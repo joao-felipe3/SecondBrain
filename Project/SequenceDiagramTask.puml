@@ -1,0 +1,45 @@
+@startuml GerenciarTarefas
+
+skinparam style strictuml
+autoactivate on
+
+actor User
+participant Screen as t
+participant Controller as c
+participant Task as task
+participant TaskRepository as repo
+
+== Create task ==
+User -> t : createTask(task)
+    t -> c : createTask(task)
+        c -> repo : create(task)
+    return Success message
+return Success message
+
+== Edit task ==
+User -> t : editTask(id, task)
+    t -> c : editTask(id, task)
+        c -> repo : getTask(id)
+        alt if task found
+            return task
+            c -> task : atualize(task)
+            return Success message
+        else
+            t -> User : "Tarefa não encontrada."
+        end
+    return Success or error message
+
+== Delete task ==
+User -> t : deleteTask(id)
+    t -> c : deleteTask(id)
+        c -> repo : getTask(id)
+        alt if task found
+            return tarefa
+            c -> repo : deleteTask(id)
+            return Success message
+        else
+            t -> User : "Tarefa não encontrada."
+        end
+    return Success or error message
+
+@enduml
