@@ -45,10 +45,3 @@ A funcionalidade de Gerenciamento de Tarefas permite:
 - **Data inválida:**  
   Se o prazo informado for anterior à data atual, o sistema exibirá:  
   `Erro: O prazo deve ser maior que a data atual.`
-
-#### **Exemplo de Fluxo**
-1. O usuário acessa a aba de tarefas.  
-2. Cria uma nova tarefa chamada "Estudar JavaScript".  
-3. Define o prazo para "31/12/2024 às 18:00".  
-4. Atribui prioridade "Alta" e dificuldade "Médio".  
-5. Salva a tarefa, que é exibida na lista e no calendário.

@@ -3,15 +3,16 @@ skinparam style strictuml
 left to right direction
 
 class Task {
-    code: String
+    code: String 
     name: String
     description: String 
     deadline: Date
     priority: String 
-    difficult: Int
-    hour: String
+    difficult: String
+    project: String
+    experience: Int
     isConcluded: Boolean
-    late: String
+    late: Boolean
     prize: Int
 }
 
