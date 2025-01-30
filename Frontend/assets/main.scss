@@ -1,0 +1,15 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  html, body {
+    font-family: 'Poppins', sans-serif;
+  }
+
+  :root {
+    --gradient-primary: linear-gradient(45deg, #002697, #005AC9, #00C8FF);
+    --gradient-primary-dark: linear-gradient(45deg, #001A6A, #00408F, #0096CC);
+  }
+  

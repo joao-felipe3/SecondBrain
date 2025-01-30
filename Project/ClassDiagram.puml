@@ -6,6 +6,7 @@ class Task {
     code: String 
     name: String
     description: String 
+    pomodoros: Int
     deadline: Date
     priority: String 
     difficult: String
@@ -14,6 +15,14 @@ class Task {
     isConcluded: Boolean
     late: Boolean
     prize: Int
+    frequency : String
+}
+
+class Project {
+    code: String 
+    name: String
+    color: String
+    totalHoursWorked: Number
 }
 
 class Habit {
@@ -50,7 +59,15 @@ class Product {
     value: Int
 }
 
-User "1" -- "*" Task: have a >
+class DailyProgress {
+    date: Date
+    pomodorosDone: Int
+    timeSpent: String
+}
+
+Task "1" -- "*" DailyProgress: track >
+User "1" -- "*" Project: have a >
+Project "1" -- "*" Task: have a >
 User "1" -- "*" Habit: have a >
 User "1" -- "*" Workout: have a >
 Workout "1" -- "*" Exercises: have a >
