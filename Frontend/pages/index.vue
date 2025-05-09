@@ -1,6 +1,5 @@
 <template>
-    <div>
-      <h1>Bem-vindo ao meu projeto Nuxt!</h1>
-      <p>Essa é a página inicial.</p>
-    </div>
+  <div style="height: 100vh; width: 100%;">
+    <img src="/assets/svg/Teste_Svg_Colorido.svg" alt="Mapa Interativo" style="height: 100vh; width: 100%;" />
+  </div>
 </template>
