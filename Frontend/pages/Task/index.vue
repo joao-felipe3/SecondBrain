@@ -1,5 +1,5 @@
 <template>
-  <v-row dense class="gap-x-2 pl-8">
+  <v-row dense class="gap-x-2 pl-8 fill-height" style="height: 100%;">
     <v-col cols="2" class="pa-0">
       <v-col cols="9" class="pa-0">
         <v-container
@@ -67,29 +67,27 @@
       </v-col>
       <v-col cols="3"></v-col>
     </v-col>
-    <v-col cols="7">
-      <v-row class="d-flex align-center justify-start pa-0" no-gutters>
+    <v-col cols="7" class="height-100 d-flex flex-column">
+      <v-row class="pa-0" style="flex: 0 0 auto">
          <TaskStatsCard />
       </v-row>
-      <v-row rows="9">
+      <v-row class="pa-0 w-100 mb-2" style="flex: 1 1 auto; overflow: hidden;">
+        <div
+          class="w-100 h-100 flex-grow-1"
+          style="background-image: url('/svg/wooden2.svg'); background-size: 100% 100%; background-position: center"
+        ></div>
+
         <v-img
-          src="svg/wooden2.svg"
-          alt="Sign Image"
-          width="90%"
-          height="auto"
-          contain
-        />
-        <v-img
-          src="svg/old-paper-2.svg"
+          src="svg/old-paper-3.svg"
           alt="Old Paper"
-          width="15%"
+          width="14%"
           class="position-absolute"
-          style="top:25%; left: 40%;"
+          style="top:23%; left: 40.5%;"
           contain
         />
         <svg
           class="position-absolute"
-          style="top: 24%; left: 35%; width: 25%; height: auto;"
+          style="top: 21%; left: 35%; width: 25%; height: auto;"
           viewBox="0 0 300 150"
         >
           <defs>
@@ -101,7 +99,6 @@
             </textPath>
           </text>
         </svg>
-
       </v-row>
     </v-col>
     <v-col cols="3">

@@ -15,6 +15,7 @@
         timeTop="50%"
         timeLeft="45%"
         timeLabelTop="80%"
+        style="margin-top: 1.5%;"
       />
 
       <TaskCard
@@ -31,7 +32,7 @@
         timeTop="50%"
         timeLeft="45%"
         timeLabelTop="80%"
-        style="margin-left: -30px; margin-top: 2%;"
+        style="margin-left: -30px;"
       />
     </div>
   </v-row>
