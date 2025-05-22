@@ -1,5 +1,5 @@
 <template>
-  <v-row dense class="gap-x-2 pl-8 fill-height" style="height: 100%;">
+  <v-row dense class="gap-x-2 px-8 fill-height" style="height: 100%;">
     <v-col cols="2" class="pa-0">
       <v-col cols="9" class="pa-0">
         <v-container
@@ -71,38 +71,17 @@
       <v-row class="pa-0" style="flex: 0 0 auto">
          <TaskStatsCard />
       </v-row>
-      <v-row class="pa-0 w-100 mb-2" style="flex: 1 1 auto; overflow: hidden;">
-        <div
-          class="w-100 h-100 flex-grow-1"
-          style="background-image: url('/svg/wooden2.svg'); background-size: 100% 100%; background-position: center"
-        ></div>
-
-        <v-img
-          src="svg/old-paper-3.svg"
-          alt="Old Paper"
-          width="14%"
-          class="position-absolute"
-          style="top:23%; left: 40.5%;"
-          contain
-        />
-        <svg
-          class="position-absolute"
-          style="top: 21%; left: 35%; width: 25%; height: auto;"
-          viewBox="0 0 300 150"
-        >
-          <defs>
-            <path id="curve" d="M10,90 Q150,10 290,90" fill="transparent"/>
-          </defs>
-          <text fill="black" font-size="42" font-family="'Irish Grover', cursive" font-weight="600">
-            <textPath href="#curve" startOffset="50%" text-anchor="middle">
-              Tasks
-            </textPath>
-          </text>
-        </svg>
+      <v-row class="pa-0 w-100 mb-2 mt-4" style="flex: 1 1 auto; overflow: hidden;">
+        <BackgroundDecor />
+        <TaskBoard :tasks="tasks" :projects="projects" />
+        <CreateTaskButton />
       </v-row>
     </v-col>
-    <v-col cols="3">
-
+    <v-col cols="3" class="py-1 d-flex flex-column justify-center" style="height: 100vh;">
+      <ProjectList :projects="projects" />
+      <WoodPanel title="Calendar" :titleOffset="'-9%'" :contentStyle="{ top: '-12%', left: '13.5%' }">
+        <Calendar />
+      </WoodPanel>
     </v-col>
   </v-row>
 </template>
@@ -112,6 +91,104 @@
   import { GoalIcon, CalendarDaysIcon, ChartNoAxesCombinedIcon } from 'lucide-vue-next'
 
   const activeIcon = ref(null)
+  const today = new Date();
+  const yesterday = new Date();
+  yesterday.setDate(today.getDate() - 1);
+  const tomorrow = new Date();
+  tomorrow.setDate(today.getDate() + 1);
+
+
+  const tasks = [
+    {
+      code: 'T1',
+      name: 'Do the UI/UX of the website',
+      description: 'Completar o relatório semanal',
+      deadline: today,
+      pomodorosPlanned: 2,
+      pomodorosDid: 1,
+      priority: 'Alta',
+      difficult: 'Média',
+      project: 'P1',
+      experience: 50,
+      isConcluded: false,
+      late: false,
+      prize: 10,
+      frequency: 'Daily'
+    },
+    {
+      code: 'T2',
+      name: 'Start to do the frontend',
+      description: 'Revisar o código da aplicação',
+      deadline: yesterday,
+      pomodorosPlanned: 4,
+      pomodorosDid: 3,
+      priority: 'Média',
+      difficult: 'Alta',
+      project: 'P2',
+      experience: 30,
+      isConcluded: false,
+      late: true,
+      prize: 15,
+      frequency: 'Monthly'
+    },
+    {
+      code: 'T3',
+      name: 'Study to Calculus III exam',
+      description: 'Revisar o código da aplicação',
+      deadline: tomorrow,
+      pomodorosPlanned: 5,
+      pomodorosDid: 3,
+      priority: 'Média',
+      difficult: 'Alta',
+      project: 'P3',
+      experience: 30,
+      isConcluded: false,
+      late: true,
+      prize: 15,
+      frequency: 'Monthly'
+    },
+    {
+      code: 'T4',
+      name: 'Say I love you to my gf',
+      description: 'Ela é muito linda e eu amo muito ela',
+      deadline: tomorrow,
+      pomodorosPlanned: 5,
+      pomodorosDid: 4,
+      priority: 'Média',
+      difficult: 'Alta',
+      project: 'P4',
+      experience: 40,
+      isConcluded: false,
+      late: true,
+      prize: 25,
+      frequency: 'Monthly'
+    },
+    {
+      code: 'T5',
+      name: 'Finish this sh*t of task',
+      description: 'Eu só quero terminar logo isso',
+      deadline: tomorrow,
+      pomodorosPlanned: 5,
+      pomodorosDid: 5,
+      priority: 'Média',
+      difficult: 'Alta',
+      project: 'P3',
+      experience: 100,
+      isConcluded: false,
+      late: true,
+      prize: 45,
+      frequency: 'Monthly'
+    }
+  ]
+
+  const projects = [
+    { code: "P1", name: "Website Redesign", color: "#FF5733", totalHoursWorked: 120 },
+    { code: "P2", name: "Backend Development", color: "#33FF57", totalHoursWorked: 200 },
+    { code: "P3", name: "Mobile App", color: "#3357FF", totalHoursWorked: 90 },
+    { code: "P4", name: "Data Analysis", color: "#FFC300", totalHoursWorked: 75 },
+    { code: "P6", name: "DevOps Automation", color: "#C70039", totalHoursWorked: 180 },
+    { code: "P7", name: "AI Model Training", color: "#1ABC9C", totalHoursWorked: 140 },
+  ]
 
 </script>
 
