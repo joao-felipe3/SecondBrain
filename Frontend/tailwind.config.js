@@ -12,6 +12,9 @@ export default {
       colors: {
         'gradient-primary': 'linear-gradient(45deg, #002697, #005AC9, #00C8FF)',
       },
+      fontFamily: {
+        poppins: ['Poppins', 'sans-serif'],
+      },
     },
   },
   plugins: [],
