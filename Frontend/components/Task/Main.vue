@@ -1,0 +1,61 @@
+<template>
+  <v-col cols="7" class="height-100 d-flex flex-column">
+    <v-row class="pa-0" style="flex: 0 0 auto">
+      <TaskStatsCard />
+    </v-row>
+    <v-row class="pa-0 w-100 mb-2 mt-4" style="flex: 1 1 auto; overflow: hidden;">
+      <TaskBackgroundDecor :zoomed="zoomed" />
+      <TaskBoard 
+        :tasks="tasks" 
+        :projects="projects"
+        :showAllTasks="showAllTasks"
+        @show-more-available="handleShowMoreAvailable"
+        @zoom-in="$emit('zoom-in')"
+        @zoom-out="$emit('zoom-out')"
+        @remove-last-task="$emit('remove-last-task', $event)"
+        :initialZoomedTask="initialZoomedTask"
+      />
+      <v-col cols="12" class="d-flex justify-center" style="margin-top: -14%;  z-index: 3;">
+        <SvgButton 
+          label="Create Task"
+          @click="$emit('task-created')"
+          :disabled="false"
+          :width="250"
+          :height="75"
+          :labelSize="27"
+          labelMarginTop="-27%"
+          labelMarginLeft="2.5%"
+          style="font-family: 'Irish Grover', cursive;"
+        />
+        <SvgButton 
+          v-if="showMoreAvailable && !showAllTasks" 
+          label="Show More"
+          @click="handleShowMoreClick"
+          :highlight="true"
+          :width="250"
+          :height="75"
+          :labelSize="27"
+          labelMarginTop="-27%"
+          labelMarginLeft="2.5%"
+          style="font-family: 'Irish Grover', cursive;"
+        />
+      </v-col>
+    </v-row>
+  </v-col>
+</template>
+
+<script setup>
+  defineProps(['tasks', 'projects', 'zoomed', 'initialZoomedTask'])
+  defineEmits(['zoom-in', 'zoom-out', 'remove-last-task', 'task-created'])
+
+  const showMoreAvailable = ref(false);
+  const showAllTasks = ref(false);
+
+  const handleShowMoreAvailable = (available) => {
+    showMoreAvailable.value = available;
+  };
+
+  const handleShowMoreClick = () => {
+    showAllTasks.value = true;
+  };
+</script>
