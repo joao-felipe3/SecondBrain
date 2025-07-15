@@ -3,10 +3,11 @@ skinparam style strictuml
 left to right direction
 
 class Task {
-    code: String 
+    _id: String 
     name: String
     description: String 
-    pomodoros: Int
+    pomodorosDid: Int
+    pomodorosPlanned: Int
     deadline: Date
     priority: String 
     difficult: String
@@ -15,14 +16,24 @@ class Task {
     isConcluded: Boolean
     late: Boolean
     prize: Int
-    frequency : String
+    recurrency: String
+    notification: Date
 }
 
 class Project {
-    code: String 
+    _id: String 
     name: String
+    description: String
     color: String
-    totalHoursWorked: Number
+    startDate: Date
+    deadline: Date
+    totalHoursWorked: Float
+    plannedHours: Float
+    shortTermGoal: String
+    midTermGoal: String
+    longTermGoal: String
+    status: String
+    progressPercentage: Float
 }
 
 class Habit {
