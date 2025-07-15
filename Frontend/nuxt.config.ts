@@ -13,6 +13,7 @@ export default defineNuxtConfig({
     'vuetify/styles',
     '~/assets/css/tailwind.css',
     '~/assets/main.scss',
+    '~/assets/styles/custom-input.css',
   ],
 
   build: {
@@ -46,6 +47,12 @@ export default defineNuxtConfig({
           href: 'https://fonts.googleapis.com/css2?family=Irish+Grover&display=swap',
         },
       ],
+    },
+  },
+
+  runtimeConfig: {
+    public: {
+      apiBase: process.env.NUXT_PUBLIC_API_BASE || 'http://localhost:3000',
     },
   },
 });

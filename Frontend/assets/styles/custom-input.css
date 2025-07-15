@@ -1,0 +1,13 @@
+.custom-input .v-field {
+  border-radius: 12px;
+  background-color: #EAC997;
+  border-bottom: none;
+  margin-bottom: -2.5%;
+}
+.custom-input input {
+  color: #3e2723;
+  font-family: 'Irish Grover', cursive;
+}
+.custom-input .v-label {
+  color: #3e2723;
+}
