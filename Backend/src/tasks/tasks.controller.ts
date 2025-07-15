@@ -52,4 +52,14 @@ export class TasksController {
     if (!removed) throw new NotFoundException('Task not found');
     return { message: 'Task removed successfully' };
   }
+
+  @Patch(':id/conclude')
+  markAsConcluded(@Param('id') id: string) {
+    return this.tasksService.markAsConcluded(id);
+  }
+
+  @Patch(':id/increment-pomodoro')
+  incrementPomodorosDid(@Param('id') id: string) {
+    return this.tasksService.incrementPomodorosDid(id);
+  }
 }

@@ -5,13 +5,14 @@ export class Task {
   pomodorosDid?: number;
   pomodorosPlanned: number;
   deadline: Date;
-  priority?: String; 
-  difficult?: String;
+  priority?: number; 
+  difficult?: number;
   project?: String;
   experience: number;
   isConcluded: Boolean;
   late: Boolean;
   prize: number;
-  frequency: String;
+  recurrency: String;
+  notification: Date;
 }
     
