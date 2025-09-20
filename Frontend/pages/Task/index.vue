@@ -1,6 +1,5 @@
 <template>
-  <v-row dense class="gap-x-2 px-8 fill-height" style="height: 100%;">
-    <Sidebar :activeIcon="activeIcon" @update:activeIcon="activeIcon = $event" />
+  <v-row dense class="gap-x-2 ml-n4 fill-height" style="height: 100%;">
     <TaskMain
       :tasks="tasks"
       :projects="projects"
@@ -22,18 +21,23 @@ import useTaskHelpers from '~/composables/useTaskHelpers'
 
 // Estado local
 const zoomed = ref(false)
-const activeIcon = ref(null)
-const newlyCreatedTask = ref(null)
+const activeIcon = ref('goal')
+const newlyCreatedTask = ref(null) // Garante que o Board nunca inicie com zoom
 
 // Store
 const taskStore = useTaskStore()
 const tasks = ref([])
 
-onMounted(loadInitialTasks)
+onMounted(() => {
+  newlyCreatedTask.value = null // Garante que o Board nunca inicie com zoom
+  loadInitialTasks()
+})
 
 async function loadInitialTasks() {
   await taskStore.loadTasks()
-  tasks.value = taskStore.tasks.filter(task => task.isConcluded !== true)
+  tasks.value = taskStore.tasks
+    .filter(task => task.isConcluded !== true)
+    .sort((a, b) => new Date(a.deadline).getTime() - new Date(b.deadline).getTime())
 }
 
 // Manipulação de zoom

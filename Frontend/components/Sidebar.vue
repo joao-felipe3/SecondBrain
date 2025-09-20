@@ -1,5 +1,5 @@
 <template>
-  <v-col cols="2" class="pa-0">
+  <v-col cols="2" class="pa-0 ml-2 mt-n4">
     <v-col cols="9" class="pa-0">
       <v-container
         fluid
@@ -12,8 +12,11 @@
           class="mx-auto mt-6 mb-1"
           contain
         />
-        <h1 class="text-h4 text-center font-weight-bold text-shadow-white font-poppins">
-          TaskRPG
+        <h1 
+          class="text-h4 text-center font-weight-bold text-shadow-white"
+          :style="{ fontFamily: 'Irish Grover', cursive }"
+        >
+          Task RPG
         </h1>
 
         <v-card elevation="0" class="icon-panel">
@@ -24,26 +27,36 @@
               :icon="icon.icon"
               :name="icon.name"
               :activeIcon="activeIcon"
-              @update:active="$emit('update:activeIcon', $event)"
+              @update:active="handleIconClick(icon)"
             />
           </div>
         </v-card>
       </v-container>
     </v-col>
-    <v-col cols="3" />
+    <v-col cols="2" />
   </v-col>
 </template>
 
 <script setup>
 import { GoalIcon, CalendarDaysIcon, ChartNoAxesCombinedIcon } from 'lucide-vue-next'
-defineProps(['activeIcon'])
-defineEmits(['update:activeIcon'])
+import { useRouter } from 'vue-router'
+
+const props = defineProps(['activeIcon'])
+const emit = defineEmits(['update:activeIcon'])
+const router = useRouter()
 
 const sidebarIcons = [
-  { icon: GoalIcon, name: 'goal' },
-  { icon: CalendarDaysIcon, name: 'calendar' },
-  { icon: ChartNoAxesCombinedIcon, name: 'graph' }
+  { icon: GoalIcon, name: 'goal', route: '/task' },
+  { icon: CalendarDaysIcon, name: 'calendar', route: '/projects' },
+  { icon: ChartNoAxesCombinedIcon, name: 'graph', route: null }
 ]
+
+function handleIconClick(icon) {
+  emit('update:activeIcon', icon.name)
+  if (icon.route) {
+    router.push(icon.route)
+  }
+}
 </script>
 
 <style scoped>

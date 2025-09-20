@@ -4,7 +4,7 @@
       <li
         v-for="project in projects"
         :key="project.code"
-        style="display: flex; align-items: center; margin-bottom: 0.5rem;"
+        style="display: flex; align-items: center; margin-bottom: 0.5rem; margin-right: 3rem;"
       >
         <span
           :style="{

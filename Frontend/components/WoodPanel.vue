@@ -25,12 +25,12 @@
       alt="Old Paper"
       width="55%"
       class="position-relative"
-      style="z-index: 1; top: 4%; left: 25%"
+      style="z-index: 1; top: 4%; left: 18%"
     />
 
     <!-- Título -->
     <div
-      style="position: relative; left: 33%; font-family: 'Irish Grover', cursive; font-size: 200%; z-index: 2;"
+      style="position: relative; left: 29%; font-family: 'Irish Grover', cursive; font-size: 200%; z-index: 2;"
       :style="{ top: titleOffset }"
     >
       <strong>{{ title }}</strong>
