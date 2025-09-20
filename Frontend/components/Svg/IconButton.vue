@@ -9,15 +9,7 @@
       @mouseup="press(false)"
       @mouseleave="press(false)"
       class="position-absolute cursor-pointer transition-fast"
-      :style="{
-        top: '10px',
-        left: '50%',
-        transform: `translateX(-50%) ${isPressing ? 'translate(-2px, 4px)' : ''}`,
-        zIndex: 2,
-        transition: 'all 0.3s ease',
-        color: isPressing ? '#AC8B9E' : (isActive ? '#ffffff' : '#59173E'),
-        filter: isActive ? 'drop-shadow(-4px 4px 2px #59173e)' : 'none'
-      }"
+      :style="iconStyle"
     />
     <svg
       :class="{ 'no-shadow': isPressing }"
@@ -84,12 +76,27 @@ const emit = defineEmits(['update:active'])
 const isActive = computed(() => props.activeIcon === props.name)
 const isPressing = ref(false)
 
+const iconStyle = computed(() => {
+  // Padroniza o valor de transform para evitar hydration mismatch
+  const baseTransform = 'translateX(-50%)';
+  const pressTransform = isPressing.value ? ' translate(-2px, 4px)' : '';
+  return {
+    top: '10px',
+    left: '50%',
+    transform: baseTransform + pressTransform,
+    zIndex: 2,
+    transition: 'all 0.3s ease',
+    color: isPressing.value ? '#AC8B9E' : (isActive.value ? '#ffffff' : '#59173E'),
+    filter: isActive.value ? 'drop-shadow(-4px 4px 2px #59173e)' : 'none'
+  };
+});
+
 function press(state) {
-  isPressing.value = state
+  isPressing.value = state;
 }
 
 function toggle() {
-  emit('update:active', isActive.value ? null : props.name)
+  emit('update:active', isActive.value ? null : props.name);
 }
 </script>
 

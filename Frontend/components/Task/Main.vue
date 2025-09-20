@@ -1,5 +1,5 @@
 <template>
-  <v-col cols="7" class="height-100 d-flex flex-column">
+  <v-col cols="8" class="height-100 px-n2 d-flex flex-column">
     <v-row class="pa-0" style="flex: 0 0 auto">
       <TaskStatsCard />
     </v-row>

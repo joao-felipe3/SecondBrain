@@ -5,10 +5,11 @@
       <img
         v-for="index in 6"
         :key="index"
-        src="/public/svg/star.svg"
         @click="$emit('update:modelValue', index)"
         class="pomodoro-star"
         :class="{ inactive: index > modelValue }"
+        :src="index <= modelValue ? 'svg/star-full.svg' : 'svg/star.svg'"
+        alt="Pomodoro Star"
       />
     </div>
   </div>
