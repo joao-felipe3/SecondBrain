@@ -7,6 +7,8 @@ export default defineNuxtConfig({
   devtools: { enabled: true },
   alias: {
     "@": resolve(__dirname, "/"),
+      // Garante que 'form-data' use 'formdata-node' no server
+      'form-data': process.env.NUXT_ENV_SSR === 'true' ? 'formdata-node' : 'form-data',
   },
 
   css: [
@@ -31,6 +33,13 @@ export default defineNuxtConfig({
       'process.env.DEBUG': false,
     },
     plugins: [vuetify()],
+    optimizeDeps: {
+      exclude: ['form-data']
+    },
+    ssr: {
+      noExternal: ['axios'],     // força axios a rodar como browser no client
+      external: ['form-data']    // garante que form-data não vá pro client
+    }
   },
 
   modules: ["@vueuse/nuxt"],
