@@ -34,6 +34,8 @@ class Project {
     longTermGoal: String
     status: String
     progressPercentage: Float
+    experience: Int
+    reward: Int
 }
 
 class Habit {
