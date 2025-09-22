@@ -35,7 +35,7 @@
         <!-- Project info overlay -->
         <div style="position: absolute; top: 0%; left: 6%; width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: left; z-index: 3; pointer-events: none;">
           <!-- Project name and hours (larger font) -->
-          <div style="font-family: 'Irish Grover', cursive; font-size: 1.4rem; font-weight: bold; color: #000; text-align: left; margin-bottom: 0.25rem;">
+          <div style="font-family: 'Irish Grover', cursive; font-size: 1.4rem; font-weight: bold; color: #000; text-align: left; margin-bottom: 0.25rem; margin-top: 0.4rem;">
             {{ p.name }} - {{ p.totalHoursWorked || 0 }}/{{ p.plannedHours || 0 }}h
           </div>
           
@@ -55,6 +55,22 @@
             </div>
           </div>
 
+          <!-- Progress Bars -->
+          <div style="position: relative; z-index: 4; margin-left: 12%; margin-top: -0.5rem; display: flex; align-items: center; gap: 0.5rem;">
+            <!-- Bar as background -->
+            <div :style="{ width: barWidth, height: '1rem', position: 'relative' }">
+              <Bar style="width: 100%; height: 130%;" />
+              <!-- ProgressBar overlaid inside Bar with dynamic width based on progress -->
+              <div style="position: absolute; top: -20%; left: 5%; z-index: 6; height: 0.6rem;" :style="{ width: `${(p.progressPercentage || 0)}%` }">
+                <ProgressBar style="width: 100%; height: 100%;" :project-color="p.color" :project-id="p._id" />
+              </div>
+            </div>
+            <!-- Percentage text -->
+            <div style="font-family: 'Irish Grover', cursive; font-size: 0.9rem; font-weight: bold; margin-top: -0.35rem;" :style="{ color: p.color || '#000' }">
+              {{ (p.progressPercentage || 0).toFixed(1) }}%
+            </div>
+          </div>
+
         </div>
       </div>
     </div>
@@ -67,6 +83,8 @@ import { ref, computed, onMounted, onBeforeUnmount, nextTick } from 'vue'
 import { Calendar, Coins, Award } from 'lucide-vue-next'
 import WoodenTable from './Svg/WoodenTable.vue'
 import OldPaper from './Svg/OldPaper.vue'
+import Bar from './Svg/Bar.vue'
+import ProgressBar from './Svg/ProgressBar.vue'
 const props = defineProps({
   title: {
     type: String,
@@ -95,6 +113,13 @@ let ro = null
 const eightyWidth = computed(() => {
   const n = parseFloat(rotatedWidth.value || '0')
   return (n * 0.75) + 'px'
+})
+
+// 80% of eightyWidth for the Bar component
+const barWidth = computed(() => {
+  const n = parseFloat(eightyWidth.value || '0')
+  const result = (n * 0.65) + 'px'
+  return result
 })
 
 // OldPaper viewBox: 84.4 (w) x 17.2 (h) => intrinsic ratio h/w
