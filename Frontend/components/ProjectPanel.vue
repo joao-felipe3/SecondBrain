@@ -29,17 +29,14 @@
         zIndex: 2,
       }"
     >
-      <div v-for="(p, idx) in projects" :key="p._id || idx" style="margin-bottom: 1.25rem; position: relative;">
+      <div v-for="(p, idx) in projects" :key="p._id || idx" class="project-row" style="margin-bottom: 1.25rem; position: relative;">
         <OldPaper :style="{ width: eightyWidth, height: ninetyHeight }" />
         
-        <!-- Project info overlay -->
-        <div style="position: absolute; top: 0%; left: 6%; width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: left; z-index: 3; pointer-events: none;">
-          <!-- Project name and hours (larger font) -->
+        <div style="position: absolute; top: 0%; left: 5%; width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: left; z-index: 3; pointer-events: none;">
           <div style="font-family: 'Irish Grover', cursive; font-size: 1.4rem; font-weight: bold; color: #000; text-align: left; margin-bottom: 0.25rem; margin-top: 0.4rem;">
             {{ p.name }} - {{ p.totalHoursWorked || 0 }}/{{ p.plannedHours || 0 }}h
           </div>
           
-          <!-- Deadline (smaller font) -->
           <div style="margin-bottom: 0.25rem; display: flex; align-items: center; gap: 1.25rem; font-family: 'Irish Grover', cursive; font-size: 1rem; text-align: left;" :style="{ color: p.deadline ? getDeadlineColor(p.deadline) : '#000' }">
             <div style="display: flex; align-items: center; gap: 0.25rem;">
               <Calendar :size="16" />
@@ -63,14 +60,21 @@
               <!-- ProgressBar overlaid inside Bar with dynamic width based on progress -->
               <div style="position: absolute; top: -20%; left: 5%; z-index: 6; height: 0.6rem;" :style="{ width: `${(p.progressPercentage || 0)}%` }">
                 <ProgressBar style="width: 100%; height: 100%;" :project-color="p.color" :project-id="p._id" />
+                <!-- Percentage label positioned right next to the filled bar -->
+                <div
+                  :style="{ color: lightenColor(p.color || '#000', 40) }"
+                  style="position: absolute; top: 130%; left: calc(100% + 0.3rem); transform: translateY(-50%); font-family: 'Irish Grover', cursive; font-size: 0.7rem; white-space: nowrap;"
+                >
+                  {{ (p.progressPercentage || 0).toFixed(1) }}%
+                </div>
               </div>
-            </div>
-            <!-- Percentage text -->
-            <div style="font-family: 'Irish Grover', cursive; font-size: 0.9rem; font-weight: bold; margin-top: -0.35rem;" :style="{ color: p.color || '#000' }">
-              {{ (p.progressPercentage || 0).toFixed(1) }}%
             </div>
           </div>
 
+        </div>
+        <!-- Trash icon at right edge of the OldPaper -->
+        <div :style="{ position: 'absolute', top: '55%', left: trashLeft, transform: 'translateY(-50%)', zIndex: 10 }">
+          <Can class="trash-icon" :style="{ width: trashSize, height: 'auto', cursor: 'pointer', pointerEvents: 'auto' }" @click="handleDelete(p, $event)" />
         </div>
       </div>
     </div>
@@ -85,6 +89,7 @@ import WoodenTable from './Svg/WoodenTable.vue'
 import OldPaper from './Svg/OldPaper.vue'
 import Bar from './Svg/Bar.vue'
 import ProgressBar from './Svg/ProgressBar.vue'
+import Can from './Svg/Can.vue'
 const props = defineProps({
   title: {
     type: String,
@@ -130,6 +135,25 @@ const ninetyHeight = computed(() => {
   const intrinsicHeight = wPx * (VIEWBOX_H / VIEWBOX_W)
   return (intrinsicHeight * 0.85) + 'px'
 })
+
+// Trash icon sizing/positioning relative to OldPaper width
+const trashSize = computed(() => {
+  const n = parseFloat(eightyWidth.value || '0')
+  return (n * 0.065) + 'px' // 8% of paper width
+})
+const trashLeft = computed(() => {
+  const paperW = parseFloat(eightyWidth.value || '0')
+  const iconW = parseFloat(trashSize.value || '0')
+  const padding = paperW * 0.025 // 2% right padding
+  const leftPx = Math.max(0, paperW - iconW - padding)
+  return leftPx + 'px'
+})
+
+const emit = defineEmits(['delete-project'])
+function handleDelete(project, e) {
+  if (e && typeof e.stopPropagation === 'function') e.stopPropagation()
+  emit('delete-project', project)
+}
 
 function refreshSizes() {
   const el = panelRef.value
@@ -180,4 +204,65 @@ function getDeadlineColor(date) {
   now.setHours(0, 0, 0, 0);
   return d.getTime() < now.getTime() ? "red" : "#000";
 }
+
+// Returns a slightly lighter version of the given color.
+// Supports 3/6-digit hex and rgb/rgba strings. Fallback: returns input color.
+function lightenColor(color, amount = 40) {
+  if (!color || typeof color !== 'string') return '#000';
+
+  const clamp = (n) => Math.min(255, Math.max(0, n));
+
+  // Handle hex colors
+  if (color.startsWith('#')) {
+    let hex = color.replace('#', '');
+    if (hex.length === 3) {
+      hex = hex.split('').map(ch => ch + ch).join('');
+    }
+    if (hex.length !== 6) return color; // unsupported hex length
+
+    const r = parseInt(hex.slice(0, 2), 16);
+    const g = parseInt(hex.slice(2, 4), 16);
+    const b = parseInt(hex.slice(4, 6), 16);
+
+    const rr = clamp(r + amount).toString(16).padStart(2, '0');
+    const gg = clamp(g + amount).toString(16).padStart(2, '0');
+    const bb = clamp(b + amount).toString(16).padStart(2, '0');
+    return `#${rr}${gg}${bb}`;
+  }
+
+  // Handle rgb/rgba
+  const rgbMatch = color.match(/^rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)(?:\s*,\s*(\d*\.?\d+))?\s*\)$/i);
+  if (rgbMatch) {
+    const r = clamp(parseInt(rgbMatch[1], 10) + amount);
+    const g = clamp(parseInt(rgbMatch[2], 10) + amount);
+    const b = clamp(parseInt(rgbMatch[3], 10) + amount);
+    const a = rgbMatch[4];
+    return a !== undefined ? `rgba(${r}, ${g}, ${b}, ${a})` : `rgb(${r}, ${g}, ${b})`;
+  }
+
+  // Named colors or unsupported formats: return as-is
+  return color;
+}
 </script>
+
+<style scoped>
+.project-row {
+  transition: transform 160ms ease;
+  transform-origin: center center;
+}
+.project-row:hover {
+  transform: scale(1.06);
+}
+
+.trash-icon {
+  transition: transform 150ms ease;
+  transform-origin: center center;
+  /* Subtle shadow for visibility against light backgrounds */
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.75));
+}
+.trash-icon:hover {
+  transform: scale(1.2);
+  /* Slightly stronger shadow on hover */
+  filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.80));
+}
+</style>
