@@ -8,8 +8,11 @@
           :projects="mockProjects"
         />
       </v-col>
-      <v-col cols="6">
-        <!-- Espaço para conteúdo futuro -->
+      <v-col cols="6" class="d-flex align-start">
+        <div style="width: 100%; padding-left: 5%;">
+          <BookShelf class="bookshelf-squashed" />
+        </div>
+        <!-- <Book /> -->
       </v-col>
     </v-row>
 </template>
@@ -17,6 +20,8 @@
 <script setup>
 
 import ProjectPanel from '../../components/ProjectPanel.vue'
+import Book from '../../components/Svg/Book.vue'
+import BookShelf from '../../components/Svg/BookShelf.vue'
 
 const mockProjects = [
   {
@@ -109,5 +114,15 @@ const mockProjects = [
 </script>
 
 <style scoped>
+.bookshelf-squashed {
+  width: 80%;
+  height: 42vh;
+  /* Força o SVG a ignorar proporções originais */
+  display: block;
+}
 
+.bookshelf-squashed svg {
+  width: 100% !important;
+  height: 100% !important;
+}
 </style>
