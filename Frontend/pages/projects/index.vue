@@ -8,11 +8,13 @@
           :projects="mockProjects"
         />
       </v-col>
-      <v-col cols="6" class="d-flex align-start">
+      <v-col cols="6" class="d-flex flex-column align-start position-relative">
         <div style="width: 100%; padding-left: 5%;">
           <BookShelf class="bookshelf-squashed" />
         </div>
-        <!-- <Book /> -->
+        <div class="book-container">
+          <Book class="book-bottom" />
+        </div>
       </v-col>
     </v-row>
 </template>
@@ -115,13 +117,36 @@ const mockProjects = [
 
 <style scoped>
 .bookshelf-squashed {
-  width: 80%;
-  height: 42vh;
+  width: 90%;
+  height: 44vh;
   /* Força o SVG a ignorar proporções originais */
   display: block;
 }
 
 .bookshelf-squashed svg {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+.book-container {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  padding-left: 5%;
+  padding-right: 5%;
+  /* Invade um pouco o espaço do BookShelf */
+  bottom: -5vh;
+}
+
+.book-bottom {
+  width: 100%;
+  height: 100%;
+  /* Remove qualquer margem */
+  margin: 0;
+}
+
+.book-bottom svg {
   width: 100% !important;
   height: 100% !important;
 }
