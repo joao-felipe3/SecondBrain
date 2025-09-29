@@ -6,11 +6,12 @@
           :titleOffset="'-10%'"
           :contentStyle="{ minHeight: '70vh' }"
           :projects="mockProjects"
+          @project-hover="onProjectHover"
         />
       </v-col>
       <v-col cols="6" class="d-flex flex-column align-start position-relative">
         <div style="width: 100%; padding-left: 5%;">
-          <BookShelf class="bookshelf-squashed" />
+          <BookShelf class="bookshelf-squashed" :projectColors="projectColors" :hoveredProjectIndex="hoveredProjectIndex" />
         </div>
         <div class="book-container">
           <Book class="book-bottom" />
@@ -20,10 +21,19 @@
 </template>
 
 <script setup>
+import { computed, ref } from 'vue'
 
 import ProjectPanel from '../../components/ProjectPanel.vue'
 import Book from '../../components/Svg/Book.vue'
 import BookShelf from '../../components/Svg/BookShelf.vue'
+
+// Estado para controlar qual projeto está em hover
+const hoveredProjectIndex = ref(-1)
+
+// Função para lidar com hover de projetos
+const onProjectHover = (projectIndex) => {
+  hoveredProjectIndex.value = projectIndex
+}
 
 const mockProjects = [
   {
@@ -113,6 +123,11 @@ const mockProjects = [
   }
 ]
 
+// Extrair as cores dos projetos
+const projectColors = computed(() => 
+  mockProjects.map(project => project.color)
+)
+
 </script>
 
 <style scoped>
@@ -136,7 +151,7 @@ const mockProjects = [
   padding-left: 5%;
   padding-right: 5%;
   /* Invade um pouco o espaço do BookShelf */
-  bottom: -5vh;
+  bottom: -2vh;
 }
 
 .book-bottom {

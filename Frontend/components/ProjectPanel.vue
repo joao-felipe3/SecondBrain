@@ -29,7 +29,14 @@
         zIndex: 2,
       }"
     >
-      <div v-for="(p, idx) in projects" :key="p._id || idx" class="project-row" style="margin-bottom: 1.25rem; position: relative;">
+      <div 
+        v-for="(p, idx) in projects" 
+        :key="p._id || idx" 
+        class="project-row" 
+        style="margin-bottom: 1.25rem; position: relative; cursor: pointer;"
+        @mouseenter="emit('project-hover', idx)"
+        @mouseleave="emit('project-hover', -1)"
+      >
         <OldPaper :style="{ width: eightyWidth, height: ninetyHeight }" />
         
         <div style="position: absolute; top: 0%; left: 5%; width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: left; z-index: 3; pointer-events: none;">
@@ -149,7 +156,7 @@ const trashLeft = computed(() => {
   return leftPx + 'px'
 })
 
-const emit = defineEmits(['delete-project'])
+const emit = defineEmits(['delete-project', 'project-hover'])
 function handleDelete(project, e) {
   if (e && typeof e.stopPropagation === 'function') e.stopPropagation()
   emit('delete-project', project)
