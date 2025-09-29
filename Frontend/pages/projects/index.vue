@@ -7,6 +7,7 @@
           :contentStyle="{ minHeight: '70vh' }"
           :projects="mockProjects"
           @project-hover="onProjectHover"
+          @project-click="onProjectClick"
         />
       </v-col>
       <v-col cols="6" class="d-flex flex-column align-start position-relative">
@@ -18,6 +19,13 @@
         </div>
       </v-col>
     </v-row>
+    
+    <!-- Modal do livro -->
+    <BookModal 
+      :isOpen="isModalOpen"
+      :project="selectedProject"
+      @close="closeModal"
+    />
 </template>
 
 <script setup>
@@ -26,13 +34,30 @@ import { computed, ref } from 'vue'
 import ProjectPanel from '../../components/ProjectPanel.vue'
 import Book from '../../components/Svg/Book.vue'
 import BookShelf from '../../components/Svg/BookShelf.vue'
+import BookModal from '../../components/BookModal.vue'
 
 // Estado para controlar qual projeto está em hover
 const hoveredProjectIndex = ref(-1)
 
+// Estado para controlar o modal
+const isModalOpen = ref(false)
+const selectedProject = ref(null)
+
 // Função para lidar com hover de projetos
 const onProjectHover = (projectIndex) => {
   hoveredProjectIndex.value = projectIndex
+}
+
+// Função para lidar com clique de projetos
+const onProjectClick = (project) => {
+  selectedProject.value = project
+  isModalOpen.value = true
+}
+
+// Função para fechar o modal
+const closeModal = () => {
+  isModalOpen.value = false
+  selectedProject.value = null
 }
 
 const mockProjects = [

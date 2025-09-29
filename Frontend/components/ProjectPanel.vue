@@ -36,6 +36,7 @@
         style="margin-bottom: 1.25rem; position: relative; cursor: pointer;"
         @mouseenter="emit('project-hover', idx)"
         @mouseleave="emit('project-hover', -1)"
+        @click="emit('project-click', p)"
       >
         <OldPaper :style="{ width: eightyWidth, height: ninetyHeight }" />
         
@@ -156,7 +157,7 @@ const trashLeft = computed(() => {
   return leftPx + 'px'
 })
 
-const emit = defineEmits(['delete-project', 'project-hover'])
+const emit = defineEmits(['delete-project', 'project-hover', 'project-click'])
 function handleDelete(project, e) {
   if (e && typeof e.stopPropagation === 'function') e.stopPropagation()
   emit('delete-project', project)
