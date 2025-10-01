@@ -1,4 +1,47 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
+import { CreateProjectDto } from './dto/create-project.dto';
+import { UpdateProjectDto } from './dto/update-project.dto';
+import { ProjectDocument } from './schemas/project.schema';
 
 @Injectable()
-export class ProjectsService {}
+export class ProjectsService {
+	constructor(
+		@InjectModel('Project') private readonly projectModel: Model<ProjectDocument>
+	) {}
+
+	async create(dto: CreateProjectDto): Promise<ProjectDocument> {
+		const created = new this.projectModel(dto);
+		return await created.save();
+	}
+
+	async findAll(): Promise<ProjectDocument[]> {
+		return await this.projectModel.find().exec();
+	}
+
+	async findOne(id: string): Promise<ProjectDocument | null> {
+		return await this.projectModel.findById(id).exec();
+	}
+
+	async update(id: string, dto: UpdateProjectDto): Promise<ProjectDocument | null> {
+		return await this.projectModel.findByIdAndUpdate(id, dto, { new: true }).exec();
+	}
+
+	async remove(id: string): Promise<boolean> {
+		const result = await this.projectModel.findByIdAndDelete(id).exec();
+		return result !== null;
+	}
+
+	async incrementHoursWorked(id: string, hours: number): Promise<ProjectDocument> {
+		const project = await this.projectModel.findById(id).exec();
+		if (!project) throw new NotFoundException('Project not found');
+		project.totalHoursWorked = (project.totalHoursWorked || 0) + hours;
+		// optionally recompute progress if plannedHours exists
+		if (project.plannedHours) {
+			const pct = (project.totalHoursWorked / project.plannedHours) * 100;
+			project.progressPercentage = Math.min(100, +pct.toFixed(2));
+		}
+		return await project.save();
+	}
+}
