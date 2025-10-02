@@ -3,11 +3,20 @@
     <div class="page left-page">
       <div v-if="project">
         <h4>🎯 Objetivo de Curto Prazo</h4>
-        <p class="goal-content">{{ project.shortTermGoal }}</p>
+        <template v-if="editing">
+          <textarea v-model="local.shortTermGoal" class="textarea" rows="5" placeholder="Objetivo curto prazo" @input="emitField('shortTermGoal', local.shortTermGoal)" />
+        </template>
+        <p v-else class="goal-content">{{ project.shortTermGoal }}</p>
         <div class="timeline-info">
           <h5>📅 Cronograma</h5>
-          <p><strong>Início:</strong> {{ formatDate(project.startDate) }}</p>
-          <p><strong>Prazo:</strong> {{ formatDate(project.deadline) }}</p>
+          <p><strong>Início:</strong>
+            <span v-if="!editing">{{ formatDate(project.startDate) }}</span>
+            <input v-else type="date" v-model="local.startDate" class="input" @input="emitField('startDate', local.startDate)" />
+          </p>
+          <p><strong>Prazo:</strong>
+            <span v-if="!editing">{{ formatDate(project.deadline) }}</span>
+            <input v-else type="date" v-model="local.deadline" class="input" @input="emitField('deadline', local.deadline)" />
+          </p>
         </div>
       </div>
     </div>
@@ -31,12 +40,28 @@
 <script setup lang="ts">
 import useDateFormat from '~/composables/useDateFormat'
 import type { PropType } from 'vue'
+import { reactive, watch } from 'vue'
 
 const { formatDate } = useDateFormat()
 
 type Project = Record<string, any>
 
 const props = defineProps({
-  project: { type: Object as PropType<Project | null>, default: null }
+  project: { type: Object as PropType<Project | null>, default: null },
+  editing: { type: Boolean, default: false }
 })
+
+const emit = defineEmits(['update-field'])
+
+const local = reactive<any>({})
+watch(() => props.project, (v) => { if (v) Object.assign(local, v) }, { immediate: true })
+watch(() => props.editing, (is) => { if (is && props.project) Object.assign(local, props.project) })
+
+function emitField(field: string, value: any) { emit('update-field', field, value) }
 </script>
+
+<style scoped>
+.textarea, .input { width:100%; background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.2); color:#fff; padding:.4rem .5rem; border-radius:4px; font:inherit; }
+.editing .textarea, .editing .input { background:#fff; color:#222; border:1px solid #c9b28a; box-shadow:0 0 0 2px rgba(140,90,40,0.12); }
+.editing .textarea:focus, .editing .input:focus { outline:2px solid #b7791f; outline-offset:2px; }
+</style>

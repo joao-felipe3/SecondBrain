@@ -64,7 +64,34 @@ export const useApi = (endpoint: string) => {
     }
   };
 
-  // ...existing code...
-
   return { get, post, patch, remove };
+};
+
+// Factory para endpoints com ID dinâmico (e.g., useApiResource('/projects'))
+export const useApiResource = (baseEndpoint: string) => {
+  const api = useNuxtApp().$api as AxiosInstance;
+
+  const one = (id: string | number) => useApi(`${baseEndpoint}/${id}`);
+
+  const list = async () => {
+    const { get } = useApi(baseEndpoint);
+    return get();
+  };
+
+  const create = async (body: any) => {
+    const { post } = useApi(baseEndpoint);
+    return post(body);
+  };
+
+  const update = async (id: string | number, body: any) => {
+    const { patch } = one(id);
+    return patch(body);
+  };
+
+  const remove = async (id: string | number) => {
+    const { remove } = one(id);
+    return remove();
+  };
+
+  return { list, create, update, remove };
 };
