@@ -1,10 +1,10 @@
 <template>
-  <div class="page-container">
+  <div class="page-container" :class="{ editing }">
     <div class="page left-page">
       <div v-if="project">
         <h4>🎯 Objetivo de Longo Prazo</h4>
         <template v-if="editing">
-          <textarea v-model="local.longTermGoal" class="textarea" rows="5" placeholder="Objetivo longo prazo" @input="emitField('longTermGoal', local.longTermGoal)" />
+          <v-textarea v-model="local.longTermGoal" label="Objetivo longo prazo" variant="solo-filled" density="comfortable" auto-grow rows="4" @update:model-value="emitField('longTermGoal', $event)" />
         </template>
         <p v-else class="goal-content">{{ project.longTermGoal }}</p>
         <div class="vision-section">
@@ -21,19 +21,19 @@
             <Coins :size="20" />
             <span>{{ editing ? local.reward : project.reward }} pontos totais</span>
           </div>
-          <div class="reward-item">
-            <Award :size="20" />
-            <span>{{ editing ? local.experience : project.experience }} EXP total</span>
-          </div>
+            <div class="reward-item">
+              <Award :size="20" />
+              <span>{{ editing ? local.experience : project.experience }} EXP total</span>
+            </div>
         </div>
         <div v-if="editing" class="edit-grid">
           <label class="mini">
             Recompensa
-            <input type="number" min="0" v-model.number="local.reward" class="input" @input="emitField('reward', local.reward)" />
+            <v-text-field v-model.number="local.reward" type="number" label="Recompensa" variant="solo-filled" density="comfortable" hide-details @update:model-value="emitField('reward', $event)" />
           </label>
           <label class="mini">
             XP
-            <input type="number" min="0" v-model.number="local.experience" class="input" @input="emitField('experience', local.experience)" />
+            <v-text-field v-model.number="local.experience" type="number" label="XP" variant="solo-filled" density="comfortable" hide-details @update:model-value="emitField('experience', $event)" />
           </label>
         </div>
         <div class="celebration-box">
@@ -63,16 +63,20 @@ const props = defineProps({
 const emit = defineEmits(['update-field'])
 
 const local = reactive<any>({})
-watch(() => props.project, (v) => { if (v) Object.assign(local, v) }, { immediate: true })
-watch(() => props.editing, (is) => { if (is && props.project) Object.assign(local, props.project) })
+watch(() => props.project, (v) => { 
+  if (v) Object.assign(local, v) 
+}, { immediate: true })
 
-function emitField(field: string, value: any) { emit('update-field', field, value) }
+watch(() => props.editing, (is) => { 
+  if (is && props.project) Object.assign(local, props.project) 
+}, { immediate: true })
+
+function emitField(field: string, value: any) { 
+  local[field] = value // Atualiza o valor local
+  emit('update-field', field, value) 
+}
 </script>
 
 <style scoped>
-.textarea, .input { width:100%; background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.2); color:#fff; padding:.4rem .5rem; border-radius:4px; font:inherit; }
-.editing .textarea, .editing .input { background:#fff; color:#222; border:1px solid #c9b28a; box-shadow:0 0 0 2px rgba(140,90,40,0.12); }
-.editing .textarea:focus, .editing .input:focus { outline:2px solid #b7791f; outline-offset:2px; }
-.edit-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(120px,1fr)); gap:.5rem; margin-top:.75rem; }
-label.mini { display:flex; flex-direction:column; font-size:.75rem; gap:.25rem; }
+/* Mantemos escopo para possíveis overrides específicos posteriormente */
 </style>

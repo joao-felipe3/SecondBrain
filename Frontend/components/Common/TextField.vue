@@ -11,7 +11,7 @@
 </template>
 
 <script setup>
-import { ref, watch } from 'vue'
+import { ref, watch, computed } from 'vue'
 
 const props = defineProps({
   modelValue: String,
@@ -25,7 +25,7 @@ const localValue = ref(props.modelValue)
 
 watch(() => props.modelValue, (val) => {
   localValue.value = val
-})
+}, { immediate: true })
 
 watch(localValue, (val) => {
   emit('update:modelValue', val)
@@ -38,6 +38,7 @@ const validationRules = computed(() => {
   }
   return rules
 })
+
 const computedLabel = computed(() => {
   return props.required ? `${props.label} *` : props.label
 })

@@ -39,7 +39,7 @@
 
 <script setup>
 import { Calendar } from 'lucide-vue-next'
-import { ref, watch } from 'vue'
+import { ref, watch, computed } from 'vue'
 
 const props = defineProps({
   modelValue: [String, Date],
@@ -59,7 +59,7 @@ const errorMessage = ref('')
 watch(() => props.modelValue, (val) => {
   localValue.value = val
   inputValue.value = formatDate(val)
-})
+}, { immediate: true })
 
 watch(localValue, (val) => {
   emit('update:modelValue', val)

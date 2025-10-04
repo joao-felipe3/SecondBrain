@@ -1,10 +1,18 @@
 <template>
-  <div class="page-container">
+  <div class="page-container" :class="{ editing }">
     <div class="page left-page">
       <div v-if="project">
         <h4>🎯 Objetivo de Médio Prazo</h4>
         <template v-if="editing">
-          <textarea v-model="local.midTermGoal" class="textarea" rows="5" placeholder="Objetivo médio prazo" @input="emitField('midTermGoal', local.midTermGoal)" />
+          <v-textarea 
+            v-model="local.midTermGoal" 
+            label="Objetivo médio prazo" 
+            variant="solo-filled" 
+            density="comfortable" 
+            auto-grow 
+            rows="4" 
+            @update:model-value="emitField('midTermGoal', $event)" 
+          />
         </template>
         <p v-else class="goal-content">{{ project.midTermGoal }}</p>
         <div class="strategy-section">
@@ -48,14 +56,20 @@ const props = defineProps({
 const emit = defineEmits(['update-field'])
 
 const local = reactive<any>({})
-watch(() => props.project, (v) => { if (v) Object.assign(local, v) }, { immediate: true })
-watch(() => props.editing, (is) => { if (is && props.project) Object.assign(local, props.project) })
+watch(() => props.project, (v) => { 
+  if (v) Object.assign(local, v) 
+}, { immediate: true })
 
-function emitField(field: string, value: any) { emit('update-field', field, value) }
+watch(() => props.editing, (is) => { 
+  if (is && props.project) Object.assign(local, props.project) 
+}, { immediate: true })
+
+function emitField(field: string, value: any) { 
+  local[field] = value // Atualiza o valor local
+  emit('update-field', field, value) 
+}
 </script>
 
 <style scoped>
-.textarea { width:100%; background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.2); color:#fff; padding:.4rem .5rem; border-radius:4px; font:inherit; }
-.editing .textarea { background:#fff; color:#222; border:1px solid #c9b28a; box-shadow:0 0 0 2px rgba(140,90,40,0.12); }
-.editing .textarea:focus { outline:2px solid #b7791f; outline-offset:2px; }
+/* CSS removido - deixando BookModal.css gerenciar os estilos globalmente */
 </style>

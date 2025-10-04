@@ -413,6 +413,59 @@
   border:1px solid rgba(255,215,0,0.3);
 }
 
+/* === Vuetify field overrides inside the book modal while editing === */
+.editing :deep(.v-field.v-field--variant-solo-filled) { 
+  background: #ffffff !important; 
+  --v-field-padding-start: 8px; 
+  --v-field-padding-end: 8px; 
+}
+.editing :deep(.v-field.v-field--variant-solo-filled .v-field__overlay) { background: transparent !important; }
+.editing .page-container .v-field__input,
+.editing .page-container .v-text-field input,
+.editing .page-container .v-textarea .v-field__input,
+.editing .page-container textarea,
+.editing :deep(.v-field__input),
+.editing :deep(.v-text-field input),
+.editing :deep(textarea) { 
+  color:#222 !important; 
+  caret-color:#222 !important;
+  -webkit-text-fill-color:#222 !important;
+}
+.editing :deep(.v-label) { color:#6b4b20 !important; opacity:.85; font-weight:500; }
+.editing :deep(.v-field--focused .v-label) { color:#b7791f !important; }
+.editing :deep(.v-field) { box-shadow:0 0 0 2px rgba(140,90,40,0.15); border-radius:6px; }
+.editing :deep(.v-field:hover) { box-shadow:0 0 0 2px rgba(140,90,40,0.25); }
+
+/* Explicit overrides for custom wrapper components so they also get white bg */
+.editing :deep(.custom-input .v-field) { 
+  background:#fff !important; 
+  box-shadow:0 0 0 2px rgba(140,90,40,0.15);
+}
+.editing :deep(.custom-input .v-field__input) { color:#222 !important; }
+.editing :deep(.custom-input .v-label) { color:#6b4b20 !important; }
+
+/* Ensure inputs remain interactive (some layering/z-index issues previously) */
+.editing .page { position:relative; z-index:10; }
+.editing :deep(.custom-input .v-field),
+.editing :deep(.v-field),
+.editing :deep(.v-field__input),
+.editing :deep(input),
+.editing :deep(textarea) { pointer-events:auto !important; z-index:15; }
+
+/* If any parent applied pointer-events:none inadvertently */
+.editing :deep(.v-input),
+.editing :deep(.v-textarea) { pointer-events:auto !important; }
+
+/* Guarantee interaction not blocked by overlay elements */
+.page-container .v-field, 
+.page-container .v-textarea, 
+.page-container input, 
+.page-container textarea, 
+.page-container select { pointer-events:auto; position:relative; z-index:5; }
+
+/* Compact spacing for stacked fields to match original feel */
+.editing :deep(.v-field) { margin-bottom: .5rem; }
+
 /* Navigation arrows (manual, more visible) */
 .nav-arrow {
   position: absolute;
@@ -550,4 +603,45 @@
   .carousel::scroll-marker-group, 
   .carousel::scroll-button(left), 
   .carousel::scroll-button(right) { display:none; }
+}
+
+/* Additional rules to ensure all Vuetify inputs are fully interactive */
+.editing .page-container .v-field,
+.editing .page-container .v-text-field,
+.editing .page-container .v-textarea,
+.editing .page-container .v-select,
+.editing .page-container input[type="date"],
+.editing .page-container input[type="number"],
+.editing .page-container input[type="color"],
+.editing .page-container textarea {
+  pointer-events: auto !important;
+  position: relative !important;
+  z-index: 20 !important;
+}
+
+.editing .page-container .v-field__input,
+.editing .page-container .v-field__field,
+.editing .page-container .v-input__control {
+  pointer-events: auto !important;
+  z-index: 25 !important;
+  color: #222 !important;
+  -webkit-text-fill-color: #222 !important;
+}
+
+/* Ensure input text is always visible */
+.editing .page-container input,
+.editing .page-container textarea {
+  color: #222 !important;
+  -webkit-text-fill-color: #222 !important;
+  background: #fff !important;
+}
+
+/* Fix for Vuetify field background and text */
+.editing .page-container .v-field.v-field--variant-solo-filled {
+  background: #ffffff !important;
+}
+
+.editing .page-container .v-field.v-field--variant-solo-filled .v-field__input {
+  color: #222 !important;
+  -webkit-text-fill-color: #222 !important;
 }

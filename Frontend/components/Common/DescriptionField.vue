@@ -27,7 +27,7 @@ const localValue = ref(props.modelValue)
 
 watch(() => props.modelValue, (val) => {
   localValue.value = val
-})
+}, { immediate: true })
 
 watch(localValue, (val) => {
   emit('update:modelValue', val)

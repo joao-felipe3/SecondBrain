@@ -1,21 +1,21 @@
 <template>
-  <div class="page-container">
+  <div class="page-container" :class="{ editing }">
     <div class="page left-page">
       <div v-if="project">
         <h4>🎯 Objetivo de Curto Prazo</h4>
         <template v-if="editing">
-          <textarea v-model="local.shortTermGoal" class="textarea" rows="5" placeholder="Objetivo curto prazo" @input="emitField('shortTermGoal', local.shortTermGoal)" />
+          <v-textarea v-model="local.shortTermGoal" label="Objetivo curto prazo" variant="solo-filled" density="comfortable" auto-grow rows="4" @update:model-value="emitField('shortTermGoal', $event)" />
         </template>
         <p v-else class="goal-content">{{ project.shortTermGoal }}</p>
         <div class="timeline-info">
           <h5>📅 Cronograma</h5>
           <p><strong>Início:</strong>
             <span v-if="!editing">{{ formatDate(project.startDate) }}</span>
-            <input v-else type="date" v-model="local.startDate" class="input" @input="emitField('startDate', local.startDate)" />
+            <v-text-field v-else v-model="local.startDate" type="date" label="Início" variant="solo-filled" density="comfortable" hide-details style="max-width:170px;display:inline-block" @update:model-value="emitField('startDate', $event)" />
           </p>
           <p><strong>Prazo:</strong>
             <span v-if="!editing">{{ formatDate(project.deadline) }}</span>
-            <input v-else type="date" v-model="local.deadline" class="input" @input="emitField('deadline', local.deadline)" />
+            <v-text-field v-else v-model="local.deadline" type="date" label="Prazo" variant="solo-filled" density="comfortable" hide-details style="max-width:170px;display:inline-block" @update:model-value="emitField('deadline', $event)" />
           </p>
         </div>
       </div>
@@ -31,7 +31,7 @@
         </ul>
         <div class="motivation-box">
           <h6>🌟 Motivação</h6>
-            <p>"O sucesso é a soma de pequenos esforços repetidos dia após dia."</p>
+          <p>"O sucesso é a soma de pequenos esforços repetidos dia após dia."</p>
         </div>
       </div>
     </div>
@@ -54,14 +54,20 @@ const props = defineProps({
 const emit = defineEmits(['update-field'])
 
 const local = reactive<any>({})
-watch(() => props.project, (v) => { if (v) Object.assign(local, v) }, { immediate: true })
-watch(() => props.editing, (is) => { if (is && props.project) Object.assign(local, props.project) })
+watch(() => props.project, (v) => { 
+  if (v) Object.assign(local, v) 
+}, { immediate: true })
 
-function emitField(field: string, value: any) { emit('update-field', field, value) }
+watch(() => props.editing, (is) => { 
+  if (is && props.project) Object.assign(local, props.project) 
+}, { immediate: true })
+
+function emitField(field: string, value: any) { 
+  local[field] = value // Atualiza o valor local
+  emit('update-field', field, value) 
+}
 </script>
 
 <style scoped>
-.textarea, .input { width:100%; background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.2); color:#fff; padding:.4rem .5rem; border-radius:4px; font:inherit; }
-.editing .textarea, .editing .input { background:#fff; color:#222; border:1px solid #c9b28a; box-shadow:0 0 0 2px rgba(140,90,40,0.12); }
-.editing .textarea:focus, .editing .input:focus { outline:2px solid #b7791f; outline-offset:2px; }
+/* CSS removido - deixando BookModal.css gerenciar os estilos globalmente */
 </style>
