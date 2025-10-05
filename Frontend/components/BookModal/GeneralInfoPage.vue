@@ -100,16 +100,31 @@ const emit = defineEmits(['update-field'])
 const local = reactive<any>({})
 const statusItems = ['pending','in-progress','completed','archived']
 
+// Sincroniza apenas os campos específicos desta página
 watch(() => props.project, (val) => {
   if (val) {
-    Object.assign(local, val)
+    local.name = val.name
+    local.description = val.description
+    local.deadline = val.deadline
+    local.reward = val.reward
+    local.experience = val.experience
+    local.color = val.color
+    local.plannedHours = val.plannedHours
+    local.status = val.status
   }
 }, { immediate: true })
 
 watch(() => props.editing, (is) => {
   if (is && props.project) {
-    // Quando entra em modo de edição, sincroniza os dados
-    Object.assign(local, props.project)
+    // Quando entra em modo de edição, sincroniza apenas os dados desta página
+    local.name = props.project.name
+    local.description = props.project.description
+    local.deadline = props.project.deadline
+    local.reward = props.project.reward
+    local.experience = props.project.experience
+    local.color = props.project.color
+    local.plannedHours = props.project.plannedHours
+    local.status = props.project.status
   }
 }, { immediate: true })
 

@@ -63,12 +63,22 @@ const props = defineProps({
 const emit = defineEmits(['update-field'])
 
 const local = reactive<any>({})
+
+// Sincroniza apenas os campos específicos desta página
 watch(() => props.project, (v) => { 
-  if (v) Object.assign(local, v) 
+  if (v) {
+    local.longTermGoal = v.longTermGoal
+    local.reward = v.reward
+    local.experience = v.experience
+  }
 }, { immediate: true })
 
 watch(() => props.editing, (is) => { 
-  if (is && props.project) Object.assign(local, props.project) 
+  if (is && props.project) {
+    local.longTermGoal = props.project.longTermGoal
+    local.reward = props.project.reward
+    local.experience = props.project.experience
+  }
 }, { immediate: true })
 
 function emitField(field: string, value: any) { 
@@ -78,5 +88,5 @@ function emitField(field: string, value: any) {
 </script>
 
 <style scoped>
-/* Mantemos escopo para possíveis overrides específicos posteriormente */
+/* CSS removido - deixando BookModal.css gerenciar os estilos globalmente */
 </style>

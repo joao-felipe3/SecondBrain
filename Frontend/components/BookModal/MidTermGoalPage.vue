@@ -56,12 +56,24 @@ const props = defineProps({
 const emit = defineEmits(['update-field'])
 
 const local = reactive<any>({})
+
+// Sincroniza apenas os campos específicos desta página
 watch(() => props.project, (v) => { 
-  if (v) Object.assign(local, v) 
+  if (v) {
+    local.midTermGoal = v.midTermGoal
+    local.plannedHours = v.plannedHours
+    local.experience = v.experience
+    local.reward = v.reward
+  }
 }, { immediate: true })
 
 watch(() => props.editing, (is) => { 
-  if (is && props.project) Object.assign(local, props.project) 
+  if (is && props.project) {
+    local.midTermGoal = props.project.midTermGoal
+    local.plannedHours = props.project.plannedHours
+    local.experience = props.project.experience
+    local.reward = props.project.reward
+  }
 }, { immediate: true })
 
 function emitField(field: string, value: any) { 

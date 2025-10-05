@@ -1,26 +1,33 @@
 <template>
-  <!-- Eventos emitidos: close (fechar modal), updated (projeto salvo), deleted (projeto excluído) -->
-  <!-- Props: isOpen(Boolean), project(Object) -->
-  <!-- Novo modo de edição interno com botões Editar/Excluir/Salvar/Cancelar -->
-  <div v-if="isOpen || isClosing" :class="['book-modal-overlay', { 'is-closing': isClosing }]" @click="onBackdrop">
-    <div class="container" @click.stop>
+  <v-row no-gutters v-if="isOpen || isClosing" :class="['book-modal-overlay', { 'is-closing': isClosing }]" @click="onBackdrop">
+    <v-container class="container" @click.stop>
       <button class="icon-floating-close" @click="closeModal" aria-label="Fechar modal" tabindex="0"><X :size="22" /></button>
       <button class="nav-arrow nav-prev" :disabled="atStart" @click="go(-1)" aria-label="Página anterior">◀</button>
-      <div class="magic-layer" aria-hidden="true">
-        <span v-for="s in sparkles" :key="s.id" class="sparkle" :style="{ left: s.x + '%', top: s.y + '%', animationDelay: s.delay + 'ms', animationDuration: s.duration + 'ms', '--spark-size': s.size + 'px', '--spark-hue': s.hue }"></span>
-      </div>
-      <div class="sprite-wrapper">
-        <div class="book">
-          <div ref="carouselEl" class="carousel" style="--slides: 4;">
-            <div class="sprite"></div>
-            <div class="carousel-item"><GeneralInfoPage :project="editing ? draft : project" :editing="editing" @update-field="updateField" /></div>
-            <div class="carousel-item"><ShortTermGoalPage :project="editing ? draft : project" :editing="editing" @update-field="updateField" /></div>
-            <div class="carousel-item"><MidTermGoalPage :project="editing ? draft : project" :editing="editing" @update-field="updateField" /></div>
-            <div class="carousel-item"><LongTermGoalPage :project="editing ? draft : project" :editing="editing" @update-field="updateField" /></div>
-          </div>
-        </div>
-      </div>
-      <button class="nav-arrow nav-next" :disabled="atEnd" @click="go(1)" aria-label="Próxima página">▶</button>
+
+      <v-row class="magic-layer" aria-hidden="true">
+        <v-sheet 
+          v-for="s in sparkles" 
+          class="sparkle"
+          :key="s.id"  
+          :style="{ left: s.x + '%', top: s.y + '%', animationDelay: s.delay + 'ms', animationDuration: s.duration + 'ms', '--spark-size': s.size + 'px', '--spark-hue': s.hue }"
+        ></v-sheet>
+      </v-row>
+
+      <v-row class="sprite-wrapper" no-gutters align="center" style="min-height: 60vh;">
+        <v-col class="d-flex justify-center">
+          <v-sheet class="book" elevation="2" color="transparent">
+            <div ref="carouselEl" class="carousel" :style="{ '--slides': `${TOTAL_SLIDES}` }">
+              <v-sheet class="sprite" elevation="0" color="transparent"></v-sheet>
+              <v-sheet class="carousel-item" elevation="0" color="transparent"><GeneralInfoPage :project="displayProject || {}" :editing="editing" @update-field="updateField" /></v-sheet>
+              <v-sheet class="carousel-item" elevation="0" color="transparent"><ShortTermGoalPage :project="displayProject || {}" :editing="editing" @update-field="updateField" /></v-sheet>
+              <v-sheet class="carousel-item" elevation="0" color="transparent"><MidTermGoalPage :project="displayProject || {}" :editing="editing" @update-field="updateField" /></v-sheet>
+              <v-sheet class="carousel-item" elevation="0" color="transparent"><LongTermGoalPage :project="displayProject || {}" :editing="editing" @update-field="updateField" /></v-sheet>
+            </div>
+          </v-sheet>
+        </v-col>
+      </v-row>
+
+      <button class="nav-arrow nav-next" :disabled="atEnd" @click="go(1)" aria-label="Próxima página"> ▶</button>
 
       <div class="actions-bar" v-if="project">
         <template v-if="!editing">
@@ -35,65 +42,57 @@
           </button>
         </template>
       </div>
-    </div>
-  </div>
+    </v-container>
+  </v-row>
 </template>
 
 <script setup lang="ts">
 import { X } from 'lucide-vue-next'
-import { ref, computed, onMounted, watch, nextTick } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount, watch, nextTick, toRef } from 'vue'
 import GeneralInfoPage from './BookModal/GeneralInfoPage.vue'
 import ShortTermGoalPage from './BookModal/ShortTermGoalPage.vue'
 import MidTermGoalPage from './BookModal/MidTermGoalPage.vue'
 import LongTermGoalPage from './BookModal/LongTermGoalPage.vue'
 import { useApiResource } from '~/composables/useApi'
 import type { PropType } from 'vue'
+import { useCarousel } from '~/composables/useCarousel'
+import { useSparkles } from '~/composables/useSparkles'
+import { useProjectEditing, getProjectId, type Project } from '~/composables/useProjectEditing'
 
-type Project = Record<string, any>
+const CLOSE_ANIM_MS = 800
+const TOTAL_SLIDES = 4
+
 
 const props = defineProps({
   isOpen: { type: Boolean, default: false },
   project: { type: Object as PropType<Project | null>, default: null }
 })
-
 const emit = defineEmits(['close', 'updated', 'deleted'])
+
+// State
 const isClosing = ref(false)
 let closeTimeout: number | null = null
 
-const editing = ref(false)
-const saving = ref(false)
-const draft = ref<Project | null>(null)
-
 const api = useApiResource('/projects')
 
-const startEdit = () => {
-  if (!props.project) return
-  draft.value = JSON.parse(JSON.stringify(props.project))
-  editing.value = true
-}
+const { carouselEl, currentIndex, atStart, atEnd, go, updateIndex, attach, detach, reset } = useCarousel(TOTAL_SLIDES)
+const { sparkles, createSparkles, clearSparkles } = useSparkles()
+const projectRef = toRef(props, 'project')
+const { editing, saving, draft, displayProject, isValid, startEdit: startEditInner, cancelEdit: cancelEditInner, updateField, reset: resetEditing } = useProjectEditing(projectRef)
 
-const cancelEdit = () => {
-  editing.value = false
-  draft.value = null
-}
+// Editing wrappers glue to props
+const startEdit = () => startEditInner(props.project)
+const cancelEdit = () => cancelEditInner()
 
-const isValid = computed(() => {
-  if (!editing.value || !draft.value) return true
-  return !!draft.value.name && String(draft.value.name).trim().length > 0
-})
-
+// Save/Delete
 const saveEdit = async () => {
   if (!props.project || !draft.value || !isValid.value) return
   try {
     saving.value = true
-    const { data, error } = await api.update(props.project._id || props.project.id, draft.value)
-    if (error) {
-      console.error('Erro ao atualizar projeto', error)
-    } else {
-      emit('updated', data)
-      editing.value = false
-      draft.value = null
-    }
+    const id = getProjectId(props.project)
+    const { data } = await api.update(id, draft.value)
+    emit('updated', data)
+    cancelEdit()
   } finally {
     saving.value = false
   }
@@ -102,7 +101,8 @@ const saveEdit = async () => {
 const handleDelete = async () => {
   if (!props.project) return
   if (!confirm('Tem certeza que deseja excluir este projeto?')) return
-  const { error } = await api.remove(props.project._id || props.project.id)
+  const id = getProjectId(props.project)
+  const { error } = await api.remove(id)
   if (error) {
     console.error('Erro ao excluir projeto', error)
   } else {
@@ -111,80 +111,47 @@ const handleDelete = async () => {
   }
 }
 
-const updateField = (field: string, value: any) => {
-  if (!editing.value || !draft.value) return
-  draft.value[field] = value
-}
-
+// Backdrop/Close
 const onBackdrop = () => {
-  if (editing.value) return // evita fechar enquanto edita
+  if (editing.value) return
   closeModal()
 }
-
 const closeModal = () => {
-  if (isClosing.value) return
-  if (!props.isOpen) return
+  if (isClosing.value || !props.isOpen) return
   isClosing.value = true
-  const duration = 800
   if (closeTimeout) window.clearTimeout(closeTimeout)
-  closeTimeout = window.setTimeout(finishClose, duration + 50)
+  closeTimeout = window.setTimeout(finishClose, CLOSE_ANIM_MS + 50)
 }
-
 function finishClose() {
   if (closeTimeout) { window.clearTimeout(closeTimeout); closeTimeout = null }
   isClosing.value = false
-  editing.value = false
-  draft.value = null
+  resetEditing()
   emit('close')
 }
 
-// Carousel
-const carouselEl = ref<HTMLElement | null>(null)
-const currentIndex = ref(0)
-const totalSlides = 4
-const updateIndex = () => {
-  const el = carouselEl.value
-  if (!el) return
-  const w = el.clientWidth
-  currentIndex.value = Math.round(el.scrollLeft / w)
-}
-const go = (dir: number) => {
-  const el = carouselEl.value
-  if (!el) return
-  const w = el.clientWidth
-  let target = currentIndex.value + dir
-  target = Math.max(0, Math.min(totalSlides - 1, target))
-  el.scrollTo({ left: target * w, behavior: 'smooth' })
-  currentIndex.value = target
-}
-const atStart = computed(() => currentIndex.value === 0)
-const atEnd = computed(() => currentIndex.value === totalSlides - 1)
-
 onMounted(() => {
-  const el = carouselEl.value
-  if (!el) return
-  el.addEventListener('scroll', () => { requestAnimationFrame(updateIndex) }, { passive: true })
+  attach()
 })
 
-// Sparkles
-interface Sparkle { id: number; x: number; y: number; delay: number; duration: number; size: number; hue: number }
-const sparkles = ref<Sparkle[]>([])
-let sparkleId = 0
-function createSparkles(amount = 42) {
-  const arr: Sparkle[] = []
-  for (let i = 0; i < amount; i++) {
-    arr.push({ id: sparkleId++, x: Math.random() * 100, y: Math.random() * 100, delay: Math.random() * 900, duration: 2500 + Math.random() * 4000, size: 6 + Math.random() * 16, hue: 35 + Math.random() * 25 })
-  }
-  sparkles.value = arr
-}
+onBeforeUnmount(() => {
+  detach()
+})
 
+// Open/close effects
 watch(() => props.isOpen, async (open) => {
-  if (open) { await nextTick(); createSparkles() } else if (!open && !isClosing.value) { sparkles.value = [] }
+  if (open) {
+    await nextTick()
+    reset()
+    createSparkles()
+    attach()
+  } else if (!open && !isClosing.value) {
+    clearSparkles()
+    detach()
+  }
 })
 </script>
 
 <style scoped>
-/* Remover toolbar antiga */
 .toolbar { display:none; }
 .icon-floating-close { position:absolute; top:.5rem; right:.5rem; background:rgba(0,0,0,.45); border:none; color:#fff; border-radius:50%; width:40px; height:40px; display:flex; align-items:center; justify-content:center; cursor:pointer; backdrop-filter: blur(4px); }
 .icon-floating-close:hover { background:rgba(0,0,0,.65); }
