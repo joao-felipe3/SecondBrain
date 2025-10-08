@@ -645,3 +645,27 @@
   color: #222 !important;
   -webkit-text-fill-color: #222 !important;
 }
+
+/* Global equivalents (non-scoped) to ensure visibility when :deep is not processed */
+.editing .v-field.v-field--variant-solo-filled { 
+  background: #ffffff !important; 
+  --v-field-padding-start: 8px; 
+  --v-field-padding-end: 8px; 
+}
+.editing .v-field.v-field--variant-solo-filled .v-field__overlay { background: transparent !important; }
+.editing .v-field__input,
+.editing .v-text-field input,
+.editing .v-textarea .v-field__input,
+.editing textarea {
+  color:#222 !important;
+  caret-color:#222 !important;
+  -webkit-text-fill-color:#222 !important;
+}
+.editing .v-label { color:#6b4b20 !important; opacity:.85; font-weight:500; }
+.editing .v-field--focused .v-label { color:#b7791f !important; }
+.editing .v-field { box-shadow:0 0 0 2px rgba(140,90,40,0.15); border-radius:6px; }
+.editing .v-field:hover { box-shadow:0 0 0 2px rgba(140,90,40,0.25); }
+.editing .v-input,
+.editing .v-textarea { pointer-events:auto !important; }
+.editing input,
+.editing textarea { background:#fff !important; }

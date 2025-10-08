@@ -1,6 +1,6 @@
 <template>
-  <div class="page-container" :class="{ editing }">
-    <div class="page left-page">
+  <v-sheet class="page-container" :class="{ editing }" elevation="0" color="transparent">
+    <v-sheet class="page left-page" elevation="0" color="transparent">
       <div v-if="project">
         <template v-if="editing">
           <v-text-field 
@@ -24,8 +24,8 @@
           <h3 class="page-title">{{ project.name }}</h3>
           <p class="project-description">{{ project.description }}</p>
         </template>
-        <div class="stats-grid">
-          <div class="stat-row">
+        <v-sheet class="stats-grid" elevation="0" color="transparent">
+          <v-sheet class="stat-row" elevation="0" color="transparent">
             <Calendar :size="16" />
             <span v-if="!editing">{{ formatDeadline(project.deadline) }}</span>
             <v-text-field 
@@ -38,28 +38,28 @@
               hide-details
               @update:model-value="emitField('deadline', $event)" 
             />
-          </div>
-          <div class="stat-row">
+          </v-sheet>
+          <v-sheet class="stat-row" elevation="0" color="transparent">
             <Coins :size="16" />
             <span v-if="!editing">{{ project.reward }} pontos</span>
             <v-text-field v-else v-model.number="local.reward" type="number" label="Recompensa" variant="solo-filled" density="comfortable" hide-details @update:model-value="emitField('reward', $event)" />
-          </div>
-            <div class="stat-row">
+          </v-sheet>
+            <v-sheet class="stat-row" elevation="0" color="transparent">
               <Award :size="16" />
               <span v-if="!editing">{{ project.experience }} EXP</span>
               <v-text-field v-else v-model.number="local.experience" type="number" label="EXP" variant="solo-filled" density="comfortable" hide-details @update:model-value="emitField('experience', $event)" />
-            </div>
-            <div class="stat-row" v-if="editing">
+            </v-sheet>
+            <v-sheet class="stat-row" v-if="editing" elevation="0" color="transparent">
               <span style="font-size:12px;opacity:.8">Cor:</span>
               <v-text-field v-model="local.color" type="color" label="Cor" variant="solo-filled" density="comfortable" hide-details style="max-width:120px" @update:model-value="emitField('color', $event)" />
-            </div>
-        </div>
+            </v-sheet>
+        </v-sheet>
       </div>
-    </div>
-    <div class="page right-page">
+    </v-sheet>
+    <v-sheet class="page right-page" elevation="0" color="transparent">
       <div v-if="project">
         <h4>📊 Progresso do Projeto</h4>
-        <div class="progress-info">
+        <v-sheet class="progress-info" elevation="0" color="transparent">
           <p><strong>Horas Trabalhadas:</strong> {{ project.totalHoursWorked }}h</p>
           <p v-if="!editing"><strong>Horas Planejadas:</strong> {{ project.plannedHours }}h</p>
           <p v-else>
@@ -67,24 +67,23 @@
             <v-text-field v-model.number="local.plannedHours" type="number" variant="solo-filled" density="comfortable" hide-details style="max-width:110px;display:inline-block" @update:model-value="emitField('plannedHours', $event)" />h
           </p>
           <p><strong>Progresso:</strong> {{ (project.progressPercentage || 0).toFixed(1) }}%</p>
-        </div>
-        <div class="progress-bar-container">
-          <div class="progress-bar" :style="{ width: `${project.progressPercentage || 0}%`, backgroundColor: project.color }"></div>
-        </div>
+        </v-sheet>
+        <v-sheet class="progress-bar-container">
+          <v-sheet class="progress-bar" :style="{ width: `${project.progressPercentage || 0}%`, backgroundColor: project.color }"></v-sheet>
+        </v-sheet>
         <p><strong>Status:</strong>
           <span v-if="!editing">{{ project.status }}</span>
           <v-select v-else v-model="local.status" :items="statusItems" variant="solo-filled" density="comfortable" hide-details style="max-width:220px;display:inline-block" @update:model-value="emitField('status', $event)" />
         </p>
       </div>
-    </div>
-  </div>
+    </v-sheet>
+  </v-sheet>
 </template>
 <script setup lang="ts">
 import { Calendar, Coins, Award } from 'lucide-vue-next'
 import useDateFormat from '~/composables/useDateFormat'
 import type { PropType } from 'vue'
 import { reactive, watch } from 'vue'
-// Removidos imports dos Common components - usando Vuetify diretamente
 
 const { formatDeadline } = useDateFormat()
 
@@ -134,6 +133,4 @@ function emitField(field: string, value: any) {
 }
 </script>
 
-<style scoped>
-/* CSS removido - deixando BookModal.css gerenciar os estilos globalmente */
-</style>
+
