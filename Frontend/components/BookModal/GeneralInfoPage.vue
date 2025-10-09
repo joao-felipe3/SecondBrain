@@ -5,14 +5,14 @@
         <template v-if="editing">
           <v-text-field 
             v-model="local.name" 
-            label="Nome do Projeto *"
+            label="Project Name *"
             variant="solo-filled"
             density="comfortable"
             @update:model-value="emitField('name', $event)" 
           />
           <v-textarea 
             v-model="local.description" 
-            label="Descrição"
+            label="Description"
             variant="solo-filled"
             density="comfortable"
             rows="3"
@@ -41,8 +41,8 @@
           </v-sheet>
           <v-sheet class="stat-row" elevation="0" color="transparent">
             <Coins :size="16" />
-            <span v-if="!editing">{{ project.reward }} pontos</span>
-            <v-text-field v-else v-model.number="local.reward" type="number" label="Recompensa" variant="solo-filled" density="comfortable" hide-details @update:model-value="emitField('reward', $event)" />
+            <span v-if="!editing">{{ project.reward }} points</span>
+            <v-text-field v-else v-model.number="local.reward" type="number" label="Reward" variant="solo-filled" density="comfortable" hide-details @update:model-value="emitField('reward', $event)" />
           </v-sheet>
             <v-sheet class="stat-row" elevation="0" color="transparent">
               <Award :size="16" />
@@ -50,23 +50,23 @@
               <v-text-field v-else v-model.number="local.experience" type="number" label="EXP" variant="solo-filled" density="comfortable" hide-details @update:model-value="emitField('experience', $event)" />
             </v-sheet>
             <v-sheet class="stat-row" v-if="editing" elevation="0" color="transparent">
-              <span style="font-size:12px;opacity:.8">Cor:</span>
-              <v-text-field v-model="local.color" type="color" label="Cor" variant="solo-filled" density="comfortable" hide-details style="max-width:120px" @update:model-value="emitField('color', $event)" />
+              <span style="font-size:12px;opacity:.8">Color:</span>
+              <v-text-field v-model="local.color" type="color" label="Color" variant="solo-filled" density="comfortable" hide-details style="max-width:120px" @update:model-value="emitField('color', $event)" />
             </v-sheet>
         </v-sheet>
       </div>
     </v-sheet>
     <v-sheet class="page right-page" elevation="0" color="transparent">
       <div v-if="project">
-        <h4>📊 Progresso do Projeto</h4>
+        <h4>📊 Project Progress</h4>
         <v-sheet class="progress-info" elevation="0" color="transparent">
-          <p><strong>Horas Trabalhadas:</strong> {{ project.totalHoursWorked }}h</p>
-          <p v-if="!editing"><strong>Horas Planejadas:</strong> {{ project.plannedHours }}h</p>
+          <p><strong>Hours Worked:</strong> {{ project.totalHoursWorked }}h</p>
+          <p v-if="!editing"><strong>Planned Hours:</strong> {{ project.plannedHours }}h</p>
           <p v-else>
-            <strong>Horas Planejadas:</strong>
+            <strong>Planned Hours:</strong>
             <v-text-field v-model.number="local.plannedHours" type="number" variant="solo-filled" density="comfortable" hide-details style="max-width:110px;display:inline-block" @update:model-value="emitField('plannedHours', $event)" />h
           </p>
-          <p><strong>Progresso:</strong> {{ (project.progressPercentage || 0).toFixed(1) }}%</p>
+          <p><strong>Progress:</strong> {{ (project.progressPercentage || 0).toFixed(1) }}%</p>
         </v-sheet>
         <v-sheet class="progress-bar-container">
           <v-sheet class="progress-bar" :style="{ width: `${project.progressPercentage || 0}%`, backgroundColor: project.color }"></v-sheet>
@@ -99,7 +99,7 @@ const emit = defineEmits(['update-field'])
 const local = reactive<any>({})
 const statusItems = ['pending','in-progress','completed','archived']
 
-// Sincroniza apenas os campos específicos desta página
+// Sync only the fields specific to this page
 watch(() => props.project, (val) => {
   if (val) {
     local.name = val.name
@@ -115,7 +115,6 @@ watch(() => props.project, (val) => {
 
 watch(() => props.editing, (is) => {
   if (is && props.project) {
-    // Quando entra em modo de edição, sincroniza apenas os dados desta página
     local.name = props.project.name
     local.description = props.project.description
     local.deadline = props.project.deadline
@@ -128,7 +127,7 @@ watch(() => props.editing, (is) => {
 }, { immediate: true })
 
 function emitField(field: string, value: any) {
-  local[field] = value // Atualiza o valor local
+  local[field] = value // Update local value
   emit('update-field', field, value)
 }
 </script>

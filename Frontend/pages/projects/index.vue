@@ -2,7 +2,7 @@
     <v-row dense class="gap-x-2 ml-n6" style="min-height: 100vh;">
       <v-col cols="6" class="d-flex align-center justify-center" style="min-height: 100vh;">
         <ProjectPanel
-          title="Projetos"
+          title="Projects"
           :titleOffset="'-10%'"
           :contentStyle="{ minHeight: '70vh' }"
           :projects="mockProjects"

@@ -1,13 +1,13 @@
 <template>
-  <div class="page-container" :class="{ editing }">
-    <div class="page left-page">
+  <v-sheet class="page-container" :class="{ editing }" elevation="0" color="transparent">
+    <v-sheet class="page left-page" elevation="0" color="transparent">
       <div v-if="project">
         <h4>🎯 Objetivo de Curto Prazo</h4>
         <template v-if="editing">
           <v-textarea v-model="local.shortTermGoal" label="Objetivo curto prazo" variant="solo-filled" density="comfortable" auto-grow rows="4" @update:model-value="emitField('shortTermGoal', $event)" />
         </template>
         <p v-else class="goal-content">{{ project.shortTermGoal }}</p>
-        <div class="timeline-info">
+        <v-sheet class="timeline-info" elevation="0" color="transparent">
           <h5>📅 Cronograma</h5>
           <p><strong>Início:</strong>
             <span v-if="!editing">{{ formatDate(project.startDate) }}</span>
@@ -17,10 +17,10 @@
             <span v-if="!editing">{{ formatDate(project.deadline) }}</span>
             <v-text-field v-else v-model="local.deadline" type="date" label="Prazo" variant="solo-filled" density="comfortable" hide-details style="max-width:170px;display:inline-block" @update:model-value="emitField('deadline', $event)" />
           </p>
-        </div>
+        </v-sheet>
       </div>
-    </div>
-    <div class="page right-page">
+    </v-sheet>
+    <v-sheet class="page right-page" elevation="0" color="transparent">
       <div v-if="project">
         <h5>💡 Dicas para o Sucesso</h5>
         <ul class="tips-list">
@@ -29,14 +29,15 @@
           <li>Monitore o progresso regularmente</li>
           <li>Ajuste o cronograma conforme necessário</li>
         </ul>
-        <div class="motivation-box">
+        <v-sheet class="motivation-box" elevation="0" color="transparent">
           <h6>🌟 Motivação</h6>
           <p>"O sucesso é a soma de pequenos esforços repetidos dia após dia."</p>
-        </div>
+        </v-sheet>
       </div>
-    </div>
-  </div>
+    </v-sheet>
+  </v-sheet>
 </template>
+
 <script setup lang="ts">
 import useDateFormat from '~/composables/useDateFormat'
 import type { PropType } from 'vue'
@@ -78,6 +79,3 @@ function emitField(field: string, value: any) {
 }
 </script>
 
-<style scoped>
-/* CSS removido - deixando BookModal.css gerenciar os estilos globalmente */
-</style>
