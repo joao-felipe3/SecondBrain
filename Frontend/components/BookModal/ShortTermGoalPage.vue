@@ -7,17 +7,28 @@
           <v-textarea v-model="local.shortTermGoal" label="Objetivo curto prazo" variant="solo-filled" density="comfortable" auto-grow rows="4" @update:model-value="emitField('shortTermGoal', $event)" />
         </template>
         <p v-else class="goal-content">{{ project.shortTermGoal }}</p>
-        <v-sheet class="timeline-info" elevation="0" color="transparent">
-          <h5>📅 Cronograma</h5>
-          <p><strong>Início:</strong>
-            <span v-if="!editing">{{ formatDate(project.startDate) }}</span>
-            <v-text-field v-else v-model="local.startDate" type="date" label="Início" variant="solo-filled" density="comfortable" hide-details style="max-width:170px;display:inline-block" @update:model-value="emitField('startDate', $event)" />
-          </p>
-          <p><strong>Prazo:</strong>
-            <span v-if="!editing">{{ formatDate(project.deadline) }}</span>
-            <v-text-field v-else v-model="local.deadline" type="date" label="Prazo" variant="solo-filled" density="comfortable" hide-details style="max-width:170px;display:inline-block" @update:model-value="emitField('deadline', $event)" />
-          </p>
-        </v-sheet>
+        <div v-if="project">
+          <h4>🎯 Objetivo de Médio Prazo</h4>
+          <template v-if="editing">
+            <v-textarea 
+              v-model="local.midTermGoal" 
+              label="Objetivo médio prazo" 
+              variant="solo-filled" 
+              density="comfortable" 
+              auto-grow 
+              rows="4" 
+              @update:model-value="emitField('midTermGoal', $event)" 
+            />
+          </template>
+          <p v-else class="goal-content">{{ project.midTermGoal }}</p>
+        </div>
+        <div v-if="project">
+          <h4>🎯 Objetivo de Longo Prazo</h4>
+          <template v-if="editing">
+            <v-textarea v-model="local.longTermGoal" label="Objetivo longo prazo" variant="solo-filled" density="comfortable" auto-grow rows="4" @update:model-value="emitField('longTermGoal', $event)" />
+          </template>
+          <p v-else class="goal-content">{{ project.longTermGoal }}</p>
+        </div>
       </div>
     </v-sheet>
     <v-sheet class="page right-page" elevation="0" color="transparent">

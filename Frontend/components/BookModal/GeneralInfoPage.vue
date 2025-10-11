@@ -58,23 +58,35 @@
     </v-sheet>
     <v-sheet class="page right-page" elevation="0" color="transparent">
       <div v-if="project">
-        <h4>📊 Project Progress</h4>
-        <v-sheet class="progress-info" elevation="0" color="transparent">
-          <p><strong>Hours Worked:</strong> {{ project.totalHoursWorked }}h</p>
-          <p v-if="!editing"><strong>Planned Hours:</strong> {{ project.plannedHours }}h</p>
-          <p v-else>
-            <strong>Planned Hours:</strong>
-            <v-text-field v-model.number="local.plannedHours" type="number" variant="solo-filled" density="comfortable" hide-details style="max-width:110px;display:inline-block" @update:model-value="emitField('plannedHours', $event)" />h
+        <v-sheet class="timeline-info" elevation="0" color="transparent">
+          <h5>📊 Project Progress</h5>
+          <v-sheet class="progress-info" elevation="0" color="transparent">
+            <p><strong>Hours Worked:</strong> {{ project.totalHoursWorked }}h</p>
+            <p v-if="!editing"><strong>Planned Hours:</strong> {{ project.plannedHours }}h</p>
+            <p v-else>
+              <strong>Planned Hours:</strong>
+              <v-text-field v-model.number="local.plannedHours" type="number" variant="solo-filled" density="comfortable" hide-details style="max-width:110px;display:inline-block" @update:model-value="emitField('plannedHours', $event)" />h
+            </p>
+            <p><strong>Progress:</strong> {{ (project.progressPercentage || 0).toFixed(1) }}%</p>
+          </v-sheet>
+          <v-sheet class="progress-bar-container">
+            <v-sheet class="progress-bar" :style="{ width: `${project.progressPercentage || 0}%`, backgroundColor: project.color }"></v-sheet>
+          </v-sheet>
+          <p><strong>Status:</strong>
+            <span v-if="!editing">{{ project.status }}</span>
+            <v-select v-else v-model="local.status" :items="statusItems" variant="solo-filled" density="comfortable" hide-details style="max-width:220px;display:inline-block" @update:model-value="emitField('status', $event)" />
           </p>
-          <p><strong>Progress:</strong> {{ (project.progressPercentage || 0).toFixed(1) }}%</p>
+
+          <h5 style="margin-top: 1.5rem;">📅 Cronograma</h5>
+          <p><strong>Início:</strong>
+            <span v-if="!editing">{{ formatDate(project.startDate) }}</span>
+            <v-text-field v-else v-model="local.startDate" type="date" label="Início" variant="solo-filled" density="comfortable" hide-details style="max-width:170px;display:inline-block" @update:model-value="emitField('startDate', $event)" />
+          </p>
+          <p><strong>Prazo:</strong>
+            <span v-if="!editing">{{ formatDate(project.deadline) }}</span>
+            <v-text-field v-else v-model="local.deadline" type="date" label="Prazo" variant="solo-filled" density="comfortable" hide-details style="max-width:170px;display:inline-block" @update:model-value="emitField('deadline', $event)" />
+          </p>
         </v-sheet>
-        <v-sheet class="progress-bar-container">
-          <v-sheet class="progress-bar" :style="{ width: `${project.progressPercentage || 0}%`, backgroundColor: project.color }"></v-sheet>
-        </v-sheet>
-        <p><strong>Status:</strong>
-          <span v-if="!editing">{{ project.status }}</span>
-          <v-select v-else v-model="local.status" :items="statusItems" variant="solo-filled" density="comfortable" hide-details style="max-width:220px;display:inline-block" @update:model-value="emitField('status', $event)" />
-        </p>
       </div>
     </v-sheet>
   </v-sheet>
@@ -85,7 +97,7 @@ import useDateFormat from '~/composables/useDateFormat'
 import type { PropType } from 'vue'
 import { reactive, watch } from 'vue'
 
-const { formatDeadline } = useDateFormat()
+const { formatDeadline, formatDate } = useDateFormat()
 
 type Project = Record<string, any>
 
