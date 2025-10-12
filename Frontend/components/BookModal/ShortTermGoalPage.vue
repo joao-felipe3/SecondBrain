@@ -4,7 +4,15 @@
       <div v-if="project">
         <h4>🎯 Objetivo de Curto Prazo</h4>
         <template v-if="editing">
-          <v-textarea v-model="local.shortTermGoal" label="Objetivo curto prazo" variant="solo-filled" density="comfortable" auto-grow rows="4" @update:model-value="emitField('shortTermGoal', $event)" />
+          <v-textarea 
+            v-model="local.shortTermGoal" 
+            label="Objetivo curto prazo" 
+            variant="solo-filled" 
+            density="comfortable" 
+            auto-grow 
+            rows="3" 
+            @update:model-value="emitField('shortTermGoal', $event)" 
+          />
         </template>
         <p v-else class="goal-content">{{ project.shortTermGoal }}</p>
         <div v-if="project">
@@ -16,7 +24,7 @@
               variant="solo-filled" 
               density="comfortable" 
               auto-grow 
-              rows="4" 
+              rows="3" 
               @update:model-value="emitField('midTermGoal', $event)" 
             />
           </template>
@@ -25,26 +33,21 @@
         <div v-if="project">
           <h4>🎯 Objetivo de Longo Prazo</h4>
           <template v-if="editing">
-            <v-textarea v-model="local.longTermGoal" label="Objetivo longo prazo" variant="solo-filled" density="comfortable" auto-grow rows="4" @update:model-value="emitField('longTermGoal', $event)" />
+            <v-textarea 
+              v-model="local.longTermGoal" 
+              label="Objetivo longo prazo" 
+              variant="solo-filled" 
+              density="comfortable" 
+              auto-grow 
+              rows="3" 
+              @update:model-value="emitField('longTermGoal', $event)" 
+            />
           </template>
           <p v-else class="goal-content">{{ project.longTermGoal }}</p>
         </div>
       </div>
     </v-sheet>
     <v-sheet class="page right-page" elevation="0" color="transparent">
-      <div v-if="project">
-        <h5>💡 Dicas para o Sucesso</h5>
-        <ul class="tips-list">
-          <li>Divida as tarefas em pequenas etapas</li>
-          <li>Estabeleça marcos intermediários</li>
-          <li>Monitore o progresso regularmente</li>
-          <li>Ajuste o cronograma conforme necessário</li>
-        </ul>
-        <v-sheet class="motivation-box" elevation="0" color="transparent">
-          <h6>🌟 Motivação</h6>
-          <p>"O sucesso é a soma de pequenos esforços repetidos dia após dia."</p>
-        </v-sheet>
-      </div>
     </v-sheet>
   </v-sheet>
 </template>
@@ -71,16 +74,16 @@ const local = reactive<any>({})
 watch(() => props.project, (v) => { 
   if (v) {
     local.shortTermGoal = v.shortTermGoal
-    local.startDate = v.startDate
-    local.deadline = v.deadline
+    local.midTermGoal = v.midTermGoal
+    local.longTermGoal = v.longTermGoal
   }
 }, { immediate: true })
 
 watch(() => props.editing, (is) => { 
   if (is && props.project) {
     local.shortTermGoal = props.project.shortTermGoal
-    local.startDate = props.project.startDate
-    local.deadline = props.project.deadline
+    local.midTermGoal = props.project.midTermGoal
+    local.longTermGoal = props.project.longTermGoal
   }
 }, { immediate: true })
 

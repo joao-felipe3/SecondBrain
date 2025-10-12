@@ -6,11 +6,12 @@
           <v-text-field 
             v-model="local.name" 
             label="Project Name *"
-            variant="solo-filled"
+            variant="solo"
             density="comfortable"
             @update:model-value="emitField('name', $event)" 
           />
           <v-textarea 
+            style="margin-top:0rem"
             v-model="local.description" 
             label="Description"
             variant="solo-filled"
@@ -42,16 +43,42 @@
           <v-sheet class="stat-row" elevation="0" color="transparent">
             <Coins :size="16" />
             <span v-if="!editing">{{ project.reward }} points</span>
-            <v-text-field v-else v-model.number="local.reward" type="number" label="Reward" variant="solo-filled" density="comfortable" hide-details @update:model-value="emitField('reward', $event)" />
+            <v-text-field 
+              v-else 
+              v-model.number="local.reward" 
+              type="number" 
+              label="Reward" 
+              variant="solo-filled" 
+              density="comfortable" 
+              hide-details 
+              @update:model-value="emitField('reward', $event)" 
+            />
           </v-sheet>
             <v-sheet class="stat-row" elevation="0" color="transparent">
               <Award :size="16" />
               <span v-if="!editing">{{ project.experience }} EXP</span>
-              <v-text-field v-else v-model.number="local.experience" type="number" label="EXP" variant="solo-filled" density="comfortable" hide-details @update:model-value="emitField('experience', $event)" />
+              <v-text-field 
+                v-else 
+                v-model.number="local.experience" 
+                type="number" 
+                label="EXP" 
+                variant="solo-filled" 
+                density="comfortable" 
+                hide-details 
+                @update:model-value="emitField('experience', $event)" 
+              />
             </v-sheet>
             <v-sheet class="stat-row" v-if="editing" elevation="0" color="transparent">
               <span style="font-size:12px;opacity:.8">Color:</span>
-              <v-text-field v-model="local.color" type="color" label="Color" variant="solo-filled" density="comfortable" hide-details style="max-width:120px" @update:model-value="emitField('color', $event)" />
+              <v-text-field 
+                v-model="local.color" 
+                type="color" 
+                label="Color" 
+                variant="solo-filled" 
+                density="comfortable" 
+                hide-details style="max-width:120px" 
+                @update:model-value="emitField('color', $event)" 
+              />
             </v-sheet>
         </v-sheet>
       </div>
@@ -65,7 +92,15 @@
             <p v-if="!editing"><strong>Planned Hours:</strong> {{ project.plannedHours }}h</p>
             <p v-else>
               <strong>Planned Hours:</strong>
-              <v-text-field v-model.number="local.plannedHours" type="number" variant="solo-filled" density="comfortable" hide-details style="max-width:110px;display:inline-block" @update:model-value="emitField('plannedHours', $event)" />h
+              <v-text-field 
+                v-model.number="local.plannedHours" 
+                type="number" 
+                variant="solo-filled"
+                density="comfortable" 
+                hide-details 
+                style="max-width:110px;display:inline-block" 
+                @update:model-value="emitField('plannedHours', $event)" 
+              />h
             </p>
             <p><strong>Progress:</strong> {{ (project.progressPercentage || 0).toFixed(1) }}%</p>
           </v-sheet>
@@ -74,17 +109,45 @@
           </v-sheet>
           <p><strong>Status:</strong>
             <span v-if="!editing"> {{ project.status }}</span>
-            <v-select v-else v-model="local.status" :items="statusItems" variant="solo-filled" density="comfortable" hide-details style="max-width:220px;display:inline-block" @update:model-value="emitField('status', $event)" />
+            <v-select 
+              v-else 
+              v-model="local.status" 
+              :items="statusItems" 
+              variant="solo-filled" 
+              density="comfortable" 
+              hide-details 
+              style="max-width:220px;display:inline-block" 
+              @update:model-value="emitField('status', $event)" 
+            />
           </p>
 
           <h5 style="margin-top: 1.5rem;">📅 Cronograma</h5>
           <p><strong>Início:</strong>
             <span v-if="!editing"> {{ formatDate(project.startDate) }}</span>
-            <v-text-field v-else v-model="local.startDate" type="date" label="Início" variant="solo-filled" density="comfortable" hide-details style="max-width:170px;display:inline-block" @update:model-value="emitField('startDate', $event)" />
+            <v-text-field 
+              v-else 
+              v-model="local.startDate" 
+              type="date" 
+              label="Início" 
+              variant="solo-filled" 
+              density="comfortable" 
+              hide-details 
+              style="max-width:170px;display:inline-block" 
+              @update:model-value="emitField('startDate', $event)" 
+            />
           </p>
           <p><strong>Prazo:</strong>
             <span v-if="!editing"> {{ formatDate(project.deadline) }}</span>
-            <v-text-field v-else v-model="local.deadline" type="date" label="Prazo" variant="solo-filled" density="comfortable" hide-details style="max-width:170px;display:inline-block" @update:model-value="emitField('deadline', $event)" />
+            <v-text-field 
+              v-else v-model="local.deadline" 
+              type="date" 
+              label="Prazo" 
+              variant="solo-filled" 
+              density="comfortable" 
+              hide-details 
+              style="max-width:170px;display:inline-block" 
+              @update:model-value="emitField('deadline', $event)" 
+            />
           </p>
         </v-sheet>
       </div>

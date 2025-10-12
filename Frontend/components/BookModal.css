@@ -315,8 +315,8 @@
 .stats-grid { 
   display:flex; 
   flex-direction:column; 
-  gap:0.5rem; 
-  margin:1rem 0;
+  gap:0.25rem; 
+  margin:-0.5rem 0;
 }
   
 .stat-row { 
@@ -433,8 +433,12 @@
 }
 .editing :deep(.v-field-label) { color:#6b4b20 !important; opacity:.85; font-weight:500; }
 .editing :deep(.v-field--focused .v-field-label) { color:#b7791f !important; }
-.editing :deep(.v-field-label) { position: relative; opacity: 1 !important; mix-blend-mode: normal; }
-.editing :deep(.v-field-label--floating) { color:#b7791f !important; }
+.editing :deep(.v-field) { overflow: visible; }
+.editing :deep(.v-field__overlay) { z-index: 1; }
+.editing :deep(.v-field-label) { z-index: 2; }
+.editing :deep(.v-field) { box-shadow:0 0 0 2px rgba(140,90,40,0.15); border-radius:6px; }
+.editing :deep(.v-field:hover) { box-shadow:0 0 0 2px rgba(140,90,40,0.25); }.editing :deep(.v-field-label) { color:#6b4b20 !important; opacity:.85; font-weight:500; }
+.editing :deep(.v-field--focused .v-field-label) { color:#b7791f !important; }
 .editing :deep(.v-field) { overflow: visible; }
 .editing :deep(.v-field__overlay) { z-index: 1; }
 .editing :deep(.v-field-label) { z-index: 2; }
@@ -666,14 +670,13 @@
   caret-color:#222 !important;
   -webkit-text-fill-color:#222 !important;
 }
-.editing .v-field-label { color:#6b4b20 !important; opacity:.85; font-weight:500; }
+.editing .v-field-label { color:#6b4b20 !important; opacity:1; font-weight:500; mix-blend-mode: normal; }
 .editing .v-field--focused .v-field-label { color:#b7791f !important; }
-.editing .v-field-label { position: relative; opacity: 1 !important; mix-blend-mode: normal; }
-.editing .v-field-label--floating { color:#b7791f !important; }
-.editing .v-field { overflow: visible; }
+.editing .v-field .v-field-label.v-field-label--floating { transform: translateY(-6px) scale(0.85); transform-origin: left top; }
+.editing .v-field { position: relative; overflow: visible; box-shadow:0 0 0 2px rgba(140,90,40,0.15); border-radius: 0.5rem; padding: 0;}
 .editing .v-field .v-field__overlay { z-index: 1; }
-.editing .v-field .v-field-label { z-index: 2; }
-.editing .v-field { box-shadow:0 0 0 2px rgba(140,90,40,0.15); border-radius:6px; }
+.editing .v-field__field { position: relative; z-index: 2; }
+.editing .v-field .v-field-label { z-index: 9; margin-top: 3px; }
 .editing .v-field:hover { box-shadow:0 0 0 2px rgba(140,90,40,0.25); }
 .editing .v-input,
 .editing .v-textarea { pointer-events:auto !important; }
