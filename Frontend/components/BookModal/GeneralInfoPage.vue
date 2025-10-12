@@ -73,17 +73,17 @@
             <v-sheet class="progress-bar" :style="{ width: `${project.progressPercentage || 0}%`, backgroundColor: project.color }"></v-sheet>
           </v-sheet>
           <p><strong>Status:</strong>
-            <span v-if="!editing">{{ project.status }}</span>
+            <span v-if="!editing"> {{ project.status }}</span>
             <v-select v-else v-model="local.status" :items="statusItems" variant="solo-filled" density="comfortable" hide-details style="max-width:220px;display:inline-block" @update:model-value="emitField('status', $event)" />
           </p>
 
           <h5 style="margin-top: 1.5rem;">📅 Cronograma</h5>
           <p><strong>Início:</strong>
-            <span v-if="!editing">{{ formatDate(project.startDate) }}</span>
+            <span v-if="!editing"> {{ formatDate(project.startDate) }}</span>
             <v-text-field v-else v-model="local.startDate" type="date" label="Início" variant="solo-filled" density="comfortable" hide-details style="max-width:170px;display:inline-block" @update:model-value="emitField('startDate', $event)" />
           </p>
           <p><strong>Prazo:</strong>
-            <span v-if="!editing">{{ formatDate(project.deadline) }}</span>
+            <span v-if="!editing"> {{ formatDate(project.deadline) }}</span>
             <v-text-field v-else v-model="local.deadline" type="date" label="Prazo" variant="solo-filled" density="comfortable" hide-details style="max-width:170px;display:inline-block" @update:model-value="emitField('deadline', $event)" />
           </p>
         </v-sheet>
