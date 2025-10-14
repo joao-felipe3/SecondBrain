@@ -19,7 +19,7 @@
             <div ref="carouselEl" class="carousel" :style="{ '--slides': `${TOTAL_SLIDES}` }">
               <v-sheet class="sprite" elevation="0" color="transparent"></v-sheet>
               <v-sheet class="carousel-item" elevation="0" color="transparent"><GeneralInfoPage :project="displayProject || {}" :editing="editing" @update-field="updateField" /></v-sheet>
-              <v-sheet class="carousel-item" elevation="0" color="transparent"><ShortTermGoalPage :project="displayProject || {}" :editing="editing" @update-field="updateField" /></v-sheet>
+              <v-sheet class="carousel-item" elevation="0" color="transparent"><GoalPage :project="displayProject || {}" :editing="editing" @update-field="updateField" /></v-sheet>
               <v-sheet class="carousel-item" elevation="0" color="transparent"><MidTermGoalPage :project="displayProject || {}" :editing="editing" @update-field="updateField" /></v-sheet>
               <v-sheet class="carousel-item" elevation="0" color="transparent"><LongTermGoalPage :project="displayProject || {}" :editing="editing" @update-field="updateField" /></v-sheet>
             </div>
@@ -50,7 +50,7 @@
 import { X } from 'lucide-vue-next'
 import { ref, computed, onMounted, onBeforeUnmount, watch, nextTick, toRef } from 'vue'
 import GeneralInfoPage from './BookModal/GeneralInfoPage.vue'
-import ShortTermGoalPage from './BookModal/ShortTermGoalPage.vue'
+import GoalPage from './BookModal/GoalPage.vue'
 import MidTermGoalPage from './BookModal/MidTermGoalPage.vue'
 import LongTermGoalPage from './BookModal/LongTermGoalPage.vue'
 import { useApiResource } from '~/composables/useApi'
@@ -65,7 +65,8 @@ const TOTAL_SLIDES = 4
 
 const props = defineProps({
   isOpen: { type: Boolean, default: false },
-  project: { type: Object as PropType<Project | null>, default: null }
+  project: { type: Object as PropType<Project | null>, default: null },
+  startInEdit: { type: Boolean, default: false }
 })
 const emit = defineEmits(['close', 'updated', 'deleted'])
 
@@ -86,12 +87,17 @@ const cancelEdit = () => cancelEditInner()
 
 // Save/Delete
 const saveEdit = async () => {
-  if (!props.project || !draft.value || !isValid.value) return
+  if (!draft.value || !isValid.value) return
   try {
     saving.value = true
-    const id = getProjectId(props.project)
-    const { data } = await api.update(id, draft.value)
-    emit('updated', data)
+    const id = getProjectId(props.project as any)
+    if (id) {
+      const { data } = await api.update(id, draft.value)
+      emit('updated', data)
+    } else {
+      const { data } = await api.create(draft.value)
+      emit('updated', data)
+    }
     cancelEdit()
   } finally {
     saving.value = false
@@ -144,6 +150,10 @@ watch(() => props.isOpen, async (open) => {
     reset()
     createSparkles()
     attach()
+    if (props.startInEdit) {
+      // Start editing for create flow or quick edit
+      startEdit()
+    }
   } else if (!open && !isClosing.value) {
     clearSparkles()
     detach()

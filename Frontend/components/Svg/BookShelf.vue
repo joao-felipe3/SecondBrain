@@ -1,5 +1,5 @@
 <template>
-    <svg viewBox="0 0 433.7 300.1" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg" xmlns:svg="http://www.w3.org/2000/svg">
+  <svg viewBox="0 0 433.7 300.1" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg" xmlns:svg="http://www.w3.org/2000/svg">
  <g class="layer">
   <title>Layer 1</title>
   <g data-name="Camada 2" id="svg_1">
@@ -20,18 +20,18 @@
     <path d="m410.7,127.9l-387.7,-48.9l0,62.5l387.7,48.9l0,-62.5z" fill="#99332e" id="svg_16"/>
     <path d="m23,20.4l387.8,0l0,11.39l-387.8,0l0,-11.39z" fill="#722420" id="svg_17"/>
     <path d="m38.5,38.6l356.7,0l0,165.56l-356.7,0l0,-165.56z" fill="#421b1a" id="svg_18"/>
-    <path d="m364.9,137.1l20.9,0l1.5,67.1l-25.4,0l3,-67.1z" :fill="bookColors.book10" id="book_10" :class="{ 'book-highlighted': shouldHighlightBook('book_10') }"/>
-    <path d="m237.7,137.1l13.7,0l1.9,67.1l-16.7,0l1.1,-67.1z" :fill="bookColors.book20" id="book_20" :class="{ 'book-highlighted': shouldHighlightBook('book_20') }"/>
-    <path d="m359.2,204.2l-20.9,0l-4.7,-67.1l22.3,0l3.3,67.1z" :fill="bookColors.book30" id="book_30" :class="{ 'book-highlighted': shouldHighlightBook('book_30') }"/>
-    <path d="m296.7,204.2l-16.7,0l-0.9,-48.5l14.8,0l2.8,48.5z" :fill="bookColors.book40" id="book_40" :class="{ 'book-highlighted': shouldHighlightBook('book_40') }"/>
-    <path d="m311.2,204.2l-12.1,0l-1.9,-67.1l12.9,0l1.1,67.1zm2.3,-58.8l18.3,-1.8l4.2,60.6l-22.3,0l-0.2,-58.8z" :fill="bookColors.book50" id="book_50" :class="{ 'book-highlighted': shouldHighlightBook('book_50') }"/>
-    <path d="m255.8,143.4l20.6,-0.8l1.6,61.6l-22.3,0l0.1,-60.8z" :fill="bookColors.book60" id="book_60" :class="{ 'book-highlighted': shouldHighlightBook('book_60') }"/>
-    <path d="m364.9,137.1l-1.9,43.7a180.5,180.5 0 0 0 23.7,-6.2l-0.9,-37.5l-20.9,0z" :fill="bookColors.book11" id="book_11" :class="{ 'book-highlighted': shouldHighlightBook('book_11') }"/>
-    <path d="m237.7,137.1l-0.6,36.6a136.2,136.2 0 0 0 15.5,4.6l-1.2,-41.2l-13.7,0z" :fill="bookColors.book21" id="book_21" :class="{ 'book-highlighted': shouldHighlightBook('book_21') }"/>
-    <path d="m333.6,137.1l3.3,47.1c7.4,-0.6 14.5,-1.5 21.2,-2.6l-2.2,-44.5l-22.3,0z" :fill="bookColors.book31" id="book_31" :class="{ 'book-highlighted': shouldHighlightBook('book_31') }"/>
-    <path d="m279.1,155.7l0.5,27.5c5.2,0.6 10.5,1.1 16,1.4l-1.7,-28.9l-14.8,0z" :fill="bookColors.book41" id="book_41" :class="{ 'book-highlighted': shouldHighlightBook('book_41') }"/>
-    <path d="m297.2,137.1l1.3,47.6c4.1,0.2 8.2,0.4 12.4,0.4l-0.8,-48l-12.9,0zm16.3,8.3l0,39.7c7.2,0 14.3,-0.2 21.1,-0.7l-2.9,-40.8l-18.2,1.8z" :fill="bookColors.book51" id="book_51" :class="{ 'book-highlighted': shouldHighlightBook('book_51') }"/>
-    <path d="m255.8,143.4l0,35.7c6.8,1.5 14.1,2.8 21.7,3.8l-1,-40.3l-20.7,0.8z" :fill="bookColors.book61" id="book_61" :class="{ 'book-highlighted': shouldHighlightBook('book_61') }"/>
+    <path d="m364.9,137.1l20.9,0l1.5,67.1l-25.4,0l3,-67.1z" :fill="bookColors.book10 || '#e27830'" id="book_10" :class="{ 'book-highlighted': shouldHighlightBook('book_10') }"/>
+    <path d="m237.7,137.1l13.7,0l1.9,67.1l-16.7,0l1.1,-67.1z" :fill="bookColors.book20 || '#726319'" id="book_20" :class="{ 'book-highlighted': shouldHighlightBook('book_20') }"/>
+    <path d="m359.2,204.2l-20.9,0l-4.7,-67.1l22.3,0l3.3,67.1z" :fill="bookColors.book30 || '#452c6d'" id="book_30" :class="{ 'book-highlighted': shouldHighlightBook('book_30') }"/>
+    <path d="m296.7,204.2l-16.7,0l-0.9,-48.5l14.8,0l2.8,48.5z" :fill="bookColors.book40 || '#452c6d'" id="book_40" :class="{ 'book-highlighted': shouldHighlightBook('book_40') }"/>
+    <path d="m311.2,204.2l-12.1,0l-1.9,-67.1l12.9,0l1.1,67.1zm2.3,-58.8l18.3,-1.8l4.2,60.6l-22.3,0l-0.2,-58.8z" :fill="bookColors.book50  || '#726319'" id="book_50" :class="{ 'book-highlighted': shouldHighlightBook('book_50') }"/>
+    <path d="m255.8,143.4l20.6,-0.8l1.6,61.6l-22.3,0l0.1,-60.8z" :fill="bookColors.book60  || '#e27830'" id="book_60" :class="{ 'book-highlighted': shouldHighlightBook('book_60') }"/>
+    <path d="m364.9,137.1l-1.9,43.7a180.5,180.5 0 0 0 23.7,-6.2l-0.9,-37.5l-20.9,0z" :fill="bookColors.book11 || '#e27830'" id="book_11" :class="{ 'book-highlighted': shouldHighlightBook('book_11') }"/>
+    <path d="m237.7,137.1l-0.6,36.6a136.2,136.2 0 0 0 15.5,4.6l-1.2,-41.2l-13.7,0z" :fill="bookColors.book21 || '#726319'" id="book_21" :class="{ 'book-highlighted': shouldHighlightBook('book_21') }"/>
+    <path d="m333.6,137.1l3.3,47.1c7.4,-0.6 14.5,-1.5 21.2,-2.6l-2.2,-44.5l-22.3,0z" :fill="bookColors.book31 || '#452c6d'" id="book_31" :class="{ 'book-highlighted': shouldHighlightBook('book_31') }"/>
+    <path d="m279.1,155.7l0.5,27.5c5.2,0.6 10.5,1.1 16,1.4l-1.7,-28.9l-14.8,0z" :fill="bookColors.book41 || '#452c6d'" id="book_41" :class="{ 'book-highlighted': shouldHighlightBook('book_41') }"/>
+    <path d="m297.2,137.1l1.3,47.6c4.1,0.2 8.2,0.4 12.4,0.4l-0.8,-48l-12.9,0zm16.3,8.3l0,39.7c7.2,0 14.3,-0.2 21.1,-0.7l-2.9,-40.8l-18.2,1.8z" :fill="bookColors.book51  || '#726319'" id="book_51" :class="{ 'book-highlighted': shouldHighlightBook('book_51') }"/>
+    <path d="m255.8,143.4l0,35.7c6.8,1.5 14.1,2.8 21.7,3.8l-1,-40.3l-20.7,0.8z" :fill="bookColors.book61  || '#e27830'" id="book_61" :class="{ 'book-highlighted': shouldHighlightBook('book_61') }"/>
     <g fill="#fff2e6" id="book_70" opacity="0.63">
      <path d="m354.6,194.4l-13.3,0l0.3,4.4l13.3,0l-0.3,-4.4zm-0.5,-7.5l-13.3,0l0.3,4.5l13.3,0l-0.3,-4.5zm-24.5,10.4l-11.6,0l0.2,3.5l11.6,0l-0.2,-3.5zm20.6,-55.5l-11.2,0l0.2,4l11.2,0l-0.2,-4zm-28.7,11.6a1.7,1.7 0 0 0 1.6,1.6a1.5,1.5 0 0 0 1.4,-1.6a1.5,1.5 0 1 0 -3,0zm-13.6,43.9l-7.2,0l0.2,3.5l7.2,0l-0.2,-3.5zm-14.6,-5.5l-11.1,0l0.4,8.1l11.1,0l-0.4,-8.1zm-21.1,-44.6l-13.1,0l0.4,6.9l13.1,0l-0.4,-6.9zm-23,-7.9l-10.1,-0.6l0.3,6.9l10.1,0.6l-0.3,-6.9zm134.2,54l-18,0.7l0.4,6.9l18,-0.7l-0.4,-6.9zm-0.5,-54.2l-15.8,0.6l0.5,6.9l15.7,-0.7l-0.4,-6.8zm-109.4,57.5l-14.7,0l0.3,4.4l14.7,0l-0.3,-4.4zm14.9,-13.2l-1.8,0l0.2,6.2l1.8,0l-0.2,-6.2z" id="book_71" opacity="0.7"/>
      <ellipse cx="303.4" cy="147.2" id="book_72" opacity="0.7" rx="1.5" ry="1.6" transform="rotate(-13.8 302.51779 146.865745)"/>

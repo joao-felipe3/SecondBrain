@@ -20,11 +20,9 @@
           label="Create Task"
           @click="$emit('task-created')"
           :disabled="false"
-          :width="250"
+          :width="300"
           :height="75"
           :labelSize="27"
-          labelMarginTop="-27%"
-          labelMarginLeft="2.5%"
           style="font-family: 'Irish Grover', cursive;"
         />
         <SvgButton 
@@ -32,11 +30,9 @@
           label="Show More"
           @click="handleShowMoreClick"
           :highlight="true"
-          :width="250"
+          :width="300"
           :height="75"
           :labelSize="27"
-          labelMarginTop="-27%"
-          labelMarginLeft="2.5%"
           style="font-family: 'Irish Grover', cursive;"
         />
       </v-col>

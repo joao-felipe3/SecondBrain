@@ -21,14 +21,7 @@
     </div>
 
     <!-- Lista de papéis para cada projeto -->
-    <div
-      :style="{
-        position: 'absolute',
-        top: '16.5%',
-        left: '8%',
-        zIndex: 2,
-      }"
-    >
+    <div :style="{ position: 'absolute', top: '16.5%', left: '8%', zIndex: 2,}">
       <div 
         v-for="(p, idx) in projects" 
         :key="p._id || idx" 
@@ -86,7 +79,22 @@
         </div>
       </div>
     </div>
-    
+    <SvgButton 
+      label="Create Project"
+      @click="emit('create-project')"
+      :disabled="false"
+      :width="350"
+      :height="75"
+      :style="{
+        fontFamily: '\'Irish Grover\', cursive',
+        position: 'absolute',
+        bottom: '1%',
+        left: '50%',
+        transform: 'translateX(-50%)',
+        zIndex: 7,
+        pointerEvents: 'auto'
+      }"
+    />
   </div>
 </template>
 
@@ -98,6 +106,7 @@ import OldPaper from './Svg/OldPaper.vue'
 import Bar from './Svg/Bar.vue'
 import ProgressBar from './Svg/ProgressBar.vue'
 import Can from './Svg/Can.vue'
+import SvgButton from './Svg/Button.vue'
 const props = defineProps({
   title: {
     type: String,
@@ -157,7 +166,7 @@ const trashLeft = computed(() => {
   return leftPx + 'px'
 })
 
-const emit = defineEmits(['delete-project', 'project-hover', 'project-click'])
+const emit = defineEmits(['delete-project', 'project-hover', 'project-click', 'create-project'])
 function handleDelete(project, e) {
   if (e && typeof e.stopPropagation === 'function') e.stopPropagation()
   emit('delete-project', project)

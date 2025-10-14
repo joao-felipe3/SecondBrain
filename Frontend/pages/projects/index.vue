@@ -5,9 +5,10 @@
           title="Projects"
           :titleOffset="'-10%'"
           :contentStyle="{ minHeight: '70vh' }"
-          :projects="mockProjects"
+          :projects="projects"
           @project-hover="onProjectHover"
           @project-click="onProjectClick"
+          @create-project="onCreateProject"
         />
       </v-col>
       <v-col cols="6" class="d-flex flex-column align-start position-relative">
@@ -24,33 +25,76 @@
     <BookModal 
       :isOpen="isModalOpen"
       :project="selectedProject"
+      :startInEdit="startInEdit"
       @close="closeModal"
+      @updated="onUpdated"
+      @deleted="onDeleted"
     />
 </template>
 
-<script setup>
-import { computed, ref } from 'vue'
+<script setup lang="ts">
+import { computed, ref, onMounted } from 'vue'
 
 import ProjectPanel from '../../components/ProjectPanel.vue'
 import Book from '../../components/Svg/Book.vue'
 import BookShelf from '../../components/Svg/BookShelf.vue'
 import BookModal from '../../components/BookModal.vue'
+import { useApiResource } from '~/composables/useApi'
+import type { Project } from '~/composables/useProjectEditing'
 
 // Estado para controlar qual projeto está em hover
 const hoveredProjectIndex = ref(-1)
 
 // Estado para controlar o modal
 const isModalOpen = ref(false)
-const selectedProject = ref(null)
+const selectedProject = ref<Project | null>(null)
+const startInEdit = ref(false)
+
+// Lista real de projetos buscada do backend
+const projects = ref<Project[]>([])
+const api = useApiResource('/projects')
+
+onMounted(async () => {
+  const { data, error } = await api.list()
+  if (error) {
+    console.error('Failed to load projects', error)
+  } else if (data) {
+    projects.value = Array.isArray(data) ? data : []
+  }
+})
 
 // Função para lidar com hover de projetos
-const onProjectHover = (projectIndex) => {
+const onProjectHover = (projectIndex: number) => {
   hoveredProjectIndex.value = projectIndex
 }
 
 // Função para lidar com clique de projetos
-const onProjectClick = (project) => {
+const onProjectClick = (project: Project) => {
   selectedProject.value = project
+  startInEdit.value = false
+  isModalOpen.value = true
+}
+
+const onCreateProject = () => {
+  // Minimal blank project draft; BookModal composable will handle editing state
+  selectedProject.value = {
+    _id: undefined,
+    name: '',
+    description: '',
+    color: '#D2B48C',
+    startDate: new Date().toISOString().slice(0,10),
+    deadline: new Date().toISOString().slice(0,10),
+    totalHoursWorked: 0,
+    plannedHours: 0,
+    shortTermGoal: '',
+    midTermGoal: '',
+    longTermGoal: '',
+    status: 'pending',
+    progressPercentage: 0,
+    experience: 0,
+    reward: 0
+  }
+  startInEdit.value = true
   isModalOpen.value = true
 }
 
@@ -58,99 +102,33 @@ const onProjectClick = (project) => {
 const closeModal = () => {
   isModalOpen.value = false
   selectedProject.value = null
+  startInEdit.value = false
 }
 
-const mockProjects = [
-  {
-    _id: "1",
-    name: "Sistema de Gerenciamento",
-    description: "Plataforma gamificada para organizar tarefas e hábitos.",
-    color: "#3EFF88",
-    startDate: new Date("2025-01-10"),
-    deadline: new Date("2026-04-30"),
-    totalHoursWorked: 120.5,
-    plannedHours: 200,
-    shortTermGoal: "Implementar CRUD de tarefas",
-    midTermGoal: "Integrar com calendário e sistema de recompensas",
-    longTermGoal: "Lançar versão beta para usuários",
-    status: "Em andamento",
-    progressPercentage: 60.25,
-    experience: 150,
-    reward: 300
-  },
-  {
-    _id: "2",
-    name: "IA Financeira",
-    description: "Desenvolver modelos preditivos para análise de crédito.",
-    color: "#C64CFF",
-    startDate: new Date("2024-11-01"),
-    deadline: new Date("2026-06-15"),
-    totalHoursWorked: 80,
-    plannedHours: 300,
-    shortTermGoal: "Levantar base de dados",
-    midTermGoal: "Treinar modelos de classificação",
-    longTermGoal: "Publicar artigo em conferência internacional",
-    status: "Planejamento",
-    progressPercentage: 26.6,
-    experience: 100,
-    reward: 250
-  },
-  {
-    _id: "3",
-    name: "Intercâmbio em Montreal",
-    description: "Preparar documentação, cursos e plano de viagem.",
-    color: "#FFD13B",
-    startDate: new Date("2025-02-01"),
-    deadline: new Date("2026-06-01"),
-    totalHoursWorked: 45.75,
-    plannedHours: 100,
-    shortTermGoal: "Organizar visto e moradia",
-    midTermGoal: "Ajustar grade curricular",
-    longTermGoal: "Aproveitar disciplinas e experiências culturais",
-    status: "Em andamento",
-    progressPercentage: 45.75,
-    experience: 80,
-    reward: 150
-  },
-  {
-    _id: "4",
-    name: "Trabalho de Redes",
-    description: "Projeto físico-lógico de rede com segurança e cabeamento estruturado.",
-    color: "#FF3030",
-    startDate: new Date("2025-03-01"),
-    deadline: new Date("2026-05-20"),
-    totalHoursWorked: 10,
-    plannedHours: 60,
-    shortTermGoal: "Modelar topologia física",
-    midTermGoal: "Configurar VLANs e roteadores",
-    longTermGoal: "Entregar documentação completa",
-    status: "Não iniciado",
-    progressPercentage: 16.6,
-    experience: 60,
-    reward: 120
-  },
-  {
-    _id: "5",
-    name: "Estudar Francês",
-    description: "Estudo fonético detalhado com várias palavras.",
-    color: "#49F9FF",
-    startDate: new Date("2025-03-01"),
-    deadline: new Date("2026-05-20"),
-    totalHoursWorked: 20,
-    plannedHours: 120,
-    shortTermGoal: "Modelar topologia física",
-    midTermGoal: "Configurar VLANs e roteadores",
-    longTermGoal: "Entregar documentação completa",
-    status: "Não iniciado",
-    progressPercentage: 28.6,
-    experience: 40,
-    reward: 80
+// Atualizações/remoções vindas do modal
+const onUpdated = (updated: Project) => {
+  if (!updated) return
+  const id = updated._id ?? updated.id
+  const idx = projects.value.findIndex(p => (p._id ?? p.id) === id)
+  if (idx >= 0) {
+    projects.value[idx] = { ...projects.value[idx], ...updated }
+  } else {
+    projects.value.push(updated)
   }
-]
+  // opcional: fechar após salvar
+  closeModal()
+}
+
+const onDeleted = (removed: Project) => {
+  if (!removed) return
+  const id = removed._id ?? removed.id
+  projects.value = projects.value.filter(p => (p._id ?? p.id) !== id)
+  closeModal()
+}
 
 // Extrair as cores dos projetos
 const projectColors = computed(() => 
-  mockProjects.map(project => project.color)
+  (projects.value || []).map(project => project.color)
 )
 
 </script>
