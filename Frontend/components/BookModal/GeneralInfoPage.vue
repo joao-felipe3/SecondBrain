@@ -27,21 +27,31 @@
         </template>
         <v-sheet class="stats-grid" elevation="0" color="transparent">
           <v-sheet class="stat-row" elevation="0" color="transparent">
-            <Calendar :size="16" />
+            <Calendar v-if="!editing" :size="16" />
             <span v-if="!editing">{{ formatDeadline(project.deadline) }}</span>
             <v-text-field 
               v-else 
+              ref="deadlineLeftRef"
               v-model="local.deadline" 
               type="date"
               label="Deadline" 
               variant="solo-filled"
               density="comfortable"
+              prepend-inner-icon=""
               hide-details
+              clearable="false"
+              @click:control="onDateClick('deadlineLeft')"
+              @click:prepend-inner="onDateClick('deadlineLeft')"
+              @focus="onDateClick('deadlineLeft')"
               @update:model-value="emitField('deadline', $event)" 
-            />
+            >
+              <template #prepend-inner>
+                <Calendar class="ml-2" :size="16" />
+              </template>
+            </v-text-field>
           </v-sheet>
           <v-sheet class="stat-row" elevation="0" color="transparent">
-            <Coins :size="16" />
+            <Coins v-if="!editing" :size="16" />
             <span v-if="!editing">{{ project.reward }} points</span>
             <v-text-field 
               v-else 
@@ -55,7 +65,7 @@
             />
           </v-sheet>
             <v-sheet class="stat-row" elevation="0" color="transparent">
-              <Award :size="16" />
+              <Award v-if="!editing" :size="16" />
               <span v-if="!editing">{{ project.experience }} EXP</span>
               <v-text-field 
                 v-else 
@@ -90,65 +100,39 @@
           <v-sheet class="progress-info" elevation="0" color="transparent">
             <p><strong>Hours Worked:</strong> {{ project.totalHoursWorked }}h</p>
             <p v-if="!editing"><strong>Planned Hours:</strong> {{ project.plannedHours }}h</p>
-            <p v-else>
-              <strong>Planned Hours:</strong>
+            <div v-else style="display: flex; align-items: center; gap: 0rem;">
+              <strong style="min-width: 110px; text-align: left;">Planned Hours:</strong>
               <v-text-field 
                 v-model.number="local.plannedHours" 
                 type="number" 
                 variant="solo-filled"
                 density="comfortable" 
                 hide-details 
-                style="max-width:110px;display:inline-block" 
+                style="max-width:110px;display:inline-block; margin-bottom:0;" 
                 @update:model-value="emitField('plannedHours', $event)" 
-              />h
-            </p>
+              />
+              <span>h</span>
+            </div>
             <p><strong>Progress:</strong> {{ (project.progressPercentage || 0).toFixed(1) }}%</p>
           </v-sheet>
           <v-sheet class="progress-bar-container">
             <v-sheet class="progress-bar" :style="{ width: `${project.progressPercentage || 0}%`, backgroundColor: project.color }"></v-sheet>
           </v-sheet>
-          <p><strong>Status:</strong>
-            <span v-if="!editing"> {{ project.status }}</span>
+          
+          <div v-if="editing" style="display: flex; align-items: center; gap: 0.5rem;">
+            <strong style="min-width: 110px; text-align: right;">Status:</strong>
             <v-select 
-              v-else 
               v-model="local.status" 
               :items="statusItems" 
               variant="solo-filled" 
               density="comfortable" 
               hide-details 
               style="max-width:220px;display:inline-block" 
+              :menu-props="{ attach: 'body', zIndex: 99999 }"
               @update:model-value="emitField('status', $event)" 
             />
-          </p>
-
-          <h5 style="margin-top: 1.5rem;">📅 Cronograma</h5>
-          <p><strong>Início:</strong>
-            <span v-if="!editing"> {{ formatDate(project.startDate) }}</span>
-            <v-text-field 
-              v-else 
-              v-model="local.startDate" 
-              type="date" 
-              label="Início" 
-              variant="solo-filled" 
-              density="comfortable" 
-              hide-details 
-              style="max-width:170px;display:inline-block" 
-              @update:model-value="emitField('startDate', $event)" 
-            />
-          </p>
-          <p><strong>Prazo:</strong>
-            <span v-if="!editing"> {{ formatDate(project.deadline) }}</span>
-            <v-text-field 
-              v-else v-model="local.deadline" 
-              type="date" 
-              label="Prazo" 
-              variant="solo-filled" 
-              density="comfortable" 
-              hide-details 
-              style="max-width:170px;display:inline-block" 
-              @update:model-value="emitField('deadline', $event)" 
-            />
-          </p>
+          </div>
+          <p v-else><strong>Status: </strong> {{ project.status }}</p>
         </v-sheet>
       </div>
     </v-sheet>
@@ -158,7 +142,7 @@
 import { Calendar, Coins, Award } from 'lucide-vue-next'
 import useDateFormat from '~/composables/useDateFormat'
 import type { PropType } from 'vue'
-import { reactive, watch } from 'vue'
+import { reactive, watch, ref, nextTick } from 'vue'
 
 const { formatDeadline, formatDate } = useDateFormat()
 
@@ -173,6 +157,37 @@ const emit = defineEmits(['update-field'])
 
 const local = reactive<any>({})
 const statusItems = ['pending','in-progress','completed','archived']
+
+// Refs to v-text-field components so we can access the native input
+const startDateRef = ref()
+const deadlineLeftRef = ref()
+const deadlineRightRef = ref()
+
+function openNativePicker(inputEl: HTMLInputElement | null | undefined) {
+  if (!inputEl) return
+  inputEl.focus()
+  if (typeof inputEl.showPicker === 'function') {
+    try { inputEl.showPicker() } catch { }
+  } else {
+    inputEl.click()
+  }
+}
+
+async function onDateClick(which: 'startDate' | 'deadlineLeft' | 'deadlineRight') {
+  await nextTick()
+  let compRef: any
+  if (which === 'startDate') compRef = startDateRef.value
+  else if (which === 'deadlineLeft') compRef = deadlineLeftRef.value
+  else compRef = deadlineRightRef.value
+
+  if (!compRef) return
+  // Vuetify v-text-field renders an input inside .v-field__input
+  // Try a few common paths
+  const root = compRef.$el as HTMLElement
+  let inputEl = root.querySelector('input[type="date"]') as HTMLInputElement | null
+  if (!inputEl) inputEl = root.querySelector('input') as HTMLInputElement | null
+  openNativePicker(inputEl)
+}
 
 // Sync only the fields specific to this page
 watch(() => props.project, (val) => {
