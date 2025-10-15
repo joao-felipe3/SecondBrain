@@ -75,7 +75,7 @@
         </div>
         <!-- Trash icon at right edge of the OldPaper -->
         <div :style="{ position: 'absolute', top: '55%', left: trashLeft, transform: 'translateY(-50%)', zIndex: 10 }">
-          <Can class="trash-icon" :style="{ width: trashSize, height: 'auto', cursor: 'pointer', pointerEvents: 'auto' }" @click="handleDelete(p, $event)" />
+          <Can class="trash-icon" :style="{ width: trashSize, height: 'auto', cursor: 'pointer', pointerEvents: 'auto' }" @click.stop="openDeleteDialog(p)" />
         </div>
       </div>
     </div>
@@ -95,11 +95,26 @@
         pointerEvents: 'auto'
       }"
     />
+  <!-- Project Deletion Dialog -->
+  <v-dialog v-model="showDeleteDialog" persistent max-width="400">
+    <v-card>
+      <v-card-title class="text-h5">Confirm Deletion</v-card-title>
+      <v-card-text>
+        Tem certeza que deseja deletar o projeto <strong>{{ projectToDelete?.name }}</strong>?
+      </v-card-text>
+      <v-card-actions>
+        <v-spacer />
+        <v-btn color="grey" variant="text" @click="showDeleteDialog = false" style="font-family: 'Irish Grover', cursive !important;">Cancelar</v-btn>
+        <v-btn color="red" variant="text" @click="confirmDelete" style="font-family: 'Irish Grover', cursive !important;">Deletar</v-btn>
+      </v-card-actions>
+    </v-card>
+  </v-dialog>
   </div>
 </template>
 
 <script setup>
 import { ref, computed, onMounted, onBeforeUnmount, nextTick } from 'vue'
+import { useApiResource } from '~/composables/useApi'
 import { Calendar, Coins, Award } from 'lucide-vue-next'
 import WoodenTable from './Svg/WoodenTable.vue'
 import OldPaper from './Svg/OldPaper.vue'
@@ -125,6 +140,8 @@ const props = defineProps({
     default: () => [],
   },
 })
+
+const api = useApiResource('/projects')
 
 const panelRef = ref(null)
 const rotatedWidth = ref('0px')
@@ -167,9 +184,28 @@ const trashLeft = computed(() => {
 })
 
 const emit = defineEmits(['delete-project', 'project-hover', 'project-click', 'create-project'])
-function handleDelete(project, e) {
-  if (e && typeof e.stopPropagation === 'function') e.stopPropagation()
-  emit('delete-project', project)
+
+const showDeleteDialog = ref(false)
+const projectToDelete = ref(null)
+
+function openDeleteDialog(project) {
+  projectToDelete.value = project
+  showDeleteDialog.value = true
+}
+
+const confirmDelete = async () => {
+  if (projectToDelete.value) {
+    console.log('Deleting project', projectToDelete.value)
+    try {
+      await api.remove(projectToDelete.value._id)
+      emit('delete-project', projectToDelete.value)
+    } catch (error) {
+      console.error('Error deleting project:', error)
+    } finally {
+      showDeleteDialog.value = false
+      projectToDelete.value = null
+    }
+  }
 }
 
 function refreshSizes() {

@@ -9,6 +9,7 @@
           @project-hover="onProjectHover"
           @project-click="onProjectClick"
           @create-project="onCreateProject"
+          @delete-project="onDeleted"
         />
       </v-col>
       <v-col cols="6" class="d-flex flex-column align-start position-relative">

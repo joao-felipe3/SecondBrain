@@ -31,16 +31,27 @@
 
       <div class="actions-bar" v-if="project">
         <template v-if="!editing">
-          <button class="action-btn" @click="startEdit" aria-label="Editar projeto" tabindex="0">Editar</button>
-          <button class="action-btn danger" @click="handleDelete" aria-label="Excluir projeto" tabindex="0">Excluir</button>
+          <button class="action-btn" @click="startEdit" aria-label="Edit project" tabindex="0">Edit</button>
+          <button class="action-btn danger" @click="showDeleteDialog = true" aria-label="Delete project" tabindex="0">Delete</button>
         </template>
         <template v-else>
-          <button class="action-btn" @click="cancelEdit" aria-label="Cancelar edição" tabindex="0">Cancelar</button>
-          <button class="action-btn primary" :disabled="saving || !isValid" @click="saveEdit" aria-label="Salvar alterações" tabindex="0">
-            <span v-if="!saving">Salvar</span>
-            <span v-else>Salvando...</span>
+          <button class="action-btn" @click="cancelEdit" aria-label="Cancel edit" tabindex="0">Cancel</button>
+          <button class="action-btn primary" :disabled="saving || !isValid" @click="saveEdit" aria-label="Save changes" tabindex="0">
+            <span v-if="!saving">Save</span>
+            <span v-else>Saving...</span>
           </button>
         </template>
+        <v-dialog v-model="showDeleteDialog" persistent max-width="400">
+          <v-card>
+            <v-card-title class="text-h5">Confirm Deletion</v-card-title>
+            <v-card-text>Are you sure you want to delete this project?</v-card-text>
+            <v-card-actions>
+              <v-spacer />
+              <v-btn color="grey" variant="text" @click="showDeleteDialog = false" style="font-family: 'Irish Grover', cursive !important;">Cancel</v-btn>
+              <v-btn color="red" variant="text" @click="confirmDelete" style="font-family: 'Irish Grover', cursive !important;">Delete</v-btn>
+            </v-card-actions>
+          </v-card>
+        </v-dialog>
       </div>
     </v-container>
   </v-row>
@@ -104,9 +115,10 @@ const saveEdit = async () => {
   }
 }
 
-const handleDelete = async () => {
+const showDeleteDialog = ref(false)
+
+const confirmDelete = async () => {
   if (!props.project) return
-  if (!confirm('Tem certeza que deseja excluir este projeto?')) return
   const id = getProjectId(props.project)
   const { error } = await api.remove(id)
   if (error) {
@@ -115,6 +127,7 @@ const handleDelete = async () => {
     emit('deleted', props.project)
     closeModal()
   }
+  showDeleteDialog.value = false
 }
 
 // Backdrop/Close

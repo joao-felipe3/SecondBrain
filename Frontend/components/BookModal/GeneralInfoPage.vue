@@ -120,14 +120,14 @@
           </v-sheet>
           
           <div v-if="editing" style="display: flex; align-items: center; gap: 0.5rem;">
-            <strong style="min-width: 110px; text-align: right;">Status:</strong>
+            <strong>Status:</strong>
             <v-select 
               v-model="local.status" 
               :items="statusItems" 
               variant="solo-filled" 
               density="comfortable" 
               hide-details 
-              style="max-width:220px;display:inline-block" 
+              style="max-width:140px;display:inline-block" 
               :menu-props="{ attach: 'body', zIndex: 99999 }"
               @update:model-value="emitField('status', $event)" 
             />
