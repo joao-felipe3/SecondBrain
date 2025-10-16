@@ -17,6 +17,7 @@
       <template v-if="zoomed2">
         <ZoomedContent 
           :task="task"
+          :projects="projects"
           :deadline="deadline"
           :notification="notification"
           :createOrEdit="createOrEdit"
@@ -34,7 +35,7 @@
 
 <script setup>
 import { ref, watchEffect } from 'vue';
-const { task, positionStyle, colors, zoomed, create } = defineProps(['task', 'positionStyle', 'colors', 'zoomed', 'create'])
+const { task, positionStyle, colors, zoomed, create, projects } = defineProps(['task', 'positionStyle', 'colors', 'zoomed', 'create', 'projects'])
 const emit = defineEmits(['edit-task', 'delete-task', 'close-zoom', 'fall-complete']);
 
 

@@ -18,6 +18,7 @@
 import { ref, onMounted } from 'vue'
 import { useTaskStore } from '~/stores/task'
 import useTaskHelpers from '~/composables/useTaskHelpers'
+import { useApiResource } from '~/composables/useApi'
 
 // Estado local
 const zoomed = ref(false)
@@ -58,12 +59,24 @@ function removeLastTask(taskId) {
 }
 
 // Projetos mockados
-const projects = [
-  { code: "P1", name: "Website Redesign", color: "#FF5733", totalHoursWorked: 120 },
-  { code: "P2", name: "Backend Development", color: "#33FF57", totalHoursWorked: 200 },
-  { code: "P3", name: "Mobile App", color: "#3357FF", totalHoursWorked: 90 },
-  { code: "P4", name: "Data Analysis", color: "#FFC300", totalHoursWorked: 75 },
-  { code: "P6", name: "DevOps Automation", color: "#C70039", totalHoursWorked: 180 },
-  { code: "P7", name: "AI Model Training", color: "#1ABC9C", totalHoursWorked: 140 },
-]
+const projects = ref([])
+const api = useApiResource('/projects')
+
+onMounted(async () => {
+  // Load tasks first as before
+  newlyCreatedTask.value = null
+  await loadInitialTasks()
+
+  // Then load projects from backend
+  try {
+    const { data, error } = await api.list()
+    if (error) {
+      console.error('Failed to load projects for /task page', error)
+    } else if (data) {
+      projects.value = Array.isArray(data) ? data : []
+    }
+  } catch (e) {
+    console.error('Unexpected error loading projects', e)
+  }
+})
 </script>

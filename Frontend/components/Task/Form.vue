@@ -15,7 +15,7 @@
   </v-row>
 
   <v-row dense>
-    <v-col cols="6"><CommonTextField v-model="task.project" label="Project" /></v-col>
+    <v-col cols="6"><CommonSelect v-model="task.project" label="Project" :items="projectNames" :required="true" /></v-col>
     <v-col cols="6"><CommonSelect v-model="task.recurrency" label="Recurrency" :items="recurrencyOptions" :required="true" /></v-col>
   </v-row>
 
@@ -29,6 +29,10 @@ const props = defineProps({
     type: Object,
     required: true
   },
+  projects: {
+    type: Array,
+    default: () => []
+  },
   deadline: [String, Date],
   notification: [String, Date],
   createOrEdit: {
@@ -39,6 +43,9 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['update:is-valid'])
+// Derived list of project names for the select
+const projectNames = computed(() => (props.projects || []).map(p => p.name).filter(Boolean))
+
 
 const localDeadline = ref(props.task.deadline)
 const localNotification = ref(props.task.notification)

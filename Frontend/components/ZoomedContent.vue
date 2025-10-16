@@ -7,6 +7,7 @@
     <SvgCloseButton @close="$emit('close')" />
     <TaskForm
       :task="props.task"
+      :projects="props.projects"
       create-or-edit="Edit"
       v-model:is-valid="isFormValid"
     />
@@ -24,6 +25,7 @@
 <script setup>
   const props = defineProps({
     task: Object,
+    projects: Array,
     createOrEdit: String,
     deadline: String,
     notification: String,

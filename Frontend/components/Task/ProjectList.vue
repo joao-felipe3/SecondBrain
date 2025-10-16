@@ -20,7 +20,7 @@
         <span style="font-weight: bold;">{{ project.totalHoursWorked }}h</span>
       </li>
     </ul>
-    <div style="position: relative; width: 180px; left: 18%;">
+    <!-- <div style="position: relative; width: 180px; left: 18%;">
       <v-img src="/svg/button-2.svg" alt="Button" width="180" height="54" style="object-fit: fill" />
       <div
         style="
@@ -40,7 +40,7 @@
       >
         + Create a Project
       </div>
-    </div>
+    </div> -->
   </WoodPanel>
 </template>
 

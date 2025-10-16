@@ -1,5 +1,5 @@
 export function getProjectColors(projectCode: string, projects: any[]) {
-  const project = projects.find(p => p.code === projectCode);
+  const project = projects.find(p => p.name === projectCode);
   let main = project ? project.color : "#888888";
 
   const adjustColor = (hex: string, amount: number) => {
