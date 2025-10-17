@@ -15,6 +15,7 @@ export interface ProjectDocument extends Document {
   progressPercentage: number;
   experience: number;
   reward: number;
+  tasks?: Array<Schema.Types.ObjectId>;
 }
 
 export const ProjectSchema = new Schema<ProjectDocument>({
@@ -32,4 +33,5 @@ export const ProjectSchema = new Schema<ProjectDocument>({
   progressPercentage: { type: Number, required: true, default: 0 },
   experience: { type: Number, required: true },
   reward: { type: Number, required: true },
+  tasks: [{ type: Schema.Types.ObjectId, ref: 'Task' }],
 });

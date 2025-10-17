@@ -1,3 +1,6 @@
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
+import { TaskDocument } from '../tasks/schemas/task.schema';
 import { Controller, Get, Post, Body, Patch, Param, Delete, NotFoundException, Query } from '@nestjs/common';
 import { ProjectsService } from './projects.service';
 import { CreateProjectDto } from './dto/create-project.dto';
@@ -7,7 +10,18 @@ import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 @ApiTags('projects')
 @Controller('projects')
 export class ProjectsController {
-	constructor(private readonly projectsService: ProjectsService) {}
+	constructor(
+		private readonly projectsService: ProjectsService,
+		@InjectModel('Task') private readonly taskModel: Model<TaskDocument>,
+	) {}
+
+	@Get(':id/tasks')
+	async getTasksForProject(@Param('id') id: string) {
+		// Option 1: Use service method
+		return this.projectsService.getTasksForProject(id);
+		// Option 2: Directly use model (uncomment if you prefer)
+		// return this.taskModel.find({ project: id }).exec();
+	}
 
 	@Post()
 	@ApiOperation({ summary: 'Create a new project' })

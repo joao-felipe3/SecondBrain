@@ -1,3 +1,5 @@
+import { Task } from '../../tasks/entities/task.entity';
+
 export class Project {
   id: String;
   name: String;
@@ -14,4 +16,5 @@ export class Project {
   progressPercentage: number;
   experience: number;
   reward: number;
+  tasks?: Task[];
 }

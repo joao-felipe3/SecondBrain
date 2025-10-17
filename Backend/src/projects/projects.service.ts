@@ -1,5 +1,6 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
+import { TaskDocument } from '../tasks/schemas/task.schema';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { Model } from 'mongoose';
 import { CreateProjectDto } from './dto/create-project.dto';
 import { UpdateProjectDto } from './dto/update-project.dto';
@@ -8,8 +9,13 @@ import { ProjectDocument } from './schemas/project.schema';
 @Injectable()
 export class ProjectsService {
 	constructor(
-		@InjectModel('Project') private readonly projectModel: Model<ProjectDocument>
+		@InjectModel('Project') private readonly projectModel: Model<ProjectDocument>,
+		@InjectModel('Task') private readonly taskModel: Model<TaskDocument>,
 	) {}
+
+	async getTasksForProject(projectId: string): Promise<TaskDocument[]> {
+		return this.taskModel.find({ project: projectId }).exec();
+	}
 
 	async create(dto: CreateProjectDto): Promise<ProjectDocument> {
 		const created = new this.projectModel(dto);
@@ -43,5 +49,28 @@ export class ProjectsService {
 			project.progressPercentage = Math.min(100, +pct.toFixed(2));
 		}
 		return await project.save();
+	}
+
+	async addTaskToProject(projectId: string, taskId: string): Promise<void> {
+		await this.projectModel.findByIdAndUpdate(
+			projectId,
+			{ $addToSet: { tasks: taskId } },
+			{ new: true }
+		).exec();
+	}
+
+	async removeTaskFromProject(projectId: string, taskId: string): Promise<void> {
+		await this.projectModel.findByIdAndUpdate(
+			projectId,
+			{ $pull: { tasks: taskId } },
+			{ new: true }
+		).exec();
+	}
+
+	async moveTaskToProject(taskId: string, oldProjectId: string, newProjectId: string): Promise<void> {
+		if (oldProjectId) {
+			await this.removeTaskFromProject(oldProjectId, taskId);
+		}
+		await this.addTaskToProject(newProjectId, taskId);
 	}
 }
