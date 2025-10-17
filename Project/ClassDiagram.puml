@@ -36,6 +36,7 @@ class Project {
     progressPercentage: Float
     experience: Int
     reward: Int
+    tasks: List<Task>
 }
 
 class Habit {

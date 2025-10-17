@@ -1,15 +1,17 @@
+import { Types } from 'mongoose';
+
 export class CreateTaskDto {
-  name: String;
-  description?: String; 
+  name: string;
+  description?: string; 
   pomodorosPlanned: number;
   deadline: Date;
   priority?: number; 
   difficult?: number;
-  project?: String;
+  project?: string | Types.ObjectId;
   experience: number;
-  isConcluded: Boolean;
-  late: Boolean;
+  isConcluded: boolean;
+  late: boolean;
   prize: number;
-  recurrency: String;
+  recurrency: string;
   notification: Date;
 }

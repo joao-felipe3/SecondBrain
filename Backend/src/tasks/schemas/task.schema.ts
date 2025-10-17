@@ -25,7 +25,7 @@ export const TaskSchema = new Schema<TaskDocument>({
   pomodorosDid: { type: Number, default: 0 }, // Adicione isso para sempre ter o campo
   priority: { type: Number },
   difficult: { type: Number },
-  project: { type: String },
+  project: { type: Schema.Types.ObjectId, ref: 'Project' },
   experience: { type: Number, required: true },
   isConcluded: { type: Boolean, required: true },
   late: { type: Boolean, required: true },
