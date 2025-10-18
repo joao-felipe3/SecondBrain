@@ -19,7 +19,7 @@
       </template>
     </div>
     <div class="d-flex flex-row align-center" style="gap: 8px; width: fit-content; margin-top: -3.5%;">
-      <SvgEffortButton class="mt-2" @click="handleEffort"/>
+      <SvgEffortButton class="mt-" @click="handleEffort"/>
       <SvgButton 
         label="Complete"
         :width="72"
@@ -28,7 +28,6 @@
         :labelSize="12"
         labelMarginTop="-55%"
         labelMarginLeft="7.5%"
-        class="mt-n2"
       />
     </div>
   </div>

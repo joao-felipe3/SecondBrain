@@ -104,9 +104,10 @@ export default {
   flex-direction: column;
   align-items: center;
   border-radius: 10px;
-  padding-top: 0.5rem; /* Reduzido */
+  padding-top: 1rem; /* Reduzido */
   padding-left: 0.5rem;
   padding-right: 0.5rem;
+  margin-left: 2rem;
   font-family: Arial, sans-serif;
   width: 100%; /* Ajusta ao contêiner pai */
   max-width: 240px; /* Reduz largura máxima */
