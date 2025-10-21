@@ -21,7 +21,6 @@
               <v-sheet :class="['carousel-item', { active: currentIndex === 0 }]" elevation="0" color="transparent"><GeneralInfoPage :project="displayProject || {}" :editing="editing" @update-field="updateField" /></v-sheet>
               <v-sheet :class="['carousel-item', { active: currentIndex === 1 }]" elevation="0" color="transparent"><GoalPage :project="displayProject || {}" :editing="editing" @update-field="updateField" /></v-sheet>
               <v-sheet :class="['carousel-item', { active: currentIndex === 2 }]" elevation="0" color="transparent"><MidTermGoalPage :project="displayProject || {}" :editing="editing" @update-field="updateField" /></v-sheet>
-              <v-sheet :class="['carousel-item', { active: currentIndex === 3 }]" elevation="0" color="transparent"><LongTermGoalPage :project="displayProject || {}" :editing="editing" @update-field="updateField" /></v-sheet>
             </div>
           </v-sheet>
         </v-col>
@@ -63,7 +62,6 @@ import { ref, computed, onMounted, onBeforeUnmount, watch, nextTick, toRef } fro
 import GeneralInfoPage from './BookModal/GeneralInfoPage.vue'
 import GoalPage from './BookModal/GoalPage.vue'
 import MidTermGoalPage from './BookModal/MidTermGoalPage.vue'
-import LongTermGoalPage from './BookModal/LongTermGoalPage.vue'
 import { useApiResource } from '~/composables/useApi'
 import type { PropType } from 'vue'
 import { useCarousel } from '~/composables/useCarousel'
