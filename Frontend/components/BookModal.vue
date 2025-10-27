@@ -69,7 +69,7 @@ import { useSparkles } from '~/composables/useSparkles'
 import { useProjectEditing, getProjectId, type Project } from '~/composables/useProjectEditing'
 
 const CLOSE_ANIM_MS = 800
-const TOTAL_SLIDES = 4
+const TOTAL_SLIDES = 3
 
 
 const props = defineProps({

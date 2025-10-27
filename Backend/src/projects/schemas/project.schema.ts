@@ -17,7 +17,7 @@ export interface ProjectDocument extends Document {
   reward: number;
   tasks?: Array<Schema.Types.ObjectId>;
   backlogIdeas?: Array<{ text: string; createdAt: Date }>;
-  backlogTasks?: Array<{ id: number; text: string; priority: string; createdAt: Date }>;
+  backlogIdeas2?: Array<{ text: string; createdAt: Date }>;
 }
 
 export const ProjectSchema = new Schema<ProjectDocument>({
@@ -40,10 +40,8 @@ export const ProjectSchema = new Schema<ProjectDocument>({
     text: { type: String, required: true },
     createdAt: { type: Date, required: true, default: Date.now }
   }],
-  backlogTasks: [{
-    id: { type: Number, required: true },
+  backlogIdeas2: [{
     text: { type: String, required: true },
-    priority: { type: String, required: true, enum: ['baixa', 'média', 'alta', 'crítica'] },
     createdAt: { type: Date, required: true, default: Date.now }
-  }]
+  }],
 });

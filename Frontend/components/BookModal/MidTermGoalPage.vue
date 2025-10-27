@@ -53,70 +53,56 @@
       </div>
     </div>
 
-    <!-- Página Direita: Backlog de Tarefas Técnicas -->
+    <!-- Página Direita: Mais Ideias -->
     <div class="page right-page">
       <div v-if="project" class="backlog-section">
-        <h4>🔧 Backlog Técnico</h4>
-        <p class="subtitle">Tarefas técnicas e correções</p>
+        <h4>� Mais Ideias</h4>
+        <p class="subtitle">Possíveis melhorias e funcionalidades</p>
 
         <div class="backlog-form">
-          <v-select
-            v-model="newTask.priority"
-            :items="priorities"
-            label="Prioridade"
-            variant="solo-filled"
-            density="comfortable"
-            hide-details
-          />
           <v-textarea
-            v-model="newTask.text"
-            label="Nova tarefa técnica"
+            v-model="newIdea2.text"
+            label="Nova ideia ou melhoria"
             variant="solo-filled"
             density="comfortable"
             auto-grow
             rows="2"
-            placeholder="Descreva uma tarefa técnica ou correção..."
+            placeholder="Descreva uma ideia ou melhoria para o projeto..."
           />
           <div class="actions">
             <v-btn 
               color="primary" 
               size="small"
-              @click="addTask" 
-              :disabled="!newTask.text.trim()"
+              @click="addIdea2" 
+              :disabled="!newIdea2.text.trim()"
             >
               Adicionar
             </v-btn>
           </div>
         </div>
 
-        <div class="backlog-list" v-if="tasks.length">
+        <div class="backlog-list" v-if="ideas2.length">
           <div 
-            v-for="(task, i) in sortedTasks" 
+            v-for="(idea, i) in ideas2" 
             :key="i" 
             class="backlog-item"
-            :class="`priority-${task.priority}`"
           >
             <div class="item-header">
-              <div class="header-left">
-                <span class="priority-badge" :class="`badge-${task.priority}`">
-                  {{ task.priority }}
-                </span>
-                <span class="item-number">#{{ i + 1 }}</span>
-              </div>
+              <span class="item-number">#{{ i + 1 }}</span>
               <v-btn 
                 icon 
                 size="x-small" 
                 variant="text"
-                @click="removeTask(task.id)"
+                @click="removeIdea2(i)"
               >
                 <span class="delete-icon">×</span>
               </v-btn>
             </div>
-            <p class="item-text">{{ task.text }}</p>
-            <span class="item-date">{{ formatYMD(task.createdAt) }}</span>
+            <p class="item-text">{{ idea.text }}</p>
+            <span class="item-date">{{ formatYMD(idea.createdAt) }}</span>
           </div>
         </div>
-        <p v-else class="empty">Nenhuma tarefa ainda. Adicione a primeira acima.</p>
+        <p v-else class="empty">Nenhuma ideia ainda. Adicione a primeira acima.</p>
       </div>
     </div>
   </div>
@@ -124,20 +110,13 @@
 
 <script setup lang="ts">
 import type { PropType } from 'vue'
-import { reactive, ref, watch, computed } from 'vue'
+import { reactive, ref, watch } from 'vue'
 import useDateFormat from '~/composables/useDateFormat'
 
 type Project = Record<string, any>
 
 interface BacklogIdea {
   text: string
-  createdAt: string
-}
-
-interface BacklogTask {
-  id: number
-  text: string
-  priority: string
   createdAt: string
 }
 
@@ -150,24 +129,15 @@ const emit = defineEmits(['update-field'])
 
 const { formatYMD } = useDateFormat()
 
-// Backlog de Ideias (página esquerda)
+// Backlog de Ideias - Página Esquerda
 const ideas = ref<BacklogIdea[]>([])
 const newIdea = reactive({ text: '' })
 
-// Backlog Técnico (página direita)
-const tasks = ref<BacklogTask[]>([])
-const newTask = reactive({ text: '', priority: 'média' })
-const priorities = ['baixa', 'média', 'alta', 'crítica']
+// Backlog de Ideias - Página Direita
+const ideas2 = ref<BacklogIdea[]>([])
+const newIdea2 = reactive({ text: '' })
 
-let nextTaskId = 1
-
-// Computed para ordenar tarefas por prioridade
-const sortedTasks = computed(() => {
-  const priorityOrder: Record<string, number> = { 'crítica': 0, 'alta': 1, 'média': 2, 'baixa': 3 }
-  return [...tasks.value].sort((a, b) => priorityOrder[a.priority] - priorityOrder[b.priority])
-})
-
-// Funções para Ideias
+// Funções para Ideias (página esquerda)
 function addIdea() {
   if (!newIdea.text.trim()) return
   
@@ -185,50 +155,41 @@ function removeIdea(index: number) {
   persistBacklog()
 }
 
-// Funções para Tarefas Técnicas
-function addTask() {
-  if (!newTask.text.trim()) return
+// Funções para Ideias (página direita)
+function addIdea2() {
+  if (!newIdea2.text.trim()) return
   
-  tasks.value.push({
-    id: nextTaskId++,
-    text: newTask.text.trim(),
-    priority: newTask.priority,
+  ideas2.value.unshift({
+    text: newIdea2.text.trim(),
     createdAt: new Date().toISOString()
   })
   
-  newTask.text = ''
-  newTask.priority = 'média'
+  newIdea2.text = ''
   persistBacklog()
 }
 
-function removeTask(id: number) {
-  const index = tasks.value.findIndex(t => t.id === id)
-  if (index !== -1) {
-    tasks.value.splice(index, 1)
-    persistBacklog()
-  }
+function removeIdea2(index: number) {
+  ideas2.value.splice(index, 1)
+  persistBacklog()
 }
 
 // Persiste o backlog no projeto
 function persistBacklog() {
   emit('update-field', 'backlogIdeas', ideas.value)
-  emit('update-field', 'backlogTasks', tasks.value)
+  emit('update-field', 'backlogIdeas2', ideas2.value)
 }
 
 // Carrega dados do projeto
 watch(() => props.project, (v) => {
   if (v) {
-    // Carrega ideias
+    // Carrega ideias da página esquerda
     if ((v as any).backlogIdeas && Array.isArray((v as any).backlogIdeas)) {
       ideas.value = [...(v as any).backlogIdeas]
     }
     
-    // Carrega tarefas técnicas
-    if ((v as any).backlogTasks && Array.isArray((v as any).backlogTasks)) {
-      tasks.value = [...(v as any).backlogTasks]
-      // Atualiza o próximo ID
-      const maxId = Math.max(...tasks.value.map(t => t.id), 0)
-      nextTaskId = maxId + 1
+    // Carrega ideias da página direita
+    if ((v as any).backlogIdeas2 && Array.isArray((v as any).backlogIdeas2)) {
+      ideas2.value = [...(v as any).backlogIdeas2]
     }
   }
 }, { immediate: true })
@@ -297,44 +258,10 @@ watch(() => props.project, (v) => {
   margin-bottom: 0.5rem;
 }
 
-.header-left {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
 .item-number {
   font-size: 0.75rem;
   color: #64748b;
   font-weight: 600;
-}
-
-.priority-badge {
-  font-size: 0.7rem;
-  padding: 0.15rem 0.5rem;
-  border-radius: 12px;
-  font-weight: 600;
-  text-transform: uppercase;
-}
-
-.badge-baixa {
-  background: #dbeafe;
-  color: #1e40af;
-}
-
-.badge-média {
-  background: #fef3c7;
-  color: #92400e;
-}
-
-.badge-alta {
-  background: #fed7aa;
-  color: #9a3412;
-}
-
-.badge-crítica {
-  background: #fecaca;
-  color: #991b1b;
 }
 
 .delete-icon {
@@ -362,22 +289,5 @@ watch(() => props.project, (v) => {
   margin-top: 2rem;
   color: #64748b;
   font-style: italic;
-}
-
-/* Prioridade visual nas bordas */
-.priority-crítica {
-  border-left: 4px solid #ef4444;
-}
-
-.priority-alta {
-  border-left: 4px solid #f97316;
-}
-
-.priority-média {
-  border-left: 4px solid #eab308;
-}
-
-.priority-baixa {
-  border-left: 4px solid #3b82f6;
 }
 </style>
