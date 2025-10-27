@@ -17,7 +17,6 @@ export interface ProjectDocument extends Document {
   reward: number;
   tasks?: Array<Schema.Types.ObjectId>;
   backlogIdeas?: Array<{ text: string; createdAt: Date }>;
-  backlogIdeas2?: Array<{ text: string; createdAt: Date }>;
 }
 
 export const ProjectSchema = new Schema<ProjectDocument>({
@@ -37,10 +36,6 @@ export const ProjectSchema = new Schema<ProjectDocument>({
   reward: { type: Number, required: true },
   tasks: [{ type: Schema.Types.ObjectId, ref: 'Task' }],
   backlogIdeas: [{
-    text: { type: String, required: true },
-    createdAt: { type: Date, required: true, default: Date.now }
-  }],
-  backlogIdeas2: [{
     text: { type: String, required: true },
     createdAt: { type: Date, required: true, default: Date.now }
   }],
