@@ -20,7 +20,7 @@
               <v-sheet class="sprite" elevation="0" color="transparent"></v-sheet>
               <v-sheet :class="['carousel-item', { active: currentIndex === 0 }]" elevation="0" color="transparent"><GeneralInfoPage :project="displayProject || {}" :editing="editing" @update-field="updateField" /></v-sheet>
               <v-sheet :class="['carousel-item', { active: currentIndex === 1 }]" elevation="0" color="transparent"><GoalPage :project="displayProject || {}" :editing="editing" @update-field="updateField" /></v-sheet>
-              <v-sheet :class="['carousel-item', { active: currentIndex === 2 }]" elevation="0" color="transparent"><MidTermGoalPage :project="displayProject || {}" :editing="editing" @update-field="updateField" /></v-sheet>
+              <v-sheet :class="['carousel-item', { active: currentIndex === 2 }]" elevation="0" color="transparent"><BacklogAndProgress :project="displayProject || {}" :editing="editing" @update-field="updateField" /></v-sheet>
             </div>
           </v-sheet>
         </v-col>
@@ -61,7 +61,7 @@ import { X } from 'lucide-vue-next'
 import { ref, computed, onMounted, onBeforeUnmount, watch, nextTick, toRef } from 'vue'
 import GeneralInfoPage from './BookModal/GeneralInfoPage.vue'
 import GoalPage from './BookModal/GoalPage.vue'
-import MidTermGoalPage from './BookModal/MidTermGoalPage.vue'
+import BacklogAndProgress from './BookModal/BacklogAndProgress.vue'
 import { useApiResource } from '~/composables/useApi'
 import type { PropType } from 'vue'
 import { useCarousel } from '~/composables/useCarousel'
