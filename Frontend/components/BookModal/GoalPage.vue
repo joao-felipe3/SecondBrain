@@ -59,6 +59,7 @@
             :key="task._id"
             class="task-item"
             :class="{ completed: task.isConcluded }"
+            @click="openTask(task)"
           >
             <div class="task-status">
               <span v-if="task.isConcluded" class="status-icon completed">✓</span>
@@ -73,6 +74,12 @@
                 <span v-if="task.pomodorosPlanned" class="task-pomodoros">
                   🍅 {{ task.pomodorosDid || 0 }}/{{ task.pomodorosPlanned }}
                 </span>
+                <span v-if="task.experience !== undefined" class="task-exp">
+                  ⭐ EXP {{ task.experience }}
+                </span>
+                <span v-if="task.prize !== undefined" class="task-reward">
+                  💰 {{ task.prize }}
+                </span>
               </div>
             </div>
           </div>
@@ -81,6 +88,183 @@
         <p v-else class="empty">Nenhuma tarefa cadastrada ainda.</p>
         
         <p v-if="error" class="error-message">Erro ao carregar tarefas</p>
+
+        <!-- Dialog de Detalhes/Edição da Task -->
+        <v-dialog v-model="taskDialogOpen" max-width="700">
+          <v-card class="task-dialog-card">
+            <v-card-title class="task-dialog-header">
+              <div class="header-content">
+                <span class="header-icon">{{ editing ? '✏️' : '📋' }}</span>
+                <span class="header-title">{{ editing ? 'Editar Tarefa' : 'Detalhes da Tarefa' }}</span>
+              </div>
+              <v-btn icon="mdi-close" variant="text" size="small" @click="closeTask" />
+            </v-card-title>
+            <v-divider />
+            <v-card-text class="task-dialog-body">
+              <div v-if="selectedTask">
+                <template v-if="editing">
+                  <div class="form-section">
+                    <v-text-field 
+                      v-model="localTask.name" 
+                      label="📝 Nome da tarefa" 
+                      variant="outlined"
+                      density="comfortable"
+                      color="primary"
+                    />
+                    <v-textarea 
+                      v-model="localTask.description" 
+                      label="📄 Descrição" 
+                      variant="outlined"
+                      auto-grow 
+                      rows="2" 
+                      density="comfortable"
+                      color="primary"
+                    />
+                  </div>
+                  
+                  <div class="form-section">
+                    <h5 class="section-title">⏱️ Planejamento</h5>
+                    <div class="dialog-grid">
+                      <v-text-field 
+                        v-model.number="localTask.pomodorosPlanned" 
+                        type="number" 
+                        label="🍅 Pomodoros" 
+                        variant="outlined"
+                        density="comfortable"
+                        color="primary"
+                      />
+                      <v-text-field 
+                        v-model="localTask.deadline" 
+                        type="date" 
+                        label="📅 Deadline" 
+                        variant="outlined"
+                        density="comfortable"
+                        color="primary"
+                      />
+                    </div>
+                  </div>
+
+                  <div class="form-section">
+                    <h5 class="section-title">🎯 Atributos</h5>
+                    <div class="dialog-grid">
+                      <v-text-field 
+                        v-model.number="localTask.priority" 
+                        type="number" 
+                        label="⚡ Prioridade (1-4)" 
+                        variant="outlined"
+                        density="comfortable" 
+                        :min="1" 
+                        :max="4"
+                        color="primary"
+                      />
+                      <v-text-field 
+                        v-model.number="localTask.difficult" 
+                        type="number" 
+                        label="💪 Dificuldade (1-4)" 
+                        variant="outlined"
+                        density="comfortable" 
+                        :min="1" 
+                        :max="4"
+                        color="primary"
+                      />
+                      <v-text-field 
+                        v-model.number="localTask.experience" 
+                        type="number" 
+                        label="⭐ EXP" 
+                        variant="outlined"
+                        density="comfortable"
+                        color="primary"
+                      />
+                      <v-text-field 
+                        v-model.number="localTask.prize" 
+                        type="number" 
+                        label="💰 Reward" 
+                        variant="outlined"
+                        density="comfortable"
+                        color="primary"
+                      />
+                    </div>
+                  </div>
+                </template>
+                <template v-else>
+                  <div class="task-details-view">
+                    <div class="detail-card main-info">
+                      <h3 class="task-title-detail">{{ selectedTask.name }}</h3>
+                      <p v-if="selectedTask.description" class="task-description">{{ selectedTask.description }}</p>
+                      <div v-if="selectedTask.deadline" class="deadline-badge">
+                        📅 {{ formatYMD(selectedTask.deadline) }}
+                      </div>
+                    </div>
+
+                    <div class="detail-card stats-grid">
+                      <div class="stat-item pomodoros">
+                        <div class="stat-icon">🍅</div>
+                        <div class="stat-content">
+                          <div class="stat-label">Pomodoros</div>
+                          <div class="stat-value">{{ selectedTask.pomodorosDid || 0 }}/{{ selectedTask.pomodorosPlanned }}</div>
+                        </div>
+                      </div>
+                      
+                      <div v-if="selectedTask.priority !== undefined" class="stat-item">
+                        <div class="stat-icon">⚡</div>
+                        <div class="stat-content">
+                          <div class="stat-label">Prioridade</div>
+                          <div class="stat-value">{{ selectedTask.priority }}</div>
+                        </div>
+                      </div>
+
+                      <div v-if="selectedTask.difficult !== undefined" class="stat-item">
+                        <div class="stat-icon">💪</div>
+                        <div class="stat-content">
+                          <div class="stat-label">Dificuldade</div>
+                          <div class="stat-value">{{ selectedTask.difficult }}</div>
+                        </div>
+                      </div>
+
+                      <div v-if="selectedTask.experience !== undefined" class="stat-item exp">
+                        <div class="stat-icon">⭐</div>
+                        <div class="stat-content">
+                          <div class="stat-label">EXP</div>
+                          <div class="stat-value">{{ selectedTask.experience }}</div>
+                        </div>
+                      </div>
+
+                      <div v-if="selectedTask.prize !== undefined" class="stat-item reward">
+                        <div class="stat-icon">💰</div>
+                        <div class="stat-content">
+                          <div class="stat-label">Reward</div>
+                          <div class="stat-value">{{ selectedTask.prize }}</div>
+                        </div>
+                      </div>
+
+                      <div class="stat-item status">
+                        <div class="stat-icon">{{ selectedTask.isConcluded ? '✅' : '⏳' }}</div>
+                        <div class="stat-content">
+                          <div class="stat-label">Status</div>
+                          <div class="stat-value">{{ selectedTask.isConcluded ? 'Concluída' : 'Pendente' }}</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </template>
+                <v-alert v-if="dialogError" type="error" density="compact" class="mt-3">
+                  {{ dialogError }}
+                </v-alert>
+              </div>
+            </v-card-text>
+            <v-divider />
+            <v-card-actions class="task-dialog-actions">
+              <v-btn variant="text" @click="closeTask">Fechar</v-btn>
+              <v-spacer />
+              <v-btn v-if="editing && selectedTask" color="error" variant="outlined" @click="deleteTask" :loading="saving" prepend-icon="mdi-delete">
+                Excluir
+              </v-btn>
+              <v-btn v-if="editing && selectedTask" color="primary" variant="elevated" @click="saveTask" :loading="saving" prepend-icon="mdi-content-save">
+                Salvar
+              </v-btn>
+            </v-card-actions>
+          </v-card>
+        </v-dialog>
       </div>
     </v-sheet>
   </v-sheet>
@@ -107,6 +291,88 @@ const local = reactive<any>({})
 const tasks = ref<any[]>([])
 const loading = ref(false)
 const error = ref<null | any>(null)
+
+// Dialog e edição de task
+const taskDialogOpen = ref(false)
+const selectedTask = ref<any | null>(null)
+const localTask = reactive<any>({})
+const saving = ref(false)
+const dialogError = ref<string | null>(null)
+
+function openTask(task: any) {
+  selectedTask.value = task
+  dialogError.value = null
+  // clonar campos que podemos editar
+  Object.assign(localTask, {
+    _id: task._id,
+    name: task.name,
+    description: task.description || '',
+    deadline: task.deadline ? new Date(task.deadline).toISOString().substring(0, 10) : '',
+    pomodorosPlanned: task.pomodorosPlanned ?? 0,
+    pomodorosDid: task.pomodorosDid ?? 0,
+    priority: task.priority ?? null,
+    difficult: task.difficult ?? null,
+    experience: task.experience ?? 0,
+    prize: task.prize ?? 0,
+    isConcluded: !!task.isConcluded,
+  })
+  taskDialogOpen.value = true
+}
+
+function closeTask() {
+  taskDialogOpen.value = false
+  selectedTask.value = null
+}
+
+async function saveTask() {
+  if (!selectedTask.value) return
+  saving.value = true
+  dialogError.value = null
+  try {
+    const { patch } = useApi(`/tasks/${selectedTask.value._id}`)
+    const payload: any = {
+      name: localTask.name,
+      description: localTask.description,
+      deadline: localTask.deadline ? new Date(localTask.deadline) : null,
+      pomodorosPlanned: Number(localTask.pomodorosPlanned),
+      pomodorosDid: Number(localTask.pomodorosDid),
+      priority: localTask.priority !== null ? Number(localTask.priority) : null,
+      difficult: localTask.difficult !== null ? Number(localTask.difficult) : null,
+      experience: Number(localTask.experience),
+      prize: Number(localTask.prize),
+      isConcluded: !!localTask.isConcluded,
+    }
+    const { data, error: e } = await patch(payload)
+    if (e) throw e
+    // atualiza a lista local
+    const idx = tasks.value.findIndex(t => t._id === selectedTask.value._id)
+    if (idx >= 0) tasks.value[idx] = data
+    closeTask()
+  } catch (err: any) {
+    dialogError.value = 'Falha ao salvar a tarefa.'
+    console.error(err)
+  } finally {
+    saving.value = false
+  }
+}
+
+async function deleteTask() {
+  if (!selectedTask.value) return
+  saving.value = true
+  dialogError.value = null
+  try {
+    const { remove } = useApi(`/tasks/${selectedTask.value._id}`)
+    const { error: e } = await remove()
+    if (e) throw e
+    tasks.value = tasks.value.filter(t => t._id !== selectedTask.value._id)
+    closeTask()
+  } catch (err: any) {
+    dialogError.value = 'Falha ao excluir a tarefa.'
+    console.error(err)
+  } finally {
+    saving.value = false
+  }
+}
 
 function getProjectId(p: any) {
   return p && (p._id || p.id || p.id === 0) ? (p._id || p.id) : null
@@ -200,6 +466,7 @@ function emitField(field: string, value: any) {
   border-radius: 8px;
   padding: 0.75rem;
   transition: all 0.2s;
+  cursor: pointer;
 }
 
 .task-item:hover {
@@ -256,15 +523,17 @@ function emitField(field: string, value: any) {
 
 .task-meta {
   display: flex;
-  gap: 0.75rem;
-  font-size: 0.75rem;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  font-size: clamp(0.65rem, 1.6vw, 0.75rem);
   color: #64748b;
 }
 
-.task-deadline, .task-pomodoros {
+.task-deadline, .task-pomodoros, .task-exp, .task-reward {
   display: inline-flex;
   align-items: center;
   gap: 0.25rem;
+  white-space: nowrap;
 }
 
 .empty {
@@ -280,6 +549,187 @@ function emitField(field: string, value: any) {
   text-align: center;
   margin-top: 1rem;
   font-size: 0.875rem;
+}
+
+.dialog-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.75rem;
+}
+
+.task-details .details-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.25rem 0.75rem;
+  margin-top: 0.5rem;
+}
+
+/* Dialog Styles */
+.task-dialog-card {
+  border-radius: 12px !important;
+  overflow: hidden;
+}
+
+.task-dialog-header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 1.25rem 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.header-content {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.header-icon {
+  font-size: 1.5rem;
+}
+
+.header-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.task-dialog-body {
+  padding: 1.5rem;
+  max-height: 70vh;
+  overflow-y: auto;
+}
+
+.form-section {
+  margin-bottom: 1.5rem;
+}
+
+.form-section:last-child {
+  margin-bottom: 0;
+}
+
+.section-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #334155;
+  margin: 0 0 0.75rem 0;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid #e2e8f0;
+}
+
+/* View Mode Styles */
+.task-details-view {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.detail-card {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 1rem;
+}
+
+.main-info {
+  background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%);
+  border: 1px solid #667eea30;
+}
+
+.task-title-detail {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #1e293b;
+  margin: 0 0 0.5rem 0;
+}
+
+.task-description {
+  color: #475569;
+  margin: 0 0 0.75rem 0;
+  line-height: 1.6;
+}
+
+.deadline-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #64748b;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 0.75rem;
+  padding: 1rem;
+}
+
+.stat-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 0.75rem;
+  transition: all 0.2s;
+}
+
+.stat-item:hover {
+  border-color: #cbd5e1;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  transform: translateY(-1px);
+}
+
+.stat-item.pomodoros {
+  border-left: 3px solid #ef4444;
+}
+
+.stat-item.exp {
+  border-left: 3px solid #f59e0b;
+}
+
+.stat-item.reward {
+  border-left: 3px solid #10b981;
+}
+
+.stat-item.status {
+  border-left: 3px solid #3b82f6;
+}
+
+.stat-icon {
+  font-size: 1.5rem;
+  flex-shrink: 0;
+}
+
+.stat-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.stat-label {
+  font-size: 0.75rem;
+  color: #64748b;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+  margin-bottom: 0.125rem;
+}
+
+.stat-value {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.task-dialog-actions {
+  padding: 1rem 1.5rem;
+  background: #f8fafc;
 }
 </style>
 

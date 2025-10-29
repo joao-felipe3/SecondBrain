@@ -19,6 +19,7 @@ import { TasksModule } from '../tasks/tasks.module';
     forwardRef(() => TasksModule)
   ],
   controllers: [ProjectsController],
-  providers: [ProjectsService]
+  providers: [ProjectsService],
+  exports: [ProjectsService]
 })
 export class ProjectsModule {}

@@ -1,15 +1,18 @@
-import { Injectable, NotFoundException  } from '@nestjs/common';
+import { Injectable, NotFoundException, Inject, forwardRef } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { TaskDocument } from './schemas/task.schema';
 import { ProjectDocument } from '../projects/schemas/project.schema';
+import { ProjectsService } from '../projects/projects.service';
 
 @Injectable()
 export class TasksService {
   constructor(
     @InjectModel('Task') private readonly taskModel: Model<TaskDocument>,
     @InjectModel('Project') private readonly projectModel: Model<ProjectDocument>,
+    @Inject(forwardRef(() => ProjectsService))
+    private readonly projectsService: ProjectsService,
   ) {}
 
   async create(createTaskDto: CreateTaskDto): Promise<TaskDocument> {
@@ -76,7 +79,16 @@ export class TasksService {
     }
 
     task.pomodorosDid += 1;
-    return await task.save();
+    const updatedTask = await task.save();
+
+    // If task is associated with a project, increment totalHoursWorked
+    // Each pomodoro = 0.5 hours
+    if (task.project) {
+      const projectId = task.project.toString();
+      await this.projectsService.incrementHoursWorked(projectId, 0.5);
+    }
+
+    return updatedTask;
   }
 
 }
