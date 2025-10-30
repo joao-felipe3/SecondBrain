@@ -49,13 +49,15 @@
     </v-sheet>
     <v-sheet class="page right-page" elevation="0" color="transparent">
       <div v-if="project" class="tasks-summary">
-        <h4>📋 Tarefas do Projeto</h4>
+        <div class="tasks-header">
+          <h4>📋 Tarefas do Projeto</h4>
+        </div>
 
         <div v-if="loading" class="loading-message">Carregando tarefas...</div>
         
-        <div v-else-if="tasks.length > 0" class="task-list">
+        <div v-if="tasks.length > 0" class="task-list">
           <div 
-            v-for="task in tasks" 
+            v-for="task in paginatedTasks" 
             :key="task._id"
             class="task-item"
             :class="{ completed: task.isConcluded }"
@@ -84,8 +86,52 @@
             </div>
           </div>
         </div>
-        
+
         <p v-else class="empty">Nenhuma tarefa cadastrada ainda.</p>
+
+        <!-- Paginação -->
+        <div v-if="tasks.length > 0 && totalPages > 1" class="pagination-controls">
+          <v-btn 
+            size="small" 
+            variant="text"
+            :disabled="currentPage === 1"
+            @click="currentPage--"
+          >
+            ◀
+          </v-btn>
+          <span class="pagination-info">{{ currentPage }} / {{ totalPages }}</span>
+          <v-btn 
+            size="small" 
+            variant="text"
+            :disabled="currentPage === totalPages"
+            @click="currentPage++"
+          >
+            ▶
+          </v-btn>
+        </div>
+        <!-- Botão Nova Tarefa abaixo da paginação -->
+        <div v-if="editing && tasks.length > 0" class="new-task-btn-wrapper">
+          <v-btn 
+            color="primary" 
+            size="small" 
+            prepend-icon="mdi-plus"
+            @click="createNewTask"
+          >
+            Nova Tarefa
+          </v-btn>
+        </div>
+        
+        <!-- Botão Nova Tarefa quando não há tarefas -->
+        <div v-if="editing && tasks.length === 0" class="new-task-btn-wrapper">
+          <v-btn 
+            color="primary" 
+            size="small" 
+            prepend-icon="mdi-plus"
+            @click="createNewTask"
+          >
+            Nova Tarefa
+          </v-btn>
+        </div>
         
         <p v-if="error" class="error-message">Erro ao carregar tarefas</p>
 
@@ -94,15 +140,15 @@
           <v-card class="task-dialog-card">
             <v-card-title class="task-dialog-header">
               <div class="header-content">
-                <span class="header-icon">{{ editing ? '✏️' : '📋' }}</span>
-                <span class="header-title">{{ editing ? 'Editar Tarefa' : 'Detalhes da Tarefa' }}</span>
+                <span class="header-icon">{{ isCreatingNewTask ? '➕' : (editing ? '✏️' : '📋') }}</span>
+                <span class="header-title">{{ isCreatingNewTask ? 'Nova Tarefa' : (editing ? 'Editar Tarefa' : 'Detalhes da Tarefa') }}</span>
               </div>
               <v-btn icon="mdi-close" variant="text" size="small" @click="closeTask" />
             </v-card-title>
             <v-divider />
             <v-card-text class="task-dialog-body">
-              <div v-if="selectedTask">
-                <template v-if="editing">
+              <div v-if="selectedTask || isCreatingNewTask">
+                <template v-if="editing || isCreatingNewTask">
                   <div class="form-section">
                     <v-text-field 
                       v-model="localTask.name" 
@@ -256,11 +302,11 @@
             <v-card-actions class="task-dialog-actions">
               <v-btn variant="text" @click="closeTask">Fechar</v-btn>
               <v-spacer />
-              <v-btn v-if="editing && selectedTask" color="error" variant="outlined" @click="deleteTask" :loading="saving" prepend-icon="mdi-delete">
+              <v-btn v-if="editing && selectedTask && !isCreatingNewTask" color="error" variant="outlined" @click="deleteTask" :loading="saving" prepend-icon="mdi-delete">
                 Excluir
               </v-btn>
-              <v-btn v-if="editing && selectedTask" color="primary" variant="elevated" @click="saveTask" :loading="saving" prepend-icon="mdi-content-save">
-                Salvar
+              <v-btn v-if="(editing && selectedTask) || isCreatingNewTask" color="primary" variant="elevated" @click="saveTask" :loading="saving" prepend-icon="mdi-content-save">
+                {{ isCreatingNewTask ? 'Criar' : 'Salvar' }}
               </v-btn>
             </v-card-actions>
           </v-card>
@@ -274,7 +320,7 @@
 import useDateFormat from '~/composables/useDateFormat'
 import { useApi } from '~/composables/useApi'
 import type { PropType } from 'vue'
-import { reactive, watch, ref } from 'vue'
+import { reactive, watch, ref, computed } from 'vue'
 
 const { formatYMD } = useDateFormat()
 
@@ -292,14 +338,50 @@ const tasks = ref<any[]>([])
 const loading = ref(false)
 const error = ref<null | any>(null)
 
+// Paginação
+const currentPage = ref(1)
+const itemsPerPage = 4
+
+const paginatedTasks = computed(() => {
+  const start = (currentPage.value - 1) * itemsPerPage
+  const end = start + itemsPerPage
+  return tasks.value.slice(start, end)
+})
+
+const totalPages = computed(() => {
+  return Math.ceil(tasks.value.length / itemsPerPage)
+})
+
 // Dialog e edição de task
 const taskDialogOpen = ref(false)
 const selectedTask = ref<any | null>(null)
 const localTask = reactive<any>({})
 const saving = ref(false)
 const dialogError = ref<string | null>(null)
+const isCreatingNewTask = ref(false)
+
+function createNewTask() {
+  isCreatingNewTask.value = true
+  selectedTask.value = null
+  dialogError.value = null
+  // Valores padrão para nova task
+  Object.assign(localTask, {
+    name: '',
+    description: '',
+    deadline: '',
+    pomodorosPlanned: 1,
+    pomodorosDid: 0,
+    priority: 1,
+    difficult: 1,
+    experience: 0,
+    prize: 0,
+    isConcluded: false,
+  })
+  taskDialogOpen.value = true
+}
 
 function openTask(task: any) {
+  isCreatingNewTask.value = false
   selectedTask.value = task
   dialogError.value = null
   // clonar campos que podemos editar
@@ -322,18 +404,17 @@ function openTask(task: any) {
 function closeTask() {
   taskDialogOpen.value = false
   selectedTask.value = null
+  isCreatingNewTask.value = false
 }
 
 async function saveTask() {
-  if (!selectedTask.value) return
   saving.value = true
   dialogError.value = null
   try {
-    const { patch } = useApi(`/tasks/${selectedTask.value._id}`)
     const payload: any = {
       name: localTask.name,
       description: localTask.description,
-      deadline: localTask.deadline ? new Date(localTask.deadline) : null,
+      deadline: localTask.deadline ? new Date(localTask.deadline) : new Date(),
       pomodorosPlanned: Number(localTask.pomodorosPlanned),
       pomodorosDid: Number(localTask.pomodorosDid),
       priority: localTask.priority !== null ? Number(localTask.priority) : null,
@@ -341,15 +422,40 @@ async function saveTask() {
       experience: Number(localTask.experience),
       prize: Number(localTask.prize),
       isConcluded: !!localTask.isConcluded,
+      late: false,
+      recurrency: 'Daily',
+      notification: null,
     }
-    const { data, error: e } = await patch(payload)
-    if (e) throw e
-    // atualiza a lista local
-    const idx = tasks.value.findIndex(t => t._id === selectedTask.value._id)
-    if (idx >= 0) tasks.value[idx] = data
+
+    if (isCreatingNewTask.value) {
+      // Criar nova task
+      payload.project = getProjectId(props.project)
+      if (!payload.project) {
+        throw new Error('Project ID não encontrado')
+      }
+      
+      const { post } = useApi('/tasks')
+      const { data, error: e } = await post(payload)
+      if (e) throw e
+      
+      // Adiciona à lista local
+      tasks.value.unshift(data)
+      // Volta para primeira página para ver a nova task
+      currentPage.value = 1
+    } else if (selectedTask.value) {
+      // Atualizar task existente
+      const { patch } = useApi(`/tasks/${selectedTask.value._id}`)
+      const { data, error: e } = await patch(payload)
+      if (e) throw e
+      
+      // Atualiza a lista local
+      const idx = tasks.value.findIndex(t => t._id === selectedTask.value._id)
+      if (idx >= 0) tasks.value[idx] = data
+    }
+    
     closeTask()
   } catch (err: any) {
-    dialogError.value = 'Falha ao salvar a tarefa.'
+    dialogError.value = isCreatingNewTask.value ? 'Falha ao criar a tarefa.' : 'Falha ao salvar a tarefa.'
     console.error(err)
   } finally {
     saving.value = false
@@ -407,6 +513,13 @@ watch(() => props.project, (v) => {
   }
 }, { immediate: true })
 
+// Reseta paginação quando tasks mudam
+watch(() => tasks.value.length, () => {
+  if (currentPage.value > totalPages.value) {
+    currentPage.value = Math.max(1, totalPages.value)
+  }
+})
+
 watch(() => props.editing, (is) => { 
   if (is && props.project) {
     local.shortTermGoal = props.project.shortTermGoal
@@ -428,8 +541,15 @@ function emitField(field: string, value: any) {
   flex-direction: column;
 }
 
+.tasks-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
 .tasks-summary h4 {
-  margin: 0 0 0.25rem 0;
+  margin: 0;
   font-size: 1.25rem;
   color: #1e293b;
 }
@@ -454,7 +574,6 @@ function emitField(field: string, value: any) {
   gap: 0.5rem;
   overflow-y: auto;
   padding-right: 0.25rem;
-  flex: 1;
 }
 
 .task-item {
@@ -730,6 +849,37 @@ function emitField(field: string, value: any) {
 .task-dialog-actions {
   padding: 1rem 1.5rem;
   background: #f8fafc;
+}
+
+.pagination-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  padding: 0.75rem 0;
+  margin-top: 0.5rem;
+  border-top: 1px solid #e2e8f0;
+}
+
+.pagination-controls .v-btn {
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+.pagination-info {
+  font-size: 0.875rem;
+  color: #64748b;
+  font-weight: 500;
+  min-width: 60px;
+  text-align: center;
+}
+
+.new-task-btn-wrapper {
+  display: flex;
+  justify-content: center;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid #e2e8f0;
 }
 </style>
 

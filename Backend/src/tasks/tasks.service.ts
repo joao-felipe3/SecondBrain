@@ -17,12 +17,21 @@ export class TasksService {
 
   async create(createTaskDto: CreateTaskDto): Promise<TaskDocument> {
     if (createTaskDto.project && typeof createTaskDto.project === 'string') {
-      const projectDoc = await this.projectModel.findOne({ name: createTaskDto.project }).exec();
-      if (projectDoc) {
-        createTaskDto.project = projectDoc._id as import('mongoose').Types.ObjectId;
-      } else {
-        throw new NotFoundException(`Project with name '${createTaskDto.project}' not found`);
+      const value = createTaskDto.project as string;
+      // tenta como ObjectId primeiro
+      const isObjectId = /^[a-f\d]{24}$/i.test(value);
+      let projectDoc: ProjectDocument | null = null;
+      if (isObjectId) {
+        projectDoc = await this.projectModel.findById(value).exec();
       }
+      // se não achou por id, tenta por nome
+      if (!projectDoc) {
+        projectDoc = await this.projectModel.findOne({ name: value }).exec();
+      }
+      if (!projectDoc) {
+        throw new NotFoundException(`Project not found by id or name '${value}'`);
+      }
+      createTaskDto.project = projectDoc._id as import('mongoose').Types.ObjectId;
     }
     const createdTask = new this.taskModel(createTaskDto);
     return await createdTask.save();
@@ -38,12 +47,19 @@ export class TasksService {
 
   async update(id: string, updateTaskDto: Partial<CreateTaskDto>): Promise<TaskDocument | null> {
     if (updateTaskDto.project && typeof updateTaskDto.project === 'string') {
-      const projectDoc = await this.projectModel.findOne({ name: updateTaskDto.project }).exec();
-      if (projectDoc) {
-        updateTaskDto.project = projectDoc._id as import('mongoose').Types.ObjectId;
-      } else {
-        throw new NotFoundException(`Project with name '${updateTaskDto.project}' not found`);
+      const value = updateTaskDto.project as string;
+      const isObjectId = /^[a-f\d]{24}$/i.test(value);
+      let projectDoc: ProjectDocument | null = null;
+      if (isObjectId) {
+        projectDoc = await this.projectModel.findById(value).exec();
       }
+      if (!projectDoc) {
+        projectDoc = await this.projectModel.findOne({ name: value }).exec();
+      }
+      if (!projectDoc) {
+        throw new NotFoundException(`Project not found by id or name '${value}'`);
+      }
+      updateTaskDto.project = projectDoc._id as import('mongoose').Types.ObjectId;
     }
     return await this.taskModel.findByIdAndUpdate(id, updateTaskDto, { new: true }).exec();
   }
