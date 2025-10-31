@@ -8,10 +8,10 @@ export class CreateTaskDto {
   priority?: number; 
   difficult?: number;
   project?: string | Types.ObjectId;
-  experience: number;
+  experience?: number; // Calculado automaticamente: priority * 2 + difficult * 5
   isConcluded: boolean;
   late: boolean;
-  prize: number;
+  prize?: number; // Calculado automaticamente: priority * 5 + difficult * 2
   recurrency: string;
   notification: Date;
 }

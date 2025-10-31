@@ -22,14 +22,14 @@ export const TaskSchema = new Schema<TaskDocument>({
   description: { type: String },
   deadline: { type: Date, required: true },
   pomodorosPlanned: { type: Number, required: true },
-  pomodorosDid: { type: Number, default: 0 }, // Adicione isso para sempre ter o campo
+  pomodorosDid: { type: Number, default: 0 },
   priority: { type: Number },
   difficult: { type: Number },
   project: { type: Schema.Types.ObjectId, ref: 'Project' },
-  experience: { type: Number, required: true },
+  experience: { type: Number, default: 0 }, // Calculado automaticamente
   isConcluded: { type: Boolean, required: true },
   late: { type: Boolean, required: true },
-  prize: { type: Number, required: true },
+  prize: { type: Number, default: 0 }, // Calculado automaticamente
   recurrency: { type: String, required: true },
   notification: { type: Date },
 });

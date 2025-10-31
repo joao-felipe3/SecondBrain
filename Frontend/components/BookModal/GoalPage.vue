@@ -213,22 +213,6 @@
                         :max="4"
                         color="primary"
                       />
-                      <v-text-field 
-                        v-model.number="localTask.experience" 
-                        type="number" 
-                        label="⭐ EXP" 
-                        variant="outlined"
-                        density="comfortable"
-                        color="primary"
-                      />
-                      <v-text-field 
-                        v-model.number="localTask.prize" 
-                        type="number" 
-                        label="💰 Reward" 
-                        variant="outlined"
-                        density="comfortable"
-                        color="primary"
-                      />
                     </div>
                   </div>
                 </template>
@@ -373,8 +357,6 @@ function createNewTask() {
     pomodorosDid: 0,
     priority: 1,
     difficult: 1,
-    experience: 0,
-    prize: 0,
     isConcluded: false,
   })
   taskDialogOpen.value = true
@@ -394,8 +376,6 @@ function openTask(task: any) {
     pomodorosDid: task.pomodorosDid ?? 0,
     priority: task.priority ?? null,
     difficult: task.difficult ?? null,
-    experience: task.experience ?? 0,
-    prize: task.prize ?? 0,
     isConcluded: !!task.isConcluded,
   })
   taskDialogOpen.value = true
@@ -419,13 +399,12 @@ async function saveTask() {
       pomodorosDid: Number(localTask.pomodorosDid),
       priority: localTask.priority !== null ? Number(localTask.priority) : null,
       difficult: localTask.difficult !== null ? Number(localTask.difficult) : null,
-      experience: Number(localTask.experience),
-      prize: Number(localTask.prize),
       isConcluded: !!localTask.isConcluded,
       late: false,
       recurrency: 'Daily',
       notification: null,
     }
+    // experience e prize são calculados automaticamente no backend
 
     if (isCreatingNewTask.value) {
       // Criar nova task

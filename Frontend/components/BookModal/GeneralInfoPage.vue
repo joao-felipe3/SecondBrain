@@ -51,32 +51,12 @@
             </v-text-field>
           </v-sheet>
           <v-sheet class="stat-row" elevation="0" color="transparent">
-            <Coins v-if="!editing" :size="16" />
-            <span v-if="!editing">{{ project.reward }} points</span>
-            <v-text-field 
-              v-else 
-              v-model.number="local.reward" 
-              type="number" 
-              label="Reward" 
-              variant="solo-filled" 
-              density="comfortable" 
-              hide-details 
-              @update:model-value="emitField('reward', $event)" 
-            />
+            <Coins :size="16" />
+            <span>{{ project.reward }} points</span>
           </v-sheet>
             <v-sheet class="stat-row" elevation="0" color="transparent">
-              <Award v-if="!editing" :size="16" />
-              <span v-if="!editing">{{ project.experience }} EXP</span>
-              <v-text-field 
-                v-else 
-                v-model.number="local.experience" 
-                type="number" 
-                label="EXP" 
-                variant="solo-filled" 
-                density="comfortable" 
-                hide-details 
-                @update:model-value="emitField('experience', $event)" 
-              />
+              <Award :size="16" />
+              <span>{{ project.experience }} EXP</span>
             </v-sheet>
             <v-sheet class="stat-row" v-if="editing" elevation="0" color="transparent">
               <span style="font-size:12px;opacity:.8">Color:</span>
@@ -99,20 +79,7 @@
           <h5>📊 Project Progress</h5>
           <v-sheet class="progress-info" elevation="0" color="transparent">
             <p><strong>Hours Worked:</strong> {{ project.totalHoursWorked }}h</p>
-            <p v-if="!editing"><strong>Planned Hours:</strong> {{ project.plannedHours }}h</p>
-            <div v-else style="display: flex; align-items: center; gap: 0rem;">
-              <strong style="min-width: 110px; text-align: left;">Planned Hours:</strong>
-              <v-text-field 
-                v-model.number="local.plannedHours" 
-                type="number" 
-                variant="solo-filled"
-                density="comfortable" 
-                hide-details 
-                style="max-width:110px;display:inline-block; margin-bottom:0;" 
-                @update:model-value="emitField('plannedHours', $event)" 
-              />
-              <span>h</span>
-            </div>
+            <p><strong>Planned Hours:</strong> {{ project.plannedHours }}h</p>
             <p><strong>Progress:</strong> {{ (project.progressPercentage || 0).toFixed(1) }}%</p>
           </v-sheet>
           <v-sheet class="progress-bar-container">

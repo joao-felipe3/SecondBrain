@@ -69,4 +69,35 @@ export class ProjectsController {
 		const h = parseFloat(hours);
 		return this.projectsService.incrementHoursWorked(id, isNaN(h) ? 0 : h);
 	}
+
+	@Post(':id/recalculate-stats')
+	@ApiOperation({ summary: 'Recalculate plannedHours, experience, and reward based on tasks' })
+	@ApiResponse({ status: 200, description: 'Project stats recalculated successfully.' })
+	recalculateStats(@Param('id') id: string) {
+		return this.projectsService.recalculateProjectStats(id);
+	}
+
+	@Post('recalculate-all-stats')
+	@ApiOperation({ summary: 'Recalculate stats for all projects' })
+	@ApiResponse({ status: 200, description: 'All project stats recalculated successfully.' })
+	async recalculateAllStats() {
+		const projects = await this.projectsService.findAll();
+		const results: any[] = [];
+		for (const project of projects) {
+			const projectId = (project as any)._id.toString();
+			const updated = await this.projectsService.recalculateProjectStats(projectId);
+			results.push({
+				id: updated._id,
+				name: updated.name,
+				plannedHours: updated.plannedHours,
+				experience: updated.experience,
+				reward: updated.reward
+			});
+		}
+		return {
+			message: 'All projects recalculated',
+			count: results.length,
+			projects: results
+		};
+	}
 }

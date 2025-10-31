@@ -70,7 +70,47 @@ export class ProjectsService {
 	async moveTaskToProject(taskId: string, oldProjectId: string, newProjectId: string): Promise<void> {
 		if (oldProjectId) {
 			await this.removeTaskFromProject(oldProjectId, taskId);
+			await this.recalculateProjectStats(oldProjectId);
 		}
 		await this.addTaskToProject(newProjectId, taskId);
+		await this.recalculateProjectStats(newProjectId);
+	}
+
+	async recalculateProjectStats(projectId: string): Promise<ProjectDocument> {
+		const project = await this.projectModel.findById(projectId).exec();
+		if (!project) throw new NotFoundException('Project not found');
+
+		const tasks = await this.taskModel.find({ project: projectId }).exec();
+
+		// Calculate plannedHours: sum of (pomodorosPlanned * 0.5) for each task
+		const plannedHours = tasks.reduce((sum, task) => {
+			const pomodoros = task.pomodorosPlanned || 0;
+			return sum + (pomodoros * 0.5);
+		}, 0);
+
+		// Calculate experience: sum of experience from all tasks
+		const experience = tasks.reduce((sum, task) => {
+			return sum + (task.experience || 0);
+		}, 0);
+
+		// Calculate reward: sum of prize from all tasks
+		const reward = tasks.reduce((sum, task) => {
+			return sum + (task.prize || 0);
+		}, 0);
+
+		// Update project
+		project.plannedHours = plannedHours;
+		project.experience = experience;
+		project.reward = reward;
+
+		// Recalculate progress percentage
+		if (project.plannedHours > 0) {
+			const pct = (project.totalHoursWorked / project.plannedHours) * 100;
+			project.progressPercentage = Math.min(100, +pct.toFixed(2));
+		} else {
+			project.progressPercentage = 0;
+		}
+
+		return await project.save();
 	}
 }
