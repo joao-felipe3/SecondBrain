@@ -2,20 +2,21 @@
   <v-sheet class="page-container" :class="{ editing }" elevation="0" color="transparent">
     <v-sheet class="page left-page" elevation="0" color="transparent">
       <div v-if="project">
+        <!-- Nome e Descrição -->
         <template v-if="editing">
           <v-text-field 
             v-model="local.name" 
             label="Project Name *"
             variant="solo"
-            density="comfortable"
+            density="compact"
             @update:model-value="emitField('name', $event)" 
           />
           <v-textarea 
-            style="margin-top:0rem"
+            style="margin-top:-0.5rem"
             v-model="local.description" 
             label="Description"
             variant="solo-filled"
-            density="comfortable"
+            density="compact"
             rows="3"
             auto-grow
             @update:model-value="emitField('description', $event)" 
@@ -25,83 +26,92 @@
           <h3 class="page-title">{{ project.name }}</h3>
           <p class="project-description">{{ project.description }}</p>
         </template>
-        <v-sheet class="stats-grid" elevation="0" color="transparent">
-          <v-sheet class="stat-row" elevation="0" color="transparent">
-            <Calendar v-if="!editing" :size="16" />
-            <span v-if="!editing">{{ formatDeadline(project.deadline) }}</span>
-            <v-text-field 
-              v-else 
-              ref="deadlineLeftRef"
-              v-model="local.deadline" 
-              type="date"
-              label="Deadline" 
-              variant="solo-filled"
-              density="comfortable"
-              prepend-inner-icon=""
-              hide-details
-              clearable="false"
-              @click:control="onDateClick('deadlineLeft')"
-              @click:prepend-inner="onDateClick('deadlineLeft')"
-              @focus="onDateClick('deadlineLeft')"
-              @update:model-value="emitField('deadline', $event)" 
-            >
-              <template #prepend-inner>
-                <Calendar class="ml-2" :size="16" />
-              </template>
-            </v-text-field>
-          </v-sheet>
-          <v-sheet class="stat-row" elevation="0" color="transparent">
-            <Coins :size="16" />
-            <span>{{ project.reward }} points</span>
-          </v-sheet>
-            <v-sheet class="stat-row" elevation="0" color="transparent">
-              <Award :size="16" />
-              <span>{{ project.experience }} EXP</span>
+
+        <!-- Project Progress -->
+        <v-sheet class="timeline-info" elevation="0" color="transparent">
+          <h5>📋 Project Info</h5>
+          <v-sheet class="progress-info" elevation="0" color="transparent">
+            <v-sheet class="stats-grid" elevation="0" color="transparent">
+              <div class="stat-item">
+                <Coins :size="18" />
+                <span>{{ project.reward }} Coins</span>
+              </div>
+              <div class="stat-item">
+                <Award :size="18" />
+                <span>{{ project.experience }} EXP</span>
+              </div>
             </v-sheet>
-            <v-sheet class="stat-row" v-if="editing" elevation="0" color="transparent">
-              <span style="font-size:12px;opacity:.8">Color:</span>
-              <v-text-field 
-                v-model="local.color" 
-                type="color" 
-                label="Color" 
-                variant="solo-filled" 
-                density="comfortable" 
-                hide-details style="max-width:120px" 
-                @update:model-value="emitField('color', $event)" 
-              />
-            </v-sheet>
+              <div class="progress-stat">
+                <span v-if="!editing"><strong>Deadline:</strong> {{ formatDeadline(project.deadline) }}</span>
+                <div v-else class="deadline-edit">
+                  <strong>Deadline:</strong>
+                  <v-text-field 
+                    ref="deadlineLeftRef"
+                    v-model="local.deadline" 
+                    type="date"
+                    label="Deadline" 
+                    variant="solo-filled"
+                    density="compact"
+                    prepend-inner-icon=""
+                    hide-details
+                    clearable="false"
+                    class="deadline-field"
+                    @click:control="onDateClick('deadlineLeft')"
+                    @click:prepend-inner="onDateClick('deadlineLeft')"
+                    @focus="onDateClick('deadlineLeft')"
+                    @update:model-value="emitField('deadline', $event)" 
+                  >
+                    <template #prepend-inner>
+                      <Calendar class="ml-2" :size="16" />
+                    </template>
+                  </v-text-field>
+                </div>
+              </div>
+            <div class="hours-row">
+              <p><strong>Hours Worked:</strong> {{ project.totalHoursWorked }}h</p>
+              <p><strong>Planned Hours:</strong> {{ project.plannedHours }}h</p>
+            </div>
+            <div class="progress-row">
+              <p class="progress-text"><strong>Progress:</strong> {{ (project.progressPercentage || 0).toFixed(1) }}%</p>
+              <div class="progress-inline">
+                <div class="progress-inline-bar" :style="{ width: `${project.progressPercentage || 0}%`, backgroundColor: project.color }"></div>
+              </div>
+            </div>
+            
+            <!-- Status dentro do Project Progress -->
+            <div v-if="editing" class="status-row">
+              <div class="control-item">
+                <span class="control-label">Status:</span>
+                <v-select 
+                  v-model="local.status" 
+                  :items="statusItems" 
+                  variant="solo-filled" 
+                  density="compact" 
+                  hide-details
+                  :menu-props="{ attach: 'body', zIndex: 99999 }"
+                  @update:model-value="emitField('status', $event)" 
+                />
+              </div>
+              <div class="control-item">
+                <span class="control-label">Color:</span>
+                <v-text-field 
+                  v-model="local.color" 
+                  type="color" 
+                  label="Color" 
+                  variant="solo-filled" 
+                  density="compact" 
+                  hide-details
+                  @update:model-value="emitField('color', $event)" 
+                />
+              </div>
+            </div>
+            <p v-else><strong>Status:</strong> {{ project.status }}</p>
+          </v-sheet>
         </v-sheet>
       </div>
     </v-sheet>
     <v-sheet class="page right-page" elevation="0" color="transparent">
-      <div v-if="project">
-        <v-sheet class="timeline-info" elevation="0" color="transparent">
-          <h5>📊 Project Progress</h5>
-          <v-sheet class="progress-info" elevation="0" color="transparent">
-            <p><strong>Hours Worked:</strong> {{ project.totalHoursWorked }}h</p>
-            <p><strong>Planned Hours:</strong> {{ project.plannedHours }}h</p>
-            <p><strong>Progress:</strong> {{ (project.progressPercentage || 0).toFixed(1) }}%</p>
-          </v-sheet>
-          <v-sheet class="progress-bar-container">
-            <v-sheet class="progress-bar" :style="{ width: `${project.progressPercentage || 0}%`, backgroundColor: project.color }"></v-sheet>
-          </v-sheet>
-          
-          <div v-if="editing" style="display: flex; align-items: center; gap: 0.5rem;">
-            <strong>Status:</strong>
-            <v-select 
-              v-model="local.status" 
-              :items="statusItems" 
-              variant="solo-filled" 
-              density="comfortable" 
-              hide-details 
-              style="max-width:140px;display:inline-block" 
-              :menu-props="{ attach: 'body', zIndex: 99999 }"
-              @update:model-value="emitField('status', $event)" 
-            />
-          </div>
-          <p v-else><strong>Status: </strong> {{ project.status }}</p>
-        </v-sheet>
-      </div>
+      <!-- Página direita vazia por enquanto -->
     </v-sheet>
   </v-sheet>
 </template>
@@ -188,5 +198,115 @@ function emitField(field: string, value: any) {
   emit('update-field', field, value)
 }
 </script>
+
+<style scoped>
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+  align-items: center;
+  margin: 0.5rem 0;
+}
+
+.stat-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1rem;
+}
+
+.timeline-info h5 {
+  margin-bottom: 0.5rem;
+  font-size: 1.1rem;
+  color: #1e293b;
+}
+
+.progress-info {
+  margin-bottom: 1rem;
+}
+
+.progress-info p {
+  margin: 0.3rem 0;
+  font-size: 1rem;
+  color: #000;
+}
+
+/* Progress Stat - Deadline row */
+.progress-stat {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0.3rem 0;
+  font-size: 1rem;
+  color: #000;
+}
+
+.deadline-edit {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.deadline-field {
+  max-width: 180px;
+}
+
+/* Hours Row - Hours Worked e Planned Hours lado a lado */
+.hours-row {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.hours-row p {
+  margin: 0.3rem 0;
+}
+
+/* Progress Row - Progress percentage e barra inline */
+.progress-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.progress-text {
+  margin: 0.25rem 0;
+  white-space: nowrap;
+}
+
+.progress-inline {
+  flex: 1;
+  height: 10px;
+  background: #e2e8f0;
+  border-radius: 9999px;
+  overflow: hidden;
+}
+
+.progress-inline-bar {
+  height: 100%;
+  transition: width 0.3s ease;
+  border-radius: inherit;
+}
+
+/* Status Row - Status e Color lado a lado no modo edição */
+.status-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-top: 0.5rem;
+}
+
+.control-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.control-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #64748b;
+}
+</style>
 
 
