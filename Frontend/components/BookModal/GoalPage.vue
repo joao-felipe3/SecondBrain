@@ -1,51 +1,7 @@
 <template>
   <v-sheet class="page-container" :class="{ editing }" elevation="0" color="transparent">
     <v-sheet class="page left-page" elevation="0" color="transparent">
-      <div v-if="project">
-        <h4>🎯 Objetivo de Curto Prazo</h4>
-        <template v-if="editing">
-          <v-textarea 
-            v-model="local.shortTermGoal" 
-            label="Objetivo curto prazo" 
-            variant="solo-filled" 
-            density="comfortable" 
-            auto-grow 
-            rows="3" 
-            @update:model-value="emitField('shortTermGoal', $event)" 
-          />
-        </template>
-        <p v-else class="goal-content">{{ project.shortTermGoal }}</p>
-        <div v-if="project">
-          <h4>🎯 Objetivo de Médio Prazo</h4>
-          <template v-if="editing">
-            <v-textarea 
-              v-model="local.midTermGoal" 
-              label="Objetivo médio prazo" 
-              variant="solo-filled" 
-              density="comfortable" 
-              auto-grow 
-              rows="3" 
-              @update:model-value="emitField('midTermGoal', $event)" 
-            />
-          </template>
-          <p v-else class="goal-content">{{ project.midTermGoal }}</p>
-        </div>
-        <div v-if="project">
-          <h4>🎯 Objetivo de Longo Prazo</h4>
-          <template v-if="editing">
-            <v-textarea 
-              v-model="local.longTermGoal" 
-              label="Objetivo longo prazo" 
-              variant="solo-filled" 
-              density="comfortable" 
-              auto-grow 
-              rows="3" 
-              @update:model-value="emitField('longTermGoal', $event)" 
-            />
-          </template>
-          <p v-else class="goal-content">{{ project.longTermGoal }}</p>
-        </div>
-      </div>
+      
     </v-sheet>
     <v-sheet class="page right-page" elevation="0" color="transparent">
       <div v-if="project" class="tasks-summary">

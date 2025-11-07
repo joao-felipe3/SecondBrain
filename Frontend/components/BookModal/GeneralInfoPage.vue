@@ -12,7 +12,7 @@
             @update:model-value="emitField('name', $event)" 
           />
           <v-textarea 
-            style="margin-top:-0.5rem"
+            style="margin-top:-0.5rem; margin-bottom:-1rem"
             v-model="local.description" 
             label="Description"
             variant="solo-filled"
@@ -33,11 +33,11 @@
           <v-sheet class="progress-info" elevation="0" color="transparent">
             <v-sheet class="stats-grid" elevation="0" color="transparent">
               <div class="stat-item">
-                <Coins :size="18" />
+                <Coins :size="20" stroke-width="3" />
                 <span>{{ project.reward }} Coins</span>
               </div>
               <div class="stat-item">
-                <Award :size="18" />
+                <Award :size="20" stroke-width="3" />
                 <span>{{ project.experience }} EXP</span>
               </div>
             </v-sheet>
@@ -111,7 +111,51 @@
       </div>
     </v-sheet>
     <v-sheet class="page right-page" elevation="0" color="transparent">
-      <!-- Página direita vazia por enquanto -->
+      <div v-if="project">
+        <h4>🎯 Objetivo de Curto Prazo</h4>
+        <template v-if="editing">
+          <v-textarea 
+            v-model="local.shortTermGoal" 
+            label="Objetivo curto prazo" 
+            variant="solo-filled" 
+            density="comfortable" 
+            auto-grow 
+            rows="3" 
+            @update:model-value="emitField('shortTermGoal', $event)" 
+          />
+        </template>
+        <p v-else class="goal-content">{{ project.shortTermGoal }}</p>
+        <div v-if="project">
+          <h4>🎯 Objetivo de Médio Prazo</h4>
+          <template v-if="editing">
+            <v-textarea 
+              v-model="local.midTermGoal" 
+              label="Objetivo médio prazo" 
+              variant="solo-filled" 
+              density="comfortable" 
+              auto-grow 
+              rows="3" 
+              @update:model-value="emitField('midTermGoal', $event)" 
+            />
+          </template>
+          <p v-else class="goal-content">{{ project.midTermGoal }}</p>
+        </div>
+        <div v-if="project">
+          <h4>🎯 Objetivo de Longo Prazo</h4>
+          <template v-if="editing">
+            <v-textarea 
+              v-model="local.longTermGoal" 
+              label="Objetivo longo prazo" 
+              variant="solo-filled" 
+              density="comfortable" 
+              auto-grow 
+              rows="3" 
+              @update:model-value="emitField('longTermGoal', $event)" 
+            />
+          </template>
+          <p v-else class="goal-content">{{ project.longTermGoal }}</p>
+        </div>
+      </div>
     </v-sheet>
   </v-sheet>
 </template>
@@ -213,12 +257,13 @@ function emitField(field: string, value: any) {
   align-items: center;
   gap: 0.5rem;
   font-size: 1rem;
+  color: #000;
 }
 
 .timeline-info h5 {
   margin-bottom: 0.5rem;
   font-size: 1.1rem;
-  color: #1e293b;
+  color: #000;
 }
 
 .progress-info {
@@ -305,7 +350,7 @@ function emitField(field: string, value: any) {
 .control-label {
   font-size: 0.875rem;
   font-weight: 500;
-  color: #64748b;
+  color: #000;
 }
 </style>
 
