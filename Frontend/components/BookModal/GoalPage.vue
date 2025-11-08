@@ -73,6 +73,7 @@
                     :key="index"
                     :class="{ selected: suggestion.selected }"
                     class="preview-row"
+                    @click="onSuggestionRowClick(suggestion, index, $event)"
                   >
                     <td class="preview-checkbox-cell">
                       <v-checkbox
@@ -86,19 +87,6 @@
                   </tr>
                 </tbody>
               </table>
-            </div>
-
-            <div class="preview-actions">
-              <v-btn
-                color="primary"
-                variant="elevated"
-                prepend-icon="mdi-eye"
-                block
-                size="large"
-                @click="carouselDialogOpen = true"
-              >
-                Visualizar e Editar Detalhes
-              </v-btn>
             </div>
           </div>
 
@@ -601,7 +589,7 @@ async function generateAISuggestions() {
     // Mock de sugestões baseadas nos objetivos
     const mockSuggestions = [
       {
-        name: `Tarefa sugerida baseada em: ${props.project?.shortTermGoal?.substring(0, 30) || 'objetivo'}...`,
+        name: `Fazer ${props.project?.shortTermGoal?.substring(0, 30) || 'objetivo'}`,
         deadline: getDatePlusDays(7),
         pomodoros: 2,
         priority: 2,
@@ -658,6 +646,18 @@ function resetSuggestions() {
 
 function discardSuggestions() {
   resetSuggestions()
+}
+
+function onSuggestionRowClick(suggestion: any, index: number, e: MouseEvent) {
+  const target = e.target as HTMLElement
+  // If the click happened inside the checkbox cell, let the checkbox handle it
+  if (target && typeof target.closest === 'function' && target.closest('.preview-checkbox-cell')) {
+    return
+  }
+
+  // Open the carousel dialog at the clicked suggestion
+  carouselIndex.value = index
+  carouselDialogOpen.value = true
 }
 
 async function addSuggestionsToProject() {
@@ -1324,6 +1324,18 @@ function emitField(field: string, value: any) {
   gap: 0.5rem;
 }
 
+/* Make button labels slightly smaller and allow wrapping so long labels don't force wide buttons */
+.preview-header-actions :deep(.v-btn__content),
+.suggestions-actions :deep(.v-btn__content),
+.suggestions-actions .v-btn,
+.preview-header-actions .v-btn {
+  font-size: 0.75rem; /* slightly smaller */
+  white-space: normal !important; /* allow wrapping */
+  overflow-wrap: anywhere;
+  word-wrap: break-word;
+  text-align: center;
+}
+
 .preview-info {
   flex: 1;
 }
@@ -1359,6 +1371,7 @@ function emitField(field: string, value: any) {
   border: 1px solid #e2e8f0;
   border-radius: 8px;
   background: white;
+  cursor: pointer;
 }
 
 .preview-row.selected {
@@ -1377,12 +1390,14 @@ function emitField(field: string, value: any) {
 }
 
 .preview-name-cell {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  /* allow long task names to wrap onto multiple lines instead of truncating */
+  overflow-wrap: anywhere; /* modern */
+  word-wrap: break-word;  /* fallback */
+  white-space: normal;
   color: #334155;
   font-weight: 500;
-  font-size: 0.8rem;
+  font-size: 0.78rem; /* slightly smaller so long names fit without expanding width */
+  line-height: 1.2;
 }
 
 .preview-item {
@@ -1696,7 +1711,6 @@ function emitField(field: string, value: any) {
   display: flex;
   justify-content: space-between;
   gap: 0.75rem;
-  padding-top: 1rem;
   border-top: 1px solid #e2e8f0;
 }
 
