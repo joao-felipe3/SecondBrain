@@ -1,7 +1,264 @@
 <template>
   <v-sheet class="page-container" :class="{ editing }" elevation="0" color="transparent">
     <v-sheet class="page left-page" elevation="0" color="transparent">
-      
+      <div v-if="project" class="planning-assistant">
+        <div class="assistant-header">
+          <h4>🧠 Planning Assistance</h4>
+        </div>
+
+        <!-- Estado Inicial: Prompt para o usuário -->
+        <div v-if="!aiLoading && !aiSuggestions.length" class="initial-state">
+          <v-textarea
+            v-model="aiPrompt"
+            label="Adicionar detalhes ou refinar o pedido"
+            placeholder="Ex: Quero focar em tarefas de pesquisa primeiro, com prazo de 2 semanas..."
+            variant="outlined"
+            rows="4"
+            auto-grow
+            density="comfortable"
+            color="primary"
+          />
+          <v-btn
+            color="primary"
+            size="large"
+            block
+            prepend-icon="mdi-creation"
+            @click="generateAISuggestions"
+            :disabled="!project.shortTermGoal && !project.midTermGoal && !project.longTermGoal"
+          >
+            Gerar Tarefas
+          </v-btn>
+          <p v-if="!project.shortTermGoal && !project.midTermGoal && !project.longTermGoal" class="warning-message">
+            ⚠️ Defina objetivos para gerar sugestões
+          </p>
+        </div>
+
+        <!-- Estado de Carregamento -->
+        <div v-if="aiLoading" class="loading-state">
+          <v-progress-circular
+            indeterminate
+            size="64"
+            width="4"
+            color="primary"
+          />
+          <p class="loading-message">Analisando seus objetivos e criando um plano...</p>
+        </div>
+
+        <!-- Estado com Sugestões -->
+        <div v-if="!aiLoading && aiSuggestions.length" class="suggestions-state">
+          <div class="suggestions-preview">
+            <div class="preview-header">
+              <div class="preview-info">
+                <p class="preview-subtitle">{{ aiSuggestions.length }} tarefas prontas para revisão</p>
+              </div>
+            </div>
+
+            <div class="preview-header-actions">
+              <v-btn
+                size="small"
+                color="primary"
+                variant="outlined "
+                @click="resetSuggestions"
+              >
+                <v-icon size="18">mdi-refresh</v-icon>
+                Nova Sugestão
+              </v-btn>
+            </div>
+
+            <div class="preview-list">
+              <table class="preview-table" role="table">
+                <tbody>
+                  <tr
+                    v-for="(suggestion, index) in aiSuggestions"
+                    :key="index"
+                    :class="{ selected: suggestion.selected }"
+                    class="preview-row"
+                  >
+                    <td class="preview-checkbox-cell">
+                      <v-checkbox
+                        v-model="suggestion.selected"
+                        hide-details
+                        density="compact"
+                        color="primary"
+                      />
+                    </td>
+                    <td class="preview-name-cell">{{ suggestion.name }}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div class="preview-actions">
+              <v-btn
+                color="primary"
+                variant="elevated"
+                prepend-icon="mdi-eye"
+                block
+                size="large"
+                @click="carouselDialogOpen = true"
+              >
+                Visualizar e Editar Detalhes
+              </v-btn>
+            </div>
+          </div>
+
+          <div class="suggestions-actions">
+            <v-btn
+              color="error"
+              variant="outlined"
+              prepend-icon="mdi-close"
+              @click="discardSuggestions"
+            >
+              Descartar Sugestões
+            </v-btn>
+            <v-btn
+              color="success"
+              variant="elevated"
+              prepend-icon="mdi-check"
+              @click="addSuggestionsToProject"
+              :disabled="selectedSuggestions.length === 0"
+              :loading="addingSuggestions"
+            >
+              Adicionar {{ selectedSuggestions.length }} Tarefa(s)
+            </v-btn>
+          </div>
+
+          <v-alert v-if="aiError" type="error" density="compact" class="mt-3">
+            {{ aiError }}
+          </v-alert>
+        </div>
+
+        <!-- Dialog do Carrossel -->
+        <v-dialog v-model="carouselDialogOpen" max-width="900" persistent>
+          <v-card class="carousel-dialog-card">
+            <v-card-title class="carousel-dialog-header">
+              <div class="header-content">
+                <span class="header-icon">🎯</span>
+                <div class="header-text">
+                  <span class="header-title">Revisar Sugestões</span>
+                  <span class="header-subtitle">{{ selectedSuggestions.length }} de {{ aiSuggestions.length }} selecionadas</span>
+                </div>
+              </div>
+              <v-btn icon="mdi-close" variant="text" size="small" @click="carouselDialogOpen = false" />
+            </v-card-title>
+
+            <v-card-text class="carousel-dialog-body">
+              <div class="carousel-container">
+                <button 
+                  class="carousel-nav prev" 
+                  @click="prevCard"
+                  :disabled="carouselIndex === 0"
+                >
+                  ◀
+                </button>
+                
+                <div class="carousel-wrapper">
+                  <div class="carousel-track" :style="{ transform: `translateX(-${carouselIndex * 100}%)` }">
+                    <div
+                      v-for="(suggestion, index) in aiSuggestions"
+                      :key="index"
+                      class="suggestion-card"
+                      :class="{ selected: suggestion.selected }"
+                    >
+                      <div class="card-header">
+                        <v-checkbox
+                          v-model="suggestion.selected"
+                          hide-details
+                          density="comfortable"
+                          color="primary"
+                          class="card-checkbox"
+                          label="Adicionar esta tarefa"
+                        />
+                        <div class="card-number">{{ index + 1 }}/{{ aiSuggestions.length }}</div>
+                      </div>
+                      
+                      <div class="card-body">
+                        <v-text-field
+                          v-model="suggestion.name"
+                          label="📝 Nome da Tarefa"
+                          variant="outlined"
+                          density="comfortable"
+                          hide-details
+                          class="card-name-field"
+                        />
+                        
+                        <div class="card-date">
+                          <span class="date-label">📅 Prazo:</span>
+                          <v-text-field
+                            v-model="suggestion.deadline"
+                            type="date"
+                            variant="outlined"
+                            density="compact"
+                            hide-details
+                            class="card-date-field"
+                          />
+                        </div>
+                        
+                        <div class="card-attributes">
+                          <div class="attribute-item pomodoros">
+                            <div class="attribute-icon">🍅</div>
+                            <div class="attribute-content">
+                              <div class="attribute-label">Pomodoros</div>
+                              <div class="attribute-value">{{ suggestion.pomodoros || 1 }}</div>
+                            </div>
+                          </div>
+                          
+                          <div class="attribute-item priority">
+                            <div class="attribute-icon">⚡</div>
+                            <div class="attribute-content">
+                              <div class="attribute-label">Prioridade</div>
+                              <div class="attribute-value">{{ suggestion.priority || 1 }}</div>
+                            </div>
+                          </div>
+                          
+                          <div class="attribute-item difficulty">
+                            <div class="attribute-icon">💪</div>
+                            <div class="attribute-content">
+                              <div class="attribute-label">Dificuldade</div>
+                              <div class="attribute-value">{{ suggestion.difficulty || 1 }}</div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                <button 
+                  class="carousel-nav next" 
+                  @click="nextCard"
+                  :disabled="carouselIndex === aiSuggestions.length - 1"
+                >
+                  ▶
+                </button>
+              </div>
+            </v-card-text>
+
+            <v-card-actions class="carousel-dialog-actions">
+              <v-btn variant="text" @click="carouselDialogOpen = false">
+                Fechar
+              </v-btn>
+              <v-spacer />
+              <div class="quick-actions">
+                <v-btn
+                  size="small"
+                  variant="outlined"
+                  @click="selectAll"
+                >
+                  Selecionar Todas
+                </v-btn>
+                <v-btn
+                  size="small"
+                  variant="outlined"
+                  @click="deselectAll"
+                >
+                  Desmarcar Todas
+                </v-btn>
+              </div>
+            </v-card-actions>
+          </v-card>
+        </v-dialog>
+      </div>
     </v-sheet>
     <v-sheet class="page right-page" elevation="0" color="transparent">
       <div v-if="project" class="tasks-summary">
@@ -299,6 +556,156 @@ const localTask = reactive<any>({})
 const saving = ref(false)
 const dialogError = ref<string | null>(null)
 const isCreatingNewTask = ref(false)
+
+// AI Planning Assistant
+const aiPrompt = ref('')
+const aiLoading = ref(false)
+const aiSuggestions = ref<any[]>([])
+const aiError = ref<string | null>(null)
+const addingSuggestions = ref(false)
+const carouselIndex = ref(0)
+const carouselDialogOpen = ref(false)
+
+const selectedSuggestions = computed(() => {
+  return aiSuggestions.value.filter(s => s.selected)
+})
+
+function nextCard() {
+  if (carouselIndex.value < aiSuggestions.value.length - 1) {
+    carouselIndex.value++
+  }
+}
+
+function prevCard() {
+  if (carouselIndex.value > 0) {
+    carouselIndex.value--
+  }
+}
+
+function selectAll() {
+  aiSuggestions.value.forEach(s => s.selected = true)
+}
+
+function deselectAll() {
+  aiSuggestions.value.forEach(s => s.selected = false)
+}
+
+async function generateAISuggestions() {
+  aiLoading.value = true
+  aiError.value = null
+  
+  try {
+    // Simular chamada à IA (substitua por sua API real)
+    await new Promise(resolve => setTimeout(resolve, 2000))
+    
+    // Mock de sugestões baseadas nos objetivos
+    const mockSuggestions = [
+      {
+        name: `Tarefa sugerida baseada em: ${props.project?.shortTermGoal?.substring(0, 30) || 'objetivo'}...`,
+        deadline: getDatePlusDays(7),
+        pomodoros: 2,
+        priority: 2,
+        difficulty: 2,
+        selected: true,
+      },
+      {
+        name: `Pesquisa inicial sobre ${props.project?.name || 'projeto'}`,
+        deadline: getDatePlusDays(3),
+        pomodoros: 1,
+        priority: 3,
+        difficulty: 1,
+        selected: true,
+      },
+      {
+        name: `Implementar funcionalidade principal`,
+        deadline: getDatePlusDays(14),
+        pomodoros: 4,
+        priority: 4,
+        difficulty: 3,
+        selected: true,
+      },
+      {
+        name: `Revisar e testar resultados`,
+        deadline: getDatePlusDays(21),
+        pomodoros: 2,
+        priority: 2,
+        difficulty: 2,
+        selected: true,
+      },
+    ]
+    
+    aiSuggestions.value = mockSuggestions
+  } catch (err: any) {
+    aiError.value = 'Falha ao gerar sugestões. Tente novamente.'
+    console.error(err)
+  } finally {
+    aiLoading.value = false
+  }
+}
+
+function getDatePlusDays(days: number): string {
+  const date = new Date()
+  date.setDate(date.getDate() + days)
+  return date.toISOString().substring(0, 10)
+}
+
+function resetSuggestions() {
+  aiSuggestions.value = []
+  aiPrompt.value = ''
+  aiError.value = null
+  carouselIndex.value = 0
+}
+
+function discardSuggestions() {
+  resetSuggestions()
+}
+
+async function addSuggestionsToProject() {
+  if (selectedSuggestions.value.length === 0) return
+  
+  addingSuggestions.value = true
+  aiError.value = null
+  
+  try {
+    const projectId = getProjectId(props.project)
+    if (!projectId) throw new Error('Project ID não encontrado')
+    
+    const { post } = useApi('/tasks')
+    
+    // Criar cada tarefa selecionada
+    for (const suggestion of selectedSuggestions.value) {
+      const payload = {
+        project: projectId,
+        name: suggestion.name,
+        description: aiPrompt.value || '',
+        deadline: new Date(suggestion.deadline),
+        pomodorosPlanned: suggestion.pomodoros || 1,
+        pomodorosDid: 0,
+        priority: suggestion.priority || 1,
+        difficult: suggestion.difficulty || 1,
+        isConcluded: false,
+        late: false,
+        recurrency: 'Daily',
+        notification: null,
+      }
+      
+      const { data, error: e } = await post(payload)
+      if (e) throw e
+      
+      // Adiciona à lista de tarefas
+      tasks.value.unshift(data)
+    }
+    
+    // Volta para primeira página e limpa sugestões
+    currentPage.value = 1
+    resetSuggestions()
+  } catch (err: any) {
+    aiError.value = 'Falha ao adicionar tarefas. Tente novamente.'
+    console.error(err)
+  } finally {
+    addingSuggestions.value = false
+  }
+}
 
 function createNewTask() {
   isCreatingNewTask.value = true
@@ -815,6 +1222,486 @@ function emitField(field: string, value: any) {
   margin-top: 1rem;
   padding-top: 1rem;
   border-top: 1px solid #e2e8f0;
+}
+
+/* Planning Assistant Styles */
+.planning-assistant {
+  height: 100%;
+  width: 100%;
+  max-width: 100%;
+  display: flex;
+  flex-direction: column;
+  padding: 0rem;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+
+.assistant-header {
+  margin-bottom: 0rem;
+}
+
+.assistant-header h4 {
+  margin: 0 0 0.5rem 0;
+  font-size: 1.25rem;
+  color: #1e293b;
+}
+
+.initial-state {
+  padding: 0;
+  padding-top: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.warning-message {
+  text-align: center;
+  color: #f59e0b;
+  font-size: 0.875rem;
+  margin: 0;
+}
+
+.loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1.5rem;
+  padding: 3rem 0;
+}
+
+.loading-message {
+  font-size: 1rem;
+  color: #64748b;
+  text-align: center;
+  font-style: italic;
+  margin: 0;
+}
+
+.suggestions-state {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  flex: 1;
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+/* Preview Styles */
+.suggestions-preview {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 1rem;
+}
+
+.preview-header {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 2px solid #e2e8f0;
+}
+
+.preview-header-actions {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.preview-header-actions :deep(.v-btn__content) {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.preview-info {
+  flex: 1;
+}
+
+.preview-title {
+  margin: 0 0 0.25rem 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.preview-subtitle {
+  margin: 0;
+  font-size: 0.875rem;
+  color: #64748b;
+}
+
+.preview-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  max-height: 200px;
+  overflow-y: auto;
+  padding-right: 0.25rem;
+}
+
+.preview-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.preview-row {
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  background: white;
+}
+
+.preview-row.selected {
+  background: #eff6ff;
+  border-color: #3b82f6;
+}
+
+.preview-row td {
+  padding: 0.5rem 0.75rem;
+  vertical-align: middle;
+}
+
+.preview-checkbox-cell {
+  width: 48px;
+  padding-left: 0.5rem;
+}
+
+.preview-name-cell {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: #334155;
+  font-weight: 500;
+  font-size: 0.8rem;
+}
+
+.preview-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 0.625rem;
+  transition: all 0.2s;
+}
+
+.preview-item:hover {
+  border-color: #cbd5e1;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.preview-item.selected {
+  background: #eff6ff;
+  border-color: #3b82f6;
+}
+
+.preview-name {
+  flex: 1;
+  font-size: 0.875rem;
+  color: #334155;
+  font-weight: 500;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.preview-badges {
+  display: flex;
+  gap: 0.375rem;
+  flex-shrink: 0;
+}
+
+.mini-badge {
+  font-size: 0.7rem;
+  padding: 0.125rem 0.375rem;
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 4px;
+  color: #64748b;
+}
+
+.preview-actions {
+  padding-top: 0.75rem;
+  border-top: 1px solid #e2e8f0;
+}
+
+/* Carousel Dialog Styles */
+.carousel-dialog-card {
+  border-radius: 16px !important;
+  overflow: hidden;
+}
+
+.carousel-dialog-header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.header-content {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.header-icon {
+  font-size: 2rem;
+}
+
+.header-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.header-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.header-subtitle {
+  font-size: 0.875rem;
+  opacity: 0.9;
+}
+
+.carousel-dialog-body {
+  padding: 2rem;
+  min-height: 500px;
+}
+
+.carousel-dialog-actions {
+  padding: 1rem 1.5rem;
+  background: #f8fafc;
+  border-top: 1px solid #e2e8f0;
+}
+
+.quick-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+/* Carousel Styles */
+.carousel-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  height: 100%;
+  min-height: 400px;
+}
+
+.carousel-nav {
+  flex-shrink: 0;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: 2px solid #e2e8f0;
+  background: white;
+  color: #64748b;
+  font-size: 1.25rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.carousel-nav:hover:not(:disabled) {
+  background: #f8fafc;
+  border-color: #3b82f6;
+  color: #3b82f6;
+  transform: scale(1.1);
+}
+
+.carousel-nav:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.carousel-wrapper {
+  flex: 1;
+  overflow: hidden;
+  position: relative;
+}
+
+.carousel-track {
+  display: flex;
+  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  height: 100%;
+}
+
+.suggestion-card {
+  flex: 0 0 100%;
+  width: 100%;
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+  border: 2px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 2rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  box-sizing: border-box;
+  min-height: 350px;
+}
+
+.suggestion-card.selected {
+  background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+  border-color: #3b82f6;
+  box-shadow: 0 8px 16px rgba(59, 130, 246, 0.15);
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 0.75rem;
+  border-bottom: 2px solid #e2e8f0;
+}
+
+.card-checkbox {
+  flex-shrink: 0;
+}
+
+.card-number {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #64748b;
+  background: white;
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+}
+
+.suggestion-card.selected .card-number {
+  background: #3b82f6;
+  color: white;
+  border-color: #3b82f6;
+}
+
+.card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  flex: 1;
+}
+
+.card-name-field {
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+.card-date {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: white;
+  padding: 0.75rem;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+}
+
+.date-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #334155;
+  flex-shrink: 0;
+}
+
+.card-date-field {
+  flex: 1;
+}
+
+.card-attributes {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.75rem;
+}
+
+.attribute-item {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  background: white;
+  border: 2px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 0.75rem;
+  transition: all 0.2s;
+}
+
+.attribute-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
+}
+
+.attribute-item.pomodoros {
+  border-color: #fecaca;
+}
+
+.attribute-item.priority {
+  border-color: #fed7aa;
+}
+
+.attribute-item.difficulty {
+  border-color: #ddd6fe;
+}
+
+.suggestion-card.selected .attribute-item {
+  border-color: #93c5fd;
+}
+
+.attribute-icon {
+  font-size: 1.5rem;
+  flex-shrink: 0;
+}
+
+.attribute-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.attribute-label {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+  margin-bottom: 0.125rem;
+}
+
+.attribute-value {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.suggestions-actions {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding-top: 1rem;
+  border-top: 1px solid #e2e8f0;
+}
+
+.suggestions-actions .v-btn {
+  flex: 1;
 }
 </style>
 
