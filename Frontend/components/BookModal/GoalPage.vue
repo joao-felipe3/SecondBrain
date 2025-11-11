@@ -57,7 +57,7 @@
               <v-btn
                 size="small"
                 color="primary"
-                variant="outlined "
+                variant="outlined"
                 @click="resetSuggestions"
               >
                 <v-icon size="18">mdi-refresh</v-icon>
@@ -583,58 +583,33 @@ async function generateAISuggestions() {
   aiError.value = null
   
   try {
-    // Simular chamada à IA (substitua por sua API real)
-    await new Promise(resolve => setTimeout(resolve, 2000))
+    // Call the backend API to generate AI suggestions
+    const { post } = useApi('/tasks/ai-suggestions')
+    const { data, error: e } = await post({
+      projectName: props.project?.name || 'Projeto',
+      shortTermGoal: props.project?.shortTermGoal || '',
+      midTermGoal: props.project?.midTermGoal || '',
+      longTermGoal: props.project?.longTermGoal || '',
+      userPrompt: aiPrompt.value || '',
+    })
     
-    // Mock de sugestões baseadas nos objetivos
-    const mockSuggestions = [
-      {
-        name: `Fazer ${props.project?.shortTermGoal?.substring(0, 30) || 'objetivo'}`,
-        deadline: getDatePlusDays(7),
-        pomodoros: 2,
-        priority: 2,
-        difficulty: 2,
-        selected: true,
-      },
-      {
-        name: `Pesquisa inicial sobre ${props.project?.name || 'projeto'}`,
-        deadline: getDatePlusDays(3),
-        pomodoros: 1,
-        priority: 3,
-        difficulty: 1,
-        selected: true,
-      },
-      {
-        name: `Implementar funcionalidade principal`,
-        deadline: getDatePlusDays(14),
-        pomodoros: 4,
-        priority: 4,
-        difficulty: 3,
-        selected: true,
-      },
-      {
-        name: `Revisar e testar resultados`,
-        deadline: getDatePlusDays(21),
-        pomodoros: 2,
-        priority: 2,
-        difficulty: 2,
-        selected: true,
-      },
-    ]
+    if (e) throw e
     
-    aiSuggestions.value = mockSuggestions
+    // Map the API response to the expected format
+    aiSuggestions.value = data.map((suggestion: any) => ({
+      name: suggestion.name,
+      deadline: suggestion.deadline,
+      pomodoros: suggestion.pomodoros,
+      priority: suggestion.priority,
+      difficulty: suggestion.difficulty,
+      selected: suggestion.selected,
+    }))
   } catch (err: any) {
     aiError.value = 'Falha ao gerar sugestões. Tente novamente.'
     console.error(err)
   } finally {
     aiLoading.value = false
   }
-}
-
-function getDatePlusDays(days: number): string {
-  const date = new Date()
-  date.setDate(date.getDate() + days)
-  return date.toISOString().substring(0, 10)
 }
 
 function resetSuggestions() {

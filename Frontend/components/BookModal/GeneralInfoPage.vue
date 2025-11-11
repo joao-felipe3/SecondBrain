@@ -54,7 +54,7 @@
                     density="compact"
                     prepend-inner-icon=""
                     hide-details
-                    clearable="false"
+                    :clearable="false"
                     class="deadline-field"
                     @click:control="onDateClick('deadlineLeft')"
                     @click:prepend-inner="onDateClick('deadlineLeft')"

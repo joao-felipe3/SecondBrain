@@ -5,6 +5,8 @@ import { CreateTaskDto } from './dto/create-task.dto';
 import { TaskDocument } from './schemas/task.schema';
 import { ProjectDocument } from '../projects/schemas/project.schema';
 import { ProjectsService } from '../projects/projects.service';
+import { GenerateAiSuggestionsDto, AiTaskSuggestionDto } from './dto/generate-ai-suggestions.dto';
+import { GeminiService } from './gemini.service';
 
 @Injectable()
 export class TasksService {
@@ -13,8 +15,10 @@ export class TasksService {
     @InjectModel('Project') private readonly projectModel: Model<ProjectDocument>,
     @Inject(forwardRef(() => ProjectsService))
     private readonly projectsService: ProjectsService,
+    private readonly geminiService: GeminiService, // Injeta o GeminiService
   ) {}
 
+  // ... (outros métodos como create, findAll, etc. permanecem os mesmos)
   async create(createTaskDto: CreateTaskDto): Promise<TaskDocument> {
     if (createTaskDto.project && typeof createTaskDto.project === 'string') {
       const value = createTaskDto.project as string;
@@ -157,4 +161,62 @@ export class TasksService {
     return updatedTask;
   }
 
+  async generateAiSuggestions(dto: GenerateAiSuggestionsDto): Promise<AiTaskSuggestionDto[]> {
+    try {
+      const aiResponse = await this.geminiService.generateTaskSuggestions(
+        dto.projectName,
+        dto.shortTermGoal,
+        dto.midTermGoal,
+        dto.longTermGoal,
+        dto.userPrompt,
+      );
+
+      // A API do Gemini com 'application/json' já deve retornar um JSON parseável
+      const suggestions = JSON.parse(aiResponse);
+
+      if (!Array.isArray(suggestions)) {
+        console.warn('A resposta da IA não é um array, retornando lista vazia.');
+        return [];
+      }
+
+      return suggestions as AiTaskSuggestionDto[];
+    } catch (error: any) {
+      console.error('Erro ao usar a API do Gemini, usando fallback:', error?.message ?? error);
+      // Aqui você pode manter o fallback de mock, se desejar
+      return this.generateMockSuggestions(dto);
+    }
+  }
+
+  /**
+   * Fallback para gerar sugestões mockadas inteligentes quando a IA não está disponível.
+   */
+  private generateMockSuggestions(dto: GenerateAiSuggestionsDto): AiTaskSuggestionDto[] {
+    const keywords = `${dto.projectName} ${dto.shortTermGoal} ${dto.midTermGoal} ${dto.longTermGoal} ${dto.userPrompt}`.toLowerCase();
+    const suggestions: AiTaskSuggestionDto[] = [];
+    const today = new Date();
+
+    const getDatePlusDays = (days: number) => {
+      const date = new Date(today);
+      date.setDate(date.getDate() + days);
+      return date.toISOString().split('T')[0];
+    };
+
+    if (keywords.includes('api') || keywords.includes('backend')) {
+      suggestions.push({ name: 'Definir endpoints da API REST', deadline: getDatePlusDays(3), pomodoros: 3, priority: 4, difficulty: 3, selected: true });
+      suggestions.push({ name: 'Configurar autenticação com JWT', deadline: getDatePlusDays(7), pomodoros: 4, priority: 3, difficulty: 4, selected: false });
+    }
+    if (keywords.includes('ui') || keywords.includes('frontend') || keywords.includes('design')) {
+      suggestions.push({ name: 'Criar protótipo de baixa fidelidade da UI', deadline: getDatePlusDays(2), pomodoros: 2, priority: 4, difficulty: 2, selected: true });
+      suggestions.push({ name: 'Desenvolver componentes reutilizáveis em Vue/React', deadline: getDatePlusDays(10), pomodoros: 6, priority: 3, difficulty: 3, selected: true });
+    }
+    if (keywords.includes('banco de dados') || keywords.includes('database')) {
+      suggestions.push({ name: 'Modelar o esquema do banco de dados', deadline: getDatePlusDays(4), pomodoros: 4, priority: 4, difficulty: 3, selected: true });
+    }
+    if (suggestions.length === 0) {
+      suggestions.push({ name: 'Reunião de brainstorming para definir os próximos passos', deadline: getDatePlusDays(1), pomodoros: 1, priority: 4, difficulty: 1, selected: true });
+      suggestions.push({ name: 'Pesquisar tecnologias concorrentes', deadline: getDatePlusDays(5), pomodoros: 3, priority: 2, difficulty: 2, selected: false });
+    }
+
+    return suggestions.slice(0, 5);
+  }
 }

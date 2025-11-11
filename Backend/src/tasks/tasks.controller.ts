@@ -11,6 +11,7 @@ import {
 import { TasksService } from './tasks.service';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
+import { GenerateAiSuggestionsDto } from './dto/generate-ai-suggestions.dto';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 
 @ApiTags('tasks')
@@ -61,5 +62,12 @@ export class TasksController {
   @Patch(':id/increment-pomodoro')
   incrementPomodorosDid(@Param('id') id: string) {
     return this.tasksService.incrementPomodorosDid(id);
+  }
+
+  @Post('ai-suggestions')
+  @ApiOperation({ summary: 'Gerar sugestões de tarefas usando IA baseado nos objetivos do projeto' })
+  @ApiResponse({ status: 200, description: 'Sugestões geradas com sucesso.' })
+  async generateAiSuggestions(@Body() generateDto: GenerateAiSuggestionsDto) {
+    return this.tasksService.generateAiSuggestions(generateDto);
   }
 }
