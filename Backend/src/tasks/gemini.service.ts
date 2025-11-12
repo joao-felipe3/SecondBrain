@@ -32,6 +32,8 @@ export class GeminiService {
     midTermGoal?: string,
     longTermGoal?: string,
     userPrompt?: string,
+    existingTaskNames?: string[],
+    remainingHours?: number,
   ): Promise<string> {
     const prompt = this.buildPrompt(
       projectName,
@@ -39,50 +41,76 @@ export class GeminiService {
       midTermGoal,
       longTermGoal,
       userPrompt,
+      existingTaskNames,
+      remainingHours,
     );
 
-    try {
-      const model = this.genAI.getGenerativeModel({ model: this.model });
+    const model = this.genAI.getGenerativeModel({ model: this.model });
 
-      const generationConfig = {
-        temperature: 0.9,
-        topK: 1,
-        topP: 1,
-        maxOutputTokens: 8192,
-        responseMimeType: 'application/json',
-      };
+    const generationConfig = {
+      temperature: 0.8,
+      topK: 1,
+      topP: 1,
+      maxOutputTokens: 2048, // menor para reduzir consumo e risco de 429
+      responseMimeType: 'application/json',
+    } as const;
 
-      const safetySettings = [
-        {
-          category: HarmCategory.HARM_CATEGORY_HARASSMENT,
-          threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
-        },
-        {
-          category: HarmCategory.HARM_CATEGORY_HATE_SPEECH,
-          threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
-        },
-        {
-          category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT,
-          threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
-        },
-        {
-          category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT,
-          threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
-        },
-      ];
+    const safetySettings: { category: HarmCategory; threshold: HarmBlockThreshold }[] = [
+      {
+        category: HarmCategory.HARM_CATEGORY_HARASSMENT,
+        threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
+      },
+      {
+        category: HarmCategory.HARM_CATEGORY_HATE_SPEECH,
+        threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
+      },
+      {
+        category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT,
+        threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
+      },
+      {
+        category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT,
+        threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
+      },
+    ];
 
-      const result = await model.generateContent({
-        contents: [{ role: 'user', parts: [{ text: prompt }] }],
-        generationConfig,
-        safetySettings,
-      });
+    const maxRetries = 4;
+    let attempt = 0;
+    let lastError: any;
 
-      const response = result.response;
-      return response.text();
-    } catch (error) {
-      console.error('Erro ao chamar a API do Gemini:', error);
-      throw new Error('Falha ao gerar sugestões com a IA do Gemini');
+    while (attempt <= maxRetries) {
+      try {
+        const result = await model.generateContent({
+          contents: [{ role: 'user', parts: [{ text: prompt }] }],
+          generationConfig,
+          safetySettings,
+        });
+        return result.response.text();
+      } catch (err: any) {
+        const status = err?.status || err?.code;
+        if (status === 429 && attempt < maxRetries) {
+          // Exponential backoff + jitter
+          const base = 1000; // 1s base
+          const delay = Math.min(base * Math.pow(2, attempt), 10000) + Math.floor(Math.random() * 300);
+          console.warn(`Rate limit 429 (tentativa ${attempt + 1}/${maxRetries}). Aguardando ${delay}ms para retry.`);
+          await new Promise(r => setTimeout(r, delay));
+          attempt++;
+          continue;
+        }
+        lastError = err;
+        break;
+      }
     }
+    // Se estourou limite após todos os retries, propaga um erro com código específico
+    if (lastError && (lastError.status === 429 || lastError.code === 429)) {
+      const rateError: any = new Error('Gemini rate limit after retries');
+      rateError.code = 'RATE_LIMIT';
+      console.error('Erro ao chamar a API do Gemini (429 após retries):', lastError);
+      throw rateError;
+    }
+
+    console.error('Erro ao chamar a API do Gemini:', lastError);
+    throw new Error('Falha ao gerar sugestões com a IA do Gemini');
   }
 
   private buildPrompt(
@@ -91,6 +119,8 @@ export class GeminiService {
     midTermGoal?: string,
     longTermGoal?: string,
     userPrompt?: string,
+    existingTaskNames?: string[],
+    remainingHours?: number,
   ): string {
     let prompt = `Gere sugestões de tarefas para o projeto "${projectName}".\n\n`;
 
@@ -105,6 +135,19 @@ export class GeminiService {
     }
     if (userPrompt) {
       prompt += `\nInstruções adicionais: ${userPrompt}\n`;
+    }
+
+    if (remainingHours && remainingHours > 0) {
+      prompt += `Objetivo: gerar tarefas de curto, médio e longo prazo cuja soma (pomodoros * 0.5h) aproxime ${remainingHours.toFixed(1)} horas (tolerância ±1h).\n`;
+    }
+
+    // Lista de tarefas já existentes/geradas (para evitar duplicatas)
+    if (existingTaskNames && existingTaskNames.length > 0) {
+      prompt += `\n IMPORTANTE: As seguintes tarefas já foram geradas. NÃO repita nenhuma delas:\n`;
+      existingTaskNames.forEach((name, idx) => {
+        prompt += `${idx + 1}. ${name}\n`;
+      });
+      prompt += `\nGere tarefas DIFERENTES e complementares às já existentes.\n`;
     }
 
     prompt += `\nRetorne APENAS um array JSON válido com sugestões de tarefas. Cada tarefa deve ter:

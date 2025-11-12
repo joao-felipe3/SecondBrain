@@ -587,10 +587,12 @@ async function generateAISuggestions() {
     const { post } = useApi('/tasks/ai-suggestions')
     const { data, error: e } = await post({
       projectName: props.project?.name || 'Projeto',
+      projectId: props.project?._id || props.project?.id, // Envia o ID do projeto
       shortTermGoal: props.project?.shortTermGoal || '',
       midTermGoal: props.project?.midTermGoal || '',
       longTermGoal: props.project?.longTermGoal || '',
       userPrompt: aiPrompt.value || '',
+      targetHours: 50, // Envia as horas planejadas do projeto
     })
     
     if (e) throw e

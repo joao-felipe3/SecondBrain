@@ -162,27 +162,149 @@ export class TasksService {
   }
 
   async generateAiSuggestions(dto: GenerateAiSuggestionsDto): Promise<AiTaskSuggestionDto[]> {
+    const targetHours = dto.targetHours || 0;
+    const allSuggestions: AiTaskSuggestionDto[] = [];
+    const existingTaskNames: string[] = [];
+    const maxIterations = 15; // Limite de segurança para evitar loops infinitos
+    let currentIteration = 0;
+
     try {
-      const aiResponse = await this.geminiService.generateTaskSuggestions(
-        dto.projectName,
-        dto.shortTermGoal,
-        dto.midTermGoal,
-        dto.longTermGoal,
-        dto.userPrompt,
-      );
+      // Busca as tarefas já existentes no projeto para calcular horas já planejadas
+      let alreadyPlannedHours = 0;
+      if (dto.projectId) {
+        const existingTasks = await this.taskModel.find({ project: dto.projectId }).exec();
+        
+        // Calcula horas já planejadas (pomodoros * 0.5h)
+        alreadyPlannedHours = existingTasks.reduce((total, task) => {
+          return total + ((task.pomodorosPlanned || 0) * 0.5);
+        }, 0);
 
-      // A API do Gemini com 'application/json' já deve retornar um JSON parseável
-      const suggestions = JSON.parse(aiResponse);
+        // Adiciona nomes das tarefas existentes para evitar duplicatas
+        existingTaskNames.push(...existingTasks.map(task => task.name));
+        
+        console.log(`Projeto já tem ${existingTasks.length} tarefas (${alreadyPlannedHours.toFixed(1)}h planejadas)`);
+      }
 
-      if (!Array.isArray(suggestions)) {
-        console.warn('A resposta da IA não é um array, retornando lista vazia.');
+      // Se targetHours não foi especificado, gera apenas uma vez (comportamento antigo)
+      if (targetHours <= 0) {
+        const aiResponse = await this.geminiService.generateTaskSuggestions(
+          dto.projectName,
+          dto.shortTermGoal,
+          dto.midTermGoal,
+          dto.longTermGoal,
+          dto.userPrompt,
+          existingTaskNames,
+          undefined,
+        );
+
+        const suggestions = JSON.parse(aiResponse);
+        if (!Array.isArray(suggestions)) {
+          console.warn('A resposta da IA não é um array, retornando lista vazia.');
+          return [];
+        }
+
+        return suggestions as AiTaskSuggestionDto[];
+      }
+
+      // Calcula quantas horas ainda precisam ser geradas
+  const remainingHours = Math.max(0, targetHours - alreadyPlannedHours);
+      
+      if (remainingHours <= 0) {
+        console.log(`Projeto já atingiu o target (${alreadyPlannedHours.toFixed(1)}h >= ${targetHours}h). Não gerando novas tarefas.`);
         return [];
       }
 
-      return suggestions as AiTaskSuggestionDto[];
+      console.log(`Gerando tarefas para completar ${remainingHours.toFixed(1)}h (de ${targetHours}h total)`);
+
+      // Loop para gerar tarefas até atingir as horas restantes
+      let currentHours = 0;
+      let consecutiveRateLimits = 0;
+      const interIterationDelayMs = 3000; // delay fixo entre iterações para reduzir 429
+
+      while (currentHours < remainingHours && currentIteration < maxIterations) {
+        currentIteration++;
+        
+        console.log(`Iteração ${currentIteration}: ${currentHours.toFixed(1)}h de ${remainingHours.toFixed(1)}h geradas`);
+
+        // Delay de 1 segundo entre requisições para evitar rate limiting (429)
+        if (currentIteration > 1) {
+          console.log(`Aguardando ${interIterationDelayMs}ms antes da próxima requisição...`);
+          await new Promise(resolve => setTimeout(resolve, interIterationDelayMs));
+        }
+
+        // Gera em lotes menores para reduzir risco de 429 e consumo de tokens
+        const chunkHours = Math.min(remainingHours - currentHours, 8); // ~16 pomodoros
+        let aiResponse: string;
+        try {
+          aiResponse = await this.geminiService.generateTaskSuggestions(
+            dto.projectName,
+            dto.shortTermGoal,
+            dto.midTermGoal,
+            dto.longTermGoal,
+            dto.userPrompt,
+            existingTaskNames,
+            chunkHours,
+          );
+          // sucesso: zera strikes
+          consecutiveRateLimits = 0;
+        } catch (err: any) {
+          if (err?.code === 'RATE_LIMIT') {
+            consecutiveRateLimits++;
+            const waitMs = Math.min(15000 * consecutiveRateLimits, 45000);
+            console.warn(`Gemini RATE_LIMIT recebido. Aguardando ${waitMs}ms antes de tentar novamente (strike ${consecutiveRateLimits}).`);
+            await new Promise((r) => setTimeout(r, waitMs));
+            // tenta próxima iteração sem contar como iteração concluída
+            continue;
+          }
+          throw err;
+        }
+
+        const suggestions = JSON.parse(aiResponse);
+
+        if (!Array.isArray(suggestions) || suggestions.length === 0) {
+          console.warn('A resposta da IA não é um array ou está vazia.');
+          break;
+        }
+
+        // Filtra duplicatas por nome (case-insensitive)
+        const newSuggestions = (suggestions as AiTaskSuggestionDto[]).filter(
+          (newTask) => {
+            const normalizedName = newTask.name.toLowerCase().trim();
+            return !existingTaskNames.some(
+              (existingName) => existingName.toLowerCase().trim() === normalizedName
+            );
+          }
+        );
+
+        if (newSuggestions.length === 0) {
+          console.warn('Nenhuma nova tarefa foi gerada (todas são duplicatas).');
+          break;
+        }
+
+        // Adiciona as novas tarefas
+        for (const task of newSuggestions) {
+          allSuggestions.push(task);
+          existingTaskNames.push(task.name);
+          // Cada pomodoro = 0.5 horas (25 minutos)
+          currentHours += (task.pomodoros || 0) * 0.5;
+        }
+      }
+
+      if (currentIteration >= maxIterations) {
+        console.warn(`Limite de ${maxIterations} iterações atingido. Retornando ${allSuggestions.length} tarefas.`);
+      }
+
+      console.log(`Geradas ${allSuggestions.length} novas tarefas totalizando ${currentHours.toFixed(1)}h (total do projeto: ${(alreadyPlannedHours + currentHours).toFixed(1)}h)`);
+      return allSuggestions;
+
     } catch (error: any) {
-      console.error('Erro ao usar a API do Gemini, usando fallback:', error?.message ?? error);
-      // Aqui você pode manter o fallback de mock, se desejar
+      console.error('Erro ao usar a API do Gemini:', error?.message ?? error);
+      // Se acumulamos algo, devolve parcial; senão fallback
+      if (allSuggestions.length > 0) {
+        console.warn('Retornando sugestões parciais acumuladas devido a erro.');
+        return allSuggestions;
+      }
+      console.warn('Usando fallback de mock por ausência de sugestões acumuladas.');
       return this.generateMockSuggestions(dto);
     }
   }
