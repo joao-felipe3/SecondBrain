@@ -114,7 +114,7 @@
 
 <script setup>
 import { ref, computed, onMounted, onBeforeUnmount, nextTick } from 'vue'
-import { useApiResource } from '~/composables/useApi'
+import { useApiResource } from '~/composables/api/useApi'
 import { Calendar, Coins, Award } from 'lucide-vue-next'
 import WoodenTable from './Svg/WoodenTable.vue'
 import OldPaper from './Svg/OldPaper.vue'

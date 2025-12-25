@@ -40,8 +40,8 @@ import ProjectPanel from '../../components/ProjectPanel.vue'
 import Book from '../../components/Svg/Book.vue'
 import BookShelf from '../../components/Svg/BookShelf.vue'
 import BookModal from '../../components/BookModal.vue'
-import { useApiResource } from '~/composables/useApi'
-import type { Project } from '~/composables/useProjectEditing'
+import { useApiResource } from '~/composables/api/useApi'
+import type { Project } from '~/composables/features/useProjectEditing'
 
 // Estado para controlar qual projeto está em hover
 const hoveredProjectIndex = ref(-1)

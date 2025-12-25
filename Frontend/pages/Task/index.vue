@@ -17,8 +17,8 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useTaskStore } from '~/stores/task'
-import useTaskHelpers from '~/composables/useTaskHelpers'
-import { useApiResource } from '~/composables/useApi'
+import useTaskHelpers from '~/composables/features/useTaskHelpers'
+import { useApiResource } from '~/composables/api/useApi'
 
 // Estado local
 const zoomed = ref(false)

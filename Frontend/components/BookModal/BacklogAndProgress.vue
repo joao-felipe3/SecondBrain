@@ -153,8 +153,8 @@
 <script setup lang="ts">
 import type { PropType } from 'vue'
 import { reactive, ref, watch, computed } from 'vue'
-import useDateFormat from '~/composables/useDateFormat'
-import { useApiResource } from '~/composables/useApi'
+import useDateFormat from '~/composables/utils/useDateFormat'
+import { useApiResource } from '~/composables/api/useApi'
 
 type Project = Record<string, any>
 

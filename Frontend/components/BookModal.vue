@@ -62,11 +62,11 @@ import { ref, computed, onMounted, onBeforeUnmount, watch, nextTick, toRef } fro
 import GeneralInfoPage from './BookModal/GeneralInfoPage.vue'
 import GoalPage from './BookModal/GoalPage.vue'
 import BacklogAndProgress from './BookModal/BacklogAndProgress.vue'
-import { useApiResource } from '~/composables/useApi'
+import { useApiResource } from '~/composables/api/useApi'
 import type { PropType } from 'vue'
-import { useCarousel } from '~/composables/useCarousel'
-import { useSparkles } from '~/composables/useSparkles'
-import { useProjectEditing, getProjectId, type Project } from '~/composables/useProjectEditing'
+import { useCarousel } from '~/composables/ui/useCarousel'
+import { useSparkles } from '~/composables/ui/useSparkles'
+import { useProjectEditing, getProjectId, type Project } from '~/composables/features/useProjectEditing'
 
 const CLOSE_ANIM_MS = 800
 const TOTAL_SLIDES = 3

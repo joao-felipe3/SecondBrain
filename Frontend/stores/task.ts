@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { useApi } from '../composables/useApi'
+import { useApi } from '../composables/api/useApi'
 
 export const useTaskStore = defineStore('task', {
   state: () => ({

@@ -502,8 +502,8 @@
 </template>
 
 <script setup lang="ts">
-import useDateFormat from '~/composables/useDateFormat'
-import { useApi } from '~/composables/useApi'
+import useDateFormat from '~/composables/utils/useDateFormat'
+import { useApi } from '~/composables/api/useApi'
 import type { PropType } from 'vue'
 import { reactive, watch, ref, computed } from 'vue'
 

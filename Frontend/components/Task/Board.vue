@@ -44,7 +44,10 @@
 <script setup>
 import { ref, watch } from 'vue'
 import { useTaskPosition } from '../../composables/useTaskPosition'
-import { getProjectColors } from '../../composables/useColor'
+import { getProjectColors } from '../../composables/utils/useColor'
+import { useZoomState } from '../../composables/ui/useZoomState'
+import { useZoomController } from '../../composables/ui/useZoomController'
+import { useTaskActions } from '../../composables/features/useTaskActions'
 
 // Props & Emits
 const { tasks, projects, initialZoomedTask, showAllTasks } = defineProps([
