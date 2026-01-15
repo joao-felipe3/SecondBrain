@@ -3,7 +3,9 @@
         <Sidebar :activeIcon="activeIcon" @update:activeIcon="activeIcon = $event"/>
         <v-col>
             <transition name="slide-page" mode="out-in">
-                <slot />
+                <div :key="$route.path">
+                    <slot />
+                </div>
             </transition>
         </v-col>
     </v-row>

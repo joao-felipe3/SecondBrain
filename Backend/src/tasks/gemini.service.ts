@@ -9,7 +9,7 @@ import {
 @Injectable()
 export class GeminiService {
   private genAI: GoogleGenerativeAI;
-  private readonly model = 'gemini-2.0-flash-lite';
+  private readonly model = 'gemini-2.5-flash';
 
   constructor(private readonly configService: ConfigService) {
     // Support either GEMINI_API_KEY or GOOGLE_API_KEY (backwards compatibility)

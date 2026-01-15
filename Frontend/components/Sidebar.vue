@@ -14,7 +14,7 @@
         />
         <h1 
           class="text-h4 text-center font-weight-bold text-shadow-white"
-          :style="{ fontFamily: 'Irish Grover', cursive }"
+          style="font-family: 'Irish Grover', cursive;"
         >
           Task RPG
         </h1>

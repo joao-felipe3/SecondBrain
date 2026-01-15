@@ -1,3 +1,6 @@
+/* IMPORTANT: @import must appear before other at-rules (PostCSS/Vite constraint) */
+@import url('https://fonts.googleapis.com/css2?family=Irish+Grover&display=swap');
+
 .v-card-title,
 .v-card-title *,
 .v-card-text,
@@ -26,8 +29,6 @@
 }
 /* Extracted styles from BookModal.vue */
 /* NOTE: Keep class names identical to preserve behavior */
-/* IMPORTANT: @import must appear before other at-rules (PostCSS/Vite constraint) */
-@import url('https://fonts.googleapis.com/css2?family=Irish+Grover&display=swap');
 @property --sprite-fs { syntax: "<integer>"; initial-value: 0; inherits: true; }
 @property --_progress { syntax: "<percentage>"; initial-value: 0%; inherits: false; }
 
