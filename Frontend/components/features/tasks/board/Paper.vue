@@ -34,7 +34,11 @@
 </template>
 
 <script setup>
-import { ref, watchEffect } from 'vue';
+import { ref, watchEffect, onMounted } from 'vue'
+import SvgProjectStamp from '../../../ui/svg/ProjectStamp.vue'
+import ZoomedContent from '../ZoomedContent.vue'
+import TaskPreview from '../TaskPreview.vue'
+
 const { task, positionStyle, colors, zoomed, create, projects } = defineProps(['task', 'positionStyle', 'colors', 'zoomed', 'create', 'projects'])
 const emit = defineEmits(['edit-task', 'delete-task', 'close-zoom', 'fall-complete']);
 
