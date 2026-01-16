@@ -67,7 +67,7 @@ const props = defineProps({
 const isPressing = ref(false)
 
 const instance = getCurrentInstance()
-const uid = `i${instance?.uid ?? Math.random().toString(36).slice(2)}`
+const uid = instance?.uid ?? 0
 
 function press(state) {
   isPressing.value = state
