@@ -39,5 +39,7 @@
 </template>
 
 <script setup>
+import TaskCard from './Card.vue'
+
 defineProps({})
 </script>
