@@ -1,5 +1,5 @@
 <template>
-  <v-textarea 
+  <v-textarea
     :label="label"
     v-model="localValue"
     variant="solo-filled"

@@ -23,6 +23,12 @@
 </template>
 
 <script setup>
+import CommonTextField from '../../shared/fields/TextField.vue'
+import CommonDescriptionField from '../../shared/fields/DescriptionField.vue'
+import CommonSlider from '../../shared/fields/Slider.vue'
+import CommonDatePickerField from '../../shared/fields/DatePickerField.vue'
+import CommonSelect from '../../shared/fields/Select.vue'
+import CommonEffortSelect from '../../shared/fields/EffortSelect.vue'
 
 const props = defineProps({
   task: {

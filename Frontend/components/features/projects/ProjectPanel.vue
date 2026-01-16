@@ -102,12 +102,12 @@
 import { ref, computed, onMounted, onBeforeUnmount, nextTick } from 'vue'
 import { useApiResource } from '~/composables/api/useApi'
 import { Calendar, Coins, Award } from 'lucide-vue-next'
-import WoodenTable from './Svg/WoodenTable.vue'
-import OldPaper from './Svg/OldPaper.vue'
-import Bar from './Svg/Bar.vue'
-import ProgressBar from './Svg/ProgressBar.vue'
-import Can from './Svg/Can.vue'
-import SvgButton from './Svg/Button.vue'
+import WoodenTable from '../../ui/svg/WoodenTable.vue'
+import OldPaper from '../../ui/svg/OldPaper.vue'
+import Bar from '../../ui/svg/Bar.vue'
+import ProgressBar from '../../ui/svg/ProgressBar.vue'
+import Can from '../../ui/svg/Can.vue'
+import SvgButton from '../../ui/svg/Button.vue'
 const props = defineProps({
   title: {
     type: String,

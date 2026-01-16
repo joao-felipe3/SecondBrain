@@ -45,7 +45,7 @@
 </template>
 
 <script>
-import WoodPanel from "../WoodPanel.vue";
+import WoodPanel from "../../ui/panels/WoodPanel.vue";
 
 export default {
   name: "ProjectList",

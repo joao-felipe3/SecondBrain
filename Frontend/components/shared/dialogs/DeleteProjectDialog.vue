@@ -4,32 +4,32 @@
       <v-card-title class="text-h5">
         Excluir Projeto
       </v-card-title>
-      
+
       <v-card-text>
         <p class="mb-4">
           Você está prestes a excluir o projeto <strong>{{ projectName }}</strong>.
         </p>
         <p class="mb-2">O que deseja fazer com as {{ taskCount }} task(s) associada(s)?</p>
-        
+
         <v-radio-group v-model="deleteOption">
-          <v-radio 
-            label="Excluir o projeto e todas as tasks associadas" 
+          <v-radio
+            label="Excluir o projeto e todas as tasks associadas"
             value="delete-tasks"
             color="error"
           />
-          <v-radio 
-            label="Excluir apenas o projeto (manter as tasks sem projeto)" 
+          <v-radio
+            label="Excluir apenas o projeto (manter as tasks sem projeto)"
             value="unlink-tasks"
             color="warning"
           />
         </v-radio-group>
       </v-card-text>
-      
+
       <v-card-actions>
         <v-spacer />
         <v-btn text @click="cancel">Cancelar</v-btn>
-        <v-btn 
-          :color="deleteOption === 'delete-tasks' ? 'error' : 'warning'" 
+        <v-btn
+          :color="deleteOption === 'delete-tasks' ? 'error' : 'warning'"
           @click="confirm"
         >
           Confirmar
