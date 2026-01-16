@@ -34,6 +34,9 @@
 </template>
 
 <script setup>
+import SvgEffortButton from '../../ui/svg/EffortButton.vue'
+import SvgButton from '../../ui/svg/Button.vue'
+import { useDateFormat } from '~/composables/features/useDateFormat'
 import { useTaskStore } from '~/stores/task'
 
 const { task } = defineProps(['task']);

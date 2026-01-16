@@ -12,5 +12,9 @@
 </template>
 
 <script setup>
+  import TaskProjectList from './ProjectList.vue'
+  import TaskCalendar from './Calendar.vue'
+  import WoodPanel from '../../ui/panels/WoodPanel.vue'
+  
   defineProps(['projects'])
 </script>

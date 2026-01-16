@@ -23,6 +23,11 @@
 </template>
 
 <script setup>
+  import { ref } from 'vue'
+  import SvgCloseButton from '../../ui/svg/CloseButton.vue'
+  import TaskForm from './Form.vue'
+  import SvgButton from '../../ui/svg/Button.vue'
+  
   const props = defineProps({
     task: Object,
     projects: Array,
