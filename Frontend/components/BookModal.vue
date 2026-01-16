@@ -40,19 +40,16 @@
             <span v-else>Saving...</span>
           </button>
         </template>
-        <v-dialog v-model="showDeleteDialog" persistent max-width="400">
-          <v-card>
-            <v-card-title class="text-h5">Confirm Deletion</v-card-title>
-            <v-card-text>Are you sure you want to delete this project?</v-card-text>
-            <v-card-actions>
-              <v-spacer />
-              <v-btn color="grey" variant="text" @click="showDeleteDialog = false" style="font-family: 'Irish Grover', cursive !important;">Cancel</v-btn>
-              <v-btn color="red" variant="text" @click="confirmDelete" style="font-family: 'Irish Grover', cursive !important;">Delete</v-btn>
-            </v-card-actions>
-          </v-card>
-        </v-dialog>
       </div>
     </v-container>
+    
+    <!-- Delete Confirmation Dialog -->
+    <DeleteProjectDialog
+      v-model="showDeleteDialog"
+      :projectName="project?.name || ''"
+      :taskCount="taskCount"
+      @confirm="confirmDelete"
+    />
   </v-row>
 </template>
 
@@ -62,6 +59,7 @@ import { ref, computed, onMounted, onBeforeUnmount, watch, nextTick, toRef } fro
 import GeneralInfoPage from './BookModal/GeneralInfoPage.vue'
 import GoalPage from './BookModal/GoalPage.vue'
 import BacklogAndProgress from './BookModal/BacklogAndProgress.vue'
+import DeleteProjectDialog from './Common/DeleteProjectDialog.vue'
 import { useApiResource } from '~/composables/api/useApi'
 import type { PropType } from 'vue'
 import { useCarousel } from '~/composables/ui/useCarousel'
@@ -114,17 +112,47 @@ const saveEdit = async () => {
 }
 
 const showDeleteDialog = ref(false)
+const taskCount = ref(0)
 
-const confirmDelete = async () => {
+// Load task count when project changes
+watch(() => props.project, async (newProject) => {
+  if (newProject?._id) {
+    try {
+      const response = await fetch(`http://localhost:3000/projects/${newProject._id}/tasks`)
+      const tasks = await response.json()
+      taskCount.value = tasks.length
+    } catch (error) {
+      console.error('Failed to load task count', error)
+      taskCount.value = 0
+    }
+  } else {
+    taskCount.value = 0
+  }
+}, { immediate: true })
+
+const confirmDelete = async (deleteTasks: boolean) => {
   if (!props.project) return
   const id = getProjectId(props.project)
-  const { error } = await api.remove(id)
-  if (error) {
-    console.error('Erro ao excluir projeto', error)
-  } else {
+  
+  try {
+    const response = await fetch(
+      `http://localhost:3000/projects/${id}?deleteTasks=${deleteTasks}`,
+      { method: 'DELETE' }
+    )
+    
+    if (!response.ok) {
+      throw new Error('Failed to delete project')
+    }
+
+    const result = await response.json()
+    console.log(result.message)
+    
     emit('deleted', props.project)
     closeModal()
+  } catch (error) {
+    console.error('Error deleting project:', error)
   }
+  
   showDeleteDialog.value = false
 }
 

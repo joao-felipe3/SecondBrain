@@ -95,20 +95,6 @@
         pointerEvents: 'auto'
       }"
     />
-  <!-- Project Deletion Dialog -->
-  <v-dialog v-model="showDeleteDialog" persistent max-width="400">
-    <v-card>
-      <v-card-title class="text-h5">Confirm Deletion</v-card-title>
-      <v-card-text>
-        Tem certeza que deseja deletar o projeto <strong>{{ projectToDelete?.name }}</strong>?
-      </v-card-text>
-      <v-card-actions>
-        <v-spacer />
-        <v-btn color="grey" variant="text" @click="showDeleteDialog = false" style="font-family: 'Irish Grover', cursive !important;">Cancelar</v-btn>
-        <v-btn color="red" variant="text" @click="confirmDelete" style="font-family: 'Irish Grover', cursive !important;">Deletar</v-btn>
-      </v-card-actions>
-    </v-card>
-  </v-dialog>
   </div>
 </template>
 
@@ -183,29 +169,11 @@ const trashLeft = computed(() => {
   return leftPx + 'px'
 })
 
-const emit = defineEmits(['delete-project', 'project-hover', 'project-click', 'create-project'])
-
-const showDeleteDialog = ref(false)
-const projectToDelete = ref(null)
+const emit = defineEmits(['delete-project', 'project-hover', 'project-click', 'create-project', 'request-delete'])
 
 function openDeleteDialog(project) {
-  projectToDelete.value = project
-  showDeleteDialog.value = true
-}
-
-const confirmDelete = async () => {
-  if (projectToDelete.value) {
-    console.log('Deleting project', projectToDelete.value)
-    try {
-      await api.remove(projectToDelete.value._id)
-      emit('delete-project', projectToDelete.value)
-    } catch (error) {
-      console.error('Error deleting project:', error)
-    } finally {
-      showDeleteDialog.value = false
-      projectToDelete.value = null
-    }
-  }
+  // Emit event to parent to show custom delete dialog
+  emit('request-delete', project)
 }
 
 function refreshSizes() {

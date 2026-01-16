@@ -53,8 +53,24 @@ export class ProjectsController {
 	}
 
 	@Delete(':id')
-	@ApiOperation({ summary: 'Delete a project by id' })
-	async remove(@Param('id') id: string) {
+	@ApiOperation({ summary: 'Delete a project by id. Use ?deleteTasks=true to delete associated tasks, or ?deleteTasks=false to just unlink them.' })
+	async remove(
+		@Param('id') id: string,
+		@Query('deleteTasks') deleteTasks?: string
+	) {
+		// If deleteTasks parameter is provided, use removeWithOptions
+		if (deleteTasks !== undefined) {
+			const shouldDeleteTasks = deleteTasks === 'true';
+			const result = await this.projectsService.removeWithOptions(id, shouldDeleteTasks);
+			if (!result.deleted) throw new NotFoundException('Project not found');
+			return {
+				message: `Project removed successfully. ${shouldDeleteTasks ? 'Deleted' : 'Unlinked'} ${result.tasksAffected} task(s).`,
+				tasksAffected: result.tasksAffected,
+				tasksDeleted: shouldDeleteTasks
+			};
+		}
+		
+		// Default behavior: just delete project
 		const removed = await this.projectsService.remove(id);
 		if (!removed) throw new NotFoundException('Project not found');
 		return { message: 'Project removed successfully' };
@@ -73,8 +89,10 @@ export class ProjectsController {
 	@Post(':id/recalculate-stats')
 	@ApiOperation({ summary: 'Recalculate plannedHours, experience, and reward based on tasks' })
 	@ApiResponse({ status: 200, description: 'Project stats recalculated successfully.' })
-	recalculateStats(@Param('id') id: string) {
-		return this.projectsService.recalculateProjectStats(id);
+	async recalculateStats(@Param('id') id: string) {
+		const result = await this.projectsService.recalculateProjectStats(id);
+		if (!result) throw new NotFoundException('Project not found');
+		return result;
 	}
 
 	@Post('recalculate-all-stats')
@@ -86,13 +104,16 @@ export class ProjectsController {
 		for (const project of projects) {
 			const projectId = (project as any)._id.toString();
 			const updated = await this.projectsService.recalculateProjectStats(projectId);
-			results.push({
-				id: updated._id,
-				name: updated.name,
-				plannedHours: updated.plannedHours,
-				experience: updated.experience,
-				reward: updated.reward
-			});
+			// Skip if project was deleted during the loop
+			if (updated) {
+				results.push({
+					id: updated._id,
+					name: updated.name,
+					plannedHours: updated.plannedHours,
+					experience: updated.experience,
+					reward: updated.reward
+				});
+			}
 		}
 		return {
 			message: 'All projects recalculated',

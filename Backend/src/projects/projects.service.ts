@@ -39,6 +39,36 @@ export class ProjectsService {
 		return result !== null;
 	}
 
+	/**
+	 * Delete a project with options for handling associated tasks
+	 * @param id - Project ID
+	 * @param deleteTasks - If true, delete all tasks; if false, just unlink them
+	 */
+	async removeWithOptions(id: string, deleteTasks: boolean): Promise<{ deleted: boolean; tasksAffected: number }> {
+		const project = await this.projectModel.findById(id).exec();
+		if (!project) {
+			return { deleted: false, tasksAffected: 0 };
+		}
+
+		const tasks = await this.taskModel.find({ project: id }).exec();
+		const tasksAffected = tasks.length;
+
+		if (deleteTasks) {
+			// Delete all tasks associated with this project
+			await this.taskModel.deleteMany({ project: id }).exec();
+		} else {
+			// Just unlink tasks from project
+			await this.taskModel.updateMany(
+				{ project: id },
+				{ $unset: { project: '' } }
+			).exec();
+		}
+
+		// Delete the project
+		const result = await this.projectModel.findByIdAndDelete(id).exec();
+		return { deleted: result !== null, tasksAffected };
+	}
+
 	async incrementHoursWorked(id: string, hours: number): Promise<ProjectDocument> {
 		const project = await this.projectModel.findById(id).exec();
 		if (!project) throw new NotFoundException('Project not found');
@@ -76,9 +106,12 @@ export class ProjectsService {
 		await this.recalculateProjectStats(newProjectId);
 	}
 
-	async recalculateProjectStats(projectId: string): Promise<ProjectDocument> {
+	async recalculateProjectStats(projectId: string): Promise<ProjectDocument | null> {
 		const project = await this.projectModel.findById(projectId).exec();
-		if (!project) throw new NotFoundException('Project not found');
+		if (!project) {
+			// Project doesn't exist anymore, skip recalculation
+			return null;
+		}
 
 		const tasks = await this.taskModel.find({ project: projectId }).exec();
 

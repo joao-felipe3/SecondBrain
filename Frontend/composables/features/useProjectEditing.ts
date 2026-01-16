@@ -1,6 +1,25 @@
 import { ref, computed, type Ref, type ComputedRef } from 'vue'
 
-export type Project = Record<string, any>
+export type Project = {
+  _id?: string
+  id?: string
+  name: string
+  description?: string
+  color?: string
+  startDate?: string
+  deadline?: string
+  totalHoursWorked?: number
+  plannedHours?: number
+  shortTermGoal?: string
+  midTermGoal?: string
+  longTermGoal?: string
+  status?: string
+  progressPercentage?: number
+  experience?: number
+  reward?: number
+  taskCount?: number
+  [key: string]: any
+}
 
 export interface UseProjectEditingResult {
   editing: Ref<boolean>
