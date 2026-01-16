@@ -48,11 +48,11 @@
 <script setup lang="ts">
 import { computed, ref, onMounted } from 'vue'
 
-import ProjectPanel from '../../components/ProjectPanel.vue'
-import Book from '../../components/Svg/Book.vue'
-import BookShelf from '../../components/Svg/BookShelf.vue'
-import BookModal from '../../components/BookModal.vue'
-import DeleteProjectDialog from '../../components/Common/DeleteProjectDialog.vue'
+import ProjectPanel from '../../components/features/projects/ProjectPanel.vue'
+import Book from '../../components/ui/svg/Book.vue'
+import BookShelf from '../../components/ui/svg/BookShelf.vue'
+import BookModal from '../../components/features/projects/BookModal.vue'
+import DeleteProjectDialog from '../../components/shared/dialogs/DeleteProjectDialog.vue'
 import { useApiResource } from '~/composables/api/useApi'
 import type { Project } from '~/composables/features/useProjectEditing'
 

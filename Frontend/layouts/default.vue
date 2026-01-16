@@ -12,7 +12,7 @@
 </template>
 
 <script setup>
-import Sidebar from '../components/Sidebar.vue'
+import Sidebar from '../components/layout/Sidebar.vue'
 import { ref, onMounted } from 'vue'
 
 const activeIcon = ref('calendar');

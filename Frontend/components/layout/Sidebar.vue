@@ -40,6 +40,7 @@
 <script setup>
 import { GoalIcon, CalendarDaysIcon, ChartNoAxesCombinedIcon } from 'lucide-vue-next'
 import { useRouter } from 'vue-router'
+import SvgIconButton from '../ui/svg/IconButton.vue'
 
 const props = defineProps(['activeIcon'])
 const emit = defineEmits(['update:activeIcon'])
