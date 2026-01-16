@@ -54,7 +54,7 @@ import BookShelf from '../../components/ui/svg/BookShelf.vue'
 import BookModal from '../../components/features/projects/BookModal.vue'
 import DeleteProjectDialog from '../../components/shared/dialogs/DeleteProjectDialog.vue'
 import { useApiResource } from '~/composables/api/useApi'
-import type { Project } from '~/composables/features/useProjectEditing'
+import type { Project } from '~/composables/useProjectEditing'
 
 // Estado para controlar qual projeto está em hover
 const hoveredProjectIndex = ref(-1)

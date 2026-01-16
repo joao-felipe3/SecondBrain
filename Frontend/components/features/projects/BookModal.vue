@@ -62,9 +62,9 @@ import BacklogAndProgress from './pages/BacklogAndProgress.vue'
 import DeleteProjectDialog from '../../shared/dialogs/DeleteProjectDialog.vue'
 import { useApiResource } from '~/composables/api/useApi'
 import type { PropType } from 'vue'
-import { useCarousel } from '~/composables/ui/useCarousel'
-import { useSparkles } from '~/composables/ui/useSparkles'
-import { useProjectEditing, getProjectId, type Project } from '~/composables/features/useProjectEditing'
+import { useCarousel } from '~/composables/useCarousel'
+import { useSparkles } from '~/composables/useSparkles'
+import { useProjectEditing, getProjectId, type Project } from '~/composables/useProjectEditing'
 
 const CLOSE_ANIM_MS = 800
 const TOTAL_SLIDES = 3
