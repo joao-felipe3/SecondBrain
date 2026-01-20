@@ -58,7 +58,7 @@
 </template>
 
 <script setup>
-import { ref, getCurrentInstance } from 'vue'
+import { ref, useId } from 'vue'
 
 const props = defineProps({
   onClick: Function,
@@ -66,8 +66,8 @@ const props = defineProps({
 
 const isPressing = ref(false)
 
-const instance = getCurrentInstance()
-const uid = instance?.uid ?? 0
+// Use Vue's useId for SSR-safe unique IDs
+const uid = useId()
 
 function press(state) {
   isPressing.value = state

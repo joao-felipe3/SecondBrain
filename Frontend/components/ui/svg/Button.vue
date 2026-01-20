@@ -101,7 +101,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, getCurrentInstance } from 'vue'
+import { ref, onMounted, useId } from 'vue'
 
 const props = defineProps({
   label: String,
@@ -114,9 +114,8 @@ const props = defineProps({
 })
 
 const isPressing = ref(false)
-// Use instance uid for consistent SSR/hydration
-const instance = getCurrentInstance()
-const uid = instance?.uid ?? 0
+// Use Vue's useId for SSR-safe unique IDs
+const uid = useId()
 
 function gid(localId) {
   return `btn-${uid}-${localId}`
