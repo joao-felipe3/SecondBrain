@@ -1,6 +1,6 @@
 import { ref, computed, onMounted } from 'vue'
 import { useApiResource } from '~/composables/api/useApi'
-import type { Project } from '~/composables/features/useProjectEditing'
+import type { Project } from '~/models/Project'
 
 export function useProjects() {
   const projects = ref<Project[]>([])

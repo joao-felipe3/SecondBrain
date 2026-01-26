@@ -1,5 +1,5 @@
 import { ref } from 'vue'
-import type { Project } from '~/composables/features/useProjectEditing'
+import type { Project } from '~/models/Project'
 
 export function useProjectDelete() {
   const showDeleteDialog = ref(false)

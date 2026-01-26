@@ -64,7 +64,8 @@ import { useApiResource } from '~/composables/api/useApi'
 import type { PropType } from 'vue'
 import { useCarousel } from '~/composables/ui/useCarousel'
 import { useSparkles } from '~/composables/ui/useSparkles'
-import { useProjectEditing, getProjectId, type Project } from '~/composables/features/useProjectEditing'
+import { useProjectEditing, getProjectId } from '~/composables/features/useProjectEditing'
+import type { Project } from '~/models/Project'
 
 const CLOSE_ANIM_MS = 800
 const TOTAL_SLIDES = 3

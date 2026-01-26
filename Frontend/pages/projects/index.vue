@@ -55,7 +55,7 @@ import DeleteProjectDialog from '../../components/shared/dialogs/DeleteProjectDi
 import { useProjects } from '~/composables/features/useProjects'
 import { useProjectModal } from '~/composables/features/useProjectModal'
 import { useProjectDelete } from '~/composables/features/useProjectDelete'
-import type { Project } from '~/composables/features/useProjectEditing'
+import type { Project } from '~/models/Project'
 
 // Composables
 const { projects, projectColors, updateProject, removeProject, removeProjectById } = useProjects()
