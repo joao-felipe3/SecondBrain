@@ -17,7 +17,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useTaskStore } from '~/stores/task'
-import useTaskHelpers from '~/composables/useTaskHelpers'
+import useTaskHelpers from '~/composables/features/useTaskHelpers'
 import { useApiResource } from '~/composables/api/useApi'
 import TaskMain from '../../components/features/tasks/Main.vue'
 import TaskSidebar from '../../components/features/tasks/Sidebar.vue'

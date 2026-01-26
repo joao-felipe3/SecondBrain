@@ -46,160 +46,57 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, onMounted } from 'vue'
-
+import { ref } from 'vue'
 import ProjectPanel from '../../components/features/projects/ProjectPanel.vue'
 import Book from '../../components/ui/svg/Book.vue'
 import BookShelf from '../../components/ui/svg/BookShelf.vue'
 import BookModal from '../../components/features/projects/BookModal.vue'
 import DeleteProjectDialog from '../../components/shared/dialogs/DeleteProjectDialog.vue'
-import { useApiResource } from '~/composables/api/useApi'
-import type { Project } from '~/composables/useProjectEditing'
+import { useProjects } from '~/composables/features/useProjects'
+import { useProjectModal } from '~/composables/features/useProjectModal'
+import { useProjectDelete } from '~/composables/features/useProjectDelete'
+import type { Project } from '~/composables/features/useProjectEditing'
 
-// Estado para controlar qual projeto está em hover
+// Composables
+const { projects, projectColors, updateProject, removeProject, removeProjectById } = useProjects()
+const { isModalOpen, selectedProject, startInEdit, openModal, closeModal, createNewProject } = useProjectModal()
+const { showDeleteDialog, projectToDelete, requestDelete, confirmDelete } = useProjectDelete()
+
+// Local state
 const hoveredProjectIndex = ref(-1)
 
-// Estado para controlar o modal
-const isModalOpen = ref(false)
-const selectedProject = ref<Project | null>(null)
-const startInEdit = ref(false)
-
-// Estado para o diálogo de exclusão
-const showDeleteDialog = ref(false)
-const projectToDelete = ref<Project | null>(null)
-
-// Lista real de projetos buscada do backend
-const projects = ref<Project[]>([])
-const api = useApiResource('/projects')
-
-onMounted(async () => {
-  await loadProjects()
-})
-
-async function loadProjects() {
-  const { data, error } = await api.list()
-  if (error) {
-    console.error('Failed to load projects', error)
-  } else if (data) {
-    projects.value = Array.isArray(data) ? data : []
-    // Load task count for each project
-    await loadTaskCounts()
-  }
-}
-
-async function loadTaskCounts() {
-  for (const project of projects.value) {
-    try {
-      const response = await fetch(`http://localhost:3000/projects/${project._id}/tasks`)
-      const tasks = await response.json()
-      project.taskCount = tasks.length
-    } catch (error) {
-      console.error(`Failed to load task count for project ${project._id}`, error)
-      project.taskCount = 0
-    }
-  }
-}
-
-// Função para lidar com hover de projetos
+// Event handlers
 const onProjectHover = (projectIndex: number) => {
   hoveredProjectIndex.value = projectIndex
 }
 
-// Função para lidar com clique de projetos
 const onProjectClick = (project: Project) => {
-  selectedProject.value = project
-  startInEdit.value = false
-  isModalOpen.value = true
+  openModal(project, false)
 }
 
 const onCreateProject = () => {
-  // Minimal blank project draft; BookModal composable will handle editing state
-  selectedProject.value = {
-    _id: undefined,
-    name: '',
-    description: '',
-    color: '#D2B48C',
-    startDate: new Date().toISOString().slice(0,10),
-    deadline: new Date().toISOString().slice(0,10),
-    totalHoursWorked: 0,
-    plannedHours: 0,
-    shortTermGoal: '',
-    midTermGoal: '',
-    longTermGoal: '',
-    status: 'pending',
-    progressPercentage: 0,
-    experience: 0,
-    reward: 0
-  }
-  startInEdit.value = true
-  isModalOpen.value = true
+  createNewProject()
 }
 
-// Função para fechar o modal
-const closeModal = () => {
-  isModalOpen.value = false
-  selectedProject.value = null
-  startInEdit.value = false
-}
-
-// Atualizações/remoções vindas do modal
 const onUpdated = (updated: Project) => {
-  if (!updated) return
-  const id = updated._id ?? updated.id
-  const idx = projects.value.findIndex(p => (p._id ?? p.id) === id)
-  if (idx >= 0) {
-    projects.value[idx] = { ...projects.value[idx], ...updated }
-  } else {
-    projects.value.push(updated)
-  }
-  // opcional: fechar após salvar
+  updateProject(updated)
   closeModal()
 }
 
 const onDeleted = (removed: Project) => {
-  if (!removed) return
-  const id = removed._id ?? removed.id
-  projects.value = projects.value.filter(p => (p._id ?? p.id) !== id)
+  removeProject(removed)
   closeModal()
 }
 
-// Função para lidar com requisição de exclusão
-const onRequestDelete = async (project: Project) => {
-  projectToDelete.value = project
-  showDeleteDialog.value = true
+const onRequestDelete = (project: Project) => {
+  requestDelete(project)
 }
 
-// Função para confirmar exclusão com opções
 const onConfirmDelete = async (deleteTasks: boolean) => {
-  if (!projectToDelete.value) return
-
-  try {
-    const projectId = projectToDelete.value._id
-    const response = await fetch(
-      `http://localhost:3000/projects/${projectId}?deleteTasks=${deleteTasks}`,
-      { method: 'DELETE' }
-    )
-    
-    if (!response.ok) {
-      throw new Error('Failed to delete project')
-    }
-
-    const result = await response.json()
-    console.log(result.message)
-
-    // Remover da lista local
-    projects.value = projects.value.filter(p => p._id !== projectId)
-    
-    projectToDelete.value = null
-  } catch (error) {
-    console.error('Error deleting project:', error)
-  }
+  await confirmDelete(deleteTasks, (projectId) => {
+    removeProjectById(projectId)
+  })
 }
-
-// Extrair as cores dos projetos
-const projectColors = computed(() => 
-  (projects.value || []).map(project => project.color)
-)
 
 </script>
 

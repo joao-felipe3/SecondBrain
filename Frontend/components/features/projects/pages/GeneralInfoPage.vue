@@ -161,7 +161,7 @@
 </template>
 <script setup lang="ts">
 import { Calendar, Coins, Award } from 'lucide-vue-next'
-import useDateFormat from '~/composables/useDateFormat'
+import useDateFormat from '~/composables/utils/useDateFormat'
 import type { PropType } from 'vue'
 import { reactive, watch, ref, nextTick } from 'vue'
 

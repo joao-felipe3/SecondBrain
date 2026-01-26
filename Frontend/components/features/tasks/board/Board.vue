@@ -44,11 +44,11 @@
 <script setup>
 import { ref, watch, onMounted, onBeforeUnmount } from 'vue'
 import TaskPaper from './Paper.vue'
-import { useTaskPosition } from '~/composables/useTaskPosition'
-import { getProjectColors } from '~/composables/useColor'
-import { useZoomState } from '~/composables/useZoomState'
-import { useZoomController } from '~/composables/useZoomController'
-import { useTaskActions } from '~/composables/useTaskActions'
+import { useTaskPosition } from '~/composables/ui/useTaskPosition'
+import { getProjectColors } from '~/composables/utils/useColor'
+import { useZoomState } from '~/composables/ui/useZoomState'
+import { useZoomController } from '~/composables/ui/useZoomController'
+import { useTaskActions } from '~/composables/features/useTaskActions'
 
 // Props & Emits
 const { tasks, projects, initialZoomedTask, showAllTasks } = defineProps([
