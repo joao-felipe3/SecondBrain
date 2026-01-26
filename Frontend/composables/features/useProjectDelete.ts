@@ -1,7 +1,9 @@
 import { ref } from 'vue'
+import { useProjectStore } from '~/stores/project'
 import type { Project } from '~/models/Project'
 
 export function useProjectDelete() {
+  const projectStore = useProjectStore()
   const showDeleteDialog = ref(false)
   const projectToDelete = ref<Project | null>(null)
 
@@ -15,19 +17,11 @@ export function useProjectDelete() {
 
     try {
       const projectId = projectToDelete.value._id
-      const response = await fetch(
-        `http://localhost:3000/projects/${projectId}?deleteTasks=${deleteTasks}`,
-        { method: 'DELETE' }
-      )
+      if (!projectId) return
 
-      if (!response.ok) {
-        throw new Error('Failed to delete project')
-      }
+      await projectStore.deleteProject(projectId, deleteTasks)
 
-      const result = await response.json()
-      console.log(result.message)
-
-      if (onSuccess && projectId) {
+      if (onSuccess) {
         onSuccess(projectId)
       }
 

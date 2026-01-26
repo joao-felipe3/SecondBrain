@@ -1,5 +1,5 @@
-import { useTaskStore } from '../../stores/task'
-import type { Task } from '../../models/Task'
+import { useTaskStore } from '~/stores/task'
+import type { Task } from '~/models/Task'
 import type { Ref } from 'vue'
 
 export function useTaskActions(params: {
