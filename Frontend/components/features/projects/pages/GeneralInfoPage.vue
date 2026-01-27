@@ -27,145 +27,41 @@
           <p class="project-description">{{ project.description }}</p>
         </template>
 
-        <!-- Project Progress -->
+        <!-- Project Info Card -->
         <v-sheet class="timeline-info" elevation="0" color="transparent">
-          <h5>📋 Project Info</h5>
-          <v-sheet class="progress-info" elevation="0" color="transparent">
-            <v-sheet class="stats-grid" elevation="0" color="transparent">
-              <div class="stat-item">
-                <Coins :size="20" stroke-width="3" />
-                <span>{{ project.reward }} Coins</span>
-              </div>
-              <div class="stat-item">
-                <Award :size="20" stroke-width="3" />
-                <span>{{ project.experience }} EXP</span>
-              </div>
-            </v-sheet>
-              <div class="progress-stat">
-                <span v-if="!editing"><strong>Deadline:</strong> {{ formatDeadline(project.deadline) }}</span>
-                <div v-else class="deadline-edit">
-                  <strong>Deadline:</strong>
-                  <v-text-field 
-                    ref="deadlineLeftRef"
-                    v-model="local.deadline" 
-                    type="date"
-                    label="Deadline" 
-                    variant="solo-filled"
-                    density="compact"
-                    prepend-inner-icon=""
-                    hide-details
-                    :clearable="false"
-                    class="deadline-field"
-                    @click:control="onDateClick('deadlineLeft')"
-                    @click:prepend-inner="onDateClick('deadlineLeft')"
-                    @focus="onDateClick('deadlineLeft')"
-                    @update:model-value="emitField('deadline', $event)" 
-                  >
-                    <template #prepend-inner>
-                      <Calendar class="ml-2" :size="16" />
-                    </template>
-                  </v-text-field>
-                </div>
-              </div>
-            <div class="hours-row">
-              <p><strong>Hours Worked:</strong> {{ project.totalHoursWorked }}h</p>
-              <p><strong>Planned Hours:</strong> {{ project.plannedHours }}h</p>
-            </div>
-            <div class="progress-row">
-              <p class="progress-text"><strong>Progress:</strong> {{ (project.progressPercentage || 0).toFixed(1) }}%</p>
-              <div class="progress-inline">
-                <div class="progress-inline-bar" :style="{ width: `${project.progressPercentage || 0}%`, backgroundColor: project.color }"></div>
-              </div>
-            </div>
-            
-            <!-- Status dentro do Project Progress -->
-            <div v-if="editing" class="status-row">
-              <div class="control-item">
-                <span class="control-label">Status:</span>
-                <v-select 
-                  v-model="local.status" 
-                  :items="statusItems" 
-                  variant="solo-filled" 
-                  density="compact" 
-                  hide-details
-                  :menu-props="{ attach: 'body', zIndex: 99999 }"
-                  @update:model-value="emitField('status', $event)" 
-                />
-              </div>
-              <div class="control-item">
-                <span class="control-label">Color:</span>
-                <v-text-field 
-                  v-model="local.color" 
-                  type="color" 
-                  label="Color" 
-                  variant="solo-filled" 
-                  density="compact" 
-                  hide-details
-                  @update:model-value="emitField('color', $event)" 
-                />
-              </div>
-            </div>
-            <p v-else><strong>Status:</strong> {{ project.status }}</p>
-          </v-sheet>
+          <ProjectInfoCard
+            :project="project"
+            :editing="editing"
+            v-model:deadline="local.deadline"
+            v-model:status="local.status"
+            v-model:color="local.color"
+            @update:deadline="emitField('deadline', $event)"
+            @update:status="emitField('status', $event)"
+            @update:color="emitField('color', $event)"
+          />
         </v-sheet>
       </div>
     </v-sheet>
     <v-sheet class="page right-page" elevation="0" color="transparent">
-      <div v-if="project">
-        <h4>🎯 Objetivo de Curto Prazo</h4>
-        <template v-if="editing">
-          <v-textarea 
-            v-model="local.shortTermGoal" 
-            label="Objetivo curto prazo" 
-            variant="solo-filled" 
-            density="comfortable" 
-            auto-grow 
-            rows="3" 
-            @update:model-value="emitField('shortTermGoal', $event)" 
-          />
-        </template>
-        <p v-else class="goal-content">{{ project.shortTermGoal }}</p>
-        <div v-if="project">
-          <h4>🎯 Objetivo de Médio Prazo</h4>
-          <template v-if="editing">
-            <v-textarea 
-              v-model="local.midTermGoal" 
-              label="Objetivo médio prazo" 
-              variant="solo-filled" 
-              density="comfortable" 
-              auto-grow 
-              rows="3" 
-              @update:model-value="emitField('midTermGoal', $event)" 
-            />
-          </template>
-          <p v-else class="goal-content">{{ project.midTermGoal }}</p>
-        </div>
-        <div v-if="project">
-          <h4>🎯 Objetivo de Longo Prazo</h4>
-          <template v-if="editing">
-            <v-textarea 
-              v-model="local.longTermGoal" 
-              label="Objetivo longo prazo" 
-              variant="solo-filled" 
-              density="comfortable" 
-              auto-grow 
-              rows="3" 
-              @update:model-value="emitField('longTermGoal', $event)" 
-            />
-          </template>
-          <p v-else class="goal-content">{{ project.longTermGoal }}</p>
-        </div>
-      </div>
+      <GoalsSection
+        v-if="project"
+        :project="project"
+        :editing="editing"
+        v-model:short-term-goal="local.shortTermGoal"
+        v-model:mid-term-goal="local.midTermGoal"
+        v-model:long-term-goal="local.longTermGoal"
+        @update:short-term-goal="emitField('shortTermGoal', $event)"
+        @update:mid-term-goal="emitField('midTermGoal', $event)"
+        @update:long-term-goal="emitField('longTermGoal', $event)"
+      />
     </v-sheet>
   </v-sheet>
 </template>
-<script setup lang="ts">
-import { Calendar, Coins, Award } from 'lucide-vue-next'
-import useDateFormat from '~/composables/utils/useDateFormat'
-import type { PropType } from 'vue'
-import { reactive, watch, ref, nextTick } from 'vue'
 
-const { formatDeadline, formatDate } = useDateFormat()
+<script setup lang="ts">
+import type { PropType } from 'vue'
+import { reactive, watch } from 'vue'
+import { ProjectInfoCard, GoalsSection } from '../components'
 
 type Project = Record<string, any>
 
@@ -177,40 +73,8 @@ const props = defineProps({
 const emit = defineEmits(['update-field'])
 
 const local = reactive<any>({})
-const statusItems = ['pending','in-progress','completed','archived']
 
-// Refs to v-text-field components so we can access the native input
-const startDateRef = ref()
-const deadlineLeftRef = ref()
-const deadlineRightRef = ref()
-
-function openNativePicker(inputEl: HTMLInputElement | null | undefined) {
-  if (!inputEl) return
-  inputEl.focus()
-  if (typeof inputEl.showPicker === 'function') {
-    try { inputEl.showPicker() } catch { }
-  } else {
-    inputEl.click()
-  }
-}
-
-async function onDateClick(which: 'startDate' | 'deadlineLeft' | 'deadlineRight') {
-  await nextTick()
-  let compRef: any
-  if (which === 'startDate') compRef = startDateRef.value
-  else if (which === 'deadlineLeft') compRef = deadlineLeftRef.value
-  else compRef = deadlineRightRef.value
-
-  if (!compRef) return
-  // Vuetify v-text-field renders an input inside .v-field__input
-  // Try a few common paths
-  const root = compRef.$el as HTMLElement
-  let inputEl = root.querySelector('input[type="date"]') as HTMLInputElement | null
-  if (!inputEl) inputEl = root.querySelector('input') as HTMLInputElement | null
-  openNativePicker(inputEl)
-}
-
-// Sync only the fields specific to this page
+// Sync fields when project changes
 watch(() => props.project, (val) => {
   if (val) {
     local.name = val.name
@@ -221,6 +85,9 @@ watch(() => props.project, (val) => {
     local.color = val.color
     local.plannedHours = val.plannedHours
     local.status = val.status
+    local.shortTermGoal = val.shortTermGoal
+    local.midTermGoal = val.midTermGoal
+    local.longTermGoal = val.longTermGoal
   }
 }, { immediate: true })
 
@@ -234,124 +101,61 @@ watch(() => props.editing, (is) => {
     local.color = props.project.color
     local.plannedHours = props.project.plannedHours
     local.status = props.project.status
+    local.shortTermGoal = props.project.shortTermGoal
+    local.midTermGoal = props.project.midTermGoal
+    local.longTermGoal = props.project.longTermGoal
   }
 }, { immediate: true })
 
 function emitField(field: string, value: any) {
-  local[field] = value // Update local value
+  local[field] = value
   emit('update-field', field, value)
 }
 </script>
 
 <style scoped>
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 1rem;
-  align-items: center;
-  margin: 0.5rem 0;
-}
-
-.stat-item {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-size: 1rem;
-  color: #000;
-}
-
-.timeline-info h5 {
-  margin-bottom: 0.5rem;
-  font-size: 1.1rem;
-  color: #000;
-}
-
-.progress-info {
-  margin-bottom: 1rem;
-}
-
-.progress-info p {
-  margin: 0.3rem 0;
-  font-size: 1rem;
-  color: #000;
-}
-
-/* Progress Stat - Deadline row */
-.progress-stat {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  margin: 0.3rem 0;
-  font-size: 1rem;
-  color: #000;
-}
-
-.deadline-edit {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.deadline-field {
-  max-width: 180px;
-}
-
-/* Hours Row - Hours Worked e Planned Hours lado a lado */
-.hours-row {
+.page-container {
   display: flex;
   gap: 1rem;
-  flex-wrap: wrap;
-}
-
-.hours-row p {
-  margin: 0.3rem 0;
-}
-
-/* Progress Row - Progress percentage e barra inline */
-.progress-row {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-}
-
-.progress-text {
-  margin: 0.25rem 0;
-  white-space: nowrap;
-}
-
-.progress-inline {
-  flex: 1;
-  height: 10px;
-  background: #e2e8f0;
-  border-radius: 9999px;
-  overflow: hidden;
-}
-
-.progress-inline-bar {
+  padding: 0.5rem;
   height: 100%;
-  transition: width 0.3s ease;
-  border-radius: inherit;
 }
 
-/* Status Row - Status e Color lado a lado no modo edição */
-.status-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1rem;
-  margin-top: 0.5rem;
+.page {
+  flex: 1;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 8px;
+  overflow-y: auto;
 }
 
-.control-item {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
+.left-page {
+  border-right: 1px solid #e2e8f0;
 }
 
-.control-label {
-  font-size: 0.875rem;
-  font-weight: 500;
-  color: #000;
+.right-page {
+  border-left: 1px solid #e2e8f0;
+}
+
+.page-container.editing .page {
+  background: rgba(255, 255, 255, 0.95);
+}
+
+.page-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0 0 0.5rem 0;
+}
+
+.project-description {
+  color: #475569;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  margin: 0 0 1rem 0;
+}
+
+.timeline-info {
+  margin-top: 1rem;
 }
 </style>
-
-

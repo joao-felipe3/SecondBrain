@@ -52,7 +52,6 @@ const deleteAndClose = () => {
 };
 
 const handleCompleteFall = () => {
-  console.log("arroz")
   emit('fall-complete', task._id);
 };
 

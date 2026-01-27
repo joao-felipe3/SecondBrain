@@ -1,0 +1,27 @@
+/* Page Container Styles - shared with other pages */
+.page-container {
+  display: flex;
+  gap: 1rem;
+  padding: 0.5rem;
+  height: 100%;
+}
+
+.page {
+  flex: 1;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 8px;
+  overflow-y: auto;
+}
+
+.left-page {
+  border-right: 1px solid #e2e8f0;
+}
+
+.right-page {
+  border-left: 1px solid #e2e8f0;
+}
+
+.page-container.editing .page {
+  background: rgba(255, 255, 255, 0.95);
+}
