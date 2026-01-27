@@ -42,10 +42,10 @@
 
 <script setup>
   import { ref } from 'vue'
-  import TaskStatsCard from './board/StatsCard.vue'
-  import TaskBackgroundDecor from './board/BackgroundDecor.vue'
-  import TaskBoard from './board/Board.vue'
-  import SvgButton from '../../ui/svg/Button.vue'
+  import TaskStatsCard from '../board/StatsCard.vue'
+  import TaskBackgroundDecor from '../board/BackgroundDecor.vue'
+  import TaskBoard from '../board/Board.vue'
+  import SvgButton from '../../../ui/svg/Button.vue'
   
   defineProps(['tasks', 'projects', 'zoomed', 'initialZoomedTask'])
   defineEmits(['zoom-in', 'zoom-out', 'remove-last-task', 'task-created'])

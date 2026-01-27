@@ -19,8 +19,8 @@ import { ref, onMounted } from 'vue'
 import { useTaskStore } from '~/stores/task'
 import useTaskHelpers from '~/composables/features/useTaskHelpers'
 import { useApiResource } from '~/composables/api/useApi'
-import TaskMain from '../../components/features/tasks/Main.vue'
-import TaskSidebar from '../../components/features/tasks/Sidebar.vue'
+import TaskMain from '../../components/features/tasks/layout/Main.vue'
+import TaskSidebar from '../../components/features/tasks/layout/Sidebar.vue'
 
 // Estado local
 const zoomed = ref(false)
