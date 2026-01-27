@@ -1,0 +1,76 @@
+/**
+ * Book Modal - Responsive Styles
+ * Media queries and accessibility preferences
+ */
+
+/* Tablet breakpoint */
+@media (max-width: 768px) { 
+  .container { 
+    --sprite-th: calc(var(--sprite-sh) / 2.5); 
+    padding: 1rem; 
+  } 
+  
+  .page-title { 
+    font-size: 1.4rem; 
+  } 
+  
+  .page { 
+    padding: 15px; 
+    font-size: 12px; 
+  } 
+  
+  .close-button { 
+    width: 50px; 
+    height: 50px; 
+    top: 1rem; 
+    right: 1rem; 
+  }
+}
+
+/* Mobile breakpoint */
+@media (max-width: 560px) { 
+  .container { 
+    --sprite-th: calc(var(--sprite-sh) / 4); 
+  } 
+  
+  .page-title { 
+    font-size: 1.2rem; 
+  } 
+  
+  .page { 
+    padding: 12px; 
+    font-size: 10px; 
+  } 
+  
+  .page > div { 
+    font-size: 0.8rem; 
+  }
+}
+
+/* Reduced motion preference */
+@media (prefers-reduced-motion: reduce) { 
+  * { 
+    animation: none !important; 
+  }
+  
+  .sparkle { 
+    display: none !important; 
+  }
+  
+  .book-modal-overlay.is-closing { 
+    opacity: 0 !important; 
+  }
+}
+
+/* Fallback for browsers without scroll-timeline support */
+@supports not (scroll-timeline: --dummy x) { 
+  .sprite { 
+    animation-timeline: auto; 
+  } 
+  
+  .carousel::scroll-marker-group, 
+  .carousel::scroll-button(left), 
+  .carousel::scroll-button(right) { 
+    display: none; 
+  }
+}

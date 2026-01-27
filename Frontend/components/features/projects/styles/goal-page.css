@@ -1,3 +1,11 @@
+/**
+ * Goal Page - Specific Styles
+ * Page container overrides for GoalPage component
+ * 
+ * Note: These styles extend the base book-pages.css styles
+ * with specific overrides for the goal management page.
+ */
+
 /* Page Container Styles - shared with other pages */
 .page-container {
   display: flex;

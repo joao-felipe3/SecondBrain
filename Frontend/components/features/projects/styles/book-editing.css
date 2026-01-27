@@ -1,0 +1,232 @@
+/**
+ * Book Modal - Editing Mode Styles
+ * Vuetify field overrides for form inputs inside the book
+ */
+
+/* === Scoped Vuetify field overrides === */
+.editing :deep(.v-field.v-field--variant-solo-filled) { 
+  background: #ffffff !important; 
+  --v-field-padding-start: 8px; 
+  --v-field-padding-end: 8px; 
+}
+
+.editing :deep(.v-field.v-field--variant-solo-filled .v-field__overlay) { 
+  background: transparent !important; 
+}
+
+.editing .page-container .v-field__input,
+.editing .page-container .v-text-field input,
+.editing .page-container .v-textarea .v-field__input,
+.editing .page-container textarea,
+.editing :deep(.v-field__input),
+.editing :deep(.v-text-field input),
+.editing :deep(textarea) { 
+  color: #222 !important; 
+  caret-color: #222 !important;
+  -webkit-text-fill-color: #222 !important;
+}
+
+.editing :deep(.v-field-label) { 
+  color: #6b4b20 !important; 
+  opacity: .85; 
+  font-weight: 500; 
+}
+
+.editing :deep(.v-field--focused .v-field-label) { 
+  color: #b7791f !important; 
+}
+
+.editing :deep(.v-field) { 
+  overflow: visible; 
+  box-shadow: 0 0 0 2px rgba(140, 90, 40, 0.15); 
+  border-radius: 6px; 
+  margin-bottom: .5rem;
+}
+
+.editing :deep(.v-field__overlay) { 
+  z-index: 1; 
+}
+
+.editing :deep(.v-field-label) { 
+  z-index: 2; 
+}
+
+.editing :deep(.v-field:hover) { 
+  box-shadow: 0 0 0 2px rgba(140, 90, 40, 0.25); 
+}
+
+/* === Custom input wrapper overrides === */
+.editing :deep(.custom-input .v-field) { 
+  background: #fff !important; 
+  box-shadow: 0 0 0 2px rgba(140, 90, 40, 0.15);
+}
+
+.editing :deep(.custom-input .v-field__input) { 
+  color: #222 !important; 
+}
+
+.editing :deep(.custom-input .v-label) { 
+  color: #6b4b20 !important; 
+}
+
+/* === Ensure inputs remain interactive === */
+.editing .page { 
+  position: relative; 
+  z-index: 10; 
+}
+
+.editing :deep(.custom-input .v-field),
+.editing :deep(.v-field),
+.editing :deep(.v-field__input),
+.editing :deep(input),
+.editing :deep(textarea) { 
+  pointer-events: auto !important; 
+  z-index: 15; 
+}
+
+.editing :deep(.v-input),
+.editing :deep(.v-textarea) { 
+  pointer-events: auto !important; 
+}
+
+/* === Guarantee interaction not blocked by overlay === */
+.page-container .v-field, 
+.page-container .v-textarea, 
+.page-container input, 
+.page-container textarea, 
+.page-container select { 
+  pointer-events: auto; 
+  position: relative; 
+  z-index: 5; 
+}
+
+/* === Additional rules for full interactivity === */
+.editing .page-container .v-field,
+.editing .page-container .v-text-field,
+.editing .page-container .v-textarea,
+.editing .page-container .v-select,
+.editing .page-container input[type="date"],
+.editing .page-container input[type="number"],
+.editing .page-container input[type="color"],
+.editing .page-container textarea {
+  pointer-events: auto !important;
+  position: relative !important;
+  z-index: 20 !important;
+}
+
+.editing .page-container .v-field__input,
+.editing .page-container .v-field__field,
+.editing .page-container .v-input__control {
+  pointer-events: auto !important;
+  z-index: 25 !important;
+  color: #222 !important;
+  -webkit-text-fill-color: #222 !important;
+}
+
+/* === Ensure input text is always visible === */
+.editing .page-container input,
+.editing .page-container textarea {
+  color: #222 !important;
+  -webkit-text-fill-color: #222 !important;
+  background: #fff !important;
+}
+
+/* === Fix for Vuetify field background and text === */
+.editing .page-container .v-field.v-field--variant-solo-filled {
+  background: #ffffff !important;
+}
+
+.editing .page-container .v-field.v-field--variant-solo-filled .v-field__input {
+  color: #222 !important;
+  -webkit-text-fill-color: #222 !important;
+}
+
+/* === Global equivalents (non-scoped) === */
+.editing .v-field.v-field--variant-solo-filled { 
+  background: #ffffff !important; 
+  --v-field-padding-start: 8px; 
+  --v-field-padding-end: 8px; 
+}
+
+.editing .v-field.v-field--variant-solo-filled .v-field__overlay { 
+  background: transparent !important; 
+}
+
+.editing .v-field__input,
+.editing .v-text-field input,
+.editing .v-textarea .v-field__input,
+.editing textarea {
+  color: #222 !important;
+  caret-color: #222 !important;
+  -webkit-text-fill-color: #222 !important;
+}
+
+.editing .v-field-label { 
+  color: #6b4b20 !important; 
+  opacity: 1; 
+  font-weight: 500; 
+  mix-blend-mode: normal; 
+}
+
+.editing .v-field--focused .v-field-label { 
+  color: #b7791f !important; 
+}
+
+.editing .v-field .v-field-label.v-field-label--floating { 
+  transform: translateY(-6px) scale(0.85); 
+  transform-origin: left top; 
+}
+
+.editing .v-field { 
+  position: relative; 
+  overflow: visible; 
+  box-shadow: 0 0 0 2px rgba(140, 90, 40, 0.15); 
+  border-radius: 0.5rem; 
+  padding: 0;
+}
+
+.editing .v-field .v-field__overlay { 
+  z-index: 1; 
+}
+
+.editing .v-field__field { 
+  position: relative; 
+  z-index: 2; 
+}
+
+.editing .v-field .v-field-label { 
+  z-index: 9; 
+  margin-top: 3px; 
+}
+
+.editing .v-field:hover { 
+  box-shadow: 0 0 0 2px rgba(140, 90, 40, 0.25); 
+}
+
+.editing .v-input,
+.editing .v-textarea { 
+  pointer-events: auto !important; 
+}
+
+.editing input,
+.editing textarea { 
+  background: #fff !important; 
+}
+
+/* === Date picker icon hiding === */
+.page-container.editing input[type="date"]::-webkit-calendar-picker-indicator {
+  opacity: 0 !important;
+  display: none !important;
+}
+
+.page-container.editing input[type="date"]::-webkit-inner-spin-button,
+.page-container.editing input[type="date"]::-webkit-clear-button {
+  display: none !important;
+}
+
+.page-container.editing input[type="date"] {
+  background-image: none !important;
+  appearance: textfield;
+  -webkit-appearance: none;
+  -moz-appearance: textfield;
+}

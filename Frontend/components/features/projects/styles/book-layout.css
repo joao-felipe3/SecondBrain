@@ -1,0 +1,170 @@
+/**
+ * Book Modal - Layout & Structure
+ * Main container, overlay, and book structure styles
+ */
+
+/* CSS custom properties for sprite animation */
+@property --sprite-fs { 
+  syntax: "<integer>"; 
+  initial-value: 0; 
+  inherits: true; 
+}
+
+@property --_progress { 
+  syntax: "<percentage>"; 
+  initial-value: 0%; 
+  inherits: false; 
+}
+
+/* Z-index layer management */
+.v-dialog__content,
+.v-overlay__content,
+.v-dialog.v-theme--light,
+.v-dialog.v-theme--dark,
+.v-dialog,
+.v-overlay {
+  z-index: 2147483647 !important;
+}
+
+/* Ensure v-select dropdown menu appears above modal overlay */
+.v-menu__content,
+.v-overlay__content {
+  z-index: 99999 !important;
+}
+
+/* Modal overlay */
+.book-modal-overlay { 
+  position: fixed; 
+  top: 0; 
+  left: 0;
+  width: 100vw; 
+  height: 100vh; 
+  background-color: rgba(0, 0, 0, 0.85); 
+  display: flex; 
+  justify-content: center; 
+  align-items: center; 
+  z-index: 9999; 
+  backdrop-filter: blur(4px); 
+  animation: fadeIn 0.6s ease-out; 
+  background-image: 
+    radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.1) 0%, transparent 50%), 
+    radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.1) 0%, transparent 50%); 
+}
+
+.book-modal-overlay.is-closing { 
+  animation: fadeOutOverlay 0.75s ease forwards; 
+}
+
+/* Main container with sprite variables */
+.container { 
+  position: relative; 
+  width: 100%; 
+  height: 100%; 
+  display: flex; 
+  flex-direction: column; 
+  align-items: center; 
+  justify-content: center; 
+  color: #333; 
+  font-family: 'Irish Grover', cursive; 
+  
+  /* Sprite configuration */
+  --sprite-image: url('https://assets.codepen.io/36869/book.webp'); 
+  --sprite-c: 5; 
+  --sprite-h: 3000; 
+  --sprite-w: 9600; 
+  --sprite-f: 7; 
+  --sprite-fr: 12; 
+  --sprite-as: calc(var(--sprite-f) / var(--sprite-fr) * 1s); 
+  --sprite-r: round(up, calc(var(--sprite-f) / var(--sprite-c)), 1); 
+  --sprite-sh: calc(var(--sprite-h) / var(--sprite-r)); 
+  --sprite-th: calc(var(--sprite-sh) / 2); 
+  --sprite-ar: calc(var(--sprite-th) / var(--sprite-sh)); 
+  --sprite-uh: calc(var(--sprite-h) * var(--sprite-ar)); 
+  --sprite-uw: calc(var(--sprite-w) * var(--sprite-ar)); 
+  --sprite-tw: calc(var(--sprite-uw) / var(--sprite-c)); 
+}
+
+/* Close button */
+.close-button { 
+  position: absolute; 
+  top: 2rem; 
+  right: 2rem; 
+  background: rgba(139, 69, 19, 0.9); 
+  border: 3px solid #8B4513; 
+  border-radius: 50%; 
+  width: 60px; 
+  height: 60px; 
+  display: flex; 
+  align-items: center; 
+  justify-content: center; 
+  cursor: pointer; 
+  transition: all 0.2s ease; 
+  color: #F5DEB3; 
+  z-index: 10001; 
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4); 
+}
+
+.close-button:hover { 
+  background: rgba(160, 82, 45, 0.9); 
+  border-color: #A0522D; 
+  transform: scale(1.1); 
+}
+
+/* Sprite wrapper with entrance animation */
+.sprite-wrapper { 
+  position: relative; 
+  width: 90%; 
+  max-width: 1000px; 
+  margin: 0 auto; 
+  animation: bookPortal 1.8s cubic-bezier(.65, .05, .35, 1) forwards; 
+  transform: translateY(40px) scale(.6) rotateX(35deg) rotateZ(-8deg); 
+  transform-style: preserve-3d;
+  opacity: 0; 
+  filter: brightness(.4) blur(10px) saturate(.6); 
+}
+
+.book-modal-overlay.is-closing .sprite-wrapper { 
+  animation: bookExit 0.8s cubic-bezier(.65, .05, .35, 1) forwards; 
+}
+
+.book-modal-overlay.is-closing .sparkle { 
+  animation: sparkleOut 0.5s ease forwards !important; 
+}
+
+/* Book grid layout */
+.book { 
+  position: relative; 
+  display: grid; 
+  grid-template-areas: 
+    "scroll scroll scroll" 
+    "left markers right"; 
+  gap: 1rem; 
+  animation: bookMaterialize 1s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.4s both; 
+}
+
+/* Sprite background element */
+.sprite { 
+  position: absolute; 
+  display: flex; 
+  align-items: center; 
+  justify-content: center; 
+  height: calc(1px * var(--sprite-th)); 
+  width: calc(1px * var(--sprite-tw)); 
+  margin: calc(-1px * calc((var(--sprite-th) - (var(--sprite-th) * 0.6107)) / 2)) 
+          calc(-1px * calc((var(--sprite-tw) - (var(--sprite-tw) * 0.7042)) / 2)); 
+  background-image: var(--sprite-image); 
+  transform-origin: center center; 
+  background-repeat: no-repeat; 
+  background-size: calc(1px * var(--sprite-uw)) calc(1px * var(--sprite-uh)); 
+  z-index: -1; 
+  
+  /* Sprite frame calculations */
+  --sprite-fe: calc(var(--sprite-f) * (var(--slides) - 1)); 
+  --sprite-fs-n: mod(var(--sprite-fs), var(--sprite-f)); 
+  --row: calc(round(down, calc(calc(var(--sprite-tw) * var(--sprite-fs-n)) / var(--sprite-uw)), 1) * var(--sprite-th)); 
+  --col: mod(calc(var(--sprite-tw) * var(--sprite-fs-n)), var(--sprite-uw)); 
+  
+  background-position: calc(-1px * var(--col)) calc(-1px * var(--row)); 
+  animation: frame var(--sprite-as) linear 0s normal none running; 
+  animation-timeline: --carousel-timeline; 
+}

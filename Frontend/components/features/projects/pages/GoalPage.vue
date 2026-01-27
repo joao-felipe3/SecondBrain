@@ -191,4 +191,4 @@ function emitField(field: string, value: any) {
 }
 </script>
 
-<style src="./GoalPage.css" scoped></style>
+<style src="../styles/goal-page.css" scoped></style>

@@ -1,0 +1,98 @@
+/**
+ * Book Modal - Navigation Arrows
+ * Manual navigation controls for carousel
+ */
+
+.nav-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: radial-gradient(
+    circle at 30% 30%, 
+    #ffe9c6, 
+    #d6a15a 60%, 
+    #8b5a25
+  );
+  color: #3a210d;
+  font-size: 2.2rem;
+  line-height: 1;
+  width: 68px;
+  height: 68px;
+  border: 3px solid #5c3817;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 
+    0 6px 18px rgba(0, 0, 0, 0.5), 
+    0 0 0 4px rgba(255, 255, 255, 0.08) inset;
+  transition: 
+    transform 0.25s cubic-bezier(.25, .8, .3, 1), 
+    filter .25s, 
+    box-shadow .25s;
+  z-index: 1000;
+  user-select: none;
+  font-family: 'Irish Grover', cursive;
+}
+
+.nav-arrow:hover:not(:disabled) {
+  transform: translateY(-50%) scale(1.08);
+  filter: brightness(1.1) saturate(1.15);
+}
+
+.nav-arrow:active:not(:disabled) {
+  transform: translateY(-50%) scale(0.92);
+  box-shadow: 
+    0 3px 10px rgba(0, 0, 0, 0.6), 
+    0 0 0 4px rgba(255, 255, 255, 0.05) inset;
+}
+
+.nav-arrow:disabled { 
+  opacity: 0.35; 
+  cursor: default; 
+  filter: grayscale(.6); 
+}
+
+/* Arrow positions */
+.nav-prev { 
+  left: clamp(0.5rem, 4vw, 3rem); 
+}
+
+.nav-next { 
+  right: clamp(0.5rem, 4vw, 3rem); 
+}
+
+/* Large screens: arrows outside book */
+@media (min-width: 1200px) {
+  .nav-prev { 
+    left: max(2%, calc(50% - 700px)); 
+  }
+  .nav-next { 
+    right: max(2%, calc(50% - 700px)); 
+  }
+}
+
+/* Medium screens: reduce size */
+@media (max-width: 900px) {
+  .nav-arrow { 
+    width: 54px; 
+    height: 54px; 
+    font-size: 1.8rem; 
+  }
+}
+
+/* Small screens: compact size */
+@media (max-width: 640px) {
+  .nav-arrow { 
+    width: 46px; 
+    height: 46px; 
+    font-size: 1.5rem; 
+  }
+  .nav-prev { 
+    left: 0.4rem; 
+  }
+  .nav-next { 
+    right: 0.4rem; 
+  }
+}

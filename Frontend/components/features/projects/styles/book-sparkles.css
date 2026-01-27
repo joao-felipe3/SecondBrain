@@ -1,0 +1,33 @@
+/**
+ * Book Modal - Sparkles & Magic Effects
+ * Magical aura and particle effects
+ */
+
+/* Magic layer container */
+.magic-layer { 
+  position: absolute; 
+  inset: 0; 
+  pointer-events: none; 
+  overflow: hidden; 
+  z-index: 5; 
+  mix-blend-mode: plus-lighter; 
+}
+
+/* Individual sparkle particles */
+.sparkle { 
+  position: absolute; 
+  width: var(--spark-size); 
+  height: var(--spark-size); 
+  background: radial-gradient(
+    circle at 30% 30%, 
+    hsl(var(--spark-hue) 90% 92%), 
+    hsl(var(--spark-hue) 85% 60%) 45%, 
+    transparent 70%
+  ); 
+  border-radius: 50%; 
+  filter: blur(.5px) drop-shadow(0 0 4px hsl(var(--spark-hue) 90% 70% / .9)); 
+  animation: 
+    sparkleFloat linear infinite, 
+    sparklePulse ease-in-out infinite; 
+  opacity: 0; 
+}

@@ -1,0 +1,33 @@
+/**
+ * Book Modal - Main Entry Point
+ * Imports all modular CSS files in correct order
+ * 
+ * IMPORTANT: @import statements must appear before other rules
+ */
+
+/* 1. Fonts (must be first for Google Fonts to work) */
+@import './book-fonts.css';
+
+/* 2. Core layout and structure */
+@import './book-layout.css';
+
+/* 3. Carousel component */
+@import './book-carousel.css';
+
+/* 4. Page content styles */
+@import './book-pages.css';
+
+/* 5. Navigation arrows */
+@import './book-navigation.css';
+
+/* 6. Editing mode (Vuetify overrides) */
+@import './book-editing.css';
+
+/* 7. Sparkles and magic effects */
+@import './book-sparkles.css';
+
+/* 8. Keyframe animations */
+@import './book-animations.css';
+
+/* 9. Responsive and accessibility */
+@import './book-responsive.css';

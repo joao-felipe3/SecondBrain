@@ -1,0 +1,147 @@
+/**
+ * Book Modal - Carousel Styles
+ * Horizontal scroll carousel with shimmer effect
+ */
+
+/* Shimmer effect overlay */
+.carousel::before { 
+  content: ''; 
+  position: absolute; 
+  left: 0; 
+  right: 0; 
+  top: 5%; 
+  height: 85%; 
+  background: linear-gradient(
+    100deg, 
+    rgba(255, 255, 255, 0) 0%, 
+    rgba(255, 255, 255, 0.05) 40%, 
+    rgba(255, 255, 255, 0.35) 50%, 
+    rgba(255, 255, 255, 0.05) 60%, 
+    rgba(255, 255, 255, 0) 100%
+  ); 
+  mix-blend-mode: screen; 
+  pointer-events: none; 
+  opacity: 0; 
+  transform: translateX(-50%) skewX(-10deg) scaleX(.35); 
+  transform-origin: center; 
+  filter: blur(1px) brightness(1.1); 
+  animation: shimmerPass 1.4s ease-out 0.9s forwards; 
+  z-index: 2; 
+}
+
+/* Main carousel container */
+.carousel { 
+  counter-increment: curpage; 
+  grid-area: scroll; 
+  overflow-x: auto; 
+  scroll-snap-type: x mandatory; 
+  overscroll-behavior-x: contain; 
+  display: grid; 
+  margin: 0 auto; 
+  width: calc(1px * (var(--sprite-tw) * 0.7042)); 
+  height: calc(1px * (var(--sprite-th) * 0.6107)); 
+  grid: 1fr / auto-flow 100%; 
+  scroll-timeline: --carousel-timeline x; 
+  scroll-behavior: smooth; 
+  scrollbar-width: none; 
+  border-radius: 8px; 
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.3), 
+    0 0 20px rgba(255, 215, 0, 0.2), 
+    inset 0 1px 0 rgba(255, 255, 255, 0.1); 
+}
+
+.carousel::-webkit-scrollbar { 
+  display: none; 
+}
+
+/* Scroll buttons (native - hidden by default) */
+.carousel::scroll-button(*) { 
+  inline-size: 48px; 
+  aspect-ratio: 1; 
+  border: 0; 
+  background: transparent; 
+  cursor: pointer; 
+}
+
+.carousel::scroll-button(*):disabled { 
+  opacity: .4; 
+  filter: grayscale(1); 
+}
+
+.carousel::scroll-button(*):not(:disabled):is(:hover, :active) { 
+  filter: drop-shadow(2px 4px 6px rgba(0, 0, 0, .6)); 
+}
+
+.carousel::scroll-button(*):not(:disabled):active { 
+  scale: 90%; 
+}
+
+.carousel::scroll-button(left) { 
+  content: '◀'; 
+}
+
+.carousel::scroll-button(right) { 
+  content: '▶'; 
+  justify-self: flex-end; 
+}
+
+/* Hide experimental native scroll buttons */
+.carousel::scroll-button(left),
+.carousel::scroll-button(right) { 
+  display: none; 
+}
+
+/* Progress marker group */
+.carousel::scroll-marker-group { 
+  content: ""; 
+  width: 100%; 
+  height: 6px; 
+  padding: 2px 0; 
+  display: grid; 
+  position: absolute; 
+  grid-area: markers; 
+  grid-auto-flow: column; 
+  place-self: center; 
+  overflow: hidden; 
+  border: 1px solid #000; 
+  background: linear-gradient(90deg, #f1e2b2 0%) no-repeat left center; 
+  --_progress: calc(calc(100 / var(--slides)) * 1%); 
+  background-size: var(--_progress, 25%) 100%; 
+  animation: progress linear both; 
+  animation-timeline: --carousel-timeline; 
+}
+
+/* Individual scroll markers */
+.carousel-item::scroll-marker { 
+  content: ''; 
+  position: relative; 
+  left: -1px; 
+  width: 100%; 
+  height: 100%; 
+  display: block; 
+  box-shadow: 2px 0 0 #000; 
+}
+
+.carousel-item:last-of-type::scroll-marker { 
+  box-shadow: none; 
+}
+
+/* Carousel items */
+.carousel-item { 
+  scroll-snap-stop: always; 
+  scroll-snap-align: start; 
+  position: relative; 
+  box-sizing: border-box; 
+  color: #2c1810; 
+  background: linear-gradient(145deg, #f5f0e8 0%, #f0e6d6 100%); 
+  animation: count-before linear forwards; 
+  animation-range: exit; 
+  animation-timeline: view(x); 
+  counter-increment: page; 
+}
+
+.carousel-item.active { 
+  pointer-events: auto; 
+  z-index: 2; 
+}

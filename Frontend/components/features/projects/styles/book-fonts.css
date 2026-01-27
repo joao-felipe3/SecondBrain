@@ -1,0 +1,28 @@
+/**
+ * Book Modal - Font Styles
+ * Irish Grover font configuration for the book theme
+ */
+
+/* Font import - must be first */
+@import url('https://fonts.googleapis.com/css2?family=Irish+Grover&display=swap');
+
+/* Vuetify dialog font overrides */
+.v-card-title,
+.v-card-title *,
+.v-card-text,
+.v-card-text * {
+  font-family: 'Irish Grover', cursive !important;
+}
+
+.v-dialog__content .v-card-title,
+.v-dialog__content .v-card-title *,
+.v-dialog__content .v-card-text,
+.v-dialog__content .v-card-text * {
+  font-family: 'Irish Grover', cursive !important;
+}
+
+/* Irish Grover font for v-dialog buttons */
+.v-dialog__content .v-btn,
+.v-dialog__content .v-btn * {
+  font-family: 'Irish Grover', cursive !important;
+}
