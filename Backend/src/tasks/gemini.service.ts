@@ -150,29 +150,23 @@ export class GeminiService {
       prompt += `\nGere tarefas DIFERENTES e complementares às já existentes.\n`;
     }
 
-    prompt += `\nRetorne APENAS um array JSON válido com sugestões de tarefas. Cada tarefa deve ter:
-- name: string (nome descritivo da tarefa)
-- deadline: string (data no formato YYYY-MM-DD, considerando hoje como ${
-      new Date().toISOString().split('T')[0]
-    })
-- pomodoros: number (1-6, estimativa de sessões de 25min)
-- priority: number (1-4, sendo 4 mais urgente)
-- difficulty: number (1-4, sendo 4 mais difícil)
-- selected: boolean (true para tarefas importantes, false para opcionais)
+    prompt += `
+FORMATO DE RESPOSTA OBRIGATÓRIO:
+Retorne APENAS um array JSON válido. NÃO inclua explicações, markdown, ou texto adicional.
+NÃO use aspas especiais ou caracteres unicode em strings - use apenas aspas duplas ASCII normais.
 
-Exemplo do formato esperado:
-[
-  {
-    "name": "Pesquisar sobre arquitetura do projeto",
-    "deadline": "2025-11-15",
-    "pomodoros": 2,
-    "priority": 3,
-    "difficulty": 2,
-    "selected": true
-  }
-]
+Cada objeto do array deve ter EXATAMENTE estas propriedades:
+- "name": string (nome descritivo da tarefa, sem quebras de linha)
+- "deadline": string (data no formato YYYY-MM-DD, considerando hoje como ${new Date().toISOString().split('T')[0]})
+- "pomodoros": number (1-6, estimativa de sessões de 25min)
+- "priority": number (1-4, sendo 4 mais urgente)
+- "difficulty": number (1-4, sendo 4 mais difícil)
+- "selected": boolean (true para tarefas importantes, false para opcionais)
 
-Retorne de 3 a 5 tarefas relevantes.`;
+Exemplo EXATO do formato esperado (copie esta estrutura):
+[{"name":"Tarefa exemplo","deadline":"2026-02-01","pomodoros":2,"priority":3,"difficulty":2,"selected":true}]
+
+Retorne de 3 a 5 tarefas relevantes. Responda APENAS com o array JSON, nada mais.`;
 
     return prompt;
   }

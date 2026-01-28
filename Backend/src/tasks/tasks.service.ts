@@ -1,11 +1,11 @@
-import { Injectable, NotFoundException, Inject, forwardRef } from '@nestjs/common';
+import { Injectable, NotFoundException, Inject, forwardRef, BadRequestException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { TaskDocument } from './schemas/task.schema';
 import { ProjectDocument } from '../projects/schemas/project.schema';
 import { ProjectsService } from '../projects/projects.service';
-import { GenerateAiSuggestionsDto, AiTaskSuggestionDto } from './dto/generate-ai-suggestions.dto';
+import { GenerateAiSuggestionsDto, AiTaskSuggestionDto, AiSuggestionsResponseDto, AiSuggestionsProgressDto } from './dto/generate-ai-suggestions.dto';
 import { GeminiService } from './gemini.service';
 
 @Injectable()
@@ -60,10 +60,17 @@ export class TasksService {
   }
 
   async findOne(id: string): Promise<TaskDocument | null> {
+    if (!id || id === 'null' || id === 'undefined' || !Types.ObjectId.isValid(id)) {
+      throw new BadRequestException(`ID inválido: ${id}`);
+    }
     return await this.taskModel.findById(id).exec();
   }
 
   async update(id: string, updateTaskDto: Partial<CreateTaskDto>): Promise<TaskDocument | null> {
+    if (!id || id === 'null' || id === 'undefined' || !Types.ObjectId.isValid(id)) {
+      throw new BadRequestException(`ID inválido: ${id}`);
+    }
+    
     const oldTask = await this.taskModel.findById(id).exec();
     const oldProjectId = oldTask?.project?.toString();
     
@@ -110,7 +117,17 @@ export class TasksService {
   }
 
   async remove(id: string): Promise<boolean> {
+    // Validar se o ID é um ObjectId válido
+    if (!id || id === 'null' || id === 'undefined' || !Types.ObjectId.isValid(id)) {
+      throw new BadRequestException(`ID inválido: ${id}`);
+    }
+
     const task = await this.taskModel.findById(id).exec();
+    
+    if (!task) {
+      throw new NotFoundException(`Task com ID ${id} não encontrada`);
+    }
+    
     const projectId = task?.project?.toString();
     
     const result = await this.taskModel.findByIdAndDelete(id).exec();
@@ -124,6 +141,10 @@ export class TasksService {
   }
 
   async markAsConcluded(id: string): Promise<TaskDocument> {
+    if (!id || id === 'null' || id === 'undefined' || !Types.ObjectId.isValid(id)) {
+      throw new BadRequestException(`ID inválido: ${id}`);
+    }
+    
     const updatedTask = await this.taskModel.findByIdAndUpdate(
       id,
       { isConcluded: true },
@@ -138,6 +159,10 @@ export class TasksService {
   }
 
   async incrementPomodorosDid(id: string): Promise<TaskDocument> {
+    if (!id || id === 'null' || id === 'undefined' || !Types.ObjectId.isValid(id)) {
+      throw new BadRequestException(`ID inválido: ${id}`);
+    }
+    
     const task = await this.taskModel.findById(id).exec();
 
     if (!task) {
@@ -161,16 +186,179 @@ export class TasksService {
     return updatedTask;
   }
 
-  async generateAiSuggestions(dto: GenerateAiSuggestionsDto): Promise<AiTaskSuggestionDto[]> {
+  /**
+   * Tenta fazer parse seguro do JSON retornado pelo Gemini.
+   * Lida com respostas malformadas, texto extra, e caracteres inválidos.
+   */
+  private safeParseGeminiJson(response: string): any[] {
+    if (!response || typeof response !== 'string') {
+      console.warn('Resposta do Gemini é nula ou não é string');
+      return [];
+    }
+
+    let cleaned = response.trim();
+
+    // Remove blocos de código markdown se presentes
+    if (cleaned.startsWith('```json')) {
+      cleaned = cleaned.slice(7);
+    } else if (cleaned.startsWith('```')) {
+      cleaned = cleaned.slice(3);
+    }
+    if (cleaned.endsWith('```')) {
+      cleaned = cleaned.slice(0, -3);
+    }
+    cleaned = cleaned.trim();
+
+    // Tenta encontrar o array JSON dentro da resposta
+    const arrayMatch = cleaned.match(/\[[\s\S]*\]/);
+    if (arrayMatch) {
+      cleaned = arrayMatch[0];
+    }
+
+    // Tenta parse direto
+    try {
+      const parsed = JSON.parse(cleaned);
+      if (Array.isArray(parsed)) {
+        return parsed;
+      }
+      // Se for objeto com array dentro, tenta extrair
+      if (parsed && typeof parsed === 'object') {
+        const keys = Object.keys(parsed);
+        for (const key of keys) {
+          if (Array.isArray(parsed[key])) {
+            return parsed[key];
+          }
+        }
+      }
+      console.warn('JSON parseado não é um array:', typeof parsed);
+      return [];
+    } catch (firstError) {
+      console.warn('Primeiro parse falhou, tentando limpar JSON...');
+    }
+
+    // Tenta corrigir problemas comuns de JSON malformado
+    try {
+      // Remove trailing commas antes de } ou ]
+      cleaned = cleaned.replace(/,\s*([\}\]])/g, '$1');
+      
+      // Remove caracteres de controle inválidos
+      cleaned = cleaned.replace(/[\x00-\x1F\x7F]/g, ' ');
+      
+      // Corrige aspas não escapadas dentro de strings (heurística simples)
+      // Isso é arriscado mas pode ajudar em alguns casos
+      
+      const parsed = JSON.parse(cleaned);
+      if (Array.isArray(parsed)) {
+        return parsed;
+      }
+      return [];
+    } catch (secondError) {
+      console.warn('Segundo parse também falhou, tentando extrair objetos manualmente...');
+    }
+
+    // Última tentativa: extrair objetos individualmente usando regex
+    try {
+      const objectMatches = cleaned.matchAll(/\{[^{}]*\}/g);
+      const objects: any[] = [];
+      
+      for (const match of objectMatches) {
+        try {
+          const obj = JSON.parse(match[0]);
+          if (obj && typeof obj === 'object' && obj.name) {
+            objects.push(obj);
+          }
+        } catch {
+          // Ignora objetos que não conseguir parsear
+        }
+      }
+      
+      if (objects.length > 0) {
+        console.log(`Extraídos ${objects.length} objetos manualmente do JSON malformado`);
+        return objects;
+      }
+    } catch {
+      // Falhou completamente
+    }
+
+    console.error('Não foi possível parsear a resposta do Gemini:', cleaned.substring(0, 200));
+    return [];
+  }
+
+  /**
+   * Versão com callback de progresso para streaming em tempo real
+   */
+  async generateAiSuggestionsWithProgress(
+    dto: GenerateAiSuggestionsDto,
+    onProgress: (progress: AiSuggestionsProgressDto) => void,
+    onComplete: (result: AiSuggestionsResponseDto) => void,
+    onError: (error: Error) => void,
+  ): Promise<void> {
+    try {
+      const result = await this.generateAiSuggestionsInternal(dto, onProgress);
+      onComplete(result);
+    } catch (error) {
+      onError(error as Error);
+    }
+  }
+
+  /**
+   * Versão original que retorna Promise (mantida para compatibilidade)
+   */
+  async generateAiSuggestions(dto: GenerateAiSuggestionsDto): Promise<AiSuggestionsResponseDto> {
+    return this.generateAiSuggestionsInternal(dto, null);
+  }
+
+  /**
+   * Implementação interna que suporta callback opcional de progresso
+   */
+  private async generateAiSuggestionsInternal(
+    dto: GenerateAiSuggestionsDto,
+    onProgress?: ((progress: AiSuggestionsProgressDto) => void) | null,
+  ): Promise<AiSuggestionsResponseDto> {
     const targetHours = dto.targetHours || 0;
     const allSuggestions: AiTaskSuggestionDto[] = [];
     const existingTaskNames: string[] = [];
     const maxIterations = 15; // Limite de segurança para evitar loops infinitos
     let currentIteration = 0;
+    let currentHours = 0;
+    let alreadyPlannedHours = 0;
+
+    // Função helper para criar resposta com progresso
+    const createResponse = (
+      status: 'loading' | 'success' | 'error' | 'partial',
+      message: string,
+    ): AiSuggestionsResponseDto => ({
+      suggestions: allSuggestions,
+      progress: {
+        currentIteration,
+        maxIterations,
+        currentHours: alreadyPlannedHours + currentHours,
+        targetHours,
+        tasksGenerated: allSuggestions.length,
+        status,
+        message,
+      },
+    });
+
+    // Função helper para emitir progresso
+    const emitProgress = (status: 'loading' | 'success' | 'error' | 'partial', message: string) => {
+      if (onProgress) {
+        onProgress({
+          currentIteration,
+          maxIterations,
+          currentHours: alreadyPlannedHours + currentHours,
+          targetHours,
+          tasksGenerated: allSuggestions.length,
+          status,
+          message,
+        });
+      }
+    };
 
     try {
+      emitProgress('loading', 'Iniciando análise do projeto...');
+
       // Busca as tarefas já existentes no projeto para calcular horas já planejadas
-      let alreadyPlannedHours = 0;
       if (dto.projectId) {
         const existingTasks = await this.taskModel.find({ project: dto.projectId }).exec();
         
@@ -187,6 +375,8 @@ export class TasksService {
 
       // Se targetHours não foi especificado, gera apenas uma vez (comportamento antigo)
       if (targetHours <= 0) {
+        emitProgress('loading', 'Gerando sugestões...');
+
         const aiResponse = await this.geminiService.generateTaskSuggestions(
           dto.projectName,
           dto.shortTermGoal,
@@ -197,32 +387,37 @@ export class TasksService {
           undefined,
         );
 
-        const suggestions = JSON.parse(aiResponse);
-        if (!Array.isArray(suggestions)) {
-          console.warn('A resposta da IA não é um array, retornando lista vazia.');
-          return [];
+        const suggestions = this.safeParseGeminiJson(aiResponse);
+        if (suggestions.length === 0) {
+          console.warn('A resposta da IA está vazia ou malformada, retornando fallback.');
+          const mockSuggestions = this.generateMockSuggestions(dto);
+          allSuggestions.push(...mockSuggestions);
+          return createResponse('partial', 'Usando sugestões de fallback devido a resposta inválida da IA');
         }
 
-        return suggestions as AiTaskSuggestionDto[];
+        allSuggestions.push(...(suggestions as AiTaskSuggestionDto[]));
+        currentHours = allSuggestions.reduce((sum, t) => sum + (t.pomodoros || 0) * 0.5, 0);
+        return createResponse('success', 'Sugestões geradas com sucesso');
       }
 
       // Calcula quantas horas ainda precisam ser geradas
-  const remainingHours = Math.max(0, targetHours - alreadyPlannedHours);
+      const remainingHours = Math.max(0, targetHours - alreadyPlannedHours);
       
       if (remainingHours <= 0) {
         console.log(`Projeto já atingiu o target (${alreadyPlannedHours.toFixed(1)}h >= ${targetHours}h). Não gerando novas tarefas.`);
-        return [];
+        return createResponse('success', 'Projeto já atingiu o total de horas planejadas');
       }
 
       console.log(`Gerando tarefas para completar ${remainingHours.toFixed(1)}h (de ${targetHours}h total)`);
 
       // Loop para gerar tarefas até atingir as horas restantes
-      let currentHours = 0;
       let consecutiveRateLimits = 0;
       const interIterationDelayMs = 3000; // delay fixo entre iterações para reduzir 429
 
       while (currentHours < remainingHours && currentIteration < maxIterations) {
         currentIteration++;
+        
+        emitProgress('loading', `Gerando lote ${currentIteration}/${maxIterations}...`);
         
         console.log(`Iteração ${currentIteration}: ${currentHours.toFixed(1)}h de ${remainingHours.toFixed(1)}h geradas`);
 
@@ -259,11 +454,12 @@ export class TasksService {
           throw err;
         }
 
-        const suggestions = JSON.parse(aiResponse);
+        const suggestions = this.safeParseGeminiJson(aiResponse);
 
-        if (!Array.isArray(suggestions) || suggestions.length === 0) {
-          console.warn('A resposta da IA não é um array ou está vazia.');
-          break;
+        if (suggestions.length === 0) {
+          console.warn('A resposta da IA está vazia ou malformada nesta iteração.');
+          // Continua tentando nas próximas iterações ao invés de quebrar
+          continue;
         }
 
         // Filtra duplicatas por nome (case-insensitive)
@@ -288,24 +484,31 @@ export class TasksService {
           // Cada pomodoro = 0.5 horas (25 minutos)
           currentHours += (task.pomodoros || 0) * 0.5;
         }
+
+        // Emite progresso após adicionar novas tarefas
+        emitProgress('loading', `${allSuggestions.length} tarefas geradas (${currentHours.toFixed(1)}h/${remainingHours.toFixed(1)}h)...`);
       }
 
       if (currentIteration >= maxIterations) {
         console.warn(`Limite de ${maxIterations} iterações atingido. Retornando ${allSuggestions.length} tarefas.`);
+        return createResponse('partial', `Limite de iterações atingido. ${allSuggestions.length} tarefas geradas.`);
       }
 
       console.log(`Geradas ${allSuggestions.length} novas tarefas totalizando ${currentHours.toFixed(1)}h (total do projeto: ${(alreadyPlannedHours + currentHours).toFixed(1)}h)`);
-      return allSuggestions;
+      return createResponse('success', `${allSuggestions.length} tarefas geradas com sucesso (${currentHours.toFixed(1)}h)`);
 
     } catch (error: any) {
       console.error('Erro ao usar a API do Gemini:', error?.message ?? error);
       // Se acumulamos algo, devolve parcial; senão fallback
       if (allSuggestions.length > 0) {
         console.warn('Retornando sugestões parciais acumuladas devido a erro.');
-        return allSuggestions;
+        return createResponse('partial', `Erro parcial: ${allSuggestions.length} tarefas geradas antes do erro`);
       }
       console.warn('Usando fallback de mock por ausência de sugestões acumuladas.');
-      return this.generateMockSuggestions(dto);
+      const mockSuggestions = this.generateMockSuggestions(dto);
+      allSuggestions.push(...mockSuggestions);
+      currentHours = allSuggestions.reduce((sum, t) => sum + (t.pomodoros || 0) * 0.5, 0);
+      return createResponse('error', 'Falha na IA. Usando sugestões de fallback.');
     }
   }
 

@@ -6,7 +6,8 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
   app.enableCors({
-    origin: 'http://localhost:8080', // permite requisições do frontend
+    origin: ['http://localhost:3000', 'http://localhost:8080'], // permite requisições do frontend
+    credentials: true,
   });
   // Swagger config
   const config = new DocumentBuilder()
@@ -19,6 +20,8 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, document); // http://localhost:3000/api
 
-  await app.listen(3000);
+  const port = process.env.PORT || 3000;
+  await app.listen(port, '0.0.0.0');
+  console.log(`🚀 Backend running on http://localhost:${port}`);
 }
 bootstrap();

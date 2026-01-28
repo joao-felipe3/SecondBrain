@@ -7,7 +7,11 @@ import {
   Param,
   Delete,
   NotFoundException,
+  Sse,
+  MessageEvent,
+  Query,
 } from '@nestjs/common';
+import { Observable } from 'rxjs';
 import { TasksService } from './tasks.service';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
@@ -32,6 +36,63 @@ export class TasksController {
   findAll() {
     return this.tasksService.findAll();
   }
+
+  // ===== ROTAS ESPECÍFICAS DEVEM VIR ANTES DE :id =====
+
+  @Post('ai-suggestions')
+  @ApiOperation({ summary: 'Gerar sugestões de tarefas usando IA baseado nos objetivos do projeto' })
+  @ApiResponse({ status: 200, description: 'Sugestões geradas com sucesso.' })
+  async generateAiSuggestions(@Body() generateDto: GenerateAiSuggestionsDto) {
+    return this.tasksService.generateAiSuggestions(generateDto);
+  }
+
+  @Sse('ai-suggestions-stream')
+  @ApiOperation({ summary: 'Stream de progresso da geração de tarefas via Server-Sent Events' })
+  generateAiSuggestionsStream(
+    @Query('projectName') projectName: string,
+    @Query('projectId') projectId: string,
+    @Query('shortTermGoal') shortTermGoal: string,
+    @Query('midTermGoal') midTermGoal: string,
+    @Query('longTermGoal') longTermGoal: string,
+    @Query('userPrompt') userPrompt: string,
+    @Query('targetHours') targetHours: string,
+  ): Observable<MessageEvent> {
+    const generateDto: GenerateAiSuggestionsDto = {
+      projectName: projectName || 'Projeto',
+      projectId: projectId || '',
+      shortTermGoal: shortTermGoal || '',
+      midTermGoal: midTermGoal || '',
+      longTermGoal: longTermGoal || '',
+      userPrompt: userPrompt || '',
+      targetHours: parseInt(targetHours) || 50,
+    };
+
+    return new Observable((observer) => {
+      // Chama o método assíncrono e captura erros
+      (async () => {
+        try {
+          await this.tasksService.generateAiSuggestionsWithProgress(
+            generateDto,
+            (progress) => {
+              observer.next({ data: progress } as MessageEvent);
+            },
+            (result) => {
+              observer.next({ data: { type: 'complete', result } } as MessageEvent);
+              observer.complete();
+            },
+            (error) => {
+              observer.next({ data: { type: 'error', error: error.message } } as MessageEvent);
+              observer.error(error);
+            },
+          );
+        } catch (error) {
+          observer.error(error);
+        }
+      })();
+    });
+  }
+
+  // ===== ROTAS GENÉRICAS COM :id DEVEM VIR POR ÚLTIMO =====
 
   @Get(':id')
   findOne(@Param('id') id: string) {
@@ -62,12 +123,5 @@ export class TasksController {
   @Patch(':id/increment-pomodoro')
   incrementPomodorosDid(@Param('id') id: string) {
     return this.tasksService.incrementPomodorosDid(id);
-  }
-
-  @Post('ai-suggestions')
-  @ApiOperation({ summary: 'Gerar sugestões de tarefas usando IA baseado nos objetivos do projeto' })
-  @ApiResponse({ status: 200, description: 'Sugestões geradas com sucesso.' })
-  async generateAiSuggestions(@Body() generateDto: GenerateAiSuggestionsDto) {
-    return this.tasksService.generateAiSuggestions(generateDto);
   }
 }

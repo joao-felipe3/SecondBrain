@@ -16,3 +16,18 @@ export class AiTaskSuggestionDto {
   difficulty: number;
   selected: boolean;
 }
+
+export class AiSuggestionsProgressDto {
+  currentIteration: number;
+  maxIterations: number;
+  currentHours: number;
+  targetHours: number;
+  tasksGenerated: number;
+  status: 'loading' | 'success' | 'error' | 'partial';
+  message: string;
+}
+
+export class AiSuggestionsResponseDto {
+  suggestions: AiTaskSuggestionDto[];
+  progress: AiSuggestionsProgressDto;
+}

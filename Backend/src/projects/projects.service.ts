@@ -1,7 +1,7 @@
 import { InjectModel } from '@nestjs/mongoose';
 import { TaskDocument } from '../tasks/schemas/task.schema';
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { Model } from 'mongoose';
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import { Model, Types } from 'mongoose';
 import { CreateProjectDto } from './dto/create-project.dto';
 import { UpdateProjectDto } from './dto/update-project.dto';
 import { ProjectDocument } from './schemas/project.schema';
@@ -14,6 +14,9 @@ export class ProjectsService {
 	) {}
 
 	async getTasksForProject(projectId: string): Promise<TaskDocument[]> {
+		if (!projectId || projectId === 'null' || projectId === 'undefined' || !Types.ObjectId.isValid(projectId)) {
+			throw new BadRequestException(`ID inválido: ${projectId}`);
+		}
 		return this.taskModel.find({ project: projectId }).exec();
 	}
 
@@ -27,14 +30,23 @@ export class ProjectsService {
 	}
 
 	async findOne(id: string): Promise<ProjectDocument | null> {
+		if (!id || id === 'null' || id === 'undefined' || !Types.ObjectId.isValid(id)) {
+			throw new BadRequestException(`ID inválido: ${id}`);
+		}
 		return await this.projectModel.findById(id).exec();
 	}
 
 	async update(id: string, dto: UpdateProjectDto): Promise<ProjectDocument | null> {
+		if (!id || id === 'null' || id === 'undefined' || !Types.ObjectId.isValid(id)) {
+			throw new BadRequestException(`ID inválido: ${id}`);
+		}
 		return await this.projectModel.findByIdAndUpdate(id, dto, { new: true }).exec();
 	}
 
 	async remove(id: string): Promise<boolean> {
+		if (!id || id === 'null' || id === 'undefined' || !Types.ObjectId.isValid(id)) {
+			throw new BadRequestException(`ID inválido: ${id}`);
+		}
 		const result = await this.projectModel.findByIdAndDelete(id).exec();
 		return result !== null;
 	}
@@ -45,6 +57,10 @@ export class ProjectsService {
 	 * @param deleteTasks - If true, delete all tasks; if false, just unlink them
 	 */
 	async removeWithOptions(id: string, deleteTasks: boolean): Promise<{ deleted: boolean; tasksAffected: number }> {
+		if (!id || id === 'null' || id === 'undefined' || !Types.ObjectId.isValid(id)) {
+			throw new BadRequestException(`ID inválido: ${id}`);
+		}
+		
 		const project = await this.projectModel.findById(id).exec();
 		if (!project) {
 			return { deleted: false, tasksAffected: 0 };
@@ -107,6 +123,12 @@ export class ProjectsService {
 	}
 
 	async recalculateProjectStats(projectId: string): Promise<ProjectDocument | null> {
+		// Validar ObjectId
+		if (!projectId || projectId === 'null' || projectId === 'undefined' || !Types.ObjectId.isValid(projectId)) {
+			console.warn(`recalculateProjectStats: ID inválido ignorado: ${projectId}`);
+			return null;
+		}
+		
 		const project = await this.projectModel.findById(projectId).exec();
 		if (!project) {
 			// Project doesn't exist anymore, skip recalculation
