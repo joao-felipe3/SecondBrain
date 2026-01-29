@@ -61,7 +61,7 @@
 <script setup lang="ts">
 import type { PropType } from 'vue'
 import { reactive, watch } from 'vue'
-import { ProjectInfoCard, GoalsSection } from '../components'
+import { ProjectInfoCard, GoalsSection } from '../sections'
 
 type Project = Record<string, any>
 

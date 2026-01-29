@@ -39,7 +39,8 @@
 import type { PropType } from 'vue'
 import { reactive, watch, ref } from 'vue'
 import { useApi } from '~/composables/api/useApi'
-import { PlanningAssistant, TasksList, TaskDialog } from '../components'
+import { PlanningAssistant } from '../sections'
+import { TaskDialog, TasksList } from '../tasks'
 
 type Project = Record<string, any>
 

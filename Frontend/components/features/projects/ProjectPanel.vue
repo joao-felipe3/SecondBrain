@@ -57,7 +57,7 @@
 import { ref, computed, onMounted, onBeforeUnmount, nextTick } from 'vue'
 import WoodenTable from '../../ui/svg/WoodenTable.vue'
 import SvgButton from '../../ui/svg/Button.vue'
-import ProjectRow from './components/ProjectRow.vue'
+import { ProjectRow } from './shared'
 
 const props = defineProps({
   title: {

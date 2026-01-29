@@ -106,8 +106,7 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
 import { useApi } from '~/composables/api/useApi'
-import SuggestionsList from './SuggestionsList.vue'
-import SuggestionsCarouselDialog from './SuggestionsCarouselDialog.vue'
+import { SuggestionsList, SuggestionsCarouselDialog } from '../tasks'
 
 interface Suggestion {
   name: string

@@ -22,7 +22,7 @@
 import type { PropType } from 'vue'
 import { ref, watch } from 'vue'
 import { useApiResource } from '~/composables/api/useApi'
-import { BacklogSection, ProgressSection } from '../components'
+import { BacklogSection, ProgressSection } from '../sections'
 
 type Project = Record<string, any>
 
