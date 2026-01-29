@@ -116,6 +116,7 @@ function onRowClick(suggestion: Suggestion, index: number, e: MouseEvent) {
   width: 100%;
   max-width: 100%;
   overflow: hidden;
+  box-sizing: border-box;
 }
 
 .suggestions-preview {
@@ -126,6 +127,8 @@ function onRowClick(suggestion: Suggestion, index: number, e: MouseEvent) {
   border: 1px solid #e2e8f0;
   border-radius: 12px;
   padding: 1rem;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 .preview-header {
@@ -199,13 +202,19 @@ function onRowClick(suggestion: Suggestion, index: number, e: MouseEvent) {
 }
 
 .suggestions-actions {
-  display: flex;
-  justify-content: space-between;
-  gap: 0.75rem;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+  padding-top: 1rem;
   border-top: 1px solid #e2e8f0;
+  max-width: 100%;
 }
 
 .suggestions-actions .v-btn {
-  flex: 1;
+  font-size: 0.5rem;
+  min-width: 0;
+  white-space: normal;
+  height: auto;
+  padding: 0.5rem;
 }
 </style>
