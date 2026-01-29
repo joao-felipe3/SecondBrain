@@ -110,7 +110,7 @@ const emit = defineEmits<{
 const { formatYMD } = useDateFormat()
 
 const currentPage = ref(1)
-const itemsPerPage = 4
+const itemsPerPage = 3
 
 const paginatedTasks = computed(() => {
   const start = (currentPage.value - 1) * itemsPerPage
@@ -168,11 +168,11 @@ watch(() => props.tasks.length, () => {
 .task-item {
   display: flex;
   align-items: flex-start;
-  gap: 0.75rem;
+  gap: 0.5rem;
   background: #f8fafc;
   border: 1px solid #e2e8f0;
   border-radius: 8px;
-  padding: 0.75rem;
+  padding: 0.5rem;
   transition: all 0.2s;
   cursor: pointer;
 }
@@ -194,10 +194,10 @@ watch(() => props.tasks.length, () => {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 24px;
-  height: 24px;
+  width: 20px;
+  height: 20px;
   border-radius: 50%;
-  font-size: 0.875rem;
+  font-size: 0.75rem;
   font-weight: 700;
 }
 
@@ -209,7 +209,7 @@ watch(() => props.tasks.length, () => {
 .status-icon.pending {
   background: #fef3c7;
   color: #ca8a04;
-  font-size: 1.25rem;
+  font-size: 1rem;
 }
 
 .task-info {
@@ -218,10 +218,16 @@ watch(() => props.tasks.length, () => {
 }
 
 .task-name {
-  font-size: 0.9rem;
+  font-size: 0.8rem;
   color: #1e293b;
   font-weight: 500;
-  margin-bottom: 0.25rem;
+  margin-bottom: 0.2rem;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
   word-break: break-word;
 }
 
@@ -231,9 +237,9 @@ watch(() => props.tasks.length, () => {
 
 .task-meta {
   display: flex;
-  gap: 0.5rem;
+  gap: 0.4rem;
   flex-wrap: wrap;
-  font-size: clamp(0.65rem, 1.6vw, 0.75rem);
+  font-size: clamp(0.6rem, 1.4vw, 0.7rem);
   color: #64748b;
 }
 
@@ -280,8 +286,7 @@ watch(() => props.tasks.length, () => {
 .new-task-btn-wrapper {
   display: flex;
   justify-content: center;
-  margin-top: 1rem;
-  padding-top: 1rem;
+  margin-top: 0.5rem;
   border-top: 1px solid #e2e8f0;
 }
 </style>

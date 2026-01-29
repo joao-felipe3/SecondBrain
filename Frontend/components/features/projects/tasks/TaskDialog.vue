@@ -1,17 +1,31 @@
 <template>
-  <v-dialog :model-value="modelValue" @update:model-value="emit('update:modelValue', $event)" max-width="700">
-    <v-card class="task-dialog-card">
-      <v-card-title class="task-dialog-header">
-        <div class="header-content">
-          <span class="header-icon">{{ isCreating ? '➕' : (editing ? '✏️' : '📋') }}</span>
-          <span class="header-title">{{ isCreating ? 'Nova Tarefa' : (editing ? 'Editar Tarefa' : 'Detalhes da Tarefa') }}</span>
+  <v-dialog :model-value="modelValue" @update:model-value="emit('update:modelValue', $event)" max-width="600">
+    <div class="task-paper-dialog">
+      <!-- Imagem de fundo do papel -->
+      <v-img 
+        src="/svg/old-paper-4.svg" 
+        alt="Old Paper" 
+        width="500"
+        height="620"
+        style="z-index: 3;" 
+      />
+      
+      <!-- Conteúdo sobre o papel -->
+      <div class="paper-dialog-content">
+        <div class="close-button-wrapper">
+          <v-btn 
+            icon="mdi-close" 
+            variant="text" 
+            size="small" 
+            @click="close"
+            class="close-btn"
+          />
         </div>
-        <v-btn icon="mdi-close" variant="text" size="small" @click="close" />
-      </v-card-title>
-      <v-divider />
-      <v-card-text class="task-dialog-body">
+
         <div v-if="task || isCreating">
           <template v-if="editing || isCreating">
+            <h1 class="paper-title">{{ isCreating ? 'Nova Tarefa' : 'Editar Tarefa' }}</h1>
+            
             <div class="form-section">
               <v-text-field 
                 v-model="localTask.name" 
@@ -78,27 +92,40 @@
                 />
               </div>
             </div>
+
+            <v-alert v-if="error" type="error" density="compact" class="mt-3">
+              {{ error }}
+            </v-alert>
+
+            <!-- Botões de ação -->
+            <div class="action-buttons">
+              <v-btn 
+                v-if="editing && task && !isCreating" 
+                color="error" 
+                variant="outlined" 
+                @click="emit('delete')" 
+                :loading="saving"
+                size="small"
+              >
+                Excluir
+              </v-btn>
+              <v-btn 
+                color="primary" 
+                variant="elevated" 
+                @click="save" 
+                :loading="saving"
+                size="small"
+              >
+                {{ isCreating ? 'Criar' : 'Salvar' }}
+              </v-btn>
+            </div>
           </template>
           <template v-else>
             <TaskDetailsView :task="task!" />
           </template>
-          <v-alert v-if="error" type="error" density="compact" class="mt-3">
-            {{ error }}
-          </v-alert>
         </div>
-      </v-card-text>
-      <v-divider />
-      <v-card-actions class="task-dialog-actions">
-        <v-btn variant="text" @click="close">Fechar</v-btn>
-        <v-spacer />
-        <v-btn v-if="editing && task && !isCreating" color="error" variant="outlined" @click="emit('delete')" :loading="saving" prepend-icon="mdi-delete">
-          Excluir
-        </v-btn>
-        <v-btn v-if="(editing && task) || isCreating" color="primary" variant="elevated" @click="save" :loading="saving" prepend-icon="mdi-content-save">
-          {{ isCreating ? 'Criar' : 'Salvar' }}
-        </v-btn>
-      </v-card-actions>
-    </v-card>
+      </div>
+    </div>
   </v-dialog>
 </template>
 
@@ -187,43 +214,71 @@ function save() {
 </script>
 
 <style scoped>
-.task-dialog-card {
-  border-radius: 12px !important;
-  overflow: hidden;
+@import url('https://fonts.googleapis.com/css2?family=Irish+Grover&family=MedievalSharp&display=swap');
+
+.task-paper-dialog {
+  position: relative;
+  width: 500px;
+  height: 620px;
+  margin: 0 auto;
 }
 
-.task-dialog-header {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  padding: 1.25rem 1.5rem;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.header-content {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-}
-
-.header-icon {
-  font-size: 1.5rem;
-}
-
-.header-title {
-  font-size: 1.25rem;
-  font-weight: 600;
-}
-
-.task-dialog-body {
-  padding: 1.5rem;
-  max-height: 70vh;
+.paper-dialog-content {
+  position: absolute;
+  top: 1rem;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 4;
+  padding: 0 4.5rem;
   overflow-y: auto;
+  overflow-x: hidden;
+  color: #3e2723;
+  font-family: 'MedievalSharp', 'Irish Grover', cursive;
+}
+
+.paper-dialog-content::-webkit-scrollbar {
+  width: 8px;
+}
+
+.paper-dialog-content::-webkit-scrollbar-track {
+  background: rgba(201, 166, 107, 0.2);
+  border-radius: 4px;
+}
+
+.paper-dialog-content::-webkit-scrollbar-thumb {
+  background: rgba(139, 90, 43, 0.5);
+  border-radius: 4px;
+}
+
+.paper-dialog-content::-webkit-scrollbar-thumb:hover {
+  background: rgba(139, 90, 43, 0.7);
+}
+
+.close-button-wrapper {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  z-index: 10;
+}
+
+.close-btn {
+  background: rgba(255, 255, 255, 0.8) !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.paper-title {
+  font-family: 'Irish Grover', cursive;
+  font-size: 1.75rem;
+  font-weight: 400;
+  color: #3e2723;
+  margin: 0 0 1.5rem 0;
+  text-align: center;
+  text-shadow: 1px 1px 0 rgba(255, 255, 255, 0.3);
 }
 
 .form-section {
-  margin-bottom: 1.5rem;
+  margin-bottom: 0.5rem;
 }
 
 .form-section:last-child {
@@ -231,12 +286,13 @@ function save() {
 }
 
 .section-title {
+  font-family: 'MedievalSharp', cursive;
   font-size: 1rem;
   font-weight: 600;
-  color: #334155;
+  color: #5d4037;
   margin: 0 0 0.75rem 0;
   padding-bottom: 0.5rem;
-  border-bottom: 2px solid #e2e8f0;
+  border-bottom: 2px dashed #c9a66b;
 }
 
 .dialog-grid {
@@ -245,8 +301,12 @@ function save() {
   gap: 0.75rem;
 }
 
-.task-dialog-actions {
-  padding: 1rem 1.5rem;
-  background: #f8fafc;
+.action-buttons {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: flex-end;
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+  border-top: 2px dashed #c9a66b;
 }
 </style>
