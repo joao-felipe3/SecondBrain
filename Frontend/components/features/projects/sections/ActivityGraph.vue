@@ -2,7 +2,7 @@
   <div class="contribution-graph">
     <!-- Ano: grid compacto tipo calendário por mês -->
     <div v-if="period === 'year'" class="year-calendar">
-      <div v-for="(monthData, mIdx) in activityByMonth" :key="mIdx" class="month-section">
+      <div v-for="(monthData, mIdx) in paginatedMonths" :key="mIdx + '-' + currentMonthPage" class="month-section">
         <div class="month-header">{{ monthData.name }}</div>
         <div class="calendar-weekdays">
           <span class="calendar-weekday">S</span>
@@ -23,6 +23,13 @@
             ></div>
           </div>
         </div>
+      </div>
+
+      <!-- Pagination controls for year view -->
+      <div class="year-pagination">
+        <button class="page-btn" @click="currentMonthPage = Math.max(0, currentMonthPage - 1)" :disabled="currentMonthPage === 0">◀</button>
+        <span class="page-info">{{ currentMonthPage + 1 }} / {{ totalMonthPages }}</span>
+        <button class="page-btn" @click="currentMonthPage = Math.min(totalMonthPages - 1, currentMonthPage + 1)" :disabled="currentMonthPage >= totalMonthPages - 1">▶</button>
       </div>
     </div>
 
@@ -62,7 +69,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref, watch } from 'vue'
 
 interface Task {
   _id?: string
@@ -209,6 +216,21 @@ const activityByMonth = computed(() => {
   }
   
   return result
+})
+
+// Pagination for year view (3 months per page)
+const monthsPerPage = 3
+const currentMonthPage = ref(0)
+const totalMonthPages = computed(() => Math.max(1, Math.ceil(activityByMonth.value.length / monthsPerPage)))
+
+const paginatedMonths = computed(() => {
+  const start = currentMonthPage.value * monthsPerPage
+  return activityByMonth.value.slice(start, start + monthsPerPage)
+})
+
+// Reset page when activityByMonth or period changes
+watch(activityByMonth, () => {
+  if (currentMonthPage.value >= totalMonthPages.value) currentMonthPage.value = Math.max(0, totalMonthPages.value - 1)
 })
 </script>
 

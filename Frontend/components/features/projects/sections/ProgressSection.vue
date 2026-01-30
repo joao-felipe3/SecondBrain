@@ -101,32 +101,32 @@ const completionRate = computed(() => {
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 0.75rem;
-  margin-bottom: 1.5rem;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
 }
 
 .stat-card {
   background: #f8fafc;
   border: 1px solid #e2e8f0;
   border-radius: 8px;
-  padding: 0.75rem;
+  padding: 0.5rem;
   text-align: center;
 }
 
 .stat-icon {
-  font-size: 1.5rem;
-  margin-bottom: 0.25rem;
+  font-size: 1.1rem;
+  margin-bottom: 0.15rem;
 }
 
 .stat-value {
-  font-size: 1.5rem;
+  font-size: 1.15rem;
   font-weight: 700;
   color: #1e293b;
-  margin-bottom: 0.25rem;
+  margin-bottom: 0.15rem;
 }
 
 .stat-label {
-  font-size: 0.75rem;
+  font-size: 0.65rem;
   color: #64748b;
   text-transform: uppercase;
   font-weight: 600;
