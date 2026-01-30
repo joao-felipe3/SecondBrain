@@ -2,6 +2,7 @@
   <v-row dense class="gap-x-2 ml-n4 fill-height" style="height: 100%;">
     <TaskMain
       :tasks="tasks"
+      :allTasks="allTasks"
       :projects="projects"
       :zoomed="zoomed"
       :initialZoomedTask="newlyCreatedTask"
@@ -30,6 +31,7 @@ const newlyCreatedTask = ref(null) // Garante que o Board nunca inicie com zoom
 // Store
 const taskStore = useTaskStore()
 const tasks = ref([])
+const allTasks = ref([]) // All tasks including completed ones
 
 onMounted(() => {
   newlyCreatedTask.value = null // Garante que o Board nunca inicie com zoom
@@ -38,6 +40,7 @@ onMounted(() => {
 
 async function loadInitialTasks() {
   await taskStore.loadTasks()
+  allTasks.value = taskStore.tasks // Keep all tasks
   tasks.value = taskStore.tasks
     .filter(task => task.isConcluded !== true)
     .sort((a, b) => new Date(a.deadline).getTime() - new Date(b.deadline).getTime())

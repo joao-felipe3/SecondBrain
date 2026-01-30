@@ -1,6 +1,6 @@
 <template>
   <div key="view-content" class="pt-3 px-5 card-content">
-    <div class="title">
+    <div class="title" ref="titleRef" :title="isTruncated ? task.name : ''">
       <strong>{{ task.name }}</strong>
     </div>
     <em>{{ task.description }}</em><br />
@@ -34,6 +34,7 @@
 </template>
 
 <script setup>
+import { ref, onMounted, nextTick, watch, onBeforeUnmount } from 'vue'
 import SvgEffortButton from '../../../ui/svg/EffortButton.vue'
 import SvgButton from '../../../ui/svg/Button.vue'
 import useDateFormat from '~/composables/utils/useDateFormat'
@@ -43,6 +44,37 @@ const { task } = defineProps(['task']);
 const emit = defineEmits(['fall-complete']);
 
 const taskStore = useTaskStore()
+
+// Tooltip when the title text is truncated
+const titleRef = ref(null)
+const isTruncated = ref(false)
+let resizeObserver = null
+
+function checkTruncated() {
+  const el = titleRef.value
+  if (!el) {
+    isTruncated.value = false
+    return
+  }
+  // For multi-line clamp, comparing scrollHeight and clientHeight works
+  isTruncated.value = el.scrollHeight > el.clientHeight || el.scrollWidth > el.clientWidth
+}
+
+onMounted(() => {
+  nextTick(checkTruncated)
+  window.addEventListener('resize', checkTruncated)
+  if (typeof ResizeObserver !== 'undefined') {
+    resizeObserver = new ResizeObserver(checkTruncated)
+    if (titleRef.value) resizeObserver.observe(titleRef.value)
+  }
+})
+
+onBeforeUnmount(() => {
+  window.removeEventListener('resize', checkTruncated)
+  if (resizeObserver) resizeObserver.disconnect()
+})
+
+watch(() => task.name, () => nextTick(checkTruncated))
 
 async function handleComplete() {
   const updatedTask = await taskStore.concludeTask(task._id)
@@ -98,6 +130,13 @@ function getDeadlineColor(date) {
   text-align: center;
   font-size: 14px;
   margin-bottom: 4px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  word-break: break-word;
 }
 .button-container {
   position: relative;

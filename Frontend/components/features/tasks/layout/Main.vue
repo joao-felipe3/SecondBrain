@@ -1,7 +1,7 @@
 <template>
   <v-col cols="8" class="height-100 px-n2 d-flex flex-column">
     <v-row class="pa-0" style="flex: 0 0 auto">
-      <TaskStatsCard />
+      <TaskStatsCard :tasks="allTasks" />
     </v-row>
     <v-row class="pa-0 w-100 mb-2 mt-4" style="flex: 1 1 auto; overflow: hidden;">
       <TaskBackgroundDecor :zoomed="zoomed" />
@@ -47,7 +47,7 @@
   import TaskBoard from '../board/Board.vue'
   import SvgButton from '../../../ui/svg/Button.vue'
   
-  defineProps(['tasks', 'projects', 'zoomed', 'initialZoomedTask'])
+  defineProps(['tasks', 'projects', 'zoomed', 'initialZoomedTask', 'allTasks'])
   defineEmits(['zoom-in', 'zoom-out', 'remove-last-task', 'task-created'])
 
   const showMoreAvailable = ref(false);

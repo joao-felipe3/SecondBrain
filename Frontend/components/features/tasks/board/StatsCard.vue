@@ -3,9 +3,9 @@
     <div class="d-flex w-100 mt-1" style="position: relative; height: auto;">
       <TaskCard
         title="Left to Do"
-        count="5"
+        :count="String(pendingStats.count)"
         countLabel="Pending tasks"
-        time="2h 05min"
+        :time="pendingStats.time"
         timeLabel="Estimated Time"
         paperTop="31%"
         paperLeft="30%"
@@ -20,9 +20,9 @@
 
       <TaskCard
         title="Already Done"
-        count="4"
+        :count="String(completedStats.count)"
         countLabel="Completed tasks"
-        time="1h 40min"
+        :time="completedStats.time"
         timeLabel="Estimated Time"
         paperTop="31%"
         paperLeft="30%"
@@ -39,7 +39,49 @@
 </template>
 
 <script setup>
+import { computed } from 'vue'
 import TaskCard from './Card.vue'
 
-defineProps({})
+const props = defineProps({
+  tasks: {
+    type: Array,
+    default: () => []
+  }
+})
+
+// Calculate statistics for pending tasks
+const pendingStats = computed(() => {
+  const pending = props.tasks.filter(t => !t.isConcluded)
+  const count = pending.length
+  const totalMinutes = pending.reduce((sum, task) => {
+    return sum + (task.pomodorosPlanned || 0) * 25
+  }, 0)
+  return {
+    count,
+    time: formatTime(totalMinutes)
+  }
+})
+
+// Calculate statistics for completed tasks
+const completedStats = computed(() => {
+  const completed = props.tasks.filter(t => t.isConcluded)
+  const count = completed.length
+  const totalMinutes = completed.reduce((sum, task) => {
+    return sum + (task.pomodorosPlanned || 0) * 25
+  }, 0)
+  return {
+    count,
+    time: formatTime(totalMinutes)
+  }
+})
+
+// Format minutes to "Xh Ymin" or "Xmin"
+function formatTime(minutes) {
+  if (minutes === 0) return '0min'
+  const hours = Math.floor(minutes / 60)
+  const mins = minutes % 60
+  if (hours === 0) return `${mins}min`
+  if (mins === 0) return `${hours}h`
+  return `${hours}h ${mins}min`
+}
 </script>

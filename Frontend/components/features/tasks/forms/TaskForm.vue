@@ -107,6 +107,42 @@ watch(localNotification, (val) => {
   }
 })
 
+function normalizeTaskProject() {
+  const names = projectNames.value || []
+  if (!props.task) return
+  const p = props.task.project
+  if (!p) {
+    props.task.project = null
+    return
+  }
+
+  if (typeof p === 'object' && p !== null) {
+    if (p.name) {
+      props.task.project = p.name
+      return
+    }
+    const foundById = (props.projects || []).find(pr => pr._id === p._id)
+    props.task.project = foundById ? foundById.name || null : null
+    return
+  }
+
+  if (typeof p === 'string') {
+    if (names.includes(p)) return
+    // or it may be an id that we can map to a name
+    const found = (props.projects || []).find(pr => pr._id === p)
+    if (found) {
+      props.task.project = found.name || null
+      return
+    }
+    // otherwise clear invalid value
+    props.task.project = null
+  }
+}
+
+normalizeTaskProject()
+watch(projectNames, () => normalizeTaskProject(), { immediate: true })
+watch(() => props.task.project, () => normalizeTaskProject())
+
 const isValidDate = (dateStr) => {
   const date = new Date(dateStr)
   return !isNaN(date.getTime())
