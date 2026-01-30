@@ -11,7 +11,7 @@
         top: 0;
         left: 0;
         height: 100vw;
-        width: 100%;
+        width: 90%;
         transform: rotate(90deg) translateY(-100%);
         transform-origin: top left;
         object-fit: fill;
