@@ -1,5 +1,5 @@
 <template>
-  <v-dialog v-model="isOpen" max-width="500">
+  <v-dialog v-model="isOpen" :max-width="isMobile ? '90vw' : '500'">
     <v-card>
       <v-card-title class="text-h5">
         Excluir Projeto
@@ -40,7 +40,23 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { ref, watch, onMounted, onBeforeUnmount } from 'vue'
+
+const MOBILE_BREAKPOINT = 768
+const isMobile = ref(false)
+
+function checkMobile() {
+  isMobile.value = window.innerWidth < MOBILE_BREAKPOINT
+}
+
+onMounted(() => {
+  checkMobile()
+  window.addEventListener('resize', checkMobile)
+})
+
+onBeforeUnmount(() => {
+  window.removeEventListener('resize', checkMobile)
+})
 
 const props = defineProps<{
   modelValue: boolean

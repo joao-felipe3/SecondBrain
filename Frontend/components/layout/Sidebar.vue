@@ -1,6 +1,6 @@
 <template>
-  <v-col cols="2" class="pa-0 ml-2 mt-n4">
-    <v-col cols="9" class="pa-0">
+  <v-col :cols="isMobile ? 12 : 2" class="pa-0" :class="{ 'ml-2 mt-n4': !isMobile }">
+    <v-col :cols="isMobile ? 12 : 9" class="pa-0">
       <v-container
         fluid
         class="d-flex flex-column align-center justify-center fill-height pa-0 bg-transparent"
@@ -8,19 +8,24 @@
         <v-img
           src="logo.svg"
           alt="Logo"
-          width="120"
-          class="mx-auto mt-6 mb-1"
+          :width="isMobile ? 80 : 120"
+          class="mx-auto mb-1"
+          :class="{ 'mt-6': !isMobile, 'mt-2': isMobile }"
           contain
         />
         <h1 
-          class="text-h4 text-center font-weight-bold text-shadow-white"
+          class="text-center font-weight-bold text-shadow-white"
+          :class="isMobile ? 'text-h5' : 'text-h4'"
           style="font-family: 'Irish Grover', cursive;"
         >
           Task RPG
         </h1>
 
-        <v-card elevation="0" class="icon-panel">
-          <div class="d-flex flex-column align-center justify-space-between fill-height pl-2 pr-4 py-8">
+        <v-card elevation="0" class="icon-panel" :class="{ 'icon-panel-mobile': isMobile }">
+          <div 
+            class="d-flex align-center justify-space-between fill-height py-8"
+            :class="isMobile ? 'flex-row px-4' : 'flex-column pl-2 pr-4'"
+          >
             <SvgIconButton
               v-for="(icon, index) in sidebarIcons"
               :key="index"
@@ -33,7 +38,7 @@
         </v-card>
       </v-container>
     </v-col>
-    <v-col cols="2" />
+    <v-col v-if="!isMobile" cols="2" />
   </v-col>
 </template>
 
@@ -42,7 +47,13 @@ import { GoalIcon, CalendarDaysIcon, ChartNoAxesCombinedIcon } from 'lucide-vue-
 import { useRouter } from 'vue-router'
 import SvgIconButton from '../ui/svg/IconButton.vue'
 
-const props = defineProps(['activeIcon'])
+const props = defineProps({
+  activeIcon: String,
+  isMobile: {
+    type: Boolean,
+    default: false
+  }
+})
 const emit = defineEmits(['update:activeIcon'])
 const router = useRouter()
 
@@ -78,5 +89,13 @@ function handleIconClick(icon) {
   height: 65vh;
   width: auto;
   aspect-ratio: 222 / 660;
+}
+
+.icon-panel-mobile {
+  height: auto;
+  width: 100%;
+  aspect-ratio: unset;
+  background-image: none;
+  background-color: transparent;
 }
 </style>

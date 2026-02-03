@@ -1,5 +1,5 @@
 <template>
-  <v-col cols="8" class="height-100 px-n2 d-flex flex-column">
+  <v-col :cols="isMobile ? 12 : 8" class="height-100 d-flex flex-column" :class="{ 'px-n2': !isMobile, 'px-2': isMobile }">
     <v-row class="pa-0" style="flex: 0 0 auto">
       <TaskStatsCard :tasks="allTasks" />
     </v-row>
@@ -15,14 +15,14 @@
         @remove-last-task="$emit('remove-last-task', $event)"
         :initialZoomedTask="initialZoomedTask"
       />
-      <v-col cols="12" class="d-flex justify-center" style="margin-top: -14%;  z-index: 3;">
+      <v-col cols="12" class="d-flex justify-center button-container" style="margin-top: -14%;  z-index: 3;">
         <SvgButton 
           label="Create Task"
           @click="$emit('task-created')"
           :disabled="false"
-          :width="300"
-          :height="75"
-          :labelSize="27"
+          :width="isMobile ? 200 : 300"
+          :height="isMobile ? 60 : 75"
+          :labelSize="isMobile ? 20 : 27"
           style="font-family: 'Irish Grover', cursive;"
         />
         <SvgButton 
@@ -30,9 +30,9 @@
           label="Show More"
           @click="handleShowMoreClick"
           :highlight="true"
-          :width="300"
-          :height="75"
-          :labelSize="27"
+          :width="isMobile ? 200 : 300"
+          :height="isMobile ? 60 : 75"
+          :labelSize="isMobile ? 20 : 27"
           style="font-family: 'Irish Grover', cursive;"
         />
       </v-col>
@@ -47,7 +47,7 @@
   import TaskBoard from '../board/Board.vue'
   import SvgButton from '../../../ui/svg/Button.vue'
   
-  defineProps(['tasks', 'projects', 'zoomed', 'initialZoomedTask', 'allTasks'])
+  defineProps(['tasks', 'projects', 'zoomed', 'initialZoomedTask', 'allTasks', 'isMobile'])
   defineEmits(['zoom-in', 'zoom-out', 'remove-last-task', 'task-created'])
 
   const showMoreAvailable = ref(false);
@@ -61,3 +61,16 @@
     showAllTasks.value = true;
   };
 </script>
+
+<style scoped>
+.button-container {
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 767px) {
+  .button-container {
+    margin-top: -8% !important;
+  }
+}
+</style>

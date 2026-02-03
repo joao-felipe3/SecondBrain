@@ -1,6 +1,6 @@
 <template>
-    <v-row dense class="gap-x-2 ml-n6" style="min-height: 100vh;">
-      <v-col cols="6" class="d-flex align-center justify-center" style="min-height: 100vh;">
+    <v-row dense class="gap-x-2" :class="{ 'ml-n6': !isMobile }" style="min-height: 100vh;">
+      <v-col cols="12" md="6" class="d-flex align-center justify-center" style="min-height: 100vh;">
         <ProjectPanel
           title="Projects"
           :titleOffset="'-10%'"
@@ -12,7 +12,7 @@
           @request-delete="onRequestDelete"
         />
       </v-col>
-      <v-col cols="6" class="d-flex flex-column align-start position-relative">
+      <v-col v-if="!isMobile" cols="12" md="6" class="d-flex flex-column align-start position-relative">
         <div style="width: 100%; padding-left: 5%;">
           <ClientOnly>
             <BookShelf class="bookshelf-squashed" :projectColors="projectColors" :hoveredProjectIndex="hoveredProjectIndex" />
@@ -46,7 +46,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted, onBeforeUnmount } from 'vue'
 import ProjectPanel from '../../components/features/projects/ProjectPanel.vue'
 import Book from '../../components/ui/svg/Book.vue'
 import BookShelf from '../../components/ui/svg/BookShelf.vue'
@@ -56,6 +56,23 @@ import { useProjects } from '~/composables/features/useProjects'
 import { useProjectModal } from '~/composables/features/useProjectModal'
 import { useProjectDelete } from '~/composables/features/useProjectDelete'
 import type { Project } from '~/models/Project'
+
+// Responsive
+const MOBILE_BREAKPOINT = 960
+const isMobile = ref(false)
+
+function checkMobile() {
+  isMobile.value = window.innerWidth < MOBILE_BREAKPOINT
+}
+
+onMounted(() => {
+  checkMobile()
+  window.addEventListener('resize', checkMobile)
+})
+
+onBeforeUnmount(() => {
+  window.removeEventListener('resize', checkMobile)
+})
 
 // Composables
 const { projects, projectColors, updateProject, removeProject, removeProjectById } = useProjects()

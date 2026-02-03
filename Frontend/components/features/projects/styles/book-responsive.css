@@ -4,10 +4,40 @@
  */
 
 /* Tablet breakpoint */
+@media (max-width: 960px) { 
+  .container { 
+    --sprite-th: calc(var(--sprite-sh) / 2.2); 
+    padding: 1.5rem 1rem; 
+    max-width: 95vw;
+  } 
+  
+  .page-title { 
+    font-size: 1.6rem; 
+  } 
+  
+  .page { 
+    padding: 20px 15px; 
+    font-size: 13px; 
+  }
+  
+  .nav-arrow {
+    width: 40px;
+    height: 40px;
+    font-size: 1.2rem;
+  }
+  
+  .actions-bar {
+    padding: 0.75rem;
+    gap: 0.75rem;
+  }
+}
+
+/* Tablet small breakpoint */
 @media (max-width: 768px) { 
   .container { 
     --sprite-th: calc(var(--sprite-sh) / 2.5); 
     padding: 1rem; 
+    max-width: 90vw;
   } 
   
   .page-title { 
@@ -19,11 +49,16 @@
     font-size: 12px; 
   } 
   
-  .close-button { 
+  .icon-floating-close { 
     width: 50px; 
     height: 50px; 
     top: 1rem; 
     right: 1rem; 
+  }
+  
+  .nav-arrow {
+    width: 35px;
+    height: 35px;
   }
 }
 
@@ -31,6 +66,8 @@
 @media (max-width: 560px) { 
   .container { 
     --sprite-th: calc(var(--sprite-sh) / 4); 
+    padding: 0.75rem;
+    max-width: 100vw;
   } 
   
   .page-title { 
@@ -45,11 +82,56 @@
   .page > div { 
     font-size: 0.8rem; 
   }
+  
+  .nav-arrow {
+    width: 30px;
+    height: 30px;
+    font-size: 1rem;
+  }
+  
+  .actions-bar {
+    flex-wrap: wrap;
+    padding: 0.5rem;
+  }
+  
+  .action-btn {
+    padding: 0.5rem 1rem;
+    font-size: 0.9rem;
+  }
 }
 
-/* Reduced motion preference */
-@media (prefers-reduced-motion: reduce) { 
-  * { 
+/* Extra small mobile */
+@media (max-width: 400px) {
+  .container {
+    --sprite-th: calc(var(--sprite-sh) / 5);
+  }
+  
+  .page-title {
+    font-size: 1rem;
+  }
+  
+  .page {
+    padding: 10px;
+    font-size: 9px;
+  }
+}
+
+/* Landscape mobile optimization */
+@media (orientation: landscape) and (max-height: 600px) {
+  .container {
+    padding: 0.5rem;
+    --sprite-th: calc(var(--sprite-sh) / 3);
+  }
+  
+  .page {
+    padding: 10px;
+    font-size: 11px;
+    max-height: 70vh;
+    overflow-y: auto;
+  }
+  
+  .actions-bar {
+    padding: 0.5rem;
     animation: none !important; 
   }
   

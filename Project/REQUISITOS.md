@@ -52,7 +52,7 @@
 
 | # | Requisito | Tipo | Protótipo | Frontend | Backend | QA |
 |---|-----------|------|:---------:|:--------:|:-------:|:--:|
-| 15 | Interface responsiva | Não Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 15 | Interface responsiva | Não Funcional | ✅ | ✅ | ✅ | ✅ |
 
 ---
 

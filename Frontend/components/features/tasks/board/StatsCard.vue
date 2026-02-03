@@ -1,6 +1,6 @@
 <template>
   <v-row class="d-flex align-center justify-start pa-0" no-gutters>
-    <div class="d-flex w-100 mt-1" style="position: relative; height: auto;">
+    <div class="stats-container">
       <TaskCard
         title="Left to Do"
         :count="String(pendingStats.count)"
@@ -15,7 +15,6 @@
         timeTop="50%"
         timeLeft="45%"
         timeLabelTop="80%"
-        style="margin-top: 1.5%;"
       />
 
       <TaskCard
@@ -32,7 +31,6 @@
         timeTop="50%"
         timeLeft="45%"
         timeLabelTop="80%"
-        style="margin-left: -30px;"
       />
     </div>
   </v-row>
@@ -85,3 +83,32 @@ function formatTime(minutes) {
   return `${hours}h ${mins}min`
 }
 </script>
+
+<style scoped>
+.stats-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  width: 100%;
+  margin-top: 0.5rem;
+  position: relative;
+  justify-content: flex-start;
+}
+
+@media (min-width: 768px) {
+  .stats-container {
+    flex-wrap: nowrap;
+    gap: 0;
+  }
+  
+  .stats-container > :nth-child(2) {
+    margin-left: -30px;
+  }
+}
+
+@media (max-width: 767px) {
+  .stats-container {
+    justify-content: center;
+  }
+}
+</style>

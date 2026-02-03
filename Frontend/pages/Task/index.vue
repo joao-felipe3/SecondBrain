@@ -1,27 +1,36 @@
 <template>
-  <v-row dense class="gap-x-2 ml-n4 fill-height" style="height: 100%;">
+  <v-row dense class="gap-x-2 fill-height" :class="{ 'ml-n4': !isMobile }" style="height: 100%;">
     <TaskMain
       :tasks="tasks"
       :allTasks="allTasks"
       :projects="projects"
       :zoomed="zoomed"
       :initialZoomedTask="newlyCreatedTask"
+      :isMobile="isMobile"
       @zoom-in="onZoomStart"
       @zoom-out="onZoomEnd"
       @remove-last-task="removeLastTask"
       @task-created="handleTaskCreated"
     />
-    <TaskSidebar :projects="projects" />
+    <TaskSidebar v-if="!isMobile" :projects="projects" />
   </v-row>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onBeforeUnmount } from 'vue'
 import { useTaskStore } from '~/stores/task'
 import useTaskHelpers from '~/composables/features/useTaskHelpers'
 import { useApiResource } from '~/composables/api/useApi'
 import TaskMain from '../../components/features/tasks/layout/Main.vue'
 import TaskSidebar from '../../components/features/tasks/layout/Sidebar.vue'
+
+// Responsive
+const MOBILE_BREAKPOINT = 960
+const isMobile = ref(false)
+
+function checkMobile() {
+  isMobile.value = window.innerWidth < MOBILE_BREAKPOINT
+}
 
 // Estado local
 const zoomed = ref(false)
@@ -36,6 +45,12 @@ const allTasks = ref([]) // All tasks including completed ones
 onMounted(() => {
   newlyCreatedTask.value = null // Garante que o Board nunca inicie com zoom
   loadInitialTasks()
+  checkMobile()
+  window.addEventListener('resize', checkMobile)
+})
+
+onBeforeUnmount(() => {
+  window.removeEventListener('resize', checkMobile)
 })
 
 async function loadInitialTasks() {

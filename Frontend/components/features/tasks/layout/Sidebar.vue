@@ -1,5 +1,5 @@
 <template>
-  <v-col cols="4" class="py-1 d-flex flex-column justify-center" style="height: 100vh; overflow: visible;">
+  <v-col cols="4" class="py-1 d-flex flex-column justify-center task-sidebar">
     <TaskProjectList :projects="projects" />
     <WoodPanel
       title="Calendar"
@@ -19,3 +19,25 @@
   
   defineProps(['projects'])
 </script>
+
+<style scoped>
+.task-sidebar {
+  height: 100vh;
+  overflow: visible;
+}
+
+@media (max-width: 960px) {
+  .task-sidebar {
+    height: auto;
+    min-height: 100vh;
+  }
+}
+
+@media (orientation: landscape) and (max-height: 600px) {
+  .task-sidebar {
+    height: auto;
+    max-height: 100vh;
+    overflow-y: auto;
+  }
+}
+</style>

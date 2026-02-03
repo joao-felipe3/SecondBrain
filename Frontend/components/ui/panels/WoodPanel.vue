@@ -6,17 +6,7 @@
     <v-img
       src="/svg/wooden2.svg"
       alt="Wood background"
-      style="
-        position: absolute;
-        top: 0;
-        left: 0;
-        height: 100vw;
-        width: 90%;
-        transform: rotate(90deg) translateY(-100%);
-        transform-origin: top left;
-        object-fit: fill;
-        z-index: 0;
-      "
+      class="wood-background"
     />
 
     <!-- Papel antigo -->
@@ -65,3 +55,31 @@ export default {
   },
 };
 </script>
+
+<style scoped>
+.wood-background {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 150vw;
+  width: 150vh;
+  transform: rotate(90deg) translateY(-100%);
+  transform-origin: top left;
+  object-fit: cover;
+  z-index: 0;
+}
+
+@media (max-width: 767px) {
+  .wood-background {
+    height: 200vw;
+    width: 200vw;
+  }
+}
+
+@media (orientation: landscape) and (max-height: 600px) {
+  .wood-background {
+    height: 200vh;
+    width: 300vw;
+  }
+}
+</style>
