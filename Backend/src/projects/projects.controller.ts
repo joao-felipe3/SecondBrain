@@ -7,7 +7,7 @@ import { CreateProjectDto } from './dto/create-project.dto';
 import { UpdateProjectDto } from './dto/update-project.dto';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { PlanningService } from './planning/planning.service';
-import { CatchballRequestDto, RefineObjectiveDto } from './dto/smart-objective.dto';
+import { CatchballRequestDto, RefineObjectiveDto, SuggestAnswerDto } from './dto/smart-objective.dto';
 
 @ApiTags('projects')
 @Controller('projects')
@@ -36,7 +36,33 @@ export class ProjectsController {
 		const project = await this.projectsService.findOne(id);
 		if (!project) throw new NotFoundException('Project not found');
 		
-		return this.planningService.startCatchball(dto.initialDescription);
+		return this.planningService.startCatchball({
+			projectName: dto.projectName,
+			projectDescription: dto.projectDescription,
+			shortTermGoal: dto.shortTermGoal,
+			midTermGoal: dto.midTermGoal,
+			longTermGoal: dto.longTermGoal
+		});
+	}
+
+	@Post(':id/suggest-answer')
+	@ApiOperation({ summary: 'Generate suggested answer for a Catchball question' })
+	@ApiResponse({ status: 200, description: 'Suggested answer generated.' })
+	async suggestAnswer(
+		@Param('id') id: string,
+		@Body() dto: SuggestAnswerDto
+	) {
+		const project = await this.projectsService.findOne(id);
+		if (!project) throw new NotFoundException('Project not found');
+		
+		const suggestedAnswer = await this.planningService.suggestAnswer(
+			dto.conversationId,
+			dto.questionIndex,
+			dto.question,
+			dto.previousAnswers
+		);
+		
+		return { suggestedAnswer };
 	}
 
 	@Post(':id/refine-objective')

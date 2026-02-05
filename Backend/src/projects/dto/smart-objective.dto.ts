@@ -9,7 +9,11 @@ export class SmartObjectiveDto {
 }
 
 export class CatchballRequestDto {
-  initialDescription: string;
+  projectName: string;
+  projectDescription: string;
+  shortTermGoal?: string;
+  midTermGoal?: string;
+  longTermGoal?: string;
 }
 
 export class CatchballResponseDto {
@@ -20,6 +24,13 @@ export class CatchballResponseDto {
 export class RefineObjectiveDto {
   conversationId: string;
   answers: string[];
+}
+
+export class SuggestAnswerDto {
+  conversationId: string;
+  questionIndex: number;
+  question: string;
+  previousAnswers: string[];
 }
 
 export class PlanWithAIResponseDto {
