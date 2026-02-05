@@ -1,7 +1,9 @@
 <template>
   <div class="goals-section">
     <div v-if="project">
-      <h4>🎯 Objetivo de Curto Prazo</h4>
+      <h4 class="section-title">📋 Objetivos por Prazo</h4>
+      
+      <h5>🎯 Objetivo de Curto Prazo</h5>
       <template v-if="editing">
         <v-textarea 
           :model-value="shortTermGoal" 
@@ -13,9 +15,9 @@
           rows="3" 
         />
       </template>
-      <p v-else class="goal-content">{{ project.shortTermGoal }}</p>
+      <p v-else class="goal-content">{{ project.shortTermGoal || 'Não definido' }}</p>
 
-      <h4>🎯 Objetivo de Médio Prazo</h4>
+      <h5>🎯 Objetivo de Médio Prazo</h5>
       <template v-if="editing">
         <v-textarea 
           :model-value="midTermGoal" 
@@ -27,9 +29,9 @@
           rows="3" 
         />
       </template>
-      <p v-else class="goal-content">{{ project.midTermGoal }}</p>
+      <p v-else class="goal-content">{{ project.midTermGoal || 'Não definido' }}</p>
 
-      <h4>🎯 Objetivo de Longo Prazo</h4>
+      <h5>🎯 Objetivo de Longo Prazo</h5>
       <template v-if="editing">
         <v-textarea 
           :model-value="longTermGoal" 
@@ -41,7 +43,7 @@
           rows="3" 
         />
       </template>
-      <p v-else class="goal-content">{{ project.longTermGoal }}</p>
+      <p v-else class="goal-content">{{ project.longTermGoal || 'Não definido' }}</p>
     </div>
   </div>
 </template>
@@ -63,24 +65,34 @@ const emit = defineEmits<{
 </script>
 
 <style scoped>
-.goals-section h4 {
-  margin: 0.75rem 0 0.5rem 0;
-  font-size: 1rem;
-  color: #1e293b;
+.goals-section {
+  width: 100%;
 }
 
-.goals-section h4:first-child {
-  margin-top: 0;
+.section-title {
+  margin: 0 0 1.5rem 0;
+  font-size: 1.1rem;
+  color: #1e293b;
+  font-weight: 600;
+}
+
+.goals-section h5 {
+  margin: 1rem 0 0.5rem 0;
+  font-size: 0.95rem;
+  color: #475569;
+  font-weight: 500;
 }
 
 .goal-content {
-  margin: 0 0 0.5rem 0;
+  margin: 0 0 1rem 0;
   color: #475569;
   font-size: 0.9rem;
   line-height: 1.6;
-  padding: 0.5rem;
-  background: #f8fafc;
-  border-radius: 6px;
+  padding: 0 0 0 0.75rem;
+  background: transparent;
   min-height: 2rem;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 </style>
+

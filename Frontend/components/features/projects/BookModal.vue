@@ -19,8 +19,9 @@
             <div ref="carouselEl" class="carousel" :style="{ '--slides': `${TOTAL_SLIDES}` }">
               <v-sheet class="sprite" elevation="0" color="transparent"></v-sheet>
               <v-sheet :class="['carousel-item', { active: currentIndex === 0 }]" elevation="0" color="transparent"><GeneralInfoPage :project="displayProject || {}" :editing="editing" @update-field="updateField" /></v-sheet>
-              <v-sheet :class="['carousel-item', { active: currentIndex === 1 }]" elevation="0" color="transparent"><GoalPage :project="displayProject || {}" :editing="editing" @update-field="updateField" /></v-sheet>
-              <v-sheet :class="['carousel-item', { active: currentIndex === 2 }]" elevation="0" color="transparent"><BacklogAndProgress :project="displayProject || {}" :editing="editing" @update-field="updateField" /></v-sheet>
+              <v-sheet :class="['carousel-item', { active: currentIndex === 1 }]" elevation="0" color="transparent"><SmartObjectivesPage :project="displayProject || {}" :editing="editing" @update-field="updateField" @smart-objective-updated="reloadProject" /></v-sheet>
+              <v-sheet :class="['carousel-item', { active: currentIndex === 2 }]" elevation="0" color="transparent"><GoalPage :project="displayProject || {}" :editing="editing" @update-field="updateField" /></v-sheet>
+              <v-sheet :class="['carousel-item', { active: currentIndex === 3 }]" elevation="0" color="transparent"><BacklogAndProgress :project="displayProject || {}" :editing="editing" @update-field="updateField" /></v-sheet>
             </div>
           </v-sheet>
         </v-col>
@@ -58,9 +59,10 @@ import { X } from 'lucide-vue-next'
 import { ref, computed, onMounted, onBeforeUnmount, watch, nextTick, toRef } from 'vue'
 import GeneralInfoPage from './pages/GeneralInfoPage.vue'
 import GoalPage from './pages/GoalPage.vue'
+import SmartObjectivesPage from './pages/SmartObjectivesPage.vue'
 import BacklogAndProgress from './pages/BacklogAndProgress.vue'
 import DeleteProjectDialog from '../../shared/dialogs/DeleteProjectDialog.vue'
-import { useApiResource } from '~/composables/api/useApi'
+import { useApiResource, useApi } from '~/composables/api/useApi'
 import type { PropType } from 'vue'
 import { useCarousel } from '~/composables/ui/useCarousel'
 import { useSparkles } from '~/composables/ui/useSparkles'
@@ -68,7 +70,7 @@ import { useProjectEditing, getProjectId } from '~/composables/features/useProje
 import type { Project } from '~/models/Project'
 
 const CLOSE_ANIM_MS = 800
-const TOTAL_SLIDES = 3
+const TOTAL_SLIDES = 4
 
 
 const props = defineProps({
@@ -114,6 +116,23 @@ const saveEdit = async () => {
 
 const showDeleteDialog = ref(false)
 const taskCount = ref(0)
+
+// Reload project (for SMART objective updates)
+async function reloadProject() {
+  if (!props.project?._id) return
+
+  try {
+    const id = props.project._id
+    const { get } = useApi(`/projects/${id}`)
+    const { data, error } = await get()
+    if (error) {
+      throw error
+    }
+    emit('updated', data)
+  } catch (error) {
+    console.error('Failed to reload project:', error)
+  }
+}
 
 // Load task count when project changes
 watch(() => props.project, async (newProject) => {
