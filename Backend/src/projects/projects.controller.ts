@@ -6,12 +6,15 @@ import { ProjectsService } from './projects.service';
 import { CreateProjectDto } from './dto/create-project.dto';
 import { UpdateProjectDto } from './dto/update-project.dto';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { PlanningService } from './planning/planning.service';
+import { CatchballRequestDto, RefineObjectiveDto } from './dto/smart-objective.dto';
 
 @ApiTags('projects')
 @Controller('projects')
 export class ProjectsController {
 	constructor(
 		private readonly projectsService: ProjectsService,
+		private readonly planningService: PlanningService,
 		@InjectModel('Task') private readonly taskModel: Model<TaskDocument>,
 	) {}
 
@@ -21,6 +24,45 @@ export class ProjectsController {
 		return this.projectsService.getTasksForProject(id);
 		// Option 2: Directly use model (uncomment if you prefer)
 		// return this.taskModel.find({ project: id }).exec();
+	}
+
+	@Post(':id/plan-with-ai')
+	@ApiOperation({ summary: 'Start AI-assisted project planning with Catchball' })
+	@ApiResponse({ status: 200, description: 'Catchball questions generated.' })
+	async planProjectWithAI(
+		@Param('id') id: string,
+		@Body() dto: CatchballRequestDto
+	) {
+		const project = await this.projectsService.findOne(id);
+		if (!project) throw new NotFoundException('Project not found');
+		
+		return this.planningService.startCatchball(dto.initialDescription);
+	}
+
+	@Post(':id/refine-objective')
+	@ApiOperation({ summary: 'Generate SMART objectives from Catchball answers' })
+	@ApiResponse({ status: 200, description: 'SMART objectives generated.' })
+	async refineObjective(
+		@Param('id') id: string,
+		@Body() dto: RefineObjectiveDto
+	) {
+		const project = await this.projectsService.findOne(id);
+		if (!project) throw new NotFoundException('Project not found');
+		
+		const smart = await this.planningService.generateSmartObjective(
+			dto.conversationId,
+			dto.answers
+		);
+		
+		// Atualiza o projeto com os objetivos SMART
+		await this.projectsService.update(id, {
+			smartObjective: smart,
+		});
+		
+		return {
+			smart,
+			nextPhase: 'wbs-generation'
+		};
 	}
 
 	@Post()

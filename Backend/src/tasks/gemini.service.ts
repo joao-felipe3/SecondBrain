@@ -113,6 +113,77 @@ export class GeminiService {
     throw new Error('Falha ao gerar sugestões com a IA do Gemini');
   }
 
+  /**
+   * Generic method to generate content from a prompt
+   * Used by other services like PlanningService
+   */
+  async generateContent(prompt: string): Promise<string> {
+    const model = this.genAI.getGenerativeModel({ model: this.model });
+
+    const generationConfig = {
+      temperature: 0.8,
+      topK: 1,
+      topP: 1,
+      maxOutputTokens: 2048,
+    };
+
+    const safetySettings: { category: HarmCategory; threshold: HarmBlockThreshold }[] = [
+      {
+        category: HarmCategory.HARM_CATEGORY_HARASSMENT,
+        threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
+      },
+      {
+        category: HarmCategory.HARM_CATEGORY_HATE_SPEECH,
+        threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
+      },
+      {
+        category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT,
+        threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
+      },
+      {
+        category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT,
+        threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
+      },
+    ];
+
+    const maxRetries = 4;
+    let attempt = 0;
+    let lastError: any;
+
+    while (attempt <= maxRetries) {
+      try {
+        const result = await model.generateContent({
+          contents: [{ role: 'user', parts: [{ text: prompt }] }],
+          generationConfig,
+          safetySettings,
+        });
+        return result.response.text();
+      } catch (err: any) {
+        const status = err?.status || err?.code;
+        if (status === 429 && attempt < maxRetries) {
+          const base = 1000;
+          const delay = Math.min(base * Math.pow(2, attempt), 10000) + Math.floor(Math.random() * 300);
+          console.warn(`Rate limit 429 (tentativa ${attempt + 1}/${maxRetries}). Aguardando ${delay}ms para retry.`);
+          await new Promise(r => setTimeout(r, delay));
+          attempt++;
+          continue;
+        }
+        lastError = err;
+        break;
+      }
+    }
+
+    if (lastError && (lastError.status === 429 || lastError.code === 429)) {
+      const rateError: any = new Error('Gemini rate limit after retries');
+      rateError.code = 'RATE_LIMIT';
+      console.error('Erro ao chamar a API do Gemini (429 após retries):', lastError);
+      throw rateError;
+    }
+
+    console.error('Erro ao chamar a API do Gemini:', lastError);
+    throw new Error('Falha ao gerar conteúdo com a IA do Gemini');
+  }
+
   private buildPrompt(
     projectName: string,
     shortTermGoal?: string,

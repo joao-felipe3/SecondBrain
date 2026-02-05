@@ -1,5 +1,15 @@
 import { Schema, Document } from 'mongoose';
 
+export interface SmartObjective {
+  specific: string;
+  measurable: string;
+  achievable: string;
+  relevant: string;
+  temporal: string;
+  summary: string;
+  risks: string[];
+}
+
 export interface ProjectDocument extends Document {
   name: string;
   description: string;
@@ -11,6 +21,7 @@ export interface ProjectDocument extends Document {
   shortTermGoal: string;
   midTermGoal: string;
   longTermGoal: string;
+  smartObjective?: SmartObjective;
   status: string;
   progressPercentage: number;
   experience: number;
@@ -30,6 +41,18 @@ export const ProjectSchema = new Schema<ProjectDocument>({
   shortTermGoal: { type: String, required: true },
   midTermGoal: { type: String, required: true },
   longTermGoal: { type: String, required: true },
+  smartObjective: {
+    type: {
+      specific: { type: String },
+      measurable: { type: String },
+      achievable: { type: String },
+      relevant: { type: String },
+      temporal: { type: String },
+      summary: { type: String },
+      risks: [{ type: String }]
+    },
+    required: false
+  },
   status: { type: String, required: true },
   progressPercentage: { type: Number, required: true, default: 0 },
   experience: { type: Number, required: true },

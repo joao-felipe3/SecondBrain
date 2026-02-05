@@ -20,6 +20,6 @@ import { ProjectsModule } from '../projects/projects.module';
   ],
   controllers: [TasksController],
   providers: [TasksService, GeminiService], // Adiciona o GeminiService aos providers
-  exports: [TasksService]
+  exports: [TasksService, GeminiService] // Exporta GeminiService para uso em outros módulos
 })
 export class TasksModule {}
