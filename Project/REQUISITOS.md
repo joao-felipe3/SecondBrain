@@ -1,7 +1,7 @@
 # 📋 Acompanhamento de Requisitos - Second Brain
 
-> **Última atualização:** 28/01/2026  
-> **Status do Projeto:** MVP em desenvolvimento
+> **Última atualização:** 03/02/2026  
+> **Status do Projeto:** MVP + Planejamento da Fase Eficiência e Micro-Tarefas
 
 ---
 
@@ -10,6 +10,8 @@
 | Fase | Total | Prototipado | Frontend | Backend | QA | Progresso |
 |------|-------|-------------|----------|---------|-----|-----------|
 | MVP | 14 | 14/14 ✅ | 14/14 ✅ | 14/14 ✅ | 14/14 ✅ | 🟢 100% |
+| Eficiência | 28 | 0/28 | 0/28 | 0/28 | 0/28 | ⬜ 0% |
+| Micro-Tarefas | 18 | 0/18 | 0/18 | 0/18 | 0/18 | ⬜ 0% |
 | Fase 2 | 12 | 0/12 | 0/12 | 0/12 | 0/12 | ⬜ 0% |
 | Fase 3 | 12 | 0/12 | 0/12 | 0/12 | 0/12 | ⬜ 0% |
 | Fase 4 | 16 | 0/16 | 0/16 | 0/16 | 0/16 | ⬜ 0% |
@@ -56,14 +58,133 @@
 
 ---
 
+## ⚡ Eficiência - Integração de LLM na Definição e Gestão de Projetos
+
+### Definição e Clarificação de Projetos (Catchball via Chat)
+
+| # | Requisito | Tipo | Protótipo | Frontend | Backend | QA |
+|---|-----------|------|:---------:|:--------:|:-------:|:--:|
+| 1 | Chat interativo de Catchball para refinar objetivos do projeto | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 2 | LLM deve fazer perguntas estratégicas para validar clareza do projeto | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 3 | Geração automática de Objetivos SMART baseado no conversa | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 4 | Exibição estruturada de SMART (Específico, Mensurável, Atingível, Realista, Temporal) | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+
+### Estrutura Analítica do Projeto (WBS/EAP)
+
+| # | Requisito | Tipo | Protótipo | Frontend | Backend | QA |
+|---|-----------|------|:---------:|:--------:|:-------:|:--:|
+| 5 | Geração automática de WBS (Estrutura Analítica do Projeto) via LLM | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 6 | Visualização hierárquica da WBS (tree view com expansão/colapso) | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 7 | Aplicação da Regra dos 8/80 - validar que pacotes tenham entre 8-80 horas | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 8 | Sugestão de decomposição quando pacote viola a regra 8/80 | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 9 | Conversão automática de WBS em tarefas (criar tarefas a partir da WBS) | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+
+### Estimativa e Planejamento de Prazos (PERT/CPM)
+
+| # | Requisito | Tipo | Protótipo | Frontend | Backend | QA |
+|---|-----------|------|:---------:|:--------:|:-------:|:--:|
+| 10 | Captura de três estimativas (Otimista, Provável, Pessimista) para cada tarefa | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 11 | Cálculo automático de TE (Tempo Esperado) usando fórmula PERT: TE = (O + 4M + P) / 6 | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 12 | Identificação automática de dependências lógicas entre tarefas via LLM | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 13 | Cálculo do Caminho Crítico (CPM) - sequência de tarefas sem folga | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 14 | Alertar usuário sobre tarefas no Caminho Crítico (urgência máxima) | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+
+### Gestão de Incerteza (Critical Chain e Buffers)
+
+| # | Requisito | Tipo | Protótipo | Frontend | Backend | QA |
+|---|-----------|------|:---------:|:--------:|:-------:|:--:|
+| 15 | Implementar estratégia de Critical Chain - consolidar buffers no fim do projeto | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 16 | Calcular automaticamente Buffer do Projeto baseado em variância das estimativas | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 17 | Dashboard de consumo de buffer do projeto (quanto foi gasto vs. disponível) | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+
+### Rastreabilidade de Requisitos (RTM)
+
+| # | Requisito | Tipo | Protótipo | Frontend | Backend | QA |
+|---|-----------|------|:---------:|:--------:|:-------:|:--:|
+| 18 | Geração automática de Matriz de Rastreabilidade de Requisitos (RTM) via LLM | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 19 | Visualização de RTM ligando requisitos de negócio → entrega específica | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+
+### Planejamento em Ondas Sucessivas e Gestão de Riscos
+
+| # | Requisito | Tipo | Protótipo | Frontend | Backend | QA |
+|---|-----------|------|:---------:|:--------:|:-------:|:--:|
+| 20 | Implementar Rolling Wave Planning - planejar próximas semanas em detalhe, futuro distante em marcos | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 21 | LLM escaneia descrição e sugere riscos potenciais baseado em histórico/lógica comum | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 22 | Plano de mitigação de riscos: evitar, mitigar, transferir ou aceitar para aprovação | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+
+### Análise de Valor Agregado (EVM) e Dashboards
+
+| # | Requisito | Tipo | Protótipo | Frontend | Backend | QA |
+|---|-----------|------|:---------:|:--------:|:-------:|:--:|
+| 23 | Cálculo automático de índices de desempenho (CPI, SPI) quando usuário inputa progresso | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 24 | Previsão de custo final: "Se continuar nesse ritmo, projeto custará X% a mais" | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 25 | Dashboard de EVM com curvas em "S" de Valor Planejado vs. Valor Agregado | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+
+### Visualizações Avançadas
+
+| # | Requisito | Tipo | Protótipo | Frontend | Backend | QA |
+|---|-----------|------|:---------:|:--------:|:-------:|:--:|
+| 26 | Gráfico de Gantt interativo - mostrar timeline, duração das tarefas e dependências | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 27 | Diagrama de Rede (PERT/CPM) - visualizar lógica de conexão entre tarefas | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 28 | X-Matrix (Hoshin Kanri) - conectar objetivos de longo prazo com metas anuais e tarefas táticas | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+
+---
+
+## ⚙️ Micro-Tarefas - Gerenciamento de Tarefas de Curta Duração (≤3h)
+
+> **Objetivo:** Integrar LLM para garantir excelência operacional, rastreabilidade e eficiência em tarefas de curta duração, evitando erros humanos e "gold plating", aplicando técnicas de qualidade, PERT adaptado, RTM simplificada e feedback contínuo.
+
+### Gold Standard Checklists
+
+| # | Requisito | Tipo | Protótipo | Frontend | Backend | QA |
+|---|-----------|------|:---------:|:--------:|:-------:|:--:|
+| 1 | Geração automática de checklist padrão ouro via LLM ao criar micro-tarefa | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 2 | Checklist deve conter passos críticos, critérios de sucesso e validações baseados em histórico/padrões | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 3 | Visualizar e editar checklist antes de iniciar tarefa | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 4 | Marcar itens do checklist como concluído durante execução da tarefa | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 5 | Validação obrigatória de checklist antes de marcar tarefa como concluída | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+
+### Estimativa PERT em Micro-Escala
+
+| # | Requisito | Tipo | Protótipo | Frontend | Backend | QA |
+|---|-----------|------|:---------:|:--------:|:-------:|:--:|
+| 6 | Captura de três estimativas em minutos: Otimista, Provável e Pessimista para micro-tarefas | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 7 | Cálculo automático de TE (Tempo Esperado) em minutos usando fórmula PERT: TE = (O + 4M + P) / 6 | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 8 | Exibir deadline realista baseado em TE calculado | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 9 | Sugestão automática pelo LLM de estimativas realistas para tipos comuns de tarefas | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+
+### Rastreabilidade e Linhagem Visual (RTM Simplificada)
+
+| # | Requisito | Tipo | Protótipo | Frontend | Backend | QA |
+|---|-----------|------|:---------:|:--------:|:-------:|:--:|
+| 10 | Vincular visualmente cada micro-tarefa ao seu "Requisito Pai" ou "Objetivo Estratégico" | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 11 | Visualização de linhagem: ao clicar na tarefa, mostrar a cadeia de rastreabilidade até o objetivo | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 12 | Rastreabilidade bidirecional: alertar sobre impactos "rio abaixo" ao deletar ou adiar tarefa | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 13 | Indicador visual de valor agregado: mostrar quanto cada micro-tarefa contribui para o objetivo maior | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+
+### Kanban Pessoal com Catchball Visual
+
+| # | Requisito | Tipo | Protótipo | Frontend | Backend | QA |
+|---|-----------|------|:---------:|:--------:|:-------:|:--:|
+| 14 | Interface Kanban para fluxo diário de micro-tarefas (ToDo, Fazendo, Revisão, Concluído) | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 15 | Arrastar e soltar tarefas entre colunas do Kanban | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 16 | Ao mover tarefa para "Concluído", LLM actua como "receptor da bola" com feedback automático | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 17 | Feedback automático: LLM valida checklist, pergunta sobre impedimentos e sugere melhorias (PDCA) | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+
+### Alertas de Micro-Desvios (EVM Preditivo)
+
+| # | Requisito | Tipo | Protótipo | Frontend | Backend | QA |
+|---|-----------|------|:---------:|:--------:|:-------:|:--:|
+| 18 | Detectar anomalias: alerta quando tempo gasto exceder TE (Tempo Esperado) em 25% | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+
+---
+
 ## 🔄 Fase 2 - Produtividade Avançada
 
 ### Organização Visual
 
 | # | Requisito | Tipo | Protótipo | Frontend | Backend | QA |
 |---|-----------|------|:---------:|:--------:|:-------:|:--:|
-| 1 | O sistema deve organizar as tarefas em três colunas | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
-| 2 | O usuário deve poder arrastar e soltar as tarefas entre as colunas | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
 | 3 | Visualizar tarefas em formato de calendário | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
 
 ### Busca e Inteligência
