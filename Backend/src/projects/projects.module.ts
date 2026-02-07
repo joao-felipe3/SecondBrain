@@ -9,6 +9,7 @@ import { Task } from '../tasks/entities/task.entity';
 import { forwardRef } from '@nestjs/common';
 import { TasksModule } from '../tasks/tasks.module';
 import { PlanningModule } from './planning/planning.module';
+import { WBSModule } from './wbs/wbs.module';
 
 
 @Module({
@@ -18,7 +19,8 @@ import { PlanningModule } from './planning/planning.module';
       { name: Task.name, schema: TaskSchema }
     ]),
     forwardRef(() => TasksModule),
-    PlanningModule
+    PlanningModule,
+    WBSModule,
   ],
   controllers: [ProjectsController],
   providers: [ProjectsService],

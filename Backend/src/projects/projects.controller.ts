@@ -8,6 +8,9 @@ import { UpdateProjectDto } from './dto/update-project.dto';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { PlanningService } from './planning/planning.service';
 import { CatchballRequestDto, RefineObjectiveDto, SuggestAnswerDto } from './dto/smart-objective.dto';
+import { WBSService } from './wbs/wbs.service';
+import { GenerateWBSDto, SaveWBSDto, SuggestDecompositionDto, ConvertWBSToTasksDto } from './dto/wbs.dto';
+import { TasksService } from '../tasks/tasks.service';
 
 @ApiTags('projects')
 @Controller('projects')
@@ -15,6 +18,8 @@ export class ProjectsController {
 	constructor(
 		private readonly projectsService: ProjectsService,
 		private readonly planningService: PlanningService,
+		private readonly wbsService: WBSService,
+		private readonly tasksService: TasksService,
 		@InjectModel('Task') private readonly taskModel: Model<TaskDocument>,
 	) {}
 
@@ -88,6 +93,107 @@ export class ProjectsController {
 		return {
 			smart,
 			nextPhase: 'wbs-generation'
+		};
+	}
+
+	// ── WBS Endpoints ──────────────────────────────────────
+
+	@Post(':id/generate-wbs')
+	@ApiOperation({ summary: 'Generate WBS from SMART objective using AI' })
+	@ApiResponse({ status: 200, description: 'WBS generated successfully.' })
+	async generateWBS(
+		@Param('id') id: string,
+		@Body() dto: GenerateWBSDto
+	) {
+		const project = await this.projectsService.findOne(id);
+		if (!project) throw new NotFoundException('Project not found');
+
+		const nodes = await this.wbsService.generateWBS(dto);
+		const validation = this.wbsService.validateWBS(nodes);
+
+		return { nodes, validation };
+	}
+
+	@Post(':id/save-wbs')
+	@ApiOperation({ summary: 'Save WBS nodes to the project' })
+	@ApiResponse({ status: 200, description: 'WBS saved successfully.' })
+	async saveWBS(
+		@Param('id') id: string,
+		@Body() dto: SaveWBSDto
+	) {
+		const project = await this.projectsService.findOne(id);
+		if (!project) throw new NotFoundException('Project not found');
+
+		console.log('📥 WBS recebida do frontend:', JSON.stringify(dto.nodes.slice(0, 2), null, 2));
+		
+		const saved = await this.wbsService.saveWBS(id, dto.nodes);
+		return { saved: saved.length, message: 'WBS salva com sucesso' };
+	}
+
+	@Get(':id/wbs')
+	@ApiOperation({ summary: 'Get WBS tree for a project' })
+	@ApiResponse({ status: 200, description: 'WBS tree retrieved.' })
+	async getWBS(@Param('id') id: string) {
+		const project = await this.projectsService.findOne(id);
+		if (!project) throw new NotFoundException('Project not found');
+
+		const nodes = await this.wbsService.getWBS(id);
+		const validation = this.wbsService.validateWBS(nodes);
+
+		return { nodes, validation };
+	}
+
+	@Post(':id/wbs/validate')
+	@ApiOperation({ summary: 'Validate WBS nodes against 8/80 rule' })
+	@ApiResponse({ status: 200, description: 'Validation result.' })
+	async validateWBS(
+		@Param('id') id: string,
+		@Body() dto: SaveWBSDto
+	) {
+		return this.wbsService.validateWBS(dto.nodes);
+	}
+
+	@Post(':id/wbs/suggest-decomposition')
+	@ApiOperation({ summary: 'Suggest decomposition for a WBS node violating 8/80' })
+	@ApiResponse({ status: 200, description: 'Decomposition suggestion.' })
+	async suggestDecomposition(
+		@Param('id') id: string,
+		@Body() dto: SuggestDecompositionDto
+	) {
+		const suggestion = await this.wbsService.suggestDecomposition(dto);
+		return { suggestion };
+	}
+
+	@Post(':id/wbs/convert-to-tasks')
+	@ApiOperation({ summary: 'Convert WBS leaf nodes into project tasks with AI enrichment' })
+	@ApiResponse({ status: 200, description: 'Tasks created from WBS.' })
+	async convertWBSToTasks(
+		@Param('id') id: string,
+		@Body() dto: ConvertWBSToTasksDto
+	) {
+		const project = await this.projectsService.findOne(id);
+		if (!project) throw new NotFoundException('Project not found');
+
+		console.log(`🔄 Convertendo WBS em tasks com enriquecimento IA para projeto ${project.name}...`);
+
+		// Gera tasks enriquecidas com IA usando o método do WBSService
+		const createdTasks = await this.wbsService.convertWBSToTasksWithAI(
+			dto.nodes,
+			id,
+			project,
+			this.tasksService
+		);
+
+		console.log(`✅ ${createdTasks.length} micro-tarefas criadas com sucesso`);
+
+		return {
+			message: `✅ Conversão bem-sucedida: ${createdTasks.length} micro-tarefas (≤3h) criadas a partir da WBS (pacotes 8/80)`,
+			tasks: createdTasks,
+			summary: {
+				totalTasks: createdTasks.length,
+				totalPomodoros: createdTasks.reduce((sum, t: any) => sum + (t.pomodorosPlanned || 0), 0),
+				estimatedHours: (createdTasks.reduce((sum, t: any) => sum + (t.pomodorosPlanned || 0), 0) * 0.5).toFixed(1),
+			}
 		};
 	}
 
