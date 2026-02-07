@@ -1,4 +1,5 @@
 import { Injectable, Inject, forwardRef } from '@nestjs/common';
+import { randomUUID } from 'crypto';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { GeminiService } from '../../tasks/gemini.service';
@@ -267,6 +268,7 @@ Retorne APENAS um array JSON com os sub-pacotes sugeridos:
     tasksService: { create: (dto: any) => Promise<any> },
   ): Promise<any[]> {
     const createdTasks: any[] = [];
+    const generationBatchId = randomUUID();
     const maxMinutesPerMicroTask = this.microTaskHardMaxMinutes;
 
     // Guardrails: avoid accidental explosions (e.g. thousands of tasks)
@@ -301,7 +303,17 @@ Retorne APENAS um array JSON com os sub-pacotes sugeridos:
           // Prefer AI-generated, non-generic microtasks (batched per leaf).
           // Fallback to heuristic templates if AI fails or if we already hit a safety limit.
           let drafts:
-            | Array<{ name: string; description?: string; pomodorosPlanned?: number; priority?: number; difficult?: number }>
+            | Array<{
+                name: string;
+                description?: string;
+                pomodorosPlanned?: number;
+                priority?: number;
+                difficult?: number;
+                microTaskType?: string;
+                themeTag?: string;
+                contextTag?: string;
+                cognitiveMode?: string;
+              }>
             | null = null;
 
           if (aiLeafCalls < maxAiLeafCalls) {
@@ -325,6 +337,26 @@ Retorne APENAS um array JSON com os sub-pacotes sugeridos:
           if (!drafts || drafts.length !== chunks) {
             drafts = this.fallbackMicroTasksDraftsForLeaf({ node, currentPath, level }, chunkMinutes);
           }
+
+          drafts = this.applyGoldilocksAndMilestones(drafts, chunkMinutes);
+
+          const leafMetrics = this.computeBatchMetrics(
+            drafts.map((d: any) => ({
+              name: d?.name,
+              description: d?.description,
+              themeTag: d?.themeTag,
+              microTaskType: d?.microTaskType,
+            })),
+          );
+          console.log(
+            `[WBS→Tasks][Batch ${generationBatchId}] project=${projectId} ` +
+              `leaf="${node.name}" total=${leafMetrics.total} ` +
+              `dupScore=${leafMetrics.dupScore.toFixed(2)} ` +
+              `similarScore=${leafMetrics.similarScore.toFixed(2)} ` +
+              `verbVariety=${leafMetrics.verbVariety.toFixed(2)} ` +
+              `cognitiveVariety=${leafMetrics.cognitiveVariety.toFixed(2)} ` +
+              `themesCount=${leafMetrics.themesCount}`,
+          );
 
           for (let chunkIndex = 0; chunkIndex < chunks; chunkIndex++) {
             const estimatedMinutes = chunkMinutes[chunkIndex];
@@ -354,13 +386,25 @@ Retorne APENAS um array JSON com os sub-pacotes sugeridos:
 
             // Sempre adiciona contexto e critérios (evita descrições “genéricas”)
             const finalDescription = (draft.description || node.description || '').trim();
+            const definitionOfDone = this.extractDefinitionOfDone(finalDescription);
 
             const name = String(draft.name || `${node.name}${suffix}`).trim();
+            const microTaskType = this.normalizeMicroTaskType(draft.microTaskType);
+            const cognitiveMode = this.normalizeCognitiveMode(
+              draft.cognitiveMode || this.mapMicroTaskTypeToCognitiveMode(microTaskType),
+            );
+            const contextTag = String(
+              draft.contextTag || this.mapCognitiveModeToContextTag(cognitiveMode),
+            ).trim();
+            const themeTag = String(draft.themeTag || '').trim();
+            const themeTags = themeTag ? [themeTag] : undefined;
+            const parentWbsNodeId = (node as any)?._id ? String((node as any)._id) : undefined;
 
             try {
               const createdTask = await tasksService.create({
                 name,
                 description: finalDescription,
+                definitionOfDone,
                 project: projectId,
                 pomodorosPlanned,
                 deadline: taskDeadline,
@@ -370,6 +414,13 @@ Retorne APENAS um array JSON com os sub-pacotes sugeridos:
                 late: false,
                 recurrency: 'no',
                 notification: taskDeadline,
+                microTaskType,
+                cognitiveMode,
+                contextTag: contextTag || undefined,
+                themeTag: themeTags,
+                parentWbsNodeId,
+                wbsPath: currentPath,
+                generationBatchId,
               });
 
               createdTasks.push(createdTask);
@@ -390,6 +441,24 @@ Retorne APENAS um array JSON com os sub-pacotes sugeridos:
 
     await traverse(nodes);
     
+    const batchMetrics = this.computeBatchMetrics(
+      createdTasks.map((t: any) => ({
+        name: t?.name,
+        description: t?.description,
+        themeTag: t?.themeTag,
+        microTaskType: t?.microTaskType,
+      })),
+    );
+
+    console.log(
+      `[WBS→Tasks][Batch ${generationBatchId}] summary total=${batchMetrics.total} ` +
+        `dupScore=${batchMetrics.dupScore.toFixed(2)} ` +
+        `similarScore=${batchMetrics.similarScore.toFixed(2)} ` +
+        `verbVariety=${batchMetrics.verbVariety.toFixed(2)} ` +
+        `cognitiveVariety=${batchMetrics.cognitiveVariety.toFixed(2)} ` +
+        `themesCount=${batchMetrics.themesCount}`,
+    );
+
     console.log(`\n📊 Resumo da conversão:`);
     console.log(`   • Total de tasks: ${createdTasks.length}`);
     console.log(`   • Total de pomodoros: ${createdTasks.reduce((sum, t) => sum + (t.pomodorosPlanned || 0), 0)}`);
@@ -474,6 +543,260 @@ Retorne APENAS um array JSON com os sub-pacotes sugeridos:
     return chunkMinutes;
   }
 
+  private normalizeTitle(title?: string): string {
+    if (!title) return '';
+    return title
+      .toLowerCase()
+      .replace(/[0-9]+/g, '')
+      .replace(/\([^)]*\)/g, '')
+      .replace(/[^a-z\u00c0-\u017f\s]/gi, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+  }
+
+  private templateTitle(title?: string): string {
+    if (!title) return '';
+    return title
+      .toLowerCase()
+      .replace(/[0-9]+/g, '')
+      .replace(/\(.*?\)/g, '')
+      .replace(/\b(parte|modulo|módulo|tarefa|micro[-\s]?tarefa|dia|semana)\b/gi, '')
+      .replace(/[^a-z\u00c0-\u017f\s]/gi, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+  }
+
+  private extractVerb(title?: string): string {
+    if (!title) return 'unknown';
+    const normalized = title.trim().toLowerCase();
+    const first = normalized.split(/\s+/)[0];
+    return first || 'unknown';
+  }
+
+  private computeBatchMetrics(
+    tasks: Array<{ name?: string; description?: string; themeTag?: string; microTaskType?: string }>,
+  ): {
+    total: number;
+    uniqueTitles: number;
+    dupScore: number;
+    uniqueTemplates: number;
+    similarScore: number;
+    verbVariety: number;
+    verbsCount: number;
+    cognitiveVariety: number;
+    cognitiveTypesCount: number;
+    themesCount: number;
+  } {
+    const total = tasks.length || 0;
+    if (!total) {
+      return {
+        total: 0,
+        uniqueTitles: 0,
+        dupScore: 0,
+        uniqueTemplates: 0,
+        similarScore: 0,
+        verbVariety: 0,
+        verbsCount: 0,
+        cognitiveVariety: 0,
+        cognitiveTypesCount: 0,
+        themesCount: 0,
+      };
+    }
+
+    const normalizedTitles = tasks.map((t) => this.normalizeTitle(t.name));
+    const templateTitles = tasks.map((t) => this.templateTitle(t.name));
+    const verbs = tasks.map((t) => this.extractVerb(t.name));
+    const themes = tasks.flatMap((t) => {
+      if (Array.isArray(t.themeTag)) return t.themeTag.filter((x) => x);
+      if (t.themeTag) return [t.themeTag];
+      if (t.microTaskType) return [t.microTaskType];
+      return [];
+    });
+    const cognitiveTypes = tasks.map((t) => this.inferCognitiveType(t.name, t.description));
+
+    const uniqueTitles = new Set(normalizedTitles).size;
+    const uniqueTemplates = new Set(templateTitles).size;
+    const uniqueVerbs = new Set(verbs).size;
+    const uniqueThemes = new Set(themes).size;
+    const uniqueCognitiveTypes = new Set(cognitiveTypes.filter((t) => t !== 'other')).size;
+
+    const dupScore = 1 - uniqueTitles / total;
+    const similarScore = 1 - uniqueTemplates / total;
+    const verbVariety = uniqueVerbs / total;
+    const cognitiveVariety = uniqueCognitiveTypes / total;
+
+    return {
+      total,
+      uniqueTitles,
+      dupScore,
+      uniqueTemplates,
+      similarScore,
+      verbVariety,
+      verbsCount: uniqueVerbs,
+      cognitiveVariety,
+      cognitiveTypesCount: uniqueCognitiveTypes,
+      themesCount: uniqueThemes,
+    };
+  }
+
+  private inferCognitiveType(title?: string, description?: string): string {
+    const text = `${title || ''} ${description || ''}`.toLowerCase();
+    if (!text.trim()) return 'other';
+
+    if (/(teste|testar|simulad|quiz|prova|avaliar|verificar|checagem)/i.test(text)) return 'test';
+    if (/(revisar|review|reforç|consolidar|flashcard|recall)/i.test(text)) return 'review';
+    if (/(escrever|redigir|produzir|criar|implementar|codificar|construir|diagramar|desenvolver)/i.test(text)) {
+      return 'deep';
+    }
+    if (/(capturar|coletar|levantar|listar|mapear|pesquisar|ler|ouvir|anotar|preparar|organizar|configurar)/i.test(text)) {
+      return 'capture';
+    }
+
+    return 'other';
+  }
+
+  private extractDefinitionOfDone(description?: string): string | undefined {
+    if (!description) return undefined;
+    const match = description.split(/defini[cç][aã]o de pronto\s*:/i);
+    if (match.length < 2) return undefined;
+    const trimmed = (match[1] || '').trim();
+    return trimmed ? trimmed : undefined;
+  }
+
+  private applyGoldilocksAndMilestones(
+    drafts: Array<{
+      name: string;
+      description?: string;
+      pomodorosPlanned?: number;
+      priority?: number;
+      difficult?: number;
+      microTaskType?: string;
+      themeTag?: string;
+      contextTag?: string;
+      cognitiveMode?: string;
+    }>,
+    chunkMinutes: number[],
+  ) {
+    const totalMinutes = chunkMinutes.reduce((sum, m) => sum + m, 0);
+    const chunks = chunkMinutes.length;
+
+    if (chunks <= 1) {
+      return drafts.map((d, idx) => this.normalizeDraft(d, idx, chunks));
+    }
+
+    // Goldilocks progression (low → medium → high) + milestone every 4–6h
+    const milestoneRequired = totalMinutes >= 240; // 4h
+
+    return drafts.map((d, idx) => {
+      const isLast = idx === chunks - 1;
+      const isFirst = idx === 0;
+      const isSecond = idx === 1;
+
+      let microTaskType = this.normalizeMicroTaskType(d.microTaskType);
+
+      if (isFirst) microTaskType = 'prepare';
+      else if (isSecond) microTaskType = 'practice';
+      else if (isLast && milestoneRequired) microTaskType = 'test';
+      else if (isLast) microTaskType = 'produce';
+
+      const cognitiveMode = this.normalizeCognitiveMode(
+        d.cognitiveMode || this.mapMicroTaskTypeToCognitiveMode(microTaskType),
+      );
+
+      return {
+        ...d,
+        microTaskType,
+        cognitiveMode,
+        contextTag: String(d.contextTag || this.mapCognitiveModeToContextTag(cognitiveMode)).trim() || undefined,
+      };
+    });
+  }
+
+  private normalizeDraft(
+    d: {
+      name: string;
+      description?: string;
+      pomodorosPlanned?: number;
+      priority?: number;
+      difficult?: number;
+      microTaskType?: string;
+      themeTag?: string;
+      contextTag?: string;
+      cognitiveMode?: string;
+    },
+    idx: number,
+    total: number,
+  ) {
+    const microTaskType = this.normalizeMicroTaskType(d.microTaskType);
+    const cognitiveMode = this.normalizeCognitiveMode(
+      d.cognitiveMode || this.mapMicroTaskTypeToCognitiveMode(microTaskType),
+    );
+    return {
+      ...d,
+      name: String(d.name || `Micro-tarefa (${idx + 1}/${total})`).trim(),
+      microTaskType,
+      cognitiveMode,
+      contextTag: String(d.contextTag || this.mapCognitiveModeToContextTag(cognitiveMode)).trim() || undefined,
+    };
+  }
+
+  private normalizeMicroTaskType(value?: string): string {
+    const v = String(value || '').toLowerCase().trim();
+    if (['prepare', 'practice', 'produce', 'review', 'test', 'consolidate'].includes(v)) return v;
+    return 'practice';
+  }
+
+  private normalizeCognitiveMode(value?: string): string {
+    const v = String(value || '').toLowerCase().trim();
+    if (['low', 'medium', 'high'].includes(v)) return v;
+    return 'medium';
+  }
+
+  private mapCognitiveTypeToMicroTaskType(type?: string): string {
+    switch (type) {
+      case 'capture':
+        return 'prepare';
+      case 'review':
+        return 'review';
+      case 'test':
+        return 'test';
+      case 'deep':
+        return 'produce';
+      default:
+        return 'practice';
+    }
+  }
+
+  private mapMicroTaskTypeToCognitiveMode(type?: string): string {
+    switch (String(type || '').toLowerCase()) {
+      case 'prepare':
+        return 'low';
+      case 'review':
+        return 'low';
+      case 'practice':
+        return 'medium';
+      case 'produce':
+        return 'high';
+      case 'test':
+        return 'high';
+      case 'consolidate':
+        return 'medium';
+      default:
+        return 'medium';
+    }
+  }
+
+  private mapCognitiveModeToContextTag(mode?: string): string {
+    switch (String(mode || '').toLowerCase()) {
+      case 'low':
+        return '@celular/offline';
+      case 'high':
+        return '@mesa/foco';
+      default:
+        return '@computador';
+    }
+  }
+
   private extractJsonArray<T = any>(response: string): T[] {
     if (!response || typeof response !== 'string') {
       throw new Error('Resposta da IA vazia');
@@ -542,6 +865,7 @@ REGRAS IMPORTANTES (para não ficar genérico):
 3) Evite frases vagas como "pesquisar" ou "estudar" sem critério.
 4) Use linguagem direta e prática.
 5) Prefira micro-tarefas pequenas (1-3 pomodoros). Use 4-6 apenas se a parte exigir.
+6) O nome da micro-tarefa deve começar com um VERBO de ação (Próxima Ação GTD).
 
 FORMATO DE RESPOSTA OBRIGATÓRIO:
 Retorne APENAS um array JSON válido (sem markdown). Cada item deve ter EXATAMENTE:
@@ -550,6 +874,10 @@ Retorne APENAS um array JSON válido (sem markdown). Cada item deve ter EXATAMEN
 - "pomodorosPlanned": number (1-6)
 - "priority": number (1-4)
 - "difficult": number (1-4)
+- "microTaskType": string (prepare|practice|produce|review|test|consolidate)
+- "themeTag": string
+- "contextTag": string (ex.: @computador, @mesa/foco, @celular/offline)
+- "cognitiveMode": string (low|medium|high)
 
 Use hoje como ${today}.`;
   }
@@ -557,7 +885,19 @@ Use hoje como ${today}.`;
   private async generateMicroTasksDraftsForLeaf(
     params: { project: any; node: WBSNodeDto; currentPath: string; level: number },
     chunkMinutes: number[],
-  ): Promise<Array<{ name: string; description: string; pomodorosPlanned: number; priority: number; difficult: number }>> {
+  ): Promise<
+    Array<{
+      name: string;
+      description: string;
+      pomodorosPlanned: number;
+      priority: number;
+      difficult: number;
+      microTaskType?: string;
+      themeTag?: string;
+      contextTag?: string;
+      cognitiveMode?: string;
+    }>
+  > {
     const prompt = this.buildMicroTasksPrompt({
       ...params,
       chunkMinutes,
@@ -574,12 +914,25 @@ Use hoje como ${today}.`;
     return drafts.map((d: any, idx: number) => {
       const targetMinutes = chunkMinutes[idx];
       const fallbackPomodoros = Math.max(1, Math.min(6, Math.ceil(targetMinutes / 25)));
+      const normalizedName = String(d?.name || `${params.node.name} (${idx + 1}/${chunkMinutes.length})`).trim();
+      const inferredType = this.normalizeMicroTaskType(
+        d?.microTaskType || this.mapCognitiveTypeToMicroTaskType(this.inferCognitiveType(normalizedName, d?.description)),
+      );
+      const inferredMode = this.normalizeCognitiveMode(
+        d?.cognitiveMode || this.mapMicroTaskTypeToCognitiveMode(inferredType),
+      );
+      const inferredContext =
+        String(d?.contextTag || this.mapCognitiveModeToContextTag(inferredMode)).trim() || undefined;
       return {
-        name: String(d?.name || `${params.node.name} (${idx + 1}/${chunkMinutes.length})`).trim(),
+        name: normalizedName,
         description: String(d?.description || '').trim(),
         pomodorosPlanned: Math.max(1, Math.min(6, Number(d?.pomodorosPlanned) || fallbackPomodoros)),
         priority: Math.max(1, Math.min(4, Number(d?.priority) || Math.max(1, Math.min(4, 5 - params.level)))),
         difficult: Math.max(1, Math.min(4, Number(d?.difficult) || 2)),
+        microTaskType: inferredType,
+        themeTag: String(d?.themeTag || '').trim() || undefined,
+        contextTag: inferredContext,
+        cognitiveMode: inferredMode,
       };
     });
   }
@@ -587,7 +940,17 @@ Use hoje como ${today}.`;
   private fallbackMicroTasksDraftsForLeaf(
     params: { node: WBSNodeDto; currentPath: string; level: number },
     chunkMinutes: number[],
-  ): Array<{ name: string; description: string; pomodorosPlanned: number; priority: number; difficult: number }> {
+  ): Array<{
+    name: string;
+    description: string;
+    pomodorosPlanned: number;
+    priority: number;
+    difficult: number;
+    microTaskType?: string;
+    themeTag?: string;
+    contextTag?: string;
+    cognitiveMode?: string;
+  }> {
     const nameLower = (params.node.name || '').toLowerCase();
     const isVocab = /vocab|vocabul|hsk/.test(nameLower);
     const isGrammar = /gram[aá]t/.test(nameLower);
@@ -614,6 +977,10 @@ Use hoje como ${today}.`;
           pomodorosPlanned,
           priority: basePriority,
           difficult,
+          microTaskType: 'practice',
+          themeTag: 'vocabulario',
+          cognitiveMode: minutes >= 90 ? 'high' : minutes >= 45 ? 'medium' : 'low',
+          contextTag: minutes >= 90 ? '@mesa/foco' : '@computador',
         };
       }
 
@@ -629,6 +996,10 @@ Use hoje como ${today}.`;
           pomodorosPlanned,
           priority: basePriority,
           difficult,
+          microTaskType: 'produce',
+          themeTag: 'gramatica',
+          cognitiveMode: minutes >= 90 ? 'high' : minutes >= 45 ? 'medium' : 'low',
+          contextTag: minutes >= 90 ? '@mesa/foco' : '@computador',
         };
       }
 
@@ -645,6 +1016,10 @@ Use hoje como ${today}.`;
           pomodorosPlanned,
           priority: basePriority,
           difficult,
+          microTaskType: 'review',
+          themeTag: 'listening',
+          cognitiveMode: minutes >= 90 ? 'high' : minutes >= 45 ? 'medium' : 'low',
+          contextTag: minutes >= 90 ? '@mesa/foco' : '@computador',
         };
       }
 
@@ -660,6 +1035,10 @@ Use hoje como ${today}.`;
           pomodorosPlanned,
           priority: basePriority,
           difficult,
+          microTaskType: 'test',
+          themeTag: 'simulado',
+          cognitiveMode: 'high',
+          contextTag: '@mesa/foco',
         };
       }
 
@@ -675,6 +1054,12 @@ Use hoje como ${today}.`;
         pomodorosPlanned,
         priority: basePriority,
         difficult,
+        microTaskType: this.mapCognitiveTypeToMicroTaskType(
+          this.inferCognitiveType(params.node.name, params.node.description),
+        ),
+        themeTag: 'geral',
+        cognitiveMode: minutes >= 90 ? 'high' : minutes >= 45 ? 'medium' : 'low',
+        contextTag: minutes >= 90 ? '@mesa/foco' : '@computador',
       };
     });
   }
