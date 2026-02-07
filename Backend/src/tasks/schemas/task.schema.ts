@@ -7,6 +7,11 @@ export interface TaskDocument extends Document {
   deadline: Date;
   pomodorosPlanned: number;
   pomodorosDid?: number;
+  pertOptimisticMinutes?: number;
+  pertMostLikelyMinutes?: number;
+  pertPessimisticMinutes?: number;
+  pertExpectedMinutes?: number;
+  pertVariance?: number;
   priority?: number;
   difficult?: number;
   project?: string;
@@ -24,6 +29,15 @@ export interface TaskDocument extends Document {
   cognitiveMode?: string;
   contextTag?: string;
   themeTag?: string[];
+  requirementIds?: string[];
+  rtmRisk?: boolean;
+  rtmRiskReason?: string;
+  evmProgress?: number;
+  evmPlannedValueMinutes?: number;
+  evmEarnedValueMinutes?: number;
+  evmSchedulePerformanceIndex?: number;
+  evmAlert?: string;
+  createdAt?: Date;
 }
 
 export const TaskSchema = new Schema<TaskDocument>({
@@ -33,6 +47,11 @@ export const TaskSchema = new Schema<TaskDocument>({
   deadline: { type: Date, required: true },
   pomodorosPlanned: { type: Number, required: true },
   pomodorosDid: { type: Number, default: 0 },
+  pertOptimisticMinutes: { type: Number },
+  pertMostLikelyMinutes: { type: Number },
+  pertPessimisticMinutes: { type: Number },
+  pertExpectedMinutes: { type: Number },
+  pertVariance: { type: Number },
   priority: { type: Number },
   difficult: { type: Number },
   project: { type: Schema.Types.ObjectId, ref: 'Project' },
@@ -50,6 +69,15 @@ export const TaskSchema = new Schema<TaskDocument>({
   cognitiveMode: { type: String },
   contextTag: { type: String },
   themeTag: { type: [String] },
+  requirementIds: { type: [String] },
+  rtmRisk: { type: Boolean },
+  rtmRiskReason: { type: String },
+  evmProgress: { type: Number },
+  evmPlannedValueMinutes: { type: Number },
+  evmEarnedValueMinutes: { type: Number },
+  evmSchedulePerformanceIndex: { type: Number },
+  evmAlert: { type: String },
+  createdAt: { type: Date, default: Date.now },
 });
 
 TaskSchema.index({ project: 1, generationBatchId: 1 });

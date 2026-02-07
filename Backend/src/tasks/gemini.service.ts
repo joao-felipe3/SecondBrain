@@ -10,6 +10,7 @@ import {
 export class GeminiService {
   private genAI: GoogleGenerativeAI;
   private readonly model = 'gemma-3-12b-it';
+  private readonly embeddingModel = 'text-embedding-004';
 
   constructor(private readonly configService: ConfigService) {
     // Support either GEMINI_API_KEY or GOOGLE_API_KEY (backwards compatibility)
@@ -192,6 +193,19 @@ export class GeminiService {
 
     console.error('Erro ao chamar a API do Gemini:', lastError);
     throw new Error('Falha ao gerar conteúdo com a IA do Gemini');
+  }
+
+  async generateEmbedding(text: string): Promise<number[]> {
+    if (!text || !text.trim()) return [];
+
+    try {
+      const model = this.genAI.getGenerativeModel({ model: this.embeddingModel });
+      const result: any = await model.embedContent(text);
+      return result?.embedding?.values || [];
+    } catch (error: any) {
+      console.warn('Erro ao gerar embedding com Gemini:', error?.message || error);
+      return [];
+    }
   }
 
   private buildPrompt(

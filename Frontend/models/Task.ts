@@ -5,6 +5,19 @@ export interface Task {
   definitionOfDone?: string
   pomodorosDid?: number
   pomodorosPlanned: number
+  pertOptimisticMinutes?: number
+  pertMostLikelyMinutes?: number
+  pertPessimisticMinutes?: number
+  pertExpectedMinutes?: number
+  pertVariance?: number
+  requirementIds?: string[]
+  rtmRisk?: boolean
+  rtmRiskReason?: string
+  evmProgress?: number
+  evmPlannedValueMinutes?: number
+  evmEarnedValueMinutes?: number
+  evmSchedulePerformanceIndex?: number
+  evmAlert?: string
   deadline: Date
   priority?: number
   difficult?: number
@@ -23,4 +36,5 @@ export interface Task {
   cognitiveMode?: string
   contextTag?: string
   themeTag?: string[]
+  createdAt?: Date
 }

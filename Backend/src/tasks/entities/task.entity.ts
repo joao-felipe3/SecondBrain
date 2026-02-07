@@ -5,6 +5,19 @@ export class Task {
   definitionOfDone?: String;
   pomodorosDid?: number;
   pomodorosPlanned: number;
+  pertOptimisticMinutes?: number;
+  pertMostLikelyMinutes?: number;
+  pertPessimisticMinutes?: number;
+  pertExpectedMinutes?: number;
+  pertVariance?: number;
+  requirementIds?: string[];
+  rtmRisk?: boolean;
+  rtmRiskReason?: string;
+  evmProgress?: number;
+  evmPlannedValueMinutes?: number;
+  evmEarnedValueMinutes?: number;
+  evmSchedulePerformanceIndex?: number;
+  evmAlert?: string;
   deadline: Date;
   priority?: number; 
   difficult?: number;
@@ -23,5 +36,6 @@ export class Task {
   cognitiveMode?: String;
   contextTag?: String;
   themeTag?: String[];
+  createdAt?: Date;
 }
     

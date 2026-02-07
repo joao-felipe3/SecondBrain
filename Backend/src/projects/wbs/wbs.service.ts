@@ -30,6 +30,9 @@ export class WBSService {
   private readonly microTaskSoftMaxMinutes = 60; // ~2-3 pomodoros
   private readonly microTaskHardMaxMinutes = 150; // 6 pomodoros (only if needed)
   private readonly microTaskMaxPerLeaf = 40;
+  private readonly minEmbeddingTextLength = 180;
+  private readonly minEmbeddingSegments = 3;
+  private readonly maxEmbeddingClusters = 6;
 
   private readonly plannerSchema = z
     .object({
@@ -413,6 +416,8 @@ Retorne APENAS um array JSON com os sub-pacotes sugeridos:
           }
 
           drafts = this.applyGoldilocksAndMilestones(drafts, chunkMinutes);
+          drafts = this.applyThemeWorkflowAndProgression(drafts, chunkMinutes);
+          drafts = this.dedupeCheckAndMitigate(drafts);
 
           const leafMetrics = this.computeBatchMetrics(
             drafts.map((d: any) => ({
@@ -431,6 +436,12 @@ Retorne APENAS um array JSON com os sub-pacotes sugeridos:
               `cognitiveVariety=${leafMetrics.cognitiveVariety.toFixed(2)} ` +
               `themesCount=${leafMetrics.themesCount}`,
           );
+          if (leafMetrics.dupScore >= 0.2 || leafMetrics.similarScore >= 0.35) {
+            console.warn(
+              `[WBS→Tasks][Batch ${generationBatchId}] ⚠️ alerta monotonia: leaf="${node.name}" ` +
+                `dupScore=${leafMetrics.dupScore.toFixed(2)} similarScore=${leafMetrics.similarScore.toFixed(2)}`,
+            );
+          }
 
           for (let chunkIndex = 0; chunkIndex < chunks; chunkIndex++) {
             const estimatedMinutes = chunkMinutes[chunkIndex];
@@ -458,6 +469,8 @@ Retorne APENAS um array JSON com os sub-pacotes sugeridos:
             const estimatedDifficulty = estimatedMinutes >= 120 ? 3 : estimatedMinutes >= 60 ? 2 : 1;
             const difficult = Math.max(1, Math.min(4, Number(draft.difficult) || estimatedDifficulty));
 
+            const pert = this.computePertFromMinutes(estimatedMinutes);
+
             // Sempre adiciona contexto e critérios (evita descrições “genéricas”)
             const finalDescription = (draft.description || node.description || '').trim();
             const definitionOfDone = this.extractDefinitionOfDone(finalDescription);
@@ -481,6 +494,11 @@ Retorne APENAS um array JSON com os sub-pacotes sugeridos:
                 definitionOfDone,
                 project: projectId,
                 pomodorosPlanned,
+                pertOptimisticMinutes: pert.optimistic,
+                pertMostLikelyMinutes: pert.mostLikely,
+                pertPessimisticMinutes: pert.pessimistic,
+                pertExpectedMinutes: pert.expected,
+                pertVariance: pert.variance,
                 deadline: taskDeadline,
                 priority,
                 difficult,
@@ -532,6 +550,12 @@ Retorne APENAS um array JSON com os sub-pacotes sugeridos:
         `cognitiveVariety=${batchMetrics.cognitiveVariety.toFixed(2)} ` +
         `themesCount=${batchMetrics.themesCount}`,
     );
+    if (batchMetrics.dupScore >= 0.2 || batchMetrics.similarScore >= 0.35) {
+      console.warn(
+        `[WBS→Tasks][Batch ${generationBatchId}] ⚠️ alerta monotonia: ` +
+          `dupScore=${batchMetrics.dupScore.toFixed(2)} similarScore=${batchMetrics.similarScore.toFixed(2)}`,
+      );
+    }
 
     console.log(`\n📊 Resumo da conversão:`);
     console.log(`   • Total de tasks: ${createdTasks.length}`);
@@ -539,6 +563,23 @@ Retorne APENAS um array JSON com os sub-pacotes sugeridos:
     console.log(`   • Horas estimadas: ${(createdTasks.reduce((sum, t) => sum + (t.pomodorosPlanned || 0), 0) * 0.5).toFixed(1)}h`);
     
     return createdTasks;
+  }
+
+  private computePertFromMinutes(minutes: number): {
+    optimistic: number;
+    mostLikely: number;
+    pessimistic: number;
+    expected: number;
+    variance: number;
+  } {
+    const base = Math.max(5, Math.round(minutes));
+    const optimistic = Math.max(5, Math.round(base * 0.75));
+    const mostLikely = Math.max(optimistic, base);
+    const pessimistic = Math.max(mostLikely, Math.round(base * 1.5));
+    const expected = Math.round((optimistic + 4 * mostLikely + pessimistic) / 6);
+    const variance = Number(Math.pow((pessimistic - optimistic) / 6, 2).toFixed(2));
+
+    return { optimistic, mostLikely, pessimistic, expected, variance };
   }
 
 
@@ -786,6 +827,104 @@ Retorne APENAS um array JSON com os sub-pacotes sugeridos:
     });
   }
 
+  private applyThemeWorkflowAndProgression(
+    drafts: Array<{
+      name: string;
+      description?: string;
+      pomodorosPlanned?: number;
+      priority?: number;
+      difficult?: number;
+      microTaskType?: string;
+      themeTag?: string;
+      contextTag?: string;
+      cognitiveMode?: string;
+    }>,
+    chunkMinutes: number[],
+  ) {
+    if (!drafts.length) return drafts;
+
+    const byTheme = new Map<string, number[]>();
+    drafts.forEach((d, idx) => {
+      const theme = String(d.themeTag || '').trim() || '__no_theme__';
+      if (!byTheme.has(theme)) byTheme.set(theme, []);
+      byTheme.get(theme)!.push(idx);
+    });
+
+    const buildThemeWorkflow = (total: number): string[] => {
+      if (total <= 1) return ['practice'];
+      if (total === 2) return ['prepare', 'produce'];
+      if (total === 3) return ['prepare', 'practice', 'produce'];
+      const base = ['prepare', 'practice', 'produce', 'test'];
+      while (base.length < total) base.splice(base.length - 1, 0, 'practice');
+      return base.slice(0, total);
+    };
+
+    const progressiveMode = (index: number, total: number): string => {
+      if (total <= 1) return 'medium';
+      if (index === 0) return 'low';
+      if (index === total - 1) return 'high';
+      return 'medium';
+    };
+
+    for (const [theme, indices] of byTheme.entries()) {
+      if (theme === '__no_theme__') continue;
+      const total = indices.length;
+      if (total <= 1) continue;
+      const workflow = buildThemeWorkflow(total);
+
+      indices.forEach((idx, localIdx) => {
+        const microTaskType = this.normalizeMicroTaskType(workflow[localIdx]);
+        const cognitiveMode = this.normalizeCognitiveMode(progressiveMode(localIdx, total));
+        drafts[idx] = {
+          ...drafts[idx],
+          microTaskType,
+          cognitiveMode,
+          contextTag:
+            String(drafts[idx].contextTag || this.mapCognitiveModeToContextTag(cognitiveMode)).trim() || undefined,
+        };
+      });
+    }
+
+    return drafts;
+  }
+
+  private dedupeCheckAndMitigate(
+    drafts: Array<{
+      name: string;
+      description?: string;
+      pomodorosPlanned?: number;
+      priority?: number;
+      difficult?: number;
+      microTaskType?: string;
+      themeTag?: string;
+      contextTag?: string;
+      cognitiveMode?: string;
+    }>,
+  ) {
+    const seenTitles = new Map<string, number>();
+    const seenTemplates = new Map<string, number>();
+
+    return drafts.map((d) => {
+      const normalized = this.normalizeTitle(d.name);
+      const templated = this.templateTitle(d.name);
+      const titleCount = (seenTitles.get(normalized) || 0) + 1;
+      const templateCount = (seenTemplates.get(templated) || 0) + 1;
+      seenTitles.set(normalized, titleCount);
+      seenTemplates.set(templated, templateCount);
+
+      if (titleCount <= 1 && templateCount <= 1) return d;
+
+      const themeSuffix = String(d.themeTag || '').trim() || 'tema';
+      const typeSuffix = String(d.microTaskType || '').trim() || 'tarefa';
+      const suffix = `${themeSuffix}-${typeSuffix}-${titleCount}`;
+
+      return {
+        ...d,
+        name: `${String(d.name || '').trim()} — ${suffix}`.trim(),
+      };
+    });
+  }
+
   private normalizeDraft(
     d: {
       name: string;
@@ -998,6 +1137,264 @@ Retorne APENAS um array JSON com os sub-pacotes sugeridos:
     return out;
   }
 
+  private getThemeSuggestions(params: {
+    project?: any;
+    node: WBSNodeDto;
+  }): { category: 'vocab' | 'tech' | 'general'; themes: string[] } {
+    const projectSummary =
+      params.project?.smartObjective?.summary || params.project?.description || '';
+    const text = `${params.node.name} ${params.node.description || ''} ${projectSummary}`
+      .toLowerCase()
+      .trim();
+
+    const isVocab = /vocab|vocabul|hsk|palavr|idiom|flashcard|kanji|hanzi|pinyin|词汇|词彙/i.test(text);
+    const isTech =
+      /api|backend|frontend|infra|deploy|docker|kubernetes|k8s|database|banco|sql|postgres|mysql|mongo|redis|cache|fila|queue|mensager|event|test|qa|unit|integration|e2e|observabil|monitor|log|seguran|auth|oauth|jwt|performance|latenc|ui|ux/i.test(
+        text,
+      );
+
+    if (isVocab) {
+      return {
+        category: 'vocab',
+        themes: [
+          'comida',
+          'casa',
+          'trabalho',
+          'viagem',
+          'saude',
+          'escola',
+          'tecnologia',
+          'financas',
+          'tempo',
+          'relacoes',
+          'lazer',
+          'cultura',
+        ].slice(0, 6),
+      };
+    }
+
+    if (isTech) {
+      const prioritized = new Set<string>();
+      if (/frontend|ui|ux|interface/.test(text)) prioritized.add('ui');
+      if (/api|endpoint|rest|graphql/.test(text)) prioritized.add('api');
+      if (/database|banco|sql|postgres|mysql|mongo/.test(text)) prioritized.add('dados');
+      if (/test|qa|unit|integration|e2e/.test(text)) prioritized.add('testes');
+      if (/observabil|monitor|log|trace|metric/.test(text)) prioritized.add('observabilidade');
+      if (/seguran|auth|oauth|jwt/.test(text)) prioritized.add('seguranca');
+      if (/deploy|docker|kubernetes|k8s|infra/.test(text)) prioritized.add('deploy');
+
+      const defaults = [
+        'setup',
+        'core',
+        'integracao',
+        'testes',
+        'observabilidade',
+        'seguranca',
+        'performance',
+        'documentacao',
+        'deploy',
+      ];
+
+      const themes = Array.from(prioritized);
+      for (const t of defaults) {
+        if (themes.length >= 6) break;
+        if (!themes.includes(t)) themes.push(t);
+      }
+
+      return {
+        category: 'tech',
+        themes,
+      };
+    }
+
+    return {
+      category: 'general',
+      themes: ['fundamentos', 'aplicacao', 'revisao', 'integracao'].slice(0, 6),
+    };
+  }
+
+  private extractThemeSegments(text: string): string[] {
+    if (!text) return [];
+    const cleaned = text.replace(/\r/g, ' ').replace(/\t/g, ' ').replace(/\u0000/g, ' ');
+
+    const parts = cleaned
+      .split(/[\n;•]+/)
+      .flatMap((p) => p.split(/[.!?]+/))
+      .flatMap((p) => p.split(/\s+-\s+|\s+—\s+|\s+–\s+/))
+      .map((p) => p.replace(/\s+/g, ' ').trim())
+      .filter((p) => p.length >= 20);
+
+    const unique = new Set<string>();
+    for (const part of parts) {
+      if (!unique.has(part)) unique.add(part);
+    }
+    return Array.from(unique);
+  }
+
+  private summarizeThemeFromSegment(segment: string): string {
+    if (!segment) return '';
+    const stop = new Set([
+      'de',
+      'da',
+      'do',
+      'das',
+      'dos',
+      'e',
+      'ou',
+      'para',
+      'por',
+      'com',
+      'em',
+      'no',
+      'na',
+      'nos',
+      'nas',
+      'um',
+      'uma',
+      'uns',
+      'umas',
+      'ao',
+      'aos',
+      'à',
+      'às',
+      'se',
+      'que',
+      'como',
+      'sobre',
+      'entre',
+      'mais',
+      'menos',
+    ]);
+
+    const tokens = segment
+      .toLowerCase()
+      .replace(/[^a-z\u00c0-\u017f0-9\s]/gi, ' ')
+      .replace(/\s+/g, ' ')
+      .trim()
+      .split(' ')
+      .filter((t) => t.length > 2 && !stop.has(t));
+
+    const title = tokens.slice(0, 4).join(' ');
+    return title || segment.slice(0, 40).trim();
+  }
+
+  private cosineSimilarity(a: number[], b: number[]): number {
+    if (!a.length || !b.length || a.length !== b.length) return 0;
+    let dot = 0;
+    let na = 0;
+    let nb = 0;
+    for (let i = 0; i < a.length; i++) {
+      dot += a[i] * b[i];
+      na += a[i] * a[i];
+      nb += b[i] * b[i];
+    }
+    if (!na || !nb) return 0;
+    return dot / (Math.sqrt(na) * Math.sqrt(nb));
+  }
+
+  private normalizeVector(vec: number[]): number[] {
+    const norm = Math.sqrt(vec.reduce((sum, v) => sum + v * v, 0));
+    if (!norm) return vec;
+    return vec.map((v) => v / norm);
+  }
+
+  private kMeansClusters(vectors: number[][], k: number): { clusters: number[][]; centroids: number[][] } {
+    const safeK = Math.max(1, Math.min(k, vectors.length));
+    const centroids = vectors.slice(0, safeK).map((v) => this.normalizeVector([...v]));
+    const clusters: number[][] = Array.from({ length: safeK }, () => []);
+
+    for (let iter = 0; iter < 6; iter++) {
+      for (const c of clusters) c.length = 0;
+
+      vectors.forEach((v, idx) => {
+        let best = 0;
+        let bestScore = -Infinity;
+        centroids.forEach((c, cIdx) => {
+          const score = this.cosineSimilarity(v, c);
+          if (score > bestScore) {
+            bestScore = score;
+            best = cIdx;
+          }
+        });
+        clusters[best].push(idx);
+      });
+
+      centroids.forEach((c, cIdx) => {
+        const members = clusters[cIdx];
+        if (!members.length) return;
+        const next = new Array(c.length).fill(0);
+        members.forEach((idx) => {
+          const v = vectors[idx];
+          for (let i = 0; i < v.length; i++) next[i] += v[i];
+        });
+        for (let i = 0; i < next.length; i++) next[i] = next[i] / members.length;
+        centroids[cIdx] = this.normalizeVector(next);
+      });
+    }
+
+    return { clusters, centroids };
+  }
+
+  private async getThemeSuggestionsForLeaf(params: {
+    project?: any;
+    node: WBSNodeDto;
+  }): Promise<{ category: 'vocab' | 'tech' | 'general' | 'embedding'; themes: string[] }> {
+    const projectSummary =
+      params.project?.smartObjective?.summary || params.project?.description || '';
+    const baseText = `${params.node.name}. ${params.node.description || ''} ${projectSummary}`.trim();
+
+    if (baseText.length < this.minEmbeddingTextLength) {
+      return this.getThemeSuggestions(params);
+    }
+
+    const segments = this.extractThemeSegments(baseText);
+    if (segments.length < this.minEmbeddingSegments) {
+      return this.getThemeSuggestions(params);
+    }
+
+    const embeddings: { segment: string; vector: number[] }[] = [];
+    for (const segment of segments) {
+      const vector = await this.geminiService.generateEmbedding(segment);
+      if (vector.length) embeddings.push({ segment, vector: this.normalizeVector(vector) });
+    }
+
+    if (embeddings.length < 2) {
+      return this.getThemeSuggestions(params);
+    }
+
+    const k = Math.min(
+      this.maxEmbeddingClusters,
+      Math.max(2, Math.round(Math.sqrt(embeddings.length))),
+    );
+    const { clusters, centroids } = this.kMeansClusters(
+      embeddings.map((e) => e.vector),
+      k,
+    );
+
+    const themes: string[] = [];
+    clusters.forEach((cluster, idx) => {
+      if (!cluster.length) return;
+      let bestSegment = embeddings[cluster[0]].segment;
+      let bestScore = -Infinity;
+      cluster.forEach((segIdx) => {
+        const score = this.cosineSimilarity(embeddings[segIdx].vector, centroids[idx]);
+        if (score > bestScore) {
+          bestScore = score;
+          bestSegment = embeddings[segIdx].segment;
+        }
+      });
+      const theme = this.summarizeThemeFromSegment(bestSegment);
+      if (theme) themes.push(theme);
+    });
+
+    const uniqueThemes = Array.from(new Set(themes)).slice(0, this.maxEmbeddingClusters);
+    if (!uniqueThemes.length) {
+      return this.getThemeSuggestions(params);
+    }
+
+    return { category: 'embedding', themes: uniqueThemes };
+  }
+
   private buildMicroTasksPrompt(params: {
     project: any;
     node: WBSNodeDto;
@@ -1055,9 +1452,13 @@ Use hoje como ${today}.`;
     currentPath: string;
     level: number;
     chunkMinutes: number[];
+    themeHints?: string[];
   }): string {
     const projectSummary = params.project?.smartObjective?.summary || params.project?.description || '';
     const minutesList = params.chunkMinutes.map((m, i) => `${i + 1}: ${m}min`).join(', ');
+    const themeHintsText = params.themeHints?.length
+      ? params.themeHints.join(', ')
+      : 'Sem sugestões';
 
     return `Você é um planejador de micro-tarefas. Sua função é CRIAR UM PLANO (temas + workflow) para evitar repetição.
 
@@ -1071,6 +1472,9 @@ Pacote WBS (nó folha):
 
 Tamanhos alvo (minutos) das micro-tarefas:
 ${minutesList}
+
+Sugestões de temas (use se fizer sentido):
+${themeHintsText}
 
 REGRAS IMPORTANTES:
 1) Gere de 2 a 6 TEMAS (themes) com um critério claro.
@@ -1241,7 +1645,14 @@ Use hoje como ${today}.`;
     milestones?: Array<{ name?: string; goal?: string; atMinutes?: number }>;
     constraints?: any;
   }> {
-    const prompt = this.buildMicroTasksPlannerPrompt(params);
+    const themeHints = await this.getThemeSuggestionsForLeaf({
+      project: params.project,
+      node: params.node,
+    });
+    const prompt = this.buildMicroTasksPlannerPrompt({
+      ...params,
+      themeHints: themeHints.themes,
+    });
     const response = await this.geminiService.generateContent(prompt, {
       responseMimeType: 'application/json',
       maxOutputTokens: 1200,
@@ -1331,6 +1742,7 @@ Use hoje como ${today}.`;
     const isGrammar = /gram[aá]t/.test(nameLower);
     const isListening = /audi|oral|compreens[aã]o/.test(nameLower);
     const isMock = /simulad|prova|revis/.test(nameLower);
+    const themeHints = this.getThemeSuggestions({ node: params.node });
 
     const basePriority = Math.max(1, Math.min(4, 5 - params.level));
 
@@ -1418,6 +1830,9 @@ Use hoje como ${today}.`;
       }
 
       // Generic fallback (still non-generic: includes deliverable + DoD)
+      const hintedTheme = themeHints.themes.length
+        ? themeHints.themes[idx % themeHints.themes.length]
+        : 'geral';
       return {
         name: `Executar tarefa com entregável (${idx + 1}/${chunkMinutes.length})`,
         description:
@@ -1432,7 +1847,7 @@ Use hoje como ${today}.`;
         microTaskType: this.mapCognitiveTypeToMicroTaskType(
           this.inferCognitiveType(params.node.name, params.node.description),
         ),
-        themeTag: 'geral',
+        themeTag: hintedTheme,
         cognitiveMode: minutes >= 90 ? 'high' : minutes >= 45 ? 'medium' : 'low',
         contextTag: minutes >= 90 ? '@mesa/foco' : '@computador',
       };
