@@ -117,14 +117,24 @@ export class GeminiService {
    * Generic method to generate content from a prompt
    * Used by other services like PlanningService
    */
-  async generateContent(prompt: string): Promise<string> {
+  async generateContent(
+    prompt: string,
+    options?: {
+      responseMimeType?: string;
+      maxOutputTokens?: number;
+      temperature?: number;
+      topK?: number;
+      topP?: number;
+    },
+  ): Promise<string> {
     const model = this.genAI.getGenerativeModel({ model: this.model });
 
     const generationConfig = {
-      temperature: 0.8,
-      topK: 1,
-      topP: 1,
-      maxOutputTokens: 2048,
+      temperature: options?.temperature ?? 0.8,
+      topK: options?.topK ?? 1,
+      topP: options?.topP ?? 1,
+      maxOutputTokens: options?.maxOutputTokens ?? 2048,
+      responseMimeType: options?.responseMimeType,
     };
 
     const safetySettings: { category: HarmCategory; threshold: HarmBlockThreshold }[] = [

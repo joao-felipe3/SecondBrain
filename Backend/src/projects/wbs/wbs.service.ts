@@ -2,6 +2,7 @@ import { Injectable, Inject, forwardRef } from '@nestjs/common';
 import { randomUUID } from 'crypto';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
+import { z } from 'zod';
 import { GeminiService } from '../../tasks/gemini.service';
 import { WBSNodeDocument } from '../schemas/wbs-node.schema';
 import { WBSNodeDto, ValidateWBSResponseDto } from '../dto/wbs.dto';
@@ -29,6 +30,59 @@ export class WBSService {
   private readonly microTaskSoftMaxMinutes = 60; // ~2-3 pomodoros
   private readonly microTaskHardMaxMinutes = 150; // 6 pomodoros (only if needed)
   private readonly microTaskMaxPerLeaf = 40;
+
+  private readonly plannerSchema = z
+    .object({
+      themes: z
+        .array(
+          z
+            .object({
+              name: z.string().min(1),
+              criteria: z.string().optional(),
+            })
+            .passthrough(),
+        )
+        .min(1),
+      workflow: z.array(z.string().min(1)).min(1),
+      milestones: z
+        .array(
+          z
+            .object({
+              name: z.string().optional(),
+              goal: z.string().optional(),
+              atMinutes: z.number().optional(),
+            })
+            .passthrough(),
+        )
+        .optional(),
+      constraints: z.record(z.string(), z.any()).optional(),
+    })
+    .passthrough();
+
+  private readonly draftSchema = z
+    .object({
+      name: z.string().min(1),
+      description: z.string().min(1),
+      pomodorosPlanned: z.preprocess(
+        (v) => (v === undefined || v === null || v === '' ? v : Number(v)),
+        z.number().int().min(1).max(6),
+      ),
+      priority: z.preprocess(
+        (v) => (v === undefined || v === null || v === '' ? v : Number(v)),
+        z.number().int().min(1).max(4),
+      ),
+      difficult: z.preprocess(
+        (v) => (v === undefined || v === null || v === '' ? v : Number(v)),
+        z.number().int().min(1).max(4),
+      ),
+      microTaskType: z.string().min(1),
+      themeTag: z.string().min(1),
+      contextTag: z.string().min(1),
+      cognitiveMode: z.string().min(1),
+    })
+    .passthrough();
+
+  private readonly draftsSchema = z.array(this.draftSchema).min(1);
 
   /**
    * Generate a WBS from a SMART objective using Gemini
@@ -316,7 +370,27 @@ Retorne APENAS um array JSON com os sub-pacotes sugeridos:
               }>
             | null = null;
 
-          if (aiLeafCalls < maxAiLeafCalls) {
+          if (aiLeafCalls <= maxAiLeafCalls - 2) {
+            try {
+              const plan = await this.generateMicroTasksPlanForLeaf({
+                project,
+                node,
+                currentPath,
+                level,
+                chunkMinutes,
+              });
+              drafts = await this.generateMicroTasksDraftsForLeafWithPlan(
+                { project, node, currentPath, level, plan },
+                chunkMinutes,
+              );
+              aiLeafCalls += 2;
+            } catch (err: any) {
+              console.warn(`⚠️ IA (Planner/Generator) falhou para "${node.name}". Tentando prompt antigo. Motivo: ${err?.message || err}`);
+              drafts = null;
+            }
+          }
+
+          if (!drafts && aiLeafCalls < maxAiLeafCalls) {
             try {
               drafts = await this.generateMicroTasksDraftsForLeaf(
                 {
@@ -831,6 +905,99 @@ Retorne APENAS um array JSON com os sub-pacotes sugeridos:
     }
   }
 
+  private extractJsonObject<T = any>(response: string): T {
+    if (!response || typeof response !== 'string') {
+      throw new Error('Resposta da IA vazia');
+    }
+
+    let cleaned = response.trim();
+    if (cleaned.startsWith('```')) {
+      cleaned = cleaned.replace(/^```(?:json)?\s*/i, '').replace(/```\s*$/, '');
+    }
+
+    const match = cleaned.match(/\{[\s\S]*\}/);
+    if (match) cleaned = match[0];
+
+    const tryParse = (text: string): any => {
+      return JSON.parse(text);
+    };
+
+    try {
+      const parsed = tryParse(cleaned);
+      if (!parsed || Array.isArray(parsed)) throw new Error('IA não retornou um objeto JSON');
+      return parsed as T;
+    } catch {
+      let repaired = cleaned.replace(/,\s*([\}\]])/g, '$1');
+      repaired = repaired.replace(/[\x00-\x1F\x7F]/g, ' ');
+      const parsed = tryParse(repaired);
+      if (!parsed || Array.isArray(parsed)) {
+        throw new Error('IA não retornou um objeto JSON');
+      }
+      return parsed as T;
+    }
+  }
+
+  private validatePlannerPlan(plan: any): {
+    themes: Array<{ name: string; criteria?: string }>;
+    workflow: string[];
+    milestones?: Array<{ name?: string; goal?: string; atMinutes?: number }>;
+    constraints?: any;
+  } {
+    const parsed = this.plannerSchema.safeParse(plan);
+    if (!parsed.success) {
+      const issues = parsed.error.issues
+        .map((i) => `${i.path.join('.') || 'root'}: ${i.message}`)
+        .join('; ');
+      throw new Error(`Plano inválido: ${issues}`);
+    }
+    return parsed.data;
+  }
+
+  private validateDrafts(drafts: any[]): Array<{
+    name: string;
+    description: string;
+    pomodorosPlanned: number;
+    priority: number;
+    difficult: number;
+    microTaskType: string;
+    themeTag: string;
+    contextTag: string;
+    cognitiveMode: string;
+  }> {
+    const parsed = this.draftsSchema.safeParse(drafts);
+    if (!parsed.success) {
+      const issues = parsed.error.issues
+        .map((i) => `${i.path.join('.') || 'root'}: ${i.message}`)
+        .join('; ');
+      throw new Error(`Drafts inválidos: ${issues}`);
+    }
+    return parsed.data as any;
+  }
+
+  private normalizeWorkflowTypes(types: string[], total: number): string[] {
+    const allowed = ['prepare', 'practice', 'produce', 'review', 'test', 'consolidate'];
+    const cleaned = (types || [])
+      .map((t) => String(t || '').toLowerCase().trim())
+      .filter((t) => allowed.includes(t));
+
+    if (!total) return [];
+
+    if (cleaned.length === 0) {
+      if (total === 1) return ['practice'];
+      if (total === 2) return ['prepare', 'produce'];
+      if (total === 3) return ['prepare', 'practice', 'produce'];
+      const base = ['prepare', 'practice', 'practice', 'produce'];
+      while (base.length < total) base.splice(base.length - 1, 0, 'practice');
+      return base.slice(0, total);
+    }
+
+    const out: string[] = [];
+    for (let i = 0; i < total; i++) {
+      out.push(cleaned[i % cleaned.length]);
+    }
+    return out;
+  }
+
   private buildMicroTasksPrompt(params: {
     project: any;
     node: WBSNodeDto;
@@ -882,6 +1049,130 @@ Retorne APENAS um array JSON válido (sem markdown). Cada item deve ter EXATAMEN
 Use hoje como ${today}.`;
   }
 
+  private buildMicroTasksPlannerPrompt(params: {
+    project: any;
+    node: WBSNodeDto;
+    currentPath: string;
+    level: number;
+    chunkMinutes: number[];
+  }): string {
+    const projectSummary = params.project?.smartObjective?.summary || params.project?.description || '';
+    const minutesList = params.chunkMinutes.map((m, i) => `${i + 1}: ${m}min`).join(', ');
+
+    return `Você é um planejador de micro-tarefas. Sua função é CRIAR UM PLANO (temas + workflow) para evitar repetição.
+
+Contexto do projeto: ${projectSummary || 'Sem resumo'}
+
+Pacote WBS (nó folha):
+- Nome: "${params.node.name}"
+- Descrição: "${params.node.description || 'Sem descrição'}"
+- Caminho WBS: "${params.currentPath}"
+- Horas estimadas: ${params.node.estimatedHours}h
+
+Tamanhos alvo (minutos) das micro-tarefas:
+${minutesList}
+
+REGRAS IMPORTANTES:
+1) Gere de 2 a 6 TEMAS (themes) com um critério claro.
+2) Workflow deve ser uma sequência de tipos para ${params.chunkMinutes.length} tarefas.
+3) Proibido “Parte 1/24” e repetição de verbo entre temas.
+4) Inclua milestones quando fizer sentido (a cada 4–6h de esforço agregado).
+
+FORMATO DE RESPOSTA OBRIGATÓRIO (JSON válido, sem markdown):
+{
+  "themes": [ { "name": "string", "criteria": "string" } ],
+  "workflow": ["prepare","practice","produce"],
+  "milestones": [ { "name": "string", "goal": "string", "atMinutes": number } ],
+  "constraints": { "avoidRepeatingVerbs": true, "minVerbVariety": 4 }
+}
+`;
+  }
+
+  private buildMicroTasksGeneratorPrompt(params: {
+    project: any;
+    node: WBSNodeDto;
+    currentPath: string;
+    level: number;
+    chunkMinutes: number[];
+    plan: {
+      themes?: Array<{ name: string; criteria?: string }>;
+      workflow?: string[];
+      milestones?: Array<{ name?: string; goal?: string; atMinutes?: number }>;
+    };
+  }): string {
+    const today = new Date().toISOString().split('T')[0];
+    const projectSummary = params.project?.smartObjective?.summary || params.project?.description || '';
+
+    const workflow = this.normalizeWorkflowTypes(params.plan.workflow || [], params.chunkMinutes.length);
+    const minutesList = params.chunkMinutes
+      .map((m, i) => `${i + 1}: ${m}min (tipo: ${workflow[i] || 'practice'})`)
+      .join(', ');
+
+    const themes = (params.plan.themes || [])
+      .map((t, i) => `${i + 1}. ${t.name}${t.criteria ? ` — ${t.criteria}` : ''}`)
+      .join('\n');
+
+    const milestones = (params.plan.milestones || [])
+      .map((m, i) => `${i + 1}. ${m?.name || 'Milestone'} (${m?.atMinutes || '?'}min): ${m?.goal || ''}`)
+      .join('\n');
+
+    const verbLibrary = `
+prepare: preparar, organizar, coletar, listar, configurar, selecionar
+practice: praticar, aplicar, resolver, exercitar, repetir, consolidar
+produce: produzir, escrever, criar, implementar, construir, sintetizar
+review: revisar, corrigir, comparar, reforçar, relembrar
+test: testar, avaliar, simular, verificar, validar
+consolidate: resumir, conectar, padronizar, registrar, documentar
+`;
+
+    return `Você é um especialista em criar micro-tarefas de execução (25 a 150 minutos) a partir de um PLANO.
+
+Objetivo do projeto (contexto): ${projectSummary || 'Sem resumo'}
+
+Pacote de trabalho WBS (nó folha):
+- Nome: "${params.node.name}"
+- Descrição: "${params.node.description || 'Sem descrição'}"
+- Caminho WBS: "${params.currentPath}"
+- Horas estimadas do pacote: ${params.node.estimatedHours}h
+
+PLANO (temas):
+${themes || 'Sem temas'}
+
+PLANO (workflow):
+${workflow.join(' → ')}
+
+Milestones:
+${milestones || 'Sem milestones'}
+
+Tamanhos alvo (minutos) das micro-tarefas:
+${minutesList}
+
+Biblioteca de verbos (use para variar):${verbLibrary}
+
+REGRAS IMPORTANTES (anti-repetição):
+1) Gere EXATAMENTE ${params.chunkMinutes.length} micro-tarefas.
+2) Cada micro-tarefa deve ter um RESULTADO verificável (entregável).
+3) A descrição deve incluir passos (2-5) + Definição de pronto.
+4) Proibido “Parte 1/24” ou títulos repetidos.
+5) Varie verbo + output + tema entre itens.
+6) Cada item deve usar um "themeTag" de um dos temas acima.
+7) O nome da micro-tarefa deve começar com um VERBO de ação (GTD).
+
+FORMATO DE RESPOSTA OBRIGATÓRIO:
+Retorne APENAS um array JSON válido (sem markdown). Cada item deve ter EXATAMENTE:
+- "name": string
+- "description": string
+- "pomodorosPlanned": number (1-6)
+- "priority": number (1-4)
+- "difficult": number (1-4)
+- "microTaskType": string (prepare|practice|produce|review|test|consolidate)
+- "themeTag": string
+- "contextTag": string (ex.: @computador, @mesa/foco, @celular/offline)
+- "cognitiveMode": string (low|medium|high)
+
+Use hoje como ${today}.`;
+  }
+
   private async generateMicroTasksDraftsForLeaf(
     params: { project: any; node: WBSNodeDto; currentPath: string; level: number },
     chunkMinutes: number[],
@@ -905,13 +1196,97 @@ Use hoje como ${today}.`;
 
     const response = await this.geminiService.generateContent(prompt);
     const drafts = this.extractJsonArray<any>(response);
+    const validatedDrafts = this.validateDrafts(drafts);
 
-    if (drafts.length !== chunkMinutes.length) {
-      throw new Error(`IA retornou ${drafts.length} itens; esperado ${chunkMinutes.length}`);
+    if (validatedDrafts.length !== chunkMinutes.length) {
+      throw new Error(`IA retornou ${validatedDrafts.length} itens; esperado ${chunkMinutes.length}`);
     }
 
     // Normalize
-    return drafts.map((d: any, idx: number) => {
+    return validatedDrafts.map((d: any, idx: number) => {
+      const targetMinutes = chunkMinutes[idx];
+      const fallbackPomodoros = Math.max(1, Math.min(6, Math.ceil(targetMinutes / 25)));
+      const normalizedName = String(d?.name || `${params.node.name} (${idx + 1}/${chunkMinutes.length})`).trim();
+      const inferredType = this.normalizeMicroTaskType(
+        d?.microTaskType || this.mapCognitiveTypeToMicroTaskType(this.inferCognitiveType(normalizedName, d?.description)),
+      );
+      const inferredMode = this.normalizeCognitiveMode(
+        d?.cognitiveMode || this.mapMicroTaskTypeToCognitiveMode(inferredType),
+      );
+      const inferredContext =
+        String(d?.contextTag || this.mapCognitiveModeToContextTag(inferredMode)).trim() || undefined;
+      return {
+        name: normalizedName,
+        description: String(d?.description || '').trim(),
+        pomodorosPlanned: Math.max(1, Math.min(6, Number(d?.pomodorosPlanned) || fallbackPomodoros)),
+        priority: Math.max(1, Math.min(4, Number(d?.priority) || Math.max(1, Math.min(4, 5 - params.level)))),
+        difficult: Math.max(1, Math.min(4, Number(d?.difficult) || 2)),
+        microTaskType: inferredType,
+        themeTag: String(d?.themeTag || '').trim() || undefined,
+        contextTag: inferredContext,
+        cognitiveMode: inferredMode,
+      };
+    });
+  }
+
+  private async generateMicroTasksPlanForLeaf(params: {
+    project: any;
+    node: WBSNodeDto;
+    currentPath: string;
+    level: number;
+    chunkMinutes: number[];
+  }): Promise<{
+    themes: Array<{ name: string; criteria?: string }>;
+    workflow: string[];
+    milestones?: Array<{ name?: string; goal?: string; atMinutes?: number }>;
+    constraints?: any;
+  }> {
+    const prompt = this.buildMicroTasksPlannerPrompt(params);
+    const response = await this.geminiService.generateContent(prompt, {
+      responseMimeType: 'application/json',
+      maxOutputTokens: 1200,
+    });
+    const plan = this.extractJsonObject<any>(response);
+    return this.validatePlannerPlan(plan);
+  }
+
+  private async generateMicroTasksDraftsForLeafWithPlan(
+    params: { project: any; node: WBSNodeDto; currentPath: string; level: number; plan: any },
+    chunkMinutes: number[],
+  ): Promise<
+    Array<{
+      name: string;
+      description: string;
+      pomodorosPlanned: number;
+      priority: number;
+      difficult: number;
+      microTaskType?: string;
+      themeTag?: string;
+      contextTag?: string;
+      cognitiveMode?: string;
+    }>
+  > {
+    const prompt = this.buildMicroTasksGeneratorPrompt({
+      project: params.project,
+      node: params.node,
+      currentPath: params.currentPath,
+      level: params.level,
+      chunkMinutes,
+      plan: params.plan,
+    });
+
+    const response = await this.geminiService.generateContent(prompt, {
+      responseMimeType: 'application/json',
+      maxOutputTokens: 1800,
+    });
+    const drafts = this.extractJsonArray<any>(response);
+    const validatedDrafts = this.validateDrafts(drafts);
+
+    if (validatedDrafts.length !== chunkMinutes.length) {
+      throw new Error(`IA retornou ${validatedDrafts.length} itens; esperado ${chunkMinutes.length}`);
+    }
+
+    return validatedDrafts.map((d: any, idx: number) => {
       const targetMinutes = chunkMinutes[idx];
       const fallbackPomodoros = Math.max(1, Math.min(6, Math.ceil(targetMinutes / 25)));
       const normalizedName = String(d?.name || `${params.node.name} (${idx + 1}/${chunkMinutes.length})`).trim();
