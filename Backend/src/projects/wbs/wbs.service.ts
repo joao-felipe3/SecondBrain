@@ -20,6 +20,15 @@ export class WBSService {
     private readonly wbsNodeModel: Model<WBSNodeDocument>,
   ) {}
 
+  // Micro-task sizing philosophy:
+  // Prefer smaller “daily” tasks (1–3 pomodoros) and only use 6 pomodoros (150min)
+  // when strictly necessary to avoid generating an excessive number of tasks.
+  private readonly microTaskMinMinutes = 25;
+  private readonly microTaskPreferredMinutes = 50; // ~2 pomodoros
+  private readonly microTaskSoftMaxMinutes = 60; // ~2-3 pomodoros
+  private readonly microTaskHardMaxMinutes = 150; // 6 pomodoros (only if needed)
+  private readonly microTaskMaxPerLeaf = 40;
+
   /**
    * Generate a WBS from a SMART objective using Gemini
    */
@@ -209,7 +218,7 @@ Retorne APENAS um array JSON com os sub-pacotes sugeridos:
     }> = [];
 
     let priorityCounter = 1;
-    const maxMinutesPerMicroTask = 150;
+    const maxMinutesPerMicroTask = this.microTaskHardMaxMinutes;
 
     const traverse = (nodeList: WBSNodeDto[], parentPath: string = '') => {
       for (const node of nodeList) {
@@ -217,14 +226,11 @@ Retorne APENAS um array JSON com os sub-pacotes sugeridos:
 
         if (!node.children || node.children.length === 0) {
           const totalMinutes = Math.max(0, Math.round((node.estimatedHours || 0) * 60));
-          const chunks = Math.max(1, Math.ceil(totalMinutes / maxMinutesPerMicroTask));
+          const chunkMinutes = this.computeChunkMinutes(totalMinutes);
+          const chunks = chunkMinutes.length;
 
           for (let chunkIndex = 0; chunkIndex < chunks; chunkIndex++) {
-            const remaining = totalMinutes - chunkIndex * maxMinutesPerMicroTask;
-            const estimatedMinutes = Math.max(
-              1,
-              Math.min(maxMinutesPerMicroTask, remaining > 0 ? remaining : maxMinutesPerMicroTask),
-            );
+            const estimatedMinutes = chunkMinutes[chunkIndex];
 
             const pomodorosPlanned = Math.max(1, Math.ceil(estimatedMinutes / 25));
             const suffix = chunks > 1 ? ` (${chunkIndex + 1}/${chunks})` : '';
@@ -261,10 +267,10 @@ Retorne APENAS um array JSON com os sub-pacotes sugeridos:
     tasksService: { create: (dto: any) => Promise<any> },
   ): Promise<any[]> {
     const createdTasks: any[] = [];
-    const maxMinutesPerMicroTask = 150;
+    const maxMinutesPerMicroTask = this.microTaskHardMaxMinutes;
 
     // Guardrails: avoid accidental explosions (e.g. thousands of tasks)
-    const estimatedTotalTasks = this.estimateMicroTaskCount(nodes, maxMinutesPerMicroTask);
+    const estimatedTotalTasks = this.estimateMicroTaskCount(nodes);
     const maxTasksToCreate = 1000;
     if (estimatedTotalTasks > maxTasksToCreate) {
       throw new Error(
@@ -289,18 +295,8 @@ Retorne APENAS um array JSON com os sub-pacotes sugeridos:
         if (!node.children || node.children.length === 0) {
           // Leaf node - criar micro-tarefas
           const totalMinutes = Math.max(0, Math.round((node.estimatedHours || 0) * 60));
-          const chunks = Math.max(1, Math.ceil(totalMinutes / maxMinutesPerMicroTask));
-
-          // Precompute each chunk's minutes
-          const chunkMinutes: number[] = [];
-          for (let chunkIndex = 0; chunkIndex < chunks; chunkIndex++) {
-            const remaining = totalMinutes - chunkIndex * maxMinutesPerMicroTask;
-            const estimatedMinutes = Math.max(
-              1,
-              Math.min(maxMinutesPerMicroTask, remaining > 0 ? remaining : maxMinutesPerMicroTask),
-            );
-            chunkMinutes.push(estimatedMinutes);
-          }
+          const chunkMinutes: number[] = this.computeChunkMinutes(totalMinutes);
+          const chunks = chunkMinutes.length;
 
           // Prefer AI-generated, non-generic microtasks (batched per leaf).
           // Fallback to heuristic templates if AI fails or if we already hit a safety limit.
@@ -335,7 +331,12 @@ Retorne APENAS um array JSON com os sub-pacotes sugeridos:
             const suffix = chunks > 1 ? ` (${chunkIndex + 1}/${chunks})` : '';
 
             const draft = drafts[chunkIndex] || ({} as any);
-            const pomodorosPlanned = Math.max(1, Math.min(6, Number(draft.pomodorosPlanned) || Math.ceil(estimatedMinutes / 25)));
+            // Prefer smaller pomodoro counts; let AI choose, otherwise derive from minutes.
+            const derivedPomodoros = Math.ceil(estimatedMinutes / 25);
+            const pomodorosPlanned = Math.max(
+              1,
+              Math.min(6, Number(draft.pomodorosPlanned) || derivedPomodoros),
+            );
 
             // Deadline distribuído ao longo do prazo do projeto
             const progressRatio = estimatedTotalTasks <= 1 ? 0 : taskCounter / (estimatedTotalTasks - 1);
@@ -352,10 +353,7 @@ Retorne APENAS um array JSON com os sub-pacotes sugeridos:
             const difficult = Math.max(1, Math.min(4, Number(draft.difficult) || estimatedDifficulty));
 
             // Sempre adiciona contexto e critérios (evita descrições “genéricas”)
-            const objectiveSummary = project?.smartObjective?.summary ? `📋 Contexto do Projeto: ${project.smartObjective.summary}\n\n` : '';
-            const microMeta = `🎯 Origem WBS: ${currentPath}\n⏱️ Alvo: ${estimatedMinutes}min (~${pomodorosPlanned} pomodoros)\n📦 Micro-tarefa: ${chunkIndex + 1}/${chunks}`;
-            const coreDescription = (draft.description || node.description || '').trim();
-            const finalDescription = `${objectiveSummary}${coreDescription}\n\n${microMeta}`.trim();
+            const finalDescription = (draft.description || node.description || '').trim();
 
             const name = String(draft.name || `${node.name}${suffix}`).trim();
 
@@ -400,14 +398,14 @@ Retorne APENAS um array JSON com os sub-pacotes sugeridos:
     return createdTasks;
   }
 
-  private estimateMicroTaskCount(nodes: WBSNodeDto[], maxMinutesPerMicroTask: number): number {
+
+  private estimateMicroTaskCount(nodes: WBSNodeDto[]): number {
     let count = 0;
     const traverse = (list: WBSNodeDto[]) => {
       for (const node of list) {
         if (!node.children || node.children.length === 0) {
           const totalMinutes = Math.max(0, Math.round((node.estimatedHours || 0) * 60));
-          const chunks = Math.max(1, Math.ceil(totalMinutes / maxMinutesPerMicroTask));
-          count += chunks;
+          count += this.computeChunkMinutes(totalMinutes).length;
         } else {
           traverse(node.children);
         }
@@ -415,6 +413,65 @@ Retorne APENAS um array JSON com os sub-pacotes sugeridos:
     };
     traverse(nodes);
     return count;
+  }
+
+  private computeChunkMinutes(totalMinutes: number): number[] {
+    const minutes = Math.max(1, Math.round(totalMinutes));
+    const minM = this.microTaskMinMinutes;
+    const preferredM = this.microTaskPreferredMinutes;
+    const softMaxM = this.microTaskSoftMaxMinutes;
+    const hardMaxM = this.microTaskHardMaxMinutes;
+
+    // Minimum chunks needed to respect hard max
+    const minChunks = Math.max(1, Math.ceil(minutes / hardMaxM));
+    // Prefer smaller chunks (roughly 1–3 pomodoros)
+    const preferredChunks = Math.max(1, Math.ceil(minutes / preferredM));
+    // Avoid too many chunks per leaf unless required by hard max
+    let chunks = Math.min(preferredChunks, this.microTaskMaxPerLeaf);
+    chunks = Math.max(chunks, minChunks);
+
+    // Also do not create chunks smaller than the minimum size
+    const maxChunksByMin = Math.max(1, Math.floor(minutes / minM));
+    chunks = Math.min(chunks, maxChunksByMin);
+    chunks = Math.max(chunks, minChunks);
+
+    // Distribute minutes as evenly as possible
+    let base = Math.floor(minutes / chunks);
+    let remainder = minutes % chunks;
+
+    // If the base is still too large (can happen with caps), increase chunks as needed
+    while (base > hardMaxM) {
+      chunks++;
+      base = Math.floor(minutes / chunks);
+      remainder = minutes % chunks;
+    }
+
+    const chunkMinutes: number[] = [];
+    for (let i = 0; i < chunks; i++) {
+      const m = base + (i < remainder ? 1 : 0);
+      chunkMinutes.push(m);
+    }
+
+    // If chunks are still very large, try to split down towards the soft max.
+    // (but never exceed the max-per-leaf cap unless needed)
+    const average = minutes / chunkMinutes.length;
+    if (average > softMaxM) {
+      const targetChunks = Math.min(
+        Math.max(minChunks, Math.ceil(minutes / softMaxM)),
+        Math.max(minChunks, this.microTaskMaxPerLeaf),
+      );
+      if (targetChunks > chunkMinutes.length) {
+        const newBase = Math.floor(minutes / targetChunks);
+        const newRemainder = minutes % targetChunks;
+        const next: number[] = [];
+        for (let i = 0; i < targetChunks; i++) {
+          next.push(newBase + (i < newRemainder ? 1 : 0));
+        }
+        return next;
+      }
+    }
+
+    return chunkMinutes;
   }
 
   private extractJsonArray<T = any>(response: string): T[] {
@@ -431,11 +488,24 @@ Retorne APENAS um array JSON com os sub-pacotes sugeridos:
     const match = cleaned.match(/\[[\s\S]*\]/);
     if (match) cleaned = match[0];
 
-    const parsed = JSON.parse(cleaned);
-    if (!Array.isArray(parsed)) {
-      throw new Error('IA não retornou um array JSON');
+    const tryParse = (text: string): any => {
+      return JSON.parse(text);
+    };
+
+    try {
+      const parsed = tryParse(cleaned);
+      if (!Array.isArray(parsed)) throw new Error('IA não retornou um array JSON');
+      return parsed as T[];
+    } catch {
+      // Common cleanups: remove trailing commas & control chars
+      let repaired = cleaned.replace(/,\s*([\}\]])/g, '$1');
+      repaired = repaired.replace(/[\x00-\x1F\x7F]/g, ' ');
+      const parsed = tryParse(repaired);
+      if (!Array.isArray(parsed)) {
+        throw new Error('IA não retornou um array JSON');
+      }
+      return parsed as T[];
     }
-    return parsed as T[];
   }
 
   private buildMicroTasksPrompt(params: {
@@ -471,6 +541,7 @@ REGRAS IMPORTANTES (para não ficar genérico):
    - Qualquer recurso/entrada necessário (se aplicável)
 3) Evite frases vagas como "pesquisar" ou "estudar" sem critério.
 4) Use linguagem direta e prática.
+5) Prefira micro-tarefas pequenas (1-3 pomodoros). Use 4-6 apenas se a parte exigir.
 
 FORMATO DE RESPOSTA OBRIGATÓRIO:
 Retorne APENAS um array JSON válido (sem markdown). Cada item deve ter EXATAMENTE:

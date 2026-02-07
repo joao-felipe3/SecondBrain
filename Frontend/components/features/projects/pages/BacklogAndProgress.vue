@@ -21,7 +21,7 @@
 <script setup lang="ts">
 import type { PropType } from 'vue'
 import { ref, watch } from 'vue'
-import { useApiResource } from '~/composables/api/useApi'
+import { useApiResource } from '~/composables/api'
 import { BacklogSection, ProgressSection } from '../sections'
 
 type Project = Record<string, any>

@@ -146,6 +146,75 @@
           </div>
         </div>
 
+        <!-- Fase 3: WBS (Work Breakdown Structure) -->
+        <div v-if="phase === 3">
+          <v-alert type="info" variant="tonal" class="mb-4">
+            📊 WBS gerada a partir do objetivo SMART.
+            <span class="text-caption d-block mt-1">Regra 8/80: cada pacote de trabalho deve ter entre 8h e 80h estimadas. Depois, convertemos em micro-tarefas (≤3h) para execução.</span>
+          </v-alert>
+
+          <div v-if="wbsNodes.length > 0">
+            <!-- Validation summary -->
+            <v-alert
+              v-if="wbsValidation"
+              :type="wbsValidation.valid ? 'success' : 'warning'"
+              variant="tonal"
+              class="mb-4"
+            >
+              <span v-if="wbsValidation.valid">✅ Todos os pacotes de trabalho respeitam a regra 8/80!</span>
+              <span v-else>⚠️ {{ wbsValidation.violations.length }} pacote(s) fora da regra 8/80.</span>
+            </v-alert>
+
+            <!-- WBS Tree -->
+            <div class="wbs-tree-container" style="max-height: 400px; overflow-y: auto;">
+              <div v-for="node in wbsNodes" :key="node.name" class="wbs-node mb-2">
+                <div class="d-flex align-center">
+                  <v-icon size="18" class="mr-2" color="primary">mdi-folder-outline</v-icon>
+                  <strong>{{ node.name }}</strong>
+                  <v-chip v-if="node.estimatedHours" size="x-small" class="ml-2" :color="isValidHours(node.estimatedHours) ? 'success' : 'warning'">
+                    {{ node.estimatedHours }}h
+                  </v-chip>
+                </div>
+                <p v-if="node.description" class="text-caption text-medium-emphasis ml-7 mb-1">{{ node.description }}</p>
+                
+                <!-- Children -->
+                <div v-if="node.children && node.children.length > 0" class="ml-6">
+                  <div v-for="child in node.children" :key="child.name" class="wbs-child mb-1">
+                    <div class="d-flex align-center">
+                      <v-icon size="16" class="mr-2" color="secondary">mdi-file-document-outline</v-icon>
+                      <span>{{ child.name }}</span>
+                      <v-chip v-if="child.estimatedHours" size="x-small" class="ml-2" :color="isValidHours(child.estimatedHours) ? 'success' : 'warning'">
+                        {{ child.estimatedHours }}h
+                      </v-chip>
+                    </div>
+                    <p v-if="child.description" class="text-caption text-medium-emphasis ml-7 mb-0">{{ child.description }}</p>
+
+                    <!-- Level 3 children -->
+                    <div v-if="child.children && child.children.length > 0" class="ml-6">
+                      <div v-for="leaf in child.children" :key="leaf.name" class="wbs-leaf mb-1">
+                        <div class="d-flex align-center">
+                          <v-icon size="14" class="mr-2" color="grey">mdi-circle-small</v-icon>
+                          <span class="text-body-2">{{ leaf.name }}</span>
+                          <v-chip v-if="leaf.estimatedHours" size="x-small" class="ml-2" :color="isValidHours(leaf.estimatedHours) ? 'success' : 'warning'">
+                            {{ leaf.estimatedHours }}h
+                          </v-chip>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Stats -->
+            <v-divider class="my-3" />
+            <div class="d-flex justify-space-between text-caption text-medium-emphasis">
+              <span>Total de pacotes folha: {{ totalLeafCount }}</span>
+              <span>Horas estimadas: {{ totalEstimatedHours }}h</span>
+            </div>
+          </div>
+        </div>
+
         <!-- Loading -->
         <div v-if="loading" class="text-center py-8">
           <v-progress-circular indeterminate color="primary" size="64" />
@@ -154,6 +223,14 @@
       </v-card-text>
 
       <v-card-actions class="pa-4">
+        <v-btn
+          v-if="phase === 3"
+          @click="phase = 2"
+          variant="text"
+        >
+          <v-icon start>mdi-arrow-left</v-icon>
+          Voltar ao SMART
+        </v-btn>
         <v-spacer />
         <v-btn
           @click="handleClose"
@@ -163,11 +240,37 @@
         </v-btn>
         <v-btn
           v-if="phase === 2"
+          @click="generateWBS"
+          color="primary"
+          :disabled="loading"
+        >
+          <v-icon start>mdi-file-tree</v-icon>
+          Gerar WBS
+        </v-btn>
+        <v-btn
+          v-if="phase === 2"
           @click="saveAndClose"
           color="success"
           :disabled="loading"
         >
-          Salvar e Concluir
+          Salvar SMART
+        </v-btn>
+        <v-btn
+          v-if="phase === 3"
+          @click="convertAndClose"
+          color="primary"
+          :disabled="loading || wbsNodes.length === 0"
+        >
+          <v-icon start>mdi-check-all</v-icon>
+          Converter em Micro-tarefas (≤3h) e Concluir
+        </v-btn>
+        <v-btn
+          v-if="phase === 3"
+          @click="saveWBSAndClose"
+          color="success"
+          :disabled="loading || wbsNodes.length === 0"
+        >
+          Salvar WBS
         </v-btn>
       </v-card-actions>
     </v-card>
@@ -201,6 +304,7 @@ interface Props {
 interface Emits {
   (e: 'update:modelValue', value: boolean): void
   (e: 'objective-generated', objective: SmartObjective): void
+  (e: 'wbs-generated'): void
 }
 
 const props = defineProps<Props>()
@@ -221,6 +325,21 @@ const answerEdited = ref(false)
 
 // Fase 2: Objetivo SMART (antes era Fase 3)
 const smartObjective = ref<SmartObjective | null>(null)
+
+// Fase 3: WBS
+interface WBSNodeUI {
+  name: string
+  description?: string
+  level: number
+  estimatedHours: number
+  children?: WBSNodeUI[]
+}
+interface WBSValidation {
+  valid: boolean
+  violations: { nodeName: string; hours: number; reason: string }[]
+}
+const wbsNodes = ref<WBSNodeUI[]>([])
+const wbsValidation = ref<WBSValidation | null>(null)
 
 // Carrega perguntas automaticamente quando o dialog abre
 watch(() => props.modelValue, (newValue) => {
@@ -254,6 +373,7 @@ const phaseTitle = computed(() => {
   switch (phase.value) {
     case 1: return 'Refinamento (Catchball)'
     case 2: return 'Objetivo SMART'
+    case 3: return 'WBS (Work Breakdown Structure)'
     default: return ''
   }
 })
@@ -374,10 +494,128 @@ async function generateSmartObjective() {
     })
 
     smartObjective.value = response.data.smart
-    phase.value = 3
+    phase.value = 2
   } catch (error) {
     console.error('Erro ao gerar objetivo SMART:', error)
     alert('Erro ao gerar objetivo SMART. Tente novamente.')
+  } finally {
+    loading.value = false
+  }
+}
+
+function isValidHours(hours: number): boolean {
+  return hours >= 8 && hours <= 80
+}
+
+function countLeaves(nodes: WBSNodeUI[]): number {
+  let count = 0
+  for (const node of nodes) {
+    if (!node.children || node.children.length === 0) {
+      count++
+    } else {
+      count += countLeaves(node.children)
+    }
+  }
+  return count
+}
+
+function sumHours(nodes: WBSNodeUI[]): number {
+  let total = 0
+  for (const node of nodes) {
+    if (!node.children || node.children.length === 0) {
+      total += node.estimatedHours || 0
+    } else {
+      total += sumHours(node.children)
+    }
+  }
+  return total
+}
+
+const totalLeafCount = computed(() => countLeaves(wbsNodes.value))
+const totalEstimatedHours = computed(() => sumHours(wbsNodes.value))
+
+async function generateWBS() {
+  if (!smartObjective.value) return
+  loading.value = true
+  loadingMessage.value = 'Gerando WBS a partir do objetivo SMART...'
+
+  try {
+    const { $api } = useNuxtApp() as any
+    const response = await $api.post(`/projects/${props.projectId}/generate-wbs`, {
+      specific: smartObjective.value.specific,
+      measurable: smartObjective.value.measurable,
+      achievable: smartObjective.value.achievable,
+      relevant: smartObjective.value.relevant,
+      temporal: smartObjective.value.temporal
+    })
+
+    wbsNodes.value = response.data.wbs || response.data
+    phase.value = 3
+
+    // Validate
+    try {
+      const valResponse = await $api.post(`/projects/${props.projectId}/wbs/validate`, {
+        nodes: wbsNodes.value
+      })
+      wbsValidation.value = valResponse.data
+    } catch {
+      wbsValidation.value = null
+    }
+  } catch (error) {
+    console.error('Erro ao gerar WBS:', error)
+    alert('Erro ao gerar WBS. Tente novamente.')
+  } finally {
+    loading.value = false
+  }
+}
+
+async function convertAndClose() {
+  loading.value = true
+  loadingMessage.value = 'Convertendo WBS em tarefas...'
+
+  try {
+    const { $api } = useNuxtApp() as any
+    // Save WBS first
+    await $api.post(`/projects/${props.projectId}/save-wbs`, {
+      nodes: wbsNodes.value
+    })
+    // Convert to tasks
+    await $api.post(`/projects/${props.projectId}/wbs/convert-to-tasks`, {
+      nodes: wbsNodes.value
+    })
+
+    // Emit SMART objective if generated
+    if (smartObjective.value) {
+      emit('objective-generated', smartObjective.value)
+    }
+    emit('wbs-generated')
+    handleClose()
+  } catch (error) {
+    console.error('Erro ao converter WBS em tarefas:', error)
+    alert('Erro ao converter WBS em tarefas. Tente novamente.')
+  } finally {
+    loading.value = false
+  }
+}
+
+async function saveWBSAndClose() {
+  loading.value = true
+  loadingMessage.value = 'Salvando WBS...'
+
+  try {
+    const { $api } = useNuxtApp() as any
+    await $api.post(`/projects/${props.projectId}/save-wbs`, {
+      nodes: wbsNodes.value
+    })
+
+    if (smartObjective.value) {
+      emit('objective-generated', smartObjective.value)
+    }
+    emit('wbs-generated')
+    handleClose()
+  } catch (error) {
+    console.error('Erro ao salvar WBS:', error)
+    alert('Erro ao salvar WBS. Tente novamente.')
   } finally {
     loading.value = false
   }
@@ -397,6 +635,8 @@ function handleClose() {
   answers.value = []
   conversationId.value = ''
   smartObjective.value = null
+  wbsNodes.value = []
+  wbsValidation.value = null
   currentQuestionIndex.value = 0
   currentAnswer.value = ''
   suggestedAnswer.value = ''

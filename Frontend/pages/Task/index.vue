@@ -20,7 +20,7 @@
 import { ref, onMounted, onBeforeUnmount } from 'vue'
 import { useTaskStore } from '~/stores/task'
 import useTaskHelpers from '~/composables/features/useTaskHelpers'
-import { useApiResource } from '~/composables/api/useApi'
+import { useApiResource } from '~/composables/api'
 import TaskMain from '../../components/features/tasks/layout/Main.vue'
 import TaskSidebar from '../../components/features/tasks/layout/Sidebar.vue'
 

@@ -38,7 +38,7 @@
 <script setup lang="ts">
 import type { PropType } from 'vue'
 import { reactive, watch, ref } from 'vue'
-import { useApi } from '~/composables/api/useApi'
+import { useApi } from '~/composables/api'
 import { PlanningAssistant } from '../sections'
 import { TaskDialog, TasksList } from '../tasks'
 
