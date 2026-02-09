@@ -6,6 +6,44 @@ import { z } from 'zod';
 import { GeminiService } from '../../tasks/gemini.service';
 import { WBSNodeDocument } from '../schemas/wbs-node.schema';
 import { WBSNodeDto, ValidateWBSResponseDto } from '../dto/wbs.dto';
+import {
+  TitleValidationService,
+  MonotonyDetectionService,
+  MonotonyFixService,
+  PromptBuilderService,
+  ThemeExtractionService,
+} from './services';
+import { extractJsonArray, extractJsonObject } from './utils/json-parser.util';
+import {
+  normalizeTitle,
+  templateTitle,
+  extractVerb,
+  normalizePreferredPomodoros,
+  normalizeMicroTaskType,
+  normalizeCognitiveMode,
+  mapMicroTaskTypeToCognitiveMode,
+  mapCognitiveModeToContextTag,
+  normalizeWorkflowTypes,
+} from './utils/normalizers.util';
+import {
+  computeChunkMinutes,
+  computePertFromMinutes,
+  estimateMicroTaskCount,
+  computeBatchMetrics,
+  cosineSimilarity,
+  kMeansClusters,
+} from './utils/metrics-calculator.util';
+import {
+  MICRO_TASK_HARD_MAX_MINUTES,
+  MAX_AI_LEAF_CALLS,
+  EXTRA_FIX_BUDGET,
+  MAX_TASKS_TO_CREATE,
+  MAX_DUPLICATE_SCORE,
+  MAX_SIMILARITY_SCORE,
+  MIN_COGNITIVE_VARIETY,
+  MAX_GENERIC_SERIES_RATE,
+  MAX_SUFFIX_RATE,
+} from './constants/wbs.constants';
 
 export interface ValidationResult {
   valid: boolean;
@@ -20,6 +58,11 @@ export class WBSService {
     private readonly geminiService: GeminiService,
     @InjectModel('WBSNode')
     private readonly wbsNodeModel: Model<WBSNodeDocument>,
+    private readonly titleValidation: TitleValidationService,
+    private readonly monotonyDetection: MonotonyDetectionService,
+    private readonly monotonyFix: MonotonyFixService,
+    private readonly promptBuilder: PromptBuilderService,
+    private readonly themeExtraction: ThemeExtractionService,
   ) {}
 
   // Micro-task sizing philosophy:
@@ -100,7 +143,7 @@ export class WBSService {
   }
 
   private baseTitle(name?: string): string {
-    return this.sanitizeTitle(this.stripDedupeSuffix(name));
+    return this.titleValidation.sanitizeTitle(this.titleValidation.stripDedupeSuffix(name));
   }
 
   private sanitizeTitle(name?: string): string {
@@ -128,6 +171,9 @@ export class WBSService {
     if (!t) return false;
     if (/\bentreg[aá]vel\b/.test(t)) return true;
     if (/\bmini\s*-?\s*simulad[oa]\b/.test(t)) return true;
+    if (/\bbloco de quest[oõ]es\b/.test(t)) return true;
+    // Old-style one-item-per-type fallback artifacts (low variety)
+    if (/^\w+\s+(sessão de prática|treino dirigido|aplicação controlada|exercício guiado)\s*[—-]/i.test(t)) return true;
     return false;
   }
 
@@ -168,9 +214,9 @@ export class WBSService {
   } {
     const forced = new Set<number>();
 
-    const baseTitles = drafts.map((d) => this.baseTitle(d?.name));
-    const normalizedTitles = baseTitles.map((t) => this.normalizeTitle(t));
-    const templateTitles = baseTitles.map((t) => this.templateTitle(t));
+    const baseTitles = drafts.map((d) => this.titleValidation.baseTitle(d?.name));
+    const normalizedTitles = baseTitles.map((t) => normalizeTitle(t));
+    const templateTitles = baseTitles.map((t) => templateTitle(t));
 
     const firstByNormalized = new Map<string, number>();
     normalizedTitles.forEach((key, idx) => {
@@ -190,9 +236,9 @@ export class WBSService {
     });
 
     baseTitles.forEach((t, idx) => {
-      if (this.isBadTitleQuality(t)) forced.add(idx);
-      if (this.isGenericTemplateTitle(t)) forced.add(idx);
-      if (this.isGenericWordsCountTitle(t)) forced.add(idx);
+      if (this.titleValidation.isBadTitleQuality(t)) forced.add(idx);
+      if (this.titleValidation.isGenericTemplateTitle(t)) forced.add(idx);
+      if (this.titleValidation.isGenericWordsCountTitle(t)) forced.add(idx);
     });
 
     return {
@@ -200,7 +246,7 @@ export class WBSService {
       duplicatesCount: Math.max(0, normalizedTitles.length - new Set(normalizedTitles).size),
       templatesCount: Math.max(0, templateTitles.length - new Set(templateTitles).size),
       badTitleCount: baseTitles.filter(
-        (t) => this.isBadTitleQuality(t) || this.isGenericTemplateTitle(t) || this.isGenericWordsCountTitle(t),
+        (t) => this.titleValidation.isBadTitleQuality(t) || this.titleValidation.isGenericTemplateTitle(t) || this.titleValidation.isGenericWordsCountTitle(t),
       ).length,
     };
   }
@@ -216,11 +262,11 @@ export class WBSService {
     let minis = 0;
 
     drafts.forEach((d, idx) => {
-      const title = this.baseTitle(d?.name);
+      const title = this.titleValidation.baseTitle(d?.name);
       const t = title.toLowerCase();
       const isDeliverable = /\bentreg[aá]vel\b/.test(t);
       const isMini = /\bmini\s*-?\s*simulad[oa]\b/.test(t);
-      const isWords = this.isGenericWordsCountTitle(title);
+      const isWords = this.titleValidation.isGenericWordsCountTitle(title);
 
       if (isDeliverable) deliverable++;
       if (isMini) minis++;
@@ -247,6 +293,10 @@ export class WBSService {
     if (/\bmicro[-\s]?tarefa\b/i.test(t)) return true;
     // Avoid generic placeholder template "entregável".
     if (/\bentreg[aá]vel\b/i.test(t)) return true;
+    // Avoid "N palavras" without concrete artifact.
+    if (this.titleValidation.isGenericWordsCountTitle(t)) return true;
+    // Avoid old single-template fallback names.
+    if (/\bbloco de quest[oõ]es\b/i.test(t)) return true;
     return false;
   }
 
@@ -255,10 +305,10 @@ export class WBSService {
     hasForbiddenPatterns: boolean;
   } {
     const bad = new Set<number>();
-    const hasForbiddenPatterns = drafts.some((d) => this.hasForbiddenTitlePattern(d?.name));
+    const hasForbiddenPatterns = drafts.some((d) => this.titleValidation.hasForbiddenTitlePattern(d?.name));
 
-    const normalizedTitles = drafts.map((d) => this.normalizeTitle(d?.name));
-    const templateTitles = drafts.map((d) => this.templateTitle(d?.name));
+    const normalizedTitles = drafts.map((d) => normalizeTitle(d?.name));
+    const templateTitles = drafts.map((d) => templateTitle(d?.name));
 
     // Flag only repeated occurrences (keep the first) to keep changes minimal.
     const firstByNormalized = new Map<string, number>();
@@ -279,250 +329,13 @@ export class WBSService {
     });
 
     drafts.forEach((d, idx) => {
-      if (this.hasForbiddenTitlePattern(d?.name)) bad.add(idx);
+      if (this.titleValidation.hasForbiddenTitlePattern(d?.name)) bad.add(idx);
     });
 
     return {
       badIndices: Array.from(bad.values()).sort((a, b) => a - b),
       hasForbiddenPatterns,
     };
-  }
-
-  private buildMicroTasksFixMonotonyPrompt(params: {
-    project: any;
-    node: WBSNodeDto;
-    currentPath: string;
-    chunkMinutes: number[];
-    drafts: Array<{
-      name?: string;
-      description?: string;
-      pomodorosPlanned?: number;
-      priority?: number;
-      difficult?: number;
-      microTaskType?: string;
-      themeTag?: string;
-      contextTag?: string;
-      cognitiveMode?: string;
-      milestoneIndex?: number;
-    }>;
-    indices: number[];
-    round: number;
-  }): string {
-    const today = new Date().toISOString().split('T')[0];
-    const projectSummary = params.project?.smartObjective?.summary || params.project?.description || '';
-
-    const indicesText = params.indices.map((i) => i).join(', ');
-
-    const fixedTargets = params.indices
-      .map((idx) => {
-        const d: any = params.drafts[idx] || {};
-        const minutes = params.chunkMinutes[idx];
-        return {
-          chunkIndex: idx,
-          targetMinutes: minutes,
-          microTaskType: String(d.microTaskType || 'practice'),
-          themeTag: String(d.themeTag || '').trim(),
-          contextTag: String(d.contextTag || '').trim(),
-          cognitiveMode: String(d.cognitiveMode || '').trim(),
-          previousName: String(d.name || '').trim(),
-        };
-      })
-      .map((o) => JSON.stringify(o))
-      .join('\n');
-
-    const keepIndices = new Set(params.indices);
-    const keepVerbs = params.drafts
-      .map((d, idx) => ({ idx, verb: this.extractVerb(d?.name) }))
-      .filter((x) => !keepIndices.has(x.idx) && x.verb && x.verb !== 'unknown')
-      .map((x) => x.verb);
-    const avoidVerbs = Array.from(new Set(keepVerbs)).slice(0, 20);
-
-    const keepTemplates = params.drafts
-      .map((d, idx) => ({ idx, tpl: this.templateTitle(d?.name) }))
-      .filter((x) => !keepIndices.has(x.idx) && x.tpl)
-      .map((x) => x.tpl);
-    const avoidTemplates = Array.from(new Set(keepTemplates)).slice(0, 25);
-
-    const strictnessHint =
-      params.round >= 1
-        ? 'Esta é uma segunda tentativa: seja ainda mais diferente (mude verbo + entregável + formato).'
-        : '';
-
-    return `Você é um especialista em criar micro-tarefas executáveis e NÃO repetitivas.
-
-Contexto do projeto: ${projectSummary || 'Sem resumo'}
-
-WBS (nó folha):
-- Nome: "${params.node.name}"
-- Descrição: "${params.node.description || 'Sem descrição'}"
-- Caminho: "${params.currentPath}"
-
-Problema: algumas micro-tarefas ficaram repetitivas/monótonas ou com padrões proibidos (ex.: "Parte 1/4").
-
-Sua tarefa: REGERAR APENAS os itens com chunkIndex em [${indicesText}] mantendo o mesmo objetivo do nó.
-
-ALVOS (NÃO altere chunkIndex; use os metadados como guia):
-${fixedTargets}
-
-REGRAS IMPORTANTES (anti-monotonia):
-1) Proibido usar frações como "1/4" no nome (inclui "Parte 1/4"). Se usar "Parte N", use apenas "Parte N" (sem "/M").
-1b) Proibido usar nomes genéricos/placeholder como "entregável", "mini-simulado" ou "N palavras". O nome deve citar um ARTEFATO concreto (ex.: resumo, lista de erros, flashcards, mapa mental, simulado completo, checklist, etc.).
-2) O nome deve começar com um VERBO de ação (GTD) e variar entre os itens.
-3) Evite repetir verbos já usados nos outros itens: ${avoidVerbs.length ? avoidVerbs.join(', ') : 'sem lista'}.
-4) Evite repetir templates (mesma ideia com palavras trocadas). Templates a evitar: ${avoidTemplates.length ? avoidTemplates.join(' | ') : 'sem lista'}.
-5) Descrição deve ter 2-5 passos + "Definição de pronto:".
-6) Mantenha a duração alvo (targetMinutes) e respeite 1-6 pomodoros.
-${strictnessHint}
-
-FORMATO DE RESPOSTA OBRIGATÓRIO:
-Retorne APENAS um array JSON válido (sem markdown), com EXATAMENTE ${params.indices.length} itens.
-Cada item deve ter:
-- "chunkIndex": number (0-based)
-- "name": string
-- "description": string
-- "pomodorosPlanned": number (1-6)
-- "priority": number (1-4)
-- "difficult": number (1-4)
-
-Use hoje como ${today}.`;
-  }
-
-  private async autoFixMonotonyForLeaf(params: {
-    project: any;
-    node: WBSNodeDto;
-    currentPath: string;
-    level: number;
-    chunkMinutes: number[];
-    drafts: Array<{
-      name: string;
-      description?: string;
-      pomodorosPlanned?: number;
-      priority?: number;
-      difficult?: number;
-      microTaskType?: string;
-      themeTag?: string;
-      contextTag?: string;
-      cognitiveMode?: string;
-      milestoneIndex?: number;
-    }>;
-    maxCalls: number;
-    forceIndices?: number[];
-  }): Promise<{ drafts: any[]; aiCallsUsed: number }> {
-    const isJsonishError = (err: any) => {
-      const msg = String(err?.message || err || '').toLowerCase();
-      return (
-        msg.includes('json') ||
-        msg.includes('truncad') ||
-        msg.includes('incomplet') ||
-        msg.includes('parse') ||
-        msg.includes('array') ||
-        msg.includes('object')
-      );
-    };
-
-    let drafts = params.drafts.slice().map((d) => ({
-      ...d,
-      name: this.sanitizeTitle(d?.name),
-    }));
-    let aiCallsUsed = 0;
-
-    const forcedIndices = Array.from(new Set((params.forceIndices || []).filter((n) => Number.isInteger(n)))).sort(
-      (a, b) => a - b,
-    );
-
-    for (let round = 0; round < 2; round++) {
-      const issues = this.detectMonotonyIssues(drafts);
-      const mergedBad = Array.from(new Set([...(issues.badIndices || []), ...forcedIndices])).sort((a, b) => a - b);
-      if (!mergedBad.length) break;
-      if (aiCallsUsed >= params.maxCalls) break;
-
-      // Regenerate in small batches to reduce truncation.
-      const batchSize = 5;
-      for (let start = 0; start < mergedBad.length && aiCallsUsed < params.maxCalls; start += batchSize) {
-        const indices = mergedBad.slice(start, start + batchSize);
-        const prompt = this.buildMicroTasksFixMonotonyPrompt({
-          project: params.project,
-          node: params.node,
-          currentPath: params.currentPath,
-          chunkMinutes: params.chunkMinutes,
-          drafts,
-          indices,
-          round,
-        });
-
-        const attempt = async (opts: { maxOutputTokens: number; temperature: number }) => {
-          const response = await this.geminiService.generateContent(prompt, {
-            responseMimeType: 'application/json',
-            maxOutputTokens: opts.maxOutputTokens,
-            temperature: opts.temperature,
-          });
-          const parsed = this.extractJsonArray<any>(response);
-          if (!Array.isArray(parsed) || parsed.length !== indices.length) {
-            throw new Error(`IA retornou ${Array.isArray(parsed) ? parsed.length : 0} itens; esperado ${indices.length}`);
-          }
-          return parsed;
-        };
-
-        let items: any[];
-        try {
-          items = await attempt({ maxOutputTokens: 1400, temperature: 0.65 });
-        } catch (err: any) {
-          if (isJsonishError(err)) {
-            items = await attempt({ maxOutputTokens: 2200, temperature: 0.35 });
-          } else {
-            throw err;
-          }
-        }
-
-        const indexSet = new Set(indices);
-        const byIndex = new Map<number, any>();
-
-        // Prefer explicit chunkIndex mapping; fallback to positional mapping if missing.
-        const allHaveIndex = items.every((it) => Number.isInteger(Number(it?.chunkIndex)));
-        if (allHaveIndex) {
-          items.forEach((it) => {
-            const idx = Number(it.chunkIndex);
-            if (indexSet.has(idx)) byIndex.set(idx, it);
-          });
-        } else {
-          items.forEach((it, pos) => {
-            const idx = indices[pos];
-            if (idx !== undefined) byIndex.set(idx, { ...it, chunkIndex: idx });
-          });
-        }
-
-        for (const idx of indices) {
-          const current = drafts[idx] || ({} as any);
-          const it = byIndex.get(idx);
-          if (!it) continue;
-
-          const targetMinutes = params.chunkMinutes[idx];
-          const fallbackPomodoros = Math.max(1, Math.min(6, Math.ceil(targetMinutes / 25)));
-          const nextName = this.sanitizeTitle(String(it?.name || '').trim());
-          const nextDesc = String(it?.description || '').trim();
-          if (!nextName || !nextDesc) continue;
-
-          drafts[idx] = {
-            ...current,
-            name: nextName,
-            description: nextDesc,
-            pomodorosPlanned: Math.max(1, Math.min(6, Number(it?.pomodorosPlanned) || current.pomodorosPlanned || fallbackPomodoros)),
-            priority: Math.max(1, Math.min(4, Number(it?.priority) || current.priority || Math.max(1, Math.min(4, 5 - params.level)))),
-            difficult: Math.max(1, Math.min(4, Number(it?.difficult) || current.difficult || 2)),
-          };
-        }
-
-        aiCallsUsed++;
-      }
-
-      // Run dedupe after replacement and keep titles sanitized.
-      drafts = this.dedupeCheckAndMitigate(drafts).map((d) => ({
-        ...d,
-        name: this.sanitizeTitle(d?.name),
-      }));
-    }
-
-    return { drafts, aiCallsUsed };
   }
 
   /**
@@ -722,7 +535,7 @@ Retorne APENAS um array JSON com os sub-pacotes sugeridos:
 
         if (!node.children || node.children.length === 0) {
           const totalMinutes = Math.max(0, Math.round((node.estimatedHours || 0) * 60));
-          const chunkMinutes = this.computeChunkMinutes(totalMinutes);
+          const chunkMinutes = computeChunkMinutes(totalMinutes);
           const chunks = chunkMinutes.length;
 
           for (let chunkIndex = 0; chunkIndex < chunks; chunkIndex++) {
@@ -769,10 +582,10 @@ Retorne APENAS um array JSON com os sub-pacotes sugeridos:
     const createdTasks: any[] = [];
     const generationBatchId = randomUUID();
     const maxMinutesPerMicroTask = this.microTaskHardMaxMinutes;
-    const preferredPomodoros = this.normalizePreferredPomodoros(preferences?.targetPomodoros);
+    const preferredPomodoros = normalizePreferredPomodoros(preferences?.targetPomodoros);
 
     // Guardrails: avoid accidental explosions (e.g. thousands of tasks)
-    const estimatedTotalTasks = this.estimateMicroTaskCount(nodes);
+    const estimatedTotalTasks = estimateMicroTaskCount(nodes);
     const maxTasksToCreate = 1000;
     if (estimatedTotalTasks > maxTasksToCreate) {
       throw new Error(
@@ -797,7 +610,7 @@ Retorne APENAS um array JSON com os sub-pacotes sugeridos:
         if (!node.children || node.children.length === 0) {
           // Leaf node - criar micro-tarefas
           const totalMinutes = Math.max(0, Math.round((node.estimatedHours || 0) * 60));
-          const chunkMinutes: number[] = this.computeChunkMinutes(totalMinutes, {
+          const chunkMinutes: number[] = computeChunkMinutes(totalMinutes, {
             preferredPomodoros,
           });
           const chunks = chunkMinutes.length;
@@ -875,12 +688,12 @@ Retorne APENAS um array JSON com os sub-pacotes sugeridos:
           leafDrafts = leafDrafts.map((d) => ({ ...d, name: this.sanitizeTitle(d?.name) }));
 
           // Pre-dedupe checks: catch duplicates that would otherwise be “hidden” by suffix-based dedupe.
-          const preDedupe = this.detectPreDedupeIssues(leafDrafts);
+          const preDedupe = this.monotonyDetection.detectPreDedupeIssues(leafDrafts);
 
-          leafDrafts = this.dedupeCheckAndMitigate(leafDrafts);
+          leafDrafts = this.monotonyFix.dedupeCheckAndMitigate(leafDrafts);
           leafDrafts = leafDrafts.map((d) => ({ ...d, name: this.sanitizeTitle(d?.name) }));
 
-          const leafMetrics = this.computeBatchMetrics(
+          const leafMetrics = computeBatchMetrics(
             leafDrafts.map((d: any) => ({
               name: d?.name,
               description: d?.description,
@@ -906,8 +719,8 @@ Retorne APENAS um array JSON com os sub-pacotes sugeridos:
 
           // Auto-fix monotony: regenerate only the problematic items (duplicates/templates/forbidden patterns).
           try {
-            const issues = this.detectMonotonyIssues(leafDrafts);
-            const genericSeries = this.detectGenericSeriesIssues(leafDrafts);
+            const issues = this.monotonyDetection.detectMonotonyIssues(leafDrafts);
+            const genericSeries = this.monotonyDetection.detectGenericSeriesIssues(leafDrafts);
             const suffixIndices = leafDrafts
               .map((d, idx) => ({ idx, hasSuffix: String(d?.name || '').includes(' — ') }))
               .filter((x) => x.hasSuffix)
@@ -950,7 +763,7 @@ Retorne APENAS um array JSON com os sub-pacotes sugeridos:
               const remainingCalls = Math.max(0, maxTotalFixCalls - aiLeafCalls);
               const maxCallsForFix = Math.min(2, remainingCalls);
               if (maxCallsForFix > 0) {
-                const fixed = await this.autoFixMonotonyForLeaf({
+                const fixed = await this.monotonyFix.autoFixMonotonyForLeaf({
                   project,
                   node,
                   currentPath,
@@ -961,10 +774,10 @@ Retorne APENAS um array JSON com os sub-pacotes sugeridos:
                   forceIndices: forcedFixIndices,
                 });
                 leafDrafts = fixed.drafts as any;
-                leafDrafts = (leafDrafts as any[]).map((d) => ({ ...d, name: this.sanitizeTitle(d?.name) }));
+                leafDrafts = (leafDrafts as any[]).map((d) => ({ ...d, name: this.titleValidation.sanitizeTitle(d?.name) }));
                 aiLeafCalls += fixed.aiCallsUsed;
 
-                const fixedMetrics = this.computeBatchMetrics(
+                const fixedMetrics = computeBatchMetrics(
                   leafDrafts.map((d: any) => ({
                     name: d?.name,
                     description: d?.description,
@@ -977,14 +790,60 @@ Retorne APENAS um array JSON com os sub-pacotes sugeridos:
                     `bad=${issues.badIndices.length} calls=${fixed.aiCallsUsed} ` +
                     `dupScore=${fixedMetrics.dupScore.toFixed(2)} similarScore=${fixedMetrics.similarScore.toFixed(2)}`,
                 );
+
+                // If we already re-generated once and problems persist, optionally escalate to a stronger model.
+                // This is guarded by a small daily budget in GeminiService.
+                if (fixed.aiCallsUsed > 0) {
+                  const postIssues = this.monotonyDetection.detectMonotonyIssues(leafDrafts);
+                  const postGeneric = this.detectGenericSeriesIssues(leafDrafts);
+                  const stillSevereGeneric = postGeneric.genericRate >= 0.25 && postGeneric.indices.length >= 2;
+                  const stillBad =
+                    postIssues.hasForbiddenPatterns ||
+                    fixedMetrics.similarScore >= 0.35 ||
+                    fixedMetrics.dupScore >= 0.2 ||
+                    stillSevereGeneric;
+
+                  const strongModel = this.geminiService.getStrongModelName?.();
+                  const shouldEscalate = Boolean(strongModel) && stillBad;
+
+                  if (shouldEscalate && aiLeafCalls < maxTotalFixCalls) {
+                    const remainingAfter = Math.max(0, maxTotalFixCalls - aiLeafCalls);
+                    const maxStrongCalls = Math.min(1, remainingAfter);
+                    if (maxStrongCalls > 0) {
+                      const strongIndices = Array.from(
+                        new Set([...(postIssues.badIndices || []), ...(postGeneric.indices || [])]),
+                      ).sort((a, b) => a - b);
+                      if (strongIndices.length) {
+                        console.warn(
+                          `[WBS→Tasks][Batch ${generationBatchId}] ⚠️ escalando para strong model: leaf="${node.name}" ` +
+                            `indices=${strongIndices.length} model="${strongModel}"`,
+                        );
+                        const strongFixed = await this.monotonyFix.autoFixMonotonyForLeaf({
+                          project,
+                          node,
+                          currentPath,
+                          level,
+                          chunkMinutes,
+                          drafts: leafDrafts as any,
+                          maxCalls: maxStrongCalls,
+                          forceIndices: strongIndices,
+                          modelOverride: strongModel,
+                        });
+                        leafDrafts = strongFixed.drafts as any;
+                        leafDrafts = (leafDrafts as any[]).map((d) => ({ ...d, name: this.titleValidation.sanitizeTitle(d?.name) }));
+                        aiLeafCalls += strongFixed.aiCallsUsed;
+                      }
+                    }
+                  }
+                }
               }
             }
 
             // Even if we couldn't spend AI calls, enforce sanitization for forbidden fraction patterns.
             if (issues.hasForbiddenPatterns) {
-              leafDrafts = (leafDrafts as any[]).map((d) => ({ ...d, name: this.sanitizeTitle(d?.name) }));
-              leafDrafts = this.dedupeCheckAndMitigate(leafDrafts as any);
-              leafDrafts = (leafDrafts as any[]).map((d) => ({ ...d, name: this.sanitizeTitle(d?.name) }));
+              leafDrafts = (leafDrafts as any[]).map((d) => ({ ...d, name: this.titleValidation.sanitizeTitle(d?.name) }));
+              leafDrafts = this.monotonyFix.dedupeCheckAndMitigate(leafDrafts as any);
+              leafDrafts = (leafDrafts as any[]).map((d) => ({ ...d, name: this.titleValidation.sanitizeTitle(d?.name) }));
             }
           } catch (err: any) {
             console.warn(
@@ -1027,12 +886,12 @@ Retorne APENAS um array JSON com os sub-pacotes sugeridos:
             const definitionOfDone = this.extractDefinitionOfDone(finalDescription);
 
             const name = String(draft.name || `${node.name}${suffix}`).trim();
-            const microTaskType = this.normalizeMicroTaskType(draft.microTaskType);
-            const cognitiveMode = this.normalizeCognitiveMode(
-              draft.cognitiveMode || this.mapMicroTaskTypeToCognitiveMode(microTaskType),
+            const microTaskType = normalizeMicroTaskType(draft.microTaskType);
+            const cognitiveMode = normalizeCognitiveMode(
+              draft.cognitiveMode || mapMicroTaskTypeToCognitiveMode(microTaskType),
             );
             const contextTag = String(
-              draft.contextTag || this.mapCognitiveModeToContextTag(cognitiveMode),
+              draft.contextTag || mapCognitiveModeToContextTag(cognitiveMode),
             ).trim();
             const themeTag = String(draft.themeTag || '').trim();
             const themeTags = themeTag ? [themeTag] : undefined;
@@ -1144,7 +1003,7 @@ Retorne APENAS um array JSON com os sub-pacotes sugeridos:
       for (const node of list) {
         if (!node.children || node.children.length === 0) {
           const totalMinutes = Math.max(0, Math.round((node.estimatedHours || 0) * 60));
-          count += this.computeChunkMinutes(totalMinutes).length;
+          count += computeChunkMinutes(totalMinutes).length;
         } else {
           traverse(node.children);
         }
@@ -1162,7 +1021,7 @@ Retorne APENAS um array JSON com os sub-pacotes sugeridos:
   ): number[] {
     const minutes = Math.max(1, Math.round(totalMinutes));
     const minM = this.microTaskMinMinutes;
-    const preferredPomodoros = this.normalizePreferredPomodoros(options?.preferredPomodoros);
+    const preferredPomodoros = normalizePreferredPomodoros(options?.preferredPomodoros);
     const preferredM = preferredPomodoros * 25;
     const softMaxM = Math.min(this.microTaskHardMaxMinutes, Math.max(preferredM, preferredPomodoros * 40));
     const hardMaxM = this.microTaskHardMaxMinutes;
@@ -1285,9 +1144,9 @@ Retorne APENAS um array JSON com os sub-pacotes sugeridos:
       };
     }
 
-    const normalizedTitles = tasks.map((t) => this.normalizeTitle(t.name));
-    const templateTitles = tasks.map((t) => this.templateTitle(t.name));
-    const verbs = tasks.map((t) => this.extractVerb(t.name));
+    const normalizedTitles = tasks.map((t) => normalizeTitle(t.name));
+    const templateTitles = tasks.map((t) => templateTitle(t.name));
+    const verbs = tasks.map((t) => extractVerb(t.name));
     const themes = tasks.flatMap((t) => {
       if (Array.isArray(t.themeTag)) return t.themeTag.filter((x) => x);
       if (t.themeTag) return [t.themeTag];
@@ -1397,15 +1256,15 @@ Retorne APENAS um array JSON com os sub-pacotes sugeridos:
 
       if (milestoneRequired && checkpointIndices.has(idx)) {
         const checkpointType = milestoneIndex % 2 === 0 ? 'consolidate' : 'test';
-        const cognitiveMode = this.normalizeCognitiveMode(
-          d.cognitiveMode || this.mapMicroTaskTypeToCognitiveMode(checkpointType),
+        const cognitiveMode = normalizeCognitiveMode(
+          d.cognitiveMode || mapMicroTaskTypeToCognitiveMode(checkpointType),
         );
         return {
           ...d,
           milestoneIndex,
           microTaskType: checkpointType,
           cognitiveMode,
-          contextTag: String(d.contextTag || this.mapCognitiveModeToContextTag(cognitiveMode)).trim() || undefined,
+          contextTag: String(d.contextTag || mapCognitiveModeToContextTag(cognitiveMode)).trim() || undefined,
         };
       }
 
@@ -1463,14 +1322,14 @@ Retorne APENAS um array JSON com os sub-pacotes sugeridos:
       const workflow = buildThemeWorkflow(total);
 
       indices.forEach((idx, localIdx) => {
-        const microTaskType = this.normalizeMicroTaskType(workflow[localIdx]);
-        const cognitiveMode = this.normalizeCognitiveMode(progressiveMode(localIdx, total));
+        const microTaskType = normalizeMicroTaskType(workflow[localIdx]);
+        const cognitiveMode = normalizeCognitiveMode(progressiveMode(localIdx, total));
         drafts[idx] = {
           ...drafts[idx],
           microTaskType,
           cognitiveMode,
           contextTag:
-            String(drafts[idx].contextTag || this.mapCognitiveModeToContextTag(cognitiveMode)).trim() || undefined,
+            String(drafts[idx].contextTag || mapCognitiveModeToContextTag(cognitiveMode)).trim() || undefined,
         };
       });
     }
@@ -1497,8 +1356,8 @@ Retorne APENAS um array JSON com os sub-pacotes sugeridos:
 
     return drafts.map((d) => {
       const baseName = this.stripDedupeSuffix(d.name);
-      const normalized = this.normalizeTitle(baseName);
-      const templated = this.templateTitle(baseName);
+      const normalized = normalizeTitle(baseName);
+      const templated = templateTitle(baseName);
       const titleCount = (seenTitles.get(normalized) || 0) + 1;
       const templateCount = (seenTemplates.get(templated) || 0) + 1;
       seenTitles.set(normalized, titleCount);
@@ -1512,7 +1371,7 @@ Retorne APENAS um array JSON com os sub-pacotes sugeridos:
 
       return {
         ...d,
-        name: `${this.sanitizeTitle(baseName)} — ${suffix}`.trim(),
+        name: `${this.titleValidation.sanitizeTitle(baseName)} — ${suffix}`.trim(),
       };
     });
   }
@@ -1533,9 +1392,9 @@ Retorne APENAS um array JSON com os sub-pacotes sugeridos:
     idx: number,
     total: number,
   ) {
-    const microTaskType = this.normalizeMicroTaskType(d.microTaskType);
-    const cognitiveMode = this.normalizeCognitiveMode(
-      d.cognitiveMode || this.mapMicroTaskTypeToCognitiveMode(microTaskType),
+    const microTaskType = normalizeMicroTaskType(d.microTaskType);
+    const cognitiveMode = normalizeCognitiveMode(
+      d.cognitiveMode || mapMicroTaskTypeToCognitiveMode(microTaskType),
     );
     return {
       ...d,
@@ -1738,9 +1597,11 @@ Retorne APENAS um array JSON com os sub-pacotes sugeridos:
       if (total === 1) return ['practice'];
       if (total === 2) return ['prepare', 'produce'];
       if (total === 3) return ['prepare', 'practice', 'produce'];
-      const base = ['prepare', 'practice', 'practice', 'produce'];
-      while (base.length < total) base.splice(base.length - 1, 0, 'practice');
-      return base.slice(0, total);
+      // Cycle through all 6 types for maximum variety (prevents practice-heavy floods)
+      const fullCycle = ['prepare', 'practice', 'produce', 'review', 'test', 'consolidate'];
+      const out: string[] = [];
+      for (let i = 0; i < total; i++) out.push(fullCycle[i % fullCycle.length]);
+      return out;
     }
 
     const out: string[] = [];
@@ -1760,11 +1621,30 @@ Retorne APENAS um array JSON com os sub-pacotes sugeridos:
       .toLowerCase()
       .trim();
 
-    const isVocab = /vocab|vocabul|hsk|palavr|idiom|flashcard|kanji|hanzi|pinyin|词汇|词彙/i.test(text);
+    // 'hsk' alone no longer triggers vocab — it matches grammar, listening, etc. too.
+    const isVocab = /vocab|vocabul|palavr|idiom|flashcard|kanji|hanzi|pinyin|词汇|词彙/i.test(text);
+    const isMockOrExam = /simulad|prova|exame|mock/i.test(text);
+    const isListeningCtx = /audi|oral|compreens[aã]o|escuta|listening/i.test(text);
+    const isConversation = /restaurante|comida|culin|transport|navega|compra|negoci|social|apresenta|cumpriment|hotel|reserva|hospedagem|emerg|socorro|hospital|comunic|diálogo|conversa/i.test(text);
     const isTech =
       /api|backend|frontend|infra|deploy|docker|kubernetes|k8s|database|banco|sql|postgres|mysql|mongo|redis|cache|fila|queue|mensager|event|test|qa|unit|integration|e2e|observabil|monitor|log|seguran|auth|oauth|jwt|performance|latenc|ui|ux/i.test(
         text,
       );
+
+    // Priority: more specific categories first
+    if (isMockOrExam && !isVocab) {
+      return {
+        category: 'general' as const,
+        themes: ['leitura', 'escuta', 'gramática', 'escrita', 'vocabulário', 'estratégias'],
+      };
+    }
+
+    if (isListeningCtx && !isVocab) {
+      return {
+        category: 'general' as const,
+        themes: ['diálogos curtos', 'narrativas', 'notícias', 'entrevistas', 'anúncios', 'conversas'],
+      };
+    }
 
     if (isVocab) {
       return {
@@ -1820,9 +1700,30 @@ Retorne APENAS um array JSON com os sub-pacotes sugeridos:
       };
     }
 
+    if (isConversation) {
+      // Context-appropriate themes for conversational/practical topics
+      const contextual: Record<string, string[]> = {
+        'restaurante|comida|culin': ['pedidos', 'cardápio', 'bebidas', 'conta', 'reserva', 'elogios'],
+        'transport|navega': ['direções', 'metrô/ônibus', 'táxi', 'bilhetes', 'horários', 'aeroporto'],
+        'compra|negoci|mercado': ['preços', 'tamanhos', 'cores', 'pagamento', 'devolução', 'pechincha'],
+        'social|apresenta|cumpriment': ['cumprimentos', 'apresentação', 'profissões', 'hobbies', 'convites', 'despedidas'],
+        'hotel|reserva|hospedagem': ['check-in', 'quarto', 'serviços', 'reclamações', 'check-out', 'locais'],
+        'emerg|socorro|hospital': ['sintomas', 'farmácia', 'hospital', 'polícia', 'acidente', 'ajuda'],
+      };
+      for (const [pattern, cThemes] of Object.entries(contextual)) {
+        if (new RegExp(pattern, 'i').test(text)) {
+          return { category: 'general' as const, themes: cThemes };
+        }
+      }
+      return {
+        category: 'general' as const,
+        themes: ['vocabulário prático', 'diálogos', 'expressões', 'cultura', 'pronúncia', 'revisão'],
+      };
+    }
+
     return {
       category: 'general',
-      themes: ['fundamentos', 'aplicacao', 'revisao', 'integracao'].slice(0, 6),
+      themes: ['conceitos', 'prática', 'aplicação', 'revisão', 'teste', 'consolidação'],
     };
   }
 
@@ -1923,7 +1824,7 @@ Retorne APENAS um array JSON com os sub-pacotes sugeridos:
         let best = 0;
         let bestScore = -Infinity;
         centroids.forEach((c, cIdx) => {
-          const score = this.cosineSimilarity(v, c);
+          const score = cosineSimilarity(v, c);
           if (score > bestScore) {
             bestScore = score;
             best = cIdx;
@@ -1960,7 +1861,7 @@ Retorne APENAS um array JSON com os sub-pacotes sugeridos:
       return this.getThemeSuggestions(params);
     }
 
-    const segments = this.extractThemeSegments(baseText);
+    const segments = this.themeExtraction.extractThemeSegments(baseText);
     if (segments.length < this.minEmbeddingSegments) {
       return this.getThemeSuggestions(params);
     }
@@ -1979,7 +1880,7 @@ Retorne APENAS um array JSON com os sub-pacotes sugeridos:
       this.maxEmbeddingClusters,
       Math.max(2, Math.round(Math.sqrt(embeddings.length))),
     );
-    const { clusters, centroids } = this.kMeansClusters(
+    const { clusters, centroids } = kMeansClusters(
       embeddings.map((e) => e.vector),
       k,
     );
@@ -1990,13 +1891,13 @@ Retorne APENAS um array JSON com os sub-pacotes sugeridos:
       let bestSegment = embeddings[cluster[0]].segment;
       let bestScore = -Infinity;
       cluster.forEach((segIdx) => {
-        const score = this.cosineSimilarity(embeddings[segIdx].vector, centroids[idx]);
+        const score = cosineSimilarity(embeddings[segIdx].vector, centroids[idx]);
         if (score > bestScore) {
           bestScore = score;
           bestSegment = embeddings[segIdx].segment;
         }
       });
-      const theme = this.summarizeThemeFromSegment(bestSegment);
+      const theme = this.themeExtraction.summarizeThemeFromSegment(bestSegment);
       if (theme) themes.push(theme);
     });
 
@@ -2132,7 +2033,7 @@ FORMATO DE RESPOSTA OBRIGATÓRIO (JSON válido, sem markdown):
     const today = new Date().toISOString().split('T')[0];
     const projectSummary = params.project?.smartObjective?.summary || params.project?.description || '';
 
-    const workflow = this.normalizeWorkflowTypes(params.plan.workflow || [], params.chunkMinutes.length);
+    const workflow = normalizeWorkflowTypes(params.plan.workflow || [], params.chunkMinutes.length);
     const minutesList = params.chunkMinutes
       .map((m, i) => `${i + 1}: ${m}min (tipo: ${workflow[i] || 'practice'})`)
       .join(', ');
@@ -2234,7 +2135,7 @@ Use hoje como ${today}.`;
     };
 
     const generateDraftsForSlice = async (sliceMinutes: number[]): Promise<any[]> => {
-      const prompt = this.buildMicroTasksPrompt({
+      const prompt = this.promptBuilder.buildMicroTasksPrompt({
         ...params,
         chunkMinutes: sliceMinutes,
       });
@@ -2245,7 +2146,7 @@ Use hoje como ${today}.`;
           maxOutputTokens: opts.maxOutputTokens,
           temperature: opts.temperature,
         });
-        const drafts = this.extractJsonArray<any>(response);
+        const drafts = extractJsonArray<any>(response);
         const validated = this.validateDrafts(drafts);
         if (validated.length !== sliceMinutes.length) {
           throw new Error(`IA retornou ${validated.length} itens; esperado ${sliceMinutes.length}`);
@@ -2290,14 +2191,14 @@ Use hoje como ${today}.`;
       const targetMinutes = chunkMinutes[idx];
       const fallbackPomodoros = Math.max(1, Math.min(6, Math.ceil(targetMinutes / 25)));
       const normalizedName = String(d?.name || `${params.node.name} (${idx + 1}/${chunkMinutes.length})`).trim();
-      const inferredType = this.normalizeMicroTaskType(
+      const inferredType = normalizeMicroTaskType(
         d?.microTaskType || this.mapCognitiveTypeToMicroTaskType(this.inferCognitiveType(normalizedName, d?.description)),
       );
-      const inferredMode = this.normalizeCognitiveMode(
-        d?.cognitiveMode || this.mapMicroTaskTypeToCognitiveMode(inferredType),
+      const inferredMode = normalizeCognitiveMode(
+        d?.cognitiveMode || mapMicroTaskTypeToCognitiveMode(inferredType),
       );
       const inferredContext =
-        String(d?.contextTag || this.mapCognitiveModeToContextTag(inferredMode)).trim() || undefined;
+        String(d?.contextTag || mapCognitiveModeToContextTag(inferredMode)).trim() || undefined;
       return {
         name: normalizedName,
         description: String(d?.description || '').trim(),
@@ -2325,11 +2226,11 @@ Use hoje como ${today}.`;
     milestones?: Array<{ name?: string; goal?: string; atMinutes?: number }>;
     constraints?: any;
   }> {
-    const themeHints = await this.getThemeSuggestionsForLeaf({
+    const themeHints = await this.themeExtraction.getThemeSuggestionsForLeaf({
       project: params.project,
       node: params.node,
     });
-    const prompt = this.buildMicroTasksPlannerPrompt({
+    const prompt = this.promptBuilder.buildMicroTasksPlannerPrompt({
       ...params,
       themeHints: themeHints.themes,
     });
@@ -2340,7 +2241,7 @@ Use hoje como ${today}.`;
         maxOutputTokens: opts.maxOutputTokens,
         temperature: opts.temperature,
       });
-      const plan = this.extractJsonObject<any>(response);
+      const plan = extractJsonObject<any>(response);
       return this.validatePlannerPlan(plan);
     };
 
@@ -2386,7 +2287,7 @@ Use hoje como ${today}.`;
           : params.plan?.workflow,
       };
 
-      const prompt = this.buildMicroTasksGeneratorPrompt({
+      const prompt = this.promptBuilder.buildMicroTasksGeneratorPrompt({
         project: params.project,
         node: params.node,
         currentPath: params.currentPath,
@@ -2460,14 +2361,15 @@ Use hoje como ${today}.`;
     cognitiveMode?: string;
   }> {
     const nameLower = (params.node.name || '').toLowerCase();
-    const isVocab = /vocab|vocabul|hsk/.test(nameLower);
+    // Priority order: most specific first. 'hsk' alone doesn't imply vocab.
+    const isMock = /simulad|prova|exame|mock/.test(nameLower);
+    const isListening = /audi|oral|compreens[aã]o|escuta/.test(nameLower);
     const isGrammar = /gram[aá]t/.test(nameLower);
-    const isListening = /audi|oral|compreens[aã]o/.test(nameLower);
-    const isMock = /simulad|prova|revis/.test(nameLower);
-    const themeHints = this.getThemeSuggestions({ node: params.node });
+    const isVocab = /vocab|vocabul/.test(nameLower);
+    const themeHints =  this.themeExtraction.getThemeSuggestions({ node: params.node });
 
     // Fallback workflow + verb variation (prevents homogeneous “Parte X/N” series)
-    const workflow = this.normalizeWorkflowTypes([], chunkMinutes.length);
+    const workflow = normalizeWorkflowTypes([], chunkMinutes.length);
     const verbsByType: Record<string, string[]> = {
       prepare: ['Preparar', 'Organizar', 'Selecionar', 'Coletar', 'Mapear', 'Listar'],
       practice: ['Praticar', 'Aplicar', 'Exercitar', 'Treinar', 'Resolver', 'Repetir'],
@@ -2487,7 +2389,7 @@ Use hoje como ${today}.`;
       const pomodorosPlanned = Math.max(1, Math.min(6, Math.ceil(minutes / 25)));
       const difficult = minutes >= 120 ? 3 : minutes >= 60 ? 2 : 1;
 
-      const microTaskType = this.normalizeMicroTaskType(workflow[idx]);
+      const microTaskType = normalizeMicroTaskType(workflow[idx]);
       const verb = pickVerb(microTaskType, idx);
       const hintedTheme = themeHints.themes.length
         ? themeHints.themes[idx % themeHints.themes.length]
@@ -2495,16 +2397,50 @@ Use hoje como ${today}.`;
 
       if (isVocab) {
         const words = Math.max(15, Math.round(minutes / 3));
+        const safeTheme = hintedTheme || 'geral';
+        // Multiple variants per type to avoid repetition across chunks
+        const vocabVariants: Record<string, Array<{ suffix: string; steps: string[]; dod: string }>> = {
+          prepare: [
+            { suffix: `baralho de flashcards — tema: ${safeTheme}`, steps: [`Selecione ~${words} palavras do pacote "${params.node.name}" (tema: ${safeTheme})`, `Crie flashcards (frente: PT/EN, verso: 汉字 + pinyin + significado + 1 frase exemplo)`, `Marque 5 palavras mais difíceis para revisão extra`], dod: `~${words} flashcards criados + 5 difíceis marcadas` },
+            { suffix: `glossário temático — tema: ${safeTheme}`, steps: [`Extraia ~${words} palavras-chave do pacote "${params.node.name}"`, `Organize por subtema (${safeTheme}) com pinyin e tradução`, `Destaque 5 falsos cognatos ou confusões`], dod: `glossário de ~${words} palavras + 5 confusões destacadas` },
+            { suffix: `lista de frequência — tema: ${safeTheme}`, steps: [`Levante as ${words} palavras mais frequentes do tema ${safeTheme}`, `Ordene por banda de frequência (alta/média/baixa)`, `Selecione 10 menos conhecidas para foco`], dod: `lista ordenada + 10 palavras foco selecionadas` },
+          ],
+          practice: [
+            { suffix: `recall ativo (SRS) — tema: ${safeTheme}`, steps: [`Faça 2 rodadas de recall ativo com o baralho do tema ${safeTheme} (sem olhar resposta)`, `Registre acertos/erros e separe as 10 mais erradas`, `Reestude as 10 mais erradas com 1 frase de exemplo cada`], dod: `1 registro de acertos + top 10 erros com frases` },
+            { suffix: `ditado de palavras — tema: ${safeTheme}`, steps: [`Ouça ${Math.min(20, words)} palavras do tema ${safeTheme} em áudio`, `Escreva os caracteres de memória (sem olhar)`, `Confira e marque acertos/erros`], dod: `${Math.min(20, words)} palavras ditadas + % acerto registrado` },
+            { suffix: `associação contextual — tema: ${safeTheme}`, steps: [`Para cada 5 palavras do tema ${safeTheme}, crie uma frase de contexto`, `Identifique padrões (colocações, verbos + objeto)`, `Registre 5 associações difíceis`], dod: `frases de contexto + 5 associações anotadas` },
+          ],
+          produce: [
+            { suffix: `frases com vocabulário — tema: ${safeTheme}`, steps: [`Escreva 8-12 frases curtas usando palavras do tema ${safeTheme}`, `Inclua pelo menos 3 palavras "difíceis" (marcadas)`, `Revise e corrija 3 erros (vocabulário/gramática)`], dod: `8-12 frases revisadas + 3 correções anotadas` },
+            { suffix: `mini-diálogos — tema: ${safeTheme}`, steps: [`Crie 3-4 mini-diálogos (4-6 falas cada) sobre ${safeTheme}`, `Use pelo menos 5 palavras novas por diálogo`, `Marque palavras que precisam de revisão extra`], dod: `3-4 diálogos escritos + palavras marcadas` },
+            { suffix: `cartões de exemplo — tema: ${safeTheme}`, steps: [`Selecione 10 palavras do tema ${safeTheme}`, `Para cada uma, escreva: 1 frase simples + 1 tradução + 1 nota de uso`, `Compile em formato de cartão de referência rápida`], dod: `10 cartões de referência completos` },
+          ],
+          review: [
+            { suffix: `lista de confusões — tema: ${safeTheme}`, steps: [`Liste 8-12 palavras confundidas (falsos cognatos, sinônimos) do tema ${safeTheme}`, `Escreva 1 frase mínima para cada uma`, `Atualize 5 flashcards para incluir a distinção`], dod: `8-12 confusões com frases + 5 flashcards atualizados` },
+            { suffix: `correção de pronúncia — tema: ${safeTheme}`, steps: [`Grave a pronúncia de 10 palavras do tema ${safeTheme}`, `Compare com áudio de referência`, `Anote 5 tons/sons problemáticos`], dod: `10 gravações + 5 correções anotadas` },
+            { suffix: `revisão de caracteres — tema: ${safeTheme}`, steps: [`Selecione 15 caracteres difíceis do tema ${safeTheme}`, `Pratique escrita (3x cada) e identifique radicais`, `Crie mnemônicos para os 5 mais difíceis`], dod: `15 caracteres praticados + 5 mnemônicos` },
+          ],
+          test: [
+            { suffix: `quiz cronometrado — tema: ${safeTheme}`, steps: [`Faça um quiz de 20-30 itens do tema ${safeTheme}`, `Cronometre e registre % de acerto`, `Analise 5 erros e escreva a correção (pinyin + frase)`], dod: `resultado do quiz (% + tempo) + 5 erros corrigidos` },
+            { suffix: `ditado avaliativo — tema: ${safeTheme}`, steps: [`Peça a alguém (ou use TTS) para ditar 15 palavras do tema ${safeTheme}`, `Escreva os caracteres sem apoio`, `Calcule % de acerto e liste os erros`], dod: `15 palavras ditadas + % acerto + lista de erros` },
+            { suffix: `teste de frases — tema: ${safeTheme}`, steps: [`Complete 10 frases com lacunas (palavras do tema ${safeTheme})`, `Traduza 5 frases do português para chinês`, `Registre acertos e erros`], dod: `15 exercícios resolvidos + erros registrados` },
+          ],
+          consolidate: [
+            { suffix: `plano de revisão espaçada — tema: ${safeTheme}`, steps: [`Defina o próximo ciclo de revisão (D+1, D+3, D+7) para o tema ${safeTheme}`, `Selecione 15-25 palavras foco (as mais erradas)`, `Crie uma mini-lista "eu erro isso" com 5 exemplos`], dod: `plano D+1/D+3/D+7 + lista foco + 5 exemplos` },
+            { suffix: `resumo de domínio — tema: ${safeTheme}`, steps: [`Classifique as palavras do tema ${safeTheme}: dominadas / em progresso / não iniciadas`, `Registre % de domínio`, `Defina 5 ações para a próxima sessão`], dod: `classificação + % domínio + 5 ações` },
+            { suffix: `mapa mental de vocabulário — tema: ${safeTheme}`, steps: [`Organize as palavras do tema ${safeTheme} em um mapa mental (por subtema/categoria)`, `Conecte palavras relacionadas (sinônimos, antônimos, campo semântico)`, `Destaque 5 conexões não óbvias`], dod: `mapa mental completo + 5 conexões destacadas` },
+          ],
+        };
+
+        const variants = vocabVariants[microTaskType] || vocabVariants.practice;
+        const variant = variants[idx % variants.length];
         return {
-          name: `${verb} ${words} palavras — tema: ${hintedTheme}`,
+          name: `${verb} ${variant.suffix}`,
           description:
             `Passos:\n` +
-            `- Selecione ~${words} palavras do pacote "${params.node.name}" (tema: ${hintedTheme})\n` +
-            `- Crie flashcards (frente: PT/EN, verso: 汉字 + pinyin + significado + 1 frase exemplo)\n` +
-            `- Faça 2 rodadas de recall ativo (sem olhar resposta)\n` +
-            `- Escreva 3 frases curtas usando 3 palavras difíceis\n` +
-            `\nDefinição de pronto:\n- ${words} flashcards criados + 1 rodada de acertos registrada (>=70% ideal)\n` +
-            `\nDica: foque nas mais difíceis e marque para revisão.`,
+            variant.steps.map((s) => `- ${s}`).join('\n') +
+            `\n\nDefinição de pronto:\n- ${variant.dod}\n` +
+            `\nDica: alterne artefatos (flashcards, frases, quiz, lista de erros) entre sessões.`,
           pomodorosPlanned,
           priority: basePriority,
           difficult,
@@ -2555,33 +2491,96 @@ Use hoje como ${today}.`;
       }
 
       if (isMock) {
+        const safeTheme = hintedTheme || 'geral';
+        const mockVariants: Record<string, Array<{ suffix: string; steps: string[]; dod: string }>> = {
+          prepare: [
+            { suffix: `material para simulado — ${safeTheme}`, steps: [`Reúna questões/exercícios de ${safeTheme} para "${params.node.name}"`, `Organize por seção (leitura, escuta, gramática, escrita)`, `Defina tempo-alvo por seção`], dod: `material organizado por seção + cronograma definido` },
+            { suffix: `roteiro de revisão pré-prova — ${safeTheme}`, steps: [`Liste os tópicos mais importantes de ${safeTheme}`, `Priorize por frequência em exames anteriores`, `Monte checklist de revisão`], dod: `checklist de revisão priorizado` },
+          ],
+          practice: [
+            { suffix: `questões de leitura — ${safeTheme}`, steps: [`Resolva 10-15 questões de leitura sobre ${safeTheme}`, `Registre tempo e acertos`, `Analise 3 erros e escreva a regra`], dod: `questões resolvidas + 3 erros analisados` },
+            { suffix: `questões de escuta — ${safeTheme}`, steps: [`Ouça 5-8 diálogos/trechos sobre ${safeTheme}`, `Responda as questões de compreensão`, `Revise transcrições dos erros`], dod: `respostas + revisão de transcrições` },
+            { suffix: `exercícios de gramática — ${safeTheme}`, steps: [`Complete 10-15 exercícios gramaticais sobre ${safeTheme}`, `Registre padrões de erro`, `Revise regras dos tópicos errados`], dod: `exercícios completos + regras revisadas` },
+          ],
+          produce: [
+            { suffix: `redação de prova — ${safeTheme}`, steps: [`Escreva 1-2 textos curtos sobre ${safeTheme} (formato de prova)`, `Revise gramática e vocabulário`, `Peça feedback ou autoavalie`], dod: `texto(s) escrito(s) + revisão aplicada` },
+            { suffix: `glossário de erros — ${safeTheme}`, steps: [`Compile erros de simulados anteriores sobre ${safeTheme}`, `Categorize por tipo (vocabulário, gramática, compreensão)`, `Escreva a correção para cada um`], dod: `glossário categorizado + correções` },
+          ],
+          review: [
+            { suffix: `análise de erros — ${safeTheme}`, steps: [`Revise erros do último simulado sobre ${safeTheme}`, `Identifique padrões de erro recorrentes`, `Escreva 1 regra/dica para cada padrão`], dod: `padrões identificados + regras escritas` },
+            { suffix: `estratégias de prova — ${safeTheme}`, steps: [`Revise quais estratégias funcionaram em ${safeTheme}`, `Ajuste tempo-alvo por seção`, `Registre 3 mudanças para o próximo simulado`], dod: `3 ajustes estratégicos documentados` },
+          ],
+          test: [
+            { suffix: `simulado cronometrado — ${safeTheme}`, steps: [`Execute simulado completo de ${safeTheme} sob tempo real`, `Registre pontuação e tempo por seção`, `Compare com resultado anterior`], dod: `pontuação + comparativo com anterior` },
+            { suffix: `seção de prova sob pressão — ${safeTheme}`, steps: [`Resolva 1 seção de ${safeTheme} com 80% do tempo normal`, `Registre acertos sob pressão`, `Anote quais tipos de questão mais afetam sob pressão`], dod: `resultado + análise de performance sob pressão` },
+          ],
+          consolidate: [
+            { suffix: `diagnóstico de desempenho — ${safeTheme}`, steps: [`Consolide resultados de simulados sobre ${safeTheme}`, `Calcule evolução de pontuação`, `Defina 3 focos prioritários para melhoria`], dod: `evolução registrada + 3 prioridades definidas` },
+            { suffix: `plano de ataque para prova — ${safeTheme}`, steps: [`Liste os tópicos fortes e fracos em ${safeTheme}`, `Defina ordem de ataque por seção`, `Estabeleça meta de pontuação`], dod: `plano escrito + meta definida` },
+          ],
+        };
+        const variants = mockVariants[microTaskType] || mockVariants.test;
+        const variant = variants[idx % variants.length];
         return {
-          name: `${pickVerb('test', idx)} mini-simulado — ${hintedTheme}`,
+          name: `${verb} ${variant.suffix}`,
           description:
-            `Passos:\n` +
-            `- Resolva 10-20 questões relacionadas a "${params.node.name}"\n` +
-            `- Registre tempo e acertos\n` +
-            `- Analise 3 erros e escreva a regra/razão do erro\n` +
-            `\nDefinição de pronto:\n- Resultado do mini-simulado + lista de 3 aprendizados acionáveis.`,
+            `Passos:\n` + variant.steps.map((s) => `- ${s}`).join('\n') +
+            `\n\nDefinição de pronto:\n- ${variant.dod}`,
           pomodorosPlanned,
           priority: basePriority,
           difficult,
-          microTaskType: 'test',
+          microTaskType,
           themeTag: hintedTheme || 'simulado',
-          cognitiveMode: 'high',
-          contextTag: '@mesa/foco',
+          cognitiveMode: this.mapMicroTaskTypeToCognitiveMode(microTaskType),
+          contextTag: this.mapCognitiveModeToContextTag(this.mapMicroTaskTypeToCognitiveMode(microTaskType)),
         };
       }
 
-      // Generic fallback (still non-generic: includes deliverable + DoD)
+      // Generic fallback: context-aware with many variants per type
+      const nodeName = params.node.name;
+      const genericVariants: Record<string, Array<{ suffix: string; steps: string[]; dod: string }>> = {
+        prepare: [
+          { suffix: `checklist de preparação — ${hintedTheme}`, steps: [`Identifique 5-8 insumos necessários para "${nodeName}" (${hintedTheme})`, `Organize por prioridade`, `Marque os já disponíveis`], dod: `checklist de insumos completo` },
+          { suffix: `mapa do conteúdo — ${hintedTheme}`, steps: [`Levante os subtópicos de "${nodeName}" (${hintedTheme})`, `Organize em diagrama/lista hierárquica`, `Identifique dependências entre subtópicos`], dod: `mapa hierárquico + dependências` },
+          { suffix: `roteiro de estudo — ${hintedTheme}`, steps: [`Defina sequência de estudo para "${nodeName}" (${hintedTheme})`, `Estime tempo por etapa`, `Marque pré-requisitos`], dod: `roteiro com tempos + pré-requisitos` },
+          { suffix: `vocabulário-chave — ${hintedTheme}`, steps: [`Extraia 10-15 termos essenciais de "${nodeName}" (${hintedTheme})`, `Escreva definição curta para cada`, `Selecione 5 para prioridade máxima`], dod: `glossário de 10-15 termos + 5 prioritários` },
+        ],
+        practice: [
+          { suffix: `exercícios de aplicação — ${hintedTheme}`, steps: [`Resolva 5-8 exercícios sobre "${nodeName}" (${hintedTheme})`, `Registre dúvidas e dificuldades`, `Revise 3 questões erradas`], dod: `exercícios resolvidos + 3 revisões` },
+          { suffix: `role-play / diálogo guiado — ${hintedTheme}`, steps: [`Simule 2-3 situações práticas de "${nodeName}" (${hintedTheme})`, `Grave ou anote suas respostas`, `Identifique 3 pontos de melhoria`], dod: `2-3 simulações + 3 melhorias anotadas` },
+          { suffix: `prática com exemplos — ${hintedTheme}`, steps: [`Encontre 5 exemplos reais de "${nodeName}" (${hintedTheme})`, `Analise a estrutura/padrão de cada`, `Reproduza 3 exemplos com variações`], dod: `5 exemplos analisados + 3 reproduções` },
+          { suffix: `treino de produção oral — ${hintedTheme}`, steps: [`Pratique falar sobre "${nodeName}" (${hintedTheme}) por 5-10 min`, `Grave 2 tentativas`, `Ouça e anote 3 erros de pronúncia/fluência`], dod: `2 gravações + 3 erros identificados` },
+        ],
+        produce: [
+          { suffix: `texto curto — ${hintedTheme}`, steps: [`Escreva um parágrafo (80-120 palavras) sobre "${nodeName}" (${hintedTheme})`, `Use pelo menos 5 termos novos`, `Revise e corrija 3 erros`], dod: `texto escrito + 3 correções` },
+          { suffix: `mini-diálogo — ${hintedTheme}`, steps: [`Crie um diálogo de 6-10 falas sobre "${nodeName}" (${hintedTheme})`, `Use vocabulário e estruturas estudados`, `Identifique 2 alternativas de expressão`], dod: `diálogo completo + 2 alternativas` },
+          { suffix: `mapa mental — ${hintedTheme}`, steps: [`Monte um mapa mental de "${nodeName}" (${hintedTheme})`, `Inclua 3+ ramificações com exemplos`, `Conecte com temas anteriores`], dod: `mapa mental com 3+ ramificações conectadas` },
+          { suffix: `resumo ilustrado — ${hintedTheme}`, steps: [`Resuma "${nodeName}" (${hintedTheme}) em 5-8 frases`, `Adicione 3 exemplos práticos`, `Destaque 2 pontos frequentemente confundidos`], dod: `resumo + 3 exemplos + 2 alertas` },
+        ],
+        review: [
+          { suffix: `lista de erros frequentes — ${hintedTheme}`, steps: [`Revise exercícios anteriores de "${nodeName}" (${hintedTheme})`, `Liste 5-8 erros recorrentes`, `Escreva a correção e a regra para cada`], dod: `lista de erros + correções + regras` },
+          { suffix: `comparação antes/depois — ${hintedTheme}`, steps: [`Compare seu primeiro exercício com o mais recente sobre "${nodeName}" (${hintedTheme})`, `Identifique 3 melhorias`, `Defina 2 áreas ainda fracas`], dod: `3 melhorias + 2 áreas para focar` },
+          { suffix: `revisão de flashcards — ${hintedTheme}`, steps: [`Revise flashcards/notas de "${nodeName}" (${hintedTheme})`, `Separe: dominados / em andamento / não iniciados`, `Reescreva 5 cartões confusos`], dod: `classificação + 5 cartões reescritos` },
+        ],
+        test: [
+          { suffix: `quiz cronometrado — ${hintedTheme}`, steps: [`Resolva 10-15 questões de "${nodeName}" (${hintedTheme}) com timer`, `Registre pontuação e tempo`, `Analise 3 erros`], dod: `pontuação + tempo + 3 análises de erro` },
+          { suffix: `autoavaliação — ${hintedTheme}`, steps: [`Responda 5 perguntas abertas sobre "${nodeName}" (${hintedTheme}) sem consulta`, `Compare com material de referência`, `Dê nota de 1-5 para cada resposta`], dod: `5 respostas + autoavaliação (nota)` },
+          { suffix: `teste prático — ${hintedTheme}`, steps: [`Aplique "${nodeName}" (${hintedTheme}) em uma situação simulada`, `Peça feedback ou autoavalie`, `Registre 3 aprendizados`], dod: `situação simulada + 3 aprendizados` },
+        ],
+        consolidate: [
+          { suffix: `resumo de aprendizados — ${hintedTheme}`, steps: [`Escreva 3-5 aprendizados-chave de "${nodeName}" (${hintedTheme})`, `Conecte com conhecimentos prévios`, `Defina 2 ações para a próxima sessão`], dod: `aprendizados + 2 ações definidas` },
+          { suffix: `plano de revisão — ${hintedTheme}`, steps: [`Defina datas de revisão (D+1, D+3, D+7) para "${nodeName}" (${hintedTheme})`, `Selecione material a revisar em cada data`, `Registre progresso esperado por data`], dod: `plano de datas + material selecionado` },
+          { suffix: `registro de progresso — ${hintedTheme}`, steps: [`Registre o que foi concluído em "${nodeName}" (${hintedTheme})`, `Calcule % de avanço`, `Identifique 1 bloqueio e 1 vitória`], dod: `% avanço + 1 bloqueio + 1 vitória` },
+        ],
+      };
+      const variants = genericVariants[microTaskType] || genericVariants.practice;
+      const variant = variants[idx % variants.length];
       return {
-        name: `${verb} entregável — ${hintedTheme}`,
+        name: `${verb} ${variant.suffix}`,
         description:
           `Passos:\n` +
-          `- Defina o resultado específico para "${params.node.name}" (1 frase)\n` +
-          `- Faça uma lista de verificação (3-6 itens)\n` +
-          `- Produza evidência (texto/link/arquivo)\n` +
-          `\nDefinição de pronto:\n- Checklist concluído + evidência do entregável (texto/link/arquivo).`,
+          variant.steps.map((s) => `- ${s}`).join('\n') +
+          `\n\nDefinição de pronto:\n- ${variant.dod}`,
         pomodorosPlanned,
         priority: basePriority,
         difficult,

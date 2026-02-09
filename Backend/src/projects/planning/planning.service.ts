@@ -78,7 +78,12 @@ Retorne APENAS a resposta sugerida, sem explicações adicionais ou formatação
 
     try {
       const response = await this.geminiService.generateContent(prompt);
-      return response.trim();
+      // Some models/providers may still wrap the answer in JSON.
+      const parsed = this.tryParseJson<{ suggestedAnswer?: string }>(response);
+      if (parsed && typeof parsed.suggestedAnswer === 'string' && parsed.suggestedAnswer.trim()) {
+        return parsed.suggestedAnswer.trim();
+      }
+      return String(response || '').trim();
     } catch (error) {
       console.error('Erro ao gerar sugestão de resposta:', error);
       throw new Error('Não foi possível gerar sugestão de resposta');
@@ -110,22 +115,45 @@ Retorne APENAS um objeto JSON no seguinte formato, sem texto adicional:
   "risks": ["risco 1", "risco 2", "risco 3"]
 }`;
 
+    let response: string;
     try {
-      const response = await this.geminiService.generateContent(prompt);
-      const smartObjective = this.parseSmartObjectiveFromResponse(response);
-      
-      // Limpa histórico após uso
-      this.conversationHistory.delete(conversationId);
-      
-      return smartObjective;
+      response = await this.geminiService.generateContent(prompt);
     } catch (error) {
       console.error('Erro ao gerar objetivo SMART:', error);
       throw new Error('Não foi possível gerar o objetivo SMART');
     }
+
+    // Parsing errors should keep their more specific message.
+    const smartObjective = this.parseSmartObjectiveFromResponse(response);
+
+    // Limpa histórico após uso
+    this.conversationHistory.delete(conversationId);
+
+    return smartObjective;
   }
 
   private generateConversationId(): string {
     return `conv_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+  }
+
+  private tryParseJson<T>(response: string): T | null {
+    try {
+      let cleanResponse = String(response || '').trim();
+      if (!cleanResponse) return null;
+
+      // Remove ```json ... ``` or ``` ... ```
+      if (cleanResponse.startsWith('```')) {
+        cleanResponse = cleanResponse.replace(/^```(?:json)?\s*/i, '').replace(/```\s*$/i, '').trim();
+      }
+
+      // Quick guard: avoid throwing on plain text responses.
+      const first = cleanResponse[0];
+      if (first !== '{' && first !== '[') return null;
+
+      return JSON.parse(cleanResponse) as T;
+    } catch {
+      return null;
+    }
   }
 
   private parseQuestionsFromResponse(response: string): string[] {

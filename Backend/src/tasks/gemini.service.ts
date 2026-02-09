@@ -10,8 +10,13 @@ import {
 export class GeminiService {
   private genAI: GoogleGenerativeAI;
   private readonly model: string;
+  private readonly strongModel?: string;
+  private readonly strongModelMaxCallsPerDay: number;
+  private strongModelCallsDay = '';
+  private strongModelCallsUsed = 0;
+  private warnedStrongBudget = false;
   private readonly embeddingModel?: string;
-  private readonly jsonModeEnabled: boolean;
+  private readonly jsonModeForced: boolean | null;
   private embeddingDisabled = false;
   private warnedEmbedding = false;
   private warnedJsonMode = false;
@@ -37,6 +42,22 @@ export class GeminiService {
       process.env.GEMINI_MODEL ||
       'gemini-2.5-flash';
 
+    // Optional strong model for rare fallback/escalation paths.
+    // Examples: gemini-2.5-flash, gemini-2.5-flash-lite, gemini-3-flash
+    const strongRaw =
+      this.configService.get<string>('GEMINI_STRONG_MODEL') ||
+      this.configService.get<string>('GEMINI_FALLBACK_MODEL') ||
+      process.env.GEMINI_STRONG_MODEL ||
+      process.env.GEMINI_FALLBACK_MODEL;
+    const strongNormalized = String(strongRaw ?? '').trim();
+    this.strongModel = strongNormalized || undefined;
+
+    const strongLimitRaw =
+      this.configService.get<string>('GEMINI_STRONG_MODEL_MAX_CALLS_PER_DAY') ||
+      process.env.GEMINI_STRONG_MODEL_MAX_CALLS_PER_DAY;
+    const parsedLimit = Number(strongLimitRaw);
+    this.strongModelMaxCallsPerDay = Number.isFinite(parsedLimit) && parsedLimit > 0 ? Math.floor(parsedLimit) : 3;
+
     // Embeddings are optional.
     // For Google AI Studio accounts, embedding models can vary; if unsupported we auto-disable.
     // You can force-disable by setting GEMINI_EMBEDDING_MODEL to empty/off/none/false.
@@ -57,10 +78,10 @@ export class GeminiService {
 
     if (forceJson !== undefined && forceJson !== null && String(forceJson).trim() !== '') {
       const v = String(forceJson).toLowerCase().trim();
-      this.jsonModeEnabled = v === '1' || v === 'true' || v === 'yes' || v === 'on';
+      this.jsonModeForced = v === '1' || v === 'true' || v === 'yes' || v === 'on';
     } else {
       // Default heuristic: Gemini models support JSON mode; Gemma does not.
-      this.jsonModeEnabled = this.model.toLowerCase().startsWith('gemini-');
+      this.jsonModeForced = null;
     }
   }
 
@@ -69,7 +90,7 @@ export class GeminiService {
    * For Gemma models this is typically false.
    */
   supportsJsonMode(): boolean {
-    return this.jsonModeEnabled;
+    return this.supportsJsonModeForModel(this.model);
   }
 
   /** For logging/diagnostics only. */
@@ -77,13 +98,68 @@ export class GeminiService {
     return this.model;
   }
 
-  private shouldUseJsonMode(requested?: string): string | undefined {
+  /** Optional stronger model name used for rare fallback/escalation paths. */
+  getStrongModelName(): string | undefined {
+    return this.strongModel;
+  }
+
+  private todayKey(): string {
+    return new Date().toISOString().slice(0, 10);
+  }
+
+  private resetStrongBudgetIfNeeded() {
+    const today = this.todayKey();
+    if (this.strongModelCallsDay !== today) {
+      this.strongModelCallsDay = today;
+      this.strongModelCallsUsed = 0;
+      this.warnedStrongBudget = false;
+    }
+  }
+
+  private canUseStrongModel(): boolean {
+    if (!this.strongModel) return false;
+    this.resetStrongBudgetIfNeeded();
+    return this.strongModelCallsUsed < this.strongModelMaxCallsPerDay;
+  }
+
+  private pickModel(requestedModel?: string): string {
+    if (!requestedModel) return this.model;
+
+    // Only enforce budget for the configured strong model.
+    if (this.strongModel && requestedModel === this.strongModel) {
+      if (this.canUseStrongModel()) return requestedModel;
+      if (!this.warnedStrongBudget) {
+        this.warnedStrongBudget = true;
+        console.warn(
+          `[GeminiService] Strong model budget exhausted for today (${this.strongModelMaxCallsPerDay}/day). ` +
+            `Falling back to model="${this.model}".`,
+        );
+      }
+      return this.model;
+    }
+
+    return requestedModel;
+  }
+
+  private trackModelUsage(modelUsed: string) {
+    if (!this.strongModel) return;
+    if (modelUsed !== this.strongModel) return;
+    this.resetStrongBudgetIfNeeded();
+    this.strongModelCallsUsed++;
+  }
+
+  private supportsJsonModeForModel(modelName: string): boolean {
+    if (this.jsonModeForced !== null) return this.jsonModeForced;
+    return String(modelName || '').toLowerCase().startsWith('gemini-');
+  }
+
+  private shouldUseJsonMode(requested: string | undefined, modelName: string): string | undefined {
     if (!requested) return undefined;
-    if (this.jsonModeEnabled) return requested;
+    if (this.supportsJsonModeForModel(modelName)) return requested;
     if (!this.warnedJsonMode) {
       this.warnedJsonMode = true;
       console.warn(
-        `[GeminiService] JSON mode desabilitado para model="${this.model}". ` +
+        `[GeminiService] JSON mode desabilitado para model="${modelName}". ` +
           `A resposta será texto e o sistema fará parse/reparo de JSON quando necessário. ` +
           `Defina GEMINI_JSON_MODE=true para forçar (se o modelo suportar).`,
       );
@@ -117,7 +193,7 @@ export class GeminiService {
       topK: 1,
       topP: 1,
       maxOutputTokens: 2048, // menor para reduzir consumo e risco de 429
-      responseMimeType: this.shouldUseJsonMode('application/json'),
+      responseMimeType: this.shouldUseJsonMode('application/json', this.model),
     };
 
     const safetySettings: { category: HarmCategory; threshold: HarmBlockThreshold }[] = [
@@ -185,6 +261,7 @@ export class GeminiService {
   async generateContent(
     prompt: string,
     options?: {
+      model?: string;
       responseMimeType?: string;
       maxOutputTokens?: number;
       temperature?: number;
@@ -192,15 +269,17 @@ export class GeminiService {
       topP?: number;
     },
   ): Promise<string> {
-    const model = this.genAI.getGenerativeModel({ model: this.model });
+    const baseModelName = this.pickModel(options?.model);
+    let currentModelName = baseModelName;
+    let model = this.genAI.getGenerativeModel({ model: currentModelName });
 
-    const generationConfig = {
+    const buildGenerationConfig = (modelName: string) => ({
       temperature: options?.temperature ?? 0.8,
       topK: options?.topK ?? 1,
       topP: options?.topP ?? 1,
       maxOutputTokens: options?.maxOutputTokens ?? 4096,
-      responseMimeType: this.shouldUseJsonMode(options?.responseMimeType),
-    };
+      responseMimeType: this.shouldUseJsonMode(options?.responseMimeType, modelName),
+    });
 
     const safetySettings: { category: HarmCategory; threshold: HarmBlockThreshold }[] = [
       {
@@ -223,22 +302,74 @@ export class GeminiService {
 
     const maxRetries = 4;
     let attempt = 0;
+    let baseModelAttempts = 0;
+    let triedStrongModel = false;
     let lastError: any;
+
+    const isTransientOverload = (status: any, msg: string) => {
+      const s = Number(status);
+      if (s === 429 || s === 500 || s === 502 || s === 503 || s === 504) return true;
+      return /overloaded|service unavailable|temporarily unavailable|try again later/i.test(msg);
+    };
 
     while (attempt <= maxRetries) {
       try {
+        const generationConfig = buildGenerationConfig(currentModelName);
         const result = await model.generateContent({
           contents: [{ role: 'user', parts: [{ text: prompt }] }],
           generationConfig,
           safetySettings,
         });
+        this.trackModelUsage(currentModelName);
         return result.response.text();
       } catch (err: any) {
         const status = err?.status || err?.code;
+        const msg = String(err?.message || err || '');
+
+        // Track base model attempts
+        if (currentModelName === baseModelName) {
+          baseModelAttempts++;
+        }
+
+        // Only failover to strong model after AT LEAST 2 failed attempts with base model
+        // This reduces unnecessary strong model usage
+        const minBaseAttempts = 2;
+        if (
+          this.strongModel &&
+          currentModelName === baseModelName &&
+          currentModelName !== this.strongModel &&
+          isTransientOverload(status, msg) &&
+          baseModelAttempts >= minBaseAttempts &&
+          !triedStrongModel &&
+          this.canUseStrongModel()
+        ) {
+          console.warn(
+            `[GeminiService] Base model overloaded/unavailable após ${baseModelAttempts} tentativas (status=${status}). ` +
+              `Tentando strong model="${this.strongModel}" para esta chamada.`,
+          );
+          currentModelName = this.strongModel;
+          model = this.genAI.getGenerativeModel({ model: currentModelName });
+          triedStrongModel = true;
+          attempt++;
+          continue;
+        }
+
         if (status === 429 && attempt < maxRetries) {
           const base = 1000;
           const delay = Math.min(base * Math.pow(2, attempt), 10000) + Math.floor(Math.random() * 300);
           console.warn(`Rate limit 429 (tentativa ${attempt + 1}/${maxRetries}). Aguardando ${delay}ms para retry.`);
+          await new Promise(r => setTimeout(r, delay));
+          attempt++;
+          continue;
+        }
+
+        if (isTransientOverload(status, msg) && attempt < maxRetries) {
+          const base = 800;
+          const delay = Math.min(base * Math.pow(2, attempt), 8000) + Math.floor(Math.random() * 300);
+          console.warn(
+            `Modelo indisponível/overloaded (status=${status}) (tentativa ${attempt + 1}/${maxRetries}). ` +
+              `Aguardando ${delay}ms para retry.`,
+          );
           await new Promise(r => setTimeout(r, delay));
           attempt++;
           continue;
