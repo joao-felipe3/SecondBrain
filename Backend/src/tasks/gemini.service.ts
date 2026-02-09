@@ -9,8 +9,12 @@ import {
 @Injectable()
 export class GeminiService {
   private genAI: GoogleGenerativeAI;
-  private readonly model = 'gemma-3-12b-it';
-  private readonly embeddingModel = 'text-embedding-004';
+  private readonly model: string;
+  private readonly embeddingModel?: string;
+  private readonly jsonModeEnabled: boolean;
+  private embeddingDisabled = false;
+  private warnedEmbedding = false;
+  private warnedJsonMode = false;
 
   constructor(private readonly configService: ConfigService) {
     // Support either GEMINI_API_KEY or GOOGLE_API_KEY (backwards compatibility)
@@ -25,6 +29,66 @@ export class GeminiService {
     }
 
     this.genAI = new GoogleGenerativeAI(apiKey);
+
+    // Allow selecting models via env/config.
+    // NOTE: Some open/partner models (e.g. Gemma) do NOT support JSON mode.
+    this.model =
+      this.configService.get<string>('GEMINI_MODEL') ||
+      process.env.GEMINI_MODEL ||
+      'gemini-2.5-flash';
+
+    // Embeddings are optional.
+    // For Google AI Studio accounts, embedding models can vary; if unsupported we auto-disable.
+    // You can force-disable by setting GEMINI_EMBEDDING_MODEL to empty/off/none/false.
+    const embeddingRaw =
+      this.configService.get<string>('GEMINI_EMBEDDING_MODEL') ??
+      process.env.GEMINI_EMBEDDING_MODEL;
+    const embeddingNormalized = String(embeddingRaw ?? '').trim();
+    const embeddingOffValues = new Set(['0', 'false', 'off', 'none', 'disable', 'disabled']);
+    if (!embeddingNormalized || embeddingOffValues.has(embeddingNormalized.toLowerCase())) {
+      this.embeddingModel = undefined;
+      this.embeddingDisabled = true;
+    } else {
+      this.embeddingModel = embeddingNormalized;
+    }
+
+    const forceJson =
+      this.configService.get<string>('GEMINI_JSON_MODE') || process.env.GEMINI_JSON_MODE;
+
+    if (forceJson !== undefined && forceJson !== null && String(forceJson).trim() !== '') {
+      const v = String(forceJson).toLowerCase().trim();
+      this.jsonModeEnabled = v === '1' || v === 'true' || v === 'yes' || v === 'on';
+    } else {
+      // Default heuristic: Gemini models support JSON mode; Gemma does not.
+      this.jsonModeEnabled = this.model.toLowerCase().startsWith('gemini-');
+    }
+  }
+
+  /**
+   * Whether this service will actually request/allow JSON-mode (responseMimeType).
+   * For Gemma models this is typically false.
+   */
+  supportsJsonMode(): boolean {
+    return this.jsonModeEnabled;
+  }
+
+  /** For logging/diagnostics only. */
+  getModelName(): string {
+    return this.model;
+  }
+
+  private shouldUseJsonMode(requested?: string): string | undefined {
+    if (!requested) return undefined;
+    if (this.jsonModeEnabled) return requested;
+    if (!this.warnedJsonMode) {
+      this.warnedJsonMode = true;
+      console.warn(
+        `[GeminiService] JSON mode desabilitado para model="${this.model}". ` +
+          `A resposta será texto e o sistema fará parse/reparo de JSON quando necessário. ` +
+          `Defina GEMINI_JSON_MODE=true para forçar (se o modelo suportar).`,
+      );
+    }
+    return undefined;
   }
 
   async generateTaskSuggestions(
@@ -53,8 +117,8 @@ export class GeminiService {
       topK: 1,
       topP: 1,
       maxOutputTokens: 2048, // menor para reduzir consumo e risco de 429
-      responseMimeType: 'application/json',
-    } as const;
+      responseMimeType: this.shouldUseJsonMode('application/json'),
+    };
 
     const safetySettings: { category: HarmCategory; threshold: HarmBlockThreshold }[] = [
       {
@@ -134,8 +198,8 @@ export class GeminiService {
       temperature: options?.temperature ?? 0.8,
       topK: options?.topK ?? 1,
       topP: options?.topP ?? 1,
-      maxOutputTokens: options?.maxOutputTokens ?? 2048,
-      responseMimeType: options?.responseMimeType,
+      maxOutputTokens: options?.maxOutputTokens ?? 4096,
+      responseMimeType: this.shouldUseJsonMode(options?.responseMimeType),
     };
 
     const safetySettings: { category: HarmCategory; threshold: HarmBlockThreshold }[] = [
@@ -197,12 +261,29 @@ export class GeminiService {
 
   async generateEmbedding(text: string): Promise<number[]> {
     if (!text || !text.trim()) return [];
+    if (this.embeddingDisabled || !this.embeddingModel) return [];
 
     try {
       const model = this.genAI.getGenerativeModel({ model: this.embeddingModel });
       const result: any = await model.embedContent(text);
       return result?.embedding?.values || [];
     } catch (error: any) {
+      const status = error?.status || error?.code;
+      const msg = String(error?.message || error || '');
+
+      // If embedding model isn't supported/available, disable to avoid spamming logs and wasting calls.
+      if (status === 404 || /not found|is not supported for embedContent/i.test(msg)) {
+        this.embeddingDisabled = true;
+        if (!this.warnedEmbedding) {
+          this.warnedEmbedding = true;
+          console.warn(
+            `[GeminiService] Embeddings desabilitados: model="${this.embeddingModel}" não suportado/indisponível. ` +
+              `Continuando sem embeddings.`,
+          );
+        }
+        return [];
+      }
+
       console.warn('Erro ao gerar embedding com Gemini:', error?.message || error);
       return [];
     }

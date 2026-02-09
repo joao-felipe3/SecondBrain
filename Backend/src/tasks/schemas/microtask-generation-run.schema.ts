@@ -6,7 +6,7 @@ export interface MicroTaskGenerationRunDocument extends Document {
   parentWbsNodeId?: string;
   wbsPath?: string;
   promptVersion?: string;
-  model?: string;
+  modelName?: string;
   input?: any;
   metrics?: any;
   error?: string;
@@ -20,7 +20,7 @@ export const MicroTaskGenerationRunSchema = new Schema<MicroTaskGenerationRunDoc
   parentWbsNodeId: { type: String },
   wbsPath: { type: String },
   promptVersion: { type: String },
-  model: { type: String },
+  modelName: { type: String },
   input: { type: Schema.Types.Mixed },
   metrics: { type: Schema.Types.Mixed },
   error: { type: String },

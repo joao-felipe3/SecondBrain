@@ -211,6 +211,54 @@ describe('WBSService', () => {
     });
   });
 
+  describe('monotony helpers', () => {
+    it('sanitizeTitle should remove fraction markers like 1/4', () => {
+      const t = (service as any).sanitizeTitle('Parte 1/4 — Teste');
+      expect(t).toBe('Parte — Teste');
+    });
+
+    it('sanitizeTitle should normalize degenerate numeric ranges like (50-50)', () => {
+      const t = (service as any).sanitizeTitle('Praticar Vocabulário (50-50)');
+      expect(t).toBe('Praticar Vocabulário (50)');
+    });
+
+    it('isBadTitleQuality should flag empty parentheses', () => {
+      expect((service as any).isBadTitleQuality('Criar Lista ()')).toBe(true);
+      expect((service as any).isBadTitleQuality('Criar Lista ( )')).toBe(true);
+    });
+
+    it('isBadTitleQuality should flag tiny numeric ranges', () => {
+      expect((service as any).isBadTitleQuality('Testar Vocabulário (50-51)')).toBe(true);
+      expect((service as any).isBadTitleQuality('Testar Vocabulário (1-50)')).toBe(false);
+    });
+
+    it('detectPreDedupeIssues should flag duplicates before suffix mitigation', () => {
+      const drafts = [
+        { name: 'Selecionar Materiais Didáticos HSK N2' },
+        { name: 'Selecionar Materiais Didáticos HSK N2' },
+        { name: 'Mapear Conteúdo HSK N2 para Cronograma' },
+      ];
+      const r = (service as any).detectPreDedupeIssues(drafts);
+      expect(r.forcedIndices).toContain(1);
+      expect(r.duplicatesCount).toBeGreaterThan(0);
+    });
+
+    it('detectGenericSeriesIssues should flag generic template series indices', () => {
+      const drafts = [
+        { name: 'Criar entregável — Tema: Leitura' },
+        { name: 'Escrever 17 palavras — tema: Escrita' },
+        { name: 'Mini-simulado (10 questões)' },
+        { name: 'Revisar flashcards (SRS)' },
+      ];
+      const r = (service as any).detectGenericSeriesIssues(drafts);
+      expect(r.indices).toEqual([0, 1, 2]);
+      expect(r.genericRate).toBeCloseTo(0.75, 2);
+      expect(r.genericKinds.deliverable).toBe(1);
+      expect(r.genericKinds.words).toBe(1);
+      expect(r.genericKinds.minis).toBe(1);
+    });
+  });
+
   describe('convertWBSToTasks', () => {
     it('should convert leaf nodes into task drafts', () => {
       const nodes: WBSNodeDto[] = [
@@ -227,13 +275,14 @@ describe('WBSService', () => {
       const tasks = service.convertWBSToTasks(nodes, 'project-123');
 
       // Each WBS leaf is split into micro-tasks (<=150 minutes)
-      // 20h = 1200min -> 8 chunks, 40h = 2400min -> 16 chunks
-      expect(tasks).toHaveLength(24);
-      expect(tasks[0].name).toBe('Página de Login (1/8)');
+      // Current strategy prefers smaller chunks (~50-60min) with a max-per-leaf cap.
+      // 20h = 1200min -> 24 chunks, 40h = 2400min -> capped at 40 chunks
+      expect(tasks).toHaveLength(64);
+      expect(tasks[0].name).toBe('Página de Login (1/24)');
       expect(tasks[0].projectId).toBe('project-123');
       expect(tasks[0].estimatedMinutes).toBeLessThanOrEqual(150);
       expect(tasks[0].pomodorosPlanned).toBe(Math.ceil(tasks[0].estimatedMinutes / 25));
-      expect(tasks[8].name).toBe('Dashboard (1/16)');
+      expect(tasks[24].name).toBe('Dashboard (1/40)');
     });
 
     it('should skip intermediate nodes and only convert leaves', () => {
@@ -258,11 +307,11 @@ describe('WBSService', () => {
       ];
       const tasks = service.convertWBSToTasks(nodes, 'project-456');
 
-      // 20h leaves => 8 micro-tasks each, and 40h leaf => 16 micro-tasks
-      expect(tasks).toHaveLength(32);
-      expect(tasks[0].name).toBe('Endpoints REST (1/8)');
-      expect(tasks[8].name).toBe('Autenticação (1/8)');
-      expect(tasks[16].name).toBe('Banco de Dados (1/16)');
+      // Leaves: Endpoints REST (20h -> 24), Autenticação (20h -> 24), Banco de Dados (40h -> capped 40)
+      expect(tasks).toHaveLength(88);
+      expect(tasks[0].name).toBe('Endpoints REST (1/24)');
+      expect(tasks[24].name).toBe('Autenticação (1/24)');
+      expect(tasks[48].name).toBe('Banco de Dados (1/40)');
     });
 
     it('should include WBS path in task description', () => {

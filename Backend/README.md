@@ -27,6 +27,17 @@
 
 ## Project setup
 
+## AI configuration (Gemini / Gemma)
+
+Environment variables used by the AI layer:
+
+- `GEMINI_API_KEY` (or `GOOGLE_API_KEY`): API key for Google Generative AI
+- `GEMINI_MODEL`: model name (example: `gemma-3-27b-it` or `gemini-1.5-flash`)
+- `GEMINI_JSON_MODE` (optional): `true|false` to force JSON mode on/off.
+  - Default behavior: enabled automatically for `gemini-*` models and disabled for `gemma-*` models.
+- `GEMINI_EMBEDDING_MODEL` (optional): embedding model name (example: `text-embedding-004`).
+  - If the embedding model returns 404/unsupported, embeddings are automatically disabled and the app continues without them.
+
 ```bash
 $ npm install
 ```

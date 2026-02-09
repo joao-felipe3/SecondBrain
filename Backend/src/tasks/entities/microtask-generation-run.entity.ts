@@ -5,7 +5,7 @@ export class MicroTaskGenerationRun {
   parentWbsNodeId?: String;
   wbsPath?: String;
   promptVersion?: String;
-  model?: String;
+  modelName?: String;
   input?: any;
   metrics?: any;
   error?: String;

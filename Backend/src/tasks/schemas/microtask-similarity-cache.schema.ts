@@ -1,9 +1,9 @@
-import { Schema, Document } from 'mongoose';
+import { Schema, Document, Types } from 'mongoose';
 
 export interface MicroTaskSimilarityCacheDocument extends Document {
-  project?: string;
-  taskIdA: string;
-  taskIdB: string;
+  project?: Types.ObjectId;
+  taskIdA: Types.ObjectId;
+  taskIdB: Types.ObjectId;
   score: number;
   method?: string;
   createdAt?: Date;

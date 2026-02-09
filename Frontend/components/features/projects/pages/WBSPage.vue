@@ -95,6 +95,63 @@
       <div v-if="hasWBS">
         <h3 class="mb-2">📋 Ações</h3>
 
+        <!-- Preview & Preferences -->
+        <v-card elevation="1" class="mb-3" @click.stop>
+          <v-card-text style="padding: 0.75rem;">
+            <div class="d-flex align-center mb-2">
+              <v-icon color="info" size="20" class="mr-2">mdi-eye-outline</v-icon>
+              <span class="text-body-2 font-weight-medium">Preview por módulos/temas</span>
+            </div>
+
+            <div v-if="themePreview.length" class="theme-preview">
+              <div
+                v-for="t in themePreview"
+                :key="t.theme"
+                class="d-flex align-center justify-space-between py-1"
+              >
+                <span class="text-caption font-weight-medium">{{ t.theme }}</span>
+                <div class="d-flex align-center" style="gap: 0.25rem;">
+                  <v-chip size="x-small" variant="tonal" color="primary">
+                    {{ t.count }} pacotes
+                  </v-chip>
+                  <v-chip size="x-small" variant="tonal" color="info">
+                    {{ Math.round(t.hours) }}h
+                  </v-chip>
+                </div>
+              </div>
+              <v-divider class="my-2" />
+            </div>
+            <p v-else class="text-caption text-medium-emphasis">
+              Nenhum pacote disponível para preview.
+            </p>
+
+            <div class="mt-3">
+              <v-select
+                v-model="granularityPomodoros"
+                :items="granularityOptions"
+                label="Granularidade (pomodoros)"
+                density="compact"
+                variant="outlined"
+                hide-details
+              />
+            </div>
+
+            <div class="mt-3">
+              <v-select
+                v-model="workflowMixPreset"
+                :items="workflowMixOptions"
+                label="Mix de tipos"
+                density="compact"
+                variant="outlined"
+                hide-details
+              />
+              <p class="text-caption text-medium-emphasis mt-1">
+                {{ workflowMixDescription }}
+              </p>
+            </div>
+          </v-card-text>
+        </v-card>
+
         <!-- Convert to Tasks -->
         <v-card elevation="1" class="mb-3" @click.stop>
           <v-card-text style="padding: 0.75rem;">
@@ -267,6 +324,37 @@ const decompositionSuggestion = ref('')
 const parsedSuggestion = ref<WBSNode[] | null>(null)
 const suggestionTargetNode = ref<WBSNode | null>(null)
 const conversionResult = ref('')
+const granularityPomodoros = ref(2)
+const workflowMixPreset = ref('balanced')
+
+const granularityOptions = [
+  { title: '1 pomodoro', value: 1 },
+  { title: '2 pomodoros', value: 2 },
+  { title: '3 pomodoros', value: 3 },
+]
+
+const workflowMixOptions = [
+  { title: 'Balanceado', value: 'balanced' },
+  { title: 'Mais preparação', value: 'prepare' },
+  { title: 'Mais prática', value: 'practice' },
+  { title: 'Mais produção', value: 'produce' },
+  { title: 'Mais teste', value: 'test' },
+]
+
+const workflowMixDescription = computed(() => {
+  switch (workflowMixPreset.value) {
+    case 'prepare':
+      return 'Ênfase em preparação e inputs.'
+    case 'practice':
+      return 'Ênfase em prática guiada.'
+    case 'produce':
+      return 'Ênfase em produção e entregáveis.'
+    case 'test':
+      return 'Ênfase em validação e testes.'
+    default:
+      return 'Distribuição equilibrada entre tipos.'
+  }
+})
 
 const hasWBS = computed(() => wbsNodes.value.length > 0)
 
@@ -393,6 +481,10 @@ async function convertToTasks() {
     const { $api } = useNuxtApp() as any
     const response = await $api.post(`/projects/${props.project._id}/wbs/convert-to-tasks`, {
       nodes: wbsNodes.value,
+      preferences: {
+        targetPomodoros: granularityPomodoros.value,
+        workflowMix: buildWorkflowMix(),
+      },
     })
 
     console.log('✅ Conversão bem-sucedida:', response.data.message)
@@ -405,6 +497,44 @@ async function convertToTasks() {
     converting.value = false
   }
 }
+
+function buildWorkflowMix() {
+  switch (workflowMixPreset.value) {
+    case 'prepare':
+      return { prepare: 0.35, practice: 0.35, produce: 0.2, test: 0.1 }
+    case 'practice':
+      return { prepare: 0.2, practice: 0.45, produce: 0.25, test: 0.1 }
+    case 'produce':
+      return { prepare: 0.15, practice: 0.35, produce: 0.4, test: 0.1 }
+    case 'test':
+      return { prepare: 0.15, practice: 0.3, produce: 0.2, test: 0.35 }
+    default:
+      return { prepare: 0.2, practice: 0.4, produce: 0.3, test: 0.1 }
+  }
+}
+
+const themePreview = computed(() => {
+  if (!wbsNodes.value.length) return []
+  const groups = new Map<string, { theme: string; count: number; hours: number }>()
+
+  const traverse = (nodes: WBSNode[], ancestors: string[] = []) => {
+    for (const node of nodes) {
+      const nextAncestors = [...ancestors, node.name]
+      if (!node.children || node.children.length === 0) {
+        const theme = nextAncestors[0] || 'Sem tema'
+        const entry = groups.get(theme) || { theme, count: 0, hours: 0 }
+        entry.count += 1
+        entry.hours += node.estimatedHours || 0
+        groups.set(theme, entry)
+      } else {
+        traverse(node.children, nextAncestors)
+      }
+    }
+  }
+
+  traverse(wbsNodes.value)
+  return Array.from(groups.values()).sort((a, b) => b.hours - a.hours)
+})
 
 async function handleSuggestDecomposition(node: WBSNode) {
   if (!props.project?._id) return
@@ -566,7 +696,7 @@ function dismissSuggestion() {
 }
 
 .wbs-content-wrapper {
-  max-width: 85%;
+  max-width: 100%;
   width: 100%;
   box-sizing: border-box;
 }
@@ -620,5 +750,11 @@ function dismissSuggestion() {
   white-space: normal;
   height: auto !important;
   min-height: 36px;
+}
+
+.preview-list {
+  max-height: 160px;
+  overflow-y: auto;
+  padding-right: 4px;
 }
 </style>

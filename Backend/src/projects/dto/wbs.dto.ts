@@ -1,4 +1,4 @@
-import { IsString, IsNumber, IsOptional, IsArray, ValidateNested, IsEnum, Min } from 'class-validator';
+import { IsString, IsNumber, IsOptional, IsArray, IsEnum } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
@@ -28,7 +28,6 @@ export class WBSNodeDto {
 
   @ApiProperty({ description: 'Estimated hours for this work package' })
   @IsNumber()
-  @Min(0)
   estimatedHours: number;
 
   @ApiPropertyOptional({ description: 'Sort order' })
@@ -39,7 +38,6 @@ export class WBSNodeDto {
   @ApiPropertyOptional({ description: 'Children nodes' })
   @IsOptional()
   @IsArray()
-  @ValidateNested({ each: true })
   @Type(() => WBSNodeDto)
   children?: WBSNodeDto[];
 }
@@ -74,7 +72,6 @@ export class GenerateWBSDto {
 export class SaveWBSDto {
   @ApiProperty({ description: 'WBS nodes to save', type: [WBSNodeDto] })
   @IsArray()
-  @ValidateNested({ each: true })
   @Type(() => WBSNodeDto)
   nodes: WBSNodeDto[];
 }
@@ -108,7 +105,16 @@ export class ValidateWBSResponseDto {
 export class ConvertWBSToTasksDto {
   @ApiProperty({ description: 'WBS nodes to convert to tasks', type: [WBSNodeDto] })
   @IsArray()
-  @ValidateNested({ each: true })
   @Type(() => WBSNodeDto)
   nodes: WBSNodeDto[];
+
+  @ApiPropertyOptional({
+    description: 'Conversion preferences for micro-task granularity and workflow mix',
+    example: { targetPomodoros: 2, workflowMix: { prepare: 0.2, practice: 0.4, produce: 0.3, test: 0.1 } }
+  })
+  @IsOptional()
+  preferences?: {
+    targetPomodoros?: number;
+    workflowMix?: Record<string, number>;
+  };
 }

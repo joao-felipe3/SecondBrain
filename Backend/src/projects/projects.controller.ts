@@ -181,7 +181,8 @@ export class ProjectsController {
 			dto.nodes,
 			id,
 			project,
-			this.tasksService
+			this.tasksService,
+			dto.preferences
 		);
 
 		console.log(`✅ ${createdTasks.length} micro-tarefas criadas com sucesso`);
