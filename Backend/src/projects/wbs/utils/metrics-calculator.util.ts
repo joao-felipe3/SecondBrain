@@ -165,7 +165,11 @@ export function computeBatchMetrics(
   });
   
   const inferCognitive = options?.inferCognitiveType || inferCognitiveTypeDefault;
-  const cognitiveTypes = tasks.map((t) => inferCognitive(t.name, t.description));
+  const cognitiveTypes = tasks.map((t) => {
+    const mapped = mapMicroTaskTypeToCognitiveType(t.microTaskType);
+    if (mapped) return mapped;
+    return inferCognitive(t.name, t.description);
+  });
 
   const uniqueTitles = new Set(normalizedTitles).size;
   const uniqueTemplates = new Set(templateTitles).size;
@@ -190,6 +194,19 @@ export function computeBatchMetrics(
     cognitiveTypesCount: uniqueCognitiveTypes,
     themesCount: uniqueThemes,
   };
+}
+
+function mapMicroTaskTypeToCognitiveType(microTaskType?: string): 'capture' | 'review' | 'test' | 'deep' | undefined {
+  const t = String(microTaskType || '').trim().toLowerCase();
+  if (!t) return undefined;
+
+  // Keep this mapping intentionally small and stable; it exists to make metrics reflect the pipeline.
+  if (t === 'prepare') return 'capture';
+  if (t === 'review' || t === 'consolidate') return 'review';
+  if (t === 'test') return 'test';
+  if (t === 'produce' || t === 'practice') return 'deep';
+
+  return undefined;
 }
 
 /**

@@ -10,6 +10,8 @@ import { MAX_MONOTONY_FIX_ROUNDS, MONOTONY_FIX_BATCH_SIZE } from '../constants/w
 export interface MicroTaskDraft {
   name: string;
   description?: string;
+  definitionOfDone?: string;
+  checklist?: string[];
   pomodorosPlanned?: number;
   priority?: number;
   difficult?: number;
@@ -139,12 +141,21 @@ export class MonotonyFixService {
           const fallbackPomodoros = Math.max(1, Math.min(6, Math.ceil(targetMinutes / 25)));
           const nextName = this.titleValidation.sanitizeTitle(String(it?.name || '').trim());
           const nextDesc = String(it?.description || '').trim();
-          if (!nextName || !nextDesc) continue;
+          const nextDefinitionOfDone = String(it?.definitionOfDone || '').trim();
+          const nextChecklist = Array.isArray(it?.checklist)
+            ? (it.checklist as any[])
+                .map((s) => String(s || '').trim())
+                .filter(Boolean)
+            : undefined;
+
+          if (!nextName || !nextDefinitionOfDone || !nextChecklist || nextChecklist.length < 2) continue;
 
           drafts[idx] = {
             ...current,
             name: nextName,
-            description: nextDesc,
+            description: nextDesc || current.description,
+            definitionOfDone: nextDefinitionOfDone,
+            checklist: nextChecklist,
             pomodorosPlanned: Math.max(1, Math.min(6, Number(it?.pomodorosPlanned) || current.pomodorosPlanned || fallbackPomodoros)),
             priority: Math.max(1, Math.min(4, Number(it?.priority) || current.priority || Math.max(1, Math.min(4, 5 - params.level)))),
             difficult: Math.max(1, Math.min(4, Number(it?.difficult) || current.difficult || 2)),
@@ -238,8 +249,9 @@ REGRAS IMPORTANTES (anti-monotonia):
 2) O nome deve começar com um VERBO de ação (GTD) e variar entre os itens.
 3) Evite repetir verbos já usados nos outros itens: ${avoidVerbs.length ? avoidVerbs.join(', ') : 'sem lista'}.
 4) Evite repetir templates (mesma ideia com palavras trocadas). Templates a evitar: ${avoidTemplates.length ? avoidTemplates.join(' | ') : 'sem lista'}.
-5) Descrição deve ter 2-5 passos + "Definição de pronto:".
-6) Mantenha a duração alvo (targetMinutes) e respeite 1-6 pomodoros.
+5) O mais importante é retornar "checklist" (2-5 passos) + "definitionOfDone".
+6) "description" é opcional e, se existir, deve ser breve (1-2 linhas) e NÃO duplicar checklist/DoD.
+7) Mantenha a duração alvo (targetMinutes) e respeite 1-6 pomodoros.
 ${strictnessHint}
 
 FORMATO DE RESPOSTA OBRIGATÓRIO:
@@ -247,10 +259,14 @@ Retorne APENAS um array JSON válido (sem markdown), com EXATAMENTE ${params.ind
 Cada item deve ter:
 - "chunkIndex": number (0-based)
 - "name": string
-- "description": string
+- "checklist": string[] (2-5 itens, sem numeração)
+- "definitionOfDone": string (1-2 frases)
 - "pomodorosPlanned": number (1-6)
 - "priority": number (1-4)
 - "difficult": number (1-4)
+
+Opcional:
+- "description": string (breve)
 
 Use hoje como ${today}.`;
   }

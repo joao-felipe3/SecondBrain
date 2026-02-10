@@ -127,19 +127,22 @@ ${minutesList}
 
 REGRAS IMPORTANTES (para não ficar genérico):
 1) Cada micro-tarefa deve ter um RESULTADO verificável (entregável), não apenas "estudar".
-2) A descrição deve incluir:
-   - Passos objetivos (2-5 itens)
-   - Definição de pronto (como saber que terminou)
-   - Qualquer recurso/entrada necessário (se aplicável)
-3) Evite frases vagas como "pesquisar" ou "estudar" sem critério.
-4) Use linguagem direta e prática.
-5) Prefira micro-tarefas pequenas (1-3 pomodoros). Use 4-6 apenas se a parte exigir.
-6) O nome da micro-tarefa deve começar com um VERBO de ação (Próxima Ação GTD).
+2) O mais importante é retornar:
+  - checklist: passos objetivos (2-5 itens)
+  - definitionOfDone: como saber que terminou
+3) "description" é OPCIONAL e, se existir, deve ser BREVE (1-2 linhas) e NÃO duplicar checklist/DoD.
+4) Evite frases vagas como "pesquisar" ou "estudar" sem critério.
+5) Use linguagem direta e prática.
+6) Prefira micro-tarefas pequenas (1-3 pomodoros). Use 4-6 apenas se a parte exigir.
+7) O nome da micro-tarefa deve começar com um VERBO de ação (Próxima Ação GTD).
 
 FORMATO DE RESPOSTA OBRIGATÓRIO:
-Retorne APENAS um array JSON válido (sem markdown). Cada item deve ter EXATAMENTE:
+Retorne APENAS um array JSON válido (sem markdown). Cada item deve ter APENAS as propriedades abaixo.
+
+Obrigatórias:
 - "name": string
-- "description": string
+- "checklist": string[] (2-5 itens, cada item 1 frase, sem numeração)
+- "definitionOfDone": string (1-2 frases)
 - "pomodorosPlanned": number (1-6)
 - "priority": number (1-4)
 - "difficult": number (1-4)
@@ -147,6 +150,9 @@ Retorne APENAS um array JSON válido (sem markdown). Cada item deve ter EXATAMEN
 - "themeTag": string
 - "contextTag": string (ex.: @computador, @mesa/foco, @celular/offline)
 - "cognitiveMode": string (low|medium|high)
+
+Opcional:
+- "description": string (breve, 0-2 linhas)
 
 Use hoje como ${today}.`;
   }
@@ -277,16 +283,20 @@ Biblioteca de verbos (use para variar):${verbLibrary}
 REGRAS IMPORTANTES (anti-repetição):
 1) Gere EXATAMENTE ${params.chunkMinutes.length} micro-tarefas.
 2) Cada micro-tarefa deve ter um RESULTADO verificável (entregável).
-3) A descrição deve incluir passos (2-5) + Definição de pronto.
-4) Proibido "Parte 1/24" ou títulos repetidos.
-5) Varie verbo + output + tema entre itens.
-6) Cada item deve usar um "themeTag" de um dos temas acima.
-7) O nome da micro-tarefa deve começar com um VERBO de ação (GTD).
+3) O mais importante é retornar checklist (2-5) + definitionOfDone.
+4) "description" é opcional e deve ser breve (1-2 linhas) e não duplicar checklist/DoD.
+5) Proibido "Parte 1/24" ou títulos repetidos.
+6) Varie verbo + output + tema entre itens.
+7) Cada item deve usar um "themeTag" de um dos temas acima.
+8) O nome da micro-tarefa deve começar com um VERBO de ação (GTD).
 
 FORMATO DE RESPOSTA OBRIGATÓRIO:
-Retorne APENAS um array JSON válido (sem markdown). Cada item deve ter EXATAMENTE:
+Retorne APENAS um array JSON válido (sem markdown). Cada item deve ter APENAS as propriedades abaixo.
+
+Obrigatórias:
 - "name": string
-- "description": string
+- "checklist": string[] (2-5 itens, cada item 1 frase, sem numeração)
+- "definitionOfDone": string (1-2 frases)
 - "pomodorosPlanned": number (1-6)
 - "priority": number (1-4)
 - "difficult": number (1-4)
@@ -294,6 +304,9 @@ Retorne APENAS um array JSON válido (sem markdown). Cada item deve ter EXATAMEN
 - "themeTag": string
 - "contextTag": string (ex.: @computador, @mesa/foco, @celular/offline)
 - "cognitiveMode": string (low|medium|high)
+
+Opcional:
+- "description": string (breve, 0-2 linhas)
 
 Use hoje como ${today}.`;
   }

@@ -3,6 +3,7 @@ export class Task {
   name: String;
   description?: String; 
   definitionOfDone?: String;
+  checklist?: String[];
   pomodorosDid?: number;
   pomodorosPlanned: number;
   pertOptimisticMinutes?: number;

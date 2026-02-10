@@ -4,6 +4,7 @@ export interface TaskDocument extends Document {
   name: string;
   description?: string;
   definitionOfDone?: string;
+  checklist?: string[];
   deadline: Date;
   pomodorosPlanned: number;
   pomodorosDid?: number;
@@ -44,6 +45,7 @@ export const TaskSchema = new Schema<TaskDocument>({
   name: { type: String, required: true },
   description: { type: String },
   definitionOfDone: { type: String },
+  checklist: { type: [String] },
   deadline: { type: Date, required: true },
   pomodorosPlanned: { type: Number, required: true },
   pomodorosDid: { type: Number, default: 0 },

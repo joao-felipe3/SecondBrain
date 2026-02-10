@@ -4,6 +4,7 @@ export class CreateTaskDto {
   name: string;
   description?: string; 
   definitionOfDone?: string;
+  checklist?: string[];
   pomodorosPlanned: number;
   pomodorosDid?: number;
   pertOptimisticMinutes?: number;
