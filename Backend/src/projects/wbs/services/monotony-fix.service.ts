@@ -1,7 +1,6 @@
 import { Injectable, Inject, forwardRef } from '@nestjs/common';
 import { GeminiService } from '../../../tasks/gemini.service';
 import { WBSNodeDto } from '../../dto/wbs.dto';
-import { TitleValidationService } from './title-validation.service';
 import { MonotonyDetectionService } from './monotony-detection.service';
 import { extractJsonArray } from '../utils/json-parser.util';
 import { normalizeTitle, templateTitle, extractVerb } from '../utils/normalizers.util';
@@ -30,9 +29,28 @@ export class MonotonyFixService {
   constructor(
     @Inject(forwardRef(() => GeminiService))
     private readonly geminiService: GeminiService,
-    private readonly titleValidation: TitleValidationService,
     private readonly monotonyDetection: MonotonyDetectionService,
   ) {}
+
+  /**
+   * Simple sanitization: remove "1/4" patterns and clean whitespace
+   */
+  private sanitizeTitle(name?: string): string {
+    let t = String(name || '').trim();
+    if (!t) return '';
+    t = t.replace(/\b\d+\s*\/\s*\d+\b/g, '').trim();
+    t = t.replace(/\s*-\s*$/g, '').replace(/\s*—\s*$/g, '').replace(/\s{2,}/g, ' ').trim();
+    return t;
+  }
+
+  /**
+   * Strip dedupe suffix from title (e.g. "Task — part2" -> "Task")
+   */
+  private stripDedupeSuffix(name?: string): string {
+    const t = String(name || '').trim();
+    if (!t) return '';
+    return t.split(' — ')[0].trim();
+  }
 
   /**
    * Auto-fix monotony issues for a leaf node using AI regeneration
@@ -63,7 +81,7 @@ export class MonotonyFixService {
 
     let drafts = params.drafts.slice().map((d) => ({
       ...d,
-      name: this.titleValidation.sanitizeTitle(d?.name),
+      name: this.sanitizeTitle(d?.name),
     }));
     let aiCallsUsed = 0;
 
@@ -139,7 +157,7 @@ export class MonotonyFixService {
 
           const targetMinutes = params.chunkMinutes[idx];
           const fallbackPomodoros = Math.max(1, Math.min(6, Math.ceil(targetMinutes / 25)));
-          const nextName = this.titleValidation.sanitizeTitle(String(it?.name || '').trim());
+          const nextName = this.sanitizeTitle(String(it?.name || '').trim());
           const nextDesc = String(it?.description || '').trim();
           const nextDefinitionOfDone = String(it?.definitionOfDone || '').trim();
           const nextChecklist = Array.isArray(it?.checklist)
@@ -165,10 +183,10 @@ export class MonotonyFixService {
         aiCallsUsed++;
       }
 
-      // Run dedupe after replacement and keep titles sanitized.
+      // Run dedupe after replacement and keep titles clean.
       drafts = this.dedupeCheckAndMitigate(drafts).map((d) => ({
         ...d,
-        name: this.titleValidation.sanitizeTitle(d?.name),
+        name: this.sanitizeTitle(d?.name),
       }));
     }
 
@@ -275,28 +293,7 @@ Use hoje como ${today}.`;
    * Deduplicate and add suffixes to repeated titles
    */
   dedupeCheckAndMitigate(drafts: MicroTaskDraft[]): MicroTaskDraft[] {
-    const seenTitles = new Map<string, number>();
-    const seenTemplates = new Map<string, number>();
-
-    return drafts.map((d) => {
-      const baseName = this.titleValidation.stripDedupeSuffix(d.name);
-      const normalized = normalizeTitle(baseName);
-      const templated = templateTitle(baseName);
-      const titleCount = (seenTitles.get(normalized) || 0) + 1;
-      const templateCount = (seenTemplates.get(templated) || 0) + 1;
-      seenTitles.set(normalized, titleCount);
-      seenTemplates.set(templated, templateCount);
-
-      if (titleCount <= 1 && templateCount <= 1) return d;
-
-      const themeSuffix = String(d.themeTag || '').trim() || 'tema';
-      const typeSuffix = String(d.microTaskType || '').trim() || 'tarefa';
-      const suffix = `${themeSuffix}-${typeSuffix}-${titleCount}`;
-
-      return {
-        ...d,
-        name: `${this.titleValidation.sanitizeTitle(baseName)} — ${suffix}`.trim(),
-      };
-    });
+    // Simply return drafts without adding dedupe suffixes
+    return drafts;
   }
 }

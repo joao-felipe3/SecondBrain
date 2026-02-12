@@ -18,6 +18,95 @@ export class TasksService {
     private readonly geminiService: GeminiService, // Injeta o GeminiService
   ) {}
 
+  async recalculateProjectStats(projectId: string): Promise<void> {
+    await this.projectsService.recalculateProjectStats(projectId);
+  }
+
+  async createMany(
+    createTaskDtos: CreateTaskDto[],
+    options?: {
+      /**
+       * If true, will attempt to resolve project strings to IDs like create().
+       * Defaults to false for performance (WBS conversion already passes projectId).
+       */
+      resolveProject?: boolean;
+      /**
+       * If true, recalculates project stats once per project present in the inserted tasks.
+       * Defaults to false so callers can defer stats recalculation to the end.
+       */
+      recalculateProjectStats?: boolean;
+    },
+  ): Promise<TaskDocument[]> {
+    const dtos = Array.isArray(createTaskDtos) ? createTaskDtos : [];
+    if (dtos.length === 0) return [];
+
+    const resolveProject = Boolean(options?.resolveProject);
+    const shouldRecalculateStats = Boolean(options?.recalculateProjectStats);
+
+    // Resolve project IDs when requested (slower; use only when needed)
+    if (resolveProject) {
+      for (const dto of dtos) {
+        if (dto.project && typeof dto.project === 'string') {
+          const value = dto.project as unknown as string;
+          const isObjectId = /^[a-f\d]{24}$/i.test(value);
+          let projectDoc: ProjectDocument | null = null;
+          if (isObjectId) {
+            projectDoc = await this.projectModel.findById(value).exec();
+          }
+          if (!projectDoc) {
+            projectDoc = await this.projectModel.findOne({ name: value }).exec();
+          }
+          if (!projectDoc) {
+            throw new NotFoundException(`Project not found by id or name '${value}'`);
+          }
+          dto.project = projectDoc._id as import('mongoose').Types.ObjectId;
+        }
+      }
+    }
+
+    // Apply derived fields (PERT/RTM/EVM/prize/experience) consistently with create()
+    for (const dto of dtos) {
+      this.applyPertEstimates(dto);
+      this.applyRtmRisk(dto);
+      this.applyEvmMetrics(dto);
+
+      const priority = (dto.priority as number) || 0;
+      const difficult = (dto.difficult as number) || 0;
+      dto.prize = priority * 5 + difficult * 2;
+      dto.experience = priority * 2 + difficult * 5;
+    }
+
+    let inserted: TaskDocument[] = [];
+    try {
+      inserted = await this.taskModel.insertMany(dtos, { ordered: false });
+    } catch (err: any) {
+      // With ordered:false Mongo can insert partial docs and still throw.
+      // Mongoose exposes insertedDocs in many cases; fall back to empty.
+      inserted = (err?.insertedDocs as TaskDocument[]) || [];
+
+      const writeErrors = Array.isArray(err?.writeErrors) ? err.writeErrors.length : undefined;
+      // eslint-disable-next-line no-console
+      console.warn('[TasksService][createMany] insertMany error (partial inserts possible)', {
+        message: err?.message,
+        inserted: inserted.length,
+        writeErrors,
+      });
+    }
+
+    if (shouldRecalculateStats) {
+      const uniqueProjectIds = new Set(
+        inserted
+          .map((t: any) => t?.project?.toString?.() ?? t?.project)
+          .filter(Boolean),
+      );
+      for (const pid of uniqueProjectIds) {
+        await this.projectsService.recalculateProjectStats(String(pid));
+      }
+    }
+
+    return inserted;
+  }
+
   // ... (outros métodos como create, findAll, etc. permanecem os mesmos)
   async create(createTaskDto: CreateTaskDto): Promise<TaskDocument> {
     if (createTaskDto.project && typeof createTaskDto.project === 'string') {

@@ -84,8 +84,27 @@
         <div class="wbs-tree-container">
           <WBSTreeView
             :nodes="wbsNodes"
+            :editing="editing"
             @suggest-decomposition="handleSuggestDecomposition"
+            @update-node="handleUpdateNode"
+            @delete-node="handleDeleteNode"
+            @add-child="handleAddChild"
+            @move-node="handleMoveNode"
           />
+        </div>
+
+        <!-- Save button in editing mode -->
+        <div v-if="editing" class="edit-mode-actions mt-2">
+          <v-btn
+            color="success"
+            variant="flat"
+            prepend-icon="mdi-content-save"
+            :loading="savingWBS"
+            block
+            @click.stop="saveWBS"
+          >
+            Salvar Alterações
+          </v-btn>
         </div>
       </div>
     </v-sheet>
@@ -95,37 +114,15 @@
       <div v-if="hasWBS">
         <h3 class="mb-2">📋 Ações</h3>
 
-        <!-- Preview & Preferences -->
+        <!-- Preferences & Conversion -->
         <v-card elevation="1" class="mb-3" @click.stop>
           <v-card-text style="padding: 0.75rem;">
             <div class="d-flex align-center mb-2">
-              <v-icon color="info" size="20" class="mr-2">mdi-eye-outline</v-icon>
-              <span class="text-body-2 font-weight-medium">Preview por módulos/temas</span>
+              <v-icon color="primary" size="20" class="mr-2">mdi-cog-outline</v-icon>
+              <span class="text-body-2 font-weight-medium">Preferências & Conversão</span>
             </div>
 
-            <div v-if="themePreview.length" class="theme-preview">
-              <div
-                v-for="t in themePreview"
-                :key="t.theme"
-                class="d-flex align-center justify-space-between py-1"
-              >
-                <span class="text-caption font-weight-medium">{{ t.theme }}</span>
-                <div class="d-flex align-center" style="gap: 0.25rem;">
-                  <v-chip size="x-small" variant="tonal" color="primary">
-                    {{ t.count }} pacotes
-                  </v-chip>
-                  <v-chip size="x-small" variant="tonal" color="info">
-                    {{ Math.round(t.hours) }}h
-                  </v-chip>
-                </div>
-              </div>
-              <v-divider class="my-2" />
-            </div>
-            <p v-else class="text-caption text-medium-emphasis">
-              Nenhum pacote disponível para preview.
-            </p>
-
-            <div class="mt-3">
+            <div class="mt-1">
               <v-select
                 v-model="granularityPomodoros"
                 :items="granularityOptions"
@@ -136,32 +133,42 @@
               />
             </div>
 
-            <div class="mt-3">
+            <div class="mt-2">
               <v-select
                 v-model="workflowMixPreset"
                 :items="workflowMixOptions"
                 label="Mix de tipos"
                 density="compact"
                 variant="outlined"
-                hide-details
+                hide-detai1remls
               />
-              <p class="text-caption text-medium-emphasis mt-1">
+              <p class="text-caption text-medium-emphasis mt-n4" style="font-size: 0.7rem;">
                 {{ workflowMixDescription }}
               </p>
             </div>
-          </v-card-text>
-        </v-card>
 
-        <!-- Convert to Tasks -->
-        <v-card elevation="1" class="mb-3" @click.stop>
-          <v-card-text style="padding: 0.75rem;">
-            <div class="d-flex align-center mb-2">
-              <v-icon color="primary" size="20" class="mr-2">mdi-checkbox-multiple-marked-outline</v-icon>
-              <span class="text-body-2 font-weight-medium">Converter em Micro-tarefas (≤3h)</span>
-            </div>
+            <v-divider class="my-1"/>
+
             <p class="text-caption text-medium-emphasis mb-2">
-              Transforma cada <strong>pacote de trabalho (8/80)</strong> em várias <strong>micro-tarefas (≤3h)</strong>.
+              Transforma cada <strong>pacote (8/80h)</strong> em <strong>micro-tarefas (≤3h)</strong>.
             </p>
+            
+            <!-- Interactive conversion button -->
+            <v-btn
+              color="success"
+              size="small"
+              variant="flat"
+              prepend-icon="mdi-eye-check"
+              style="font-size: 0.6rem;"
+              :disabled="!validation?.valid"
+              block
+              class="mb-2"
+              @click.stop="showInteractiveDialog = true"
+            >
+              Conversão Interativa (Permite revisar)
+            </v-btn>
+
+            <!-- Automatic conversion button -->
             <v-btn
               color="primary"
               size="small"
@@ -173,35 +180,11 @@
               block
               @click.stop="convertToTasks"
             >
-              Converter {{ totalLeafNodes }} pacotes em micro-tarefas
+              Conversão Automática ({{ totalLeafNodes }} pacotes)
             </v-btn>
             <p v-if="!validation?.valid" class="text-caption text-warning mt-1">
               Corrija as violações 8/80 antes de converter
             </p>
-          </v-card-text>
-        </v-card>
-
-        <!-- Save WBS -->
-        <v-card elevation="1" class="mb-3" @click.stop>
-          <v-card-text style="padding: 0.75rem;">
-            <div class="d-flex align-center mb-2">
-              <v-icon color="success" size="20" class="mr-2">mdi-content-save-outline</v-icon>
-              <span class="text-body-2 font-weight-medium">Salvar WBS</span>
-            </div>
-            <p class="text-caption text-medium-emphasis mb-2">
-              Persiste a WBS no banco de dados vinculada ao projeto.
-            </p>
-            <v-btn
-              color="success"
-              size="small"
-              variant="tonal"
-              prepend-icon="mdi-content-save"
-              :loading="savingWBS"
-              block
-              @click.stop="saveWBS"
-            >
-              Salvar WBS
-            </v-btn>
           </v-card-text>
         </v-card>
 
@@ -297,12 +280,26 @@
       </div>
     </v-sheet>
   </v-sheet>
+
+  <!-- Interactive Conversion Dialog -->
+  <InteractiveConversionDialog
+    v-model="showInteractiveDialog"
+    :project="project"
+    :wbs-nodes="wbsNodes"
+    :preferences="{
+      targetPomodoros: granularityPomodoros,
+      workflowMix: buildWorkflowMix(),
+    }"
+    @complete="handleInteractiveComplete"
+    @cancel="handleInteractiveCancel"
+  />
 </template>
 
 <script setup lang="ts">
 import { ref, computed, watch, onMounted } from 'vue'
 import type { PropType } from 'vue'
 import WBSTreeView from '../sections/WBSTreeView.vue'
+import InteractiveConversionDialog from '../dialogs/InteractiveConversionDialog.vue'
 import type { WBSNode } from '../sections/WBSTreeView.vue'
 import { useNuxtApp } from '#app'
 
@@ -326,6 +323,7 @@ const suggestionTargetNode = ref<WBSNode | null>(null)
 const conversionResult = ref('')
 const granularityPomodoros = ref(2)
 const workflowMixPreset = ref('balanced')
+const showInteractiveDialog = ref(false)
 
 const granularityOptions = [
   { title: '1 pomodoro', value: 1 },
@@ -441,6 +439,8 @@ async function generateWBS() {
     validation.value = response.data.validation
     
     console.log('✅ WBS aplicada com', totalLeafNodes.value, 'pacotes e', totalHours.value, 'horas')
+    // Auto-save after generation
+    await saveWBS()
   } catch (error) {
     console.error('Erro ao gerar WBS:', error)
     alert('Erro ao gerar WBS. Tente novamente.')
@@ -475,12 +475,35 @@ async function saveWBS() {
 async function convertToTasks() {
   if (!props.project?._id || wbsNodes.value.length === 0) return
 
+  // Budget validation and confirmation
+  const wbsBudget = totalHours.value
+  const estimatedTasks = totalLeafNodes.value
+  const avgPomodorosPerHour = 2 // Aproximação conservadora
+  const estimatedPomodoros = wbsBudget * avgPomodorosPerHour
+  
+  const confirmMsg = `Você está prestes a converter a WBS em micro-tarefas:
+
+  📊 Orçamento WBS: ${wbsBudget.toFixed(1)}h (${estimatedTasks} pacotes)
+  🎯 Granularidade: ${granularityPomodoros.value} pomodoros (~${(granularityPomodoros.value * 0.5).toFixed(1)}h)
+  ⚙️ Workflow: ${workflowMixPreset.value}
+  
+  ⏱️ Estimativa: ~${estimatedPomodoros} pomodoros (~${(estimatedPomodoros * 0.5).toFixed(1)}h geradas)
+  
+  ⚠️ IMPORTANTE: O backend validará se as horas geradas não excedem muito o orçamento planejado.
+  
+  Deseja continuar?`
+  
+  if (!confirm(confirmMsg)) {
+    return
+  }
+
   converting.value = true
   console.log('🔄 Iniciando conversão de tarefas...')
   try {
     const { $api } = useNuxtApp() as any
     const response = await $api.post(`/projects/${props.project._id}/wbs/convert-to-tasks`, {
       nodes: wbsNodes.value,
+      autoResolveDiscrepancies: true,
       preferences: {
         targetPomodoros: granularityPomodoros.value,
         workflowMix: buildWorkflowMix(),
@@ -489,10 +512,37 @@ async function convertToTasks() {
 
     console.log('✅ Conversão bem-sucedida:', response.data.message)
     conversionResult.value = response.data.message
+
+    // Persist automatic rebaseline/simplify changes (if any)
+    if (Array.isArray(response?.data?.wbsUpdates) && response.data.wbsUpdates.length > 0) {
+      const applyUpdates = (nodes: WBSNode[], updates: any[]) => {
+        const updateById = new Map<string, any>()
+        for (const u of updates) {
+          if (u?.nodeId) updateById.set(String(u.nodeId), u)
+        }
+
+        const traverse = (list: WBSNode[]) => {
+          for (const node of list) {
+            const u = node._id ? updateById.get(String(node._id)) : null
+            if (u && typeof u.newEstimatedHours === 'number') {
+              node.estimatedHours = u.newEstimatedHours
+            }
+            if (node.children && node.children.length > 0) traverse(node.children)
+          }
+        }
+        traverse(nodes)
+      }
+
+      applyUpdates(wbsNodes.value, response.data.wbsUpdates)
+      validateWBS()
+      wbsNodes.value = JSON.parse(JSON.stringify(wbsNodes.value))
+      await saveWBS()
+    }
     // NÃO fazer emit('wbs-updated') aqui para evitar fechar o modal
-  } catch (error) {
+  } catch (error: any) {
     console.error('❌ Erro ao converter WBS em tarefas:', error)
-    alert('Erro ao converter WBS em micro-tarefas.')
+    const errorMsg = error?.response?.data?.message || error?.message || 'Erro desconhecido'
+    alert(`Erro ao converter WBS: ${errorMsg}`)
   } finally {
     converting.value = false
   }
@@ -511,6 +561,45 @@ function buildWorkflowMix() {
     default:
       return { prepare: 0.2, practice: 0.4, produce: 0.3, test: 0.1 }
   }
+}
+
+function handleInteractiveComplete(result: any) {
+  console.log('✅ Conversão interativa concluída:', result)
+  conversionResult.value = `✅ Conversão interativa concluída: ${result.totalTasks} micro-tarefas (${result.totalHours.toFixed(1)}h geradas de ${result.budgetHours.toFixed(1)}h orçadas)`
+
+  // Apply any re-baselining updates coming from the dialog and persist to backend
+  if (Array.isArray(result?.wbsUpdates) && result.wbsUpdates.length > 0) {
+    const applyUpdates = (nodes: WBSNode[], updates: any[]) => {
+      const updateById = new Map<string, any>()
+      for (const u of updates) {
+        if (u?.nodeId) updateById.set(String(u.nodeId), u)
+      }
+
+      const traverse = (list: WBSNode[]) => {
+        for (const node of list) {
+          const u = node._id ? updateById.get(String(node._id)) : null
+          if (u && typeof u.newEstimatedHours === 'number') {
+            node.estimatedHours = u.newEstimatedHours
+          }
+          if (node.children && node.children.length > 0) traverse(node.children)
+        }
+      }
+      traverse(nodes)
+    }
+
+    applyUpdates(wbsNodes.value, result.wbsUpdates)
+    validateWBS()
+    wbsNodes.value = JSON.parse(JSON.stringify(wbsNodes.value))
+    // Persist to backend (updates intermediate rollups server-side)
+    saveWBS()
+  }
+
+  showInteractiveDialog.value = false
+}
+
+function handleInteractiveCancel() {
+  console.log('❌ Conversão interativa cancelada')
+  showInteractiveDialog.value = false
 }
 
 const themePreview = computed(() => {
@@ -603,7 +692,7 @@ function validateWBS() {
   }
 }
 
-function applySuggestion() {
+async function applySuggestion() {
   if (!parsedSuggestion.value || !suggestionTargetNode.value) return
   
   // Ajustar o level dos children sugeridos para parent.level + 1
@@ -644,13 +733,200 @@ function applySuggestion() {
   parsedSuggestion.value = null
   suggestionTargetNode.value = null
   
-  alert('✅ Sugestão aplicada com sucesso! Lembre-se de salvar a WBS.')
+  // Auto-save after applying suggestion
+  await saveWBS()
+  
+  alert('✅ Sugestão aplicada e salva com sucesso!')
 }
 
 function dismissSuggestion() {
   decompositionSuggestion.value = ''
   parsedSuggestion.value = null
   suggestionTargetNode.value = null
+}
+
+// Node editing handlers
+function handleUpdateNode(payload: { nodeId?: string; field: string; value: any }) {
+  const findAndUpdate = (nodes: WBSNode[]): boolean => {
+    for (const node of nodes) {
+      if (node._id === payload.nodeId) {
+        ;(node as any)[payload.field] = payload.value
+        return true
+      }
+      if (node.children && findAndUpdate(node.children)) {
+        return true
+      }
+    }
+    return false
+  }
+  
+  if (findAndUpdate(wbsNodes.value)) {
+    validateWBS()
+    // Trigger re-render
+    wbsNodes.value = JSON.parse(JSON.stringify(wbsNodes.value))
+  }
+}
+
+function handleDeleteNode(nodeId?: string) {
+  const deleteNode = (nodes: WBSNode[]): WBSNode[] => {
+    return nodes.filter(node => {
+      if (node._id === nodeId) {
+        return false
+      }
+      if (node.children && node.children.length > 0) {
+        node.children = deleteNode(node.children)
+      }
+      return true
+    })
+  }
+  
+  wbsNodes.value = deleteNode(wbsNodes.value)
+  validateWBS()
+}
+
+function handleAddChild(parentNodeId?: string) {
+  const newChild: WBSNode = {
+    _id: `temp-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+    name: 'Novo pacote',
+    description: '',
+    level: 1,
+    estimatedHours: 20,
+  }
+  
+  const findAndAddChild = (nodes: WBSNode[]): boolean => {
+    for (const node of nodes) {
+      if (node._id === parentNodeId) {
+        if (!node.children) {
+          node.children = []
+        }
+        const parentLevel = node.level || 0
+        newChild.level = parentLevel + 1
+        node.children.push(newChild)
+        return true
+      }
+      if (node.children && findAndAddChild(node.children)) {
+        return true
+      }
+    }
+    return false
+  }
+  
+  if (findAndAddChild(wbsNodes.value)) {
+    validateWBS()
+    // Trigger re-render
+    wbsNodes.value = JSON.parse(JSON.stringify(wbsNodes.value))
+  }
+}
+
+function handleMoveNode(payload: { sourceId?: string; targetId?: string }) {
+  const { sourceId, targetId } = payload
+  if (!sourceId || !targetId) return
+
+  // Find nodes and their parents
+  interface NodeInfo {
+    node: WBSNode | null
+    parent: WBSNode | null
+    index: number
+  }
+
+  const findNodeAndParent = (nodes: WBSNode[] | undefined, nodeId?: string, parent: WBSNode | null = null): NodeInfo => {
+    // Accept undefined to avoid TS "object is possibly 'undefined'" when
+    // calling with `node.children`. Guard early for undefined.
+    if (!nodes || nodes.length === 0) {
+      return { node: null, parent: null, index: -1 }
+    }
+
+    for (let i = 0; i < nodes.length; i++) {
+      if (nodes[i]._id === nodeId) {
+        return { node: nodes[i], parent, index: i }
+      }
+      const childList = nodes[i].children
+      if (childList && childList.length > 0) {
+        const result = findNodeAndParent(childList, nodeId, nodes[i])
+        if (result.node) return result
+      }
+    }
+    return { node: null, parent: null, index: -1 }
+  }
+
+  const sourceInfo = findNodeAndParent(wbsNodes.value, sourceId)
+  const targetInfo = findNodeAndParent(wbsNodes.value, targetId)
+
+  if (!sourceInfo.node || !targetInfo.node) return
+
+  // Check if they are siblings (same parent)
+  const areSiblings = sourceInfo.parent === targetInfo.parent
+
+  if (areSiblings && sourceInfo.parent) {
+    // Reorder siblings
+    const siblings = sourceInfo.parent.children || []
+    if (sourceInfo.index !== -1) {
+      // Remove source from its current position
+      siblings.splice(sourceInfo.index, 1)
+      // Insert before target
+      const newTargetIndex = siblings.findIndex(n => n._id === targetId)
+      if (newTargetIndex !== -1) {
+        siblings.splice(newTargetIndex, 0, sourceInfo.node)
+      } else {
+        siblings.push(sourceInfo.node)
+      }
+    }
+  } else if (areSiblings && !sourceInfo.parent) {
+    // Reorder root level nodes
+    const newTargetIndex = wbsNodes.value.findIndex(n => n._id === targetId)
+    if (sourceInfo.index !== -1 && newTargetIndex !== -1) {
+      const [removed] = wbsNodes.value.splice(sourceInfo.index, 1)
+      wbsNodes.value.splice(newTargetIndex, 0, removed)
+    }
+  } else {
+    // Move source as child of target
+    let sourceNode: WBSNode | null = null
+
+    // Extract source node
+    const extractSource = (nodes: WBSNode[]): WBSNode[] => {
+      return nodes.filter(node => {
+        if (node._id === sourceId) {
+          sourceNode = node
+          return false
+        }
+        if (node.children && node.children.length > 0) {
+          node.children = extractSource(node.children)
+        }
+        return true
+      })
+    }
+
+    wbsNodes.value = extractSource(wbsNodes.value)
+
+    if (!sourceNode) return
+
+    // Add source as child of target
+    const addToTarget = (nodes: WBSNode[]): boolean => {
+      for (const node of nodes) {
+        if (node._id === targetId) {
+          if (!node.children) {
+            node.children = []
+          }
+          const targetLevel = node.level || 0
+          sourceNode!.level = targetLevel + 1
+          node.children.push(sourceNode!)
+          return true
+        }
+        if (node.children && addToTarget(node.children)) {
+          return true
+        }
+      }
+      return false
+    }
+
+    if (!addToTarget(wbsNodes.value)) {
+      return
+    }
+  }
+
+  validateWBS()
+  // Trigger re-render
+  wbsNodes.value = JSON.parse(JSON.stringify(wbsNodes.value))
 }
 </script>
 
@@ -697,8 +973,12 @@ function dismissSuggestion() {
 
 .wbs-content-wrapper {
   max-width: 100%;
-  width: 100%;
+  width: 92%;
   box-sizing: border-box;
+}
+
+.page-container.editing .wbs-content-wrapper {
+  width: 80%;
 }
 
 .wbs-stats {
@@ -756,5 +1036,13 @@ function dismissSuggestion() {
   max-height: 160px;
   overflow-y: auto;
   padding-right: 4px;
+}
+
+.edit-mode-actions {
+  padding: 0.5rem 0;
+}
+
+.edit-mode-actions .v-btn {
+  font-size: 0.75rem;
 }
 </style>

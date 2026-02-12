@@ -4,7 +4,6 @@ import { WBSService } from './wbs.service';
 import { WBSNodeSchema } from '../schemas/wbs-node.schema';
 import { TasksModule } from '../../tasks/tasks.module';
 import {
-  TitleValidationService,
   MonotonyDetectionService,
   MonotonyFixService,
   PromptBuilderService,
@@ -18,7 +17,6 @@ import {
   ],
   providers: [
     WBSService,
-    TitleValidationService,
     MonotonyDetectionService,
     MonotonyFixService,
     PromptBuilderService,

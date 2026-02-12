@@ -9,7 +9,7 @@ import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { PlanningService } from './planning/planning.service';
 import { CatchballRequestDto, RefineObjectiveDto, SuggestAnswerDto } from './dto/smart-objective.dto';
 import { WBSService } from './wbs/wbs.service';
-import { GenerateWBSDto, SaveWBSDto, SuggestDecompositionDto, ConvertWBSToTasksDto } from './dto/wbs.dto';
+import { GenerateWBSDto, SaveWBSDto, SuggestDecompositionDto, ConvertWBSToTasksDto, GetLeafNodesDto, GenerateTasksForLeafDto, AuditLeafDiscrepancyDto } from './dto/wbs.dto';
 import { TasksService } from '../tasks/tasks.service';
 
 @ApiTags('projects')
@@ -177,25 +177,95 @@ export class ProjectsController {
 		console.log(`🔄 Convertendo WBS em tasks com enriquecimento IA para projeto ${project.name}...`);
 
 		// Gera tasks enriquecidas com IA usando o método do WBSService
-		const createdTasks = await this.wbsService.convertWBSToTasksWithAI(
+		const result = await this.wbsService.convertWBSToTasksWithAI(
 			dto.nodes,
 			id,
 			project,
 			this.tasksService,
-			dto.preferences
+			dto.preferences,
+			{
+				autoResolveDiscrepancies: !!dto.autoResolveDiscrepancies,
+				autoAuditThresholdPct: dto.autoAuditThresholdPct,
+			}
 		);
 
-		console.log(`✅ ${createdTasks.length} micro-tarefas criadas com sucesso`);
+		console.log(`✅ ${result.createdTasks.length} micro-tarefas criadas com sucesso`);
 
 		return {
-			message: `✅ Conversão bem-sucedida: ${createdTasks.length} micro-tarefas (≤3h) criadas a partir da WBS (pacotes 8/80)`,
-			tasks: createdTasks,
+			message: `✅ Conversão bem-sucedida: ${result.createdTasks.length} micro-tarefas (≤3h) criadas a partir da WBS (pacotes 8/80)` +
+				(dto.autoResolveDiscrepancies && result.auditsApplied.length
+					? ` • Auditoria aplicada em ${result.auditsApplied.length} pacote(s)`
+					: ''),
+			tasks: result.createdTasks,
+			wbsUpdates: result.wbsUpdates,
+			auditsApplied: result.auditsApplied,
 			summary: {
-				totalTasks: createdTasks.length,
-				totalPomodoros: createdTasks.reduce((sum, t: any) => sum + (t.pomodorosPlanned || 0), 0),
-				estimatedHours: (createdTasks.reduce((sum, t: any) => sum + (t.pomodorosPlanned || 0), 0) * 0.5).toFixed(1),
+				totalTasks: result.createdTasks.length,
+				totalPomodoros: result.createdTasks.reduce((sum, t: any) => sum + (t.pomodorosPlanned || 0), 0),
+				estimatedHours: (result.createdTasks.reduce((sum, t: any) => sum + (t.pomodorosPlanned || 0), 0) * 0.5).toFixed(1),
 			}
 		};
+	}
+
+	@Post(':id/wbs/leaf-nodes')
+	@ApiOperation({ summary: 'Get all leaf nodes from WBS tree with their paths (for interactive generation)' })
+	@ApiResponse({ status: 200, description: 'List of leaf nodes with paths' })
+	async getLeafNodes(
+		@Param('id') id: string,
+		@Body() dto: GetLeafNodesDto
+	) {
+		const leafNodes = this.wbsService.getLeafNodesWithPaths(dto.nodes);
+		
+		return {
+			leafNodes,
+			total: leafNodes.length,
+			totalHours: leafNodes.reduce((sum, leaf) => sum + (leaf.node.estimatedHours || 0), 0),
+		};
+	}
+
+	@Post(':id/wbs/generate-tasks-for-leaf')
+	@ApiOperation({ summary: 'Generate tasks for a single leaf node (interactive mode)' })
+	@ApiResponse({ status: 200, description: 'Tasks generated for the leaf node' })
+	async generateTasksForLeaf(
+		@Param('id') id: string,
+		@Body() dto: GenerateTasksForLeafDto
+	) {
+		const project = await this.projectsService.findOne(id);
+		if (!project) throw new NotFoundException('Project not found');
+
+		console.log(`🔄 Gerando tasks para leaf: "${dto.leafNode.name}"...`);
+
+		const result = await this.wbsService.generateTasksForSingleLeaf(
+			dto.leafNode,
+			dto.nodePath,
+			id,
+			project,
+			this.tasksService,
+			dto.preferences,
+			dto.saveTasks || false
+		);
+
+		console.log(`✅ ${result.tasks.length} tasks ${dto.saveTasks ? 'criadas' : 'preparadas'}`);
+
+		return {
+			...result,
+			message: dto.saveTasks 
+				? `✅ ${result.tasks.length} micro-tarefas criadas com sucesso`
+				: `📝 ${result.tasks.length} micro-tarefas preparadas para revisão`,
+		};
+	}
+
+	@Post(':id/wbs/audit-leaf-discrepancy')
+	@ApiOperation({ summary: 'Audit a leaf discrepancy (WBS estimate vs generated micro-tasks)' })
+	@ApiResponse({ status: 200, description: 'Audit result with diagnosis and suggested action.' })
+	async auditLeafDiscrepancy(
+		@Param('id') id: string,
+		@Body() dto: AuditLeafDiscrepancyDto,
+	) {
+		const project = await this.projectsService.findOne(id);
+		if (!project) throw new NotFoundException('Project not found');
+
+		return this.wbsService.auditLeafDiscrepancy(project, dto);
 	}
 
 	@Post()

@@ -110,7 +110,12 @@ Retorne APENAS um array JSON com os sub-pacotes sugeridos:
     const today = new Date().toISOString().split('T')[0];
     const projectSummary = params.project?.smartObjective?.summary || params.project?.description || '';
 
-    const minutesList = params.chunkMinutes.map((m, i) => `${i + 1}: ${m}min`).join(', ');
+    const compact = ['1', 'true', 'yes', 'on'].includes(
+      String(process.env.WBS_COMPACT_OUTPUT || '').trim().toLowerCase(),
+    );
+
+    // Shorter payload than "1: 50min, 2: 50min..." while still preserving order.
+    const minutesList = JSON.stringify(params.chunkMinutes);
 
     return `Você é um especialista em criar micro-tarefas de execução (25 a 150 minutos) a partir de uma WBS.
 
@@ -122,7 +127,9 @@ Pacote de trabalho WBS (nó folha, regra 8/80):
 - Caminho WBS: "${params.currentPath}"
 - Horas estimadas do pacote: ${params.node.estimatedHours}h
 
-Preciso que você gere EXATAMENTE ${params.chunkMinutes.length} micro-tarefas, uma para cada parte com duração alvo:
+Preciso que você gere EXATAMENTE ${params.chunkMinutes.length} micro-tarefas, uma para cada parte.
+
+As durações alvo em minutos (na mesma ordem das tarefas) são:
 ${minutesList}
 
 REGRAS IMPORTANTES (para não ficar genérico):
@@ -137,7 +144,17 @@ REGRAS IMPORTANTES (para não ficar genérico):
 7) O nome da micro-tarefa deve começar com um VERBO de ação (Próxima Ação GTD).
 
 FORMATO DE RESPOSTA OBRIGATÓRIO:
-Retorne APENAS um array JSON válido (sem markdown). Cada item deve ter APENAS as propriedades abaixo.
+Retorne APENAS um array JSON válido (sem markdown). NÃO inclua nenhum texto fora do JSON.
+Cada item deve ter APENAS as propriedades abaixo.
+
+${compact
+  ? `MODO COMPACTO (priorize latência):
+- Strings CURTAS. Sem explicações.
+- checklist: EXATAMENTE 2 itens curtos (<= 60 caracteres cada).
+- definitionOfDone: EXATAMENTE 1 frase curta (<= 80 caracteres).
+- NÃO inclua "description".
+`
+  : ''}
 
 Obrigatórias:
 - "name": string
