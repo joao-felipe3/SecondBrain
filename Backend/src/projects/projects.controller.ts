@@ -9,6 +9,9 @@ import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { PlanningService } from './planning/planning.service';
 import { CatchballRequestDto, RefineObjectiveDto, SuggestAnswerDto } from './dto/smart-objective.dto';
 import { WBSService } from './wbs/wbs.service';
+import { WbsValidationService } from './wbs/services/wbs-validation.service';
+import { TaskConversionService } from './wbs/services/task-conversion.service';
+import { AuditService } from './wbs/services/audit.service';
 import { GenerateWBSDto, SaveWBSDto, SuggestDecompositionDto, ConvertWBSToTasksDto, GetLeafNodesDto, GenerateTasksForLeafDto, AuditLeafDiscrepancyDto } from './dto/wbs.dto';
 import { TasksService } from '../tasks/tasks.service';
 
@@ -19,6 +22,9 @@ export class ProjectsController {
 		private readonly projectsService: ProjectsService,
 		private readonly planningService: PlanningService,
 		private readonly wbsService: WBSService,
+		private readonly validation: WbsValidationService,
+		private readonly taskConversionService: TaskConversionService,
+		private readonly auditService: AuditService,
 		private readonly tasksService: TasksService,
 		@InjectModel('Task') private readonly taskModel: Model<TaskDocument>,
 	) {}
@@ -109,7 +115,7 @@ export class ProjectsController {
 		if (!project) throw new NotFoundException('Project not found');
 
 		const nodes = await this.wbsService.generateWBS(dto);
-		const validation = this.wbsService.validateWBS(nodes);
+		const validation = this.validation.validateTree(nodes);
 
 		return { nodes, validation };
 	}
@@ -138,7 +144,7 @@ export class ProjectsController {
 		if (!project) throw new NotFoundException('Project not found');
 
 		const nodes = await this.wbsService.getWBS(id);
-		const validation = this.wbsService.validateWBS(nodes);
+		const validation = this.validation.validateTree(nodes);
 
 		return { nodes, validation };
 	}
@@ -150,7 +156,7 @@ export class ProjectsController {
 		@Param('id') id: string,
 		@Body() dto: SaveWBSDto
 	) {
-		return this.wbsService.validateWBS(dto.nodes);
+		return this.validation.validateTree(dto.nodes);
 	}
 
 	@Post(':id/wbs/suggest-decomposition')
@@ -160,7 +166,7 @@ export class ProjectsController {
 		@Param('id') id: string,
 		@Body() dto: SuggestDecompositionDto
 	) {
-		const suggestion = await this.wbsService.suggestDecomposition(dto);
+		const suggestion = await this.validation.suggestDecomposition(dto);
 		return { suggestion };
 	}
 
@@ -174,10 +180,8 @@ export class ProjectsController {
 		const project = await this.projectsService.findOne(id);
 		if (!project) throw new NotFoundException('Project not found');
 
-		console.log(`🔄 Convertendo WBS em tasks com enriquecimento IA para projeto ${project.name}...`);
-
-		// Gera tasks enriquecidas com IA usando o método do WBSService
-		const result = await this.wbsService.convertWBSToTasksWithAI(
+		// Gera tasks enriquecidas com IA usando TaskConversionService
+		const result = await this.taskConversionService.convertWBSToTasksWithAI(
 			dto.nodes,
 			id,
 			project,
@@ -265,7 +269,7 @@ export class ProjectsController {
 		const project = await this.projectsService.findOne(id);
 		if (!project) throw new NotFoundException('Project not found');
 
-		return this.wbsService.auditLeafDiscrepancy(project, dto);
+		return this.auditService.auditLeafDiscrepancy(project, dto);
 	}
 
 	@Post()

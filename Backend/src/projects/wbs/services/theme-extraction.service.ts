@@ -20,10 +20,10 @@ export class ThemeExtractionService {
   ) {}
 
   /**
-   * Get theme suggestions using heuristics and keyword matching
-   * (Fast, no AI calls)
+   * Get theme suggestions using heuristics and keyword matching (fallback)
+   * (Fast, no AI calls) - Private: used as fallback only
    */
-  getThemeSuggestions(params: {
+  private getThemeSuggestions(params: {
     project?: any;
     node: WBSNodeDto;
   }): { category: 'vocab' | 'tech' | 'general'; themes: string[] } {

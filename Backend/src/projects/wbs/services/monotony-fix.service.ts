@@ -44,15 +44,6 @@ export class MonotonyFixService {
   }
 
   /**
-   * Strip dedupe suffix from title (e.g. "Task — part2" -> "Task")
-   */
-  private stripDedupeSuffix(name?: string): string {
-    const t = String(name || '').trim();
-    if (!t) return '';
-    return t.split(' — ')[0].trim();
-  }
-
-  /**
    * Auto-fix monotony issues for a leaf node using AI regeneration
    * Regenerates problematic tasks in small batches to avoid truncation
    */
@@ -183,8 +174,8 @@ export class MonotonyFixService {
         aiCallsUsed++;
       }
 
-      // Run dedupe after replacement and keep titles clean.
-      drafts = this.dedupeCheckAndMitigate(drafts).map((d) => ({
+      // Keep titles clean after regeneration.
+      drafts = drafts.map((d) => ({
         ...d,
         name: this.sanitizeTitle(d?.name),
       }));
@@ -287,13 +278,5 @@ Opcional:
 - "description": string (breve)
 
 Use hoje como ${today}.`;
-  }
-
-  /**
-   * Deduplicate and add suffixes to repeated titles
-   */
-  dedupeCheckAndMitigate(drafts: MicroTaskDraft[]): MicroTaskDraft[] {
-    // Simply return drafts without adding dedupe suffixes
-    return drafts;
   }
 }

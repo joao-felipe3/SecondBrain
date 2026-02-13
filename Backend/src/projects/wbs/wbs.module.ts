@@ -8,6 +8,16 @@ import {
   MonotonyFixService,
   PromptBuilderService,
   ThemeExtractionService,
+  CacheService,
+  WbsValidationService,
+  WbsPersistenceService,
+  WbsGenerationService,
+  AuditService,
+  TaskConversionService,
+  DraftGenerationService,
+  DraftProcessingService,
+  ConfigService,
+  WbsConversionOrchestrationService,
 } from './services';
 
 @Module({
@@ -21,7 +31,17 @@ import {
     MonotonyFixService,
     PromptBuilderService,
     ThemeExtractionService,
+    CacheService,
+    WbsValidationService,
+    WbsPersistenceService,
+    WbsGenerationService,
+    AuditService,
+    TaskConversionService,
+    DraftGenerationService,
+    DraftProcessingService,
+    ConfigService,
+    WbsConversionOrchestrationService,
   ],
-  exports: [WBSService],
+  exports: [WBSService, WbsValidationService, TaskConversionService, AuditService],
 })
 export class WBSModule {}
