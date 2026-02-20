@@ -346,37 +346,122 @@ export class DraftGenerationService {
       cognitiveMode?: string;
     }>
   > {
-    const baseMaxTokens = this.getNumericEnv('WBS_MAX_OUTPUT_TOKENS', 2200);
+    // Smaller batches + reduced tokens for faster generation
+    const maxPerCall = this.getNumericEnv('WBS_MAX_PER_CALL', 6);
+    const baseMaxTokens = this.getNumericEnv('WBS_MAX_OUTPUT_TOKENS', 1500);
+    const retryMaxTokens = this.getNumericEnv('WBS_MAX_OUTPUT_TOKENS_RETRY', 2500);
     const resolvedModelOverride = params.modelOverride || this.getWbsGenerationModelOverride();
 
-    const prompt = this.promptBuilder.buildMicroTasksGeneratorPrompt({
-      ...params,
-      chunkMinutes,
-    });
-
-    const attempt = async (opts: { maxOutputTokens: number; temperature: number }) => {
-      const response = await this.geminiService.generateContent(prompt, {
-        model: resolvedModelOverride,
-        responseMimeType: 'application/json',
-        maxOutputTokens: opts.maxOutputTokens,
-        temperature: opts.temperature,
-      });
-      const drafts = extractJsonArray<any>(response);
-      const validated = this.validateDrafts(drafts);
-      if (validated.length !== chunkMinutes.length) {
-        throw new Error(`IA retornou ${validated.length} itens; esperado ${chunkMinutes.length}`);
-      }
-      return validated;
+    const isJsonishError = (err: any) => {
+      const msg = String(err?.message || err || '').toLowerCase();
+      return (
+        msg.includes('json') ||
+        msg.includes('truncad') ||
+        msg.includes('incomplet') ||
+        msg.includes('parse') ||
+        msg.includes('array') ||
+        msg.includes('object') ||
+        msg.includes('salvag')
+      );
     };
 
-    try {
-      return await attempt({ maxOutputTokens: baseMaxTokens, temperature: 0.3 });
-    } catch (err: any) {
-      const msg = String(err?.message || err || '');
-      if (/json|truncad|incomplet|parse|array|object/i.test(msg)) {
-        return await attempt({ maxOutputTokens: baseMaxTokens * 1.5, temperature: 0.2 });
+    const generateDraftsForSlice = async (sliceMinutes: number[], depth = 0): Promise<any[]> => {
+      const prompt = this.promptBuilder.buildMicroTasksGeneratorPrompt({
+        ...params,
+        chunkMinutes: sliceMinutes,
+      });
+
+      const attempt = async (opts: { maxOutputTokens: number; temperature: number }) => {
+        const response = await this.geminiService.generateContent(prompt, {
+          model: resolvedModelOverride,
+          responseMimeType: 'application/json',
+          maxOutputTokens: opts.maxOutputTokens,
+          temperature: opts.temperature,
+        });
+        const drafts = extractJsonArray<any>(response);
+        const validated = this.validateDrafts(drafts);
+        if (validated.length < sliceMinutes.length) {
+          // Partial salvage: accept if ≥60% recovered
+          const pct = (validated.length / sliceMinutes.length) * 100;
+          if (validated.length > 0 && pct >= 60) {
+            const remaining = sliceMinutes.slice(validated.length);
+            if (remaining.length > 0 && depth < 3) {
+              console.warn(
+                `[draft-generation] Partial: ${validated.length}/${sliceMinutes.length} items (${pct.toFixed(0)}%). Completing tail...`,
+              );
+              const tail = await generateDraftsForSlice(remaining, depth + 1);
+              return [...validated, ...tail];
+            }
+            return validated;
+          }
+          throw new Error(`IA retornou ${validated.length} itens; esperado ${sliceMinutes.length}`);
+        }
+        return validated;
+      };
+
+      // Attempt 1: Fast, low tokens
+      try {
+        return await attempt({ maxOutputTokens: baseMaxTokens, temperature: 0.15 });
+      } catch (err1: any) {
+        if (!isJsonishError(err1)) throw err1;
+
+        // Fast fail → split immediately into parallel halves instead of retry
+        if (sliceMinutes.length > 1 && depth < 4) {
+          console.warn(
+            `[draft-generation] Slice of ${sliceMinutes.length} items failed; splitting into parallel halves...`,
+          );
+          const mid = Math.ceil(sliceMinutes.length / 2);
+          const [left, right] = await Promise.all([
+            generateDraftsForSlice(sliceMinutes.slice(0, mid), depth + 1),
+            generateDraftsForSlice(sliceMinutes.slice(mid), depth + 1),
+          ]);
+          return [...left, ...right];
+        }
+
+        // Last resort: higher tokens
+        try {
+          return await attempt({ maxOutputTokens: retryMaxTokens, temperature: 0.1 });
+        } catch (err2: any) {
+          throw err2;
+        }
       }
-      throw err;
+    };
+
+    // Split all chunks into smaller, more parallelizable slices
+    const slices: number[][] = [];
+    for (let i = 0; i < chunkMinutes.length; i += maxPerCall) {
+      slices.push(chunkMinutes.slice(i, i + maxPerCall));
     }
+    console.log(`[draft-generation] WithPlan: ${chunkMinutes.length} items in ${slices.length} slice(s) - starting all in parallel...`);
+
+    // Generate ALL slices in parallel (more aggressive parallelism)
+    const sliceResults = await Promise.all(
+      slices.map((slice, i) => {
+        console.log(`[draft-generation] Slice ${i + 1}/${slices.length} (${slice.length} items)`);
+        return generateDraftsForSlice(slice);
+      })
+    );
+    
+    const allDrafts: any[] = [];
+    sliceResults.forEach((sliceDrafts) => {
+      allDrafts.push(...sliceDrafts);
+    });
+
+    return allDrafts.map((d, idx) => ({
+      name: String(d.name || `Micro-tarefa (${idx + 1}/${chunkMinutes.length})`).trim(),
+      description: String(d?.description || '').trim() || undefined,
+      checklist: Array.isArray(d?.checklist)
+        ? (d.checklist as any[]).map((s) => String(s || '').trim()).filter(Boolean)
+        : [],
+      definitionOfDone: String(d?.definitionOfDone || '').trim(),
+      pomodorosPlanned: Math.max(1, Math.min(6, Number(d?.pomodorosPlanned) || 1)),
+      priority: Math.max(1, Math.min(4, Number(d?.priority) || Math.max(1, Math.min(4, 5 - params.level)))),
+      difficult: Math.max(1, Math.min(4, Number(d?.difficult) || 2)),
+      microTaskType: normalizeMicroTaskType(d?.microTaskType),
+      themeTag: String(d?.themeTag || '').trim() || undefined,
+      contextTag: String(d?.contextTag || '').trim() || undefined,
+      cognitiveMode: normalizeCognitiveMode(d?.cognitiveMode),
+      milestoneIndex: d?.milestoneIndex,
+    }));
   }
 }

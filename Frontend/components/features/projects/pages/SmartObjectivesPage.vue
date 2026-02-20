@@ -166,7 +166,7 @@
     <!-- Dialog de Planejamento -->
     <ProjectPlannerDialog
       v-model="showPlannerDialog"
-      :project-id="project?._id"
+      :project-id="getProjectId(project)"
       :project-name="project?.name || ''"
       :project-description="project?.description || ''"
       :short-term-goal="project?.shortTermGoal"
@@ -182,6 +182,7 @@ import { ref, reactive, watch } from 'vue'
 import type { PropType } from 'vue'
 import ProjectPlannerDialog from '../dialogs/ProjectPlannerDialog.vue'
 import SmartDetailCard from '../sections/SmartDetailCard.vue'
+import { getProjectId } from '~/composables/features/useProjectEditing'
 
 interface SmartObjective {
   specific: string

@@ -19,7 +19,7 @@ export default defineNuxtConfig({
   ],
 
   build: {
-    transpile: ['vuetify'],
+    transpile: ['vuetify', 'echarts', 'vue-echarts'],
     postcss: {
       plugins: {
         tailwindcss: {},

@@ -91,6 +91,9 @@ export class WBSService {
 
     if (!result.success && result.error) {
       console.error(`Erro na conversão: ${result.error.stage} - ${result.error.message}`);
+      if (result.error.originalError) {
+        throw result.error.originalError;
+      }
       throw new Error(`WBS conversion failed: ${result.error.message}`);
     }
 

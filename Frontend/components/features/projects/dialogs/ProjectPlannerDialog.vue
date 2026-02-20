@@ -412,6 +412,13 @@ async function finishQuestions() {
 }
 
 async function loadSuggestedAnswer() {
+  // Validate projectId before making any API calls
+  if (!props.projectId || String(props.projectId).trim() === 'undefined' || String(props.projectId).trim() === '') {
+    console.warn('Project ID not available, skipping suggested answer')
+    suggestedAnswer.value = ''
+    return
+  }
+
   loading.value = true
   loadingMessage.value = 'Gerando sugestão de resposta...'
   
@@ -454,6 +461,13 @@ function previousPhase() {
 }
 
 async function generateQuestions() {
+  // Validate projectId before making any API calls
+  if (!props.projectId || String(props.projectId).trim() === 'undefined' || String(props.projectId).trim() === '') {
+    showError.value = true
+    errorMessage.value = '❌ Erro: Project ID não definido. Salve o projeto antes de usar o planejador com IA.'
+    return
+  }
+
   loading.value = true
   loadingMessage.value = 'Gerando perguntas estratégicas...'
 
@@ -483,6 +497,13 @@ async function generateQuestions() {
 }
 
 async function generateSmartObjective() {
+  // Validate projectId before making any API calls
+  if (!props.projectId || String(props.projectId).trim() === 'undefined' || String(props.projectId).trim() === '') {
+    showError.value = true
+    errorMessage.value = '❌ Erro: Project ID não definido. Salve o projeto antes de continuar.'
+    return
+  }
+
   loading.value = true
   loadingMessage.value = 'Gerando objetivo SMART...'
 
@@ -536,6 +557,13 @@ const totalEstimatedHours = computed(() => sumHours(wbsNodes.value))
 
 async function generateWBS() {
   if (!smartObjective.value) return
+  
+  if (!props.projectId || String(props.projectId).trim() === 'undefined') {
+    showError.value = true
+    errorMessage.value = '❌ Erro: Project ID não definido. Salve o projeto antes de gerar WBS.'
+    return
+  }
+  
   loading.value = true
   loadingMessage.value = 'Gerando WBS a partir do objetivo SMART...'
 
@@ -570,6 +598,12 @@ async function generateWBS() {
 }
 
 async function convertAndClose() {
+  if (!props.projectId || String(props.projectId).trim() === 'undefined') {
+    showError.value = true
+    errorMessage.value = '❌ Erro: Project ID não definido. Salve o projeto antes de converter para tarefas.'
+    return
+  }
+  
   loading.value = true
   loadingMessage.value = 'Convertendo WBS em tarefas...'
 
@@ -599,6 +633,12 @@ async function convertAndClose() {
 }
 
 async function saveWBSAndClose() {
+  if (!props.projectId || String(props.projectId).trim() === 'undefined') {
+    showError.value = true
+    errorMessage.value = '❌ Erro: Project ID não definido. Salve o projeto antes de salvar WBS.'
+    return
+  }
+  
   loading.value = true
   loadingMessage.value = 'Salvando WBS...'
 

@@ -1,95 +1,168 @@
 /**
- * Utilities for parsing and cleaning JSON responses from AI
+ * Utilities for parsing and cleaning JSON responses from AI (Gemma-compatible)
  */
 
+/** Strip markdown fences and isolate JSON content. */
+function cleanMarkdown(response: string): string {
+  let s = response.trim();
+  // Remove markdown code fences
+  s = s.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/i, '');
+  return s.trim();
+}
+
 /**
- * Extract and parse a JSON array from AI response (handles markdown, truncation, etc)
+ * Aggressive JSON repair for Gemma/open-source models that produce almost-valid JSON.
+ * Handles: trailing commas, unquoted/single-quoted keys, escaped newlines, smart quotes,
+ * control chars, duplicate commas, and other common LLM JSON quirks.
+ */
+export function repairJsonString(raw: string): string {
+  let s = raw;
+
+  // Normalize smart/curly quotes
+  s = s.replace(/[\u201C\u201D\u00AB\u00BB]/g, '"');
+  s = s.replace(/[\u2018\u2019\u2032]/g, "'");
+
+  // Remove control characters except \t \n \r
+  s = s.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, ' ');
+
+  // Normalize literal escaped newline sequences in string values: \n → \\n etc.
+  // (Gemma sometimes outputs real newlines inside JSON strings)
+  // We'll handle this by replacing newlines inside string values only — risky to do globally,
+  // so just replace raw \r\n inside strings with space.
+  s = s.replace(/([^\\])(\r?\n)(\s*[^"\[\{])/g, (_, pre, _nl, post) => pre + ' ' + post);
+
+  // Remove trailing commas before ] or }
+  s = s.replace(/,\s*([\]\}])/g, '$1');
+
+  // Remove duplicate commas
+  s = s.replace(/,\s*,/g, ',');
+
+  // Fix unquoted or single-quoted property names:  { key: ... } → { "key": ... }
+  s = s.replace(/([{,]\s*)'([^']+)'\s*:/g, '$1"$2":');
+  s = s.replace(/([{,]\s*)([a-zA-Z_$][a-zA-Z0-9_$]*)\s*:/g, '$1"$2":');
+
+  // Fix single-quoted string values (naive — doesn't handle escaped quotes inside)
+  s = s.replace(/:\s*'([^']*)'/g, ': "$1"');
+
+  // Remove any trailing comma before end of string
+  s = s.replace(/,\s*$/, '');
+
+  return s;
+}
+
+/**
+ * Try to salvage an incomplete/malformed JSON array by extracting complete objects.
+ * Returns an empty array if nothing can be salvaged.
+ */
+function extractPartialArray(raw: string): any[] {
+  // Find array start
+  const arrStart = raw.indexOf('[');
+  if (arrStart === -1) return [];
+
+  const content = raw.slice(arrStart + 1);
+  const objects: any[] = [];
+
+  // Split on object boundaries: },{ or },\n{
+  const parts = content.split(/\}\s*,\s*\{/);
+
+  for (let i = 0; i < parts.length; i++) {
+    let chunk = parts[i].trim();
+    // Re-add braces stripped by split
+    if (i > 0) chunk = '{' + chunk;
+    if (i < parts.length - 1) chunk = chunk + '}';
+    // Last part: strip trailing ] and garbage
+    if (i === parts.length - 1) {
+      chunk = chunk.replace(/\][^}]*$/, '').trim();
+      if (!chunk.endsWith('}')) chunk = chunk + '}';
+    }
+    chunk = chunk.trim();
+    if (!chunk.startsWith('{')) chunk = '{' + chunk;
+    try {
+      const parsed = JSON.parse(repairJsonString(chunk));
+      if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
+        objects.push(parsed);
+      }
+    } catch {
+      // Salvage failed for this chunk — skip it
+    }
+  }
+
+  return objects;
+}
+
+/**
+ * Extract and parse a JSON array from AI response.
+ * Handles: markdown fences, truncation, malformed JSON, partial arrays.
  */
 export function extractJsonArray<T = any>(response: string): T[] {
   if (!response || typeof response !== 'string') {
     throw new Error('Resposta da IA vazia');
   }
 
-  let cleaned = response.trim();
-  if (cleaned.startsWith('```')) {
-    cleaned = cleaned.replace(/^```(?:json)?\s*/i, '').replace(/```\s*$/, '');
-  }
+  let cleaned = cleanMarkdown(response);
 
-  // Try to isolate the array
-  const match = cleaned.match(/\[[\s\S]*\]/);
-  if (match) cleaned = match[0];
+  // Isolate array if present anywhere in the response
+  const arrMatch = cleaned.match(/\[[\s\S]*\]/);
+  if (arrMatch) cleaned = arrMatch[0];
 
-  // If it looks like JSON started but was truncated, fail fast so caller can retry/batch.
-  const hasArrayStart = cleaned.includes('[');
-  const endsAsArray = cleaned.trim().endsWith(']');
-  if (hasArrayStart && !endsAsArray) {
-    throw new Error('Resposta JSON parece truncada (array incompleto)');
-  }
-
-  const tryParse = (text: string): any => {
-    return JSON.parse(text);
-  };
-
+  // --- Attempt 1: direct parse ---
   try {
-    const parsed = tryParse(cleaned);
-    if (!Array.isArray(parsed)) throw new Error('IA não retornou um array JSON');
-    return parsed as T[];
-  } catch {
-    // Common cleanups: remove trailing commas & control chars
-    let repaired = cleaned.replace(/,\s*([\}\]])/g, '$1');
-    repaired = repaired.replace(/[\x00-\x1F\x7F]/g, ' ');
-    // Normalize "smart quotes" that break JSON parsing.
-    repaired = repaired
-      .replace(/[\u201C\u201D]/g, '"')
-      .replace(/[\u2018\u2019]/g, "'");
-    const parsed = tryParse(repaired);
-    if (!Array.isArray(parsed)) {
-      throw new Error('IA não retornou um array JSON');
-    }
-    return parsed as T[];
+    const parsed = JSON.parse(cleaned);
+    if (Array.isArray(parsed)) return parsed as T[];
+  } catch { /* fall through */ }
+
+  // --- Attempt 2: repair then parse ---
+  const repaired = repairJsonString(cleaned);
+  try {
+    const parsed = JSON.parse(repaired);
+    if (Array.isArray(parsed)) return parsed as T[];
+  } catch { /* fall through */ }
+
+  // --- Attempt 3: partial salvage (array was truncated mid-object) ---
+  const salvaged = extractPartialArray(repaired || cleaned);
+  if (salvaged.length > 0) {
+    console.warn(
+      `[json-parser] extractJsonArray: parsing failed; salvaged ${salvaged.length} object(s) from partial response.`,
+    );
+    return salvaged as T[];
   }
+
+  // Nothing worked — throw with useful context
+  const preview = cleaned.slice(0, 120).replace(/\s+/g, ' ');
+  throw new Error(`Não foi possível extrair array JSON da resposta da IA. Preview: ${preview}`);
 }
 
 /**
- * Extract and parse a JSON object from AI response (handles markdown, truncation, etc)
+ * Extract and parse a JSON object from AI response.
+ * Handles: markdown fences, truncation, malformed JSON.
  */
 export function extractJsonObject<T = any>(response: string): T {
   if (!response || typeof response !== 'string') {
     throw new Error('Resposta da IA vazia');
   }
 
-  let cleaned = response.trim();
-  if (cleaned.startsWith('```')) {
-    cleaned = cleaned.replace(/^```(?:json)?\s*/i, '').replace(/```\s*$/, '');
-  }
+  let cleaned = cleanMarkdown(response);
 
-  const match = cleaned.match(/\{[\s\S]*\}/);
-  if (match) cleaned = match[0];
+  // Isolate object if present
+  const objMatch = cleaned.match(/\{[\s\S]*\}/);
+  if (objMatch) cleaned = objMatch[0];
 
-  const hasObjStart = cleaned.includes('{');
-  const endsAsObj = cleaned.trim().endsWith('}');
-  if (hasObjStart && !endsAsObj) {
-    throw new Error('Resposta JSON parece truncada (objeto incompleto)');
-  }
-
-  const tryParse = (text: string): any => {
-    return JSON.parse(text);
-  };
-
+  // --- Attempt 1: direct parse ---
   try {
-    const parsed = tryParse(cleaned);
-    if (!parsed || Array.isArray(parsed)) throw new Error('IA não retornou um objeto JSON');
-    return parsed as T;
-  } catch {
-    let repaired = cleaned.replace(/,\s*([\}\]])/g, '$1');
-    repaired = repaired.replace(/[\x00-\x1F\x7F]/g, ' ');
-    repaired = repaired
-      .replace(/[\u201C\u201D]/g, '"')
-      .replace(/[\u2018\u2019]/g, "'");
-    const parsed = tryParse(repaired);
-    if (!parsed || Array.isArray(parsed)) {
-      throw new Error('IA não retornou um objeto JSON');
-    }
-    return parsed as T;
+    const parsed = JSON.parse(cleaned);
+    if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) return parsed as T;
+  } catch { /* fall through */ }
+
+  // --- Attempt 2: repair then parse ---
+  const repaired = repairJsonString(cleaned);
+  try {
+    const parsed = JSON.parse(repaired);
+    if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) return parsed as T;
+  } catch (e: any) {
+    const preview = cleaned.slice(0, 120).replace(/\s+/g, ' ');
+    throw new Error(`Não foi possível extrair objeto JSON da resposta da IA. Preview: ${preview}`);
   }
+
+  const preview = cleaned.slice(0, 120).replace(/\s+/g, ' ');
+  throw new Error(`Não foi possível extrair objeto JSON da resposta da IA. Preview: ${preview}`);
 }

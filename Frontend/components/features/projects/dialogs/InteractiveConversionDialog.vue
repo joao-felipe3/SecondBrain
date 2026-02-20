@@ -1,5 +1,5 @@
 <template>
-  <v-dialog v-model="isOpen" max-width="900" persistent scrollable>
+  <v-dialog v-model="isOpen" max-width="900" persistent scrollable style="height: 95vh;">
     <v-card>
       <v-card-title class="d-flex align-center justify-space-between">
         <span>🔄 Geração Interativa de Micro-Tarefas</span>
@@ -8,8 +8,8 @@
 
       <v-divider />
 
-      <!-- Progress Overview -->
-      <v-card-text class="pb-2">
+      <!-- Progress Overview (Fixed Header) -->
+      <v-card-text class="progress-header pa-4 pb-3">
         <div class="d-flex align-center justify-space-between mb-3">
           <div>
             <div class="text-subtitle-2">Progresso: {{ currentIndex }} / {{ totalLeafs }}</div>
@@ -27,95 +27,160 @@
           :color="statusColor"
           height="8"
           rounded
-          class="mb-3"
         />
-
-        <!-- Leaf Nodes List -->
-        <v-list density="compact" class="mb-3" style="max-height: 200px; overflow-y: auto;">
-          <v-list-item
-            v-for="(leaf, idx) in leafNodes"
-            :key="idx"
-            :class="{
-              'bg-primary-lighten-5': idx === currentIndex,
-              'bg-success-lighten-5': idx < currentIndex,
-            }"
-          >
-            <template #prepend>
-              <v-icon
-                :icon="
-                  idx < currentIndex
-                    ? 'mdi-check-circle'
-                    : idx === currentIndex
-                    ? 'mdi-loading mdi-spin'
-                    : 'mdi-circle-outline'
-                "
-                :color="
-                  idx < currentIndex
-                    ? 'success'
-                    : idx === currentIndex
-                    ? 'primary'
-                    : 'grey-lighten-1'
-                "
-                size="small"
-              />
-            </template>
-            <v-list-item-title class="text-caption">{{ leaf.path }}</v-list-item-title>
-            <v-list-item-subtitle class="text-caption">
-              {{ leaf.node.estimatedHours }}h → 
-              {{ leaf.generatedTasks ? leaf.generatedTasks.length : '?' }} tasks
-              {{ leaf.generatedHours ? `(${leaf.generatedHours.toFixed(1)}h)` : '' }}
-            </v-list-item-subtitle>
-          </v-list-item>
-        </v-list>
       </v-card-text>
 
       <v-divider />
 
-      <!-- Current Leaf Details -->
-      <v-card-text v-if="currentLeaf && currentGeneratedResult" style="max-height: 400px; overflow-y: auto;">
-        <div class="mb-3">
-          <h3 class="text-subtitle-1 mb-1">📦 {{ currentLeaf.node.name }}</h3>
-          <p class="text-caption text-medium-emphasis mb-2">{{ currentLeaf.path }}</p>
-          
-          <v-alert 
-            :type="budgetAlertType" 
-            density="compact" 
-            variant="tonal" 
-            class="mb-3"
-            :prominent="differencePercentage > 50"
-          >
-            <div class="text-caption">
-              <strong>Orçamento pacote:</strong> {{ currentLeaf.node.estimatedHours }}h<br>
-              <strong>Horas geradas:</strong> {{ currentGeneratedResult.generatedHours.toFixed(1) }}h
-              ({{ currentGeneratedResult.pomodorosGenerated }} pomodoros)<br>
-              <strong>Diferença:</strong>
-              <span :class="differenceClass">
-                {{ ((currentGeneratedResult.generatedHours - currentLeaf.node.estimatedHours) >= 0 ? '+' : '') }}
-                {{ (currentGeneratedResult.generatedHours - currentLeaf.node.estimatedHours).toFixed(1) }}h
-                ({{ differencePercentage.toFixed(0) }}%)
-              </span>
-              <div v-if="differencePercentage > 20" class="mt-2 font-weight-bold">
-                ⚠️ Detalhamento revelou discrepância de estimativa. Use "Resolver discrepância".
+      <!-- Main Content Area (Scrollable) -->
+      <div class="main-content-wrapper">
+        <!-- WBS Tree Visualization -->
+        <v-expand-transition>
+          <div v-if="currentLeaf" class="px-4">
+            <WBSTreeVisualization 
+              :leaf-nodes="leafNodes" 
+              :current-index="currentIndex"
+              @leaf-clicked="openLeafDetailDialog"
+              @task-clicked="openMicroTaskDialog"
+            />
+          </div>
+        </v-expand-transition>
+
+        <v-divider class="my-4" />
+
+        <!-- Two Column Layout: Leaf Nodes List + Current Leaf Details -->
+        <div class="content-grid px-4 pb-4">
+          <!-- Left: Leaf Nodes List (Collapsible) -->
+          <div class="leaf-list-column">
+            <div class="list-header">
+              <h4 class="text-subtitle-2">📦 Pacotes</h4>
+              <v-btn
+                :icon="listExpanded ? 'mdi-chevron-down' : 'mdi-chevron-right'"
+                size="x-small"
+                variant="text"
+                @click="listExpanded = !listExpanded"
+              />
+            </div>
+            
+            <v-expand-transition>
+              <v-list v-show="listExpanded" density="compact" class="leaf-nodes-list">
+                <v-list-item
+                  v-for="(leaf, idx) in leafNodes"
+                  :key="idx"
+                  :class="{
+                    'bg-primary-lighten-5': idx === currentIndex,
+                    'bg-success-lighten-5': idx < currentIndex,
+                  }"
+                >
+                  <template #prepend>
+                    <v-icon
+                      :icon="
+                        idx < currentIndex
+                          ? 'mdi-check-circle'
+                          : idx === currentIndex
+                          ? 'mdi-loading mdi-spin'
+                          : 'mdi-circle-outline'
+                      "
+                      :color="
+                        idx < currentIndex
+                          ? 'success'
+                          : idx === currentIndex
+                          ? 'primary'
+                          : 'grey-lighten-1'
+                      "
+                      size="small"
+                    />
+                  </template>
+                  <v-list-item-title class="text-caption">{{ leaf.path }}</v-list-item-title>
+                  <v-list-item-subtitle class="text-caption">
+                    {{ leaf.node.estimatedHours }}h → 
+                    {{ leaf.generatedTasks ? leaf.generatedTasks.length : '?' }} tasks
+                    {{ leaf.generatedHours ? `(${leaf.generatedHours.toFixed(1)}h)` : '' }}
+                  </v-list-item-subtitle>
+                </v-list-item>
+              </v-list>
+            </v-expand-transition>
+          </div>
+
+          <!-- Right: Current Leaf Details + Generated Tasks Preview -->
+          <div class="leaf-details-column">
+            <div v-if="currentLeaf && currentGeneratedResult">
+              <div class="leaf-header">
+                <div>
+                  <h3 class="text-subtitle-1 mb-1">{{ currentLeaf.node.name }}</h3>
+                  <p class="text-caption text-medium-emphasis">{{ currentLeaf.path }}</p>
+                </div>
+              </div>
+
+              <v-alert 
+                :type="budgetAlertType" 
+                density="compact" 
+                variant="tonal" 
+                class="my-3"
+                :prominent="differencePercentage > 50"
+              >
+                <div class="text-caption">
+                  <strong>Orçamento:</strong> {{ currentLeaf.node.estimatedHours }}h &nbsp;
+                  <strong>Gerado:</strong> {{ currentGeneratedResult.generatedHours.toFixed(1) }}h 
+                  ({{ currentGeneratedResult.pomodorosGenerated }} 🍅)
+                  <br>
+                  <strong>Diferença:</strong>
+                  <span :class="differenceClass">
+                    {{ ((currentGeneratedResult.generatedHours - currentLeaf.node.estimatedHours) >= 0 ? '+' : '') }}
+                    {{ (currentGeneratedResult.generatedHours - currentLeaf.node.estimatedHours).toFixed(1) }}h
+                    ({{ differencePercentage.toFixed(0) }}%)
+                  </span>
+                  <div v-if="differencePercentage > 20" class="mt-2 font-weight-bold">
+                    ⚠️ Discrepância detectada
+                  </div>
+                </div>
+              </v-alert>
+
+              <!-- Generated Tasks Preview -->
+              <h4 class="text-subtitle-2 mt-4 mb-2">✅ Micro-tarefas Geradas ({{ currentGeneratedResult.tasks?.length || 0 }})</h4>
+              <div class="tasks-preview-container">
+                <div v-if="!currentGeneratedResult.tasks || currentGeneratedResult.tasks.length === 0" class="text-caption text-medium-emphasis pa-3">
+                  Nenhuma tarefa gerada
+                </div>
+                <v-slide-y-transition group>
+                  <div
+                    v-for="(task, idx) in currentGeneratedResult.tasks"
+                    :key="`task-${idx}`"
+                    class="task-item"
+                    @click="openMicroTaskDialog(task)"
+                  >
+                    <div class="task-header">
+                      <div class="task-title">
+                        <v-icon 
+                          :icon="`mdi-${getTaskTypeIcon(task.microTaskType)}`"
+                          size="small"
+                          class="mr-2"
+                        />
+                        <span class="font-weight-medium">{{ task.name }}</span>
+                      </div>
+                      <v-chip 
+                        size="x-small"
+                        :color="getPriorityColor(task.priority)"
+                        variant="tonal"
+                      >
+                        {{ task.pomodorosPlanned || 1 }} 🍅
+                      </v-chip>
+                    </div>
+                    <div v-if="task.themeTag || task.contextTag" class="task-tags">
+                      <v-chip v-if="task.themeTag" size="x-small" variant="outlined" class="mr-1">
+                        {{ task.themeTag }}
+                      </v-chip>
+                      <v-chip v-if="task.contextTag" size="x-small" variant="outlined">
+                        {{ task.contextTag }}
+                      </v-chip>
+                    </div>
+                  </div>
+                </v-slide-y-transition>
               </div>
             </div>
-          </v-alert>
-
-          <h4 class="text-subtitle-2 mb-2">Micro-tarefas geradas ({{ currentGeneratedResult.tasks.length }}):</h4>
-          <v-list density="compact" class="task-preview-list">
-            <v-list-item v-for="(task, idx) in currentGeneratedResult.tasks" :key="idx" class="mb-1">
-              <template #prepend>
-                <v-chip size="x-small" :color="getPriorityColor(task.priority)" class="mr-2">
-                  P{{ task.priority }}
-                </v-chip>
-              </template>
-              <v-list-item-title class="text-caption">{{ task.name }}</v-list-item-title>
-              <v-list-item-subtitle class="text-caption">
-                {{ task.pomodorosPlanned }} 🍅 • {{ task.microTaskType }} • {{ task.cognitiveMode }}
-              </v-list-item-subtitle>
-            </v-list-item>
-          </v-list>
+          </div>
         </div>
-      </v-card-text>
+      </div>
 
       <v-divider />
 
@@ -348,6 +413,226 @@
           </v-card-actions>
         </v-card>
       </v-dialog>
+
+      <!-- Micro Task Preview Dialog -->
+      <v-dialog v-model="microTaskDialogOpen" max-width="600" persistent>
+        <div class="micro-task-paper-dialog" v-if="selectedMicroTask">
+          <!-- Imagem de fundo do papel -->
+          <v-img 
+            src="/svg/old-paper-4.svg" 
+            alt="Old Paper" 
+            width="500"
+            height="700"
+            style="z-index: 3;" 
+          />
+          
+          <!-- Conteúdo sobre o papel -->
+          <div class="paper-dialog-content micro-task-content">
+            <div class="close-button-wrapper">
+              <v-btn 
+                icon="mdi-close" 
+                variant="text" 
+                size="small" 
+                @click="microTaskDialogOpen = false"
+                class="close-btn"
+              />
+            </div>
+
+            <h1 class="paper-title mt-10 ml-4">{{ selectedMicroTask.name }}</h1>
+
+            <!-- Seção Básica -->
+            <div class="form-section">
+              <div v-if="selectedMicroTask.description" class="field-display">
+                <strong>Descrição:</strong>
+                <p>{{ selectedMicroTask.description }}</p>
+              </div>
+              <div v-if="selectedMicroTask.definitionOfDone" class="field-display">
+                <strong>📝 Definição de Pronto:</strong> <span style="font-weight: normal;">{{ selectedMicroTask.definitionOfDone }}</span>
+              </div>
+            </div>
+
+            <!-- Seção Checklist -->
+            <div v-if="selectedMicroTask.checklist && selectedMicroTask.checklist.length > 0" class="form-section">
+              <h5 class="section-title">☑️ Checklist</h5>
+              <div class="checklist-display">
+                <div v-for="(item, idx) in selectedMicroTask.checklist" :key="idx" class="checklist-item">
+                  <v-icon icon="mdi-checkbox-blank-outline" size="small" />
+                  <span>{{ item }}</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Seção Planejamento -->
+            <div class="form-section">
+              <h5 class="section-title">🎯 Atributos</h5>
+              <div class="dialog-grid">
+                <div class="field-display" style="display: flex; align-items: center; gap: 0.25rem;">
+                  <strong>- Prioridade:</strong><span style="font-weight: normal;">{{ selectedMicroTask.priority || 'N/A' }}</span>
+                </div>
+                <div class="field-display" style="display: flex; align-items: center; gap: 0.25rem;">
+                  <strong>- Dificuldade:</strong><span style="font-weight: normal;">{{ selectedMicroTask.difficult || 'N/A' }}</span>
+                </div>
+              </div>
+              <div v-if="selectedMicroTask.experience" class="field-display mt-2">
+                <strong>- Experiência: {{ selectedMicroTask.experience }} XP</strong>
+              </div>
+              <div v-if="selectedMicroTask.prize" class="field-display">
+                <strong>- Prêmio: {{ selectedMicroTask.prize }} pontos</strong>
+              </div>
+              <div class="dialog-grid">
+                <div class="field-display" style="display: flex; align-items: center; gap: 0.25rem;">
+                  <strong>- Tipo de Task:</strong><span style="font-weight: normal;">{{ selectedMicroTask.microTaskType || 'N/A' }}</span>
+                </div>
+                <div class="field-display" style="display: flex; align-items: center; gap: 0.25rem;">
+                  <strong>- Modo Cognitivo:</strong> <span style="font-weight: normal;">{{ selectedMicroTask.cognitiveMode || 'N/A' }}</span>
+                </div>
+
+              </div>
+              <div class="field-display mt-n2" style="display: flex; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
+                <strong>- Tags:</strong>
+                <v-chip v-if="selectedMicroTask.contextTag" size="small" variant="outlined">
+                  {{ selectedMicroTask.contextTag }}
+                </v-chip>
+                <v-chip 
+                  v-for="(tag, idx) in (Array.isArray(selectedMicroTask.themeTag) ? selectedMicroTask.themeTag : [])" 
+                  :key="idx" 
+                  size="small" 
+                  variant="outlined"
+                >
+                  {{ tag }}
+                </v-chip>
+              </div>
+              <div class="dialog-grid">
+                <div class="field-display" style="display: flex; align-items: center; gap: 0.25rem;">
+                  <strong>- Pomodoros:</strong><span style="font-weight: normal;">{{ selectedMicroTask.pomodorosPlanned || 1 }}</span>
+                </div>
+                <div class="field-display" style="display: flex; align-items: center; gap: 0.25rem;">
+                  <strong>- Deadline:</strong><span style="font-weight: normal;">{{ formatDate(selectedMicroTask.deadline) }}</span>
+                </div>
+              </div>
+
+              <div v-if="selectedMicroTask.pertExpectedMinutes" class="pert-display">
+                <strong>PERT Estimativas:</strong>
+                <div class="pert-values">
+                  <span>Otimista: {{ selectedMicroTask.pertOptimisticMinutes }}min</span>
+                  <span>Provável: {{ selectedMicroTask.pertMostLikelyMinutes }}min</span>
+                  <span>Pessimista: {{ selectedMicroTask.pertPessimisticMinutes }}min</span>
+                  <span>Esperado: {{ selectedMicroTask.pertExpectedMinutes }}min</span>
+                  <span>Variância: {{ selectedMicroTask.pertVariance?.toFixed(2) }}</span>
+                </div>
+              </div>
+            </div>
+
+            <div v-if="selectedMicroTask.wbsPath" class="form-section">
+              <h5 class="section-title">📂 WBS Path</h5>
+              <p class="wbs-path">{{ selectedMicroTask.wbsPath }}</p>
+            </div>
+          </div>
+        </div>
+      </v-dialog>
+
+      <!-- Leaf Node Detail Dialog -->
+      <v-dialog v-model="leafDetailDialogOpen" max-width="650" persistent scrollable>
+        <div class="leaf-paper-dialog" v-if="selectedLeafNode">
+          <!-- Imagem de fundo do papel -->
+          <v-img 
+            src="/svg/old-paper-4.svg" 
+            alt="Old Paper" 
+            width="550"
+            height="750"
+            style="z-index: 3;" 
+          />
+          
+          <!-- Conteúdo sobre o papel -->
+          <div class="paper-dialog-content leaf-content">
+            <div class="close-button-wrapper">
+              <v-btn 
+                icon="mdi-close" 
+                variant="text" 
+                size="small" 
+                @click="leafDetailDialogOpen = false"
+                class="close-btn"
+              />
+            </div>
+
+            <h1 class="paper-title">{{ selectedLeafNode.node.name }}</h1>
+
+            <!-- Seção Informações do Pacote -->
+            <div class="form-section">
+              <h5 class="section-title">📦 Informações do Pacote</h5>
+              <div v-if="selectedLeafNode.node.description" class="field-display">
+                <strong>Descrição:</strong>
+                <p>{{ selectedLeafNode.node.description }}</p>
+              </div>
+              <div class="field-display">
+                <strong>Nível de Profundidade:</strong>
+                <span class="value">{{ selectedLeafNode.level }}</span>
+              </div>
+              <div class="field-display">
+                <strong>Caminho WBS:</strong>
+                <p class="wbs-path">{{ selectedLeafNode.path }}</p>
+              </div>
+            </div>
+
+            <!-- Seção Orçamento -->
+            <div class="form-section">
+              <h5 class="section-title">💰 Orçamento</h5>
+              <div class="budget-display">
+                <div class="budget-item">
+                  <span>Estimado (WBS):</span>
+                  <span class="value">{{ selectedLeafNode.node.estimatedHours }}h</span>
+                </div>
+                <div class="budget-item">
+                  <span>Gerado (Bottom-up):</span>
+                  <span class="value">{{ selectedLeafNode.generatedHours?.toFixed(1) || 'N/A' }}h</span>
+                </div>
+                <div class="budget-item" v-if="selectedLeafNode.generatedHours">
+                  <span>Pomodoros:</span>
+                  <span class="value">{{ Math.round(selectedLeafNode.generatedHours * 2) }} 🍅</span>
+                </div>
+              </div>
+              
+              <div v-if="selectedLeafNode.generatedHours" class="budget-alert">
+                <div class="budget-diff">
+                  <strong>Diferença:</strong>
+                  <span :class="getBudgetDiffClass(selectedLeafNode)">
+                    {{ ((selectedLeafNode.generatedHours - selectedLeafNode.node.estimatedHours) >= 0 ? '+' : '') }}
+                    {{ (selectedLeafNode.generatedHours - selectedLeafNode.node.estimatedHours).toFixed(1) }}h
+                    ({{ getBudgetDiffPercentage(selectedLeafNode).toFixed(0) }}%)
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Seção Tasks Geradas -->
+            <div v-if="selectedLeafNode.generatedTasks && selectedLeafNode.generatedTasks.length > 0" class="form-section">
+              <h5 class="section-title">✅ Micro-tarefas ({{ selectedLeafNode.generatedTasks.length }})</h5>
+              <div class="tasks-summary">
+                <div 
+                  v-for="(task, idx) in selectedLeafNode.generatedTasks"
+                  :key="idx"
+                  class="task-summary-item"
+                >
+                  <div class="task-summary-name">
+                    <v-icon size="small" class="mr-1">mdi-{{ getTaskTypeIcon(task.microTaskType) }}</v-icon>
+                    <span>{{ task.name }}</span>
+                  </div>
+                  <div class="task-summary-info">
+                    <v-chip size="x-small" :color="getPriorityColor(task.priority)" variant="tonal" class="mr-1">
+                      P{{ task.priority }}
+                    </v-chip>
+                    <span class="text-caption">{{ task.pomodorosPlanned || 1 }} 🍅</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div v-else class="form-section empty-state">
+              <p class="text-caption text-medium-emphasis">Nenhuma tarefa gerada ainda</p>
+            </div>
+          </div>
+        </div>
+      </v-dialog>
     </v-card>
   </v-dialog>
 </template>
@@ -356,6 +641,8 @@
 import { ref, computed, watch } from 'vue'
 import type { PropType } from 'vue'
 import { useNuxtApp } from '#app'
+import WBSTreeVisualization from '~/components/features/projects/visualization/WBSTreeVisualization.vue'
+
 
 type WBSNode = {
   _id?: string
@@ -394,6 +681,7 @@ const currentGeneratedResult = ref<any>(null)
 const processing = ref(false)
 const approvedTasks = ref<any[]>([])
 const accumulatedHours = ref(0)
+const listExpanded = ref(true)
 
 const resolutionDialogOpen = ref(false)
 const resolutionMode = ref<'rebaseline' | 'audit' | 'simplify'>('rebaseline')
@@ -402,6 +690,12 @@ const auditResult = ref<any>(null)
 
 const modelSelectionDialogOpen = ref(false)
 const selectedModel = ref<string>('gemini-2.5-flash')
+
+const microTaskDialogOpen = ref(false)
+const selectedMicroTask = ref<any>(null)
+
+const leafDetailDialogOpen = ref(false)
+const selectedLeafNode = ref<any>(null)
 
 // When discrepancy is very large, run audit automatically.
 const autoAuditThresholdPct = 60
@@ -460,6 +754,17 @@ const budgetAlertType = computed(() => {
 function getPriorityColor(priority: number) {
   const colors = { 1: 'error', 2: 'warning', 3: 'info', 4: 'success' }
   return colors[priority as keyof typeof colors] || 'grey'
+}
+
+function getTaskTypeIcon(type: string) {
+  const icons: Record<string, string> = {
+    'practice': 'dumbbell',
+    'produce': 'pencil-box',
+    'test': 'checkbox-marked-circle',
+    'consolidate': 'book',
+    'prepare': 'clipboard-list',
+  }
+  return icons[String(type || '').toLowerCase()] || 'checkbox-blank-circle-outline'
 }
 
 function summarizeTasks(tasks: any[]) {
@@ -1073,13 +1378,550 @@ watch(isOpen, (newVal) => {
     initializeLeafNodes()
   }
 })
+
+function openMicroTaskDialog(task: any) {
+  selectedMicroTask.value = task
+  microTaskDialogOpen.value = true
+}
+
+
+function openLeafDetailDialog(leafNode: any) {
+  selectedLeafNode.value = leafNode
+  leafDetailDialogOpen.value = true
+}
+
+function getBudgetDiffPercentage(leafNode: any): number {
+  const budget = leafNode.node.estimatedHours || 0
+  const generated = leafNode.generatedHours || 0
+  return budget > 0 ? ((generated - budget) / budget) * 100 : 0
+}
+
+function getBudgetDiffClass(leafNode: any): string {
+  const diff = getBudgetDiffPercentage(leafNode)
+  if (diff > 50) return 'text-error font-weight-bold'
+  if (diff > 20) return 'text-warning font-weight-bold'
+  if (diff < -10) return 'text-info'
+  return 'text-success'
+}
+
+function formatDate(dateValue: any): string {
+  if (!dateValue) return 'N/A'
+  try {
+    const date = new Date(dateValue)
+    return date.toLocaleDateString('pt-BR', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+    })
+  } catch {
+    return 'Data inválida'
+  }
+}
 </script>
 
 <style scoped>
-.task-preview-list {
+@import url('https://fonts.googleapis.com/css2?family=Irish+Grover&family=MedievalSharp&display=swap');
+
+/* Dialog Layout Structure */
+.progress-header {
+  background: rgba(var(--v-theme-surface), 1);
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  border-bottom: 1px solid rgba(var(--v-border-color), 0.12);
+}
+
+.main-content-wrapper {
+  max-height: calc(100vh - 340px);
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+/* Two Column Grid Layout */
+.content-grid {
+  display: grid;
+  grid-template-columns: 0.6fr 1.4fr;
+  gap: 2rem;
+  align-items: start;
+}
+
+.leaf-list-column {
+  display: flex;
+  flex-direction: column;
+}
+
+.list-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 0.5rem;
+  margin-bottom: 0.5rem;
+  border-bottom: 1px solid rgba(var(--v-border-color), 0.12);
+}
+
+.list-header h4 {
+  margin: 0;
+}
+
+.leaf-nodes-list {
   border: 1px solid rgba(var(--v-border-color), 0.12);
   border-radius: 4px;
-  padding: 8px;
-  background: rgba(var(--v-theme-surface-variant), 0.05);
+  padding: 0.5rem;
+  background: rgba(var(--v-theme-surface-variant), 0.02);
+  max-height: 600px;
+  overflow-y: auto;
 }
+
+.leaf-details-column {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid rgba(var(--v-border-color), 0.12);
+  border-radius: 4px;
+  padding: 1.5rem;
+  background: rgba(var(--v-theme-surface-variant), 0.02);
+}
+
+.leaf-header {
+  margin-bottom: 1rem;
+}
+
+.leaf-header h3 {
+  margin-bottom: 0.25rem;
+}
+
+/* Tasks Preview Container */
+.tasks-preview-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  max-height: 500px;
+  overflow-y: auto;
+  border: 1px solid rgba(var(--v-border-color), 0.08);
+  border-radius: 4px;
+  padding: 0.75rem;
+  background: rgba(var(--v-theme-surface), 0.5);
+}
+
+.task-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  border-left: 3px solid rgba(var(--v-primary-color), 0.2);
+  border-radius: 2px;
+  background: rgba(var(--v-surface-color), 1);
+  transition: all 0.2s ease;
+}
+
+.task-item:hover {
+  border-left-color: rgba(var(--v-primary-color), 0.8);
+  background: rgba(var(--v-primary-color), 0.03);
+}
+
+.task-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.task-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex: 1;
+  font-size: 0.875rem;
+  min-width: 0;
+}
+
+.task-title span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.task-tags {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.details-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+  .task-item {
+    cursor: pointer;
+  }
+
+  /* Micro Task Dialog Styles */
+  .micro-task-paper-dialog {
+    position: relative;
+    width: 500px;
+    height: 700px;
+    margin: -4rem auto;
+  }
+
+  .micro-task-content {
+    position: absolute;
+    top: 1rem;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 4;
+    padding: 0 3.5rem;
+    overflow-y: auto;
+    overflow-x: hidden;
+    color: #3e2723;
+    font-family: 'MedievalSharp', 'Irish Grover', cursive;
+  }
+
+  .micro-task-content::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  .micro-task-content::-webkit-scrollbar-track {
+    background: rgba(201, 166, 107, 0.2);
+    border-radius: 4px;
+  }
+
+  .micro-task-content::-webkit-scrollbar-thumb {
+    background: rgba(139, 90, 43, 0.5);
+    border-radius: 4px;
+  }
+
+  .micro-task-content::-webkit-scrollbar-thumb:hover {
+    background: rgba(139, 90, 43, 0.7);
+  }
+
+  /* Paper Title */
+  .paper-title {
+    font-family: 'Irish Grover', cursive;
+    font-size: 1.5rem;
+    font-weight: 400;
+    color: #3e2723;
+    margin: 0 0 1rem 0;
+    text-align: center;
+    text-shadow: 1px 1px 0 rgba(255, 255, 255, 0.3);
+    word-wrap: break-word;
+  }
+
+  /* Paper Dialog Content */
+  .paper-dialog-content,
+  .micro-task-content {
+    font-size: 0.9rem;
+    line-height: 1.5;
+  }
+
+  /* Form Sections */
+  .form-section {
+    margin-bottom: 0.75rem;
+  }
+
+  .form-section:last-child {
+    margin-bottom: 0;
+  }
+
+  .section-title {
+    font-family: 'MedievalSharp', cursive;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #5d4037;
+    margin: 0 0 0.25rem 0;
+    padding-bottom: 0.4rem;
+    border-bottom: 2px dashed #c9a66b;
+  }
+
+  /* Field Display */
+  .field-display {
+    margin-bottom: 0.5rem;
+    font-size: 0.85rem;
+  }
+
+  .field-display strong {
+    color: #3e2723;
+    display: block;
+    margin-bottom: 0.2rem;
+  }
+
+  .field-display .value {
+    font-weight: 600;
+    color: #5d4037;
+  }
+
+  .field-display p {
+    margin: 0.3rem 0 0 0;
+    color: #5d4037;
+  }
+
+  /* Dialog Grid */
+  .dialog-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+  }
+
+  /* Checklist Display */
+  .checklist-display {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+  }
+
+  .checklist-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+    font-size: 0.85rem;
+    color: #5d4037;
+  }
+
+  /* PERT Display */
+  .pert-display {
+    background: rgba(201, 166, 107, 0.1);
+    padding: 0.5rem;
+    border-radius: 3px;
+    border-left: 3px solid #c9a66b;
+    margin: 0.5rem 0;
+    font-size: 0.8rem;
+  }
+
+  .pert-display strong {
+    display: block;
+    margin-bottom: 0.3rem;
+    color: #3e2723;
+  }
+
+  .pert-values {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.3rem;
+    color: #5d4037;
+  }
+
+  .pert-values span {
+    font-size: 0.75rem;
+  }
+
+  /* Tags Display */
+  .tags-display {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    margin-top: 0.3rem;
+  }
+
+  /* WBS Path */
+  .wbs-path {
+    background: rgba(201, 166, 107, 0.1);
+    padding: 0.35rem;
+    border-radius: 3px;
+    border-left: 3px solid #c9a66b;
+    margin: 0.5rem 0;
+    font-size: 0.725rem;
+    color: #5d4037;
+    word-break: break-word;
+  }
+
+  /* Close Button */
+  .close-button-wrapper {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    z-index: 10;
+  }
+
+  .close-btn {
+    background: rgba(255, 255, 255, 0.8) !important;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  }
+
+  /* Responsive utilities */
+  .mr-1 {
+    margin-right: 0.25rem;
+  }
+
+  .mt-2 {
+    margin-top: 0.5rem;
+  }
+
+  .mt-4 {
+    margin-top: 1rem;
+  }
+
+  .mb-2 {
+    margin-bottom: 0.5rem;
+  }
+
+  .mb-3 {
+    margin-bottom: 0.75rem;
+  }
+
+  .pa-3 {
+    padding: 0.75rem;
+  }
+
+  /* Leaf Detail Dialog Styles */
+  .leaf-paper-dialog {
+    position: relative;
+    width: 550px;
+    height: 750px;
+    margin: 0 auto;
+  }
+
+  .leaf-content {
+    position: absolute;
+    top: 1rem;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 4;
+    padding: 0 3rem;
+    overflow-y: auto;
+    overflow-x: hidden;
+    color: #3e2723;
+    font-family: 'MedievalSharp', 'Irish Grover', cursive;
+  }
+
+  .leaf-content::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  .leaf-content::-webkit-scrollbar-track {
+    background: rgba(201, 166, 107, 0.2);
+    border-radius: 4px;
+  }
+
+  .leaf-content::-webkit-scrollbar-thumb {
+    background: rgba(139, 90, 43, 0.5);
+    border-radius: 4px;
+  }
+
+  .leaf-content::-webkit-scrollbar-thumb:hover {
+    background: rgba(139, 90, 43, 0.7);
+  }
+
+  /* Budget Display */
+  .budget-display {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    background: rgba(201, 166, 107, 0.1);
+    padding: 0.75rem;
+    border-radius: 3px;
+    border-left: 3px solid #c9a66b;
+  }
+
+  .budget-item {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.85rem;
+    color: #5d4037;
+  }
+
+  .budget-item .value {
+    font-weight: 600;
+    color: #3e2723;
+  }
+
+  .budget-alert {
+    margin-top: 0.5rem;
+    padding: 0.5rem;
+    border-radius: 3px;
+    background: rgba(229, 57, 53, 0.08);
+    border-left: 3px solid #E53935;
+  }
+
+  .budget-diff {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.85rem;
+    align-items: center;
+  }
+
+  .budget-diff strong {
+    color: #3e2723;
+  }
+
+  /* Tasks Summary */
+  .tasks-summary {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    max-height: 300px;
+    overflow-y: auto;
+  }
+
+  .task-summary-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem;
+    background: rgba(46, 125, 50, 0.05);
+    border-radius: 3px;
+    border-left: 2px solid #2E7D32;
+    font-size: 0.8rem;
+  }
+
+  .task-summary-name {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    flex: 1;
+    min-width: 0;
+    color: #5d4037;
+  }
+
+  .task-summary-name span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .task-summary-info {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    flex-shrink: 0;
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 1rem;
+    color: #999;
+  }
+  @media (max-width: 1400px) {
+    .content-grid {
+      grid-template-columns: 0.5fr 1.5fr;
+    }
+  }
+
+  @media (max-width: 1200px) {
+    .content-grid {
+      grid-template-columns: 1fr;
+      gap: 1.5rem;
+    }
+
+    .main-content-wrapper {
+      max-height: calc(100vh - 300px);
+    }
+
+    .tasks-preview-container {
+      max-height: 400px;
+    }
+  }
+
+  @media (max-width: 600px) {
+    .task-header {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    .task-tags {
+      width: 100%;
+    }
+  }
 </style>

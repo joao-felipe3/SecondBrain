@@ -1,7 +1,7 @@
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { TaskDocument } from '../tasks/schemas/task.schema';
-import { Controller, Get, Post, Body, Patch, Param, Delete, NotFoundException, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, NotFoundException, Query, HttpException, HttpStatus } from '@nestjs/common';
 import { ProjectsService } from './projects.service';
 import { CreateProjectDto } from './dto/create-project.dto';
 import { UpdateProjectDto } from './dto/update-project.dto';
@@ -239,15 +239,35 @@ export class ProjectsController {
 
 		console.log(`🔄 Gerando tasks para leaf: "${dto.leafNode.name}"...`);
 
-		const result = await this.wbsService.generateTasksForSingleLeaf(
-			dto.leafNode,
-			dto.nodePath,
-			id,
-			project,
-			this.tasksService,
-			dto.preferences,
-			dto.saveTasks || false
-		);
+		let result: any;
+		try {
+			result = await this.wbsService.generateTasksForSingleLeaf(
+				dto.leafNode,
+				dto.nodePath,
+				id,
+				project,
+				this.tasksService,
+				dto.preferences,
+				dto.saveTasks || false
+			);
+		} catch (err: any) {
+			if (err?.code === 'RATE_LIMIT') {
+				const retryAfterMs = Number(err?.retryAfterMs);
+				throw new HttpException(
+					{
+						message: err?.isQuotaExceeded
+							? 'Limite/Quota do Gemini atingido. Tente novamente mais tarde ou aumente a quota/billing.'
+							: 'Rate limit do Gemini. Aguarde e tente novamente.',
+						code: 'RATE_LIMIT',
+						isQuotaExceeded: !!err?.isQuotaExceeded,
+						retryAfterMs: Number.isFinite(retryAfterMs) ? retryAfterMs : undefined,
+						model: err?.model,
+					},
+					HttpStatus.TOO_MANY_REQUESTS,
+				);
+			}
+			throw err;
+		}
 
 		console.log(`✅ ${result.tasks.length} tasks ${dto.saveTasks ? 'criadas' : 'preparadas'}`);
 

@@ -499,18 +499,37 @@ async function convertToTasks() {
 
   converting.value = true
   console.log('🔄 Iniciando conversão de tarefas...')
+  console.log('📋 WBS Nodes:', JSON.stringify(wbsNodes.value, null, 2))
+  console.log('📊 Total de pacotes (leafs):', estimatedTasks)
+  console.log('⏱️ Total de horas:', wbsBudget)
+  
   try {
     const { $api } = useNuxtApp() as any
-    const response = await $api.post(`/projects/${props.project._id}/wbs/convert-to-tasks`, {
+    const payload = {
       nodes: wbsNodes.value,
       autoResolveDiscrepancies: true,
       preferences: {
         targetPomodoros: granularityPomodoros.value,
         workflowMix: buildWorkflowMix(),
       },
-    })
+    }
+    
+    console.log('📤 Enviando payload:', JSON.stringify(payload, null, 2))
+    
+    const response = await $api.post(`/projects/${props.project._id}/wbs/convert-to-tasks`, payload)
 
-    console.log('✅ Conversão bem-sucedida:', response.data.message)
+    console.log('✅ Conversão bem-sucedida:', response.data)
+    console.log('📈 Resposta do backend:', {
+      message: response.data.message,
+      tasksCreated: response.data.tasksCreated,
+      totalTasks: response.data.totalTasks,
+      totalHours: response.data.totalHours,
+    })
+    
+    if (response.data.tasksCreated === 0) {
+      alert('⚠️ Aviso: Nenhuma micro-tarefa foi criada. Verifique se seus pacotes estão dentro da regra 8/80h')
+    }
+    
     conversionResult.value = response.data.message
 
     // Persist automatic rebaseline/simplify changes (if any)
@@ -541,6 +560,11 @@ async function convertToTasks() {
     // NÃO fazer emit('wbs-updated') aqui para evitar fechar o modal
   } catch (error: any) {
     console.error('❌ Erro ao converter WBS em tarefas:', error)
+    console.error('📍 Detalhes do erro:', {
+      message: error?.response?.data?.message,
+      status: error?.response?.status,
+      data: error?.response?.data,
+    })
     const errorMsg = error?.response?.data?.message || error?.message || 'Erro desconhecido'
     alert(`Erro ao converter WBS: ${errorMsg}`)
   } finally {
