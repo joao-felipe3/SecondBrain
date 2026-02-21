@@ -159,9 +159,9 @@ export class AuditService {
     };
 
     try {
-      return await attemptCall(900, 0.2);
+      return await attemptCall(2048, 0.2);
     } catch (err: any) {
-      return await attemptCall(1400, 0.1);
+      return await attemptCall(4096, 0.1);
     }
   }
 
@@ -263,8 +263,8 @@ export class AuditService {
       `- gold_plating = há escopo desnecessário/repetição excessiva (tarefas redundantes ou granularidade exagerada)\n` +
       `- mixed = há evidência forte de ambos (use SOMENTE quando realmente houver sinais fortes dos dois lados)\n\n` +
       `Regras para evitar "sempre mixed":\n` +
-      `- Se duplicateRatio >= 30% OU dupScore >= 0.30, trate como forte sinal de redundância e prefira gold_plating ou mixed com suggestedAction=simplify.\n` +
-      `- Se duplicateRatio < 15% E dupScore < 0.18 E similarScore < 0.45, prefira underestimated (a menos que haja escopo claramente opcional).\n` +
+      `- Se duplicateRatio >= 40% OU dupScore >= 0.40, trate como forte sinal de redundância e prefira gold_plating ou mixed com suggestedAction=simplify.\n` +
+      `- Se duplicateRatio < 25% E dupScore < 0.25 E similarScore < 0.45, prefira underestimated (a menos que haja escopo claramente opcional).\n` +
       `- Se diffPct >= 120% e houver repetição alta, suggestedAction deve ser simplify (não rebaseline).\n\n` +
       `Importante: tarefas podem parecer "parecidas" (ex: prática/análise), mas se tiverem themeTag/contextTag diferentes, considere que podem cobrir CONTEÚDO diferente e NÃO são redundância automaticamente.\n\n` +
       `Então sugira UMA ação: \n` +
@@ -294,11 +294,11 @@ export class AuditService {
     let finalDiagnosis = diagnosis;
     let finalSuggestedAction = suggestedAction;
 
-    const strongRedundancy = duplicateRatio >= 0.3 || repetitionMetrics.dupScore >= 0.3;
-    const moderateRedundancy = duplicateRatio >= 0.22 || repetitionMetrics.dupScore >= 0.25;
+    const strongRedundancy = duplicateRatio >= 0.5 || repetitionMetrics.dupScore >= 0.55;
+    const moderateRedundancy = duplicateRatio >= 0.4 || repetitionMetrics.dupScore >= 0.4;
     const lowRedundancy =
-      duplicateRatio < 0.15 &&
-      repetitionMetrics.dupScore < 0.18 &&
+      duplicateRatio < 0.3 &&
+      repetitionMetrics.dupScore < 0.3 &&
       repetitionMetrics.similarScore < 0.45;
     const highVariety =
       repetitionMetrics.themesCount >= Math.min(6, Math.ceil(Math.max(1, taskLength) / 6)) ||

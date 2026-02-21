@@ -133,6 +133,68 @@ export function extractJsonArray<T = any>(response: string): T[] {
 }
 
 /**
+ * Try to salvage a truncated JSON object.
+ *
+ * Strategy: walk the string character-by-character, tracking string/brace depth.
+ * The last top-level comma marks the boundary between the last COMPLETE field and
+ * the partial one. We truncate there and close with `}`.
+ * Handles multi-line values and quotes inside strings (Gemma's verbose rationales).
+ */
+function salvageIncompleteObject(raw: string): any | null {
+  const objStart = raw.indexOf('{');
+  if (objStart === -1) return null;
+
+  const s = raw.slice(objStart);
+
+  // Scan char-by-char to find last top-level comma (depth === 1, outside string)
+  let depth = 0;
+  let inString = false;
+  let lastTopLevelComma = -1;
+
+  for (let i = 0; i < s.length; i++) {
+    const ch = s[i];
+
+    if (ch === '\\' && inString) {
+      i++; // skip escaped character
+      continue;
+    }
+    if (ch === '"') {
+      inString = !inString;
+      continue;
+    }
+    if (inString) continue;
+
+    if (ch === '{' || ch === '[') {
+      depth++;
+    } else if (ch === '}' || ch === ']') {
+      depth--;
+    } else if (ch === ',' && depth === 1) {
+      lastTopLevelComma = i;
+    }
+  }
+
+  // Build candidate closing: truncate at last known-complete field
+  let candidate: string;
+  if (lastTopLevelComma > 0) {
+    // Keep everything up to (but not including) the last top-level comma,
+    // then close the object.
+    candidate = s.slice(0, lastTopLevelComma) + '}';
+  } else {
+    // No comma found — the very first (and only) value is truncated.
+    // Append closing quote + brace as last resort.
+    candidate = s + '"}';
+  }
+
+  try {
+    const parsed = JSON.parse(repairJsonString(candidate));
+    if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) return parsed;
+  } catch {
+    return null;
+  }
+  return null;
+}
+
+/**
  * Extract and parse a JSON object from AI response.
  * Handles: markdown fences, truncation, malformed JSON.
  */
@@ -143,7 +205,7 @@ export function extractJsonObject<T = any>(response: string): T {
 
   let cleaned = cleanMarkdown(response);
 
-  // Isolate object if present
+  // Isolate object if present (greedy — finds outermost {})
   const objMatch = cleaned.match(/\{[\s\S]*\}/);
   if (objMatch) cleaned = objMatch[0];
 
@@ -158,9 +220,13 @@ export function extractJsonObject<T = any>(response: string): T {
   try {
     const parsed = JSON.parse(repaired);
     if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) return parsed as T;
-  } catch (e: any) {
-    const preview = cleaned.slice(0, 120).replace(/\s+/g, ' ');
-    throw new Error(`Não foi possível extrair objeto JSON da resposta da IA. Preview: ${preview}`);
+  } catch { /* fall through */ }
+
+  // --- Attempt 3: salvage truncated object (AI cut off mid-string) ---
+  const salvaged = salvageIncompleteObject(repaired || cleaned);
+  if (salvaged) {
+    console.warn('[json-parser] extractJsonObject: salvaged truncated object from partial AI response.');
+    return salvaged as T;
   }
 
   const preview = cleaned.slice(0, 120).replace(/\s+/g, ' ');
