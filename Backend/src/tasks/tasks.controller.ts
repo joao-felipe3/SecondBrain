@@ -10,12 +10,14 @@ import {
   Sse,
   MessageEvent,
   Query,
+  BadRequestException,
 } from '@nestjs/common';
 import { Observable } from 'rxjs';
 import { TasksService } from './tasks.service';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
 import { GenerateAiSuggestionsDto } from './dto/generate-ai-suggestions.dto';
+import { PertEstimateDto, PertEstimateResponseDto } from './dto/pert-estimate.dto';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 
 @ApiTags('tasks')
@@ -123,5 +125,31 @@ export class TasksController {
   @Patch(':id/increment-pomodoro')
   incrementPomodorosDid(@Param('id') id: string) {
     return this.tasksService.incrementPomodorosDid(id);
+  }
+
+  @Post(':id/pert-estimate')
+  @ApiOperation({ 
+    summary: 'Salvar estimativa PERT (3 pontos) para uma tarefa',
+    description: 'Recebe estimativas otimista, provável e pessimista e calcula o tempo esperado via fórmula PERT: (O + 4M + P) / 6'
+  })
+  @ApiResponse({ 
+    status: 200, 
+    description: 'Estimativa PERT salva com sucesso e métricas calculadas.',
+    type: PertEstimateResponseDto,
+  })
+  @ApiResponse({ status: 404, description: 'Tarefa não encontrada.' })
+  @ApiResponse({ status: 400, description: 'Estimativas inválidas (deve ser O ≤ M ≤ P).' })
+  async savePertEstimate(
+    @Param('id') id: string,
+    @Body() pertEstimateDto: PertEstimateDto,
+  ): Promise<PertEstimateResponseDto> {
+    try {
+      return await this.tasksService.savePertEstimate(id, pertEstimateDto);
+    } catch (error) {
+      if (error.message.includes('não encontrada')) {
+        throw new NotFoundException(error.message);
+      }
+      throw new BadRequestException(error.message);
+    }
   }
 }

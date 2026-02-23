@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { TasksService } from './tasks.service';
 import { GeminiService } from './gemini.service'; // Importa o GeminiService
+import { PertService } from './services/pert.service';
 import { TasksController } from './tasks.controller';
 import { MongooseModule } from '@nestjs/mongoose';
 import { TaskSchema } from './schemas/task.schema';
@@ -28,7 +29,7 @@ import { ProjectsModule } from '../projects/projects.module';
     forwardRef(() => ProjectsModule)
   ],
   controllers: [TasksController],
-  providers: [TasksService, GeminiService], // Adiciona o GeminiService aos providers
-  exports: [TasksService, GeminiService] // Exporta GeminiService para uso em outros módulos
+  providers: [TasksService, GeminiService, PertService], // Adiciona o PertService aos providers
+  exports: [TasksService, GeminiService, PertService] // Exporta PertService para uso em outros módulos
 })
 export class TasksModule {}

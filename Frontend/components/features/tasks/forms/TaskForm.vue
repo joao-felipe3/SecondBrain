@@ -14,12 +14,21 @@
     <v-col cols="6"><CommonDatePickerField label="Notification" v-model="localNotification" :formatted="formattedNotification" placeholder="Selecione a data" :minDate="getYesterday()"/></v-col>
   </v-row>
 
-  <v-row dense>
+  <v-row dense class="mt-n3 mb-n4">
     <v-col cols="6"><CommonSelect v-model="task.project" label="Project" :items="projectNames" :required="true" /></v-col>
     <v-col cols="6"><CommonSelect v-model="task.recurrency" label="Recurrency" :items="recurrencyOptions" :required="true" /></v-col>
   </v-row>
 
   <CommonEffortSelect v-model="task.pomodorosPlanned" />
+
+  <!-- PERT Estimation Section -->
+  <PERTEstimationCard
+    v-if="props.task._id"
+    :task-id="props.task._id"
+    :initial-optimistic="props.task.pertOptimisticMinutes || 0"
+    :initial-most-likely="props.task.pertMostLikelyMinutes || 0"
+    :initial-pessimistic="props.task.pertPessimisticMinutes || 0"
+  />
 </template>
 
 <script setup>
@@ -29,6 +38,7 @@ import CommonSlider from '../../../shared/fields/Slider.vue'
 import CommonDatePickerField from '../../../shared/fields/DatePickerField.vue'
 import CommonSelect from '../../../shared/fields/Select.vue'
 import CommonEffortSelect from '../../../shared/fields/EffortSelect.vue'
+import PERTEstimationCard from '../widgets/PERTEstimationCard.vue'
 
 const props = defineProps({
   task: {
@@ -166,7 +176,6 @@ watch(
   },
   { immediate: true }
 )
-
 
 </script>
 

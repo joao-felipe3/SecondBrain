@@ -7,6 +7,8 @@ import { ProjectDocument } from '../projects/schemas/project.schema';
 import { ProjectsService } from '../projects/projects.service';
 import { GenerateAiSuggestionsDto, AiTaskSuggestionDto, AiSuggestionsResponseDto, AiSuggestionsProgressDto } from './dto/generate-ai-suggestions.dto';
 import { GeminiService } from './gemini.service';
+import { PertService } from './services/pert.service';
+import { PertEstimateDto, PertEstimateResponseDto } from './dto/pert-estimate.dto';
 
 @Injectable()
 export class TasksService {
@@ -16,6 +18,7 @@ export class TasksService {
     @Inject(forwardRef(() => ProjectsService))
     private readonly projectsService: ProjectsService,
     private readonly geminiService: GeminiService, // Injeta o GeminiService
+    private readonly pertService: PertService, // Injeta o PertService
   ) {}
 
   async recalculateProjectStats(projectId: string): Promise<void> {
@@ -745,5 +748,44 @@ export class TasksService {
     }
 
     return suggestions.slice(0, 5);
+  }
+
+  /**
+   * Salva uma estimativa PERT (3 pontos) para uma tarefa existente
+   * 
+   * @param taskId - ID da tarefa
+   * @param pertEstimateDto - Estimativas otimista, provável e pessimista
+   * @returns Objeto com tempo esperado, variância e recomendações
+   * @throws NotFoundException se a tarefa não existir
+   * @throws BadRequestException se as estimativas forem inválidas
+   */
+  async savePertEstimate(
+    taskId: string,
+    pertEstimateDto: PertEstimateDto,
+  ): Promise<PertEstimateResponseDto> {
+    // 1. Validar que a tarefa existe
+    const task = await this.taskModel.findById(taskId).exec();
+    if (!task) {
+      throw new NotFoundException(`Tarefa com ID ${taskId} não encontrada`);
+    }
+
+    // 2. Calcular métricas PERT
+    const pertMetrics = this.pertService.calculatePertMetrics(pertEstimateDto);
+
+    // 3. Atualizar a tarefa no banco com os valores PERT
+    await this.taskModel.findByIdAndUpdate(
+      taskId,
+      {
+        pertOptimisticMinutes: pertEstimateDto.optimistic,
+        pertMostLikelyMinutes: pertEstimateDto.mostLikely,
+        pertPessimisticMinutes: pertEstimateDto.pessimistic,
+        pertExpectedMinutes: Math.round(pertMetrics.expectedTime),
+        pertVariance: pertMetrics.variance,
+      },
+      { new: true },
+    ).exec();
+
+    // 4. Retornar as métricas calculadas
+    return pertMetrics;
   }
 }
