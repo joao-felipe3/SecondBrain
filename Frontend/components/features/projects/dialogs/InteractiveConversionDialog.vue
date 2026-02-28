@@ -308,8 +308,15 @@ async function generateCurrentLeaf() {
   processing.value = true; currentGeneratedResult.value = null
   try {
     const { $api } = useNuxtApp() as any
+    const prefetchLeafs = leafNodes.value
+      .slice(currentIndex.value + 1, currentIndex.value + 3)
+      .map((l) => ({ leafNode: l.node, nodePath: l.path }))
     const response = await $api.post(`/projects/${props.project._id}/wbs/generate-tasks-for-leaf`, {
-      leafNode: currentLeaf.value.node, nodePath: currentLeaf.value.path, preferences: props.preferences, saveTasks: false,
+      leafNode: currentLeaf.value.node,
+      nodePath: currentLeaf.value.path,
+      preferences: props.preferences,
+      saveTasks: false,
+      prefetchLeafs,
     })
     currentGeneratedResult.value = response.data
     leafNodes.value[currentIndex.value].generatedTasks = response.data.tasks
@@ -325,9 +332,14 @@ async function regenerateWithModel(model: string) {
   processing.value = true; currentGeneratedResult.value = null
   try {
     const { $api } = useNuxtApp() as any
+    const prefetchLeafs = leafNodes.value
+      .slice(currentIndex.value + 1, currentIndex.value + 3)
+      .map((l) => ({ leafNode: l.node, nodePath: l.path }))
     const response = await $api.post(`/projects/${props.project._id}/wbs/generate-tasks-for-leaf`, {
       leafNode: currentLeaf.value.node, nodePath: currentLeaf.value.path,
-      preferences: { ...props.preferences, modelOverride: model }, saveTasks: false,
+      preferences: { ...props.preferences, modelOverride: model },
+      saveTasks: false,
+      prefetchLeafs,
     })
     currentGeneratedResult.value = response.data
     leafNodes.value[currentIndex.value].generatedTasks = response.data.tasks
@@ -350,8 +362,18 @@ async function handleApproveAndContinue() {
   if (!currentGeneratedResult.value) return
   approvedTasks.value.push(...currentGeneratedResult.value.tasks)
   accumulatedHours.value += currentGeneratedResult.value.generatedHours
-  currentIndex.value++; currentGeneratedResult.value = null
-  if (!isLastLeaf.value) await generateCurrentLeaf()
+  const nextIndex = currentIndex.value + 1
+  currentGeneratedResult.value = null
+
+  // Generate next leaf as long as it exists (fixes skipping the last leaf).
+  if (nextIndex < totalLeafs.value) {
+    currentIndex.value = nextIndex
+    await generateCurrentLeaf()
+    return
+  }
+
+  // Completed all leafs.
+  currentIndex.value = totalLeafs.value
 }
 async function handleSaveAll() {
   if (approvedTasks.value.length === 0) { alert('Nenhuma task aprovada para salvar'); return }
@@ -369,10 +391,27 @@ async function handleSaveAll() {
   processing.value = true
   try {
     const { $api } = useNuxtApp() as any
+    const projectId = props.project?._id
     const finalTasks = [...approvedTasks.value]
     if (currentGeneratedResult.value) finalTasks.push(...currentGeneratedResult.value.tasks)
-    await Promise.all(finalTasks.map((taskData: any) => $api.post('/tasks', taskData)))
-    console.log(`Tasks salvas: ${finalTasks.length}`)
+
+    const payloadTasks = finalTasks.map((taskData: any) => ({
+      ...taskData,
+      project: taskData?.project ?? taskData?.projectId ?? projectId,
+    }))
+
+    const bulkResp = await $api.post('/tasks/bulk', {
+      tasks: payloadTasks,
+      autoDependencies: {
+        mode: 'heuristic-phases',
+        relationship: 'FINISH_TO_START',
+        reason: 'Auto: sequência WBS (InteractiveConversionDialog saveAll)',
+      },
+    })
+
+    console.log(
+      `Tasks salvas: ${bulkResp?.data?.insertedCount ?? finalTasks.length} | deps auto: ${bulkResp?.data?.autoDependenciesCreatedOrUpdated ?? 0}`,
+    )
     emit('complete', { totalTasks: finalTasks.length, totalHours: totalApprovedHours, budgetHours: totalBudgetHours.value, wbsUpdates: wbsUpdates.value })
     isOpen.value = false
   } catch (error: any) {

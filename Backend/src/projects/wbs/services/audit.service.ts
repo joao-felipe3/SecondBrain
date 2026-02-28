@@ -293,7 +293,7 @@ export class AuditService {
       `- mixed = há evidência forte de ambos (use SOMENTE quando realmente houver sinais fortes dos dois lados)\n\n` +
       `Regras para evitar "sempre mixed" e para reduzir falso-positivo de gold_plating:\n` +
       `- Se duplicateRatio >= 40% OU dupScore >= 0.40, trate como forte sinal de redundância e prefira gold_plating ou mixed com suggestedAction=simplify.\n` +
-      `- Se duplicateRatio < 25% E dupScore < 0.25 E similarScore < 0.45, prefira underestimated. Só use mixed se você identificar escopo claramente opcional/fora do pacote.\n` +
+      `- Se duplicateRatio < 25% E dupScore < 0.25 E similarScore < 0.35, prefira underestimated. Só use mixed se você identificar escopo opcional/fora do pacote.\n` +
       `- Com redundância baixa (regras acima), NÃO use gold_plating apenas por "granularidade"; micro-tarefas detalhadas são esperadas neste sistema.\n` +
       `- Se diffPct >= 120% e houver repetição alta, suggestedAction deve ser simplify (não rebaseline).\n\n` +
       `Importante: tarefas podem parecer "parecidas" (ex: prática/análise), mas se tiverem themeTag/contextTag diferentes, considere que podem cobrir CONTEÚDO diferente e NÃO são redundância automaticamente.\n\n` +
@@ -336,7 +336,7 @@ export class AuditService {
     const lowRedundancy =
       duplicateRatio < 0.25 &&
       dupScore < 0.25 &&
-      similarScore < 0.45;
+      similarScore < 0.35;
     const highVariety =
       themesCount >= Math.min(6, Math.ceil(Math.max(1, taskLength) / 6)) ||
       verbVariety >= 0.45 ||
@@ -373,7 +373,7 @@ export class AuditService {
         finalSuggestedAction = 'rebaseline';
       }
       if (finalDiagnosis === 'gold_plating') {
-        finalDiagnosis = 'underestimated';
+        finalDiagnosis = diffPct >= 90 ? 'mixed' : 'underestimated';
       }
     }
 

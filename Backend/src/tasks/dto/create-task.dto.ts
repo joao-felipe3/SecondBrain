@@ -23,7 +23,7 @@ export class CreateTaskDto {
   deadline: Date;
   priority?: number; 
   difficult?: number;
-  project?: string | Types.ObjectId;
+  project: string | Types.ObjectId;
   parentWbsNodeId?: string;
   wbsPath?: string;
   generationBatchId?: string;

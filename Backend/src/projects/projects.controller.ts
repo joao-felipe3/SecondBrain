@@ -14,6 +14,8 @@ import { TaskConversionService } from './wbs/services/task-conversion.service';
 import { AuditService } from './wbs/services/audit.service';
 import { GenerateWBSDto, SaveWBSDto, SuggestDecompositionDto, ConvertWBSToTasksDto, GetLeafNodesDto, GenerateTasksForLeafDto, AuditLeafDiscrepancyDto } from './dto/wbs.dto';
 import { TasksService } from '../tasks/tasks.service';
+import { LeafTasksBufferService } from './leaf-tasks-buffer.service';
+import { createHash } from 'crypto';
 
 @ApiTags('projects')
 @Controller('projects')
@@ -26,8 +28,28 @@ export class ProjectsController {
 		private readonly taskConversionService: TaskConversionService,
 		private readonly auditService: AuditService,
 		private readonly tasksService: TasksService,
+		private readonly leafBuffer: LeafTasksBufferService,
 		@InjectModel('Task') private readonly taskModel: Model<TaskDocument>,
 	) {}
+
+	private hashKey(input: any): string {
+		const raw = typeof input === 'string' ? input : JSON.stringify(input);
+		return createHash('sha1').update(raw).digest('hex').slice(0, 16);
+	}
+
+	private buildLeafBufferKey(projectId: string, leafNode: any, nodePath: string, preferences: any): string {
+		const fingerprint = {
+			v: 1,
+			nodeId: leafNode?._id ? String(leafNode._id) : undefined,
+			nodeName: leafNode?.name,
+			nodeDesc: leafNode?.description,
+			estimatedHours: leafNode?.estimatedHours,
+			nodePath,
+			preferences: preferences || {},
+			model: preferences?.modelOverride || process.env.GEMINI_MODEL || process.env.WBS_GEMINI_MODEL || undefined,
+		};
+		return `leafbuf:${projectId}:${this.hashKey(fingerprint)}`;
+	}
 
 	@Get(':id/tasks')
 	async getTasksForProject(@Param('id') id: string) {
@@ -239,6 +261,44 @@ export class ProjectsController {
 
 		console.log(`🔄 Gerando tasks para leaf: "${dto.leafNode.name}"...`);
 
+		const preferences = dto.preferences || {};
+		const currentKey = this.buildLeafBufferKey(id, dto.leafNode as any, dto.nodePath, preferences);
+
+		// Start prefetch for upcoming leaves in parallel (buffer).
+		const prefetchLeafs = Array.isArray(dto.prefetchLeafs) ? dto.prefetchLeafs : [];
+		for (const p of prefetchLeafs) {
+			if (!p?.leafNode || !p?.nodePath) continue;
+			// Skip if user accidentally included current leaf.
+			if (String(p.nodePath) === String(dto.nodePath)) continue;
+			const key = this.buildLeafBufferKey(id, p.leafNode as any, p.nodePath, preferences);
+			this.leafBuffer.prefetch(key, id, async () => {
+				return this.wbsService.generateTasksForSingleLeaf(
+					p.leafNode,
+					p.nodePath,
+					id,
+					project,
+					this.tasksService,
+					preferences,
+					false,
+				);
+			});
+		}
+
+		// If current leaf is already prefetched, consume it instantly.
+		// Safety: only do this for interactive preview (saveTasks=false), so we never skip persistence.
+		const shouldUseBuffer = !(dto.saveTasks || false);
+		const buffered = shouldUseBuffer ? await this.leafBuffer.consume<any>(currentKey) : null;
+		if (buffered) {
+			console.log(`⚡ Buffer hit for leaf: "${dto.leafNode.name}"`);
+			console.log(`✅ ${buffered.tasks?.length || 0} tasks preparadas`);
+			return {
+				...buffered,
+				message: dto.saveTasks
+					? `✅ ${(buffered.tasks?.length || 0)} micro-tarefas criadas com sucesso`
+					: `📝 ${(buffered.tasks?.length || 0)} micro-tarefas preparadas para revisão`,
+			};
+		}
+
 		let result: any;
 		try {
 			result = await this.wbsService.generateTasksForSingleLeaf(
@@ -247,7 +307,7 @@ export class ProjectsController {
 				id,
 				project,
 				this.tasksService,
-				dto.preferences,
+				preferences,
 				dto.saveTasks || false
 			);
 		} catch (err: any) {

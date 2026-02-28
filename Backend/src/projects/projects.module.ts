@@ -10,6 +10,7 @@ import { forwardRef } from '@nestjs/common';
 import { TasksModule } from '../tasks/tasks.module';
 import { PlanningModule } from './planning/planning.module';
 import { WBSModule } from './wbs/wbs.module';
+import { LeafTasksBufferService } from './leaf-tasks-buffer.service';
 
 
 @Module({
@@ -23,7 +24,7 @@ import { WBSModule } from './wbs/wbs.module';
     WBSModule,
   ],
   controllers: [ProjectsController],
-  providers: [ProjectsService],
+  providers: [ProjectsService, LeafTasksBufferService],
   exports: [ProjectsService]
 })
 export class ProjectsModule {}

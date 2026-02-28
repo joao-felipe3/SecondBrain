@@ -46,7 +46,8 @@ export const TaskSchema = new Schema<TaskDocument>({
   description: { type: String },
   definitionOfDone: { type: String },
   checklist: { type: [String] },
-  deadline: { type: Date, required: true },
+  // Required, but we provide a default to support AI-generated tasks that omit it.
+  deadline: { type: Date, required: true, default: Date.now },
   pomodorosPlanned: { type: Number, required: true },
   pomodorosDid: { type: Number, default: 0 },
   pertOptimisticMinutes: { type: Number },
@@ -62,10 +63,10 @@ export const TaskSchema = new Schema<TaskDocument>({
   generationBatchId: { type: String },
   milestoneId: { type: String },
   experience: { type: Number, default: 0 }, // Calculado automaticamente
-  isConcluded: { type: Boolean, required: true },
-  late: { type: Boolean, required: true },
+  isConcluded: { type: Boolean, required: true, default: false },
+  late: { type: Boolean, required: true, default: false },
   prize: { type: Number, default: 0 }, // Calculado automaticamente
-  recurrency: { type: String, required: true },
+  recurrency: { type: String, required: true, default: 'no-recurrence' },
   notification: { type: Date },
   microTaskType: { type: String },
   cognitiveMode: { type: String },
