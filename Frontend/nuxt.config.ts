@@ -6,9 +6,11 @@ export default defineNuxtConfig({
   compatibilityDate: '2024-11-01',
   devtools: { enabled: true },
   alias: {
-    "@": resolve(__dirname, "/"),
-      // Garante que 'form-data' use 'formdata-node' no server
-      'form-data': process.env.NUXT_ENV_SSR === 'true' ? 'formdata-node' : 'form-data',
+    // IMPORTANT: do NOT point '@' to filesystem root ("/") on Windows.
+    // It can make module resolution crawl the whole drive and hit Vite-node timeouts.
+    '@': resolve(__dirname, '.'),
+    // Garante que 'form-data' use 'formdata-node' no server
+    'form-data': process.env.NUXT_ENV_SSR === 'true' ? 'formdata-node' : 'form-data',
   },
 
   css: [

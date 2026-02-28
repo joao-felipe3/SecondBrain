@@ -398,9 +398,7 @@ async function loadWBS() {
   try {
     const { $api } = useNuxtApp() as any
     const response = await $api.get(`/projects/${props.project._id}/wbs`)
-    
-    console.log('🔍 Dados carregados do backend:', JSON.stringify(response.data.nodes, null, 2))
-    
+        
     if (response.data.nodes && response.data.nodes.length > 0) {
       // Criar uma cópia profunda para evitar mutações inesperadas
       wbsNodes.value = JSON.parse(JSON.stringify(response.data.nodes))
@@ -408,7 +406,6 @@ async function loadWBS() {
       // Revalidar após carregar para garantir consistência
       validateWBS()
       
-      console.log('✅ WBS carregada com', totalLeafNodes.value, 'pacotes e', totalHours.value, 'horas')
     }
   } catch (error) {
     // No WBS saved yet, that's fine
@@ -432,13 +429,10 @@ async function generateWBS() {
       temporal: smart.temporal,
       summary: smart.summary,
     })
-
-    console.log('🎉 WBS gerada pelo backend:', JSON.stringify(response.data.nodes, null, 2))
     
     wbsNodes.value = response.data.nodes
     validation.value = response.data.validation
     
-    console.log('✅ WBS aplicada com', totalLeafNodes.value, 'pacotes e', totalHours.value, 'horas')
     // Auto-save after generation
     await saveWBS()
   } catch (error) {
@@ -456,14 +450,10 @@ async function saveWBS() {
   try {
     const { $api } = useNuxtApp() as any
     
-    console.log('💾 Salvando WBS com', totalLeafNodes.value, 'pacotes e', totalHours.value, 'horas')
-    console.log('💾 Dados sendo enviados:', JSON.stringify(wbsNodes.value, null, 2))
     
     await $api.post(`/projects/${props.project._id}/save-wbs`, {
       nodes: wbsNodes.value,
     })
-    console.log('✅ WBS salva com sucesso!')
-    // NÃO fazer emit('wbs-updated') aqui para evitar fechar o modal
   } catch (error) {
     console.error('Erro ao salvar WBS:', error)
     alert('Erro ao salvar WBS.')
@@ -498,10 +488,6 @@ async function convertToTasks() {
   }
 
   converting.value = true
-  console.log('🔄 Iniciando conversão de tarefas...')
-  console.log('📋 WBS Nodes:', JSON.stringify(wbsNodes.value, null, 2))
-  console.log('📊 Total de pacotes (leafs):', estimatedTasks)
-  console.log('⏱️ Total de horas:', wbsBudget)
   
   try {
     const { $api } = useNuxtApp() as any
@@ -514,17 +500,8 @@ async function convertToTasks() {
       },
     }
     
-    console.log('📤 Enviando payload:', JSON.stringify(payload, null, 2))
     
     const response = await $api.post(`/projects/${props.project._id}/wbs/convert-to-tasks`, payload)
-
-    console.log('✅ Conversão bem-sucedida:', response.data)
-    console.log('📈 Resposta do backend:', {
-      message: response.data.message,
-      tasksCreated: response.data.tasksCreated,
-      totalTasks: response.data.totalTasks,
-      totalHours: response.data.totalHours,
-    })
     
     if (response.data.tasksCreated === 0) {
       alert('⚠️ Aviso: Nenhuma micro-tarefa foi criada. Verifique se seus pacotes estão dentro da regra 8/80h')
@@ -557,14 +534,7 @@ async function convertToTasks() {
       wbsNodes.value = JSON.parse(JSON.stringify(wbsNodes.value))
       await saveWBS()
     }
-    // NÃO fazer emit('wbs-updated') aqui para evitar fechar o modal
   } catch (error: any) {
-    console.error('❌ Erro ao converter WBS em tarefas:', error)
-    console.error('📍 Detalhes do erro:', {
-      message: error?.response?.data?.message,
-      status: error?.response?.status,
-      data: error?.response?.data,
-    })
     const errorMsg = error?.response?.data?.message || error?.message || 'Erro desconhecido'
     alert(`Erro ao converter WBS: ${errorMsg}`)
   } finally {
@@ -588,7 +558,6 @@ function buildWorkflowMix() {
 }
 
 function handleInteractiveComplete(result: any) {
-  console.log('✅ Conversão interativa concluída:', result)
   conversionResult.value = `✅ Conversão interativa concluída: ${result.totalTasks} micro-tarefas (${result.totalHours.toFixed(1)}h geradas de ${result.budgetHours.toFixed(1)}h orçadas)`
 
   // Apply any re-baselining updates coming from the dialog and persist to backend
@@ -622,7 +591,6 @@ function handleInteractiveComplete(result: any) {
 }
 
 function handleInteractiveCancel() {
-  console.log('❌ Conversão interativa cancelada')
   showInteractiveDialog.value = false
 }
 
@@ -725,9 +693,7 @@ async function applySuggestion() {
     ...child,
     level: targetLevel + 1
   }))
-  
-  console.log(`🔧 Ajustando children de level ${parsedSuggestion.value[0]?.level} para ${targetLevel + 1}`)
-  
+    
   // Encontrar e substituir o nó alvo pelos filhos sugeridos
   const replaceNode = (nodes: WBSNode[]): WBSNode[] => {
     return nodes.map(node => {

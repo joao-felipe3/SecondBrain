@@ -161,7 +161,20 @@ export class GenerateTasksForLeafDto {
   preferences?: {
     targetPomodoros?: number;
     workflowMix?: Record<string, number>;
+    modelOverride?: string;
   };
+
+  @ApiPropertyOptional({
+    description:
+      'Optional list of upcoming leaf nodes to prefetch in background (buffer). Used to make interactive conversion feel instant.',
+    type: [Object],
+  })
+  @IsOptional()
+  @IsArray()
+  prefetchLeafs?: Array<{
+    leafNode: WBSNodeDto;
+    nodePath: string;
+  }>;
 
   @ApiPropertyOptional({ description: 'Whether to save tasks to database or return them only' })
   @IsOptional()

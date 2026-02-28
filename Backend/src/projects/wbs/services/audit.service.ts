@@ -72,9 +72,16 @@ export class AuditService {
       Array.isArray(dto?.tasks) ? dto.tasks.length : 0,
     );
 
+    const guardrailsChanged =
+      finalResult.diagnosis !== parsedResponse.diagnosis ||
+      finalResult.suggestedAction !== parsedResponse.suggestedAction;
+    const rationale = guardrailsChanged
+      ? `${parsedResponse.rationale}\n\n[Guardrails] Ajuste automático: diagnosis="${parsedResponse.diagnosis}"→"${finalResult.diagnosis}", suggestedAction="${parsedResponse.suggestedAction}"→"${finalResult.suggestedAction}".`
+      : parsedResponse.rationale;
+
     return {
       diagnosis: finalResult.diagnosis,
-      rationale: parsedResponse.rationale,
+      rationale,
       suggestedAction: finalResult.suggestedAction,
       suggestedEstimatedHours: parsedResponse.suggestedEstimatedHours,
     };
@@ -190,13 +197,33 @@ export class AuditService {
 
     let suggestedEstimatedHours: number | undefined;
     if (parsed?.suggestedEstimatedHours !== undefined && parsed?.suggestedEstimatedHours !== null) {
-      const hours = Number(parsed.suggestedEstimatedHours);
-      if (Number.isFinite(hours) && hours > 0) {
+      const hours = this.parseHoursValue(parsed.suggestedEstimatedHours);
+      if (hours !== undefined) {
         suggestedEstimatedHours = Math.round(hours * 2) / 2;
       }
     }
 
     return { diagnosis, rationale, suggestedAction, suggestedEstimatedHours };
+  }
+
+
+  private parseHoursValue(value: unknown): number | undefined {
+    if (value === undefined || value === null) return undefined;
+
+    if (typeof value === 'number') {
+      return Number.isFinite(value) && value > 0 ? value : undefined;
+    }
+
+    const raw = String(value).trim();
+    if (!raw) return undefined;
+
+    // Accept formats like: "28", "28h", "28 horas", "28.5", "28,5"
+    const match = raw.match(/\d+(?:[\.,]\d+)?/);
+    if (!match) return undefined;
+
+    const normalized = match[0].replace(',', '.');
+    const n = Number(normalized);
+    return Number.isFinite(n) && n > 0 ? n : undefined;
   }
 
 
@@ -243,6 +270,8 @@ export class AuditService {
     const duplicateRatio = duplicateMetrics.duplicateRatio;
     const topDuplicateKeys = duplicateMetrics.topDuplicateKeys;
     const repetitionMetrics = duplicateMetrics.repetitionMetrics;
+    const dupScore = Number(repetitionMetrics?.dupScore ?? 0);
+    const similarScore = Number(repetitionMetrics?.similarScore ?? 0);
     return `Você é um auditor de escopo e estimativas (WBS/PERT/EVM).\n\n` +
       `Contexto do projeto: ${String(project?.name || 'Projeto').trim()}\n` +
       `Pacote (WBS leaf): "${String(dto.leafNode?.name || '').trim()}"\n` +
@@ -253,18 +282,19 @@ export class AuditService {
       `Sinais automáticos (anti-gold-plating):\n` +
       `- totalTasks: ${dto.tasks?.length || 0}\n` +
       `- duplicateRatio(aprox): ${(duplicateRatio * 100).toFixed(0)}%\n` +
-      `- dupScore: ${repetitionMetrics.dupScore.toFixed(2)}\n` +
-      `- similarScore: ${repetitionMetrics.similarScore.toFixed(2)}\n` +
+      `- dupScore: ${dupScore.toFixed(2)}\n` +
+      `- similarScore: ${similarScore.toFixed(2)}\n` +
       `${topDuplicateKeys ? `- topRepeated: ${topDuplicateKeys}\n` : ''}` +
       `\n` +
       `Micro-tarefas (amostra):\n${tasksPreview || '(sem tarefas)'}\n\n` +
       `Tarefa: classifique a discrepância como UMA destas opções:\n` +
       `- underestimated = o pacote foi subestimado (tarefas são majoritariamente distintas/necessárias)\n` +
-      `- gold_plating = há escopo desnecessário/repetição excessiva (tarefas redundantes ou granularidade exagerada)\n` +
+      `- gold_plating = há escopo desnecessário OU repetição excessiva (tarefas redundantes, opcionalidade clara, ou expansão de escopo fora do pacote)\n` +
       `- mixed = há evidência forte de ambos (use SOMENTE quando realmente houver sinais fortes dos dois lados)\n\n` +
-      `Regras para evitar "sempre mixed":\n` +
+      `Regras para evitar "sempre mixed" e para reduzir falso-positivo de gold_plating:\n` +
       `- Se duplicateRatio >= 40% OU dupScore >= 0.40, trate como forte sinal de redundância e prefira gold_plating ou mixed com suggestedAction=simplify.\n` +
-      `- Se duplicateRatio < 25% E dupScore < 0.25 E similarScore < 0.45, prefira underestimated (a menos que haja escopo claramente opcional).\n` +
+      `- Se duplicateRatio < 25% E dupScore < 0.25 E similarScore < 0.45, prefira underestimated. Só use mixed se você identificar escopo claramente opcional/fora do pacote.\n` +
+      `- Com redundância baixa (regras acima), NÃO use gold_plating apenas por "granularidade"; micro-tarefas detalhadas são esperadas neste sistema.\n` +
       `- Se diffPct >= 120% e houver repetição alta, suggestedAction deve ser simplify (não rebaseline).\n\n` +
       `Importante: tarefas podem parecer "parecidas" (ex: prática/análise), mas se tiverem themeTag/contextTag diferentes, considere que podem cobrir CONTEÚDO diferente e NÃO são redundância automaticamente.\n\n` +
       `Então sugira UMA ação: \n` +
@@ -294,16 +324,23 @@ export class AuditService {
     let finalDiagnosis = diagnosis;
     let finalSuggestedAction = suggestedAction;
 
-    const strongRedundancy = duplicateRatio >= 0.5 || repetitionMetrics.dupScore >= 0.55;
-    const moderateRedundancy = duplicateRatio >= 0.4 || repetitionMetrics.dupScore >= 0.4;
+    const dupScore = Number(repetitionMetrics?.dupScore ?? 0);
+    const similarScore = Number(repetitionMetrics?.similarScore ?? 0);
+    const themesCount = Number(repetitionMetrics?.themesCount ?? 0);
+    const verbVariety = Number(repetitionMetrics?.verbVariety ?? 0);
+    const cognitiveVariety = Number(repetitionMetrics?.cognitiveVariety ?? 0);
+
+    const strongRedundancy = duplicateRatio >= 0.5 || dupScore >= 0.55;
+    const moderateRedundancy = duplicateRatio >= 0.4 || dupScore >= 0.4;
+    // Keep "low redundancy" strict (aligns with prompt): below ~25% duplication signals.
     const lowRedundancy =
-      duplicateRatio < 0.3 &&
-      repetitionMetrics.dupScore < 0.3 &&
-      repetitionMetrics.similarScore < 0.45;
+      duplicateRatio < 0.25 &&
+      dupScore < 0.25 &&
+      similarScore < 0.45;
     const highVariety =
-      repetitionMetrics.themesCount >= Math.min(6, Math.ceil(Math.max(1, taskLength) / 6)) ||
-      repetitionMetrics.verbVariety >= 0.45 ||
-      repetitionMetrics.cognitiveVariety >= 0.45;
+      themesCount >= Math.min(6, Math.ceil(Math.max(1, taskLength) / 6)) ||
+      verbVariety >= 0.45 ||
+      cognitiveVariety >= 0.45;
 
     if (strongRedundancy && diffPct >= 90) {
       finalDiagnosis = 'gold_plating';
@@ -323,13 +360,20 @@ export class AuditService {
       finalSuggestedAction = 'rebaseline';
     }
 
+    // Stronger guardrail: high overrun + low redundancy should be treated as underestimation.
+    // If tasks are mostly distinct, a large diffPct is more likely "top-down too low" than "gold plating".
+    if (lowRedundancy && diffPct >= 120) {
+      finalDiagnosis = 'underestimated';
+      finalSuggestedAction = 'rebaseline';
+    }
+
     // Extra guardrail: if redundancy signals are low, avoid forcing simplify/gold_plating
-    if (lowRedundancy && diffPct < 120) {
+    if (lowRedundancy) {
       if (finalSuggestedAction === 'simplify') {
         finalSuggestedAction = 'rebaseline';
       }
       if (finalDiagnosis === 'gold_plating') {
-        finalDiagnosis = diffPct >= 90 ? 'mixed' : 'underestimated';
+        finalDiagnosis = 'underestimated';
       }
     }
 

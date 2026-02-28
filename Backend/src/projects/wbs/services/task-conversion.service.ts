@@ -1,7 +1,8 @@
 import { Injectable, Inject, forwardRef } from '@nestjs/common';
+import { createHash } from 'crypto';
 import { GeminiService } from '../../../tasks/gemini.service';
 import { WBSNodeDto } from '../../dto/wbs.dto';
-import { AuditService, DraftGenerationService } from './index';
+import { AuditService, CacheService, DraftGenerationService } from './index';
 import {
   computeChunkMinutes,
   computePertFromMinutes,
@@ -19,7 +20,108 @@ export class TaskConversionService {
     private readonly auditService: AuditService,
     @Inject(forwardRef(() => DraftGenerationService))
     private readonly draftGenerationService: DraftGenerationService,
+    private readonly cacheService: CacheService,
   ) {}
+
+  private safeEnv(name: string): string {
+    const v = process.env[name];
+    return String(v ?? '').trim();
+  }
+
+  private getNumericEnv(name: string, fallback: number): number {
+    const raw = this.safeEnv(name);
+    if (!raw) return fallback;
+    const n = Number(raw);
+    if (!Number.isFinite(n) || n <= 0) return fallback;
+    return Math.floor(n);
+  }
+
+  private hashKey(input: any): string {
+    const raw = typeof input === 'string' ? input : JSON.stringify(input);
+    return createHash('sha1').update(raw).digest('hex').slice(0, 16);
+  }
+
+  private buildDraftsWithPlanCacheKey(params: {
+    projectId: string;
+    node: WBSNodeDto;
+    nodePath: string;
+    chunkMinutes: number[];
+    plan: any;
+    modelOverride?: string;
+  }): string {
+    // Key MUST start with drafts_with_plan:${projectId}: so CacheService.clearForProject can purge it.
+    const nodeId = (params.node as any)?._id ? String((params.node as any)._id) : undefined;
+    const model =
+      params.modelOverride ||
+      this.safeEnv('WBS_GEMINI_MODEL') ||
+      this.safeEnv('WBS_FAST_MODEL') ||
+      this.safeEnv('WBS_MODEL_OVERRIDE') ||
+      '';
+
+    const fingerprint = {
+      v: 2,
+      nodeId,
+      nodeName: params.node?.name,
+      nodeDesc: params.node?.description,
+      nodePath: params.nodePath,
+      estimatedHours: params.node?.estimatedHours,
+      chunkMinutes: params.chunkMinutes,
+      plan: params.plan,
+      model,
+      // include the most relevant env flags that change output semantics
+      twoPass: this.safeEnv('WBS_TWO_PASS_DETAILS'),
+      detailsModel: this.safeEnv('WBS_DETAILS_MODEL'),
+    };
+
+    const h = this.hashKey(fingerprint);
+    return `drafts_with_plan:${params.projectId}:${h}`;
+  }
+
+  private async mapWithConcurrency<T, R>(
+    items: T[],
+    concurrency: number,
+    worker: (item: T, index: number) => Promise<R>,
+  ): Promise<R[]> {
+    const limit = Math.max(1, Math.floor(concurrency || 1));
+    const results: R[] = new Array(items.length);
+    let nextIndex = 0;
+
+    const runOne = async () => {
+      while (true) {
+        const current = nextIndex++;
+        if (current >= items.length) return;
+        results[current] = await worker(items[current], current);
+      }
+    };
+
+    const workers: Promise<void>[] = [];
+    for (let i = 0; i < Math.min(limit, items.length); i++) {
+      workers.push(runOne());
+    }
+    await Promise.all(workers);
+    return results;
+  }
+
+  private collectLeafNodesInOrder(
+    nodes: WBSNodeDto[],
+    parentPath: string = '',
+    level: number = 1,
+  ): Array<{ node: WBSNodeDto; nodePath: string; level: number }> {
+    const out: Array<{ node: WBSNodeDto; nodePath: string; level: number }> = [];
+    const traverse = (nodeList: WBSNodeDto[], p: string, lvl: number) => {
+      for (const node of nodeList) {
+        const currentPath = p ? `${p} > ${node.name}` : node.name;
+        const isLeaf = !node.children || node.children.length === 0;
+        if (isLeaf) {
+          out.push({ node, nodePath: currentPath, level: lvl });
+        } else {
+          traverse(node.children || [], currentPath, lvl + 1);
+        }
+      }
+    };
+    traverse(nodes, parentPath, level);
+    return out;
+  }
 
   // Convert WBS leaf nodes into tasks (legacy - simple conversion)
   convertWBSToTasks(
@@ -137,16 +239,31 @@ export class TaskConversionService {
       }>,
     };
 
-    // Process WBS tree recursively
-    await this.processWBSNodesRecursively(
-      nodes,
-      projectId,
-      project,
-      tasksService,
-      preferences,
-      options,
-      result,
-    );
+    // Process leaf nodes with optional parallelism (per-leaf), keeping per-leaf generation quality intact.
+    const leafConcurrency = this.getNumericEnv('WBS_LEAF_CONCURRENCY', 1);
+    const leaves = this.collectLeafNodesInOrder(nodes);
+    console.log(`[WBS-Conversion] Found ${leaves.length} leaf node(s). leafConcurrency=${leafConcurrency}`);
+
+    // Pre-compute deterministic priority offsets based on traversal order.
+    let runningOffset = 0;
+    const leafJobs = leaves.map((l) => {
+      const totalMinutes = Math.max(0, Math.round((l.node.estimatedHours || 0) * 60));
+      const chunkMinutes = computeChunkMinutes(totalMinutes);
+      const chunks = chunkMinutes.length;
+      const baseOffset = runningOffset;
+      runningOffset += chunks;
+      return {
+        ...l,
+        chunkMinutes,
+        chunks,
+        priorityOffset: baseOffset,
+      };
+    });
+
+    await this.mapWithConcurrency(leafJobs, leafConcurrency, async (job) => {
+      console.log(`[WBS-Conversion] Processing leaf node: "${job.nodePath}" (chunks=${job.chunks})`);
+      await this.processLeafNode(job.node, job.nodePath, projectId, project, tasksService, options, result, job.priorityOffset);
+    });
 
     // Finalize: recalculate project stats
     await this.finalizeConversion(tasksService, projectId);
@@ -205,6 +322,7 @@ export class TaskConversionService {
     tasksService: any,
     options: any,
     result: any,
+    priorityOffset: number = 0,
   ): Promise<void> {
     console.log(`[WBS-Conversion] === Processing Leaf: "${nodePath}" (${node.estimatedHours}h) ===`);
     
@@ -215,7 +333,7 @@ export class TaskConversionService {
         : 60;
 
     // Generate tasks for this leaf node based on time estimates and breaks them into chunks
-    const leafTaskDtos = await this.generateTasksForLeafNode(node, nodePath, projectId, result.createdTasks.length);
+    const leafTaskDtos = await this.generateTasksForLeafNode(node, nodePath, projectId, priorityOffset);
     console.log(`[WBS-Conversion] Generated ${leafTaskDtos.length} task(s) for leaf: "${nodePath}"`, leafTaskDtos.length > 0 ? leafTaskDtos[0] : 'EMPTY');
 
     if (autoResolveEnabled && leafTaskDtos.length > 0) {
@@ -299,19 +417,38 @@ export class TaskConversionService {
     // Generate full drafts using DraftGenerationService (same system as draft-generation)
     try {
       console.log(`[WBS-Conversion] Generating ${chunks} drafts via DraftGenerationService...`);
-      const drafts = await this.draftGenerationService.generateMicroTasksDraftsForLeafWithPlan(
+
+      const plan = {
+        themes: [{ name: node.name }],
+        workflow: ['execute'],
+      };
+      const cacheKey = this.buildDraftsWithPlanCacheKey({
+        projectId,
+        node,
+        nodePath,
+        chunkMinutes,
+        plan,
+      });
+
+      const cached = await this.cacheService.get(cacheKey);
+      let drafts: any[];
+      if (cached && Array.isArray(cached) && cached.length > 0) {
+        console.log(`[WBS-Conversion] ✅ Cache hit for drafts (items=${cached.length}) keyPrefix=${cacheKey.split(':').slice(0, 3).join(':')}`);
+        drafts = cached;
+      } else {
+        drafts = await this.draftGenerationService.generateMicroTasksDraftsForLeafWithPlan(
         {
           project: { _id: projectId },
           node,
           currentPath: nodePath,
           level: 3, // Typical level for leaf nodes
-          plan: {
-            themes: [{ name: node.name }],
-            workflow: ['execute'],
-          },
+          plan,
         },
         chunkMinutes,
       );
+
+        await this.cacheService.set(cacheKey, drafts);
+      }
 
       console.log(`[WBS-Conversion] ✨ Generated ${drafts.length} micro-task drafts via AI`);
 
@@ -585,13 +722,21 @@ export class TaskConversionService {
     let taskIndex = 1;
     const totalTasks = drafts.length;
 
+    const projectId = context.project?._id || context.project?.id;
+    const parentWbsNodeId = context.wbsNode?._id || context.wbsNode?.name;
+
     for (const draft of drafts) {
       const task: any = {
         name: String(draft.name || `Tarefa ${taskIndex}`).trim(),
         description: (draft.description || '').trim() || undefined,
-        projectId: context.project?._id || context.project?.id,
-        wbsNodeId: context.wbsNode?._id || context.wbsNode?.name,
+        // Canonical fields used by Task schema/DTO
+        project: projectId,
+        parentWbsNodeId,
         wbsPath: context.path,
+
+        // Backward-compatible aliases (some clients used these)
+        projectId,
+        wbsNodeId: parentWbsNodeId,
 
         // Task-specific fields from draft
         checklist: Array.isArray(draft.checklist) ? draft.checklist : [],

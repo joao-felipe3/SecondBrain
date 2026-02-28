@@ -5,7 +5,7 @@ import { Injectable } from '@nestjs/common';
  */
 @Injectable()
 export class CacheService {
-  private draftsCache = new Map<string, { value: any[]; exp: number }>();
+  private draftsCache = new Map<string, { value: any; exp: number }>();
   private redisClient: any = null;
   private cacheTTLSeconds = 60 * 60 * 24; // 24h
 
@@ -54,7 +54,7 @@ export class CacheService {
     console.log(`[CacheService][cache:${event}]`, payload);
   }
 
-  async get(key: string): Promise<any[] | null> {
+  async get<T = any>(key: string): Promise<T | null> {
     try {
       if (this.redisClient) {
         const raw = await this.redisClient.get(key);
@@ -63,7 +63,7 @@ export class CacheService {
           return null;
         }
         this.logCache('hit', key);
-        return JSON.parse(raw);
+        return JSON.parse(raw) as T;
       }
     } catch (err) {
       // ignore redis errors
@@ -80,10 +80,10 @@ export class CacheService {
       return null;
     }
     this.logCache('hit', key);
-    return entry.value;
+    return entry.value as T;
   }
 
-  async set(key: string, value: any[]): Promise<void> {
+  async set(key: string, value: any): Promise<void> {
     try {
       if (this.redisClient) {
         await this.redisClient.set(key, JSON.stringify(value), 'EX', this.cacheTTLSeconds);
