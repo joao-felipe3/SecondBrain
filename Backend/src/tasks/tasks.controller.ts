@@ -19,11 +19,157 @@ import { UpdateTaskDto } from './dto/update-task.dto';
 import { GenerateAiSuggestionsDto } from './dto/generate-ai-suggestions.dto';
 import { PertEstimateDto, PertEstimateResponseDto } from './dto/pert-estimate.dto';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { CPMService } from './services/cpm.service';
+import { DependencyInferenceService } from './services/dependency-inference.service';
 
 @ApiTags('tasks')
 @Controller('tasks')
 export class TasksController {
-  constructor(private readonly tasksService: TasksService) {}
+  constructor(
+    private readonly tasksService: TasksService,
+    private readonly cpmService: CPMService,
+    private readonly dependencyInference: DependencyInferenceService,
+  ) {}
+
+  @Post('bulk')
+  @ApiOperation({ summary: 'Criar múltiplas tasks em lote' })
+  @ApiResponse({ status: 201, description: 'Tasks criadas com sucesso.' })
+  async createBulk(
+    @Body()
+    body: {
+      tasks: CreateTaskDto[];
+      autoDependencies?: {
+        /**
+         * none: não cria dependências
+         * within-leaf: cria sequência linear dentro de cada parentWbsNodeId (leaf)
+         * within-and-between-leafs: além do dentro do leaf, conecta o 1º do próximo leaf ao último do leaf anterior (na ordem enviada)
+         */
+        mode?: 'none' | 'within-leaf' | 'within-and-between-leafs' | 'heuristic-phases' | 'ai-per-leaf';
+        relationship?: string;
+        reason?: string;
+      };
+    },
+  ) {
+    const tasks = Array.isArray(body?.tasks) ? body.tasks : [];
+    if (tasks.length === 0) {
+      throw new BadRequestException('Body inválido: "tasks" deve ser um array não-vazio');
+    }
+
+    // Inserção em lote, preservando a ordem para que possamos gerar dependências coerentes.
+    const inserted = await this.tasksService.createMany(tasks, {
+      resolveProject: true,
+      recalculateProjectStats: true,
+      ordered: true,
+    });
+
+    const mode = body?.autoDependencies?.mode ?? 'none';
+    const relationship = body?.autoDependencies?.relationship;
+    const reason = body?.autoDependencies?.reason ?? 'Auto-generated dependency (bulk save)';
+
+    let dependencyOps = 0;
+    if (mode !== 'none' && inserted.length >= 2) {
+      // Build consecutive WBS-leaf groups based on parentWbsNodeId.
+      const groups: Array<{ leafId: string; tasks: any[] }> = [];
+      for (const t of inserted) {
+        const leafId = String((t as any)?.parentWbsNodeId || '').trim();
+        if (!leafId) {
+          // Ignore non-WBS tasks for auto dependency.
+          continue;
+        }
+        const last = groups[groups.length - 1];
+        if (!last || last.leafId !== leafId) {
+          groups.push({ leafId, tasks: [t] });
+        } else {
+          last.tasks.push(t);
+        }
+      }
+
+      const deps: Array<{
+        taskId: string;
+        dependsOnTaskId: string;
+        projectId: string;
+        relationship?: string;
+        reason?: string;
+        isAutoIdentified?: boolean;
+      }> = [];
+
+      for (let gi = 0; gi < groups.length; gi++) {
+        const g = groups[gi];
+        const projectId = String((g.tasks[0] as any)?.project?.toString?.() ?? (g.tasks[0] as any)?.project ?? '').trim();
+        if (!projectId) continue;
+
+        // within-leaf chain
+        if (mode === 'within-leaf' || mode === 'within-and-between-leafs') {
+          for (let i = 1; i < g.tasks.length; i++) {
+            deps.push({
+              taskId: String((g.tasks[i] as any)._id),
+              dependsOnTaskId: String((g.tasks[i - 1] as any)._id),
+              projectId,
+              relationship,
+              reason,
+              isAutoIdentified: true,
+            });
+          }
+        }
+
+        if (mode === 'heuristic-phases' || mode === 'ai-per-leaf') {
+          const inferenceTasks = g.tasks.map((t: any) => ({
+            id: String(t?._id ?? t?.id ?? ''),
+            name: String(t?.name ?? t?.title ?? 'Task'),
+            description: t?.description,
+            checklist: t?.checklist,
+            definitionOfDone: t?.definitionOfDone,
+            microTaskType: t?.microTaskType,
+          }));
+
+          const inferred =
+            mode === 'heuristic-phases'
+              ? this.dependencyInference.inferHeuristicPhases(inferenceTasks)
+              : await this.dependencyInference.inferWithAi({
+                  tasks: inferenceTasks,
+                  maxEdges: Number(process.env.CPM_DEP_INFER_MAX_EDGES || 60),
+                });
+
+          for (const d of inferred) {
+            deps.push({
+              taskId: d.taskId,
+              dependsOnTaskId: d.dependsOnTaskId,
+              projectId,
+              relationship: d.relationship ?? relationship,
+              reason: d.reason ?? reason,
+              isAutoIdentified: true,
+            });
+          }
+        }
+
+        // between-leafs link (only 1 edge between consecutive leaf groups)
+        if (mode === 'within-and-between-leafs' && gi > 0) {
+          const prev = groups[gi - 1];
+          if (prev.tasks.length > 0 && g.tasks.length > 0) {
+            const prevLast = prev.tasks[prev.tasks.length - 1];
+            const currentFirst = g.tasks[0];
+            deps.push({
+              taskId: String((currentFirst as any)._id),
+              dependsOnTaskId: String((prevLast as any)._id),
+              projectId,
+              relationship,
+              reason: body?.autoDependencies?.reason ?? 'Auto: WBS leaf sequence (bulk save)',
+              isAutoIdentified: true,
+            });
+          }
+        }
+      }
+
+      // Idempotent upsert avoids duplicate edges on retries.
+      dependencyOps = await this.cpmService.upsertDependencies(deps);
+    }
+
+    return {
+      insertedCount: inserted.length,
+      autoDependenciesCreatedOrUpdated: dependencyOps,
+      taskIds: inserted.map((t: any) => String(t?._id ?? t?.id ?? '')).filter(Boolean),
+    };
+  }
 
   @Post()
   @ApiOperation({ summary: 'Criar uma nova task' })

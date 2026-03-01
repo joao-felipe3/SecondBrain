@@ -38,6 +38,12 @@ export class TasksService {
        * Defaults to false so callers can defer stats recalculation to the end.
        */
       recalculateProjectStats?: boolean;
+
+      /**
+       * When true, preserves input order and stops on first error.
+       * Defaults to false (ordered:false) to allow partial inserts.
+       */
+      ordered?: boolean;
     },
   ): Promise<TaskDocument[]> {
     const dtos = Array.isArray(createTaskDtos) ? createTaskDtos : [];
@@ -45,6 +51,7 @@ export class TasksService {
 
     const resolveProject = Boolean(options?.resolveProject);
     const shouldRecalculateStats = Boolean(options?.recalculateProjectStats);
+    const ordered = Boolean(options?.ordered);
 
     // Resolve project IDs when requested (slower; use only when needed)
     if (resolveProject) {
@@ -81,7 +88,7 @@ export class TasksService {
 
     let inserted: TaskDocument[] = [];
     try {
-      inserted = await this.taskModel.insertMany(dtos, { ordered: false });
+      inserted = await this.taskModel.insertMany(dtos, { ordered });
     } catch (err: any) {
       // With ordered:false Mongo can insert partial docs and still throw.
       // Mongoose exposes insertedDocs in many cases; fall back to empty.
@@ -158,6 +165,34 @@ export class TasksService {
 
   async findAll(): Promise<TaskDocument[]> {
     return await this.taskModel.find().exec();
+  }
+
+  async findByProjectId(projectId: string, opts?: { taskIds?: string[]; parentWbsNodeId?: string }): Promise<TaskDocument[]> {
+    if (!projectId || projectId === 'null' || projectId === 'undefined') {
+      throw new BadRequestException(`Project ID inválido: ${projectId}`);
+    }
+
+    const query: any = {};
+    if (Types.ObjectId.isValid(projectId)) {
+      query.project = new Types.ObjectId(projectId);
+    } else {
+      // Fallback (should be rare): allow querying by raw value
+      query.project = projectId;
+    }
+
+    const taskIds = Array.isArray(opts?.taskIds) ? opts!.taskIds : [];
+    if (taskIds.length > 0) {
+      const validIds = taskIds.filter((id) => Types.ObjectId.isValid(id));
+      if (validIds.length > 0) {
+        query._id = { $in: validIds.map((id) => new Types.ObjectId(id)) };
+      }
+    }
+
+    if (opts?.parentWbsNodeId) {
+      query.parentWbsNodeId = String(opts.parentWbsNodeId);
+    }
+
+    return await this.taskModel.find(query).exec();
   }
 
   async findOne(id: string): Promise<TaskDocument | null> {

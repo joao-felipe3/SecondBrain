@@ -21,8 +21,9 @@
               <v-sheet :class="['carousel-item', { active: currentIndex === 0 }]" elevation="0" color="transparent"><GeneralInfoPage :project="displayProject || {}" :editing="editing" @update-field="updateField" /></v-sheet>
               <v-sheet :class="['carousel-item', { active: currentIndex === 1 }]" elevation="0" color="transparent"><SmartObjectivesPage :project="displayProject || {}" :editing="editing" @update-field="updateField" @smart-objective-updated="reloadProject" /></v-sheet>
               <v-sheet :class="['carousel-item', { active: currentIndex === 2 }]" elevation="0" color="transparent"><WBSPage :project="displayProject || {}" :editing="editing" @wbs-updated="reloadProject" /></v-sheet>
-              <v-sheet :class="['carousel-item', { active: currentIndex === 3 }]" elevation="0" color="transparent"><GoalPage :project="displayProject || {}" :editing="editing" @update-field="updateField" /></v-sheet>
-              <v-sheet :class="['carousel-item', { active: currentIndex === 4 }]" elevation="0" color="transparent"><BacklogAndProgress :project="displayProject || {}" :editing="editing" @update-field="updateField" /></v-sheet>
+              <v-sheet :class="['carousel-item', { active: currentIndex === 3 }]" elevation="0" color="transparent"><CriticalPathPage :project="displayProject || {}" :editing="editing" @update-field="updateField" /></v-sheet>
+              <v-sheet :class="['carousel-item', { active: currentIndex === 4 }]" elevation="0" color="transparent"><GoalPage :project="displayProject || {}" :editing="editing" @update-field="updateField" /></v-sheet>
+              <v-sheet :class="['carousel-item', { active: currentIndex === 5 }]" elevation="0" color="transparent"><BacklogAndProgress :project="displayProject || {}" :editing="editing" @update-field="updateField" /></v-sheet>
             </div>
           </v-sheet>
         </v-col>
@@ -63,6 +64,7 @@ import GoalPage from './pages/GoalPage.vue'
 import SmartObjectivesPage from './pages/SmartObjectivesPage.vue'
 import WBSPage from './pages/WBSPage.vue'
 import BacklogAndProgress from './pages/BacklogAndProgress.vue'
+import CriticalPathPage from './pages/CriticalPathPage.vue'
 import DeleteProjectDialog from '../../shared/dialogs/DeleteProjectDialog.vue'
 import { useApiResource, useApi } from '~/composables/api'
 import type { PropType } from 'vue'
@@ -72,7 +74,7 @@ import { useProjectEditing, getProjectId } from '~/composables/features/useProje
 import type { Project } from '~/models/Project'
 
 const CLOSE_ANIM_MS = 800
-const TOTAL_SLIDES = 5
+const TOTAL_SLIDES = 6
 
 
 const props = defineProps({

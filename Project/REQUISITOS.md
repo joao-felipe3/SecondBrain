@@ -1,7 +1,7 @@
 # 📋 Acompanhamento de Requisitos - Second Brain
 
-> **Última atualização:** 20/02/2026  
-> **Status do Projeto:** MVP + Planejamento das Fases (Eficiência → 7)
+> **Última atualização:** 22/02/2026  
+> **Status do Projeto:** MVP + Planejamento das Fases (Eficiência → 9)
 
 ---
 
@@ -12,12 +12,14 @@
 | MVP | 14 | 14/14 ✅ | 14/14 ✅ | 14/14 ✅ | 14/14 ✅ | 🟢 100% |
 | Eficiência | 28 | 9/28 | 9/28 | 9/28 | 9/28 | ⬜ 32% |
 | Micro-Tarefas | 18 | 0/18 | 0/18 | 0/18 | 0/18 | ⬜ 0% |
-| Fase 2 | 18 | 0/18 | 0/18 | 0/18 | 0/18 | ⬜ 0% |
-| Fase 3 | 25 | 0/25 | 0/25 | 0/25 | 0/25 | ⬜ 0% |
-| Fase 4 | 18 | 0/18 | 0/18 | 0/18 | 0/18 | ⬜ 0% |
-| Fase 5 | 16 | 0/16 | 0/16 | 0/16 | 0/16 | ⬜ 0% |
+| Produtividade Avançada | 18 | 0/18 | 0/18 | 0/18 | 0/18 | ⬜ 0% |
+| Fase 3 | 17 | 0/17 | 0/17 | 0/17 | 0/17 | ⬜ 0% |
+| Fase 4 | 8 | 0/8 | 0/8 | 0/8 | 0/8 | ⬜ 0% |
+| Fase 5 | 23 | 0/23 | 0/23 | 0/23 | 0/23 | ⬜ 0% |
 | Fase 6 | 22 | 0/22 | 0/22 | 0/22 | 0/22 | ⬜ 0% |
-| Fase 7 | 8 | 0/8 | 0/8 | 0/8 | 0/8 | ⬜ 0% |
+| Fase 7 | 29 | 0/29 | 0/29 | 0/29 | 0/29 | ⬜ 0% |
+| Fase 8 | 34 | 0/34 | 0/34 | 0/34 | 0/34 | ⬜ 0% |
+| Fase 9 | 8 | 0/8 | 0/8 | 0/8 | 0/8 | ⬜ 0% |
 
 
 ---
@@ -131,6 +133,15 @@
 | 27 | Diagrama de Rede (PERT/CPM) - visualizar lógica de conexão entre tarefas | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
 | 28 | X-Matrix (Hoshin Kanri) - conectar objetivos de longo prazo com metas anuais e tarefas táticas | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
 
+
+### Antes da próxima fase
+
+| # | Requisito | Tipo | Protótipo | Frontend | Backend | QA |
+|---|-----------|------|:---------:|:--------:|:-------:|:--:|
+| 29 | Corrigir criação/edição e de projetos para melhorar a experiência de usuário | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 30 | Corrigir botão de catchball e melhorar geração de pacotes WBS pois está sempre entre 500-600h | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 31 | Melhorar a UI das páginas 3-4 e 5-6 para ficar mais de acordo com a temática fantasia medieval | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+
 ---
 
 ## ⚙️ Micro-Tarefas - Gerenciamento de Tarefas de Curta Duração (≤3h)
@@ -241,83 +252,99 @@
 
 ---
 
-## 🎮 Fase 3 - Gamificação e Monitoramento
+## 🎮 Fase 3 - Gamificação Essencial (Manual-First)
 
-> **Objetivo:** Reforçar hábitos com um loop de feedback (sinais → interpretação → resposta), de forma **opt-in** e com **privacidade por padrão**. A fase combina **monitoramento (manual/automático)**, **classificação assistida por IA**, **recompensas** e **mecânicas suaves** para evitar frustração.
+> **Objetivo:** Introduzir um loop de gameplay **sem depender de monitoramento automático**: check-ins manuais, recompensas, streaks e mecânicas “gentis” para aumentar consistência sem frustração. A fase funciona 100% mesmo sem desktop/OS.
 
-### Consentimento, Privacidade e Controle
-
-| # | Requisito | Tipo | Protótipo | Frontend | Backend | QA |
-|---|-----------|------|:---------:|:--------:|:-------:|:--:|
-| 1 | Monitoramento de produtividade deve ser opt-in com consentimento explícito | Não Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
-| 2 | Configurar intervalo de captura e permitir pausar/retomar monitoramento a qualquer momento | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
-| 3 | Allowlist/Denylist de apps/sites para (não) monitorar e/ou (não) enviar para IA | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
-
-### Coleta de Sinais (Manual e Automática)
+### Princípios (Opt-in e Controle)
 
 | # | Requisito | Tipo | Protótipo | Frontend | Backend | QA |
 |---|-----------|------|:---------:|:--------:|:-------:|:--:|
-| 4 | Script captura o título da janela ativa do SO periodicamente | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
-| 5 | Modo check-in manual (sem captura automática): usuário marca “produtivo/neutro/distração” | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 1 | Gamificação deve ser opt-in (usuário pode desativar/pausar mecânicas a qualquer momento) | Não Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
 
-### Interpretação por IA (Classificação)
-
-| # | Requisito | Tipo | Protótipo | Frontend | Backend | QA |
-|---|-----------|------|:---------:|:--------:|:-------:|:--:|
-| 6 | Consultar IA para determinar se o contexto atual é produtivo ou não (com texto sanitizado) | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
-| 7 | Exibir classificação com confiança e justificativa curta (“por que foi distração?”) | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
-| 8 | Permitir o usuário corrigir a classificação (feedback) para melhorar regras/modelo | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
-
-### Feedback em Tempo Real (Personagem/Estado)
+### Check-in Manual e Estado do Personagem
 
 | # | Requisito | Tipo | Protótipo | Frontend | Backend | QA |
 |---|-----------|------|:---------:|:--------:|:-------:|:--:|
-| 9 | Exibir um personagem que muda de estado conforme a produtividade | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
-| 10 | Mostrar feedback leve (ex.: dica de retomada) ao detectar distração por um período contínuo | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 2 | Modo check-in manual: usuário marca “produtivo/neutro/distração” sem captura automática | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 3 | Exibir um personagem que muda de estado conforme o check-in manual (sem IA obrigatória) | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
 
 ### Regras de Penalidade (Sem Frustração)
 
 | # | Requisito | Tipo | Protótipo | Frontend | Backend | QA |
 |---|-----------|------|:---------:|:--------:|:-------:|:--:|
-| 11 | Perda de recursos (HP) só após “período de graça” e com opção de desativar penalidades | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
-| 12 | Garantir que recompensas/penalidades não frustrem o usuário (modo “Gentil” sem punições) | Não Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 4 | Perda de recursos (HP) só após “período de graça” e com opção de desativar penalidades | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 5 | Garantir que recompensas/penalidades não frustrem o usuário (modo “Gentil” sem punições) | Não Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
 
 ### Sistema de Recompensas
 
 | # | Requisito | Tipo | Protótipo | Frontend | Backend | QA |
 |---|-----------|------|:---------:|:--------:|:-------:|:--:|
-| 13 | CRUD de Recompensas | Gamificação | ⬜ | ⬜ | ⬜ | ⬜ |
-| 14 | Loja para trocar moedas por recompensas | Gamificação | ⬜ | ⬜ | ⬜ | ⬜ |
-| 15 | Sistema de conquistas | Gamificação | ⬜ | ⬜ | ⬜ | ⬜ |
-| 16 | Avatar que evolui com XP | Gamificação | ⬜ | ⬜ | ⬜ | ⬜ |
-| 17 | Missões diárias/semanais e streaks (sem obrigatoriedade) | Gamificação | ⬜ | ⬜ | ⬜ | ⬜ |
-| 18 | Sortear recompensas aleatórias especiais após conclusão surpresa | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 6 | CRUD de Recompensas | Gamificação | ⬜ | ⬜ | ⬜ | ⬜ |
+| 7 | Loja para trocar moedas por recompensas | Gamificação | ⬜ | ⬜ | ⬜ | ⬜ |
+| 8 | Sistema de conquistas | Gamificação | ⬜ | ⬜ | ⬜ | ⬜ |
+| 9 | Avatar que evolui com XP | Gamificação | ⬜ | ⬜ | ⬜ | ⬜ |
+| 10 | Missões diárias/semanais e streaks (sem obrigatoriedade) | Gamificação | ⬜ | ⬜ | ⬜ | ⬜ |
+| 11 | Sortear recompensas aleatórias especiais após conclusão surpresa | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
 
 ### Usuário e UX
 
 | # | Requisito | Tipo | Protótipo | Frontend | Backend | QA |
 |---|-----------|------|:---------:|:--------:|:-------:|:--:|
-| 19 | Login de Usuário (opcional, para sincronização multi-dispositivo e backup) | Não Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
-| 20 | Sugerir execução de tarefas difíceis por 5 min para superar bloqueios (gatilho: baixa produtividade/distração) | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 12 | Login de Usuário (opcional, para sincronização multi-dispositivo e backup) | Não Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
 
 ### Gestão da Frustração (Mecânica Roguelike para Falhas)
 
 | # | Requisito | Tipo | Protótipo | Frontend | Backend | QA |
 |---|-----------|------|:---------:|:--------:|:-------:|:--:|
-| 21 | Implementar “Permadeath de Ciclo”: se um sprint/projeto falhar criticamente, encerrar a instância e iniciar um novo ciclo | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
-| 22 | Gerar Relatório de “Legado” ao Game Over (o que foi feito, decisões, causas de falha, aprendizados) | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
-| 23 | Preservar agência na falha: manter XP/recursos (“loot”) e bônus acumulados para o próximo ciclo (configurável/opt-in) | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 13 | Implementar “Permadeath de Ciclo”: se um sprint/projeto falhar criticamente, encerrar a instância e iniciar um novo ciclo | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 14 | Gerar Relatório de “Legado” ao Game Over (o que foi feito, decisões, causas de falha, aprendizados) | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 15 | Preservar agência na falha: manter XP/recursos (“loot”) e bônus acumulados para o próximo ciclo (configurável/opt-in) | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
 
 ### Loot Drops de Conhecimento (Intermediate Packets)
 
 | # | Requisito | Tipo | Protótipo | Frontend | Backend | QA |
 |---|-----------|------|:---------:|:--------:|:-------:|:--:|
-| 24 | Ao concluir etapa complexa, gerar “Loot Drop” (item clicável) contendo resumo, template ou pacote intermediário reutilizável | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
-| 25 | Inventário/Biblioteca de Loot: listar, buscar e “equipar” itens para acelerar tarefas futuras (inclui tags e reutilização) | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 16 | Ao concluir etapa complexa, gerar “Loot Drop” (item clicável) contendo resumo, template ou pacote intermediário reutilizável | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 17 | Inventário/Biblioteca de Loot: listar, buscar e “equipar” itens para acelerar tarefas futuras (inclui tags e reutilização) | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
 
 ---
 
-## 🧩 Fase 4 - Arquitetura Cognitiva e Psicologia Comportamental
+## 📡 Fase 4 - Monitoramento e Interpretação Assistida (IA)
+
+> **Objetivo:** Adicionar monitoramento (manual + automatizável), classificação assistida por IA e intervenções leves — **sem** tornar o sistema dependente do desktop/OS. Integrações com Guardião do OS (Fase 6) entram como fonte opcional de sinais.
+
+### Controles de Monitoramento e Privacidade
+
+| # | Requisito | Tipo | Protótipo | Frontend | Backend | QA |
+|---|-----------|------|:---------:|:--------:|:-------:|:--:|
+| 1 | Configurar intervalo de captura e permitir pausar/retomar monitoramento a qualquer momento | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 2 | Allowlist/Denylist de apps/sites para (não) monitorar e/ou (não) enviar para IA | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+
+### Coleta de Sinais (Baixo Risco) e Integrações Opcionais
+
+| # | Requisito | Tipo | Protótipo | Frontend | Backend | QA |
+|---|-----------|------|:---------:|:--------:|:-------:|:--:|
+| 3 | Registrar “sinais de contexto” como texto **sanitizado** (ex.: rótulo/descrição curta), coletados via check-in manual e/ou por integração opcional com o Guardião do OS (Fase 6) | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+
+### Interpretação por IA (Classificação) + Feedback
+
+| # | Requisito | Tipo | Protótipo | Frontend | Backend | QA |
+|---|-----------|------|:---------:|:--------:|:-------:|:--:|
+| 4 | Consultar IA para determinar se o contexto atual é produtivo ou não (com texto sanitizado) | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 5 | Exibir classificação com confiança e justificativa curta (“por que foi distração?”) | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 6 | Permitir o usuário corrigir a classificação (feedback) para melhorar regras/modelo | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+
+### Intervenções Leves (Sem Capataz)
+
+| # | Requisito | Tipo | Protótipo | Frontend | Backend | QA |
+|---|-----------|------|:---------:|:--------:|:-------:|:--:|
+| 7 | Mostrar feedback leve (ex.: dica de retomada) ao detectar distração por um período contínuo | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 8 | Sugerir execução de tarefas difíceis por 5 min para superar bloqueios (gatilho: baixa produtividade/distração) | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+
+---
+
+## 🧩 Fase 5 - Arquitetura Cognitiva e Psicologia Comportamental
 
 > **Objetivo:** Estruturar o app para respeitar limites cognitivos e reforçar motivação sustentável (competência, autonomia), engajamento saudável (Zeigarnik/Hook) e foco (Flow) — reduzindo fadiga mental e aumentando consistência.
 
@@ -327,7 +354,7 @@
 |---|-----------|------|:---------:|:--------:|:-------:|:--:|
 | 1 | Limitar a quantidade de itens simultâneos na tela (padrão: 7±2) e priorizar exibição do “próximo passo” | Não Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
 | 2 | Aplicar *Chunking* automaticamente em projetos grandes: agrupar tarefas em sub-etapas e usar disclosure progressivo | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
-| 3 | “Modo execução” minimalista (livre de distrações) para uma tarefa ativa, com foco no essencial | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 3 | Evoluir o “Modo foco” da Fase 2 para um “Modo execução” minimalista (livre de distrações) para uma tarefa ativa, com foco no essencial | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
 | 4 | Reduzir “atenção dividida”: evitar que o usuário precise alternar entre áreas distantes para entender/agir em uma tarefa | Não Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
 | 5 | Remover redundâncias e fricções: textos objetivos, campos consistentes e ações principais sempre no mesmo local | Não Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
 
@@ -344,9 +371,9 @@
 
 | # | Requisito | Tipo | Protótipo | Frontend | Backend | QA |
 |---|-----------|------|:---------:|:--------:|:-------:|:--:|
-| 10 | “Missões Ativas”: tarefas em andamento devem permanecer visíveis até resolução, com status claro | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 10 | “Tarefas Ativas”: tarefas em andamento devem permanecer visíveis até resolução, com status claro | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
 | 11 | Aplicar o Efeito Zeigarnik de forma útil: destacar pendências iniciadas/interrompidas e sugerir fechamento | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
-| 12 | Recompensa variável ao concluir tarefas (magnitude/celebração/pontos) com opção de desativar | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 12 | Recompensa variável ao concluir tarefas (magnitude/celebração/pontos), preferencialmente utilizando o sistema de recompensas da Fase 3, com opção de desativar | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
 | 13 | “Valor armazenado”: diário/histórico visual do que foi feito (linha do tempo, vitórias e aprendizados) | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
 | 14 | O app deve ficar mais útil com o uso: preferências e padrões aprendidos (com transparência e controle do usuário) | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
 
@@ -357,42 +384,18 @@
 | 15 | Detectar tarefas “ansiosas” (muito difíceis/grandes) e sugerir decomposição em passos menores com metas claras | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
 | 16 | Detectar tarefas “entediantes” (muito triviais) e sugerir agrupamento/batch ou micro-recompensas | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
 | 17 | Metas claras e feedback rápido: cada tarefa pode ter critérios de sucesso visíveis durante a execução | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
-| 18 | Sessões de foco guiadas: escolher 1 tarefa por vez, confirmar intenção e registrar conclusão/impedimentos | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
-
----
-
-## 🧠 Fase 5 - Deep Work e Narrativa
+| 18 | Evoluir o Pomodoro da Fase 2 para “sessões de foco guiadas”: escolher 1 tarefa por vez, confirmar intenção e registrar conclusão/impedimentos | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
 
 ### Ferramentas de Foco
 
 | # | Requisito | Tipo | Protótipo | Frontend | Backend | QA |
 |---|-----------|------|:---------:|:--------:|:-------:|:--:|
-| 1 | Ferramenta de "foco visual" pré-sessão (30-60s) | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
-| 2 | Campo para anotar pensamentos intrusivos durante sessão | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
-| 3 | "Placar de Deep Work" com alerta ao atingir 4h/dia | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
-| 4 | Bloquear redes sociais durante intervalos | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
-| 5 | Instruções para expandir campo visual nas pausas | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 19 | Ferramenta de "foco visual" pré-sessão (30-60s) | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 20 | Campo para anotar pensamentos intrusivos durante sessão | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 21 | "Placar de Deep Work" com alerta ao atingir 4h/dia | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 22 | Bloquear redes sociais durante intervalos | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 23 | Instruções para expandir campo visual nas pausas | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
 
-### Monitoramento Biométrico
-
-| # | Requisito | Tipo | Protótipo | Frontend | Backend | QA |
-|---|-----------|------|:---------:|:--------:|:-------:|:--:|
-| 6 | Webcam (Pupilometria/Olhar) + Smartwatch (VFC/Sono) | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
-| 7 | Algoritmo de Carga Cognitiva (Custo de Troca + Tempo) | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
-
-### Narrativa Medieval (Agentes Narrativos)
-
-| # | Requisito | Tipo | Protótipo | Frontend | Backend | QA |
-|---|-----------|------|:---------:|:--------:|:-------:|:--:|
-| 8 | Reescrever título da tarefa para contexto medieval via IA | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
-| 9 | Barra de progresso em 4 atos: Chamado, Provações, Transformação, Resultado | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
-| 10 | Tarefas críticas como "Chefes de Fase" que bloqueiam progresso | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
-| 11 | Tela da guilda com elementos visuais dinâmicos | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
-| 12 | "Diário de aventuras" visual das missões completadas | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
-| 13 | Streak de dias consecutivos com recompensas exponenciais | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
-| 14 | Escolha narrativa ao concluir projeto grande | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
-| 15 | NPC "Bardo" que escreve crônica semanal baseada nas tarefas | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
-| 16 | Progresso visual (Landmark) ao invés de barra de porcentagem | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
 
 ---
 
@@ -444,7 +447,139 @@
 
 ---
 
-## 🏰 Fase 7 - Polimento e Segurança
+
+## 🧠 Fase 7 - Espelho Metacognitivo, Energia Biológica e Game Master Preditivo
+
+> **Objetivo:** Substituir o “app-capataz” por um sistema que **investiga gargalos**, **calibra energia** (HRV/Sono/Estresse + RPE) e **ajusta o plano** para evitar esgotamento — com gamificação (Mana/Rested XP) e privacidade por padrão.
+
+### O Espelho Metacognitivo (Debriefing Agent)
+
+| # | Requisito | Tipo | Protótipo | Frontend | Backend | QA |
+|---|-----------|------|:---------:|:--------:|:-------:|:--:|
+| 1 | Ao concluir tarefa, executar um debriefing curto (perguntas metacognitivas) quando houver desvio relevante (ex.: 2x do planejado, adiamentos repetidos) | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 2 | Usar logs/timestamps do usuário (criação, início, pausas, adiamentos, conclusão) como contexto do debriefing | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 3 | O output do agente deve ser **estrutura** (categorias de gargalo) e não texto livre | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 4 | Catálogo mínimo de gargalos: Definição Ruim, Tarefa Grande Demais, Falta de Material, Fadiga/Cansaço, Interrupções, Ansiedade/Evitação | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 5 | Persistir e agregar gargalos por tarefa/tag/tipo/horário para gerar padrões (ex.: “Cálculo à noite drena mais”) | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 6 | Regras adaptativas: quando “Definição Ruim” for recorrente, o sistema passa a bloquear/alertar criação de tarefas vagas | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 7 | Tom do agente deve ser investigativo (não julgador), com prompts focados em diagnóstico e melhoria | Não Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+
+### Energia Biológica (HRV/Sono/Estresse) como Orçamento Inicial
+
+| # | Requisito | Tipo | Protótipo | Frontend | Backend | QA |
+|---|-----------|------|:---------:|:--------:|:-------:|:--:|
+| 8 | Integração mobile para leitura de métricas via Health Connect (Android) e/ou HealthKit (iOS), com consentimento explícito | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 9 | Ao acordar (ou ao abrir o app), calcular o “Orçamento de Energia/Mana” do dia com base em HRV/Sleep Score | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 10 | Regra base: HRV > média + 10% → modo “Berserk” (120%); HRV < média - 10% → modo “Survival” (60%) | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 11 | Renderizar “Mana” como barra gamificada e aplicar buffs/debuffs (ex.: “Mente Límpida”, “Névoa Mental”) | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 12 | Rested XP: mapear Sleep Score para multiplicador de XP (ex.: score > 85 → 1.5x XP; score < 60 → penalidade/configurável) | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 13 | Estresse contínuo (HR/HRV) deve refletir em uma barra de “Sanidade” e afetar recomendação de tarefas (work-heavy vs maintenance) | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 14 | Quando em “Survival” ou Sanidade crítica, bloquear sugerir “novas Quests pesadas” e priorizar manutenção/recuperação | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 15 | Privacidade por padrão: permitir desativar biometria, escolher quais métricas enviar ao backend e armazenar mínimo necessário | Não Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 16 | Fallback sem biometria: permitir definir energia manualmente (ex.: slider 0-100) mantendo o sistema funcional | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+
+### RPE (Percepção Subjetiva de Esforço) e Calibração do Custo
+
+| # | Requisito | Tipo | Protótipo | Frontend | Backend | QA |
+|---|-----------|------|:---------:|:--------:|:-------:|:--:|
+| 17 | Pós-tarefa: coletar RPE (escala 1–10) perguntando “O quanto isso drenou sua barra?” | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 18 | Aprender custo por tarefa/contexto: usar (tipo/tag/horário/duração) + RPE para estimar custo futuro | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 19 | Chronotype mapping: custo previsto deve variar por horário (ex.: manhã vs noite) e ajustar recomendações | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 20 | Ao agendar tarefa, reservar Mana proporcional ao custo previsto (ex.: RPE 8 → 80% do budget do bloco) | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 21 | Permitir feedback do usuário para corrigir custo previsto (“era mais leve/pesado”) para acelerar calibração | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+
+### Quests de Recuperação (Active Rest)
+
+| # | Requisito | Tipo | Protótipo | Frontend | Backend | QA |
+|---|-----------|------|:---------:|:--------:|:-------:|:--:|
+| 22 | Quando Sanidade/Estresse atingir limiar crítico, sugerir e priorizar “Quests de Recuperação” no lugar de trabalho pesado | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 23 | Quest “Caminhada de Fluxo Óptico”: validar por passos + zona de batimento (Zona 1) para recompensar com item/buff | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 24 | Quest “Suspiro Fisiológico”: guia visual de 2 min e validar sucesso por queda aguda de FC (quando disponível) | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 25 | Recompensas de recuperação devem restaurar Mana/Sanidade e/ou conceder poções (itens) para uso posterior | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+
+### Game Master Preditivo (Ritmo Ultradiano)
+
+| # | Requisito | Tipo | Protótipo | Frontend | Backend | QA |
+|---|-----------|------|:---------:|:--------:|:-------:|:--:|
+| 26 | Aprender o ritmo ultradiano do usuário usando logs de sessões (ex.: >90 min sem pausa correlaciona com estresse/sono ruim) | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 27 | Intervenção preditiva: emitir evento de pausa por volta de 80 min de foco (configurável) para evitar pico de estresse | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 28 | Mensagem narrativa de intervenção (“portal fecha em 5 min…”) com opção de bypass/adiar (controle do usuário) | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 29 | Recompensar o usuário por respeitar cooldown biológico (XP/buffs/itens), sem punições agressivas | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+
+
+---
+
+## 🧙 Fase 8 - Narrativa e Motor RPG (SRS)
+
+> **Objetivo:** Transformar tarefas e projetos em um loop de gameplay consistente (dungeons, bosses, estados de combate, buffs/debuffs), com requisitos técnicos claros (workers assíncronos, FSM, WebSockets, cron jobs) e integração com o sistema de energia/recuperação (Fase 7) para não virar “if/else” nem travar a UI.
+
+### 1) O “Gerador de Masmorras” (LLM Procedural Generation)
+
+| # | Requisito | Tipo | Protótipo | Frontend | Backend | QA |
+|---|-----------|------|:---------:|:--------:|:-------:|:--:|
+| 1 | Ao receber `POST /tasks`, salvar a tarefa base e enfileirar um Job de “Geração de Entidade” (Dungeon/Boss) sem bloquear a resposta | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 2 | A geração deve rodar em *Asynchronous Worker Queue* (fila + worker) com retries, backoff e idempotência por `taskId` | Não Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 3 | O LLM deve retornar JSON estrito conforme schema validado (Zod/TypeScript); respostas inválidas devem ser rejeitadas e reprocessadas | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 4 | Persistir `generationVersion` (schema/prompt) + `rawResponse` (para auditoria) + `validatedEntity` (para gameplay) | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 5 | Determinismo operacional: para o mesmo input (taskId + payload + versão), a geração deve ser reexecutável (replay) sem divergência não explicada | Não Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 6 | Enquanto o Job roda, o frontend deve mostrar um loading state “Mago conjurando o portal” e atualizar quando o Job concluir | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+
+### 2) Sistema de Batalha (FSM + WebSockets)
+
+| # | Requisito | Tipo | Protótipo | Frontend | Backend | QA |
+|---|-----------|------|:---------:|:--------:|:-------:|:--:|
+| 7 | Implementar um canal WebSocket (ex.: Socket.io no NestJS) para sincronizar estado de combate em tempo real (boss HP, avatar state, eventos) | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 8 | Motor de combate deve ser uma *Finite State Machine (FSM)* com estados mínimos: `IDLE`, `CHARGING`, `FLOW_STATE`, `INTERRUPTED` | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 9 | Regras-base: `IDLE` DPS=0; `CHARGING` (0–15 min) DPS=1; `FLOW_STATE` (16+ min) DPS=5x; `INTERRUPTED` interrompe DPS e habilita penalidades | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 10 | Mudança para `INTERRUPTED` deve ser acionável por eventos de “combo breaker” (ex.: janela do OS em blacklist) e propagada via WebSocket | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 11 | Criar Webhook Listener para `push` do GitHub; ao receber evento válido, emitir `CRITICAL_STRIKE` via WebSocket e subtrair 20% do HP do boss | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 12 | Segurança do webhook: validar assinatura (ex.: secret) e rate limit para evitar abuso | Não Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+
+### 3) Mecânica de Procrastinação (Workers, Cron e Decaimento)
+
+| # | Requisito | Tipo | Protótipo | Frontend | Backend | QA |
+|---|-----------|------|:---------:|:--------:|:-------:|:--:|
+| 13 | Se a FSM permanecer em `INTERRUPTED` por mais de 10 minutos, aplicar buff de `REGEN` ao boss (regeneração) | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 14 | Regra de HP Regen: `Current_HP = min(Max_HP, Current_HP + (Max_HP * 0.05 * Horas_Inativas))` | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 15 | Rodar Cron Job a cada hora cheia para varrer tarefas “Em Aberto” e calcular `Threat_Level = 1 / Dias_Para_Deadline` | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 16 | Se faltar menos de 24h, usar `Threat_Level` para drenar “Sanidade” e disparar notificação push severa (“O Golem está em fúria! Defenda-se!”) | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 17 | Notificações push devem ser configuráveis (opt-in) e respeitar privacidade/quiet hours | Não Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+
+### 4) Integração com Energia do Personagem (dependência da Fase 7)
+
+| # | Requisito | Tipo | Protótipo | Frontend | Backend | QA |
+|---|-----------|------|:---------:|:--------:|:-------:|:--:|
+| 18 | O motor RPG deve **consumir** (read-only) o estado de Energia/Mana/Sanidade calculado na Fase 7, sem reimplementar ingestão biométrica nesta fase | Não Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 19 | A Energia/Stamina deve influenciar o combate: stamina baixa reduz janela de `FLOW_STATE`, aumenta chance de `INTERRUPTED` e sugere pausa/recuperação | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 20 | Fallback sem biometria: quando o usuário definir energia manualmente (Fase 7), o combate deve continuar funcional sem degradar para “travado” | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 21 | Expor snapshot versionado do status do personagem (Energia/Mana/Sanidade/buffs) para o frontend e para eventos via WebSocket, evitando expor dados brutos sensíveis | Não Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+
+### 5) Classes de Personagem (Design Patterns no Backend)
+
+| # | Requisito | Tipo | Protótipo | Frontend | Backend | QA |
+|---|-----------|------|:---------:|:--------:|:-------:|:--:|
+| 22 | Modelar “classe do personagem” por usuário e permitir troca (ex.: Mago, Ladino) de forma configurável | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 23 | Implementar Strategy Pattern (ou Decorator) com interface `CharacterClass` para calcular DPS e drenagem de Sanidade | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 24 | O motor de combate deve depender apenas da interface (injeção da estratégia), evitando regras espalhadas em `if/else` | Não Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 25 | Ao trocar classe, o sistema deve aplicar novos modificadores sem reescrever o motor (apenas trocar a estratégia) | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+
+### Narrativa Medieval (Agentes Narrativos)
+
+| # | Requisito | Tipo | Protótipo | Frontend | Backend | QA |
+|---|-----------|------|:---------:|:--------:|:-------:|:--:|
+| 26 | Reescrever título da tarefa para contexto medieval via IA | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 27 | Barra de progresso em 4 atos: Chamado, Provações, Transformação, Resultado | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 28 | Tarefas críticas como "Chefes de Fase" que bloqueiam progresso | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 29 | Tela da guilda com elementos visuais dinâmicos | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 30 | "Diário de aventuras" visual das missões completadas | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 31 | Integrar streaks e recompensas de consistência já definidas na Fase 3 ao contexto narrativo (sem duplicar lógica de streak) | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 32 | Escolha narrativa ao concluir projeto grande | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 33 | NPC "Bardo" que escreve crônica semanal baseada nas tarefas | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 34 | Progresso visual (Landmark) ao invés de barra de porcentagem | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+
+---
+
+## 🏰 Fase 9 - Polimento e Segurança
 
 ### Usabilidade
 
@@ -472,24 +607,12 @@
 
 ---
 
-## 📝 Legenda
-
-| Símbolo | Significado |
-|---------|-------------|
-| ✅ | Concluído |
-| ⬜ | Pendente |
-| 🔄 | Em andamento |
-| ❌ | Bloqueado/Problema |
-| ⏳ | Aguardando dependência |
-
----
-
 ## 📅 Histórico de Atualizações
 
 | Data | Descrição |
 |------|-----------|
 | 28/01/2026 | Documento criado com status atual do MVP |
-| - | - |
+| 22/02/2026 | Reorganização das fases: dividir a antiga Fase 3 em Fase 3 (Gamificação Manual-First) + Fase 4 (Monitoramento/IA) e renumerar fases seguintes até Fase 9 |
 
 ---
 

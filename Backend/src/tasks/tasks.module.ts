@@ -2,7 +2,10 @@ import { Module } from '@nestjs/common';
 import { TasksService } from './tasks.service';
 import { GeminiService } from './gemini.service'; // Importa o GeminiService
 import { PertService } from './services/pert.service';
+import { CPMService } from './services/cpm.service';
+import { DependencyInferenceService } from './services/dependency-inference.service';
 import { TasksController } from './tasks.controller';
+import { CPMController } from './controllers/cpm.controller';
 import { MongooseModule } from '@nestjs/mongoose';
 import { TaskSchema } from './schemas/task.schema';
 import { Task } from './entities/task.entity';
@@ -14,6 +17,8 @@ import { MicroTaskSimilarityCacheSchema } from './schemas/microtask-similarity-c
 import { MicroTaskSimilarityCache } from './entities/microtask-similarity-cache.entity';
 import { ProjectSchema } from '../projects/schemas/project.schema';
 import { Project } from '../projects/entities/project.entity';
+import { TaskDependencySchema } from './schemas/task-dependency.schema';
+import { TaskDependency } from './schemas/task-dependency.schema';
 import { forwardRef } from '@nestjs/common';
 import { ProjectsModule } from '../projects/projects.module';
 
@@ -24,12 +29,13 @@ import { ProjectsModule } from '../projects/projects.module';
       { name: MicroTaskMilestone.name, schema: MicroTaskMilestoneSchema },
       { name: MicroTaskGenerationRun.name, schema: MicroTaskGenerationRunSchema },
       { name: MicroTaskSimilarityCache.name, schema: MicroTaskSimilarityCacheSchema },
-      { name: Project.name, schema: ProjectSchema }
+      { name: Project.name, schema: ProjectSchema },
+      { name: TaskDependency.name, schema: TaskDependencySchema }
     ]),
     forwardRef(() => ProjectsModule)
   ],
-  controllers: [TasksController],
-  providers: [TasksService, GeminiService, PertService], // Adiciona o PertService aos providers
-  exports: [TasksService, GeminiService, PertService] // Exporta PertService para uso em outros módulos
+  controllers: [TasksController, CPMController],
+  providers: [TasksService, GeminiService, PertService, CPMService, DependencyInferenceService],
+  exports: [TasksService, GeminiService, PertService, CPMService, DependencyInferenceService]
 })
 export class TasksModule {}
