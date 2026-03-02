@@ -69,7 +69,18 @@ export class BufferService {
       0,
     );
 
-    // 4. Desviación estándar
+    // Diagnóstico: log detalhado das tarefas críticas
+    const criticalTasksDebug = criticalTasks.map((t) => ({
+      taskId: t.taskId,
+      estimatedHours: t.estimatedHours,
+      variance: t.variance,
+    }));
+
+    this.logger.debug(
+      `[Buffer Debug] Tarefas críticas detalhadas: ${JSON.stringify(criticalTasksDebug)}`,
+    );
+
+    // 4. Desviação estándar
     const standardDeviation = Math.sqrt(totalVariance);
 
     // 5. Buffer = 50% de la duración del camino crítico

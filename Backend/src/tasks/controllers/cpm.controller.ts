@@ -1067,6 +1067,14 @@ export class CPMController {
         } as BufferTaskMetrics;
       });
 
+      // Diagnóstico: contar tarefas com variança > 0
+      const tasksWithVariance = taskMetrics.filter((t) => (t.variance ?? 0) > 0).length;
+      const totalVariance = taskMetrics.reduce((sum, t) => sum + (t.variance ?? 0), 0);
+
+      this.logger.log(
+        `[Buffer Calc] ${tasksWithVariance}/${taskMetrics.length} tarefas com variança, variança total: ${totalVariance.toFixed(2)}`,
+      );
+
       await this.bufferService.calculateProjectBuffer(projectId, taskMetrics, analysis.criticalPath);
       this.logger.log(`Buffer recalculado para projeto ${projectId}`);
     } catch (error: any) {
