@@ -175,6 +175,17 @@
         @open-auto-infer="() => {}"
         @clear-cycles="clearCycles"
       />
+
+      <!-- NOVO: Buffer Dashboard -->
+      <ProjectBufferDashboard
+        ref="bufferDashboard"
+        :project-id="(props.project as any)?._id"
+        :critical-path-duration="projectDuration"
+        :total-variance="diagnostics?.totalVariance"
+        :standard-deviation="diagnostics?.standardDeviation"
+        @buffer-consumed="onBufferConsumed"
+        @buffer-alert="onBufferAlert"
+      />
     </v-sheet>
 
     <!-- Error Alert -->
@@ -196,6 +207,7 @@ import { ref, computed, onMounted, watch } from 'vue';
 import { useTaskStore } from '~/stores/task';
 import { useApi } from '~/composables/api';
 import CriticalPathAnalysisPanel from '../sections/CriticalPathAnalysisPanel.vue';
+import ProjectBufferDashboard from '../sections/ProjectBufferDashboard.vue'; // NOVO: Importa Dashboard de Buffer
 import type { Project } from '~/models/Project';
 
 interface TaskMetrics {
@@ -222,6 +234,7 @@ const criticalPath = ref<string[]>([]);
 const projectDuration = ref(0);
 const alerts = ref<string[]>([]);
 const diagnostics = ref<any | null>(null);
+const bufferDashboard = ref<any>(null); // NOVO: Referência ao componente de buffer
 
 // Auto-infer state
 const autoInferLoading = ref(false);
@@ -425,6 +438,32 @@ watch(() => projectId.value, (newId) => {
   if (newId?.trim()) {
     calculateCriticalPath();
   }
+});
+
+// NOVO: Handlers para Buffer Dashboard
+const onBufferConsumed = (hours: number) => {
+  console.log(`Buffer consumido: ${hours}h`);
+};
+
+const onBufferAlert = (alert: string) => {
+  console.log('Buffer Alert:', alert);
+  // Mostrar notificação ao usuário aqui se necessário
+};
+
+// Recalcular buffer após CPM calculation
+const triggerBufferRecalculation = async () => {
+  if (bufferDashboard.value) {
+    try {
+      await bufferDashboard.value.recalculateBuffer();
+    } catch (err) {
+      console.error('Erro ao recalcular buffer:', err);
+    }
+  }
+};
+
+// Chamar recalculation de buffer após CPM
+watch([projectDuration, diagnostics], () => {
+  triggerBufferRecalculation();
 });
 </script>
 

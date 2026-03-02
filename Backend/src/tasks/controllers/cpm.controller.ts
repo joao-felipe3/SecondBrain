@@ -9,9 +9,10 @@ import {
 } from '@nestjs/common';
 import { Logger } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
-import { CPMService, CPMAnalysis, TaskMetrics, TaskNode } from '../services/cpm.service';
+import { CPMService, CPMAnalysis, TaskNode, TaskMetrics as CpmTaskMetrics } from '../services/cpm.service';
 import { TasksService } from '../tasks.service';
 import { DependencyInferenceService } from '../services/dependency-inference.service';
+import { BufferService, TaskMetrics as BufferTaskMetrics } from '../services/buffer.service'; // NOVO: Importa BufferService e tipo
 import type { TaskDependency } from '../schemas/task-dependency.schema';
 
 class AddDependencyDto {
@@ -40,6 +41,7 @@ export class CPMController {
     private readonly cpmService: CPMService,
     private readonly tasksService: TasksService,
     private readonly dependencyInference: DependencyInferenceService,
+    private readonly bufferService: BufferService, // NOVO: Injeta BufferService
   ) {}
 
   @Post('projects/:projectId/dependencies/auto-infer')
@@ -1049,6 +1051,29 @@ export class CPMController {
     // Calcular CPM
     const analysis: CPMAnalysis = this.cpmService.calculateCriticalPath(taskNodes);
 
+    // NOVO: Calcular buffer consolidado também quando CPM é calculado
+    try {
+      const taskDocs = await this.tasksService.findByProjectId(projectId);
+
+      const taskMetrics: BufferTaskMetrics[] = (taskDocs as any[]).map((task) => {
+        const id = (task as any)._id?.toString() || (task as any).id;
+        const minutes = Number((task as any).pertExpectedMinutes ?? (task as any).estimatedMinutes ?? 60);
+        return {
+          taskId: String(id ?? ''),
+          // Keep same units used by CPM (minutes) to avoid unit mismatch with other callers.
+          estimatedHours: Number(minutes ?? 0),
+          variance: Number((task as any).pertVariance ?? (task as any).variance ?? 0),
+          isCritical: analysis.criticalPath.includes(String(id ?? '')),
+        } as BufferTaskMetrics;
+      });
+
+      await this.bufferService.calculateProjectBuffer(projectId, taskMetrics, analysis.criticalPath);
+      this.logger.log(`Buffer recalculado para projeto ${projectId}`);
+    } catch (error: any) {
+      this.logger.warn(`Erro ao calcular buffer: ${error?.message ?? String(error)}`);
+      // Não falha o CPM se buffer falhar - apenas log
+    }
+
     return {
       projectId,
       analysis: analysis,
@@ -1090,7 +1115,7 @@ export class CPMController {
   async getTaskMetrics(
     @Param('taskId') taskId: string,
     @Query('projectId') projectId: string,
-  ): Promise<TaskMetrics & { taskName: string }> {
+  ): Promise<CpmTaskMetrics & { taskName: string }> {
     // Buscar tarefa
     const task = await this.tasksService.findOne(taskId);
 

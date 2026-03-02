@@ -4,8 +4,10 @@ import { GeminiService } from './gemini.service'; // Importa o GeminiService
 import { PertService } from './services/pert.service';
 import { CPMService } from './services/cpm.service';
 import { DependencyInferenceService } from './services/dependency-inference.service';
+import { BufferService } from './services/buffer.service'; // NOVO: Importa BufferService
 import { TasksController } from './tasks.controller';
 import { CPMController } from './controllers/cpm.controller';
+import { BufferController } from './controllers/buffer.controller'; // NOVO: Importa BufferController
 import { MongooseModule } from '@nestjs/mongoose';
 import { TaskSchema } from './schemas/task.schema';
 import { Task } from './entities/task.entity';
@@ -19,6 +21,8 @@ import { ProjectSchema } from '../projects/schemas/project.schema';
 import { Project } from '../projects/entities/project.entity';
 import { TaskDependencySchema } from './schemas/task-dependency.schema';
 import { TaskDependency } from './schemas/task-dependency.schema';
+import { ProjectBufferSchema } from './schemas/project-buffer.schema'; // NOVO: Importa schema de buffer
+import { ProjectBuffer } from './entities/project-buffer.entity'; // NOVO: Importa entidade de buffer
 import { forwardRef } from '@nestjs/common';
 import { ProjectsModule } from '../projects/projects.module';
 
@@ -30,12 +34,13 @@ import { ProjectsModule } from '../projects/projects.module';
       { name: MicroTaskGenerationRun.name, schema: MicroTaskGenerationRunSchema },
       { name: MicroTaskSimilarityCache.name, schema: MicroTaskSimilarityCacheSchema },
       { name: Project.name, schema: ProjectSchema },
-      { name: TaskDependency.name, schema: TaskDependencySchema }
+      { name: TaskDependency.name, schema: TaskDependencySchema },
+      { name: ProjectBuffer.name, schema: ProjectBufferSchema }, // NOVO: Adiciona ProjectBuffer
     ]),
     forwardRef(() => ProjectsModule)
   ],
-  controllers: [TasksController, CPMController],
-  providers: [TasksService, GeminiService, PertService, CPMService, DependencyInferenceService],
-  exports: [TasksService, GeminiService, PertService, CPMService, DependencyInferenceService]
+  controllers: [TasksController, CPMController, BufferController], // NOVO: Adiciona BufferController
+  providers: [TasksService, GeminiService, PertService, CPMService, DependencyInferenceService, BufferService], // NOVO: Adiciona BufferService
+  exports: [TasksService, GeminiService, PertService, CPMService, DependencyInferenceService, BufferService], // NOVO: Adiciona BufferService aos exports
 })
 export class TasksModule {}
