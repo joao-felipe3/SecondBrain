@@ -70,8 +70,8 @@
   /* Sprite configuration */
   --sprite-image: url('https://assets.codepen.io/36869/book.webp'); 
   --sprite-c: 5; 
-  --sprite-h: 3000; 
-  --sprite-w: 9600; 
+  --sprite-h: 3500; 
+  --sprite-w: 11200; 
   --sprite-f: 7; 
   --sprite-fr: 12; 
   --sprite-as: calc(var(--sprite-f) / var(--sprite-fr) * 1s); 

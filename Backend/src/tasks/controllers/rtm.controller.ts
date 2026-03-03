@@ -131,6 +131,19 @@ export class RTMController {
         }ms`,
       );
 
+      // Debug: log WBS distribution
+      const wbsDistribution = new Map<string, number>();
+      matrixData.tasks.forEach((t: any) => {
+        const wbsName = t.wbsNodeName || 'Sem WBS';
+        wbsDistribution.set(wbsName, (wbsDistribution.get(wbsName) || 0) + 1);
+      });
+      this.logger.debug(
+        `[rtm-matrix] WBS Distribution: ${JSON.stringify(Array.from(wbsDistribution.entries()))}`,
+      );
+      this.logger.debug(
+        `[rtm-matrix] Sample tasks: ${JSON.stringify(matrixData.tasks.slice(0, 3))}`,
+      );
+
       return {
         success: true,
         projectId,

@@ -1,10 +1,5 @@
 <template>
   <v-card elevation="1" class="mb-4">
-    <v-card-title class="d-flex align-center gap-2" style="font-size: 1rem; font-weight: 500">
-      <v-icon>mdi-link-variant</v-icon>
-      Matriz de Rastreabilidade (RTM)
-    </v-card-title>
-
     <v-card-text v-if="!loading">
       <!-- Empty State -->
       <div v-if="!matrixData || matrixData.requirements.length === 0" class="text-center py-4">
@@ -20,10 +15,10 @@
       <!-- Matrix View -->
       <div v-else class="rtm-container">
         <!-- Validation Summary -->
-        <v-card variant="tonal" color="info" class="mb-4">
+        <v-card variant="tonal" color="info" class="pa-0">
           <v-card-text>
             <div class="d-flex align-center gap-2 mb-2">
-              <v-icon :color="getValidationColor()">
+              <v-icon :color="getValidationColor()" class="mr-2">
                 {{ getValidationIcon() }}
               </v-icon>
               <div>
@@ -31,7 +26,7 @@
               </div>
             </div>
 
-            <v-divider class="my-2" />
+            <v-divider class="my-1" />
 
             <div class="text-caption">
               <p v-if="matrixData.validation.isValid" class="text-success mb-0">
@@ -49,13 +44,13 @@
         <div v-if="matrixData.requirements.length > 0" class="mb-4">
           <div class="text-subtitle-2 font-weight-bold mb-2">Mapeamento Requisito × Tarefa</div>
 
-          <v-table density="compact" class="rtm-table">
+          <v-table class="rtm-table">
             <thead>
               <tr>
-                <th width="30%">Requisito</th>
-                <th width="10%">Tipo</th>
-                <th width="50%">Tarefas Rastreadas</th>
-                <th width="10%">Status</th>
+                <th style="min-width: 150px; text-align: center;">Requisito</th>
+                <th style="width: 60px; text-align: center;">Tipo</th>
+                <th style="width: 60px; text-align: center;">Tarefas</th>
+                <th style="width: 40px; text-align: center;">Status</th>
               </tr>
             </thead>
             <tbody>
@@ -64,9 +59,52 @@
                 :key="req.id"
                 :class="{ 'unmapped-row': !isRequirementMapped(req.id) }"
               >
-                <td>
-                  <div class="d-flex align-start justify-space-between gap-2">
-                    <div class="text-caption">{{ req.description }}</div>
+
+                <td class="requirement-cell">
+                  <div class="requirement-wrapper">
+                    <div 
+                      class="text-caption font-weight-medium truncate-text"
+                      :title="req.description"
+                    >
+                      {{ req.description }}
+                    </div>
+                  </div>
+                </td>
+
+                <td class="text-center" style="padding: 0.15rem 0.35rem !important;">
+                  <v-chip
+                    size="x-small"
+                    variant="tonal"
+                    :color="getTypeColor(req.type)"
+                    class="compact-chip"
+                    label
+                  >
+                    {{ req.type === 'functional' ? 'Funcional' : req.type === 'non_functional' ? 'Não-Funcional' : 'Restrição' }}
+                  </v-chip>
+                </td>
+
+                <td style="padding: 0.15rem 0.35rem !important;">
+                  <v-btn
+                    v-if="getTasksForRequirement(req.id).length > 0"
+                    size="x-small"
+                    variant="tonal"
+                    color="primary"
+                    class="compact-btn"
+                    :text="`${getTasksForRequirement(req.id).length} Tasks`"
+                    @click="openTasksDialog(req)"
+                  />
+                  <span v-else class="text-caption text-medium-emphasis">—</span>
+                </td>
+
+                <td class="text-center status-cell">
+                  <div class="d-flex align-center justify-center gap-1">
+                    <v-icon
+                      :color="isRequirementMapped(req.id) ? 'success' : 'error'"
+                      size="small"
+                    >
+                      {{ isRequirementMapped(req.id) ? 'mdi-check-circle' : 'mdi-alert-circle' }}
+                    </v-icon>
+
                     <v-btn
                       icon="mdi-delete"
                       size="x-small"
@@ -77,67 +115,6 @@
                       @click.stop="deleteRequirement(req.id)"
                     />
                   </div>
-                  <v-chip
-                    size="x-small"
-                    variant="tonal"
-                    :color="getTypeColor(req.type)"
-                    class="mt-1"
-                  >
-                    {{ req.type }}
-                  </v-chip>
-                </td>
-
-                <td>
-                  <v-chip size="x-small" variant="outlined">
-                    {{ req.type === 'functional' ? 'Func' : req.type === 'non_functional' ? 'NF' : 'Constraint' }}
-                  </v-chip>
-                </td>
-
-                <td>
-                  <div class="d-flex flex-wrap gap-1">
-                    <v-chip
-                      v-for="taskId in getTasksForRequirement(req.id)"
-                      :key="taskId"
-                      size="x-small"
-                      variant="outlined"
-                      closable
-                      @click:close="unmapTask(req.id, taskId)"
-                    >
-                      {{ getTaskName(taskId) }}
-                    </v-chip>
-
-                    <!-- Add Task Button -->
-                    <v-menu>
-                      <template #activator="{ props }">
-                        <v-btn
-                          v-bind="props"
-                          icon="mdi-plus"
-                          size="x-small"
-                          variant="text"
-                          color="primary"
-                        />
-                      </template>
-
-                      <v-list>
-                        <v-list-item
-                          v-for="task in getUnmappedTasks(req.id)"
-                          :key="task.id"
-                          @click="mapTask(req.id, task.id)"
-                        >
-                          <v-list-item-title class="text-caption">{{ task.name }}</v-list-item-title>
-                        </v-list-item>
-                      </v-list>
-                    </v-menu>
-                  </div>
-                </td>
-
-                <td>
-                  <v-icon
-                    :color="isRequirementMapped(req.id) ? 'success' : 'error'"
-                    size="small"
-                  >
-                    {{ isRequirementMapped(req.id) ? 'mdi-check-circle' : 'mdi-alert-circle' }}
-                  </v-icon>
                 </td>
               </tr>
             </tbody>
@@ -145,7 +122,7 @@
         </div>
 
         <!-- Actions -->
-        <v-card-actions class="mt-4">
+        <v-card-actions class="mt-4 actions-row">
           <v-spacer />
           <v-btn
             v-if="matrixData.requirements.length > 0 && matrixData.validation.unmappedRequirements.length > 0"
@@ -212,6 +189,101 @@
       <p class="text-medium-emphasis mt-2">Carregando matriz de rastreabilidade...</p>
     </v-card-text>
   </v-card>
+
+  <!-- Dialog: Tasks for Requirement -->
+  <v-dialog v-model="selectedRequirementDialog" max-width="800">
+    <v-card>
+      <v-card-title class="d-flex justify-space-between align-center pa-3">
+        <div 
+          class="text-h6 flex-grow-1 text-truncate"
+          :title="selectedRequirement?.description"
+        >
+          {{ selectedRequirement?.description }}
+        </div>
+        <v-btn icon="mdi-close" variant="text" size="small" @click="selectedRequirementDialog = false" />
+      </v-card-title>
+
+      <v-divider />
+
+      <v-card-text class="py-4">
+        <div class="text-caption text-medium-emphasis mb-3">
+          {{ getTasksForRequirement(selectedRequirement?.id || '').length }} tarefa(s) mapeada(s)
+        </div>
+
+        <div class="tasks-list">
+          <div
+            v-for="taskId in getTasksForRequirement(selectedRequirement?.id || '')"
+            :key="taskId"
+            class="task-item mb-2 pa-3"
+          >
+            <div class="d-flex justify-space-between align-center">
+              <div class="flex-grow-1 min-width-0">
+                <div 
+                  class="text-body-2 font-weight-medium truncate-text"
+                  :title="getTaskName(taskId)"
+                >
+                  {{ getTaskName(taskId) }}
+                </div>
+                <div 
+                  class="text-caption text-medium-emphasis truncate-text"
+                  :title="taskId"
+                >
+                  ID: {{ taskId }}
+                </div>
+              </div>
+              <v-btn
+                icon="mdi-close"
+                size="x-small"
+                variant="text"
+                color="error"
+                @click="unmapTask(selectedRequirement?.id || '', taskId)"
+              />
+            </div>
+          </div>
+
+          <div v-if="getTasksForRequirement(selectedRequirement?.id || '').length === 0" class="text-center py-4">
+            <p class="text-medium-emphasis">Nenhuma tarefa mapeada</p>
+          </div>
+        </div>
+
+        <!-- Add Task to Requirement -->
+        <v-divider class="my-4" />
+        <div class="text-caption text-medium-emphasis mb-2">Adicionar Tarefa</div>
+        
+        <!-- Task Autocomplete -->
+        <v-autocomplete
+          v-model="selectedTaskId"
+          :items="groupedTasksForAutocomplete"
+          item-title="name"
+          item-value="id"
+          placeholder="Digite o nome ou ID da tarefa..."
+          density="compact"
+          prepend-icon="mdi-magnify"
+          clearable
+          auto-select-first
+          hide-details
+          :search="taskSearchQuery"
+          @update:model-value="(val: any) => val && handleTaskSelected(selectedRequirement?.id || '', val)"
+          @input="(val: any) => taskSearchQuery = typeof val === 'string' ? val : ''"
+        >
+          <template #item="{ props, item }">
+            <v-list-item v-bind="props" class="text-body-2">
+              <v-list-item-subtitle class="text-caption">{{ item.raw.wbsNodeName }}</v-list-item-subtitle>
+            </v-list-item>
+          </template>
+
+          <template #no-data>
+            <div class="pa-4 text-center">
+              <v-icon color="grey" size="32" class="mb-2">mdi-database-search</v-icon>
+              <p class="text-caption text-medium-emphasis">
+                {{ taskSearchQuery ? 'Nenhuma tarefa encontrada' : 'Digite para buscar tarefas' }}
+              </p>
+            </div>
+          </template>
+        </v-autocomplete>
+      </v-card-text>
+    </v-card>
+  </v-dialog>
 </template>
 
 <script setup lang="ts">
@@ -228,6 +300,8 @@ interface Requirement {
 interface Task {
   id: string;
   name: string;
+  wbsNodeId?: string;
+  wbsNodeName?: string;
 }
 
 interface MatrixData {
@@ -254,6 +328,12 @@ const autoMapping = ref(false);
 const deletingRequirementId = ref<string | null>(null);
 const matrixData = ref<MatrixData | null>(null);
 
+// Dialog state
+const selectedRequirementDialog = ref(false);
+const selectedRequirement = ref<Requirement | null>(null);
+const taskSearchQuery = ref('');
+const selectedTaskId = ref<string | null>(null);
+
 // Computed
 const getValidationColor = () => {
   if (!matrixData.value) return 'grey';
@@ -268,6 +348,32 @@ const getValidationIcon = () => {
   if (matrixData.value.validation.coverage >= 80) return 'mdi-alert-circle';
   return 'mdi-alert-octagon';
 };
+
+// Computed for autocomplete tasks
+const groupedTasksForAutocomplete = computed(() => {
+  const requirementId = selectedRequirement.value?.id || '';
+  const unmappedTasks = getUnmappedTasks(requirementId);
+  
+  if (unmappedTasks.length === 0) return [];
+
+  // Filter by search query
+  let filtered = unmappedTasks;
+  if (taskSearchQuery.value.trim()) {
+    const query = taskSearchQuery.value.toLowerCase();
+    filtered = unmappedTasks.filter((task) => 
+      task.name.toLowerCase().includes(query) || 
+      task.id.toLowerCase().includes(query)
+    );
+  }
+
+  // Return filtered tasks with WBS info - autocomplete will handle grouping
+  return filtered.map(task => ({
+    id: task.id,
+    name: `${task.name}`,
+    wbsNodeId: task.wbsNodeId,
+    wbsNodeName: task.wbsNodeName || 'Sem WBS',
+  }));
+});
 
 // Methods
 const loadMatrix = async () => {
@@ -290,6 +396,17 @@ const loadMatrix = async () => {
         matrix: data.matrix || {},
         validation: data.validation,
       };
+      
+      // Debug: log WBS data availability
+      if (process.env.NODE_ENV === 'development') {
+        const tasksWithWBS = matrixData.value.tasks.filter((t: any) => t.wbsNodeId).length;
+        console.debug('[RTM] Matrix loaded:', {
+          totalTasks: matrixData.value.tasks.length,
+          tasksWithWBS,
+          sampleTask: matrixData.value.tasks[0],
+          requirements: matrixData.value.requirements.length,
+        });
+      }
     }
   } catch (err) {
     console.error('Erro buscando matriz RTM:', err);
@@ -320,6 +437,13 @@ const autoGenerateRequirements = async () => {
   }
 };
 
+const openTasksDialog = (requirement: Requirement) => {
+  selectedRequirement.value = requirement;
+  taskSearchQuery.value = '';
+  selectedTaskId.value = null;
+  selectedRequirementDialog.value = true;
+};
+
 const mapTask = async (requirementId: string, taskId: string) => {
   if (!props.projectId) return;
 
@@ -337,6 +461,19 @@ const mapTask = async (requirementId: string, taskId: string) => {
   } catch (err) {
     console.error('Erro mapeando tarefa:', err);
   }
+};
+
+const mapTaskFromDialog = async (requirementId: string, taskId: string) => {
+  if (!taskId) return;
+  await mapTask(requirementId, taskId);
+};
+
+const handleTaskSelected = async (requirementId: string, taskId: string) => {
+  if (!taskId) return;
+  await mapTask(requirementId, taskId);
+  // Reset search and selected task after mapping
+  taskSearchQuery.value = '';
+  selectedTaskId.value = null;
 };
 
 const unmapTask = async (requirementId: string, taskId: string) => {
@@ -518,6 +655,7 @@ const getTypeColor = (type: string): string => {
   }
 };
 
+
 // Lifecycle
 onMounted(() => {
   loadMatrix();
@@ -549,6 +687,7 @@ defineExpose({
   border: 1px solid #e0e0e0;
   border-radius: 4px;
   overflow: hidden;
+  width: 100%;
 }
 
 .unmapped-row {
@@ -560,11 +699,103 @@ defineExpose({
 }
 
 .rtm-table td {
-  padding: 0.75rem;
+  padding: 0.25rem 0.35rem;
+  vertical-align: middle;
+  height: auto;
+  min-height: 32px;
 }
 
 .rtm-table thead {
   background-color: #f5f5f5;
   font-weight: 600;
+}
+
+.rtm-table thead th {
+  padding: 0.35rem 0.35rem !important;
+  font-size: 0.85rem;
+}
+
+.tasks-list {
+  max-height: 400px;
+  overflow-y: auto;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+}
+
+.task-item {
+  border-bottom: 1px solid #f5f5f5;
+  background-color: #fafafa;
+}
+
+.task-item:last-child {
+  border-bottom: none;
+}
+
+.task-item:hover {
+  background-color: #f0f0f0;
+}
+
+.truncate-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: default;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+}
+
+.min-width-0 {
+  min-width: 0;
+}
+
+.compact-chip {
+  height: 20px !important;
+  font-size: 0.7rem !important;
+  padding: 0 6px !important;
+}
+
+.compact-btn {
+  height: 24px !important;
+  font-size: 0.7rem !important;
+  padding: 0 6px !important;
+  min-width: 32px !important;
+}
+
+.requirement-cell {
+  padding: 0.35rem 0.35rem !important;
+  max-width: 1px;
+}
+
+.requirement-wrapper {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  -webkit-box-orient: vertical;
+  width: 100%;
+  min-width: 0;
+  line-height: 1.4;
+}
+
+.requirement-cell .truncate-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  -webkit-box-orient: vertical;
+  width: 100%;
+  line-height: 1.4;
+  white-space: normal;
+  word-wrap: break-word;
+  font-size: 0.65rem !important;
+}
+
+.actions-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
 }
 </style>

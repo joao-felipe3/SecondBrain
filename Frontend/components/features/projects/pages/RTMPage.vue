@@ -1,18 +1,21 @@
 <template>
-  <div class="page-content">
-    <div class="page-header">
-      <h2 class="page-title">Matriz de Rastreabilidade</h2>
-      <p class="page-subtitle">
-        Mapeie e valide a cobertura de requisitos nas tarefas do projeto
-      </p>
-    </div>
+  <v-sheet class="page-container" elevation="0" color="transparent" @click.stop>
+    <!-- LEFT PAGE: Matriz de Rastreabilidade -->
+    <v-sheet class="page left-page" elevation="0" color="transparent" @click.stop>
+      <h3 class="page-title mb-4">🔗 Matriz de Rastreabilidade</h3>
 
-    <RTMMatrix
-      v-if="project._id"
-      :projectId="project._id"
-      :smartObjective="project.smartObjective"
-    />
-  </div>
+      <RTMMatrix
+        v-if="project._id"
+        :projectId="project._id"
+        :smartObjective="project.smartObjective"
+      />
+    </v-sheet>
+
+    <!-- RIGHT PAGE: Resumo e Métricas -->
+    <v-sheet class="page right-page" elevation="0" color="transparent" @click.stop>
+      
+    </v-sheet>
+  </v-sheet>
 </template>
 
 <script setup lang="ts">
@@ -26,28 +29,36 @@ defineProps<{
 </script>
 
 <style scoped>
-.page-content {
-  padding: 2rem 1.5rem;
-  max-width: 100%;
+.page-container {
+  display: flex;
+  gap: 1rem;
+  padding: 0.5rem;
   height: 100%;
-  overflow-y: auto;
+  align-items: flex-start;
 }
 
-.page-header {
-  margin-bottom: 2rem;
-  text-align: center;
+.page {
+  flex: 1;
+  min-width: 0;
+  padding: 0.5rem;
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 8px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  box-sizing: border-box;
+}
+
+.left-page {
+  border-right: 1px solid #e2e8f0;
+}
+
+.right-page {
+  border-left: 1px solid #e2e8f0;
 }
 
 .page-title {
-  font-size: 1.75rem;
+  font-size: 1rem;
   font-weight: 600;
   margin: 0;
-  color: #fff;
-}
-
-.page-subtitle {
-  font-size: 0.95rem;
-  color: rgba(255, 255, 255, 0.7);
-  margin: 0.5rem 0 0 0;
 }
 </style>

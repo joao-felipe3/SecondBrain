@@ -14,7 +14,7 @@ export interface RTMValidation {
 
 export interface RTMMatrixData {
   requirements: Array<{ id: string; description: string; type: string; status: string }>;
-  tasks: Array<{ id: string; name: string }>;
+  tasks: Array<{ id: string; name: string; wbsNodeId?: string; wbsNodeName: string }>;
   matrix: Map<string, Set<string>>; // req id -> set of task ids
   validation: RTMValidation;
 }
@@ -322,10 +322,37 @@ Sem blocos markdown, sem texto extra.`;
         status: req.status,
       }));
 
-      const tasksData = (tasks as any[]).map((task) => ({
-        id: String(task._id ?? task.id ?? ''),
-        name: task.title || task.name || 'Task',
-      }));
+      // Build WBS name map for enrichment
+      const wbsNameMap = new Map<string, string>();
+      
+      const tasksData = (tasks as any[]).map((task) => {
+        const wbsNodeId = task.parentWbsNodeId ? String(task.parentWbsNodeId) : undefined;
+        
+        // Try to get WBS name from cache or fallback to path or ID
+        let wbsNodeName = 'Sem WBS';
+        if (wbsNodeId) {
+          if (wbsNameMap.has(wbsNodeId)) {
+            wbsNodeName = wbsNameMap.get(wbsNodeId) || 'Sem WBS';
+          } else {
+            // Strategy: use wbsPath parts or fallback to truncated ID
+            if (task.wbsPath) {
+              // Extract last part of wbs path: e.g. "1 > 2 > 3" -> "3"
+              const pathParts = task.wbsPath.split('>').map((p: string) => p.trim());
+              wbsNodeName = pathParts[pathParts.length - 1] || wbsNodeId.slice(0, 12);
+            } else {
+              wbsNodeName = `WBS: ${wbsNodeId.slice(0, 12)}`;
+            }
+            wbsNameMap.set(wbsNodeId, wbsNodeName);
+          }
+        }
+
+        return {
+          id: String(task._id ?? task.id ?? ''),
+          name: task.title || task.name || 'Task',
+          wbsNodeId,
+          wbsNodeName,
+        };
+      });
 
       this.logger.log(
         `Matriz RTM gerada: ${requirements.length} requisitos × ${tasks.length} tarefas`,
