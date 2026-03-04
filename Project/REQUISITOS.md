@@ -1,7 +1,7 @@
 # 📋 Acompanhamento de Requisitos - Second Brain
 
-> **Última atualização:** 22/02/2026  
-> **Status do Projeto:** MVP + Planejamento das Fases (Eficiência → 9)
+> **Última atualização:** 04/03/2026  
+> **Status do Projeto:** MVP + Planejamento das Fases (Eficiência → 10)
 
 ---
 
@@ -9,17 +9,18 @@
 
 | Fase | Total | Prototipado | Frontend | Backend | QA | Progresso |
 |------|-------|-------------|----------|---------|-----|-----------|
-| MVP | 14 | 14/14 ✅ | 14/14 ✅ | 14/14 ✅ | 14/14 ✅ | 🟢 100% |
-| Eficiência | 28 | 9/28 | 9/28 | 9/28 | 9/28 | ⬜ 32% |
-| Micro-Tarefas | 18 | 0/18 | 0/18 | 0/18 | 0/18 | ⬜ 0% |
-| Produtividade Avançada | 18 | 0/18 | 0/18 | 0/18 | 0/18 | ⬜ 0% |
-| Fase 3 | 17 | 0/17 | 0/17 | 0/17 | 0/17 | ⬜ 0% |
-| Fase 4 | 8 | 0/8 | 0/8 | 0/8 | 0/8 | ⬜ 0% |
-| Fase 5 | 23 | 0/23 | 0/23 | 0/23 | 0/23 | ⬜ 0% |
-| Fase 6 | 22 | 0/22 | 0/22 | 0/22 | 0/22 | ⬜ 0% |
-| Fase 7 | 29 | 0/29 | 0/29 | 0/29 | 0/29 | ⬜ 0% |
-| Fase 8 | 34 | 0/34 | 0/34 | 0/34 | 0/34 | ⬜ 0% |
-| Fase 9 | 8 | 0/8 | 0/8 | 0/8 | 0/8 | ⬜ 0% |
+| Fase 0 - MVP | 14 | 14/14 ✅ | 14/14 ✅ | 14/14 ✅ | 14/14 ✅ | 🟢 100% |
+| Fase 1 - Eficiência | 28 | 9/28 | 9/28 | 9/28 | 9/28 | ⬜ 32% |
+| Fase 2 - Micro-Tarefas | 18 | 0/18 | 0/18 | 0/18 | 0/18 | ⬜ 0% |
+| Fase 3 - Produtividade Avançada | 18 | 0/18 | 0/18 | 0/18 | 0/18 | ⬜ 0% |
+| Fase 4 | 17 | 0/17 | 0/17 | 0/17 | 0/17 | ⬜ 0% |
+| Fase 5 | 8 | 0/8 | 0/8 | 0/8 | 0/8 | ⬜ 0% |
+| Fase 6 | 23 | 0/23 | 0/23 | 0/23 | 0/23 | ⬜ 0% |
+| Fase 7 | 22 | 0/22 | 0/22 | 0/22 | 0/22 | ⬜ 0% |
+| Fase 8 | 29 | 0/29 | 0/29 | 0/29 | 0/29 | ⬜ 0% |
+| Fase 9 | 34 | 0/34 | 0/34 | 0/34 | 0/34 | ⬜ 0% |
+| Fase 10 | 24 | 0/24 | 0/24 | 0/24 | 0/24 | ⬜ 0% |
+| Fase 11 | 8 | 0/8 | 0/8 | 0/8 | 0/8 | ⬜ 0% |
 
 
 ---
@@ -193,7 +194,7 @@
 
 ---
 
-## 🔄 Fase 2 - Produtividade Avançada
+## 🔄 Fase 3 - Produtividade Avançada
 
 > **Objetivo:** Reduzir fricção e aumentar consistência no dia a dia, transformando backlog → plano executável. A fase foca em **planejamento visual**, **captura rápida**, **busca/organização**, **priorização assistida** e **foco**, mantendo a criação e execução de tarefas rápidas e previsíveis.
 
@@ -252,7 +253,7 @@
 
 ---
 
-## 🎮 Fase 3 - Gamificação Essencial (Manual-First)
+## 🎮 Fase 4 - Gamificação Essencial (Manual-First)
 
 > **Objetivo:** Introduzir um loop de gameplay **sem depender de monitoramento automático**: check-ins manuais, recompensas, streaks e mecânicas “gentis” para aumentar consistência sem frustração. A fase funciona 100% mesmo sem desktop/OS.
 
@@ -310,7 +311,7 @@
 
 ---
 
-## 📡 Fase 4 - Monitoramento e Interpretação Assistida (IA)
+## 📡 Fase 5 - Monitoramento e Interpretação Assistida (IA)
 
 > **Objetivo:** Adicionar monitoramento (manual + automatizável), classificação assistida por IA e intervenções leves — **sem** tornar o sistema dependente do desktop/OS. Integrações com Guardião do OS (Fase 6) entram como fonte opcional de sinais.
 
@@ -325,7 +326,7 @@
 
 | # | Requisito | Tipo | Protótipo | Frontend | Backend | QA |
 |---|-----------|------|:---------:|:--------:|:-------:|:--:|
-| 3 | Registrar “sinais de contexto” como texto **sanitizado** (ex.: rótulo/descrição curta), coletados via check-in manual e/ou por integração opcional com o Guardião do OS (Fase 6) | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 3 | Registrar “sinais de contexto” como texto **sanitizado** (ex.: rótulo/descrição curta), coletados via check-in manual e/ou por integração opcional com o Guardião do OS (Fase 7) | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
 
 ### Interpretação por IA (Classificação) + Feedback
 
@@ -344,7 +345,7 @@
 
 ---
 
-## 🧩 Fase 5 - Arquitetura Cognitiva e Psicologia Comportamental
+## 🧩 Fase 6 - Arquitetura Cognitiva e Psicologia Comportamental
 
 > **Objetivo:** Estruturar o app para respeitar limites cognitivos e reforçar motivação sustentável (competência, autonomia), engajamento saudável (Zeigarnik/Hook) e foco (Flow) — reduzindo fadiga mental e aumentando consistência.
 
@@ -354,7 +355,7 @@
 |---|-----------|------|:---------:|:--------:|:-------:|:--:|
 | 1 | Limitar a quantidade de itens simultâneos na tela (padrão: 7±2) e priorizar exibição do “próximo passo” | Não Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
 | 2 | Aplicar *Chunking* automaticamente em projetos grandes: agrupar tarefas em sub-etapas e usar disclosure progressivo | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
-| 3 | Evoluir o “Modo foco” da Fase 2 para um “Modo execução” minimalista (livre de distrações) para uma tarefa ativa, com foco no essencial | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 3 | Evoluir o “Modo foco” da Fase 3 para um “Modo execução” minimalista (livre de distrações) para uma tarefa ativa, com foco no essencial | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
 | 4 | Reduzir “atenção dividida”: evitar que o usuário precise alternar entre áreas distantes para entender/agir em uma tarefa | Não Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
 | 5 | Remover redundâncias e fricções: textos objetivos, campos consistentes e ações principais sempre no mesmo local | Não Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
 
@@ -373,7 +374,7 @@
 |---|-----------|------|:---------:|:--------:|:-------:|:--:|
 | 10 | “Tarefas Ativas”: tarefas em andamento devem permanecer visíveis até resolução, com status claro | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
 | 11 | Aplicar o Efeito Zeigarnik de forma útil: destacar pendências iniciadas/interrompidas e sugerir fechamento | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
-| 12 | Recompensa variável ao concluir tarefas (magnitude/celebração/pontos), preferencialmente utilizando o sistema de recompensas da Fase 3, com opção de desativar | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 12 | Recompensa variável ao concluir tarefas (magnitude/celebração/pontos), preferencialmente utilizando o sistema de recompensas da Fase 4, com opção de desativar | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
 | 13 | “Valor armazenado”: diário/histórico visual do que foi feito (linha do tempo, vitórias e aprendizados) | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
 | 14 | O app deve ficar mais útil com o uso: preferências e padrões aprendidos (com transparência e controle do usuário) | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
 
@@ -384,7 +385,7 @@
 | 15 | Detectar tarefas “ansiosas” (muito difíceis/grandes) e sugerir decomposição em passos menores com metas claras | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
 | 16 | Detectar tarefas “entediantes” (muito triviais) e sugerir agrupamento/batch ou micro-recompensas | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
 | 17 | Metas claras e feedback rápido: cada tarefa pode ter critérios de sucesso visíveis durante a execução | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
-| 18 | Evoluir o Pomodoro da Fase 2 para “sessões de foco guiadas”: escolher 1 tarefa por vez, confirmar intenção e registrar conclusão/impedimentos | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 18 | Evoluir o Pomodoro da Fase 3 para “sessões de foco guiadas”: escolher 1 tarefa por vez, confirmar intenção e registrar conclusão/impedimentos | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
 
 ### Ferramentas de Foco
 
@@ -399,7 +400,7 @@
 
 ---
 
-## 🧠 Fase 6 - IA Autônoma, Memória Semântica e Guardião do OS
+## 🧠 Fase 7 - IA Autônoma, Memória Semântica e Guardião do OS
 
 > **Objetivo:** Evoluir o SecondBrain de “app com IA” para um **sistema agentivo** com memória (RAG) e automação segura, capaz de planejar, lembrar contexto, adaptar-se ao usuário e intervir contra distrações — com controle, privacidade e *feature flags*.
 
@@ -448,7 +449,7 @@
 ---
 
 
-## 🧠 Fase 7 - Espelho Metacognitivo, Energia Biológica e Game Master Preditivo
+## 🧠 Fase 8 - Espelho Metacognitivo, Energia Biológica e Game Master Preditivo
 
 > **Objetivo:** Substituir o “app-capataz” por um sistema que **investiga gargalos**, **calibra energia** (HRV/Sono/Estresse + RPE) e **ajusta o plano** para evitar esgotamento — com gamificação (Mana/Rested XP) e privacidade por padrão.
 
@@ -509,9 +510,9 @@
 
 ---
 
-## 🧙 Fase 8 - Narrativa e Motor RPG (SRS)
+## 🧙 Fase 9 - Narrativa e Motor RPG (SRS)
 
-> **Objetivo:** Transformar tarefas e projetos em um loop de gameplay consistente (dungeons, bosses, estados de combate, buffs/debuffs), com requisitos técnicos claros (workers assíncronos, FSM, WebSockets, cron jobs) e integração com o sistema de energia/recuperação (Fase 7) para não virar “if/else” nem travar a UI.
+> **Objetivo:** Transformar tarefas e projetos em um loop de gameplay consistente (dungeons, bosses, estados de combate, buffs/debuffs), com requisitos técnicos claros (workers assíncronos, FSM, WebSockets, cron jobs) e integração com o sistema de energia/recuperação (Fase 8) para não virar “if/else” nem travar a UI.
 
 ### 1) O “Gerador de Masmorras” (LLM Procedural Generation)
 
@@ -545,13 +546,13 @@
 | 16 | Se faltar menos de 24h, usar `Threat_Level` para drenar “Sanidade” e disparar notificação push severa (“O Golem está em fúria! Defenda-se!”) | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
 | 17 | Notificações push devem ser configuráveis (opt-in) e respeitar privacidade/quiet hours | Não Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
 
-### 4) Integração com Energia do Personagem (dependência da Fase 7)
+### 4) Integração com Energia do Personagem (dependência da Fase 8)
 
 | # | Requisito | Tipo | Protótipo | Frontend | Backend | QA |
 |---|-----------|------|:---------:|:--------:|:-------:|:--:|
-| 18 | O motor RPG deve **consumir** (read-only) o estado de Energia/Mana/Sanidade calculado na Fase 7, sem reimplementar ingestão biométrica nesta fase | Não Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 18 | O motor RPG deve **consumir** (read-only) o estado de Energia/Mana/Sanidade calculado na Fase 8, sem reimplementar ingestão biométrica nesta fase | Não Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
 | 19 | A Energia/Stamina deve influenciar o combate: stamina baixa reduz janela de `FLOW_STATE`, aumenta chance de `INTERRUPTED` e sugere pausa/recuperação | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
-| 20 | Fallback sem biometria: quando o usuário definir energia manualmente (Fase 7), o combate deve continuar funcional sem degradar para “travado” | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 20 | Fallback sem biometria: quando o usuário definir energia manualmente (Fase 8), o combate deve continuar funcional sem degradar para “travado” | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
 | 21 | Expor snapshot versionado do status do personagem (Energia/Mana/Sanidade/buffs) para o frontend e para eventos via WebSocket, evitando expor dados brutos sensíveis | Não Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
 
 ### 5) Classes de Personagem (Design Patterns no Backend)
@@ -572,14 +573,69 @@
 | 28 | Tarefas críticas como "Chefes de Fase" que bloqueiam progresso | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
 | 29 | Tela da guilda com elementos visuais dinâmicos | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
 | 30 | "Diário de aventuras" visual das missões completadas | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
-| 31 | Integrar streaks e recompensas de consistência já definidas na Fase 3 ao contexto narrativo (sem duplicar lógica de streak) | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 31 | Integrar streaks e recompensas de consistência já definidas na Fase 4 ao contexto narrativo (sem duplicar lógica de streak) | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
 | 32 | Escolha narrativa ao concluir projeto grande | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
 | 33 | NPC "Bardo" que escreve crônica semanal baseada nas tarefas | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
 | 34 | Progresso visual (Landmark) ao invés de barra de porcentagem | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
 
 ---
 
-## 🏰 Fase 9 - Polimento e Segurança
+## 🧭 Fase 10 - Rotina Invisível, Âncoras e Desligamento (Anti-Tábula Rasa)
+
+> **Objetivo:** Corrigir a “Falácia da Tábula Rasa”: o dia **não** começa com 24h em branco. Ele já nasce com grande parte do orçamento comprometido (aulas, deslocamento, alimentação, sono, manutenção). Esta fase adiciona mecânicas para **planejar capacidade real**, inserir hábitos por **ancoragem (habit stacking)**, proteger blocos do **Maker’s Schedule (timeboxing)** e encerrar o dia com o ritual da **Taverna (Save/Shutdown)**.
+
+### Orçamento Real do Dia (Capacidade e Rotina Invisível)
+
+| # | Requisito | Tipo | Protótipo | Frontend | Backend | QA |
+|---|-----------|------|:---------:|:--------:|:-------:|:--:|
+| 1 | Permitir cadastrar a “Rotina Invisível” como compromissos recorrentes (ex.: aulas, deslocamento, refeições, sono) com repetição semanal e exceções | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 2 | Exibir no início do dia um “Orçamento de Capacidade” (horas e/ou energia) já **descontando** a Rotina Invisível, evitando tela vazia por padrão | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 3 | Ao planejar/ancorar tarefas, validar conflito com o orçamento restante e sinalizar “overcommit” (ex.: ultrapassou horas/energia disponíveis) | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 4 | Classificar tarefas em pelo menos 2 macro-tipos: **Quest (progresso/nível)** e **Upkeep (manutenção)**, com UI explícita para valorizar manutenção | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 5 | Upkeep deve afetar “Durabilidade” (ver seção abaixo), mas não precisa conceder XP de nível (progressão pode ser separada) | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+
+### Habit Stacking: Tarefas Ancoradas (Disponibilidade por Evento)
+
+| # | Requisito | Tipo | Protótipo | Frontend | Backend | QA |
+|---|-----------|------|:---------:|:--------:|:-------:|:--:|
+| 6 | Definir “Âncoras” como eventos fortes da rotina (ex.: Almoço, Chegar em casa, Pós-aula), derivadas da Rotina Invisível ou criadas manualmente | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 7 | Permitir criar “Tarefas Ancoradas” que só ficam **disponíveis** imediatamente após a âncora (ex.: concluir evento “Almoço” → destrava Quest “Leitura”) | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 8 | UI deve mostrar estado **bloqueado** antes da âncora (ex.: cadeado + “Disponível após Almoço”) e estado “pronto” após concluir a âncora | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 9 | Ao concluir uma Tarefa Ancorada dentro de uma janela configurável pós-âncora, aplicar bônus de **Combo X2** (ex.: XP/loot/streak) para reforçar o comportamento | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 10 | Se o usuário perder a janela da âncora, a tarefa deve continuar disponível (não punir com bloqueio), porém sem bônus de Combo | Não Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 11 | Permitir “pilhas” de ancoragem (sequência curta após a mesma âncora, ex.: 2–3 tarefas), evitando listas longas para não virar tabuleta infinita | Não Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+
+### Maker’s Schedule: Timeboxing (Blocos Longos e Ininterruptos)
+
+| # | Requisito | Tipo | Protótipo | Frontend | Backend | QA |
+|---|-----------|------|:---------:|:--------:|:-------:|:--:|
+| 12 | Criar “Bloco Maker” como uma sessão de execução com **timebox** (ex.: 60/90/120 min) vinculada a **1 tarefa** | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 13 | Durante o Bloco Maker, desencorajar alternância: trocar a tarefa ativa deve exigir confirmação (custo de troca/Resíduo de Atenção) | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 14 | Registrar interrupções (manual-first, com integração opcional ao Guardião do OS da Fase 7) e aplicar uma regra de “Custo da Interrupção” (ex.: cooldown sugerido de 25 min para retomar fluxo) | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 15 | Diferenciar visualmente Blocos Maker (deep work) de janelas curtas tipo “Manager” (tarefas administrativas) para reduzir frustração por fragmentação | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 16 | Ao encerrar um Bloco Maker, registrar rapidamente: progresso, próximo passo e impedimento (se houver), alimentando o debriefing/metacognição (Fase 8) | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+
+### Boundary Management: “A Taverna” e o Ritual de Save (Shutdown)
+
+| # | Requisito | Tipo | Protótipo | Frontend | Backend | QA |
+|---|-----------|------|:---------:|:--------:|:-------:|:--:|
+| 17 | Implementar o ponto de encerramento do dia (“Taverna”) acionado por horário configurável e/ou por âncora (ex.: “Chegar em casa”) | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 18 | Na Taverna, executar micro-interação: “O dia lá fora foi duro. Guarde suas armas. O que você quer deixar preparado para o seu ‘Eu’ de amanhã?” | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 19 | No ritual, permitir selecionar até 3 itens para preparar (ex.: próximas Quests, material necessário, primeira ação) e ancorar automaticamente no dia seguinte | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 20 | Ritual deve “fechar loops” (Efeito Zeigarnik): tarefas não concluídas ficam registradas como **guardadas na taverna** (parking lot) e não devem gerar ansiedade/notificação até a próxima janela planejada | Não Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+
+### Manutenção de Infraestrutura: Durabilidade e Base Building (Valor do Invisível)
+
+| # | Requisito | Tipo | Protótipo | Frontend | Backend | QA |
+|---|-----------|------|:---------:|:--------:|:-------:|:--:|
+| 21 | Introduzir “Durabilidade” (0–100) como métrica agregada de manutenção (sono, alimentação, ordem/ambiente) e expor de forma clara para o usuário | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 22 | Tarefas Upkeep devem restaurar Durabilidade (ex.: “Dormir 8h”, “Preparar marmitas”), com regras simples e configuráveis | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 23 | Se Durabilidade cair abaixo de um limiar (ex.: <40), aplicar consequência explícita no loop (ex.: progresso/dano reduzido em 50% em tarefas profundas) e sugerir recuperação | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 24 | O sistema deve tratar manutenção como pré-requisito de combate (não “perda de tempo”): alertas e recomendações devem usar linguagem de base building (“sua espada precisa de reparo”) | Não Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+
+---
+
+## 🏰 Fase 11 - Polimento e Segurança
 
 ### Usabilidade
 
@@ -612,7 +668,8 @@
 | Data | Descrição |
 |------|-----------|
 | 28/01/2026 | Documento criado com status atual do MVP |
-| 22/02/2026 | Reorganização das fases: dividir a antiga Fase 3 em Fase 3 (Gamificação Manual-First) + Fase 4 (Monitoramento/IA) e renumerar fases seguintes até Fase 9 |
+| 22/02/2026 | Reorganização das fases: dividir a antiga Fase 4 em Fase 4 (Gamificação Manual-First) + Fase 5 (Monitoramento/IA) e renumerar fases seguintes até Fase 9 |
+| 04/03/2026 | Adicionar nova Fase 9 (Rotina Invisível/Âncoras/Timeboxing/Taverna/Durabilidade) e renumerar “Polimento e Segurança” para Fase 10 |
 
 ---
 

@@ -76,9 +76,6 @@ export class BufferService {
       variance: t.variance,
     }));
 
-    this.logger.debug(
-      `[Buffer Debug] Tarefas críticas detalhadas: ${JSON.stringify(criticalTasksDebug)}`,
-    );
 
     // 4. Desviação estándar
     const standardDeviation = Math.sqrt(totalVariance);

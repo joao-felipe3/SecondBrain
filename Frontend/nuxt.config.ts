@@ -66,4 +66,15 @@ export default defineNuxtConfig({
       apiBase: process.env.NUXT_PUBLIC_API_BASE || 'http://localhost:3000',
     },
   },
+
+  nitro: {
+    routeRules: {
+      // Proxiar todas as rotas `/api/**` para o backend em localhost:3000
+      '/api/**': {
+        proxy: process.env.NITRO_API_PROXY || 'http://localhost:3000/**',
+      },
+    },
+  },
+
+  ssr: true,
 });
