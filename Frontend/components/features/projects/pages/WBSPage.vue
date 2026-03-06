@@ -963,7 +963,6 @@ function handleMoveNode(payload: { sourceId?: string; targetId?: string }) {
 
 .wbs-content-wrapper {
   max-width: 100%;
-  width: 92%;
   box-sizing: border-box;
 }
 

@@ -1,5 +1,5 @@
 <template>
-  <v-sheet class="mb-6" elevation="0" color="transparent" @click.stop>
+  <v-sheet class="cpm-root" elevation="0" color="transparent" @click.stop>
     <div v-if="!projectDuration || projectDuration === 0" class="empty-state">
       <v-icon size="64" color="grey-lighten-1">mdi-chart-timeline</v-icon>
       <h3 class="mt-2 mb-2 text-medium-emphasis">Caminho Crítico — Análise CPM</h3>
@@ -27,14 +27,14 @@
               <!-- Tarefas que mais destravam -->
               <v-expansion-panel title="🔓 Tarefas que mais destravam">
                 <template #text>
-                  <div v-if="topUnlockersList.length" class="d-flex flex-column" style="gap: 4px;">
-                    <div v-for="t in topUnlockersList" :key="t.taskId" class="d-flex align-center justify-space-between">
+                  <div v-if="topUnlockersList.length" class="task-list">
+                    <div v-for="t in topUnlockersList" :key="t.taskId" class="task-row">
                       <v-tooltip :text="t.taskName" location="top">
                         <template #activator="{ props }">
-                          <span v-bind="props" class="text-caption" style="max-width: 78%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ t.taskName }}</span>
+                          <span v-bind="props" class="task-name">{{ t.taskName }}</span>
                         </template>
                       </v-tooltip>
-                      <span class="text-caption font-mono" style="min-width: 70px; text-align: right;">{{ t.outDegree }} deps</span>
+                      <span class="task-metric">{{ t.outDegree }} deps</span>
                     </div>
                   </div>
                   <div v-else class="text-caption text-medium-emphasis">Ainda não há dependências suficientes para medir desbloqueio.</div>
@@ -44,14 +44,14 @@
               <!-- Mais "bloqueadas" -->
               <v-expansion-panel title="🧩 Mais 'bloqueadas' (muitas deps)">
                 <template #text>
-                  <div v-if="topBottlenecksList.length" class="d-flex flex-column" style="gap: 4px;">
-                    <div v-for="t in topBottlenecksList" :key="t.taskId" class="d-flex align-center justify-space-between">
+                  <div v-if="topBottlenecksList.length" class="task-list">
+                    <div v-for="t in topBottlenecksList" :key="t.taskId" class="task-row">
                       <v-tooltip :text="t.taskName" location="top">
                         <template #activator="{ props }">
-                          <span v-bind="props" class="text-caption" style="max-width: 78%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ t.taskName }}</span>
+                          <span v-bind="props" class="task-name">{{ t.taskName }}</span>
                         </template>
                       </v-tooltip>
-                      <span class="text-caption font-mono" style="min-width: 70px; text-align: right;">{{ t.inDegree }} deps</span>
+                      <span class="task-metric">{{ t.inDegree }} deps</span>
                     </div>
                   </div>
                   <div v-else class="text-caption text-medium-emphasis">Poucas dependências; gargalos ainda não aparecem.</div>
@@ -91,14 +91,14 @@
               <!-- Top 15 por menor folga -->
               <v-expansion-panel title="⏳ Top 15 por menor folga">
                 <template #text>
-                  <div v-if="lowestSlackTasks.length" class="d-flex flex-column" style="gap: 4px;">
-                    <div v-for="t in lowestSlackTasks" :key="t.taskId" class="d-flex align-center justify-space-between">
+                  <div v-if="lowestSlackTasks.length" class="task-list">
+                    <div v-for="t in lowestSlackTasks" :key="t.taskId" class="task-row">
                       <v-tooltip :text="t.taskName" location="top">
                         <template #activator="{ props }">
-                          <span v-bind="props" class="text-caption" style="max-width: 78%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ t.taskName }}</span>
+                          <span v-bind="props" class="task-name">{{ t.taskName }}</span>
                         </template>
                       </v-tooltip>
-                      <span class="text-caption font-mono" style="min-width: 70px; text-align: right;">{{ t.slack.toFixed(1) }}h</span>
+                      <span class="task-metric">{{ t.slack.toFixed(1) }}h</span>
                     </div>
                   </div>
                   <div v-else class="text-caption text-medium-emphasis">Sem dados suficientes.</div>
@@ -108,14 +108,14 @@
               <!-- Iniciáveis agora -->
               <v-expansion-panel title="🚀 Iniciáveis agora (ES ≈ 0)">
                 <template #text>
-                  <div v-if="startableTasks.length" class="d-flex flex-column" style="gap: 4px;">
-                    <div v-for="t in startableTasks" :key="t.taskId" class="d-flex align-center justify-space-between">
+                  <div v-if="startableTasks.length" class="task-list">
+                    <div v-for="t in startableTasks" :key="t.taskId" class="task-row">
                       <v-tooltip :text="t.taskName" location="top">
                         <template #activator="{ props }">
-                          <span v-bind="props" class="text-caption" style="max-width: 78%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ t.taskName }}</span>
+                          <span v-bind="props" class="task-name">{{ t.taskName }}</span>
                         </template>
                       </v-tooltip>
-                      <span class="text-caption font-mono" style="min-width: 70px; text-align: right;">{{ t.slack.toFixed(1) }}h</span>
+                      <span class="task-metric">{{ t.slack.toFixed(1) }}h</span>
                     </div>
                   </div>
                   <div v-else class="text-caption text-medium-emphasis">Nenhuma tarefa com ES≈0.</div>
@@ -125,14 +125,14 @@
               <!-- Próximos 10 do fio guia -->
               <v-expansion-panel title="🧵 Próximos 10 do fio guia">
                 <template #text>
-                  <div v-if="criticalNextTasks.length" class="d-flex flex-column" style="gap: 4px;">
-                    <div v-for="t in criticalNextTasks" :key="t.taskId" class="d-flex align-center justify-space-between">
+                  <div v-if="criticalNextTasks.length" class="task-list">
+                    <div v-for="t in criticalNextTasks" :key="t.taskId" class="task-row">
                       <v-tooltip :text="t.taskName" location="top">
                         <template #activator="{ props }">
-                          <span v-bind="props" class="text-caption" style="max-width: 78%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ t.taskName }}</span>
+                          <span v-bind="props" class="task-name">{{ t.taskName }}</span>
                         </template>
                       </v-tooltip>
-                      <span class="text-caption font-mono" style="min-width: 70px; text-align: right;">{{ t.slack.toFixed(1) }}h</span>
+                      <span class="task-metric">{{ t.slack.toFixed(1) }}h</span>
                     </div>
                   </div>
                   <div v-else class="text-caption text-medium-emphasis">Sem fio guia.</div>
@@ -488,6 +488,54 @@ const bufferSummary = computed(() => {
   height: 100%;
 }
 
+.cpm-root {
+  width: 100% !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+  overflow: hidden !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+/* Task list layout - constrained width */
+.task-list {
+  width: 100%;
+  max-width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.task-row {
+  display: grid;
+  grid-template-columns: 1fr 70px;
+  gap: 8px;
+  align-items: center;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  min-width: 0;
+}
+
+.task-name {
+  font-size: 0.75rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+  word-break: break-word;
+}
+
+.task-metric {
+  font-size: 0.75rem;
+  font-family: monospace;
+  text-align: right;
+  flex-shrink: 0;
+  min-width: 70px;
+}
+
 .page-title {
   font-size: 1rem;
   font-weight: 600;
@@ -529,14 +577,65 @@ const bufferSummary = computed(() => {
   overflow-x: auto;
 }
 
+/* Garante que expansion panels não crescem além do container */
+:deep(.v-expansion-panels) {
+  width: 100%;
+  box-sizing: border-box;
+  max-width: 100% !important;
+}
+
+:deep(.v-expansion-panel) {
+  max-width: 100% !important;
+  overflow: hidden !important;
+}
+
+:deep(.v-expansion-panel__content) {
+  max-width: 100% !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  padding-right: 16px !important;
+  display: block !important;
+}
+
+/* Força todos os children do content a respeitar largura */
+:deep(.v-expansion-panel__content *) {
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+  overflow-x: hidden !important;
+}
+
+/* Flex items particulares */
+:deep(.v-expansion-panel__content .d-flex) {
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  flex-shrink: 1 !important;
+  flex-wrap: wrap !important;
+}
+
+/* Spans dentro dos flex items */
+:deep(.v-expansion-panel__content span) {
+  min-width: 0 !important;
+  flex-shrink: 1 !important;
+  overflow-x: hidden !important;
+}
+
 .cpm-content-wrapper {
   display: flex;
   flex-direction: column;
   height: 100%;
-  max-width: 290px;
+  min-width: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  max-width: 100%;
+  width: 100%;
 }
 
 .nested-panels {
   width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 </style>
