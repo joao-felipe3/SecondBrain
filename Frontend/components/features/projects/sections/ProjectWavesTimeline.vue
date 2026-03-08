@@ -36,7 +36,7 @@
           </p>
         </div>
         <div class="wave-tasks-count">
-          {{ wave.taskIds.length }} {{ isFutureWave(idx, wave.status) ? 'itens agrupados' : 'tarefas' }}
+          {{ wave.taskIds.length }} tarefas
         </div>
       </div>
     </div>
@@ -71,26 +71,6 @@
               </v-col>
             </v-row>
 
-            <v-alert
-              v-if="isSelectedWaveFuture"
-              density="comfortable"
-              type="info"
-              variant="tonal"
-              class="mb-3"
-            >
-              Onda futura em planejamento agregado (épicos/milestones). O detalhamento completo será feito quando esta onda se aproximar.
-            </v-alert>
-
-            <v-alert
-              v-else
-              density="comfortable"
-              type="success"
-              variant="tonal"
-              class="mb-3"
-            >
-              Onda em detalhamento máximo: tarefas individuais e esforço estimado.
-            </v-alert>
-
             <v-card v-if="selectedWave.description" variant="outlined" class="mb-3 wave-focus-card">
               <v-card-text class="py-2 px-3">
                 <p class="text-caption text-grey mb-1">Foco da Onda</p>
@@ -115,20 +95,6 @@
                 </v-list-item>
               </v-list>
               <p v-else class="text-caption text-grey mb-0">Não há tarefas detalhadas vinculadas a esta onda.</p>
-            </div>
-
-            <!-- Granularidade por Onda -->
-            <div class="granularity-info">
-              <v-icon size="18" class="mr-2">mdi-information</v-icon>
-              <span class="text-caption">
-                <strong v-if="selectedWave.waveNumber === 1 || selectedWave.waveNumber === 2">
-                  Detalhe máximo:
-                </strong>
-                <strong v-else>
-                  Detalhe reduzido:
-                </strong>
-                {{ getGranularityDescription(selectedWave.waveNumber) }}
-              </span>
             </div>
           </v-card-text>
 
@@ -425,7 +391,7 @@ onMounted(async () => {
 }
 
 .wave-date {
-  font-size: 0.75rem;
+  font-size: 0.65rem;
   color: #666;
   margin: 0.25rem 0 0 0;
 }

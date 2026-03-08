@@ -13,14 +13,14 @@
 | Fase 1 - Eficiência | 28 | 9/28 | 9/28 | 9/28 | 9/28 | ⬜ 32% |
 | Fase 2 - Micro-Tarefas | 18 | 0/18 | 0/18 | 0/18 | 0/18 | ⬜ 0% |
 | Fase 3 - Produtividade Avançada | 18 | 0/18 | 0/18 | 0/18 | 0/18 | ⬜ 0% |
-| Fase 4 | 17 | 0/17 | 0/17 | 0/17 | 0/17 | ⬜ 0% |
-| Fase 5 | 8 | 0/8 | 0/8 | 0/8 | 0/8 | ⬜ 0% |
-| Fase 6 | 23 | 0/23 | 0/23 | 0/23 | 0/23 | ⬜ 0% |
-| Fase 7 | 22 | 0/22 | 0/22 | 0/22 | 0/22 | ⬜ 0% |
-| Fase 8 | 29 | 0/29 | 0/29 | 0/29 | 0/29 | ⬜ 0% |
-| Fase 9 | 34 | 0/34 | 0/34 | 0/34 | 0/34 | ⬜ 0% |
-| Fase 10 | 24 | 0/24 | 0/24 | 0/24 | 0/24 | ⬜ 0% |
-| Fase 11 | 8 | 0/8 | 0/8 | 0/8 | 0/8 | ⬜ 0% |
+| Fase 4 - Gamificação Essencial | 17 | 0/17 | 0/17 | 0/17 | 0/17 | ⬜ 0% |
+| Fase 5 - Narrativa e Motor RPG | 34 | 0/34 | 0/34 | 0/34 | 0/34 | ⬜ 0% |
+| Fase 6 - Monitoramento e Interpretação Assistida | 8 | 0/8 | 0/8 | 0/8 | 0/8 | ⬜ 0% |
+| Fase 7 - Arquitetura Cognitiva | 23 | 0/23 | 0/23 | 0/23 | 0/23 | ⬜ 0% |
+| Fase 8 - IA Autônoma e Guardião do OS | 22 | 0/22 | 0/22 | 0/22 | 0/22 | ⬜ 0% |
+| Fase 9 - Espelho Metacognitivo e Energia Biológica | 29 | 0/29 | 0/29 | 0/29 | 0/29 | ⬜ 0% |
+| Fase 10 - Rotina Invisível, Âncoras e Desligamento | 24 | 0/24 | 0/24 | 0/24 | 0/24 | ⬜ 0% |
+| Fase 11 - Polimento e Segurança | 8 | 0/8 | 0/8 | 0/8 | 0/8 | ⬜ 0% |
 
 
 ---
@@ -141,7 +141,7 @@
 |---|-----------|------|:---------:|:--------:|:-------:|:--:|
 | 29 | Corrigir criação/edição e de projetos para melhorar a experiência de usuário | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
 | 30 | Corrigir botão de catchball e melhorar geração de pacotes WBS pois está sempre entre 500-600h | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
-| 31 | Melhorar a UI das páginas 3-4 e 5-6 para ficar mais de acordo com a temática fantasia medieval | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 31 | Melhorar a UI das páginas 3-4, 5-6 e 7-8 para ficar mais de acordo com a temática fantasia medieval | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
 
 ---
 
@@ -310,10 +310,78 @@
 | 17 | Inventário/Biblioteca de Loot: listar, buscar e “equipar” itens para acelerar tarefas futuras (inclui tags e reutilização) | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
 
 ---
+## 🧙 Fase 5 - Narrativa e Motor RPG (SRS)
 
-## 📡 Fase 5 - Monitoramento e Interpretação Assistida (IA)
+> **Objetivo:** Transformar tarefas e projetos em um loop de gameplay consistente (dungeons, bosses, estados de combate, buffs/debuffs), com requisitos técnicos claros (workers assíncronos, FSM, WebSockets, cron jobs) e integração com o sistema de energia/recuperação (Fase 9) para não virar "if/else" nem travar a UI.
 
-> **Objetivo:** Adicionar monitoramento (manual + automatizável), classificação assistida por IA e intervenções leves — **sem** tornar o sistema dependente do desktop/OS. Integrações com Guardião do OS (Fase 6) entram como fonte opcional de sinais.
+### 1) O "Gerador de Masmorras" (LLM Procedural Generation)
+
+| # | Requisito | Tipo | Protótipo | Frontend | Backend | QA |
+|---|-----------|------|:---------:|:--------:|:-------:|:--:|
+| 1 | Ao receber `POST /tasks`, salvar a tarefa base e enfileirar um Job de "Geração de Entidade" (Dungeon/Boss) sem bloquear a resposta | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 2 | A geração deve rodar em *Asynchronous Worker Queue* (fila + worker) com retries, backoff e idempotência por `taskId` | Não Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 3 | O LLM deve retornar JSON estrito conforme schema validado (Zod/TypeScript); respostas inválidas devem ser rejeitadas e reprocessadas | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 4 | Persistir `generationVersion` (schema/prompt) + `rawResponse` (para auditoria) + `validatedEntity` (para gameplay) | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 5 | Determinismo operacional: para o mesmo input (taskId + payload + versão), a geração deve ser reexecutável (replay) sem divergência não explicada | Não Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 6 | Enquanto o Job roda, o frontend deve mostrar um loading state "Mago conjurando o portal" e atualizar quando o Job concluir | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+
+### 2) Sistema de Batalha (FSM + WebSockets)
+
+| # | Requisito | Tipo | Protótipo | Frontend | Backend | QA |
+|---|-----------|------|:---------:|:--------:|:-------:|:--:|
+| 7 | Implementar um canal WebSocket (ex.: Socket.io no NestJS) para sincronizar estado de combate em tempo real (boss HP, avatar state, eventos) | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 8 | Motor de combate deve ser uma *Finite State Machine (FSM)* com estados mínimos: `IDLE`, `CHARGING`, `FLOW_STATE`, `INTERRUPTED` | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 9 | Regras-base: `IDLE` DPS=0; `CHARGING` (0–15 min) DPS=1; `FLOW_STATE` (16+ min) DPS=5x; `INTERRUPTED` interrompe DPS e habilita penalidades | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 10 | Mudança para `INTERRUPTED` deve ser acionável por eventos de "combo breaker" (ex.: janela do OS em blacklist) e propagada via WebSocket | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 11 | Criar Webhook Listener para `push` do GitHub; ao receber evento válido, emitir `CRITICAL_STRIKE` via WebSocket e subtrair 20% do HP do boss | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 12 | Segurança do webhook: validar assinatura (ex.: secret) e rate limit para evitar abuso | Não Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+
+### 3) Mecânica de Procrastinação (Workers, Cron e Decaimento)
+
+| # | Requisito | Tipo | Protótipo | Frontend | Backend | QA |
+|---|-----------|------|:---------:|:--------:|:-------:|:--:|
+| 13 | Se a FSM permanecer em `INTERRUPTED` por mais de 10 minutos, aplicar buff de `REGEN` ao boss (regeneração) | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 14 | Regra de HP Regen: `Current_HP = min(Max_HP, Current_HP + (Max_HP * 0.05 * Horas_Inativas))` | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 15 | Rodar Cron Job a cada hora cheia para varrer tarefas "Em Aberto" e calcular `Threat_Level = 1 / Dias_Para_Deadline` | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 16 | Se faltar menos de 24h, usar `Threat_Level` para drenar "Sanidade" e disparar notificação push severa ("O Golem está em fúria! Defenda-se!") | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 17 | Notificações push devem ser configuráveis (opt-in) e respeitar privacidade/quiet hours | Não Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+
+### 4) Integração com Energia do Personagem (dependência da Fase 9)
+
+| # | Requisito | Tipo | Protótipo | Frontend | Backend | QA |
+|---|-----------|------|:---------:|:--------:|:-------:|:--:|
+| 18 | O motor RPG deve **consumir** (read-only) o estado de Energia/Mana/Sanidade calculado na Fase 9, sem reimplementar ingestão biométrica nesta fase | Não Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 19 | A Energia/Stamina deve influenciar o combate: stamina baixa reduz janela de `FLOW_STATE`, aumenta chance de `INTERRUPTED` e sugere pausa/recuperação | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 20 | Fallback sem biometria: quando o usuário definir energia manualmente (Fase 9), o combate deve continuar funcional sem degradar para "travado" | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 21 | Expor snapshot versionado do status do personagem (Energia/Mana/Sanidade/buffs) para o frontend e para eventos via WebSocket, evitando expor dados brutos sensíveis | Não Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+
+### 5) Classes de Personagem (Design Patterns no Backend)
+
+| # | Requisito | Tipo | Protótipo | Frontend | Backend | QA |
+|---|-----------|------|:---------:|:--------:|:-------:|:--:|
+| 22 | Modelar "classe do personagem" por usuário e permitir troca (ex.: Mago, Ladino) de forma configurável | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 23 | Implementar Strategy Pattern (ou Decorator) com interface `CharacterClass` para calcular DPS e drenagem de Sanidade | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 24 | O motor de combate deve depender apenas da interface (injeção da estratégia), evitando regras espalhadas em `if/else` | Não Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 25 | Ao trocar classe, o sistema deve aplicar novos modificadores sem reescrever o motor (apenas trocar a estratégia) | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+
+### Narrativa Medieval (Agentes Narrativos)
+
+| # | Requisito | Tipo | Protótipo | Frontend | Backend | QA |
+|---|-----------|------|:---------:|:--------:|:-------:|:--:|
+| 26 | Reescrever título da tarefa para contexto medieval via IA | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 27 | Barra de progresso em 4 atos: Chamado, Provações, Transformação, Resultado | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 28 | Tarefas críticas como "Chefes de Fase" que bloqueiam progresso | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 29 | Tela da guilda com elementos visuais dinâmicos | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 30 | "Diário de aventuras" visual das missões completadas | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 31 | Integrar streaks e recompensas de consistência já definidas na Fase 4 ao contexto narrativo (sem duplicar lógica de streak) | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 32 | Escolha narrativa ao concluir projeto grande | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 33 | NPC "Bardo" que escreve crônica semanal baseada nas tarefas | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 34 | Progresso visual (Landmark) ao invés de barra de porcentagem | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+
+---
+## 📡 Fase 6 - Monitoramento e Interpretação Assistida (IA)
+
+> **Objetivo:** Adicionar monitoramento (manual + automatizável), classificação assistida por IA e intervenções leves — **sem** tornar o sistema dependente do desktop/OS. Integrações com Guardião do OS (Fase 8) entram como fonte opcional de sinais.
 
 ### Controles de Monitoramento e Privacidade
 
@@ -345,7 +413,7 @@
 
 ---
 
-## 🧩 Fase 6 - Arquitetura Cognitiva e Psicologia Comportamental
+## 🧩 Fase 7 - Arquitetura Cognitiva e Psicologia Comportamental
 
 > **Objetivo:** Estruturar o app para respeitar limites cognitivos e reforçar motivação sustentável (competência, autonomia), engajamento saudável (Zeigarnik/Hook) e foco (Flow) — reduzindo fadiga mental e aumentando consistência.
 
@@ -400,7 +468,7 @@
 
 ---
 
-## 🧠 Fase 7 - IA Autônoma, Memória Semântica e Guardião do OS
+## 🧠 Fase 8 - IA Autônoma, Memória Semântica e Guardião do OS
 
 > **Objetivo:** Evoluir o SecondBrain de “app com IA” para um **sistema agentivo** com memória (RAG) e automação segura, capaz de planejar, lembrar contexto, adaptar-se ao usuário e intervir contra distrações — com controle, privacidade e *feature flags*.
 
@@ -449,7 +517,7 @@
 ---
 
 
-## 🧠 Fase 8 - Espelho Metacognitivo, Energia Biológica e Game Master Preditivo
+## 🧠 Fase 9 - Espelho Metacognitivo, Energia Biológica e Game Master Preditivo
 
 > **Objetivo:** Substituir o “app-capataz” por um sistema que **investiga gargalos**, **calibra energia** (HRV/Sono/Estresse + RPE) e **ajusta o plano** para evitar esgotamento — com gamificação (Mana/Rested XP) e privacidade por padrão.
 
@@ -510,9 +578,9 @@
 
 ---
 
-## 🧙 Fase 9 - Narrativa e Motor RPG (SRS)
+## 🧙 Fase 5 - Narrativa e Motor RPG (SRS)
 
-> **Objetivo:** Transformar tarefas e projetos em um loop de gameplay consistente (dungeons, bosses, estados de combate, buffs/debuffs), com requisitos técnicos claros (workers assíncronos, FSM, WebSockets, cron jobs) e integração com o sistema de energia/recuperação (Fase 8) para não virar “if/else” nem travar a UI.
+> **Objetivo:** Transformar tarefas e projetos em um loop de gameplay consistente (dungeons, bosses, estados de combate, buffs/debuffs), com requisitos técnicos claros (workers assíncronos, FSM, WebSockets, cron jobs) e integração com o sistema de energia/recuperação (Fase 9) para não virar "if/else" nem travar a UI.
 
 ### 1) O “Gerador de Masmorras” (LLM Procedural Generation)
 
@@ -546,7 +614,7 @@
 | 16 | Se faltar menos de 24h, usar `Threat_Level` para drenar “Sanidade” e disparar notificação push severa (“O Golem está em fúria! Defenda-se!”) | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
 | 17 | Notificações push devem ser configuráveis (opt-in) e respeitar privacidade/quiet hours | Não Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
 
-### 4) Integração com Energia do Personagem (dependência da Fase 8)
+### 4) Integração com Energia do Personagem (dependência da Fase 9)
 
 | # | Requisito | Tipo | Protótipo | Frontend | Backend | QA |
 |---|-----------|------|:---------:|:--------:|:-------:|:--:|
@@ -669,8 +737,7 @@
 |------|-----------|
 | 28/01/2026 | Documento criado com status atual do MVP |
 | 22/02/2026 | Reorganização das fases: dividir a antiga Fase 4 em Fase 4 (Gamificação Manual-First) + Fase 5 (Monitoramento/IA) e renumerar fases seguintes até Fase 9 |
-| 04/03/2026 | Adicionar nova Fase 9 (Rotina Invisível/Âncoras/Timeboxing/Taverna/Durabilidade) e renumerar “Polimento e Segurança” para Fase 10 |
-
+| 04/03/2026 | Adicionar nova Fase 9 (Rotina Invisível/Âncoras/Timeboxing/Taverna/Durabilidade) e renumerar “Polimento e Segurança” para Fase 10 || 06/03/2026 | Reposicionar Fase 9 "Narrativa e Motor RPG" para Fase 5 (logo após Gamificação Essencial) para consolidar gamificação; renumerar fases subsequentes: Fase 5 Monitoramento→Fase 6, Fase 6 Arquitetura→Fase 7, Fase 7 IA/Guardião→Fase 8, Fase 8 Metacognição→Fase 9, Fase 10 Rotina Invisível permanece, Fase 11 Polimento permanece |
 ---
 
 ## 🔗 Links Úteis

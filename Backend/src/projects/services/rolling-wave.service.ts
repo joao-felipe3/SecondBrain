@@ -108,6 +108,203 @@ export class RollingWaveService {
     return 'goal:Execução Geral'
   }
 
+  private buildBalancedWaveDurations(totalDurationDays: number, waveCount: number): number[] {
+    const safeWaveCount = Math.max(1, waveCount)
+    const safeTotalDurationDays = Math.max(safeWaveCount, totalDurationDays)
+    const baseDuration = Math.floor(safeTotalDurationDays / safeWaveCount)
+    const remainder = safeTotalDurationDays % safeWaveCount
+
+    return Array.from({ length: safeWaveCount }, (_, index) => baseDuration + (index < remainder ? 1 : 0))
+  }
+
+  private normalizeWavePlanShape(aiPlan: AIPlan, expectedWaveCount: number, totalDurationDays: number): AIPlan {
+    const durations = this.buildBalancedWaveDurations(totalDurationDays, expectedWaveCount)
+    const existingWaves = Array.isArray(aiPlan.waves) ? aiPlan.waves : []
+
+    const normalizedWaves: AIPlanWave[] = Array.from({ length: expectedWaveCount }, (_, index) => {
+      const existingWave = existingWaves[index]
+
+      return {
+        waveNumber: index + 1,
+        name: existingWave?.name?.trim() || `Wave ${index + 1}`,
+        description: existingWave?.description?.trim() || `Execução balanceada da Wave ${index + 1}.`,
+        durationDays: durations[index],
+        focus: existingWave?.focus?.trim() || `Entrega incremental da Wave ${index + 1}`,
+        wbsAllocation: existingWave?.wbsAllocation || {},
+        taskIds: Array.isArray(existingWave?.taskIds) ? [...existingWave.taskIds] : [],
+      }
+    })
+
+    return {
+      ...aiPlan,
+      waves: normalizedWaves,
+    }
+  }
+
+  private takeTaskForTransfer(waves: AIPlanWave[], donorIndex: number, recipientIndex: number): string | undefined {
+    if (donorIndex < 0 || donorIndex >= waves.length || donorIndex === recipientIndex) {
+      return undefined
+    }
+
+    if (donorIndex < recipientIndex) {
+      return waves[donorIndex].taskIds.pop()
+    }
+
+    return waves[donorIndex].taskIds.shift()
+  }
+
+  private findBestDonorIndex(
+    waves: AIPlanWave[],
+    recipientIndex: number,
+    minimumCountToKeep: number,
+  ): number {
+    let bestIndex = -1
+    let bestDistance = Number.POSITIVE_INFINITY
+    let bestSurplus = Number.NEGATIVE_INFINITY
+
+    for (let index = 0; index < waves.length; index++) {
+      if (index === recipientIndex) {
+        continue
+      }
+
+      const surplus = waves[index].taskIds.length - minimumCountToKeep
+      if (surplus <= 0) {
+        continue
+      }
+
+      const distance = Math.abs(index - recipientIndex)
+      if (
+        distance < bestDistance ||
+        (distance === bestDistance && surplus > bestSurplus)
+      ) {
+        bestIndex = index
+        bestDistance = distance
+        bestSurplus = surplus
+      }
+    }
+
+    return bestIndex
+  }
+
+  private findBestRecipientIndex(
+    waves: AIPlanWave[],
+    donorIndex: number,
+    maxTasksPerWave: number,
+  ): number {
+    let bestIndex = -1
+    let bestDistance = Number.POSITIVE_INFINITY
+    let lowestCount = Number.POSITIVE_INFINITY
+
+    for (let index = 0; index < waves.length; index++) {
+      if (index === donorIndex || waves[index].taskIds.length >= maxTasksPerWave) {
+        continue
+      }
+
+      const distance = Math.abs(index - donorIndex)
+      const currentCount = waves[index].taskIds.length
+      if (
+        currentCount < lowestCount ||
+        (currentCount === lowestCount && distance < bestDistance)
+      ) {
+        bestIndex = index
+        bestDistance = distance
+        lowestCount = currentCount
+      }
+    }
+
+    return bestIndex
+  }
+
+  private redistributeTasksAcrossWaves(
+    aiPlan: AIPlan,
+    allTaskIds: string[],
+    expectedWaveCount: number,
+    totalDurationDays: number,
+    minTasksPerWave: number,
+    maxTasksPerWave: number,
+  ): AIPlan {
+    const normalizedPlan = this.normalizeWavePlanShape(aiPlan, expectedWaveCount, totalDurationDays)
+    const validTaskIdSet = new Set(allTaskIds)
+    const seenTaskIds = new Set<string>()
+
+    for (const wave of normalizedPlan.waves) {
+      const sanitizedTaskIds: string[] = []
+      for (const taskId of wave.taskIds || []) {
+        if (!validTaskIdSet.has(taskId) || seenTaskIds.has(taskId)) {
+          continue
+        }
+        seenTaskIds.add(taskId)
+        sanitizedTaskIds.push(taskId)
+      }
+      wave.taskIds = sanitizedTaskIds
+    }
+
+    const missingTaskIds: string[] = []
+    for (const taskId of allTaskIds) {
+      if (!seenTaskIds.has(taskId)) {
+        missingTaskIds.push(taskId)
+        seenTaskIds.add(taskId)
+      }
+    }
+
+    while (missingTaskIds.length > 0) {
+      let targetIndex = 0
+      for (let index = 1; index < normalizedPlan.waves.length; index++) {
+        if (normalizedPlan.waves[index].taskIds.length < normalizedPlan.waves[targetIndex].taskIds.length) {
+          targetIndex = index
+        }
+      }
+
+      const taskId = missingTaskIds.shift()
+      if (!taskId) {
+        break
+      }
+      normalizedPlan.waves[targetIndex].taskIds.push(taskId)
+    }
+
+    const recipientIndices = normalizedPlan.waves
+      .map((wave, index) => ({ index, size: wave.taskIds.length }))
+      .sort((left, right) => left.size - right.size || left.index - right.index)
+      .map(item => item.index)
+
+    for (const recipientIndex of recipientIndices) {
+      while (normalizedPlan.waves[recipientIndex].taskIds.length < minTasksPerWave) {
+        let donorIndex = this.findBestDonorIndex(normalizedPlan.waves, recipientIndex, maxTasksPerWave)
+        if (donorIndex < 0) {
+          donorIndex = this.findBestDonorIndex(normalizedPlan.waves, recipientIndex, minTasksPerWave)
+        }
+        if (donorIndex < 0) {
+          break
+        }
+
+        const taskId = this.takeTaskForTransfer(normalizedPlan.waves, donorIndex, recipientIndex)
+        if (!taskId) {
+          break
+        }
+
+        normalizedPlan.waves[recipientIndex].taskIds.push(taskId)
+      }
+    }
+
+    for (let donorIndex = 0; donorIndex < normalizedPlan.waves.length; donorIndex++) {
+      while (normalizedPlan.waves[donorIndex].taskIds.length > maxTasksPerWave) {
+        const recipientIndex = this.findBestRecipientIndex(normalizedPlan.waves, donorIndex, maxTasksPerWave)
+        if (recipientIndex < 0) {
+          break
+        }
+
+        const taskId = this.takeTaskForTransfer(normalizedPlan.waves, donorIndex, recipientIndex)
+        if (!taskId) {
+          break
+        }
+
+        normalizedPlan.waves[recipientIndex].taskIds.push(taskId)
+      }
+    }
+
+    return normalizedPlan
+  }
+
   /**
    * Primeira chamada Gemini: determinar número ideal de ondas
    */
@@ -477,7 +674,7 @@ RETORNE APENAS JSON (SEM MARKDOWN, STRINGS EM UMA LINHA):
       const today = new Date()
       const deadline = new Date(project.deadline)
       const totalAvailableDays = Math.ceil((deadline.getTime() - today.getTime()) / (24 * 60 * 60 * 1000))
-      const daysPerWave = Math.ceil(totalAvailableDays / waveCount)
+      const waveDurations = this.buildBalancedWaveDurations(totalAvailableDays, waveCount)
 
       // Calcular distribuição equilibrada de tasks
       const totalTasks = tasks.length
@@ -517,10 +714,10 @@ RETORNE APENAS JSON (SEM MARKDOWN, STRINGS EM UMA LINHA):
       }
 
       // IMPORTANTE: Usar títulos, não IDs, para semântica real
-      const wbsWithExamples = wbsDistribution.slice(0, 15).map(item => ({
+      const wbsWithExamples = wbsDistribution.map(item => ({
         wbs: item.wbs,
         count: item.count,
-        examples: taskExamplesByWbs.get(item.wbs) || [],
+        examples: (taskExamplesByWbs.get(item.wbs) || []).slice(0, 3),
       }))
 
       const prompt = `
@@ -529,11 +726,13 @@ Você é um especialista em Rolling Waves. Aloque pacotes WBS às ondas com aloc
 PROJETO: ${project.name || 'Sem nome'}
 Período: ${totalAvailableDays} dias, ${waveCount} ondas, ${totalTasks} tarefas
 Meta por onda: ${tasksPerWave} tarefas (${minTasksPerWave}-${maxTasksPerWave} aceitável)
+Duracões exatas por onda: ${waveDurations.join(', ')} dias
 
 PACOTES WBS:
 ${JSON.stringify(wbsWithExamples, null, 2)}
 
 REGRAS CRÍTICAS:
+0. RETORNE EXATAMENTE ${waveCount} ondas, numeradas de 1 até ${waveCount}
 1. CADA WBS ALOCADO A EXATAMENTE UMA ONDA (sem duplicação)
 2. NENHUMA QUANTIDADE 0 (se aloca WBS, quantidade maior que 0)
 3. SOMA TOTAL = ${totalTasks} tarefas
@@ -547,7 +746,7 @@ ESTRUTURA JSON OBRIGATÓRIA:
       "waveNumber": 1,
       "name": "Nome da Onda",
       "description": "Descrição clara do que será feito nesta onda, resumindo os principais WBS blocos alocados",
-      "durationDays": ${daysPerWave},
+      "durationDays": DURACAO_EXATA_DA_ONDA,
       "focus": "Foco principal desta onda",
       "wbsAllocation": {
         "WBS_NAME": NUMERO,
@@ -562,6 +761,8 @@ REQUISITOS CRÍTICOS:
 - Use NÚMEROS para quantidades (não strings entre aspas)
 - SEM ASPAS no início/fim de strings (use aspas simples se necessário)
 - DESCRIPTION obrigatória: resumir em 1-2 linhas os principais WBS blocos (ex: "Vocabulário HSK N2 parte 1, Gramática básica e Compreensão auditiva")
+- As ${waveCount} ondas devem existir mesmo que algumas tenham poucos WBS; nunca retorne menos de ${waveCount} ondas
+- Use estas durações exatamente nesta ordem: ${waveDurations.join(', ')}
 - Sem caracteres especiais em descriptions (acentos OK)
 - JSON deve ser válido: JSON.parse() sem erros
 - Sem markdown, sem truncação, JSON completo
@@ -583,20 +784,40 @@ REQUISITOS CRÍTICOS:
         return null
       }
 
+      if (parsed.waves.length !== waveCount) {
+        this.logger.warn(
+          `[WAVE_COUNT_MISMATCH] Gemini retornou ${parsed.waves.length} ondas, mas eram esperadas ${waveCount}. O plano será normalizado.`,
+        )
+      }
+
+      const normalizedPlan = this.normalizeWavePlanShape(parsed, waveCount, totalAvailableDays)
+      const taskCursorByWbs = new Map<string, number>()
+      const allTaskIds = tasks.map(t => String(t._id || t.id))
+
       // CONVERTER ALOCAÇÃO DE WBS EM TASK IDs REAIS
-      for (const wave of parsed.waves) {
+      for (const wave of normalizedPlan.waves) {
         const taskIds: string[] = []
         
         // Para cada WBS alocado nesta onda
         const wbsAllocation = wave.wbsAllocation || {}
         for (const [wbs, quantityNeeded] of Object.entries(wbsAllocation)) {
           const tasksInWbs = tasksByWbs.get(wbs) || []
+          const startIndex = taskCursorByWbs.get(wbs) || 0
+          const safeQuantityNeeded = Math.max(0, Number(quantityNeeded) || 0)
           
-          // Pegar os primeiros N tasks deste WBS (mantém ordem original)
-          const selectedTasks = tasksInWbs.slice(0, quantityNeeded as number)
+          // Consumir tarefas sem reaproveitar o mesmo começo do pacote em múltiplas ondas.
+          const selectedTasks = tasksInWbs.slice(startIndex, startIndex + safeQuantityNeeded)
           
           for (const task of selectedTasks) {
             taskIds.push(String(task._id || task.id))
+          }
+
+          taskCursorByWbs.set(wbs, startIndex + selectedTasks.length)
+
+          if (selectedTasks.length < safeQuantityNeeded) {
+            this.logger.warn(
+              `[WBS_ALLOCATION_SHORTFALL] Wave ${wave.waveNumber}: WBS "${wbs}" pediu ${safeQuantityNeeded}, mas só ${selectedTasks.length} tarefas estavam disponíveis.`,
+            )
           }
         }
         
@@ -604,8 +825,8 @@ REQUISITOS CRÍTICOS:
       }
 
       // DEBUG: Log
-      this.logger.debug(`[GEMINI] Agrupamento (WBS-based) retornou: ${parsed.waves.length} ondas`)
-      for (const wave of parsed.waves) {
+      this.logger.debug(`[GEMINI] Agrupamento (WBS-based) retornou: ${normalizedPlan.waves.length} ondas`)
+      for (const wave of normalizedPlan.waves) {
         const wbsList = Object.entries(wave.wbsAllocation || {})
           .map(([w, c]) => `${w}(${c})`)
           .join(', ')
@@ -613,17 +834,26 @@ REQUISITOS CRÍTICOS:
       }
 
       // VALIDAR DISTRIBUIÇÃO
-      const taskCountByWave = parsed.waves.map(w => w.taskIds.length)
-      const unbalancedWaves = taskCountByWave.filter(cnt => cnt < minTasksPerWave || cnt > maxTasksPerWave * 1.5)
+      const taskCountByWave = normalizedPlan.waves.map(w => w.taskIds.length)
+      const allocatedUniqueTaskIds = new Set(normalizedPlan.waves.flatMap(w => w.taskIds))
+      const missingTaskCount = allTaskIds.length - allocatedUniqueTaskIds.size
+      const unbalancedWaves = taskCountByWave.filter(cnt => cnt < minTasksPerWave || cnt > maxTasksPerWave)
       
-      if (unbalancedWaves.length > 0) {
+      if (parsed.waves.length !== waveCount || missingTaskCount > 0 || unbalancedWaves.length > 0) {
         this.logger.warn(
-          `[DISTRIBUTION] Distribuição desbalanceada: ${unbalancedWaves.length} ondas fora do range. Rebalanceando...`,
+          `[DISTRIBUTION] Plano inválido para persistência direta: mismatchOndas=${parsed.waves.length !== waveCount}, missingTasks=${missingTaskCount}, ondasForaDoRange=${unbalancedWaves.length}. Rebalanceando...`,
         )
-        return this.rebalanceWaveDistribution(parsed, tasks.map(t => String(t._id || t.id)), minTasksPerWave, maxTasksPerWave)
+        return this.rebalanceWaveDistribution(
+          normalizedPlan,
+          allTaskIds,
+          minTasksPerWave,
+          maxTasksPerWave,
+          waveCount,
+          totalAvailableDays,
+        )
       }
 
-      return parsed
+      return normalizedPlan
     } catch (error) {
       this.logger.warn(`Erro ao chamar Gemini para agrupamento WBS: ${error.message}`)
       return null
@@ -638,122 +868,80 @@ REQUISITOS CRÍTICOS:
     allTaskIds: string[],
     minTasksPerWave: number,
     maxTasksPerWave: number,
+    expectedWaveCount: number,
+    totalDurationDays: number,
   ): AIPlan {
     this.logger.debug(`[REBALANCE] Iniciando rebalanceamento de distribuição...`)
 
+    const normalizedPlan = this.normalizeWavePlanShape(aiPlan, expectedWaveCount, totalDurationDays)
+
     // Coletar todas as tarefas alocadas do plano
     const allocatedTasks = new Set<string>()
-    for (const wave of aiPlan.waves) {
+    let duplicateTaskCount = 0
+    for (const wave of normalizedPlan.waves) {
       for (const tid of wave.taskIds) {
+        if (allocatedTasks.has(tid)) {
+          duplicateTaskCount++
+          continue
+        }
         allocatedTasks.add(tid)
       }
     }
 
     // Encontrar tarefas não alocadas
     const unallocatedTasks = allTaskIds.filter(tid => !allocatedTasks.has(tid))
-    this.logger.debug(`[REBALANCE] Tarefas alocadas: ${allocatedTasks.size}, não alocadas: ${unallocatedTasks.length}`)
+    this.logger.debug(
+      `[REBALANCE] Tarefas alocadas: ${allocatedTasks.size}, não alocadas: ${unallocatedTasks.length}, duplicadas ignoradas: ${duplicateTaskCount}`,
+    )
 
-    // Se todas as tarefas foram alocadas mas distribuição é ruim, redistribuir tudo
-    if (unallocatedTasks.length === 0) {
-      this.logger.debug(`[REBALANCE] Todas as tarefas alocadas, mas distribuição ruim. Redistribuindo...`)
-      
-      // Coletar TODAS as tarefas
-      const allAllocatedTaskIds: string[] = []
-      for (const wave of aiPlan.waves) {
-        allAllocatedTaskIds.push(...wave.taskIds)
-      }
+    this.logger.debug(`[REBALANCE] Redistribuindo ${allTaskIds.length} tarefas em ${expectedWaveCount} ondas.`)
 
-      // Limpar todas as ondas
-      for (const wave of aiPlan.waves) {
-        wave.taskIds = []
-      }
-
-      // Distribuir equilibradamente
-      const targetPerWave = Math.ceil(allAllocatedTaskIds.length / aiPlan.waves.length)
-      
-      for (let i = 0; i < allAllocatedTaskIds.length; i++) {
-        const waveIndex = Math.floor(i / targetPerWave) % aiPlan.waves.length
-        aiPlan.waves[waveIndex].taskIds.push(allAllocatedTaskIds[i])
-      }
-
-      this.logger.debug(`[REBALANCE] Redistribuição concluída: ${targetPerWave} tasks/wave aproximadamente`)
-      return aiPlan
-    }
-
-    // Se há tarefas desalocadas, precisam ser distribuídas
-    this.logger.debug(`[REBALANCE] Distribuindo ${unallocatedTasks.length} tarefas não alocadas`)
-
-    // Encontrar ondas vazias primeiro
-    const emptyWaves = aiPlan.waves.filter(w => w.taskIds.length === 0)
-    if (emptyWaves.length > 0) {
-      let taskIdx = 0
-      for (const wave of emptyWaves) {
-        if (taskIdx < unallocatedTasks.length) {
-          wave.taskIds.push(unallocatedTasks[taskIdx])
-          taskIdx++
-        }
-      }
-      
-      // Distribuir restantes
-      while (taskIdx < unallocatedTasks.length) {
-        for (let i = 0; i < aiPlan.waves.length && taskIdx < unallocatedTasks.length; i++) {
-          aiPlan.waves[i].taskIds.push(unallocatedTasks[taskIdx])
-          taskIdx++
-        }
-      }
-    }
-
-    // Verificar e rebalancear se ainda houver desigualdade severa
-    const taskCounts = aiPlan.waves.map(w => w.taskIds.length)
-    const maxCount = Math.max(...taskCounts)
-    const minCount = Math.min(...taskCounts)
-    
-    if (maxCount > minCount * 2) {
-      this.logger.debug(`[REBALANCE] Ainda desbalanceado (max=${maxCount}, min=${minCount}). Rebalanceando...`)
-      
-      const avgCount = Math.ceil(allTaskIds.length / aiPlan.waves.length)
-      
-      // Mover tarefas de ondas sobrecarregadas para sub-ocupadas
-      for (let attempt = 0; attempt < 3; attempt++) {
-        const overloaded = aiPlan.waves.filter(w => w.taskIds.length > avgCount * 1.3)
-        const underloaded = aiPlan.waves.filter(w => w.taskIds.length < avgCount * 0.7)
-        
-        if (overloaded.length === 0 || underloaded.length === 0) break
-        
-        for (const overloadedWave of overloaded) {
-          while (overloadedWave.taskIds.length > avgCount * 1.1 && underloaded.length > 0) {
-            const task = overloadedWave.taskIds.pop()
-            if (task) {
-              const target = underloaded.reduce((min, w) => 
-                w.taskIds.length < min.taskIds.length ? w : min
-              )
-              target.taskIds.push(task)
-            }
-          }
-        }
-      }
-    }
+    const redistributedPlan = this.redistributeTasksAcrossWaves(
+      normalizedPlan,
+      allTaskIds,
+      expectedWaveCount,
+      totalDurationDays,
+      minTasksPerWave,
+      maxTasksPerWave,
+    )
 
     // Log Final
-    const finalCounts = aiPlan.waves.map(w => w.taskIds.length)
+    const finalCounts = redistributedPlan.waves.map(w => w.taskIds.length)
     this.logger.debug(`[REBALANCE] Distribuição final:`)
-    for (const wave of aiPlan.waves) {
+    for (const wave of redistributedPlan.waves) {
       this.logger.debug(`  Wave ${wave.waveNumber}: ${wave.taskIds.length} tasks`)
     }
 
-    return aiPlan
+    const finalOutOfRangeCount = finalCounts.filter(cnt => cnt < minTasksPerWave || cnt > maxTasksPerWave).length
+    if (finalOutOfRangeCount > 0) {
+      this.logger.warn(
+        `[REBALANCE] ${finalOutOfRangeCount} ondas ainda ficaram fora do range alvo ${minTasksPerWave}-${maxTasksPerWave}, embora todas as tarefas tenham sido redistribuídas.`,
+      )
+    }
+
+    return redistributedPlan
   }
 
   /**
    * Aplicar o plano gerado por Gemini às ondas do banco
    */
-  private async applyAIPlanToWaves(projectId: string, tasks: any[], aiPlan: AIPlan): Promise<ProjectWave[]> {
+  private async applyAIPlanToWaves(
+    projectId: string,
+    tasks: any[],
+    aiPlan: AIPlan,
+    expectedWaveCount: number,
+    totalDurationDays: number,
+  ): Promise<ProjectWave[]> {
     const today = new Date()
     today.setHours(0, 0, 0, 0) // Resetar para início do dia
     const dayMs = 24 * 60 * 60 * 1000
 
     // Validar o plano
-    const validPlan = this.rebalanceEmptyWaves(aiPlan, tasks.map(t => String(t._id || t.id)))
+    const validPlan = this.normalizeWavePlanShape(
+      this.rebalanceEmptyWaves(aiPlan, tasks.map(t => String(t._id || t.id))),
+      expectedWaveCount,
+      totalDurationDays,
+    )
 
     const taskMap = new Map(tasks.map((t: any) => [String(t._id || t.id), t]))
     const allTaskIds = tasks.map(t => String(t._id || t.id))
@@ -1153,7 +1341,13 @@ REQUISITOS CRÍTICOS:
     )
 
     if (aiPlan) {
-      return this.applyAIPlanToWaves(projectId, tasks, aiPlan)
+      return this.applyAIPlanToWaves(
+        projectId,
+        tasks,
+        aiPlan,
+        waveStructure.recommendedWaveCount,
+        waveStructure.totalDurationDays,
+      )
     }
 
     return this.createWavesDeterministic(projectId, project, tasks, wbsTree, dailyCapacityHours, waveLengthDays)
