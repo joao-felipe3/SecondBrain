@@ -3,6 +3,7 @@ import { InjectModel } from '@nestjs/mongoose'
 import { Model, Types } from 'mongoose'
 import { MongoClient, ObjectId as NativeObjectId } from 'mongodb'
 import { ProjectWave, ProjectWaveDocument } from '../schemas/project-wave.schema'
+import { TaskDocument } from '../../tasks/schemas/task.schema'
 import { ProjectsService } from '../projects.service'
 import { WBSService } from '../wbs/wbs.service'
 import { GoogleGenerativeAI } from '@google/generative-ai'
@@ -43,6 +44,19 @@ type AIWaveStructure = {
   reasoning: string
 }
 
+type ReplanTaskDeadlinesResult = {
+  updatedCount: number
+  skippedConcludedCount: number
+  waveCount: number
+  summaries: Array<{
+    waveNumber: number
+    updatedTasks: number
+    skippedConcludedTasks: number
+    effectiveStartDate: string | null
+    effectiveEndDate: string | null
+  }>
+}
+
 @Injectable()
 export class RollingWaveService {
   private readonly logger = new Logger(RollingWaveService.name)
@@ -50,6 +64,7 @@ export class RollingWaveService {
 
   constructor(
     @InjectModel(ProjectWave.name) private waveModel: Model<ProjectWaveDocument>,
+    @InjectModel('Task') private readonly taskModel: Model<TaskDocument>,
     private readonly projectsService: ProjectsService,
     private readonly wbsService: WBSService,
   ) {
@@ -80,6 +95,63 @@ export class RollingWaveService {
       return task.pomodorosPlanned * 0.5
     }
     return 1
+  }
+
+  private startOfDay(date: Date): Date {
+    const normalized = new Date(date)
+    normalized.setHours(0, 0, 0, 0)
+    return normalized
+  }
+
+  private endOfDay(date: Date): Date {
+    const normalized = new Date(date)
+    normalized.setHours(23, 59, 59, 999)
+    return normalized
+  }
+
+  private addDays(date: Date, days: number): Date {
+    const next = new Date(date)
+    next.setDate(next.getDate() + days)
+    return next
+  }
+
+  private buildTaskScheduleMetrics(task: any, deadline: Date) {
+    const expectedMinutes =
+      typeof task?.pertExpectedMinutes === 'number' && task.pertExpectedMinutes > 0
+        ? task.pertExpectedMinutes
+        : typeof task?.pomodorosPlanned === 'number' && task.pomodorosPlanned > 0
+          ? task.pomodorosPlanned * 25
+          : undefined
+
+    if (!expectedMinutes) {
+      return {}
+    }
+
+    const pomodorosPlanned =
+      typeof task?.pomodorosPlanned === 'number' && task.pomodorosPlanned > 0
+        ? task.pomodorosPlanned
+        : Math.max(1, Math.round(expectedMinutes / 25))
+    const pomodorosDid = typeof task?.pomodorosDid === 'number' ? task.pomodorosDid : 0
+    const progress = Math.max(0, Math.min(1, pomodorosPlanned ? pomodorosDid / pomodorosPlanned : 0))
+
+    const createdAt = task?.createdAt ? new Date(task.createdAt) : new Date()
+    const totalDurationMs = deadline.getTime() - createdAt.getTime()
+    const elapsedRatio =
+      totalDurationMs <= 0
+        ? 1
+        : Math.max(0, Math.min(1, (Date.now() - createdAt.getTime()) / totalDurationMs))
+
+    const plannedValue = expectedMinutes * elapsedRatio
+    const earnedValue = expectedMinutes * progress
+    const spi = plannedValue > 0 ? earnedValue / plannedValue : progress > 0 ? 1 : 0
+
+    return {
+      evmProgress: Number(progress.toFixed(2)),
+      evmPlannedValueMinutes: Math.round(plannedValue),
+      evmEarnedValueMinutes: Math.round(earnedValue),
+      evmSchedulePerformanceIndex: Number(spi.toFixed(2)),
+      evmAlert: spi > 0 && spi < 0.9 ? 'SPI abaixo de 0.9 (risco de atraso)' : undefined,
+    }
   }
 
   private resolveGroupKey(task: any, wbsById: Map<string, WbsNodeFlat>, startTime: number, totalRangeMs: number): string {
@@ -1444,5 +1516,187 @@ REQUISITOS CRÍTICOS:
     }
 
     return null
+  }
+
+  async replanTaskDeadlines(projectId: string): Promise<ReplanTaskDeadlinesResult> {
+    const waves = (await this.getWavesByProject(projectId)).sort((left, right) => left.waveNumber - right.waveNumber)
+
+    if (waves.length === 0) {
+      return {
+        updatedCount: 0,
+        skippedConcludedCount: 0,
+        waveCount: 0,
+        summaries: [],
+      }
+    }
+
+    const uniqueTaskIds = Array.from(
+      new Set(
+        waves.flatMap((wave) =>
+          (wave.taskIds || [])
+            .map((taskId) => String(taskId))
+            .filter((taskId) => Types.ObjectId.isValid(taskId)),
+        ),
+      ),
+    )
+
+    if (uniqueTaskIds.length === 0) {
+      return {
+        updatedCount: 0,
+        skippedConcludedCount: 0,
+        waveCount: waves.length,
+        summaries: waves.map((wave) => ({
+          waveNumber: wave.waveNumber,
+          updatedTasks: 0,
+          skippedConcludedTasks: 0,
+          effectiveStartDate: null,
+          effectiveEndDate: null,
+        })),
+      }
+    }
+
+    const projectQuery = Types.ObjectId.isValid(projectId) ? new Types.ObjectId(projectId) : projectId
+    const tasks = await this.taskModel
+      .find({
+        project: projectQuery,
+        _id: { $in: uniqueTaskIds.map((taskId) => new Types.ObjectId(taskId)) },
+      })
+      .lean()
+      .exec()
+
+    const taskById = new Map(tasks.map((task: any) => [String(task._id), task]))
+    const activeWaveIndex = waves.findIndex((wave) => wave.status === 'active')
+    const firstPlannedWaveIndex = waves.findIndex((wave) => wave.status === 'planned')
+    const anchorWaveIndex = activeWaveIndex >= 0 ? activeWaveIndex : firstPlannedWaveIndex >= 0 ? firstPlannedWaveIndex : 0
+    const dayMs = 24 * 60 * 60 * 1000
+
+    let cursor = this.startOfDay(new Date())
+    let updatedCount = 0
+    let skippedConcludedCount = 0
+    const bulkOps: any[] = []
+    const summaries: ReplanTaskDeadlinesResult['summaries'] = []
+
+    for (let index = 0; index < waves.length; index++) {
+      const wave = waves[index]
+      const waveTasks = (wave.taskIds || [])
+        .map((taskId) => taskById.get(String(taskId)))
+        .filter(Boolean) as any[]
+
+      const skippedConcludedTasks = waveTasks.filter((task) => Boolean(task?.isConcluded)).length
+      skippedConcludedCount += skippedConcludedTasks
+
+      const pendingTasks = waveTasks
+        .filter((task) => !task?.isConcluded)
+        .sort((left, right) => {
+          const leftDeadline = left?.deadline ? new Date(left.deadline).getTime() : Number.POSITIVE_INFINITY
+          const rightDeadline = right?.deadline ? new Date(right.deadline).getTime() : Number.POSITIVE_INFINITY
+          if (leftDeadline !== rightDeadline) {
+            return leftDeadline - rightDeadline
+          }
+
+          const rightHours = this.estimateTaskHours(right)
+          const leftHours = this.estimateTaskHours(left)
+          if (rightHours !== leftHours) {
+            return rightHours - leftHours
+          }
+
+          const leftCreatedAt = left?.createdAt ? new Date(left.createdAt).getTime() : 0
+          const rightCreatedAt = right?.createdAt ? new Date(right.createdAt).getTime() : 0
+          return leftCreatedAt - rightCreatedAt
+        })
+
+      if (pendingTasks.length === 0) {
+        summaries.push({
+          waveNumber: wave.waveNumber,
+          updatedTasks: 0,
+          skippedConcludedTasks,
+          effectiveStartDate: null,
+          effectiveEndDate: null,
+        })
+        continue
+      }
+
+      const originalStart = this.startOfDay(new Date(wave.startDate))
+      const originalEnd = this.endOfDay(new Date(wave.endDate))
+      const originalDurationDays = Math.max(
+        1,
+        Math.ceil((this.startOfDay(originalEnd).getTime() - originalStart.getTime()) / dayMs) + 1,
+      )
+
+      const effectiveStart =
+        index <= anchorWaveIndex
+          ? this.startOfDay(cursor)
+          : this.startOfDay(new Date(Math.max(cursor.getTime(), originalStart.getTime())))
+
+      const effectiveEnd =
+        originalEnd.getTime() >= effectiveStart.getTime()
+          ? originalEnd
+          : this.endOfDay(this.addDays(effectiveStart, Math.max(0, originalDurationDays - 1)))
+
+      const availableDays = Math.max(
+        1,
+        Math.ceil((this.startOfDay(effectiveEnd).getTime() - this.startOfDay(effectiveStart).getTime()) / dayMs) + 1,
+      )
+      const totalHours = pendingTasks.reduce((sum, task) => sum + Math.max(0.25, this.estimateTaskHours(task)), 0)
+
+      let cumulativeHours = 0
+      let waveUpdatedCount = 0
+
+      for (const task of pendingTasks) {
+        cumulativeHours += Math.max(0.25, this.estimateTaskHours(task))
+
+        const dayOffset = Math.min(
+          availableDays - 1,
+          Math.max(0, Math.ceil((cumulativeHours / totalHours) * availableDays) - 1),
+        )
+        const nextDeadline = this.endOfDay(this.addDays(effectiveStart, dayOffset))
+        const currentDeadlineTime = task?.deadline ? new Date(task.deadline).getTime() : null
+
+        if (currentDeadlineTime === nextDeadline.getTime()) {
+          continue
+        }
+
+        bulkOps.push({
+          updateOne: {
+            filter: { _id: task._id },
+            update: {
+              $set: {
+                deadline: nextDeadline,
+                late: !task?.isConcluded && nextDeadline.getTime() < Date.now(),
+                ...this.buildTaskScheduleMetrics(task, nextDeadline),
+              },
+            },
+          },
+        })
+        updatedCount++
+        waveUpdatedCount++
+      }
+
+      summaries.push({
+        waveNumber: wave.waveNumber,
+        updatedTasks: waveUpdatedCount,
+        skippedConcludedTasks,
+        effectiveStartDate: effectiveStart.toISOString(),
+        effectiveEndDate: effectiveEnd.toISOString(),
+      })
+
+      cursor = this.startOfDay(this.addDays(effectiveEnd, 1))
+    }
+
+    if (bulkOps.length > 0) {
+      await this.taskModel.bulkWrite(bulkOps, { ordered: false })
+      await this.projectsService.recalculateProjectStats(projectId)
+    }
+
+    this.logger.debug(
+      `[REPLAN_DEADLINES] Projeto ${projectId}: ${updatedCount} tarefas atualizadas em ${waves.length} ondas`,
+    )
+
+    return {
+      updatedCount,
+      skippedConcludedCount,
+      waveCount: waves.length,
+      summaries,
+    }
   }
 }

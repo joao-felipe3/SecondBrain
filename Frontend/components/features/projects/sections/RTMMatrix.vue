@@ -42,7 +42,7 @@
         </v-card>
 
         <!-- Matrix Table -->
-        <div v-if="matrixData.requirements.length > 0" class="mb-4 table-container">
+        <div v-if="matrixData.requirements.length > 0" class="table-container">
           <div class="text-subtitle-2 font-weight-bold mb-2">Mapeamento Requisito × Tarefa</div>
 
           <v-table class="rtm-table">
@@ -72,7 +72,7 @@
                   </div>
                 </td>
 
-                <td class="text-center compact-cell" style="padding: 0.025rem 0.1rem !important;">
+                <td class="text-center compact-cell">
                   <v-chip
                     size="x-small"
                     variant="tonal"
@@ -84,7 +84,7 @@
                   </v-chip>
                 </td>
 
-                <td class="compact-cell" style="padding: 0.025rem 0.1rem !important;">
+                <td class="compact-cell" >
                   <v-btn
                     v-if="getTasksForRequirement(req.id).length > 0"
                     size="x-small"
@@ -97,7 +97,7 @@
                   <span v-else class="text-caption text-medium-emphasis">—</span>
                 </td>
 
-                <td class="text-center compact-cell" style="padding: 0.025rem 0.1rem !important;">
+                <td class="text-center compact-cell">
                   <div class="d-flex align-center justify-center gap-1">
                     <v-icon
                       :color="isRequirementMapped(req.id) ? 'success' : 'error'"
@@ -133,7 +133,7 @@
         </div>
 
         <!-- Actions -->
-        <v-card-actions class="mt-4 actions-row">
+        <v-card-actions class="actions-row">
           <v-spacer />
           <v-btn
             v-if="matrixData.requirements.length > 0 && matrixData.validation.unmappedRequirements.length > 0"
@@ -144,19 +144,21 @@
             @click="generateTasksForUnmappedRequirements"
             :loading="loading"
             :disabled="autoGenerating || autoMapping"
+            class="expand-btn"
           >
-            Gerar Tarefas IA
+            <span class="btn-text">Gerar Tarefas IA</span>
           </v-btn>
           <v-btn
             v-if="matrixData.requirements.length > 0"
             color="error"
             variant="tonal"
             size="small"
-            prepend-icon="mdi-delete-multiple"
+            prepend-icon="mdi-delete"
             @click="deleteAllRequirements"
             :loading="loading"
+            class="expand-btn"
           >
-            Limpar Todos
+            <span class="btn-text">Limpar Todos</span>
           </v-btn>
           <v-btn
             v-if="matrixData.requirements.length > 0 && matrixData.tasks.length > 0"
@@ -167,8 +169,9 @@
             @click="autoMapRequirements"
             :loading="autoMapping"
             :disabled="loading || autoGenerating"
+            class="expand-btn"
           >
-            Auto-Map IA
+            <span class="btn-text">Auto-Map IA</span>
           </v-btn>
           <v-btn
             color="primary"
@@ -177,18 +180,20 @@
             prepend-icon="mdi-refresh"
             @click="loadMatrix"
             :loading="loading"
+            class="expand-btn"
           >
-            Atualizar
+            <span class="btn-text">Atualizar</span>
           </v-btn>
           <v-btn
             color="primary"
             variant="tonal"
             size="small"
-            prepend-icon="mdi-robotics"
+            prepend-icon="mdi-lightbulb"
             @click="autoGenerateRequirements"
             :loading="autoGenerating"
+            class="expand-btn"
           >
-            Gerar Requisitos IA
+            <span class="btn-text">Gerar Requisitos</span>
           </v-btn>
         </v-card-actions>
       </div>
@@ -745,11 +750,11 @@ defineExpose({
 }
 
 .rtm-table .compact-cell {
-  padding: 0.05rem 0.1rem !important;
+  padding: 0.15rem 0.15rem !important;
 }
 
 .rtm-table tbody .compact-cell {
-  padding: 0.05rem 0.1rem !important;
+  padding: 0.15rem 0.15rem !important;
 }
 
 .rtm-table thead {
@@ -837,14 +842,58 @@ defineExpose({
   line-height: 1.4;
   white-space: normal;
   word-wrap: break-word;
-  font-size: 0.65rem !important;
+  font-size: 0.7rem !important;
 }
 
 .actions-row {
+  padding: 0;
+  margin-top: -1.25rem;
+  margin-bottom: -1rem;
+  margin-left: -8px;
+  margin-right: -8px;
+  width: calc(100% + 16px);
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   gap: 0.5rem;
   align-items: center;
+  justify-content: flex-end;
+  overflow-x: auto;
+}
+
+/* Expand button effect */
+.expand-btn {
+  min-width: 36px !important;
+  width: 36px !important;
+  /* border-radius: 50% !important; */
+  transition: all 0.3s ease-in-out !important;
+  overflow: hidden !important;
+  position: relative !important;
+  padding: 0 10px !important;
+}
+
+.expand-btn .btn-text {
+  opacity: 0;
+  width: 0;
+  overflow: hidden;
+  transition: all 0.3s ease-in-out;
+  white-space: nowrap;
+}
+
+.expand-btn:hover {
+  width: 180px !important;
+  transition: all 0.3s ease-in-out !important;
+  padding: 0 12px !important;
+}
+
+.expand-btn:hover .btn-text {
+  opacity: 1;
+  width: auto;
+  margin-left: 8px;
+  transition: all 0.3s ease-in-out;
+}
+
+.expand-btn:active {
+  transform: translate(1px, 1px);
 }
 
 :deep(.v-pagination) {
@@ -861,6 +910,6 @@ defineExpose({
   width: 100%;
   max-width: 100%;
   justify-content: center;
-  margin-top: 0.5rem;
+  margin-top: 0.1rem;
 }
 </style>

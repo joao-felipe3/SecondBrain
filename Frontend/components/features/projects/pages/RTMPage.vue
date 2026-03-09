@@ -11,51 +11,27 @@
       />
     </v-sheet>
 
-    <!-- RIGHT PAGE: Planejamento em Ondas + Riscos -->
+    <!-- RIGHT PAGE: Planejamento em Ondas -->
     <v-sheet class="page right-page" elevation="0" color="transparent" @click.stop>
-      <v-tabs
-        v-model="activeTab"
-        class="mb-2"
-        density="compact"
-      >
-        <v-tab value="waves" text="Ondas" />
-        <v-tab value="risks" text="Riscos" />
-      </v-tabs>
+      <h3 class="page-title mb-4">🌊 Planejamento em Ondas</h3>
 
-      <v-window v-model="activeTab">
-        <!-- Aba: Planejamento em Ondas -->
-        <v-window-item value="waves">
-          <ProjectWavesTimeline
-            v-if="project._id"
-            :projectId="project._id"
-          />
-        </v-window-item>
-
-        <!-- Aba: Registro de Riscos -->
-        <v-window-item value="risks">
-          <RiskRegister
-            v-if="project._id"
-            :projectId="project._id"
-          />
-        </v-window-item>
-      </v-window>
+      <ProjectWavesTimeline
+        v-if="project._id"
+        :projectId="project._id"
+      />
     </v-sheet>
   </v-sheet>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
 import RTMMatrix from '../sections/RTMMatrix.vue'
 import ProjectWavesTimeline from '../sections/ProjectWavesTimeline.vue'
-import RiskRegister from '../sections/RiskRegister.vue'
 import type { Project } from '~/models/Project'
 
 defineProps<{
   project: Project
   editing: boolean
 }>()
-
-const activeTab = ref<'waves' | 'risks'>('waves')
 </script>
 
 <style scoped>

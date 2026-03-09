@@ -113,6 +113,29 @@ export class WaveAndRiskController {
     }
   }
 
+  @Post('waves/replan-task-deadlines')
+  async replanTaskDeadlines(@Param('projectId') projectId: string): Promise<{
+    updatedCount: number
+    skippedConcludedCount: number
+    waveCount: number
+    summaries: Array<{
+      waveNumber: number
+      updatedTasks: number
+      skippedConcludedTasks: number
+      effectiveStartDate: string | null
+      effectiveEndDate: string | null
+    }>
+  }> {
+    try {
+      return await this.waveService.replanTaskDeadlines(projectId)
+    } catch (error) {
+      throw new HttpException(
+        `Erro ao replanejar prazos das tasks: ${error.message}`,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      )
+    }
+  }
+
   // ============================================
   // RISK ENDPOINTS
   // ============================================

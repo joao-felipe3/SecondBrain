@@ -23,8 +23,9 @@
               <v-sheet :class="['carousel-item', { active: currentIndex === 2 }]" elevation="0" color="transparent"><WBSPage :project="displayProject || {}" :editing="editing" @wbs-updated="reloadProject" /></v-sheet>
               <v-sheet :class="['carousel-item', { active: currentIndex === 3 }]" elevation="0" color="transparent"><CriticalPathPage :project="displayProject || {}" :editing="editing" @update-field="updateField" /></v-sheet>
               <v-sheet :class="['carousel-item', { active: currentIndex === 4 }]" elevation="0" color="transparent"><RTMPage :project="displayProject as Project" :editing="editing" /></v-sheet>
-              <v-sheet :class="['carousel-item', { active: currentIndex === 5 }]" elevation="0" color="transparent"><GoalPage :project="displayProject || {}" :editing="editing" @update-field="updateField" /></v-sheet>
-              <v-sheet :class="['carousel-item', { active: currentIndex === 6 }]" elevation="0" color="transparent"><BacklogAndProgress :project="displayProject || {}" :editing="editing" @update-field="updateField" /></v-sheet>
+              <v-sheet :class="['carousel-item', { active: currentIndex === 5 }]" elevation="0" color="transparent"><RiskPage :project="displayProject as Project" :editing="editing" /></v-sheet>
+              <v-sheet :class="['carousel-item', { active: currentIndex === 6 }]" elevation="0" color="transparent"><GoalPage :project="displayProject || {}" :editing="editing" @update-field="updateField" /></v-sheet>
+              <v-sheet :class="['carousel-item', { active: currentIndex === 7 }]" elevation="0" color="transparent"><BacklogAndProgress :project="displayProject || {}" :editing="editing" @update-field="updateField" /></v-sheet>
             </div>
           </v-sheet>
         </v-col>
@@ -67,6 +68,7 @@ import WBSPage from './pages/WBSPage.vue'
 import BacklogAndProgress from './pages/BacklogAndProgress.vue'
 import CriticalPathPage from './pages/CriticalPathPage.vue'
 import RTMPage from './pages/RTMPage.vue'
+import RiskPage from './pages/RiskPage.vue'
 import DeleteProjectDialog from '../../shared/dialogs/DeleteProjectDialog.vue'
 import { useApiResource, useApi } from '~/composables/api'
 import type { PropType } from 'vue'
@@ -76,7 +78,7 @@ import { useProjectEditing, getProjectId } from '~/composables/features/useProje
 import type { Project } from '~/models/Project'
 
 const CLOSE_ANIM_MS = 800
-const TOTAL_SLIDES = 7
+const TOTAL_SLIDES = 8
 
 
 const props = defineProps({
