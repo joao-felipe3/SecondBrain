@@ -15,7 +15,11 @@
     </v-sheet>
 
     <v-sheet class="page right-page" elevation="0" color="transparent" @click.stop>
-
+      <h3 class="page-title mb-4">📊 EVM e Performance</h3>
+      <EVMDashboard
+        :project-id="project._id || 'default'"
+        :planned-hours="project.plannedHours || 0"
+      />
     </v-sheet>
   </v-sheet>
 </template>
@@ -24,6 +28,7 @@
 import { onMounted, ref, watch } from 'vue'
 import type { Ref } from 'vue'
 import RiskRegisterList from '../sections/RiskRegisterList.vue'
+import EVMDashboard from '../sections/EVMDashboard.vue'
 import type { Project } from '~/models/Project'
 
 interface Risk {
