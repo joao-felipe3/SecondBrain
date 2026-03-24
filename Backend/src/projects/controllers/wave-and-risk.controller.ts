@@ -13,8 +13,10 @@ import { InjectModel } from '@nestjs/mongoose'
 import { Model } from 'mongoose'
 import { RollingWaveService } from '../services/rolling-wave.service'
 import { RiskService } from '../services/risk.service'
+import { EVMService } from '../services/evm.service'
 import { CreateWaveDto, UpdateWaveDto } from '../dto/wave.dto'
 import { CreateRiskDto, UpdateRiskDto, AssessRisksDto } from '../dto/risk.dto'
+import { RecordProjectProgressDto } from '../dto/evm.dto'
 import { ProjectWave } from '../schemas/project-wave.schema'
 import { Risk } from '../schemas/risk.schema'
 import { Project } from '../entities/project.entity'
@@ -24,6 +26,7 @@ export class WaveAndRiskController {
   constructor(
     private readonly waveService: RollingWaveService,
     private readonly riskService: RiskService,
+    private readonly evmService: EVMService,
     @InjectModel(Project.name) private projectModel: Model<any>,
   ) {}
 
@@ -254,6 +257,121 @@ export class WaveAndRiskController {
     } catch (error) {
       throw new HttpException(
         `Erro ao buscar estatísticas: ${error.message}`,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      )
+    }
+  }
+
+  // ============================================
+  // EVM ENDPOINTS
+  // ============================================
+
+  @Post('evm/progress')
+  async recordProgress(
+    @Param('projectId') projectId: string,
+    @Body() body: RecordProjectProgressDto,
+  ) {
+    try {
+      return await this.evmService.recordProgress(
+        projectId,
+        body.completedHours,
+        body.actualCost,
+        body.plannedValue,
+        body.date,
+      )
+    } catch (error) {
+      throw new HttpException(
+        `Erro ao registrar progresso EVM: ${error.message}`,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      )
+    }
+  }
+
+  @Get('evm/progress')
+  async getProgressEntries(@Param('projectId') projectId: string) {
+    try {
+      return await this.evmService.getProgressEntries(projectId)
+    } catch (error) {
+      throw new HttpException(
+        `Erro ao buscar progresso EVM: ${error.message}`,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      )
+    }
+  }
+
+  @Delete('evm/progress/:entryId')
+  async deleteProgressEntry(
+    @Param('projectId') projectId: string,
+    @Param('entryId') entryId: string,
+  ) {
+    try {
+      const deleted = await this.evmService.deleteProgressEntry(projectId, entryId)
+      return { deleted }
+    } catch (error) {
+      throw new HttpException(
+        `Erro ao remover registro EVM: ${error.message}`,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      )
+    }
+  }
+
+  @Get('evm/spi')
+  async getSPI(@Param('projectId') projectId: string) {
+    try {
+      const spi = await this.evmService.calculateSPI(projectId)
+      return { spi }
+    } catch (error) {
+      throw new HttpException(
+        `Erro ao calcular SPI: ${error.message}`,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      )
+    }
+  }
+
+  @Get('evm/cpi')
+  async getCPI(@Param('projectId') projectId: string) {
+    try {
+      const cpi = await this.evmService.calculateCPI(projectId)
+      return { cpi }
+    } catch (error) {
+      throw new HttpException(
+        `Erro ao calcular CPI: ${error.message}`,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      )
+    }
+  }
+
+  @Get('evm/forecast')
+  async getForecast(@Param('projectId') projectId: string) {
+    try {
+      return await this.evmService.forecastCompletion(projectId)
+    } catch (error) {
+      throw new HttpException(
+        `Erro ao calcular previsao EVM: ${error.message}`,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      )
+    }
+  }
+
+  @Get('evm/curve')
+  async getCurve(@Param('projectId') projectId: string) {
+    try {
+      return await this.evmService.getEVMCurve(projectId)
+    } catch (error) {
+      throw new HttpException(
+        `Erro ao buscar curva EVM: ${error.message}`,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      )
+    }
+  }
+
+  @Get('evm/summary')
+  async getEVMSummary(@Param('projectId') projectId: string) {
+    try {
+      return await this.evmService.getEVMSummary(projectId)
+    } catch (error) {
+      throw new HttpException(
+        `Erro ao buscar resumo EVM: ${error.message}`,
         HttpStatus.INTERNAL_SERVER_ERROR,
       )
     }

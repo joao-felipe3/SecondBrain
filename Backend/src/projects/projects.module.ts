@@ -14,8 +14,10 @@ import { ProjectWaveSchema } from './schemas/project-wave.schema';
 import { ProjectWave } from './schemas/project-wave.schema';
 import { RiskSchema } from './schemas/risk.schema';
 import { Risk } from './schemas/risk.schema';
+import { ProjectProgress, ProjectProgressSchema } from './schemas/project-progress.schema';
 import { RollingWaveService } from './services/rolling-wave.service';
 import { RiskService } from './services/risk.service';
+import { EVMService } from './services/evm.service';
 import { WaveAndRiskController } from './controllers/wave-and-risk.controller';
 
 
@@ -25,14 +27,15 @@ import { WaveAndRiskController } from './controllers/wave-and-risk.controller';
       { name: Project.name, schema: ProjectSchema },
       { name: 'Task', schema: TaskSchema },
       { name: ProjectWave.name, schema: ProjectWaveSchema },
-      { name: Risk.name, schema: RiskSchema }
+      { name: Risk.name, schema: RiskSchema },
+      { name: ProjectProgress.name, schema: ProjectProgressSchema },
     ]),
     forwardRef(() => TasksModule),
     PlanningModule,
     WBSModule,
   ],
   controllers: [ProjectsController, WaveAndRiskController],
-  providers: [ProjectsService, LeafTasksBufferService, RollingWaveService, RiskService],
-  exports: [ProjectsService, RollingWaveService, RiskService]
+  providers: [ProjectsService, LeafTasksBufferService, RollingWaveService, RiskService, EVMService],
+  exports: [ProjectsService, RollingWaveService, RiskService, EVMService]
 })
 export class ProjectsModule {}
