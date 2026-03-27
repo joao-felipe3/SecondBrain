@@ -9,6 +9,7 @@ import { GenerateAiSuggestionsDto, AiTaskSuggestionDto, AiSuggestionsResponseDto
 import { GeminiService } from './gemini.service';
 import { PertService } from './services/pert.service';
 import { PertEstimateDto, PertEstimateResponseDto } from './dto/pert-estimate.dto';
+import { EVMService } from '../projects/services/evm.service';
 
 @Injectable()
 export class TasksService {
@@ -17,6 +18,8 @@ export class TasksService {
     @InjectModel('Project') private readonly projectModel: Model<ProjectDocument>,
     @Inject(forwardRef(() => ProjectsService))
     private readonly projectsService: ProjectsService,
+    @Inject(forwardRef(() => EVMService))
+    private readonly evmService: EVMService,
     private readonly geminiService: GeminiService, // Injeta o GeminiService
     private readonly pertService: PertService, // Injeta o PertService
   ) {}
@@ -383,15 +386,33 @@ export class TasksService {
     if (!id || id === 'null' || id === 'undefined' || !Types.ObjectId.isValid(id)) {
       throw new BadRequestException(`ID inválido: ${id}`);
     }
-    
-    const updatedTask = await this.taskModel.findByIdAndUpdate(
-      id,
-      { isConcluded: true },
-      { new: true }
-    ).exec();
 
-    if (!updatedTask) {
+    const task = await this.taskModel.findById(id).exec();
+    if (!task) {
       throw new NotFoundException(`Task with id ${id} not found`);
+    }
+
+    if (task.isConcluded) {
+      return task;
+    }
+
+    const currentPomodorosDid = Math.max(0, task.pomodorosDid || 0);
+    const plannedPomodoros = Math.max(0, task.pomodorosPlanned || 0);
+    const remainingPomodoros = Math.max(0, plannedPomodoros - currentPomodorosDid);
+    const remainingHours = remainingPomodoros * 0.5;
+
+    task.isConcluded = true;
+    if (remainingPomodoros > 0) {
+      task.pomodorosDid = plannedPomodoros;
+    }
+
+    this.applyEvmMetrics(task);
+    const updatedTask = await task.save();
+
+    if (updatedTask.project && remainingHours > 0) {
+      const projectId = updatedTask.project.toString();
+      await this.projectsService.incrementHoursWorked(projectId, remainingHours);
+      await this.registerAutoEvmProgress(projectId, id, remainingHours, 'completion');
     }
 
     return updatedTask;
@@ -421,9 +442,38 @@ export class TasksService {
     if (task.project) {
       const projectId = task.project.toString();
       await this.projectsService.incrementHoursWorked(projectId, 0.5);
+      await this.registerAutoEvmProgress(projectId, id, 0.5, 'pomodoro');
     }
 
     return updatedTask;
+  }
+
+  private async registerAutoEvmProgress(
+    projectId: string,
+    taskId: string,
+    hoursDelta: number,
+    source: 'pomodoro' | 'completion',
+  ): Promise<void> {
+    if (!projectId || !taskId || hoursDelta <= 0) return;
+
+    try {
+      await this.evmService.recordProgress(
+        projectId,
+        hoursDelta,
+        hoursDelta,
+        undefined,
+        { source, taskId },
+      );
+    } catch (error: any) {
+      // Não bloqueia o fluxo principal da task caso o registro EVM falhe.
+      // eslint-disable-next-line no-console
+      console.warn('[TasksService] Falha ao registrar progresso EVM automatico', {
+        projectId,
+        taskId,
+        source,
+        message: error?.message,
+      });
+    }
   }
 
   /**

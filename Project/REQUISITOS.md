@@ -85,46 +85,46 @@
 | 8 | Sugestão de decomposição quando pacote viola a regra 8/80 | Funcional | ✅ | ✅ | ✅ | ✅ |
 | 9 | Conversão automática de WBS em tarefas (criar tarefas a partir da WBS) | Funcional | ✅ | ✅ | ✅ | ✅ |
 
-### Estimativa e Planejamento de Prazos (PERT/CPM)
+### Planejamento de Etapas, Prazos e Dependências
 
 | # | Requisito | Tipo | Protótipo | Frontend | Backend | QA |
 |---|-----------|------|:---------:|:--------:|:-------:|:--:|
-| 10 | Captura de três estimativas (Otimista, Provável, Pessimista) para cada tarefa | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
-| 11 | Cálculo automático de TE (Tempo Esperado) usando fórmula PERT: TE = (O + 4M + P) / 6 | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
-| 12 | Identificação automática de dependências lógicas entre tarefas via LLM | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
-| 13 | Cálculo do Caminho Crítico (CPM) - sequência de tarefas sem folga | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
-| 14 | Alertar usuário sobre tarefas no Caminho Crítico (urgência máxima) | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 10 | Capturar três estimativas (otimista, provável e pessimista) para cada etapa relevante da jornada | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 11 | Calcular automaticamente o tempo esperado da etapa usando PERT: TE = (O + 4M + P) / 6 | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 12 | Identificar dependências lógicas entre etapas, hábitos ou subtarefas via LLM | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 13 | Calcular a sequência mais sensível a atrasos em uma meta pessoal ou projeto individual | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 14 | Alertar o usuário sobre etapas sem folga que merecem atenção imediata | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
 
-### Gestão de Incerteza (Critical Chain e Buffers)
-
-| # | Requisito | Tipo | Protótipo | Frontend | Backend | QA |
-|---|-----------|------|:---------:|:--------:|:-------:|:--:|
-| 15 | Implementar estratégia de Critical Chain - consolidar buffers no fim do projeto | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
-| 16 | Calcular automaticamente Buffer do Projeto baseado em variância das estimativas | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
-| 17 | Dashboard de consumo de buffer do projeto (quanto foi gasto vs. disponível) | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
-
-### Rastreabilidade de Requisitos (RTM)
+### Gestão de Incerteza e Margem de Segurança
 
 | # | Requisito | Tipo | Protótipo | Frontend | Backend | QA |
 |---|-----------|------|:---------:|:--------:|:-------:|:--:|
-| 18 | Geração automática de Matriz de Rastreabilidade de Requisitos (RTM) via LLM | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
-| 19 | Visualização de RTM ligando requisitos de negócio → entrega específica | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 15 | Consolidar margem de segurança no fim da sequência para absorver variações do dia a dia | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 16 | Calcular automaticamente a margem com base na variabilidade das estimativas das etapas | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 17 | Exibir um painel de consumo da margem do projeto pessoal (quanto foi usado vs. disponível) | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
 
-### Planejamento em Ondas Sucessivas e Gestão de Riscos
-
-| # | Requisito | Tipo | Protótipo | Frontend | Backend | QA |
-|---|-----------|------|:---------:|:--------:|:-------:|:--:|
-| 20 | Implementar Rolling Wave Planning - planejar próximas semanas em detalhe, futuro distante em marcos | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
-| 21 | LLM escaneia descrição e sugere riscos potenciais baseado em histórico/lógica comum | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
-| 22 | Plano de mitigação de riscos: evitar, mitigar, transferir ou aceitar para aprovação | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
-
-### Análise de Valor Agregado (EVM) e Dashboards
+### Linhagem de Objetivos e Entregas
 
 | # | Requisito | Tipo | Protótipo | Frontend | Backend | QA |
 |---|-----------|------|:---------:|:--------:|:-------:|:--:|
-| 23 | Cálculo automático de índices de desempenho (CPI, SPI) quando usuário inputa progresso | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
-| 24 | Previsão de custo final: "Se continuar nesse ritmo, projeto custará X% a mais" | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
-| 25 | Dashboard de EVM com curvas em "S" de Valor Planejado vs. Valor Agregado | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 18 | Gerar automaticamente uma matriz de rastreabilidade ligando objetivo, hábito, etapa e entrega | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 19 | Visualizar a linhagem do valor, mostrando como cada etapa contribui para a meta final | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+
+### Planejamento em Ondas e Gestão de Riscos
+
+| # | Requisito | Tipo | Protótipo | Frontend | Backend | QA |
+|---|-----------|------|:---------:|:--------:|:-------:|:--:|
+| 20 | Planejar as próximas semanas em detalhe e deixar o horizonte distante em marcos | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 21 | Escanear a descrição da meta e sugerir riscos práticos de execução, adesão e abandono | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 22 | Transformar riscos em ações concretas de mitigação, com decisão explícita do usuário | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+
+### Acompanhamento de Progresso e Valor
+
+| # | Requisito | Tipo | Protótipo | Frontend | Backend | QA |
+|---|-----------|------|:---------:|:--------:|:-------:|:--:|
+| 23 | Calcular índices de aderência e velocidade quando o usuário registrar progresso | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 24 | Prever atraso ou sobrecarga se o ritmo atual continuar, em linguagem simples | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 25 | Mostrar um dashboard de progresso com planejado vs. realizado e tendência de conclusão | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
 
 ### Visualizações Avançadas
 

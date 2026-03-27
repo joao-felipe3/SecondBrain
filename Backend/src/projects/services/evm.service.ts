@@ -20,16 +20,17 @@ export class EVMService {
   async recordProgress(
     projectId: string,
     completedHours: number,
-    actualCost: number,
     plannedValue: number,
     date?: string,
+    metadata?: { source?: 'manual' | 'pomodoro' | 'completion'; taskId?: string },
   ): Promise<ProjectProgress> {
     return this.projectProgressModel.create({
       projectId: new Types.ObjectId(projectId),
       date: date ? new Date(date) : new Date(),
       completedHours,
-      actualCost,
       plannedValue,
+      source: metadata?.source || 'manual',
+      taskId: metadata?.taskId ? new Types.ObjectId(metadata.taskId) : undefined,
     })
   }
 
@@ -54,12 +55,6 @@ export class EVMService {
     return Number((metrics.ev / metrics.pv).toFixed(4))
   }
 
-  async calculateCPI(projectId: string): Promise<number> {
-    const metrics = await this.getCoreMetrics(projectId)
-    if (metrics.ac <= 0 || metrics.ac < 100) return 1
-    return Number((metrics.ev / metrics.ac).toFixed(4))
-  }
-
   async forecastCompletion(projectId: string): Promise<EVMForecast> {
     const [entries, metrics, project, activeWaveContext] = await Promise.all([
       this.getProgressEntries(projectId),
@@ -68,11 +63,11 @@ export class EVMService {
       this.getActiveWaveContext(projectId),
     ])
 
-    const cpi = metrics.ac > 0 ? metrics.ev / metrics.ac : 1
-    const safeCpi = cpi <= 0 ? 1 : cpi
-    const etc = Math.max(0, (metrics.bac - metrics.ev) / safeCpi)
-    const eeac = metrics.ac + etc
-    const variance = eeac - metrics.bac
+    const completionRate = metrics.bac > 0
+      ? Math.max(0, Math.min(1, metrics.ev / metrics.bac))
+      : 0
+    const remainingHours = Math.max(0, metrics.plannedHours - metrics.completedHours)
+    const variance = metrics.ev - metrics.pv
 
     const scopedEntries = this.scopeEntriesByWindow(entries, activeWaveContext.startDate, activeWaveContext.endDate)
     const estimatedDate = this.estimateCompletionDate(
@@ -84,14 +79,12 @@ export class EVMService {
     )
 
     return {
-      estimatedCost: Number(eeac.toFixed(2)),
       estimatedDate,
       variance: Number(variance.toFixed(2)),
-      eeac: Number(eeac.toFixed(2)),
-      etc: Number(etc.toFixed(2)),
+      remainingHours: Number(remainingHours.toFixed(2)),
+      completionRate: Number((completionRate * 100).toFixed(2)),
       bac: Number(metrics.bac.toFixed(2)),
       ev: Number(metrics.ev.toFixed(2)),
-      ac: Number(metrics.ac.toFixed(2)),
       pv: Number(metrics.pv.toFixed(2)),
     }
   }
@@ -99,7 +92,7 @@ export class EVMService {
   async getEVMCurve(projectId: string): Promise<EVMCurve> {
     const entries = await this.getProgressEntries(projectId)
     if (entries.length === 0) {
-      return { plannedValue: [], actualValue: [], costValue: [], dates: [] }
+      return { plannedValue: [], actualValue: [], dates: [] }
     }
 
     const [project, activeWaveContext] = await Promise.all([
@@ -109,23 +102,19 @@ export class EVMService {
 
     const scopedEntries = this.scopeEntriesByWindow(entries, activeWaveContext.startDate, activeWaveContext.endDate)
     if (scopedEntries.length === 0) {
-      return { plannedValue: [], actualValue: [], costValue: [], dates: [] }
+      return { plannedValue: [], actualValue: [], dates: [] }
     }
 
     const totalPV = scopedEntries.reduce((sum, entry) => sum + (entry.plannedValue || 0), 0)
     const plannedHours = Math.max(1, activeWaveContext.plannedHours)
     const bac = Math.max(1, totalPV, plannedHours)
 
-    let cumulativeAC = 0
     let cumulativeHours = 0
-
     const plannedValue: number[] = []
     const actualValue: number[] = []
-    const costValue: number[] = []
     const dates: string[] = []
 
     for (const entry of scopedEntries) {
-      cumulativeAC += entry.actualCost || 0
       cumulativeHours += entry.completedHours || 0
 
       const progressRatio = Math.max(0, Math.min(1, cumulativeHours / plannedHours))
@@ -143,22 +132,19 @@ export class EVMService {
 
       plannedValue.push(Number(cumulativePV.toFixed(2)))
       actualValue.push(Number(cumulativeEV.toFixed(2)))
-      costValue.push(Number(cumulativeAC.toFixed(2)))
       dates.push(new Date(entry.date).toISOString().slice(0, 10))
     }
 
     return {
       plannedValue,
       actualValue,
-      costValue,
       dates,
     }
   }
 
   async getEVMSummary(projectId: string): Promise<EVMSummary> {
-    const [spi, cpi, forecast, curve, entries, coreMetrics] = await Promise.all([
+    const [spi, forecast, curve, entries, coreMetrics] = await Promise.all([
       this.calculateSPI(projectId),
-      this.calculateCPI(projectId),
       this.forecastCompletion(projectId),
       this.getEVMCurve(projectId),
       this.getProgressEntries(projectId),
@@ -166,18 +152,15 @@ export class EVMService {
     ])
 
     const completedHours = coreMetrics.completedHours
-    const actualCost = coreMetrics.ac
-    const personalMetrics = this.buildPersonalMetrics(entries, spi, cpi, coreMetrics)
+    const personalMetrics = this.buildPersonalMetrics(entries, spi, coreMetrics)
 
     return {
       spi,
-      cpi,
       forecast,
       curve,
       totals: {
         completedHours: Number(completedHours.toFixed(2)),
         entriesCount: entries.length,
-        actualCost: Number(actualCost.toFixed(2)),
       },
       personalMetrics,
     }
@@ -185,7 +168,6 @@ export class EVMService {
 
   private async getCoreMetrics(projectId: string): Promise<{
     pv: number
-    ac: number
     ev: number
     bac: number
     completedHours: number
@@ -200,7 +182,6 @@ export class EVMService {
     const scopedEntries = this.scopeEntriesByWindow(entries, activeWaveContext.startDate, activeWaveContext.endDate)
 
     const pv = scopedEntries.reduce((sum, entry) => sum + (entry.plannedValue || 0), 0)
-    const ac = scopedEntries.reduce((sum, entry) => sum + (entry.actualCost || 0), 0)
     const completedHours = scopedEntries.reduce((sum, entry) => sum + (entry.completedHours || 0), 0)
 
     const plannedHours = Math.max(1, activeWaveContext.plannedHours)
@@ -212,7 +193,6 @@ export class EVMService {
 
     return {
       pv: Number(effectivePV.toFixed(2)),
-      ac,
       ev,
       bac,
       completedHours,
@@ -258,8 +238,7 @@ export class EVMService {
   private buildPersonalMetrics(
     entries: ProjectProgress[],
     spi: number,
-    cpi: number,
-    coreMetrics: { pv: number; ac: number; ev: number; completedHours: number; plannedHours: number },
+    coreMetrics: { pv: number; ev: number; completedHours: number; plannedHours: number },
   ): EVMPersonalMetrics {
     const consistencyScore = this.calculateConsistencyScore(entries)
     const planAdherence = coreMetrics.pv > 0
@@ -269,9 +248,6 @@ export class EVMService {
     const completionTrend = this.calculateCompletionTrend(entries)
     const completionRatio = Math.max(0, Math.min(1, coreMetrics.completedHours / Math.max(1, coreMetrics.plannedHours)))
 
-    const actualCost = entries.reduce((sum, entry) => sum + (entry.actualCost || 0), 0)
-    const isCostRelevant = actualCost >= 100
-
     const perceivedValueScore = this.toBoundedScore(
       (completionRatio * 100) * 0.45
       + consistencyScore * 0.3
@@ -280,11 +256,9 @@ export class EVMService {
 
     const actionHint = this.buildActionHint({
       spi,
-      cpi,
       consistencyScore,
       planAdherence,
       completionTrend,
-      isCostRelevant,
     })
 
     return {
@@ -292,7 +266,6 @@ export class EVMService {
       planAdherence,
       completionTrend,
       perceivedValueScore,
-      isCostRelevant,
       actionHint,
     }
   }
@@ -347,11 +320,9 @@ export class EVMService {
 
   private buildActionHint(input: {
     spi: number
-    cpi: number
     consistencyScore: number
     planAdherence: number
     completionTrend: 'acelerando' | 'estavel' | 'desacelerando' | 'insuficiente'
-    isCostRelevant: boolean
   }): string {
     if (input.consistencyScore < 55) {
       return 'Padronize uma meta minima semanal de horas para recuperar consistencia.'
@@ -365,12 +336,8 @@ export class EVMService {
       return 'Voce esta abaixo do ritmo planejado: revise o plano da semana e ajuste prazos intermediarios.'
     }
 
-    if (input.isCostRelevant && input.cpi < 0.95) {
-      return 'O custo real esta acima do esperado: avalie alternativas mais simples e reduza retrabalho.'
-    }
-
-    if (!input.isCostRelevant && input.planAdherence < 90) {
-      return 'Mesmo sem custo relevante, vale ajustar o plano para manter aderencia e previsibilidade.'
+    if (input.planAdherence < 90) {
+      return 'Seu ritmo oscila em relacao ao plano. Reforce checkpoints curtos para ganhar previsibilidade.'
     }
 
     return 'Bom progresso: mantenha a cadencia atual e reavalie o plano no fechamento da semana.'
