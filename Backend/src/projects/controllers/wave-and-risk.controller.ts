@@ -275,7 +275,6 @@ export class WaveAndRiskController {
       return await this.evmService.recordProgress(
         projectId,
         body.completedHours,
-        body.actualCost,
         body.plannedValue,
         body.date,
       )
@@ -323,19 +322,6 @@ export class WaveAndRiskController {
     } catch (error) {
       throw new HttpException(
         `Erro ao calcular SPI: ${error.message}`,
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      )
-    }
-  }
-
-  @Get('evm/cpi')
-  async getCPI(@Param('projectId') projectId: string) {
-    try {
-      const cpi = await this.evmService.calculateCPI(projectId)
-      return { cpi }
-    } catch (error) {
-      throw new HttpException(
-        `Erro ao calcular CPI: ${error.message}`,
         HttpStatus.INTERNAL_SERVER_ERROR,
       )
     }

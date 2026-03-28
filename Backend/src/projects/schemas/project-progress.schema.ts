@@ -15,10 +15,13 @@ export class ProjectProgress {
   completedHours: number
 
   @Prop({ required: true, min: 0 })
-  actualCost: number
-
-  @Prop({ required: true, min: 0 })
   plannedValue: number
+
+  @Prop({ required: false, enum: ['manual', 'pomodoro', 'completion'], default: 'manual' })
+  source?: 'manual' | 'pomodoro' | 'completion'
+
+  @Prop({ required: false, type: Types.ObjectId, ref: 'Task' })
+  taskId?: Types.ObjectId
 }
 
 export const ProjectProgressSchema = SchemaFactory.createForClass(ProjectProgress)

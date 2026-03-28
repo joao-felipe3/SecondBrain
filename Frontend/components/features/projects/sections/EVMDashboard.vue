@@ -1,7 +1,7 @@
 <template>
   <v-card elevation="1" class="evm-card">
     <v-card-title class="d-flex align-center justify-space-between ga-2">
-      <span class="text-subtitle-1 font-weight-medium">📈 Dashboard EVM</span>
+      <span class="text-subtitle-1 font-weight-medium">EVM Dashboard</span>
       <v-chip size="small" color="primary" variant="tonal">Integrado API</v-chip>
     </v-card-title>
 
@@ -11,45 +11,43 @@
       </v-alert>
 
       <div class="kpi-grid mb-4">
-        <v-card variant="tonal" :color="spiColor" class="kpi-card">
-          <v-card-text>
-            <div class="kpi-label">SPI</div>
-            <div class="kpi-value">{{ formatIndex(spi) }}</div>
-          </v-card-text>
-        </v-card>
+        <v-tooltip text="SPI (Schedule Performance Index): mede se o ritmo de entrega esta acima ou abaixo do planejado." location="top">
+          <template #activator="{ props }">
+            <v-card v-bind="props" variant="tonal" :color="spiColor" class="kpi-card">
+              <v-card-text>
+                <div class="kpi-label">SPI</div>
+                <div class="kpi-value">{{ formatIndex(spi) }}</div>
+              </v-card-text>
+            </v-card>
+          </template>
+        </v-tooltip>
 
-        <v-card variant="tonal" :color="cpiColor" class="kpi-card">
-          <v-card-text>
-            <div class="kpi-label">CPI</div>
-            <div class="kpi-value">{{ summary.personalMetrics.isCostRelevant ? formatIndex(cpi) : 'N/A' }}</div>
-          </v-card-text>
-        </v-card>
+        <v-tooltip text="PV (Planned Value): valor planejado acumulado para o momento atual." location="top">
+          <template #activator="{ props }">
+            <v-card v-bind="props" variant="tonal" color="primary" class="kpi-card">
+              <v-card-text>
+                <div class="kpi-label">PV</div>
+                <div class="kpi-value">{{ formatValue(forecast.pv) }}</div>
+              </v-card-text>
+            </v-card>
+          </template>
+        </v-tooltip>
 
-        <v-card variant="tonal" color="primary" class="kpi-card">
-          <v-card-text>
-            <div class="kpi-label">ETC</div>
-            <div class="kpi-value">{{ formatCurrency(forecast.etc) }}</div>
-          </v-card-text>
-        </v-card>
-
-        <v-card variant="tonal" color="secondary" class="kpi-card">
-          <v-card-text>
-            <div class="kpi-label">EEAC</div>
-            <div class="kpi-value">{{ formatCurrency(forecast.eeac) }}</div>
-          </v-card-text>
-        </v-card>
+        <v-tooltip text="EV (Earned Value): valor agregado acumulado com base no progresso real." location="top">
+          <template #activator="{ props }">
+            <v-card v-bind="props" variant="tonal" color="indigo" class="kpi-card">
+              <v-card-text>
+                <div class="kpi-label">EV</div>
+                <div class="kpi-value">{{ formatValue(forecast.ev) }}</div>
+              </v-card-text>
+            </v-card>
+          </template>
+        </v-tooltip>
 
         <v-card variant="tonal" color="info" class="kpi-card">
           <v-card-text>
             <div class="kpi-label">Horas Concluidas</div>
             <div class="kpi-value">{{ formatHours(summary.totals.completedHours) }}</div>
-          </v-card-text>
-        </v-card>
-
-        <v-card variant="tonal" color="indigo" class="kpi-card">
-          <v-card-text>
-            <div class="kpi-label">Valor Agregado</div>
-            <div class="kpi-value">{{ formatCurrency(forecast.ev) }}</div>
           </v-card-text>
         </v-card>
 
@@ -74,19 +72,20 @@
           </v-card-text>
         </v-card>
 
-        <v-card
-          v-if="!summary.personalMetrics.isCostRelevant"
-          variant="tonal"
-          color="pink"
-          class="kpi-card"
-        >
+        <v-card variant="tonal" color="pink" class="kpi-card">
           <v-card-text>
             <div class="kpi-label">Valor Percebido</div>
             <div class="kpi-value">{{ formatPercent(summary.personalMetrics.perceivedValueScore) }}</div>
           </v-card-text>
         </v-card>
-      </div>
 
+        <v-card variant="tonal" color="amber" class="kpi-card">
+          <v-card-text>
+            <div class="kpi-label">Restante</div>
+            <div class="kpi-value">{{ formatHours(forecast.remainingHours) }}</div>
+          </v-card-text>
+        </v-card>
+      </div>
 
       <v-alert
         :type="isCritical ? 'error' : isWarning ? 'warning' : 'success'"
@@ -123,16 +122,6 @@
             type="number"
             min="0"
             label="Horas Concluidas"
-            density="compact"
-            variant="outlined"
-            hide-details
-          />
-
-          <v-text-field
-            v-model.number="entryActualCost"
-            type="number"
-            min="0"
-            label="Custo Real (AC)"
             density="compact"
             variant="outlined"
             hide-details
@@ -187,15 +176,13 @@
             >
               <div class="curve-meta">
                 <strong>{{ point.date }}</strong>
-                <span>Planejado {{ formatCurrency(point.cumulativePV) }}</span>
-                <span>Realizado {{ formatCurrency(point.cumulativeEV) }}</span>
-                <span>Custo {{ formatCurrency(point.cumulativeAC) }}</span>
+                <span>Planejado {{ formatValue(point.cumulativePV) }}</span>
+                <span>Realizado {{ formatValue(point.cumulativeEV) }}</span>
               </div>
 
               <div class="bars">
                 <div class="bar pv" :style="{ width: `${toBarPercent(point.cumulativePV)}%` }">PV</div>
                 <div class="bar ev" :style="{ width: `${toBarPercent(point.cumulativeEV)}%` }">EV</div>
-                <div class="bar ac" :style="{ width: `${toBarPercent(point.cumulativeAC)}%` }">AC</div>
               </div>
             </div>
           </div>
@@ -218,17 +205,17 @@
               <tr>
                 <th>Data</th>
                 <th class="text-right">PV</th>
-                <th class="text-right">AC</th>
                 <th class="text-right">Hrs</th>
+                <th class="text-right">Origem</th>
                 <th class="text-right">Acoes</th>
               </tr>
             </thead>
             <tbody>
               <tr v-for="entry in recentEntries" :key="entry._id">
                 <td>{{ toIsoDate(entry.date) }}</td>
-                <td class="text-right">{{ formatCurrency(entry.plannedValue) }}</td>
-                <td class="text-right">{{ formatCurrency(entry.actualCost) }}</td>
+                <td class="text-right">{{ formatValue(entry.plannedValue) }}</td>
                 <td class="text-right">{{ formatHours(entry.completedHours) }}</td>
+                <td class="text-right">{{ sourceLabel(entry.source) }}</td>
                 <td class="text-right">
                   <v-btn
                     icon="mdi-delete-outline"
@@ -255,41 +242,35 @@ interface ProgressEntry {
   _id: string
   date: string
   completedHours: number
-  actualCost: number
   plannedValue: number
+  source?: 'manual' | 'pomodoro' | 'completion'
 }
 
 interface EVMSummary {
   spi: number
-  cpi: number
   forecast: {
-    estimatedCost: number
     estimatedDate: string | null
     variance: number
-    eeac: number
-    etc: number
+    remainingHours: number
+    completionRate: number
     bac: number
     ev: number
-    ac: number
     pv: number
   }
   curve: {
     plannedValue: number[]
     actualValue: number[]
-    costValue: number[]
     dates: string[]
   }
   totals: {
     completedHours: number
     entriesCount: number
-    actualCost: number
   }
   personalMetrics: {
     consistencyScore: number
     planAdherence: number
     completionTrend: 'acelerando' | 'estavel' | 'desacelerando' | 'insuficiente'
     perceivedValueScore: number
-    isCostRelevant: boolean
     actionHint: string
   }
 }
@@ -301,35 +282,29 @@ const props = defineProps<{
 
 const emptySummary: EVMSummary = {
   spi: 1,
-  cpi: 1,
   forecast: {
-    estimatedCost: 0,
     estimatedDate: null,
     variance: 0,
-    eeac: 0,
-    etc: 0,
+    remainingHours: 0,
+    completionRate: 0,
     bac: 0,
     ev: 0,
-    ac: 0,
     pv: 0,
   },
   curve: {
     plannedValue: [],
     actualValue: [],
-    costValue: [],
     dates: [],
   },
   totals: {
     completedHours: 0,
     entriesCount: 0,
-    actualCost: 0,
   },
   personalMetrics: {
     consistencyScore: 100,
     planAdherence: 100,
     completionTrend: 'insuficiente',
     perceivedValueScore: 100,
-    isCostRelevant: false,
     actionHint: 'Registre progresso para gerar recomendacoes personalizadas.',
   },
 }
@@ -343,15 +318,13 @@ const today = new Date().toISOString().slice(0, 10)
 const entryDate = ref(today)
 const entryPlannedValue = ref(0)
 const entryCompletedHours = ref(0)
-const entryActualCost = ref(0)
 
 const entries = ref<ProgressEntry[]>([])
 const summary = ref<EVMSummary>({ ...emptySummary })
 
 const forecast = computed(() => summary.value.forecast)
 const spi = computed(() => summary.value.spi || 1)
-const cpi = computed(() => summary.value.cpi || 1)
-const isCostRelevant = computed(() => summary.value.personalMetrics.isCostRelevant)
+
 const trendLabel = computed(() => {
   const map: Record<EVMSummary['personalMetrics']['completionTrend'], string> = {
     acelerando: 'Acelerando',
@@ -369,16 +342,11 @@ const canAddEntry = computed(() => {
     && !!entryDate.value
     && entryPlannedValue.value >= 0
     && entryCompletedHours.value >= 0
-    && entryActualCost.value >= 0
   )
 })
 
-const isWarning = computed(() => spi.value < 0.95 || (isCostRelevant.value && cpi.value < 0.95))
-const isCritical = computed(() => spi.value < 0.85 || (isCostRelevant.value && cpi.value < 0.85))
-const scheduleCritical = computed(() => spi.value < 0.85)
-const scheduleWarning = computed(() => spi.value < 0.95)
-const costCritical = computed(() => isCostRelevant.value && cpi.value < 0.85)
-const costWarning = computed(() => isCostRelevant.value && cpi.value < 0.95)
+const isWarning = computed(() => spi.value < 0.95)
+const isCritical = computed(() => spi.value < 0.85)
 
 const spiColor = computed(() => {
   if (spi.value < 0.85) return 'error'
@@ -386,35 +354,19 @@ const spiColor = computed(() => {
   return 'success'
 })
 
-const cpiColor = computed(() => {
-  if (!isCostRelevant.value) return 'grey'
-  if (cpi.value < 0.85) return 'error'
-  if (cpi.value < 0.95) return 'warning'
-  return 'success'
-})
-
 const interpretation = computed(() => {
   const delay = spi.value < 1 ? ((1 - spi.value) * 100).toFixed(1) : '0.0'
-  const overBudget = cpi.value < 1 ? ((1 - cpi.value) * 100).toFixed(1) : '0.0'
 
-  if (scheduleCritical.value) {
+  if (isCritical.value) {
     return `Voce esta avancando abaixo do ritmo esperado (${delay}% de atraso). Priorize menos tarefas e entregue o essencial nesta semana.`
   }
 
-  if (costCritical.value) {
-    return `O custo esta ineficiente (${overBudget}% acima do previsto para o valor entregue). Simplifique o escopo da semana e reduza retrabalho.`
-  }
-
-  if (scheduleWarning.value && costWarning.value) {
-    return `Ritmo e custo pedem ajuste: ${delay}% abaixo do esperado e ${overBudget}% acima do previsto.`
-  }
-
-  if (scheduleWarning.value) {
+  if (isWarning.value) {
     return `O plano precisa de ajuste: ritmo ${delay}% abaixo do esperado.`
   }
 
-  if (costWarning.value) {
-    return `Ritmo ok, mas o custo esta acima do previsto (${overBudget}%). Tente manter entregas com menos retrabalho.`
+  if (summary.value.personalMetrics.consistencyScore < 70) {
+    return 'Ritmo geral bom, mas a consistencia semanal pode melhorar. Defina uma meta minima de horas por semana.'
   }
 
   return 'Voce esta no ritmo esperado. Mantenha a consistencia semanal para sustentar o progresso.'
@@ -424,20 +376,18 @@ const curveRows = computed(() => {
   const dates = summary.value.curve.dates || []
   const pv = summary.value.curve.plannedValue || []
   const ev = summary.value.curve.actualValue || []
-  const ac = summary.value.curve.costValue || []
 
   return dates.map((date, index) => ({
     date,
     cumulativePV: pv[index] || 0,
     cumulativeEV: ev[index] || 0,
-    cumulativeAC: ac[index] || 0,
   }))
 })
 
 const maxCurveValue = computed(() => {
   if (curveRows.value.length === 0) return 1
   return Math.max(
-    ...curveRows.value.flatMap((point) => [point.cumulativePV, point.cumulativeEV, point.cumulativeAC]),
+    ...curveRows.value.flatMap((point) => [point.cumulativePV, point.cumulativeEV]),
     1,
   )
 })
@@ -450,6 +400,12 @@ const toBarPercent = (value: number) => {
 
 const toIsoDate = (value: string) => {
   return value ? new Date(value).toISOString().slice(0, 10) : ''
+}
+
+const sourceLabel = (source?: ProgressEntry['source']) => {
+  if (source === 'pomodoro') return 'Pomodoro'
+  if (source === 'completion') return 'Conclusao'
+  return 'Manual'
 }
 
 const loadData = async () => {
@@ -486,14 +442,12 @@ const addEntry = async () => {
       body: {
         date: entryDate.value,
         completedHours: Number(entryCompletedHours.value) || 0,
-        actualCost: Number(entryActualCost.value) || 0,
         plannedValue: Number(entryPlannedValue.value) || 0,
       },
     })
 
     entryPlannedValue.value = 0
     entryCompletedHours.value = 0
-    entryActualCost.value = 0
 
     await loadData()
   } catch (error) {
@@ -538,14 +492,7 @@ watch(
 const formatIndex = (value: number) => value.toFixed(2)
 const formatHours = (value: number) => `${value.toFixed(1)}h`
 const formatPercent = (value: number) => `${Math.round(value)}%`
-
-const formatCurrency = (value: number) => {
-  return new Intl.NumberFormat('pt-BR', {
-    style: 'currency',
-    currency: 'BRL',
-    maximumFractionDigits: 0,
-  }).format(value)
-}
+const formatValue = (value: number) => value.toFixed(1)
 </script>
 
 <style scoped>
@@ -625,10 +572,6 @@ const formatCurrency = (value: number) => {
 
 .bar.ev {
   background: #059669;
-}
-
-.bar.ac {
-  background: #ef4444;
 }
 
 @media (max-width: 960px) {
