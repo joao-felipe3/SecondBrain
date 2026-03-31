@@ -26,6 +26,7 @@
               <v-sheet :class="['carousel-item', { active: currentIndex === 5 }]" elevation="0" color="transparent"><RiskPage :project="displayProject as Project" :editing="editing" /></v-sheet>
               <v-sheet :class="['carousel-item', { active: currentIndex === 6 }]" elevation="0" color="transparent"><GoalPage :project="displayProject || {}" :editing="editing" @update-field="updateField" /></v-sheet>
               <v-sheet :class="['carousel-item', { active: currentIndex === 7 }]" elevation="0" color="transparent"><BacklogAndProgress :project="displayProject || {}" :editing="editing" @update-field="updateField" /></v-sheet>
+              <v-sheet :class="['carousel-item', { active: currentIndex === 8 }]" elevation="0" color="transparent"><GanttPage :project="displayProject as Project" :editing="editing" /></v-sheet>
             </div>
           </v-sheet>
         </v-col>
@@ -69,6 +70,7 @@ import BacklogAndProgress from './pages/BacklogAndProgress.vue'
 import CriticalPathPage from './pages/CriticalPathPage.vue'
 import RTMPage from './pages/RTMPage.vue'
 import RiskPage from './pages/RiskPage.vue'
+import GanttPage from './pages/GanttPage.vue'
 import DeleteProjectDialog from '../../shared/dialogs/DeleteProjectDialog.vue'
 import { useApiResource, useApi } from '~/composables/api'
 import type { PropType } from 'vue'
@@ -78,7 +80,7 @@ import { useProjectEditing, getProjectId } from '~/composables/features/useProje
 import type { Project } from '~/models/Project'
 
 const CLOSE_ANIM_MS = 800
-const TOTAL_SLIDES = 8
+const TOTAL_SLIDES = 9
 
 
 const props = defineProps({

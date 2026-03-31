@@ -59,6 +59,22 @@ export class ProjectsController {
 		// return this.taskModel.find({ project: id }).exec();
 	}
 
+	@Get(':id/gantt-data')
+	@ApiOperation({ summary: 'Get timeline data for Gantt chart visualization' })
+	@ApiResponse({ status: 200, description: 'Gantt data retrieved successfully.' })
+	async getGanttData(
+		@Param('id') id: string,
+		@Query('includeCompleted') includeCompleted?: string,
+	) {
+		const include = includeCompleted === undefined
+			? true
+			: !['false', '0', 'no'].includes(String(includeCompleted).toLowerCase());
+
+		return this.projectsService.getGanttData(id, {
+			includeCompleted: include,
+		});
+	}
+
 	@Post(':id/plan-with-ai')
 	@ApiOperation({ summary: 'Start AI-assisted project planning with Catchball' })
 	@ApiResponse({ status: 200, description: 'Catchball questions generated.' })
