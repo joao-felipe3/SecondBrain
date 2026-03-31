@@ -87,150 +87,64 @@
         </v-card>
       </div>
 
-      <v-alert
-        :type="isCritical ? 'error' : isWarning ? 'warning' : 'success'"
-        variant="tonal"
-        class="mb-4"
-      >
-        {{ interpretation }}
-      </v-alert>
-
-      <v-card variant="outlined" class="mb-4">
-        <v-card-title class="text-subtitle-2">Registrar Progresso</v-card-title>
-        <v-card-text class="form-grid">
-          <v-text-field
-            v-model="entryDate"
-            type="date"
-            label="Data"
-            density="compact"
-            variant="outlined"
-            hide-details
-          />
-
-          <v-text-field
-            v-model.number="entryPlannedValue"
-            type="number"
-            min="0"
-            label="Valor Planejado (PV)"
-            density="compact"
-            variant="outlined"
-            hide-details
-          />
-
-          <v-text-field
-            v-model.number="entryCompletedHours"
-            type="number"
-            min="0"
-            label="Horas Concluidas"
-            density="compact"
-            variant="outlined"
-            hide-details
-          />
-        </v-card-text>
-        <v-card-actions>
-          <v-spacer />
-          <v-btn
-            color="primary"
-            variant="tonal"
-            size="small"
-            prepend-icon="mdi-plus"
-            :disabled="!canAddEntry"
-            :loading="saving"
-            @click="addEntry"
-          >
-            Adicionar Registro
-          </v-btn>
-          <v-btn
-            color="default"
-            variant="text"
-            size="small"
-            prepend-icon="mdi-refresh"
-            :loading="loading"
-            @click="loadData"
-          >
-            Atualizar
-          </v-btn>
-        </v-card-actions>
-      </v-card>
-
-      <v-card variant="outlined">
-        <v-card-title class="text-subtitle-2">Curva S: Planejado x Realizado</v-card-title>
-        <v-card-text>
-          <v-empty-state
-            v-if="curveRows.length === 0"
-            icon="mdi-chart-line"
-            title="Sem registros"
-            text="Adicione entradas para visualizar a evolucao acumulada."
-            density="compact"
-          />
-
-          <div v-else class="curve-list">
-            <v-alert type="info" variant="tonal" density="compact">
-              O ideal e manter a linha Realizado (EV) proxima da Planejada (PV).
-            </v-alert>
-
-            <div
-              v-for="(point, index) in curveRows"
-              :key="`${point.date}-${index}`"
-              class="curve-row"
+      <v-expansion-panels variant="accordion" class="compact-panels">
+        <v-expansion-panel>
+          <v-expansion-panel-title>
+            Diagnostico Rapido
+          </v-expansion-panel-title>
+          <v-expansion-panel-text>
+            <v-alert
+              :type="isCritical ? 'error' : isWarning ? 'warning' : 'success'"
+              variant="tonal"
+              density="compact"
+              class="mb-3"
             >
-              <div class="curve-meta">
-                <strong>{{ point.date }}</strong>
-                <span>Planejado {{ formatValue(point.cumulativePV) }}</span>
-                <span>Realizado {{ formatValue(point.cumulativeEV) }}</span>
-              </div>
+              {{ interpretation }}
+            </v-alert>
+            <v-alert type="info" variant="outlined" density="compact">
+              {{ summary.personalMetrics.actionHint }}
+            </v-alert>
+          </v-expansion-panel-text>
+        </v-expansion-panel>
 
-              <div class="bars">
-                <div class="bar pv" :style="{ width: `${toBarPercent(point.cumulativePV)}%` }">PV</div>
-                <div class="bar ev" :style="{ width: `${toBarPercent(point.cumulativeEV)}%` }">EV</div>
+        <v-expansion-panel>
+          <v-expansion-panel-title>
+            Curva S: Planejado x Realizado
+          </v-expansion-panel-title>
+          <v-expansion-panel-text>
+            <v-empty-state
+              v-if="curveRows.length === 0"
+              icon="mdi-chart-line"
+              title="Sem registros"
+              text="Adicione entradas para visualizar a evolucao acumulada."
+              density="compact"
+            />
+
+            <div v-else class="curve-list">
+              <v-alert type="info" variant="tonal" density="compact">
+                O ideal e manter a linha Realizado (EV) proxima da Planejada (PV).
+              </v-alert>
+
+              <div
+                v-for="(point, index) in curveRows"
+                :key="`${point.date}-${index}`"
+                class="curve-row"
+              >
+                <div class="curve-meta">
+                  <strong>{{ point.date }}</strong>
+                  <span>Planejado {{ formatValue(point.cumulativePV) }}</span>
+                  <span>Realizado {{ formatValue(point.cumulativeEV) }}</span>
+                </div>
+
+                <div class="bars">
+                  <div class="bar pv" :style="{ width: `${toBarPercent(point.cumulativePV)}%` }">PV</div>
+                  <div class="bar ev" :style="{ width: `${toBarPercent(point.cumulativeEV)}%` }">EV</div>
+                </div>
               </div>
             </div>
-          </div>
-        </v-card-text>
-      </v-card>
-
-      <v-card variant="outlined" class="mt-4">
-        <v-card-title class="text-subtitle-2">Registros Recentes</v-card-title>
-        <v-card-text class="pt-2">
-          <v-empty-state
-            v-if="entries.length === 0"
-            icon="mdi-format-list-bulleted"
-            title="Sem registros"
-            text="Os registros mais recentes aparecem aqui."
-            density="compact"
-          />
-
-          <v-table v-else density="compact">
-            <thead>
-              <tr>
-                <th>Data</th>
-                <th class="text-right">PV</th>
-                <th class="text-right">Hrs</th>
-                <th class="text-right">Origem</th>
-                <th class="text-right">Acoes</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="entry in recentEntries" :key="entry._id">
-                <td>{{ toIsoDate(entry.date) }}</td>
-                <td class="text-right">{{ formatValue(entry.plannedValue) }}</td>
-                <td class="text-right">{{ formatHours(entry.completedHours) }}</td>
-                <td class="text-right">{{ sourceLabel(entry.source) }}</td>
-                <td class="text-right">
-                  <v-btn
-                    icon="mdi-delete-outline"
-                    size="x-small"
-                    variant="text"
-                    color="error"
-                    :loading="deletingId === entry._id"
-                    @click="removeEntry(entry._id)"
-                  />
-                </td>
-              </tr>
-            </tbody>
-          </v-table>
-        </v-card-text>
-      </v-card>
+          </v-expansion-panel-text>
+        </v-expansion-panel>
+      </v-expansion-panels>
     </v-card-text>
   </v-card>
 </template>
@@ -310,14 +224,8 @@ const emptySummary: EVMSummary = {
 }
 
 const loading = ref(false)
-const saving = ref(false)
 const deletingId = ref('')
 const errorMessage = ref('')
-
-const today = new Date().toISOString().slice(0, 10)
-const entryDate = ref(today)
-const entryPlannedValue = ref(0)
-const entryCompletedHours = ref(0)
 
 const entries = ref<ProgressEntry[]>([])
 const summary = ref<EVMSummary>({ ...emptySummary })
@@ -334,15 +242,6 @@ const trendLabel = computed(() => {
   }
 
   return map[summary.value.personalMetrics.completionTrend] || 'Dados insuficientes'
-})
-
-const canAddEntry = computed(() => {
-  return (
-    !!props.projectId
-    && !!entryDate.value
-    && entryPlannedValue.value >= 0
-    && entryCompletedHours.value >= 0
-  )
 })
 
 const isWarning = computed(() => spi.value < 0.95)
@@ -384,6 +283,8 @@ const curveRows = computed(() => {
   }))
 })
 
+const recentEntries = computed(() => [...entries.value].slice(-6).reverse())
+
 const maxCurveValue = computed(() => {
   if (curveRows.value.length === 0) return 1
   return Math.max(
@@ -391,8 +292,6 @@ const maxCurveValue = computed(() => {
     1,
   )
 })
-
-const recentEntries = computed(() => [...entries.value].slice(-6).reverse())
 
 const toBarPercent = (value: number) => {
   return Math.max(4, Math.min(100, (value / maxCurveValue.value) * 100))
@@ -427,34 +326,6 @@ const loadData = async () => {
     errorMessage.value = message
   } finally {
     loading.value = false
-  }
-}
-
-const addEntry = async () => {
-  if (!canAddEntry.value) return
-
-  saving.value = true
-  errorMessage.value = ''
-
-  try {
-    await $fetch(`/api/projects/${props.projectId}/evm/progress`, {
-      method: 'POST',
-      body: {
-        date: entryDate.value,
-        completedHours: Number(entryCompletedHours.value) || 0,
-        plannedValue: Number(entryPlannedValue.value) || 0,
-      },
-    })
-
-    entryPlannedValue.value = 0
-    entryCompletedHours.value = 0
-
-    await loadData()
-  } catch (error) {
-    const message = error instanceof Error ? error.message : 'Falha ao registrar progresso.'
-    errorMessage.value = message
-  } finally {
-    saving.value = false
   }
 }
 
@@ -518,7 +389,7 @@ const formatValue = (value: number) => value.toFixed(1)
 }
 
 .kpi-value {
-  font-size: 1rem;
+  font-size: 0.9rem;
   font-weight: 700;
 }
 
@@ -532,6 +403,20 @@ const formatValue = (value: number) => value.toFixed(1)
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
+}
+
+.compact-panels :deep(.v-expansion-panel-title) {
+  min-height: 38px;
+  font-size: 0.86rem;
+}
+
+.compact-panels :deep(.v-expansion-panel-text__wrapper) {
+  padding-top: 0.5rem;
+}
+
+.recent-table :deep(th),
+.recent-table :deep(td) {
+  white-space: nowrap;
 }
 
 .curve-row {
@@ -575,8 +460,7 @@ const formatValue = (value: number) => value.toFixed(1)
 }
 
 @media (max-width: 960px) {
-  .kpi-grid,
-  .form-grid {
+  .kpi-grid {
     grid-template-columns: 1fr;
   }
 }
