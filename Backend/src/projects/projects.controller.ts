@@ -75,6 +75,22 @@ export class ProjectsController {
 		});
 	}
 
+	@Get(':id/pert-diagram-data')
+	@ApiOperation({ summary: 'Get PERT/CPM network data for diagram visualization' })
+	@ApiResponse({ status: 200, description: 'PERT diagram data retrieved successfully.' })
+	async getPertDiagramData(
+		@Param('id') id: string,
+		@Query('includeCompleted') includeCompleted?: string,
+	) {
+		const include = includeCompleted === undefined
+			? true
+			: !['false', '0', 'no'].includes(String(includeCompleted).toLowerCase());
+
+		return this.projectsService.getPertDiagramData(id, {
+			includeCompleted: include,
+		});
+	}
+
 	@Post(':id/plan-with-ai')
 	@ApiOperation({ summary: 'Start AI-assisted project planning with Catchball' })
 	@ApiResponse({ status: 200, description: 'Catchball questions generated.' })

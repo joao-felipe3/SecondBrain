@@ -7,6 +7,7 @@ import { UpdateProjectDto } from './dto/update-project.dto';
 import { ProjectDocument } from './schemas/project.schema';
 import { CPMService, type TaskNode } from '../tasks/services/cpm.service';
 import type { GanttDataResponse } from './dto/gantt.dto';
+import type { PertDiagramDataResponse } from './dto/pert-diagram.dto';
 import { ProjectWave, type ProjectWaveDocument } from './schemas/project-wave.schema';
 
 @Injectable()
@@ -190,6 +191,166 @@ export class ProjectsService {
 			dependencies: dependencyItems,
 			criticalPath: analysis.criticalPath,
 			alerts: analysis.alerts,
+			diagnostics: analysis.diagnostics,
+		};
+	}
+
+	async getPertDiagramData(
+		projectId: string,
+		options?: { includeCompleted?: boolean },
+	): Promise<PertDiagramDataResponse> {
+		if (!projectId || projectId === 'null' || projectId === 'undefined' || !Types.ObjectId.isValid(projectId)) {
+			throw new BadRequestException(`ID inválido: ${projectId}`);
+		}
+
+		const project = await this.projectModel.findById(projectId).exec();
+		if (!project) {
+			throw new NotFoundException('Project not found');
+		}
+
+		const includeCompleted = options?.includeCompleted ?? true;
+		const query: Record<string, any> = { project: projectId };
+		if (!includeCompleted) query.isConcluded = { $ne: true };
+
+		const [tasks, dependencies] = await Promise.all([
+			this.taskModel.find(query).exec(),
+			this.cpmService.getDependencies(projectId),
+		]);
+
+		const toMinutes = (task: any): number => {
+			if (typeof task?.pertExpectedMinutes === 'number' && task.pertExpectedMinutes > 0) return task.pertExpectedMinutes;
+			if (typeof task?.pomodorosPlanned === 'number' && task.pomodorosPlanned > 0) return task.pomodorosPlanned * 25;
+			return 60;
+		};
+
+		const round2 = (value: number) => Number((Number.isFinite(value) ? value : 0).toFixed(2));
+
+		const taskNodes: TaskNode[] = tasks.map((task: any) => ({
+			id: task?._id?.toString?.() || String(task?.id || ''),
+			name: String(task?.title || task?.name || 'Task'),
+			duration: toMinutes(task),
+			dependencies: [],
+		}));
+
+		const nodeById = new Map<string, TaskNode>();
+		for (const node of taskNodes) nodeById.set(node.id, node);
+
+		for (const dep of dependencies as any[]) {
+			const taskId = String(dep?.taskId || '').trim();
+			const dependsOnTaskId = String(dep?.dependsOnTaskId || '').trim();
+			if (!taskId || !dependsOnTaskId) continue;
+			const node = nodeById.get(taskId);
+			if (node) node.dependencies.push(dependsOnTaskId);
+		}
+
+		const analysis = this.cpmService.calculateCriticalPath(taskNodes);
+		const metricsById = new Map<string, TaskNode>();
+		for (const metric of analysis.tasksByImpact) metricsById.set(metric.id, metric);
+
+		const predecessorCount = new Map<string, number>();
+		const predecessorMap = new Map<string, Set<string>>();
+		for (const task of tasks as any[]) {
+			const id = task?._id?.toString?.() || String(task?.id || '');
+			predecessorCount.set(id, 0);
+			predecessorMap.set(id, new Set<string>());
+		}
+
+		for (const dep of dependencies as any[]) {
+			const target = String(dep?.taskId || '').trim();
+			const source = String(dep?.dependsOnTaskId || '').trim();
+			if (!predecessorMap.has(target) || !predecessorMap.has(source)) continue;
+			if (!predecessorMap.get(target)!.has(source)) {
+				predecessorMap.get(target)!.add(source);
+				predecessorCount.set(target, (predecessorCount.get(target) || 0) + 1);
+			}
+		}
+
+		const levelMemo = new Map<string, number>();
+		const computeLevel = (taskId: string, stack = new Set<string>()): number => {
+			if (levelMemo.has(taskId)) return levelMemo.get(taskId)!;
+			if (stack.has(taskId)) return 0;
+			stack.add(taskId);
+			const predecessors = Array.from(predecessorMap.get(taskId) || []);
+			if (predecessors.length === 0) {
+				levelMemo.set(taskId, 0);
+				stack.delete(taskId);
+				return 0;
+			}
+
+			const level = 1 + Math.max(...predecessors.map((id) => computeLevel(id, stack)));
+			levelMemo.set(taskId, level);
+			stack.delete(taskId);
+			return level;
+		};
+
+		const criticalSet = new Set(analysis.criticalPath || []);
+		const nodes = tasks.map((task: any) => {
+			const id = task?._id?.toString?.() || String(task?.id || '');
+			const metric = metricsById.get(id);
+			const durationHours = round2(toMinutes(task) / 60);
+			const earlyStart = round2(metric?.earlyStart ?? 0);
+			const earlyFinish = round2(metric?.earlyFinish ?? durationHours);
+			const lateStart = round2(metric?.lateStart ?? earlyStart);
+			const lateFinish = round2(metric?.lateFinish ?? earlyFinish);
+			const slack = round2(metric?.slack ?? 0);
+			const progress = Math.max(0, Math.min(100, Number(task?.evmProgress || 0) * 100));
+			const level = computeLevel(id);
+			return {
+				id,
+				name: String(task?.title || task?.name || 'Task'),
+				durationHours,
+				earlyStart,
+				earlyFinish,
+				lateStart,
+				lateFinish,
+				slack,
+				isCritical: Boolean(metric?.isCritical),
+				progress: round2(progress),
+				isConcluded: Boolean(task?.isConcluded),
+				priority: Number(task?.priority || 0),
+				parentWbsNodeId: task?.parentWbsNodeId ? String(task.parentWbsNodeId) : undefined,
+				wbsPath: task?.wbsPath ? String(task.wbsPath) : undefined,
+				x: level,
+				y: earlyStart,
+			};
+		});
+
+		const edges = (dependencies as any[])
+			.map((dep: any) => {
+				const source = String(dep?.dependsOnTaskId || '').trim();
+				const target = String(dep?.taskId || '').trim();
+				if (!source || !target || !nodeById.has(source) || !nodeById.has(target)) return null;
+
+				return {
+					id: dep?._id?.toString?.() || `${source}-${target}`,
+					source,
+					target,
+					relationship: (dep?.relationship || 'finish-to-start') as 'finish-to-start' | 'start-to-start' | 'finish-to-finish',
+					reason: dep?.reason ? String(dep.reason) : undefined,
+					isAutoIdentified: Boolean(dep?.isAutoIdentified),
+					isCriticalEdge: criticalSet.has(source) && criticalSet.has(target),
+				};
+			})
+			.filter(Boolean) as PertDiagramDataResponse['edges'];
+
+		const totalTasks = nodes.length;
+		const criticalTasks = nodes.filter((node) => node.isCritical).length;
+
+		return {
+			projectId,
+			projectName: String(project.name || 'Projeto'),
+			projectDurationHours: round2(analysis.projectDuration),
+			nodes,
+			edges,
+			criticalPath: analysis.criticalPath,
+			alerts: analysis.alerts,
+			statistics: {
+				totalTasks,
+				criticalTasks,
+				criticalPercent: totalTasks > 0 ? round2((criticalTasks / totalTasks) * 100) : 0,
+				totalEdges: edges.length,
+				maxParallelism: round2(analysis.diagnostics?.impliedParallelism || 0),
+			},
 			diagnostics: analysis.diagnostics,
 		};
 	}
