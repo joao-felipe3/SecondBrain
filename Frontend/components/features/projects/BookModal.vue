@@ -24,9 +24,9 @@
               <v-sheet :class="['carousel-item', { active: currentIndex === 3 }]" elevation="0" color="transparent"><CriticalPathPage :project="displayProject || {}" :editing="editing" @update-field="updateField" /></v-sheet>
               <v-sheet :class="['carousel-item', { active: currentIndex === 4 }]" elevation="0" color="transparent"><RTMPage :project="displayProject as Project" :editing="editing" /></v-sheet>
               <v-sheet :class="['carousel-item', { active: currentIndex === 5 }]" elevation="0" color="transparent"><RiskPage :project="displayProject as Project" :editing="editing" /></v-sheet>
-              <v-sheet :class="['carousel-item', { active: currentIndex === 6 }]" elevation="0" color="transparent"><GoalPage :project="displayProject || {}" :editing="editing" @update-field="updateField" /></v-sheet>
-              <v-sheet :class="['carousel-item', { active: currentIndex === 7 }]" elevation="0" color="transparent"><BacklogAndProgress :project="displayProject || {}" :editing="editing" @update-field="updateField" /></v-sheet>
-              <v-sheet :class="['carousel-item', { active: currentIndex === 8 }]" elevation="0" color="transparent"><GanttPage :project="displayProject as Project" :editing="editing" /></v-sheet>
+              <v-sheet :class="['carousel-item', { active: currentIndex === 6 }]" elevation="0" color="transparent"><GanttPage :project="displayProject as Project" :editing="editing" /></v-sheet>
+              <v-sheet :class="['carousel-item', { active: currentIndex === 7 }]" elevation="0" color="transparent"><GoalPage :project="displayProject || {}" :editing="editing" @update-field="updateField" /></v-sheet>
+              <v-sheet :class="['carousel-item', { active: currentIndex === 8 }]" elevation="0" color="transparent"><BacklogAndProgress :project="displayProject || {}" :editing="editing" @update-field="updateField" /></v-sheet>
             </div>
           </v-sheet>
         </v-col>

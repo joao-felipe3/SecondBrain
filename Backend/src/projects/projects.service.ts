@@ -7,12 +7,14 @@ import { UpdateProjectDto } from './dto/update-project.dto';
 import { ProjectDocument } from './schemas/project.schema';
 import { CPMService, type TaskNode } from '../tasks/services/cpm.service';
 import type { GanttDataResponse } from './dto/gantt.dto';
+import { ProjectWave, type ProjectWaveDocument } from './schemas/project-wave.schema';
 
 @Injectable()
 export class ProjectsService {
 	constructor(
 		@InjectModel('Project') private readonly projectModel: Model<ProjectDocument>,
 		@InjectModel('Task') private readonly taskModel: Model<TaskDocument>,
+		@InjectModel(ProjectWave.name) private readonly waveModel: Model<ProjectWaveDocument>,
 		@Inject(forwardRef(() => CPMService))
 		private readonly cpmService: CPMService,
 	) {}
@@ -34,8 +36,11 @@ export class ProjectsService {
 		const query: Record<string, any> = { project: projectId };
 		if (!includeCompleted) query.isConcluded = { $ne: true };
 
-		const tasks = await this.taskModel.find(query).exec();
-		const dependencies = await this.cpmService.getDependencies(projectId);
+		const [tasks, dependencies, waves] = await Promise.all([
+			this.taskModel.find(query).exec(),
+			this.cpmService.getDependencies(projectId),
+			this.waveModel.find({ projectId: new Types.ObjectId(projectId) }).sort({ waveNumber: 1 }).exec(),
+		]);
 
 		const toMinutes = (task: any): number => {
 			if (typeof task?.pertExpectedMinutes === 'number' && task.pertExpectedMinutes > 0) {
@@ -67,15 +72,16 @@ export class ProjectsService {
 
 		const analysis = this.cpmService.calculateCriticalPath(taskNodes);
 
-		const projectStart = project.startDate
+		const waveByTaskId = new Map<string, ProjectWaveDocument>();
+		for (const wave of waves) {
+			for (const taskId of (wave.taskIds || [])) {
+				waveByTaskId.set(String(taskId), wave);
+			}
+		}
+
+		const fallbackProjectStart = project.startDate
 			? new Date(project.startDate)
-			: (() => {
-				const minCreated = tasks
-					.map((task: any) => (task?.createdAt ? new Date(task.createdAt) : null))
-					.filter(Boolean)
-					.sort((a: Date | null, b: Date | null) => (a?.getTime?.() || 0) - (b?.getTime?.() || 0))[0];
-				return minCreated || new Date();
-			})();
+			: (waves[0]?.startDate ? new Date(waves[0].startDate) : new Date());
 
 		const metricsById = new Map<string, TaskNode>();
 		for (const metric of analysis.tasksByImpact) {
@@ -89,6 +95,43 @@ export class ProjectsService {
 			return date.toISOString();
 		};
 
+		const resolveWindowByDeadline = (task: any, durationHours: number) => {
+			const taskId = task?._id?.toString?.() || String(task?.id || '');
+			const wave = waveByTaskId.get(taskId) || null;
+
+			const waveStart = wave?.startDate ? new Date(wave.startDate) : null;
+			const waveEnd = wave?.endDate ? new Date(wave.endDate) : null;
+
+			const taskDeadline = task?.deadline ? new Date(task.deadline) : null;
+			const projectDeadline = project.deadline ? new Date(project.deadline) : null;
+			const durationMs = Math.max(1, durationHours) * 60 * 60 * 1000;
+
+			let effectiveEnd = taskDeadline || waveEnd || projectDeadline || new Date();
+			if (waveEnd && effectiveEnd.getTime() > waveEnd.getTime()) {
+				effectiveEnd = new Date(waveEnd);
+			}
+
+			let effectiveStart = new Date(effectiveEnd.getTime() - durationMs);
+
+			if (waveStart && effectiveStart.getTime() < waveStart.getTime()) {
+				effectiveStart = new Date(waveStart);
+			}
+
+			if (waveEnd && effectiveStart.getTime() > waveEnd.getTime()) {
+				effectiveStart = new Date(Math.max(waveStart?.getTime?.() || (waveEnd.getTime() - durationMs), waveEnd.getTime() - durationMs));
+				effectiveEnd = new Date(waveEnd);
+			}
+
+			if (effectiveStart.getTime() > effectiveEnd.getTime()) {
+				effectiveStart = new Date(effectiveEnd.getTime() - durationMs);
+			}
+
+			return {
+				startDate: effectiveStart.toISOString(),
+				endDate: effectiveEnd.toISOString(),
+			};
+		};
+
 		const taskItems = tasks
 			.map((task: any) => {
 				const id = task?._id?.toString?.() || String(task?.id || '');
@@ -99,12 +142,13 @@ export class ProjectsService {
 				const lateStart = round2(metric?.lateStart ?? earlyStart);
 				const lateFinish = round2(metric?.lateFinish ?? earlyFinish);
 				const progress = Math.max(0, Math.min(100, Number(task?.evmProgress || 0) * 100));
+				const timelineWindow = resolveWindowByDeadline(task, durationHours);
 
 				return {
 					id,
 					name: String(task?.title || task?.name || 'Task'),
-					startDate: addHours(projectStart, earlyStart),
-					endDate: addHours(projectStart, earlyFinish),
+					startDate: timelineWindow.startDate,
+					endDate: timelineWindow.endDate,
 					durationHours,
 					earlyStart,
 					earlyFinish,
@@ -119,7 +163,11 @@ export class ProjectsService {
 					wbsPath: task?.wbsPath ? String(task.wbsPath) : undefined,
 				};
 			})
-			.sort((a, b) => a.earlyStart - b.earlyStart || a.name.localeCompare(b.name));
+			.sort((a, b) => {
+				const left = new Date(a.startDate).getTime();
+				const right = new Date(b.startDate).getTime();
+				return left - right || a.name.localeCompare(b.name);
+			});
 
 		const dependencyItems = (dependencies as any[])
 			.map((dep: any) => ({
@@ -135,7 +183,7 @@ export class ProjectsService {
 		return {
 			projectId,
 			projectName: String(project.name || 'Projeto'),
-			projectStartDate: projectStart.toISOString(),
+			projectStartDate: fallbackProjectStart.toISOString(),
 			projectDeadline: project.deadline ? new Date(project.deadline).toISOString() : null,
 			projectDurationHours: round2(analysis.projectDuration),
 			tasks: taskItems,

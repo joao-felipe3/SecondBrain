@@ -21,18 +21,18 @@
       </div>
     </v-card-title>
 
-    <v-card-text class="pt-2">
+    <v-card-text class="mt-n5">
+      <div v-if="tasks.length === 0" class="text-caption text-medium-emphasis">
+        Sem tarefas para exibir no Gantt.
+      </div>
+      <div v-else ref="chartContainer" class="chart-container" />
+
       <div class="legend-row mb-2">
         <span><i class="dot critical" /> Critica</span>
         <span><i class="dot regular" /> Em andamento</span>
         <span><i class="dot done" /> Concluida</span>
         <span><i class="today-line" /> Hoje</span>
       </div>
-
-      <div v-if="tasks.length === 0" class="text-caption text-medium-emphasis">
-        Sem tarefas para exibir no Gantt.
-      </div>
-      <div v-else ref="chartContainer" class="chart-container" />
     </v-card-text>
   </v-card>
 </template>
@@ -59,19 +59,24 @@ const buildOption = () => {
   const taskById = new Map(sorted.map((task, index) => [task.id, { task, index }]))
   const criticalSet = new Set(props.criticalPath)
   const labelFontSize = sorted.length > 60 ? 10 : 11
+  const toMs = (value: unknown, fallback: number) => {
+    const ms = new Date(String(value || '')).getTime()
+    return Number.isFinite(ms) ? ms : fallback
+  }
 
   const now = new Date()
   const nowMs = now.getTime()
 
   const data = sorted.map((task, index) => {
-    const start = new Date(task.startDate).getTime()
-    const end = new Date(task.endDate).getTime()
+    const start = toMs(task.startDate, nowMs)
+    const rawEnd = toMs(task.endDate, start)
+    const end = Math.max(start + 60 * 60 * 1000, rawEnd)
     const progress = Math.max(0, Math.min(100, Number(task.progress || 0)))
     const baseColor = task.isCritical ? '#d32f2f' : task.isConcluded ? '#2e7d32' : '#1976d2'
     const progressColor = task.isCritical ? '#ef5350' : task.isConcluded ? '#66bb6a' : '#64b5f6'
 
     return {
-      value: [index, start, end, task.durationHours, progress, task.isCritical ? 1 : 0],
+      value: [index, start, end, task.durationHours, progress, task.isCritical ? 1 : 0, task.isConcluded ? 1 : 0],
       itemStyle: {
         color: baseColor,
       },
@@ -89,8 +94,9 @@ const buildOption = () => {
       const to = taskById.get(dependency.toTaskId)
       if (!from || !to) return null
 
-      const fromEnd = new Date(from.task.endDate).getTime()
-      const toStart = new Date(to.task.startDate).getTime()
+      const fromEnd = toMs(from.task.endDate, nowMs)
+      const toStart = toMs(to.task.startDate, nowMs)
+      if (!Number.isFinite(fromEnd) || !Number.isFinite(toStart)) return null
       const isCriticalEdge = criticalSet.has(dependency.fromTaskId) && criticalSet.has(dependency.toTaskId)
 
       return {
@@ -163,11 +169,13 @@ const buildOption = () => {
         const dependency = params?.data?.dependency as GanttDependencyItem
         if (dependency) {
           const relationship = dependency.relationship || 'finish-to-start'
+          const fromLabel = String(dependency.fromTaskId || '').slice(0, 8)
+          const toLabel = String(dependency.toTaskId || '').slice(0, 8)
           return [
             '<strong>Dependencia</strong>',
             `Tipo: ${relationship}`,
-            `Origem: ${dependency.fromTaskId.slice(0, 8)}...`,
-            `Destino: ${dependency.toTaskId.slice(0, 8)}...`,
+            `Origem: ${fromLabel}...`,
+            `Destino: ${toLabel}...`,
           ].join('<br/>')
         }
 
@@ -223,11 +231,13 @@ const buildOption = () => {
           const height = Math.max(8, api.size([0, 1])[1] * 0.6)
           const progress = Math.max(0, Math.min(100, Number(api.value(4) || 0)))
           const isCritical = Boolean(api.value(5))
+          const isConcluded = Boolean(api.value(6))
           const width = Math.max(2, end[0] - start[0])
           const progressWidth = Math.max(2, (width * progress) / 100)
 
           const fill = api.style()
-          const progressFill = api.style({ fill: params.data.progressStyle?.color || '#7cb342' })
+          const fallbackProgressColor = isCritical ? '#ef5350' : isConcluded ? '#66bb6a' : '#64b5f6'
+          const progressFill = api.style({ fill: params?.data?.progressStyle?.color || fallbackProgressColor })
 
           const children: any[] = [
             {
@@ -359,7 +369,7 @@ watch(
 
 .chart-container {
   width: 100%;
-  height: 460px;
+  height: 420px;
 }
 
 .legend-row {
