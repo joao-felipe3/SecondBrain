@@ -136,7 +136,7 @@
         <v-expansion-panels>
           <v-expansion-panel title="📊 Detalhes do Cálculo">
             <template #text>
-              <v-simple-table dense>
+              <v-table density="compact">
                 <tbody>
                   <tr>
                     <td class="text-caption font-weight-bold">Duração Caminho Crítico</td>
@@ -161,7 +161,7 @@
                     <td class="text-right">75%</td>
                   </tr>
                 </tbody>
-              </v-simple-table>
+              </v-table>
 
               <v-divider class="my-3" />
 

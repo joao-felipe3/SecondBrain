@@ -235,9 +235,9 @@ const buildOption = () => {
           const width = Math.max(2, end[0] - start[0])
           const progressWidth = Math.max(2, (width * progress) / 100)
 
-          const fill = api.style()
+          const baseColor = params?.data?.itemStyle?.color || (isCritical ? '#d32f2f' : isConcluded ? '#2e7d32' : '#1976d2')
           const fallbackProgressColor = isCritical ? '#ef5350' : isConcluded ? '#66bb6a' : '#64b5f6'
-          const progressFill = api.style({ fill: params?.data?.progressStyle?.color || fallbackProgressColor })
+          const progressColor = params?.data?.progressStyle?.color || fallbackProgressColor
 
           const children: any[] = [
             {
@@ -249,7 +249,9 @@ const buildOption = () => {
                 height,
                 r: 4,
               },
-              style: fill,
+              style: {
+                fill: baseColor,
+              },
             },
             {
               type: 'rect',
@@ -260,7 +262,9 @@ const buildOption = () => {
                 height,
                 r: 4,
               },
-              style: progressFill,
+              style: {
+                fill: progressColor,
+              },
             },
           ]
 

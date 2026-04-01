@@ -35,6 +35,15 @@
           class="pert-switch"
         />
 
+        <v-switch
+          v-model="criticalEdgesOnly"
+          label="Arestas criticas"
+          density="compact"
+          hide-details
+          inset
+          class="pert-switch"
+        />
+
         <v-select
           v-model="slackBucket"
           :items="slackOptions"
@@ -61,7 +70,6 @@
         />
       </v-card-text>
     </v-card>
-
 
     <v-skeleton-loader v-if="loading" type="image" class="chart-shell" />
 
@@ -94,6 +102,7 @@
       :nodes="filteredNodes"
       :edges="filteredEdges"
       :only-critical="onlyCritical"
+      :critical-edges-only="criticalEdgesOnly"
       class="chart-shell"
     />
   </v-sheet>
@@ -118,6 +127,7 @@ const projectId = computed(() => {
 const { mobile } = useDisplay()
 const isMobile = computed(() => mobile.value)
 const onlyCritical = ref(false)
+const criticalEdgesOnly = ref(false)
 const slackBucket = ref<'all' | 'critical' | 'near' | 'comfortable'>('all')
 const selectedWbsPackage = ref<string | null>(null)
 
@@ -151,7 +161,9 @@ const wbsPackageOptions = computed(() => {
   for (const node of nodes.value) {
     const parts = extractWbsParts(node)
     if (parts.length > 0) {
-      packages.add(parts.join(' > '))
+      for (let i = 1; i <= parts.length; i += 1) {
+        packages.add(parts.slice(0, i).join(' > '))
+      }
     }
   }
 
@@ -183,7 +195,27 @@ const filteredNodes = computed(() => {
   }
 
   if (selectedWbsPackage.value) {
-    result = result.filter((node) => extractWbsParts(node).join(' > ') === selectedWbsPackage.value)
+    const selectedParts = selectedWbsPackage.value.split(' > ').map((item) => item.trim()).filter(Boolean)
+    result = result.filter((node) => {
+      const nodeParts = extractWbsParts(node)
+      if (nodeParts.length < selectedParts.length) return false
+      for (let i = 0; i < selectedParts.length; i += 1) {
+        if (nodeParts[i] !== selectedParts[i]) return false
+      }
+      return true
+    })
+
+    // Fallback: if package has no critical tasks, keep package filter and drop critical-only restriction.
+    if (result.length === 0 && onlyCritical.value) {
+      result = nodes.value.filter((node) => {
+        const nodeParts = extractWbsParts(node)
+        if (nodeParts.length < selectedParts.length) return false
+        for (let i = 0; i < selectedParts.length; i += 1) {
+          if (nodeParts[i] !== selectedParts[i]) return false
+        }
+        return true
+      })
+    }
   }
 
   return result
@@ -191,7 +223,11 @@ const filteredNodes = computed(() => {
 
 const filteredEdges = computed(() => {
   const allowedIds = new Set(filteredNodes.value.map((node) => node.id))
-  return edges.value.filter((edge) => allowedIds.has(edge.source) && allowedIds.has(edge.target))
+  const inScope = edges.value.filter((edge) => allowedIds.has(edge.source) && allowedIds.has(edge.target))
+  if (!criticalEdgesOnly.value) return inScope
+
+  const criticalOnly = inScope.filter((edge) => edge.isCriticalEdge)
+  return criticalOnly.length > 0 ? criticalOnly : inScope
 })
 
 const reload = async () => {
