@@ -4,18 +4,6 @@
       <v-card-text class="d-flex align-center flex-wrap ga-2 py-3">
         <h3 class="page-title ma-0">PERT/CPM</h3>
 
-        <v-chip size="small" color="primary" variant="tonal">
-          {{ filteredNodes.length }} nos
-        </v-chip>
-
-        <v-chip size="small" color="error" variant="tonal">
-          {{ (statistics?.criticalTasks || 0) }} criticos
-        </v-chip>
-
-        <v-chip size="small" color="indigo" variant="tonal">
-          {{ (statistics?.projectDurationHours || 0).toFixed(1) }}h duracao
-        </v-chip>
-
         <v-switch
           v-model="includeCompleted"
           label="Incluir concluidas"
@@ -35,39 +23,30 @@
           class="pert-switch"
         />
 
-        <v-switch
-          v-model="criticalEdgesOnly"
-          label="Arestas criticas"
-          density="compact"
-          hide-details
-          inset
-          class="pert-switch"
-        />
-
         <v-select
-          v-model="slackBucket"
-          :items="slackOptions"
+          v-model="selectedWave"
+          :items="waveOptions"
           item-title="label"
           item-value="value"
-          label="Folga"
+          label="Wave"
           density="compact"
           hide-details
           variant="outlined"
           class="compact-select"
         />
 
-        <v-select
-          v-model="selectedWbsPackage"
-          :items="wbsPackageOptions"
-          item-title="label"
-          item-value="value"
-          label="Pacote WBS"
-          density="compact"
-          hide-details
-          variant="outlined"
-          clearable
-          class="compact-select"
-        />
+
+        <v-btn
+          v-if="selectedGroupId"
+          size="small"
+          variant="text"
+          color="primary"
+          @click="clearDetail"
+        >
+          Voltar ao resumo
+        </v-btn>
+
+        
       </v-card-text>
     </v-card>
 
@@ -86,7 +65,7 @@
               </tr>
             </thead>
             <tbody>
-              <tr v-for="node in filteredNodes" :key="node.id">
+              <tr v-for="node in displayNodes" :key="node.id">
                 <td>{{ node.name }}</td>
                 <td class="text-right">{{ node.slack.toFixed(1) }}h</td>
                 <td class="text-right">{{ node.durationHours.toFixed(1) }}h</td>
@@ -99,10 +78,16 @@
 
     <PertDiagramVisualization
       v-else
-      :nodes="filteredNodes"
-      :edges="filteredEdges"
+      :nodes="displayNodes"
+      :edges="displayEdges"
+      :ready-node-ids="Array.from(displayReadyIds)"
+      :blocked-node-ids="Array.from(displayBlockedIds)"
+      :focus-node-ids="Array.from(displayFocusIds)"
       :only-critical="onlyCritical"
       :critical-edges-only="criticalEdgesOnly"
+      :show-all-edges="showAllEdges"
+      :ready-now-task-count="readyNowTaskCount"
+      @node-click="onGraphNodeClick"
       class="chart-shell"
     />
   </v-sheet>
@@ -112,8 +97,16 @@
 import { computed, onMounted, ref, watch } from 'vue'
 import type { Project } from '~/models/Project'
 import { useDisplay } from 'vuetify'
-import { usePertDiagramData, type PertDiagramNode } from '~/composables/features/usePertDiagramData'
+import { usePertDiagramData, type PertDiagramNode, type PertDiagramEdge } from '~/composables/features/usePertDiagramData'
+import { useApi } from '~/composables/api'
 import PertDiagramVisualization from '../visualization/PertDiagramVisualization.vue'
+
+interface ProjectWave {
+  _id: string
+  waveNumber: number
+  status: 'planned' | 'active' | 'completed'
+  taskIds: string[]
+}
 
 const props = defineProps<{
   project: Project | Record<string, any> | null
@@ -128,8 +121,12 @@ const { mobile } = useDisplay()
 const isMobile = computed(() => mobile.value)
 const onlyCritical = ref(false)
 const criticalEdgesOnly = ref(false)
+const showAllEdges = ref(true)
 const slackBucket = ref<'all' | 'critical' | 'near' | 'comfortable'>('all')
-const selectedWbsPackage = ref<string | null>(null)
+const selectedWave = ref<string>('ready')
+const viewMode = ref<'summary' | 'detail'>('summary')
+const selectedGroupId = ref<string | null>(null)
+const waves = ref<ProjectWave[]>([])
 
 const {
   loading,
@@ -150,26 +147,69 @@ const statistics = computed(() => {
   }
 })
 
-const extractWbsParts = (node: PertDiagramNode): string[] => {
-  const rawPath = String(node.wbsPath || '').trim()
-  if (!rawPath) return []
-  return rawPath.split(/[>/\\|]/).map((item) => item.trim()).filter(Boolean)
-}
+const graphMeta = computed(() => {
+  const predecessorMap = new Map<string, string[]>()
+  const successorMap = new Map<string, string[]>()
 
-const wbsPackageOptions = computed(() => {
-  const packages = new Set<string>()
   for (const node of nodes.value) {
-    const parts = extractWbsParts(node)
-    if (parts.length > 0) {
-      for (let i = 1; i <= parts.length; i += 1) {
-        packages.add(parts.slice(0, i).join(' > '))
-      }
-    }
+    predecessorMap.set(node.id, [])
+    successorMap.set(node.id, [])
   }
 
-  return Array.from(packages)
-    .sort((a, b) => a.localeCompare(b))
-    .map((path) => ({ label: path, value: path }))
+  for (const edge of edges.value) {
+    predecessorMap.set(edge.target, [...(predecessorMap.get(edge.target) || []), edge.source])
+    successorMap.set(edge.source, [...(successorMap.get(edge.source) || []), edge.target])
+  }
+
+  const nodeById = new Map(nodes.value.map((node) => [node.id, node]))
+  const readyNow = new Set<string>()
+  const blocked = new Set<string>()
+
+  for (const node of nodes.value) {
+    if (node.isConcluded) continue
+    const predecessors = predecessorMap.get(node.id) || []
+    const allDone = predecessors.every((id) => nodeById.get(id)?.isConcluded)
+    if (allDone) readyNow.add(node.id)
+    else blocked.add(node.id)
+  }
+
+  return {
+    predecessorMap,
+    successorMap,
+    readyNow,
+    blocked,
+  }
+})
+
+const wavesByNumber = computed(() => {
+  const map = new Map<number, Set<string>>()
+  for (const wave of waves.value) {
+    const key = Number(wave.waveNumber || 0)
+    if (!map.has(key)) map.set(key, new Set<string>())
+    const taskSet = map.get(key) as Set<string>
+    for (const taskId of wave.taskIds || []) {
+      taskSet.add(String(taskId))
+    }
+  }
+  return map
+})
+
+const waveOptions = computed(() => {
+  const dynamic = Array.from(wavesByNumber.value.keys())
+    .sort((a, b) => a - b)
+    .map((waveNumber) => {
+      const taskCount = (wavesByNumber.value.get(waveNumber) || new Set<string>()).size
+      return {
+        label: `Wave ${waveNumber} (${taskCount})`,
+        value: `wave:${waveNumber}`,
+      }
+    })
+
+  return [
+    { label: 'Posso fazer agora', value: 'ready' },
+    { label: 'Todas as waves', value: 'all' },
+    ...dynamic,
+  ]
 })
 
 const slackOptions = [
@@ -181,6 +221,15 @@ const slackOptions = [
 
 const filteredNodes = computed(() => {
   let result = [...nodes.value]
+
+  if (selectedWave.value === 'ready') {
+    const readyIds = graphMeta.value.readyNow
+    result = result.filter((node) => readyIds.has(node.id))
+  } else if (selectedWave.value.startsWith('wave:')) {
+    const targetWave = Number(selectedWave.value.replace('wave:', ''))
+    const allowedTaskIds = wavesByNumber.value.get(targetWave) || new Set<string>()
+    result = result.filter((node) => allowedTaskIds.has(String(node.id)))
+  }
 
   if (onlyCritical.value) {
     result = result.filter((node) => node.isCritical)
@@ -194,31 +243,44 @@ const filteredNodes = computed(() => {
     result = result.filter((node) => node.slack >= 2)
   }
 
-  if (selectedWbsPackage.value) {
-    const selectedParts = selectedWbsPackage.value.split(' > ').map((item) => item.trim()).filter(Boolean)
-    result = result.filter((node) => {
-      const nodeParts = extractWbsParts(node)
-      if (nodeParts.length < selectedParts.length) return false
-      for (let i = 0; i < selectedParts.length; i += 1) {
-        if (nodeParts[i] !== selectedParts[i]) return false
-      }
-      return true
-    })
+  return result
+})
 
-    // Fallback: if package has no critical tasks, keep package filter and drop critical-only restriction.
-    if (result.length === 0 && onlyCritical.value) {
-      result = nodes.value.filter((node) => {
-        const nodeParts = extractWbsParts(node)
-        if (nodeParts.length < selectedParts.length) return false
-        for (let i = 0; i < selectedParts.length; i += 1) {
-          if (nodeParts[i] !== selectedParts[i]) return false
-        }
-        return true
-      })
+const readyNowIds = computed(() => {
+  const inScope = new Set(filteredNodes.value.map((node) => node.id))
+  return new Set(Array.from(graphMeta.value.readyNow).filter((id) => inScope.has(id)))
+})
+
+const blockedIds = computed(() => {
+  const inScope = new Set(filteredNodes.value.map((node) => node.id))
+  return new Set(Array.from(graphMeta.value.blocked).filter((id) => inScope.has(id)))
+})
+
+const focusNodeIds = computed(() => {
+  if (!selectedWave.value.startsWith('wave:')) {
+    return new Set(Array.from(readyNowIds.value))
+  }
+
+  const targetWave = Number(selectedWave.value.replace('wave:', ''))
+  const allowedTaskIds = wavesByNumber.value.get(targetWave) || new Set<string>()
+  const waveNodeIds = filteredNodes.value
+    .filter((node) => allowedTaskIds.has(String(node.id)))
+    .map((node) => node.id)
+
+  const focus = new Set<string>(waveNodeIds)
+  const queue = [...waveNodeIds]
+  while (queue.length > 0) {
+    const current = queue.shift() as string
+    const predecessors = graphMeta.value.predecessorMap.get(current) || []
+    for (const prev of predecessors) {
+      if (!focus.has(prev)) {
+        focus.add(prev)
+        queue.push(prev)
+      }
     }
   }
 
-  return result
+  return focus
 })
 
 const filteredEdges = computed(() => {
@@ -230,21 +292,249 @@ const filteredEdges = computed(() => {
   return criticalOnly.length > 0 ? criticalOnly : inScope
 })
 
+const getWbsParts = (node: PertDiagramNode) => {
+  const raw = String(node.wbsPath || '').trim()
+  if (!raw) return ['Sem pacote']
+  return raw.split(/[>/\\|]/).map((part) => part.trim()).filter(Boolean)
+}
+
+const buildGroupMapByDepth = (depth: number) => {
+  const map = new Map<string, PertDiagramNode[]>()
+  for (const node of filteredNodes.value) {
+    const parts = getWbsParts(node)
+    const key = parts.slice(0, Math.min(depth, parts.length)).join(' > ') || 'Sem pacote'
+    if (!map.has(key)) map.set(key, [])
+    map.get(key)?.push(node)
+  }
+  return map
+}
+
+const adaptiveGroupMap = computed(() => {
+  const allParts = filteredNodes.value.map((node) => getWbsParts(node))
+  const maxDepth = Math.max(1, ...allParts.map((parts) => parts.length))
+
+  let best = buildGroupMapByDepth(1)
+  for (let depth = 1; depth <= maxDepth; depth += 1) {
+    const current = buildGroupMapByDepth(depth)
+    const groupStats = Array.from(current.values()).map((tasks) => ({
+      hours: tasks.reduce((sum, task) => sum + Number(task.durationHours || 0), 0),
+      count: tasks.length,
+    }))
+    const maxHours = Math.max(0, ...groupStats.map((item) => item.hours))
+    const maxCount = Math.max(0, ...groupStats.map((item) => item.count))
+
+    best = current
+    if (maxHours <= 80 && maxCount <= 30) {
+      break
+    }
+  }
+
+  return best
+})
+
+const summaryGraph = computed(() => {
+  const taskToGroup = new Map<string, string>()
+  const groupToTasks = new Map<string, string[]>()
+  const nodeById = new Map(filteredNodes.value.map((node) => [node.id, node]))
+
+  for (const [groupLabel, tasks] of adaptiveGroupMap.value.entries()) {
+    const groupId = `group:${groupLabel}`
+    groupToTasks.set(groupId, tasks.map((task) => task.id))
+    for (const task of tasks) {
+      taskToGroup.set(task.id, groupId)
+    }
+  }
+
+  const nodes = Array.from(adaptiveGroupMap.value.entries()).map(([groupLabel, tasks]) => {
+    const duration = tasks.reduce((sum, task) => sum + Number(task.durationHours || 0), 0)
+    const minES = Math.min(...tasks.map((task) => Number(task.earlyStart || 0)))
+    const maxEF = Math.max(...tasks.map((task) => Number(task.earlyFinish || 0)))
+    const minLS = Math.min(...tasks.map((task) => Number(task.lateStart || 0)))
+    const maxLF = Math.max(...tasks.map((task) => Number(task.lateFinish || 0)))
+    const avgSlack = tasks.reduce((sum, task) => sum + Number(task.slack || 0), 0) / Math.max(tasks.length, 1)
+
+    return {
+      id: `group:${groupLabel}`,
+      name: `${groupLabel} (${tasks.length})`,
+      durationHours: duration,
+      earlyStart: minES,
+      earlyFinish: maxEF,
+      lateStart: minLS,
+      lateFinish: maxLF,
+      slack: avgSlack,
+      isCritical: tasks.some((task) => task.isCritical),
+      progress: tasks.reduce((sum, task) => sum + Number(task.progress || 0), 0) / Math.max(tasks.length, 1),
+      isConcluded: tasks.every((task) => task.isConcluded),
+      priority: Math.max(...tasks.map((task) => Number(task.priority || 0))),
+      parentWbsNodeId: tasks.find((task) => task.parentWbsNodeId)?.parentWbsNodeId,
+      wbsPath: groupLabel,
+      x: 0,
+      y: 0,
+    } as PertDiagramNode
+  })
+
+  const aggregateEdge = new Map<string, { source: string; target: string; critical: boolean; relationship: 'finish-to-start' | 'start-to-start' | 'finish-to-finish' }>()
+  for (const edge of filteredEdges.value) {
+    const fromGroup = taskToGroup.get(edge.source)
+    const toGroup = taskToGroup.get(edge.target)
+    if (!fromGroup || !toGroup || fromGroup === toGroup) continue
+
+    const key = `${fromGroup}->${toGroup}`
+    if (!aggregateEdge.has(key)) {
+      aggregateEdge.set(key, {
+        source: fromGroup,
+        target: toGroup,
+        critical: false,
+        relationship: edge.relationship,
+      })
+    }
+
+    const current = aggregateEdge.get(key)
+    if (current) {
+      current.critical = current.critical || edge.isCriticalEdge
+    }
+  }
+
+  const edges = Array.from(aggregateEdge.entries()).map(([id, item]) => ({
+    id,
+    source: item.source,
+    target: item.target,
+    relationship: item.relationship,
+    isAutoIdentified: true,
+    isCriticalEdge: item.critical,
+  }))
+
+  const readyTaskIds = new Set(Array.from(readyNowIds.value))
+  const blockedTaskIds = new Set(Array.from(blockedIds.value))
+  const readyGroupIds = new Set<string>()
+  const blockedGroupIds = new Set<string>()
+  for (const [groupId, taskIds] of groupToTasks.entries()) {
+    if (taskIds.some((id) => readyTaskIds.has(id))) readyGroupIds.add(groupId)
+    if (taskIds.every((id) => blockedTaskIds.has(id))) blockedGroupIds.add(groupId)
+  }
+
+  const focusGroupIds = new Set<string>()
+  for (const groupId of readyGroupIds) focusGroupIds.add(groupId)
+  if (selectedGroupId.value && groupToTasks.has(selectedGroupId.value)) {
+    focusGroupIds.add(selectedGroupId.value)
+  }
+
+  return {
+    nodes,
+    edges,
+    taskToGroup,
+    groupToTasks,
+    nodeById,
+    readyGroupIds,
+    blockedGroupIds,
+    focusGroupIds,
+  }
+})
+
+const detailGraph = computed(() => {
+  if (!selectedGroupId.value) {
+    return {
+      nodes: [] as PertDiagramNode[],
+      edges: [] as PertDiagramEdge[],
+    }
+  }
+
+  const taskIds = new Set(summaryGraph.value.groupToTasks.get(selectedGroupId.value) || [])
+  const nodesDetail = filteredNodes.value.filter((node) => taskIds.has(node.id))
+  const nodeSet = new Set(nodesDetail.map((node) => node.id))
+  const edgesDetail = filteredEdges.value.filter((edge) => nodeSet.has(edge.source) && nodeSet.has(edge.target))
+
+  return {
+    nodes: nodesDetail,
+    edges: edgesDetail,
+  }
+})
+
+const displayNodes = computed(() => {
+  if (viewMode.value === 'summary') return summaryGraph.value.nodes
+  return detailGraph.value.nodes
+})
+
+const displayEdges = computed(() => {
+  if (viewMode.value === 'summary') return summaryGraph.value.edges
+  return detailGraph.value.edges
+})
+
+const displayReadyIds = computed(() => {
+  if (viewMode.value === 'summary') return new Set(summaryGraph.value.readyGroupIds)
+  const visible = new Set(detailGraph.value.nodes.map((node) => node.id))
+  return new Set(Array.from(readyNowIds.value).filter((id) => visible.has(id)))
+})
+
+const displayBlockedIds = computed(() => {
+  if (viewMode.value === 'summary') return new Set(summaryGraph.value.blockedGroupIds)
+  const visible = new Set(detailGraph.value.nodes.map((node) => node.id))
+  return new Set(Array.from(blockedIds.value).filter((id) => visible.has(id)))
+})
+
+const displayFocusIds = computed(() => {
+  if (viewMode.value === 'summary') return new Set(summaryGraph.value.focusGroupIds)
+  return new Set(detailGraph.value.nodes.map((node) => node.id))
+})
+
+const selectedGroupLabel = computed(() => {
+  if (!selectedGroupId.value) return ''
+  const id = selectedGroupId.value
+  if (id.startsWith('group:')) return id.replace('group:', '')
+  return id
+})
+
+const readyNowTaskCount = computed(() => readyNowIds.value.size)
+
+const clearDetail = () => {
+  viewMode.value = 'summary'
+  selectedGroupId.value = null
+}
+
+const onGraphNodeClick = (node: PertDiagramNode) => {
+  if (viewMode.value !== 'summary') return
+  if (!node?.id || !String(node.id).startsWith('group:')) return
+  selectedGroupId.value = String(node.id)
+  viewMode.value = 'detail'
+}
+
+const loadWaves = async () => {
+  const id = String(projectId.value || '')
+  if (!id) {
+    waves.value = []
+    return
+  }
+
+  try {
+    const { get } = useApi(`/projects/${id}/waves`)
+    const result = await get()
+    if (result.error) throw result.error
+    waves.value = Array.isArray(result.data) ? (result.data as ProjectWave[]) : []
+  } catch {
+    waves.value = []
+  }
+}
+
 const reload = async () => {
-  await load()
+  await Promise.all([load(), loadWaves()])
 }
 
 onMounted(reload)
 
 watch(projectId, () => {
-  selectedWbsPackage.value = null
+  selectedWave.value = 'ready'
+  clearDetail()
   reload()
 })
 
 watch(onlyCritical, () => {
-  if (selectedWbsPackage.value && filteredNodes.value.length === 0) {
-    selectedWbsPackage.value = null
+  if (filteredNodes.value.length === 0) {
+    selectedWave.value = 'all'
   }
+})
+
+watch(selectedWave, () => {
+  clearDetail()
 })
 </script>
 
