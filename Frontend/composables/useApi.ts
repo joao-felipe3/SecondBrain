@@ -1,4 +1,4 @@
-export const useApi = () => {
+export const useApiFetch = () => {
   const config = useRuntimeConfig()
   const apiBase = config.public.apiBase || 'http://localhost:3000'
 

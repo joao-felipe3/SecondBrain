@@ -16,6 +16,7 @@ import { GenerateWBSDto, SaveWBSDto, SuggestDecompositionDto, ConvertWBSToTasksD
 import { TasksService } from '../tasks/tasks.service';
 import { LeafTasksBufferService } from './leaf-tasks-buffer.service';
 import { createHash } from 'crypto';
+import { CreateXMatrixDto } from './dto/x-matrix.dto';
 
 @ApiTags('projects')
 @Controller('projects')
@@ -89,6 +90,16 @@ export class ProjectsController {
 		return this.projectsService.getPertDiagramData(id, {
 			includeCompleted: include,
 		});
+	}
+
+	@Post(':id/create-x-matrix')
+	@ApiOperation({ summary: 'Create fractal X-Matrix (Norte/Estrategico/Tatico) using WBS L1/L2 initiatives and waves' })
+	@ApiResponse({ status: 200, description: 'X-Matrix generated successfully.' })
+	async createXMatrix(
+		@Param('id') id: string,
+		@Body() dto: CreateXMatrixDto,
+	) {
+		return this.projectsService.createXMatrix(id, dto || {});
 	}
 
 	@Post(':id/plan-with-ai')

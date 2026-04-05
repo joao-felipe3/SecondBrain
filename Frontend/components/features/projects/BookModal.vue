@@ -26,8 +26,9 @@
               <v-sheet :class="['carousel-item', { active: currentIndex === 5 }]" elevation="0" color="transparent"><RiskPage :project="displayProject as Project" :editing="editing" /></v-sheet>
               <v-sheet :class="['carousel-item', { active: currentIndex === 6 }]" elevation="0" color="transparent"><GanttPage :project="displayProject as Project" :editing="editing" /></v-sheet>
               <v-sheet :class="['carousel-item', { active: currentIndex === 7 }]" elevation="0" color="transparent"><PertDiagramPage :project="displayProject as Project" :editing="editing" /></v-sheet>
-              <v-sheet :class="['carousel-item', { active: currentIndex === 8 }]" elevation="0" color="transparent"><GoalPage :project="displayProject || {}" :editing="editing" @update-field="updateField" /></v-sheet>
-              <v-sheet :class="['carousel-item', { active: currentIndex === 9 }]" elevation="0" color="transparent"><BacklogAndProgress :project="displayProject || {}" :editing="editing" @update-field="updateField" /></v-sheet>
+              <v-sheet :class="['carousel-item', { active: currentIndex === 8 }]" elevation="0" color="transparent"><XMatrixPage :project="displayProject as Project" :editing="editing" /></v-sheet>
+              <v-sheet :class="['carousel-item', { active: currentIndex === 9 }]" elevation="0" color="transparent"><GoalPage :project="displayProject || {}" :editing="editing" @update-field="updateField" /></v-sheet>
+              <v-sheet :class="['carousel-item', { active: currentIndex === 10 }]" elevation="0" color="transparent"><BacklogAndProgress :project="displayProject || {}" :editing="editing" @update-field="updateField" /></v-sheet>
             </div>
           </v-sheet>
         </v-col>
@@ -73,6 +74,7 @@ import RTMPage from './pages/RTMPage.vue'
 import RiskPage from './pages/RiskPage.vue'
 import GanttPage from './pages/GanttPage.vue'
 import PertDiagramPage from './pages/PertDiagramPage.vue'
+import XMatrixPage from './pages/XMatrixPage.vue'
 import DeleteProjectDialog from '../../shared/dialogs/DeleteProjectDialog.vue'
 import { useApiResource, useApi } from '~/composables/api'
 import type { PropType } from 'vue'
@@ -82,7 +84,7 @@ import { useProjectEditing, getProjectId } from '~/composables/features/useProje
 import type { Project } from '~/models/Project'
 
 const CLOSE_ANIM_MS = 800
-const TOTAL_SLIDES = 10
+const TOTAL_SLIDES = 11
 
 
 const props = defineProps({

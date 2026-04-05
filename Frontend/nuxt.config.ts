@@ -36,7 +36,7 @@ export default defineNuxtConfig({
     },
     plugins: [vuetify()],
     optimizeDeps: {
-      exclude: ['form-data']
+      exclude: ['form-data', 'nuxt', 'nuxt/app', 'nuxt/dist/app']
     },
     ssr: {
       noExternal: ['axios'],     // força axios a rodar como browser no client
