@@ -27,8 +27,7 @@
               <v-sheet :class="['carousel-item', { active: currentIndex === 6 }]" elevation="0" color="transparent"><GanttPage :project="displayProject as Project" :editing="editing" /></v-sheet>
               <v-sheet :class="['carousel-item', { active: currentIndex === 7 }]" elevation="0" color="transparent"><PertDiagramPage :project="displayProject as Project" :editing="editing" /></v-sheet>
               <v-sheet :class="['carousel-item', { active: currentIndex === 8 }]" elevation="0" color="transparent"><XMatrixPage :project="displayProject as Project" :editing="editing" /></v-sheet>
-              <v-sheet :class="['carousel-item', { active: currentIndex === 9 }]" elevation="0" color="transparent"><GoalPage :project="displayProject || {}" :editing="editing" @update-field="updateField" /></v-sheet>
-              <v-sheet :class="['carousel-item', { active: currentIndex === 10 }]" elevation="0" color="transparent"><BacklogAndProgress :project="displayProject || {}" :editing="editing" @update-field="updateField" /></v-sheet>
+              <v-sheet :class="['carousel-item', { active: currentIndex === 9 }]" elevation="0" color="transparent"><BacklogAndProgress :project="displayProject || {}" :editing="editing" @update-field="updateField" /></v-sheet>
             </div>
           </v-sheet>
         </v-col>
@@ -65,7 +64,6 @@
 import { X } from 'lucide-vue-next'
 import { ref, computed, onMounted, onBeforeUnmount, watch, nextTick, toRef } from 'vue'
 import GeneralInfoPage from './pages/GeneralInfoPage.vue'
-import GoalPage from './pages/GoalPage.vue'
 import SmartObjectivesPage from './pages/SmartObjectivesPage.vue'
 import WBSPage from './pages/WBSPage.vue'
 import BacklogAndProgress from './pages/BacklogAndProgress.vue'
@@ -84,7 +82,7 @@ import { useProjectEditing, getProjectId } from '~/composables/features/useProje
 import type { Project } from '~/models/Project'
 
 const CLOSE_ANIM_MS = 800
-const TOTAL_SLIDES = 11
+const TOTAL_SLIDES = 10
 
 
 const props = defineProps({
