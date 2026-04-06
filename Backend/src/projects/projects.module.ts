@@ -19,6 +19,7 @@ import { RollingWaveService } from './services/rolling-wave.service';
 import { RiskService } from './services/risk.service';
 import { EVMService } from './services/evm.service';
 import { WaveAndRiskController } from './controllers/wave-and-risk.controller';
+import { XMatrixSnapshot, XMatrixSnapshotSchema } from './schemas/x-matrix-snapshot.schema';
 
 
 @Module({
@@ -29,6 +30,7 @@ import { WaveAndRiskController } from './controllers/wave-and-risk.controller';
       { name: ProjectWave.name, schema: ProjectWaveSchema },
       { name: Risk.name, schema: RiskSchema },
       { name: ProjectProgress.name, schema: ProjectProgressSchema },
+      { name: XMatrixSnapshot.name, schema: XMatrixSnapshotSchema },
     ]),
     forwardRef(() => TasksModule),
     PlanningModule,

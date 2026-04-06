@@ -10,6 +10,7 @@ import type { GanttDataResponse } from './dto/gantt.dto';
 import type { PertDiagramDataResponse } from './dto/pert-diagram.dto';
 import { ProjectWave, type ProjectWaveDocument } from './schemas/project-wave.schema';
 import type { CreateXMatrixDto, XMatrixResponseDto, XMatrixStrength } from './dto/x-matrix.dto';
+import { XMatrixSnapshot, type XMatrixSnapshotDocument } from './schemas/x-matrix-snapshot.schema';
 
 @Injectable()
 export class ProjectsService {
@@ -17,6 +18,7 @@ export class ProjectsService {
 		@InjectModel('Project') private readonly projectModel: Model<ProjectDocument>,
 		@InjectModel('Task') private readonly taskModel: Model<TaskDocument>,
 		@InjectModel(ProjectWave.name) private readonly waveModel: Model<ProjectWaveDocument>,
+		@InjectModel(XMatrixSnapshot.name) private readonly xMatrixSnapshotModel: Model<XMatrixSnapshotDocument>,
 		@Inject(forwardRef(() => CPMService))
 		private readonly cpmService: CPMService,
 	) {}
@@ -300,25 +302,122 @@ export class ProjectsService {
 			}
 		}
 
-		return {
+		let activeAnnualIds = new Set(annualGoals.map((item) => item.id));
+		let activeStrategyIds = new Set(strategyGoals.map((item) => item.id));
+		let activeTacticalIds = new Set(tacticalItems.map((item) => item.id));
+
+		const usefulAnnualIdsFromNorth = new Set(
+			strategyToAnnual.filter((cell) => cell.strength !== 'none').map((cell) => cell.toId),
+		);
+		const usefulAnnualIdsFromTactical = new Set(
+			annualToTactical.filter((cell) => cell.strength !== 'none').map((cell) => cell.fromId),
+		);
+
+		const usefulAnnualIds = usefulAnnualIdsFromNorth.size > 0
+			? usefulAnnualIdsFromNorth
+			: new Set<string>([
+				...Array.from(usefulAnnualIdsFromNorth),
+				...Array.from(usefulAnnualIdsFromTactical),
+			]);
+
+		if (usefulAnnualIds.size > 0) {
+			activeAnnualIds = usefulAnnualIds;
+			activeStrategyIds = new Set(
+				strategyToAnnual
+					.filter((cell) => cell.strength !== 'none' && activeAnnualIds.has(cell.toId))
+					.map((cell) => cell.fromId),
+			);
+			activeTacticalIds = new Set(
+				annualToTactical
+					.filter((cell) => cell.strength !== 'none' && activeAnnualIds.has(cell.fromId))
+					.map((cell) => cell.toId),
+			);
+
+			if (activeStrategyIds.size === 0) activeStrategyIds = new Set(strategyGoals.map((item) => item.id));
+			if (activeTacticalIds.size === 0) activeTacticalIds = new Set(tacticalItems.map((item) => item.id));
+		}
+
+		const filteredStrategyGoals = strategyGoals.filter((item) => activeStrategyIds.has(item.id));
+		const filteredAnnualGoals = annualGoals.filter((item) => activeAnnualIds.has(item.id));
+		const filteredTacticalItems = tacticalItems.filter((item) => activeTacticalIds.has(item.id));
+
+		const filteredStrategyToAnnual = strategyToAnnual.filter(
+			(cell) => activeStrategyIds.has(cell.fromId) && activeAnnualIds.has(cell.toId),
+		);
+		const filteredAnnualToTactical = annualToTactical.filter(
+			(cell) => activeAnnualIds.has(cell.fromId) && activeTacticalIds.has(cell.toId),
+		);
+
+		if (filteredAnnualGoals.length < annualGoals.length) {
+			warnings.push(`Metas estrategicas sem correlacao foram ocultadas (${annualGoals.length - filteredAnnualGoals.length}).`);
+		}
+		if (filteredStrategyGoals.length < strategyGoals.length) {
+			warnings.push(`Diretrizes norte sem correlacao foram ocultadas (${strategyGoals.length - filteredStrategyGoals.length}).`);
+		}
+		if (filteredTacticalItems.length < tacticalItems.length) {
+			warnings.push(`Iniciativas taticas sem correlacao foram ocultadas (${tacticalItems.length - filteredTacticalItems.length}).`);
+		}
+
+		const response: XMatrixResponseDto = {
 			projectId,
 			projectName: String(project.name || 'Projeto'),
-			strategyGoals,
-			annualGoals,
-			tacticalItems,
-			tasks: tacticalItems,
-			strategyToAnnual,
-			annualToTactical,
-			annualToTasks: annualToTactical,
+			strategyGoals: filteredStrategyGoals,
+			annualGoals: filteredAnnualGoals,
+			tacticalItems: filteredTacticalItems,
+			tasks: filteredTacticalItems,
+			strategyToAnnual: filteredStrategyToAnnual,
+			annualToTactical: filteredAnnualToTactical,
+			annualToTasks: filteredAnnualToTactical,
 			diagnostics: {
 				generatedAt: new Date().toISOString(),
-				strategyCount: strategyGoals.length,
-				annualCount: annualGoals.length,
-				tacticalCount: tacticalItems.length,
-				taskCount: tacticalItems.length,
+				strategyCount: filteredStrategyGoals.length,
+				annualCount: filteredAnnualGoals.length,
+				tacticalCount: filteredTacticalItems.length,
+				taskCount: filteredTacticalItems.length,
 				warnings,
 			},
 		};
+
+		await this.xMatrixSnapshotModel.updateOne(
+			{ projectId: new Types.ObjectId(projectId) },
+			{ $set: { data: response } },
+			{ upsert: true },
+		).exec();
+
+		return response;
+	}
+
+	async getSavedXMatrix(projectId: string): Promise<XMatrixResponseDto | null> {
+		if (!projectId || projectId === 'null' || projectId === 'undefined' || !Types.ObjectId.isValid(projectId)) {
+			throw new BadRequestException(`ID invalido: ${projectId}`);
+		}
+
+		const project = await this.projectModel.findById(projectId).exec();
+		if (!project) throw new NotFoundException('Project not found');
+
+		const snapshot = await this.xMatrixSnapshotModel
+			.findOne({ projectId: new Types.ObjectId(projectId) })
+			.exec();
+
+		if (snapshot?.data) return snapshot.data as XMatrixResponseDto;
+
+		const legacySnapshot = (project as any).xMatrixSnapshot;
+		if (legacySnapshot) {
+			await this.xMatrixSnapshotModel.updateOne(
+				{ projectId: new Types.ObjectId(projectId) },
+				{ $set: { data: legacySnapshot } },
+				{ upsert: true },
+			).exec();
+
+			await this.projectModel.updateOne(
+				{ _id: projectId },
+				{ $unset: { xMatrixSnapshot: '' } },
+			).exec();
+
+			return legacySnapshot as XMatrixResponseDto;
+		}
+
+		return null;
 	}
 
 	async getGanttData(

@@ -12,23 +12,8 @@
       <v-alert v-else-if="error" type="error" variant="tonal" density="compact">{{ error }}</v-alert>
       <div v-else-if="!data" class="text-caption text-medium-emphasis">Sem dados de matriz para este projeto.</div>
       <template v-else>
-        <v-alert
-          v-if="data.diagnostics.warnings.length"
-          type="warning"
-          variant="tonal"
-          density="compact"
-          class="mb-3"
-        >
-          {{ data.diagnostics.warnings.join(' | ') }}
-        </v-alert>
+        <div class="meta-line ">
 
-        <div class="meta-line mb-3">
-          <v-chip size="x-small" color="primary" variant="tonal">Norte (3-5 anos): {{ data.strategyGoals.length }}</v-chip>
-          <v-chip size="x-small" color="indigo" variant="tonal">Estratégico (ano/semestre): {{ data.annualGoals.length }}</v-chip>
-          <v-chip size="x-small" color="teal" variant="tonal">Tático (WBS L1/L2): {{ tacticalItems.length }}</v-chip>
-          <v-chip v-if="isTaskTruncated" size="x-small" color="deep-orange" variant="tonal">
-            Exibindo {{ visibleTasks.length }} de {{ tacticalItems.length }} iniciativas
-          </v-chip>
           <v-btn
             v-if="isTaskTruncated"
             size="x-small"
@@ -40,20 +25,20 @@
           </v-btn>
         </div>
 
-        <div class="matrix-scroll mb-4">
-          <div class="text-caption font-weight-bold mb-2">Norte × Estratégico</div>
+        <div class="matrix-scroll mb-2">
+          <div class="text-caption font-weight-bold">Norte × Estratégico</div>
           <v-table density="compact" class="matrix-table">
             <thead>
               <tr>
                 <th>Estratégia \ Anual</th>
                 <th v-for="annual in data.annualGoals" :key="annual.id" class="text-center col-fixed">
-                  {{ annual.label }}
+                  <span class="header-text" :title="annual.label">{{ annual.label }}</span>
                 </th>
               </tr>
             </thead>
             <tbody>
               <tr v-for="strategy in data.strategyGoals" :key="strategy.id">
-                <td class="row-header">{{ strategy.label }}</td>
+                <td class="row-header"><span class="header-text" :title="strategy.label">{{ strategy.label }}</span></td>
                 <td
                   v-for="annual in data.annualGoals"
                   :key="`${strategy.id}-${annual.id}`"
@@ -69,19 +54,19 @@
         </div>
 
         <div class="matrix-scroll">
-          <div class="text-caption font-weight-bold mb-2">Estratégico × Tático (Iniciativas WBS)</div>
+          <div class="text-caption font-weight-bold">Estratégico × Tático (Iniciativas WBS)</div>
           <v-table density="compact" class="matrix-table">
             <thead>
               <tr>
                 <th>Estratégico \ Tático</th>
                 <th v-for="task in visibleTasks" :key="task.id" class="text-center col-fixed">
-                  {{ task.label }}
+                  <span class="header-text" :title="task.label">{{ task.label }}</span>
                 </th>
               </tr>
             </thead>
             <tbody>
               <tr v-for="annual in data.annualGoals" :key="annual.id">
-                <td class="row-header">{{ annual.label }}</td>
+                <td class="row-header"><span class="header-text" :title="annual.label">{{ annual.label }}</span></td>
                 <td
                   v-for="task in visibleTasks"
                   :key="`${annual.id}-${task.id}`"
@@ -101,7 +86,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useApi } from '~/composables/api'
 
 type Strength = 'strong' | 'medium' | 'weak' | 'none'
@@ -227,6 +212,29 @@ const generate = async () => {
     loading.value = false
   }
 }
+
+const loadSaved = async () => {
+  if (!props.projectId) return
+  loading.value = true
+  error.value = null
+
+  try {
+    const { get } = useApi(`/projects/${props.projectId}/x-matrix`)
+    const result = await get()
+    if (result.error) throw result.error
+
+    if (result.data) {
+      data.value = result.data as XMatrixData
+      showAllTasks.value = false
+    }
+  } catch (err: any) {
+    error.value = err?.message || 'Falha ao carregar X-Matrix salva.'
+  } finally {
+    loading.value = false
+  }
+}
+
+onMounted(loadSaved)
 </script>
 
 <style scoped>
@@ -245,29 +253,40 @@ const generate = async () => {
 }
 
 .matrix-table {
-  min-width: 860px;
+  min-width: 680px;
 }
 
 .col-fixed {
-  min-width: 130px;
-  max-width: 130px;
+  min-width: 92px;
+  max-width: 92px;
+  white-space: normal;
+  font-size: 0.68rem;
+}
+
+.row-header {
+  min-width: 152px;
+  max-width: 152px;
   white-space: normal;
   font-size: 0.72rem;
 }
 
-.row-header {
-  min-width: 220px;
-  max-width: 220px;
-  white-space: normal;
-  font-size: 0.76rem;
+.header-text {
+  display: -webkit-box;
+  line-clamp: 2;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.15;
+  word-break: break-word;
 }
 
 .strength-pill {
   display: inline-block;
-  min-width: 56px;
+  min-width: 48px;
   border-radius: 10px;
-  padding: 2px 6px;
-  font-size: 0.68rem;
+  padding: 1px 5px;
+  font-size: 0.64rem;
   line-height: 1.2;
   font-weight: 600;
 }

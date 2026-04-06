@@ -102,6 +102,13 @@ export class ProjectsController {
 		return this.projectsService.createXMatrix(id, dto || {});
 	}
 
+	@Get(':id/x-matrix')
+	@ApiOperation({ summary: 'Get saved X-Matrix snapshot for project' })
+	@ApiResponse({ status: 200, description: 'X-Matrix snapshot returned (or null when not generated yet).' })
+	async getSavedXMatrix(@Param('id') id: string) {
+		return this.projectsService.getSavedXMatrix(id);
+	}
+
 	@Post(':id/plan-with-ai')
 	@ApiOperation({ summary: 'Start AI-assisted project planning with Catchball' })
 	@ApiResponse({ status: 200, description: 'Catchball questions generated.' })
