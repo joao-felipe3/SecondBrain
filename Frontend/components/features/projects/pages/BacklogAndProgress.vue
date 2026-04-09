@@ -72,7 +72,7 @@ function persistBacklog() {
 }
 
 async function loadProjectTasks() {
-  const projectId = (props.project as any)?._id || (props.project as any)?.id
+  const projectId = ((props.project as any)?._id || (props.project as any)?.id || null) as string | null
   if (!projectId) return
   
   try {

@@ -12,6 +12,16 @@ interface GeneratedRisk {
   mitigationPlan?: string
 }
 
+export interface RiskIntervention {
+  riskId: string
+  description: string
+  severity: 'baixa' | 'média' | 'alta'
+  status: 'identificado' | 'mitigando' | 'resolvido' | 'aceito'
+  recommendedAction: 'reduzir-escopo' | 'trocar-estrategia' | 'pausa-planejada' | 'monitorar'
+  rationale: string
+  confidence: number
+}
+
 @Injectable()
 export class RiskService {
   private readonly logger = new Logger(RiskService.name)
@@ -203,6 +213,61 @@ Retorne APENAS o JSON, sem markdown ou formatação extra.
       total: risks.length,
       byStatus,
       bySeverity,
+    }
+  }
+
+  async getRiskInterventions(projectId: string): Promise<{
+    summary: { total: number; criticos: number; recomendacoesPrioritarias: number }
+    interventions: RiskIntervention[]
+  }> {
+    const risks = await this.getRisksByProject(projectId)
+
+    const interventions: RiskIntervention[] = risks
+      .map((risk) => {
+        const score = (Number(risk.probability || 0) / 100) * Number(risk.impact || 0)
+
+        let recommendedAction: RiskIntervention['recommendedAction'] = 'monitorar'
+        let rationale = 'Risco controlado; manter monitoramento ativo.'
+        let confidence = 0.55
+
+        if (risk.severity === 'alta' && risk.status === 'identificado') {
+          recommendedAction = 'reduzir-escopo'
+          rationale = 'Severidade alta e sem mitigacao ativa: reduzir escopo evita atraso em cascata.'
+          confidence = 0.9
+        } else if (risk.severity === 'alta' && risk.status === 'mitigando') {
+          recommendedAction = 'trocar-estrategia'
+          rationale = 'Risco alto em mitigacao: revisar abordagem pode aumentar chance de sucesso.'
+          confidence = 0.82
+        } else if (score >= 2 && risk.status !== 'resolvido') {
+          recommendedAction = 'pausa-planejada'
+          rationale = 'Impacto relevante: uma pausa curta para replanejar reduz retrabalho.'
+          confidence = 0.72
+        }
+
+        return {
+          riskId: String((risk as any)._id),
+          description: risk.description,
+          severity: risk.severity,
+          status: risk.status,
+          recommendedAction,
+          rationale,
+          confidence: Number(confidence.toFixed(2)),
+        }
+      })
+      .sort((a, b) => b.confidence - a.confidence)
+
+    const criticos = interventions.filter((item) => item.severity === 'alta').length
+    const recomendacoesPrioritarias = interventions.filter(
+      (item) => item.recommendedAction !== 'monitorar',
+    ).length
+
+    return {
+      summary: {
+        total: interventions.length,
+        criticos,
+        recomendacoesPrioritarias,
+      },
+      interventions,
     }
   }
 }

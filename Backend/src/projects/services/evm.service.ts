@@ -166,6 +166,39 @@ export class EVMService {
     }
   }
 
+  async getPersonalSummary(projectId: string): Promise<{
+    consistencyScore: number
+    planAdherence: number
+    completionTrend: EVMPersonalMetrics['completionTrend']
+    perceivedValueScore: number
+    actionHint: string
+    paceStatus: 'saudavel' | 'atencao' | 'critico'
+    focusMessage: string
+  }> {
+    const summary = await this.getEVMSummary(projectId)
+    const { personalMetrics, spi } = summary
+
+    let paceStatus: 'saudavel' | 'atencao' | 'critico' = 'saudavel'
+    if (personalMetrics.consistencyScore < 50 || spi < 0.8) {
+      paceStatus = 'critico'
+    } else if (personalMetrics.consistencyScore < 70 || spi < 0.95) {
+      paceStatus = 'atencao'
+    }
+
+    const focusMessage =
+      paceStatus === 'critico'
+        ? 'Reduza escopo da semana e ataque uma entrega critica por vez.'
+        : paceStatus === 'atencao'
+          ? 'Seu plano precisa de ajuste leve para manter previsibilidade.'
+          : 'Ritmo saudavel: mantenha cadencia e revise no fechamento semanal.'
+
+    return {
+      ...personalMetrics,
+      paceStatus,
+      focusMessage,
+    }
+  }
+
   private async getCoreMetrics(projectId: string): Promise<{
     pv: number
     ev: number

@@ -1,4 +1,4 @@
-import {
+﻿import {
   Controller,
   Get,
   Post,
@@ -14,6 +14,8 @@ import { Model } from 'mongoose'
 import { RollingWaveService } from '../services/rolling-wave.service'
 import { RiskService } from '../services/risk.service'
 import { EVMService } from '../services/evm.service'
+import { TasksService } from '../../tasks/tasks.service'
+import { CPMService, TaskNode } from '../../tasks/services/cpm.service'
 import { CreateWaveDto, UpdateWaveDto } from '../dto/wave.dto'
 import { CreateRiskDto, UpdateRiskDto, AssessRisksDto } from '../dto/risk.dto'
 import { RecordProjectProgressDto } from '../dto/evm.dto'
@@ -27,8 +29,76 @@ export class WaveAndRiskController {
     private readonly waveService: RollingWaveService,
     private readonly riskService: RiskService,
     private readonly evmService: EVMService,
+    private readonly tasksService: TasksService,
+    private readonly cpmService: CPMService,
     @InjectModel(Project.name) private projectModel: Model<any>,
   ) {}
+
+  private getErrorMessage(error: unknown): string {
+    if (error instanceof Error) return error.message
+    return String(error)
+  }
+
+  private mapTaskToNode(task: any, dependencyMap: Map<string, string[]>): TaskNode {
+    const taskId = String(task?._id ?? task?.id)
+    const pertMinutes = Number(task?.pertExpectedMinutes || 0)
+    const pomodoroMinutes = Math.max(1, Number(task?.pomodorosPlanned || 0)) * 25
+    const duration = pertMinutes > 0 ? pertMinutes : pomodoroMinutes
+
+    return {
+      id: taskId,
+      name: String(task?.name || 'Task'),
+      duration,
+      dependencies: dependencyMap.get(taskId) || [],
+    }
+  }
+
+  private selectNextAction(params: {
+    interventions: Array<{ recommendedAction: string; confidence: number; description: string }>
+    evm: { paceStatus: string; actionHint: string }
+    cpmAnalysis: { criticalPath: string[]; diagnostics?: any }
+    taskNameById: Map<string, string>
+  }): {
+    type: 'risco' | 'caminho-critico' | 'ritmo'
+    title: string
+    rationale: string
+    confidence: number
+    taskId?: string
+    cta: string
+  } {
+    const prioritizedRisk = params.interventions.find((item) => item.recommendedAction !== 'monitorar')
+    if (prioritizedRisk && prioritizedRisk.confidence >= 0.8) {
+      return {
+        type: 'risco',
+        title: 'Tratar risco prioritario agora',
+        rationale: prioritizedRisk.description,
+        confidence: prioritizedRisk.confidence,
+        cta: 'Abrir registro de riscos',
+      }
+    }
+
+    const firstCriticalTaskId = params.cpmAnalysis.criticalPath?.[0]
+    if (firstCriticalTaskId) {
+      const taskName = params.taskNameById.get(firstCriticalTaskId) || 'Tarefa critica'
+      return {
+        type: 'caminho-critico',
+        title: `Executar tarefa critica: ${taskName}`,
+        rationale: 'A tarefa esta no caminho critico e reduz risco de atraso em cadeia.',
+        confidence: 0.78,
+        taskId: firstCriticalTaskId,
+        cta: 'Abrir tarefa critica',
+      }
+    }
+
+    const isCriticalPace = params.evm.paceStatus === 'critico'
+    return {
+      type: 'ritmo',
+      title: isCriticalPace ? 'Replanejar semana' : 'Manter cadencia semanal',
+      rationale: params.evm.actionHint,
+      confidence: isCriticalPace ? 0.74 : 0.64,
+      cta: 'Abrir revisao semanal',
+    }
+  }
 
   // ============================================
   // ROLLING WAVE ENDPOINTS
@@ -40,7 +110,7 @@ export class WaveAndRiskController {
       return await this.waveService.getWavesByProject(projectId)
     } catch (error) {
       throw new HttpException(
-        `Erro ao buscar ondas: ${error.message}`,
+        `Erro ao buscar ondas: ${this.getErrorMessage(error)}`,
         HttpStatus.INTERNAL_SERVER_ERROR,
       )
     }
@@ -57,7 +127,7 @@ export class WaveAndRiskController {
       // Buscar projeto para obter deadline e smartObjective
       const project = await this.projectModel.findById(projectId).populate('tasks')
       if (!project) {
-        throw new HttpException('Projeto não encontrado', HttpStatus.NOT_FOUND)
+        throw new HttpException('Projeto nÃ£o encontrado', HttpStatus.NOT_FOUND)
       }
 
       console.log(`[WaveAndRiskController.generateWaves] Found project: ${project.name}, tasks: ${project.tasks?.length || 0}`)
@@ -95,7 +165,7 @@ export class WaveAndRiskController {
       return wave
     } catch (error) {
       throw new HttpException(
-        `Erro ao atualizar onda: ${error.message}`,
+        `Erro ao atualizar onda: ${this.getErrorMessage(error)}`,
         HttpStatus.INTERNAL_SERVER_ERROR,
       )
     }
@@ -110,7 +180,7 @@ export class WaveAndRiskController {
       return await this.waveService.advanceToNextWave(projectId)
     } catch (error) {
       throw new HttpException(
-        `Erro ao avançar onda: ${error.message}`,
+        `Erro ao avanÃ§ar onda: ${this.getErrorMessage(error)}`,
         HttpStatus.INTERNAL_SERVER_ERROR,
       )
     }
@@ -133,7 +203,7 @@ export class WaveAndRiskController {
       return await this.waveService.replanTaskDeadlines(projectId)
     } catch (error) {
       throw new HttpException(
-        `Erro ao replanejar prazos das tasks: ${error.message}`,
+        `Erro ao replanejar prazos das tasks: ${this.getErrorMessage(error)}`,
         HttpStatus.INTERNAL_SERVER_ERROR,
       )
     }
@@ -149,7 +219,7 @@ export class WaveAndRiskController {
       return await this.riskService.getRisksByProject(projectId)
     } catch (error) {
       throw new HttpException(
-        `Erro ao buscar riscos: ${error.message}`,
+        `Erro ao buscar riscos: ${this.getErrorMessage(error)}`,
         HttpStatus.INTERNAL_SERVER_ERROR,
       )
     }
@@ -162,7 +232,7 @@ export class WaveAndRiskController {
   ): Promise<Risk[]> {
     try {
       console.log(`[WaveAndRiskController.assessRisks] projectId: ${projectId}, body:`, body)
-      const projectDescription = body.projectDescription || 'Projeto sem descrição'
+      const projectDescription = body.projectDescription || 'Projeto sem descriÃ§Ã£o'
       const result = await this.riskService.assessRisks(projectId, projectDescription)
       console.log(`[WaveAndRiskController.assessRisks] Success, returned ${result.length} risks`)
       return result
@@ -185,7 +255,7 @@ export class WaveAndRiskController {
       return await this.riskService.getRisksBySeverity(projectId, severity)
     } catch (error) {
       throw new HttpException(
-        `Erro ao buscar riscos por severidade: ${error.message}`,
+        `Erro ao buscar riscos por severidade: ${this.getErrorMessage(error)}`,
         HttpStatus.INTERNAL_SERVER_ERROR,
       )
     }
@@ -204,7 +274,7 @@ export class WaveAndRiskController {
       return risk
     } catch (error) {
       throw new HttpException(
-        `Erro ao criar risco: ${error.message}`,
+        `Erro ao criar risco: ${this.getErrorMessage(error)}`,
         HttpStatus.INTERNAL_SERVER_ERROR,
       )
     }
@@ -226,7 +296,7 @@ export class WaveAndRiskController {
       return risk
     } catch (error) {
       throw new HttpException(
-        `Erro ao atualizar risco: ${error.message}`,
+        `Erro ao atualizar risco: ${this.getErrorMessage(error)}`,
         HttpStatus.INTERNAL_SERVER_ERROR,
       )
     }
@@ -242,7 +312,7 @@ export class WaveAndRiskController {
       return { message: 'Risco deletado com sucesso' }
     } catch (error) {
       throw new HttpException(
-        `Erro ao deletar risco: ${error.message}`,
+        `Erro ao deletar risco: ${this.getErrorMessage(error)}`,
         HttpStatus.INTERNAL_SERVER_ERROR,
       )
     }
@@ -256,7 +326,19 @@ export class WaveAndRiskController {
       return await this.riskService.getRiskStatistics(projectId)
     } catch (error) {
       throw new HttpException(
-        `Erro ao buscar estatísticas: ${error.message}`,
+        `Erro ao buscar estatísticas: ${this.getErrorMessage(error)}`,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      )
+    }
+  }
+
+  @Get('risks/interventions')
+  async getRiskInterventions(@Param('projectId') projectId: string) {
+    try {
+      return await this.riskService.getRiskInterventions(projectId)
+    } catch (error) {
+      throw new HttpException(
+        `Erro ao gerar recomendações de risco: ${this.getErrorMessage(error)}`,
         HttpStatus.INTERNAL_SERVER_ERROR,
       )
     }
@@ -280,7 +362,7 @@ export class WaveAndRiskController {
       )
     } catch (error) {
       throw new HttpException(
-        `Erro ao registrar progresso EVM: ${error.message}`,
+        `Erro ao registrar progresso EVM: ${this.getErrorMessage(error)}`,
         HttpStatus.INTERNAL_SERVER_ERROR,
       )
     }
@@ -292,7 +374,7 @@ export class WaveAndRiskController {
       return await this.evmService.getProgressEntries(projectId)
     } catch (error) {
       throw new HttpException(
-        `Erro ao buscar progresso EVM: ${error.message}`,
+        `Erro ao buscar progresso EVM: ${this.getErrorMessage(error)}`,
         HttpStatus.INTERNAL_SERVER_ERROR,
       )
     }
@@ -308,7 +390,7 @@ export class WaveAndRiskController {
       return { deleted }
     } catch (error) {
       throw new HttpException(
-        `Erro ao remover registro EVM: ${error.message}`,
+        `Erro ao remover registro EVM: ${this.getErrorMessage(error)}`,
         HttpStatus.INTERNAL_SERVER_ERROR,
       )
     }
@@ -321,7 +403,7 @@ export class WaveAndRiskController {
       return { spi }
     } catch (error) {
       throw new HttpException(
-        `Erro ao calcular SPI: ${error.message}`,
+        `Erro ao calcular SPI: ${this.getErrorMessage(error)}`,
         HttpStatus.INTERNAL_SERVER_ERROR,
       )
     }
@@ -333,7 +415,7 @@ export class WaveAndRiskController {
       return await this.evmService.forecastCompletion(projectId)
     } catch (error) {
       throw new HttpException(
-        `Erro ao calcular previsao EVM: ${error.message}`,
+        `Erro ao calcular previsao EVM: ${this.getErrorMessage(error)}`,
         HttpStatus.INTERNAL_SERVER_ERROR,
       )
     }
@@ -345,7 +427,7 @@ export class WaveAndRiskController {
       return await this.evmService.getEVMCurve(projectId)
     } catch (error) {
       throw new HttpException(
-        `Erro ao buscar curva EVM: ${error.message}`,
+        `Erro ao buscar curva EVM: ${this.getErrorMessage(error)}`,
         HttpStatus.INTERNAL_SERVER_ERROR,
       )
     }
@@ -357,9 +439,80 @@ export class WaveAndRiskController {
       return await this.evmService.getEVMSummary(projectId)
     } catch (error) {
       throw new HttpException(
-        `Erro ao buscar resumo EVM: ${error.message}`,
+        `Erro ao buscar resumo EVM: ${this.getErrorMessage(error)}`,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      )
+    }
+  }
+
+  @Get('evm/personal-summary')
+  async getPersonalEVMSummary(@Param('projectId') projectId: string) {
+    try {
+      return await this.evmService.getPersonalSummary(projectId)
+    } catch (error) {
+      throw new HttpException(
+        `Erro ao buscar resumo pessoal EVM: ${this.getErrorMessage(error)}`,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      )
+    }
+  }
+
+  @Get('next-best-action')
+  async getNextBestAction(@Param('projectId') projectId: string) {
+    try {
+      const [riskInterventions, personalEvm, tasks, dependencies] = await Promise.all([
+        this.riskService.getRiskInterventions(projectId),
+        this.evmService.getPersonalSummary(projectId),
+        this.tasksService.findByProjectId(projectId),
+        this.cpmService.getDependencies(projectId),
+      ])
+
+      const dependencyMap = new Map<string, string[]>()
+      for (const dep of dependencies as any[]) {
+        const taskId = String(dep.taskId)
+        const dependsOnTaskId = String(dep.dependsOnTaskId)
+        const existing = dependencyMap.get(taskId) || []
+        existing.push(dependsOnTaskId)
+        dependencyMap.set(taskId, existing)
+      }
+
+      const taskNodes: TaskNode[] = (tasks as any[])
+        .filter((task) => !task?.isConcluded)
+        .map((task) => this.mapTaskToNode(task, dependencyMap))
+
+      const cpmAnalysis = this.cpmService.calculateCriticalPath(taskNodes)
+      const taskNameById = new Map<string, string>(
+        (tasks as any[]).map((task) => [String(task?._id), String(task?.name || 'Task')]),
+      )
+
+      const action = this.selectNextAction({
+        interventions: riskInterventions.interventions,
+        evm: personalEvm,
+        cpmAnalysis,
+        taskNameById,
+      })
+
+      return {
+        action,
+        signals: {
+          risk: riskInterventions.summary,
+          pace: {
+            status: personalEvm.paceStatus,
+            consistencyScore: personalEvm.consistencyScore,
+            planAdherence: personalEvm.planAdherence,
+          },
+          cpm: {
+            criticalTasks: cpmAnalysis.diagnostics?.criticalCount || 0,
+            projectDuration: cpmAnalysis.projectDuration,
+          },
+        },
+      }
+    } catch (error) {
+      throw new HttpException(
+        `Erro ao calcular proxima melhor acao: ${this.getErrorMessage(error)}`,
         HttpStatus.INTERNAL_SERVER_ERROR,
       )
     }
   }
 }
+

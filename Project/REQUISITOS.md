@@ -1,7 +1,7 @@
 # 📋 Acompanhamento de Requisitos - Second Brain
 
-> **Última atualização:** 04/03/2026  
-> **Status do Projeto:** MVP + Planejamento das Fases (Eficiência → 10)
+> **Última atualização:** 06/04/2026  
+> **Status do Projeto:** MVP + Fase 1 89% Completa (Eficiência)
 
 ---
 
@@ -10,7 +10,7 @@
 | Fase | Total | Prototipado | Frontend | Backend | QA | Progresso |
 |------|-------|-------------|----------|---------|-----|-----------|
 | Fase 0 - MVP | 14 | 14/14 ✅ | 14/14 ✅ | 14/14 ✅ | 14/14 ✅ | 🟢 100% |
-| Fase 1 - Eficiência | 28 | 9/28 | 9/28 | 9/28 | 9/28 | ⬜ 32% |
+| Fase 1 - Eficiência | 28 | 25/28 ✅ | 25/28 ✅ | 25/28 ✅ | 25/28 ✅ | 🟡 89% |
 | Fase 2 - Micro-Tarefas | 18 | 0/18 | 0/18 | 0/18 | 0/18 | ⬜ 0% |
 | Fase 3 - Produtividade Avançada | 18 | 0/18 | 0/18 | 0/18 | 0/18 | ⬜ 0% |
 | Fase 4 - Gamificação Essencial | 17 | 0/17 | 0/17 | 0/17 | 0/17 | ⬜ 0% |
@@ -89,50 +89,50 @@
 
 | # | Requisito | Tipo | Protótipo | Frontend | Backend | QA |
 |---|-----------|------|:---------:|:--------:|:-------:|:--:|
-| 10 | Capturar três estimativas (otimista, provável e pessimista) para cada etapa relevante da jornada | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
-| 11 | Calcular automaticamente o tempo esperado da etapa usando PERT: TE = (O + 4M + P) / 6 | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
-| 12 | Identificar dependências lógicas entre etapas, hábitos ou subtarefas via LLM | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
-| 13 | Calcular a sequência mais sensível a atrasos em uma meta pessoal ou projeto individual | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
-| 14 | Alertar o usuário sobre etapas sem folga que merecem atenção imediata | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 10 | Capturar três estimativas (otimista, provável e pessimista) para cada etapa relevante da jornada | Funcional | ✅ | ✅ | ✅ | ✅ |
+| 11 | Calcular automaticamente o tempo esperado da etapa usando PERT: TE = (O + 4M + P) / 6 | Funcional | ✅ | ✅ | ✅ | ✅ |
+| 12 | Identificar dependências lógicas entre etapas, hábitos ou subtarefas via LLM | Funcional | ✅ | ✅ | ✅ | ✅ |
+| 13 | Calcular a sequência mais sensível a atrasos em uma meta pessoal ou projeto individual | Funcional | ✅ | ✅ | ✅ | ✅ |
+| 14 | Alertar o usuário sobre etapas sem folga que merecem atenção imediata | Funcional | ✅ | ✅ | ✅ | ✅ |
 
 ### Gestão de Incerteza e Margem de Segurança
 
 | # | Requisito | Tipo | Protótipo | Frontend | Backend | QA |
 |---|-----------|------|:---------:|:--------:|:-------:|:--:|
-| 15 | Consolidar margem de segurança no fim da sequência para absorver variações do dia a dia | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
-| 16 | Calcular automaticamente a margem com base na variabilidade das estimativas das etapas | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
-| 17 | Exibir um painel de consumo da margem do projeto pessoal (quanto foi usado vs. disponível) | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 15 | Consolidar margem de segurança no fim da sequência para absorver variações do dia a dia | Funcional | ✅ | ✅ | ✅ | ✅ |
+| 16 | Calcular automaticamente a margem com base na variabilidade das estimativas das etapas | Funcional | ✅ | ✅ | ✅ | ✅ |
+| 17 | Exibir um painel de consumo da margem do projeto pessoal (quanto foi usado vs. disponível) | Funcional | ✅ | ✅ | ✅ | ✅ |
 
 ### Linhagem de Objetivos e Entregas
 
 | # | Requisito | Tipo | Protótipo | Frontend | Backend | QA |
 |---|-----------|------|:---------:|:--------:|:-------:|:--:|
-| 18 | Gerar automaticamente uma matriz de rastreabilidade ligando objetivo, hábito, etapa e entrega | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
-| 19 | Visualizar a linhagem do valor, mostrando como cada etapa contribui para a meta final | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 18 | Gerar automaticamente uma matriz de rastreabilidade ligando objetivo, hábito, etapa e entrega | Funcional | ✅ | ✅ | ✅ | ✅ |
+| 19 | Visualizar a linhagem do valor, mostrando como cada etapa contribui para a meta final | Funcional | ✅ | ✅ | ✅ | ✅ |
 
 ### Planejamento em Ondas e Gestão de Riscos
 
 | # | Requisito | Tipo | Protótipo | Frontend | Backend | QA |
 |---|-----------|------|:---------:|:--------:|:-------:|:--:|
-| 20 | Planejar as próximas semanas em detalhe e deixar o horizonte distante em marcos | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
-| 21 | Escanear a descrição da meta e sugerir riscos práticos de execução, adesão e abandono | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
-| 22 | Transformar riscos em ações concretas de mitigação, com decisão explícita do usuário | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 20 | Planejar as próximas semanas em detalhe e deixar o horizonte distante em marcos | Funcional | ✅ | ✅ | ✅ | ✅ |
+| 21 | Escanear a descrição da meta e sugerir riscos práticos de execução, adesão e abandono | Funcional | ✅ | ✅ | ✅ | ✅ |
+| 22 | Transformar riscos em ações concretas de mitigação, com decisão explícita do usuário | Funcional | ✅ | ✅ | ✅ | ✅ |
 
 ### Acompanhamento de Progresso e Valor
 
 | # | Requisito | Tipo | Protótipo | Frontend | Backend | QA |
 |---|-----------|------|:---------:|:--------:|:-------:|:--:|
-| 23 | Calcular índices de aderência e velocidade quando o usuário registrar progresso | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
-| 24 | Prever atraso ou sobrecarga se o ritmo atual continuar, em linguagem simples | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
-| 25 | Mostrar um dashboard de progresso com planejado vs. realizado e tendência de conclusão | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 23 | Calcular índices de aderência e velocidade quando o usuário registrar progresso | Funcional | ✅ | ✅ | ✅ | ✅ |
+| 24 | Prever atraso ou sobrecarga se o ritmo atual continuar, em linguagem simples | Funcional | ✅ | ✅ | ✅ | ✅ |
+| 25 | Mostrar um dashboard de progresso com planejado vs. realizado e tendência de conclusão | Funcional | ✅ | ✅ | ✅ | ✅ |
 
 ### Visualizações Avançadas
 
 | # | Requisito | Tipo | Protótipo | Frontend | Backend | QA |
 |---|-----------|------|:---------:|:--------:|:-------:|:--:|
-| 26 | Gráfico de Gantt interativo - mostrar timeline, duração das tarefas e dependências | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
-| 27 | Diagrama de Rede (PERT/CPM) - visualizar lógica de conexão entre tarefas | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
-| 28 | X-Matrix (Hoshin Kanri) - conectar objetivos de longo prazo com metas anuais e tarefas táticas | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 26 | Gráfico de Gantt interativo - mostrar timeline, duração das tarefas e dependências | Funcional | ✅ | ✅ | ✅ | ✅ |
+| 27 | Diagrama de Rede (PERT/CPM) - visualizar lógica de conexão entre tarefas | Funcional | ✅ | ✅ | ✅ | ✅ |
+| 28 | X-Matrix (Hoshin Kanri) - conectar objetivos de longo prazo com metas anuais e tarefas táticas | Funcional | ✅ | ✅ | ✅ | ✅ |
 
 
 ### Antes da próxima fase
