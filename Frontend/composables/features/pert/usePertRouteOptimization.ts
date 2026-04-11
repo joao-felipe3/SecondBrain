@@ -1,14 +1,13 @@
 import type { PertDiagramEdge } from '~/composables/features/pert/usePertDiagramData'
 
-type PertResolvedLayoutMode = 'hierarchical' | 'radial'
+type PertResolvedLayoutMode = 'hierarchical' | 'force'
 
 type UsePertRouteOptimizationParams = {
   getCy: () => any
   getResolvedLayoutMode: () => PertResolvedLayoutMode
-  getChartContainer: () => HTMLElement | null
   getEdges: () => PertDiagramEdge[]
-  radialEdgeIntersectionThreshold?: number
-  getRadialEdgeIntersectionThreshold?: () => number
+  edgeIntersectionThreshold?: number
+  getEdgeIntersectionThreshold?: () => number
 }
 
 type RouteOptimizationSummary = {
@@ -33,21 +32,20 @@ type Segment = {
 export const usePertRouteOptimization = ({
   getCy,
   getResolvedLayoutMode,
-  getChartContainer,
   getEdges,
-  radialEdgeIntersectionThreshold = 1,
-  getRadialEdgeIntersectionThreshold,
+  edgeIntersectionThreshold = 1,
+  getEdgeIntersectionThreshold,
 }: UsePertRouteOptimizationParams) => {
   const resolveIntersectionThreshold = () => {
-    const raw = getRadialEdgeIntersectionThreshold
-      ? getRadialEdgeIntersectionThreshold()
-      : radialEdgeIntersectionThreshold
+    const raw = getEdgeIntersectionThreshold
+      ? getEdgeIntersectionThreshold()
+      : edgeIntersectionThreshold
     if (!Number.isFinite(raw)) return 0
     return Math.max(0, Math.min(20, Math.floor(raw)))
   }
 
   let lastOptimizationSummary: RouteOptimizationSummary = {
-    mode: 'radial',
+    mode: 'force',
     threshold: resolveIntersectionThreshold(),
     totalRoutableEdges: 0,
     acceptedWithinThreshold: 0,
@@ -55,22 +53,17 @@ export const usePertRouteOptimization = ({
     criticalFallbackKept: 0,
   }
 
-  const updateRadialEdgeRouting = (force = false) => {
+  const updateEdgeRouting = (force = false) => {
     const cy = getCy()
-    if (!cy || (!force && getResolvedLayoutMode() !== 'radial')) return
+    if (!cy) return
 
-    const nodes = cy.nodes().not('.outer-route-node')
-    if (!nodes || nodes.length === 0) return
+    const mode = getResolvedLayoutMode()
+    if (!force && mode !== 'hierarchical' && mode !== 'force') return
 
-    const bounds = nodes.boundingBox()
-    const centerX = Number(bounds?.x1 || 0) + Number(bounds?.w || 0) / 2
-    const centerY = Number(bounds?.y1 || 0) + Number(bounds?.h || 0) / 2
-    const container = getChartContainer()
-    const containerRadius = container
-      ? Math.max(40, Math.min(container.clientWidth, container.clientHeight) * 0.48)
-      : Math.max(40, Math.min(Number(bounds?.w || 0), Number(bounds?.h || 0)) * 0.5)
+    const routedEdges = cy.edges('.routed-edge').not('.suppressed-edge')
+    if (!routedEdges || routedEdges.length === 0) return
 
-    cy.edges('.radial-route-edge').forEach((edge: any) => {
+    routedEdges.forEach((edge: any) => {
       const source = edge.source()
       const target = edge.target()
       if (!source || !target || source.empty() || target.empty()) return
@@ -81,139 +74,37 @@ export const usePertRouteOptimization = ({
       const sy = Number(sourcePos?.y || 0)
       const tx = Number(targetPos?.x || 0)
       const ty = Number(targetPos?.y || 0)
-
-      const dx = tx - sx
-      const dy = ty - sy
-      const chord = Math.hypot(dx, dy)
+      const chord = Math.hypot(tx - sx, ty - sy)
       if (!Number.isFinite(chord) || chord < 1) return
 
-      const nx = -dy / chord
-      const ny = dx / chord
-      const midpointX = (sx + tx) / 2
-      const midpointY = (sy + ty) / 2
-      const sourceRadius = Math.hypot(sx - centerX, sy - centerY)
-      const targetRadius = Math.hypot(tx - centerX, ty - centerY)
-      const midRadius = Math.hypot(midpointX - centerX, midpointY - centerY)
-      const toCenterX = midpointX - centerX
-      const toCenterY = midpointY - centerY
-      const outwardScore = nx * toCenterX + ny * toCenterY
-
-      const sectorDelta = Number(edge.data('sectorDelta') || 1)
+      const sideHint = Number(edge.data('sectorHint') || 0) % 2 === 0 ? 1 : -1
       const fanOffset = Number(edge.data('fanOffset') || 0)
-      const fanAbs = Math.max(0, Math.min(4, Math.abs(fanOffset)))
-      const sectorHint = Number(edge.data('sectorHint') || 0)
-      const midCenterRatio = Math.max(0, Math.min(1, midRadius / Math.max(containerRadius, 1)))
-      const centerPull = 1 - midCenterRatio
-      const isHubEdge = sourceRadius < containerRadius * 0.34 || targetRadius < containerRadius * 0.34
-      const isInterSector = sectorDelta >= 1
-      const sideHint = sectorHint % 2 === 0 ? 1 : -1
-      const sign = Math.abs(outwardScore) < 0.16 ? sideHint : (outwardScore >= 0 ? 1 : -1)
-      const interSectorBoost = Math.max(0, sectorDelta - 1) * 38
-      const outerBoost = centerPull * containerRadius * 1.4 + (isHubEdge ? containerRadius * 0.62 : 0) + (isInterSector ? containerRadius * 0.24 : 0)
+      const sourceLayer = Number(source.data('layer') || 0)
+      const targetLayer = Number(target.data('layer') || 0)
+      const layerJump = Math.abs(targetLayer - sourceLayer)
+      const isCriticalEdge =
+        edge.hasClass('critical-edge') ||
+        Boolean(edge.data('edge')?.isCriticalEdge)
 
-      const curveMagnitude = Math.min(containerRadius * 1.95, 92 + interSectorBoost + fanAbs * 22 + outerBoost)
-      const radialCpDistance = sign * curveMagnitude
+      const baseMagnitude = Math.max(18, Math.min(220, chord * 0.24))
+      const fanBoost = Math.min(40, Math.abs(fanOffset) * 10)
+      const jumpBoost = Math.min(64, Math.max(0, layerJump - 1) * 18)
+      const criticalBoost = isCriticalEdge ? 12 : 0
+      const magnitude = Math.min(250, baseMagnitude + fanBoost + jumpBoost + criticalBoost)
+      const signedDistance = Math.round((fanOffset >= 0 ? 1 : -1) * sideHint * magnitude)
 
-      const outerEndpointBias = targetRadius >= sourceRadius ? 0.08 : -0.08
-      const weightBase = sectorDelta >= 3
-        ? 0.9
-        : sectorDelta >= 2
-          ? 0.84
-          : 0.74
-      const weightShift = outerEndpointBias + centerPull * 0.22 + (isHubEdge ? 0.12 : 0) + Math.max(-0.08, Math.min(0.08, fanOffset * 0.03))
-      const radialCpWeight = Math.max(0.6, Math.min(0.98, weightBase + weightShift))
+      const secondaryDistance = Math.round((fanOffset >= 0 ? 1 : -1) * sideHint * Math.min(300, magnitude * 1.52))
+      const useDoubleControl = layerJump >= 2 || Math.abs(fanOffset) >= 1.2
 
-      let radialCpDistances = `${Math.round(radialCpDistance)}`
-      let radialCpWeights = `${radialCpWeight.toFixed(2)}`
-      if (isInterSector || isHubEdge || centerPull > 0.55) {
-        const secondMagnitude = Math.min(containerRadius * 2.25, curveMagnitude * (1.42 + Math.min(0.28, centerPull * 0.36)))
-        const firstMagnitude = Math.max(24, Math.min(secondMagnitude - 14, curveMagnitude * 0.82))
-        const firstWeight = Math.max(0.12, Math.min(0.36, 0.22 + centerPull * 0.1))
-        const secondWeight = Math.max(0.72, Math.min(0.96, 0.84 + (isHubEdge ? 0.06 : 0) + outerEndpointBias * 0.35))
-        radialCpDistances = `${Math.round(sign * firstMagnitude)} ${Math.round(sign * secondMagnitude)}`
-        radialCpWeights = `${firstWeight.toFixed(2)} ${secondWeight.toFixed(2)}`
-      }
+      const cpDistances = useDoubleControl
+        ? `${signedDistance} ${secondaryDistance}`
+        : `${signedDistance}`
+      const cpWeights = useDoubleControl ? '0.34 0.82' : '0.74'
 
-      edge.data('radialCpDistance', radialCpDistance)
-      edge.data('radialCpWeight', radialCpWeight)
-      edge.data('radialCpDistances', radialCpDistances)
-      edge.data('radialCpWeights', radialCpWeights)
-    })
-  }
-
-  const updateOuterContourRouteNodes = (force = false) => {
-    const cy = getCy()
-    if (!cy || (!force && getResolvedLayoutMode() !== 'radial')) return
-
-    const routeNodes = cy.nodes('.outer-route-node')
-    if (!routeNodes || routeNodes.length === 0) return
-
-    const realNodes = cy.nodes().not('.outer-route-node')
-    if (!realNodes || realNodes.length === 0) return
-
-    const normalizeAngle = (angle: number) => {
-      let value = angle
-      while (value < 0) value += Math.PI * 2
-      while (value >= Math.PI * 2) value -= Math.PI * 2
-      return value
-    }
-
-    const bounds = realNodes.boundingBox()
-    const centerX = Number(bounds?.x1 || 0) + Number(bounds?.w || 0) / 2
-    const centerY = Number(bounds?.y1 || 0) + Number(bounds?.h || 0) / 2
-
-    let maxRadius = 1
-    realNodes.forEach((node: any) => {
-      const pos = node.position()
-      const radius = Math.hypot(Number(pos?.x || 0) - centerX, Number(pos?.y || 0) - centerY)
-      if (Number.isFinite(radius)) maxRadius = Math.max(maxRadius, radius)
-    })
-
-    const outerBaseRadius = Math.max(maxRadius + 56, maxRadius * 1.24)
-
-    routeNodes.forEach((routeNode: any) => {
-      const sourceId = String(routeNode.data('routeSource') || '')
-      const targetId = String(routeNode.data('routeTarget') || '')
-      if (!sourceId || !targetId) return
-
-      const sourceNode = cy.$id(sourceId)
-      const targetNode = cy.$id(targetId)
-      if (!sourceNode || !targetNode || sourceNode.empty() || targetNode.empty()) return
-
-      const sourcePos = sourceNode.position()
-      const targetPos = targetNode.position()
-      const sourceAngle = normalizeAngle(Math.atan2(Number(sourcePos?.y || 0) - centerY, Number(sourcePos?.x || 0) - centerX))
-      const targetAngle = normalizeAngle(Math.atan2(Number(targetPos?.y || 0) - centerY, Number(targetPos?.x || 0) - centerX))
-
-      const routeSide = Number(routeNode.data('routeSide') || 1) >= 0 ? 1 : -1
-      let arc = targetAngle - sourceAngle
-      while (arc <= -Math.PI) arc += Math.PI * 2
-      while (arc > Math.PI) arc -= Math.PI * 2
-      if (routeSide > 0 && arc < 0) arc += Math.PI * 2
-      if (routeSide < 0 && arc > 0) arc -= Math.PI * 2
-
-      if (Math.abs(arc) < 0.58) arc += routeSide * 0.74
-
-      const routeRole = String(routeNode.data('routeRole') || 'mid')
-      const routeLane = Number(routeNode.data('routeLane') || 0)
-      const laneBias = Math.max(-6, Math.min(6, routeLane)) * 0.03
-      const sourceAnchorAngle = normalizeAngle(sourceAngle + routeSide * (0.22 + laneBias))
-      const targetAnchorAngle = normalizeAngle(targetAngle - routeSide * (0.22 + laneBias))
-      const routeAngle = routeRole === 'source'
-        ? sourceAnchorAngle
-        : routeRole === 'target'
-          ? targetAnchorAngle
-          : normalizeAngle(sourceAngle + arc * 0.5 + routeSide * 0.16)
-      const laneOffset = Math.max(-4, Math.min(4, routeLane)) * 14
-      const roleRadiusBoost = routeRole === 'mid' ? 34 : 12
-      const radius = outerBaseRadius + laneOffset + roleRadiusBoost
-
-      routeNode.unlock()
-      routeNode.position({
-        x: centerX + Math.cos(routeAngle) * radius,
-        y: centerY + Math.sin(routeAngle) * radius,
-      })
-      routeNode.lock()
+      edge.data('cpDistance', signedDistance)
+      edge.data('cpWeight', useDoubleControl ? 0.34 : 0.74)
+      edge.data('cpDistances', cpDistances)
+      edge.data('cpWeights', cpWeights)
     })
   }
 
@@ -226,11 +117,7 @@ export const usePertRouteOptimization = ({
     if (!cy) return
 
     const effectiveThreshold = resolveIntersectionThreshold()
-
-    const edgeSelector = mode === 'radial' ? '.radial-route-edge' : '.hierarchical-route-edge'
-    const routedEdges = cy.edges(edgeSelector)
-      .not('.suppressed-edge')
-      .not('.outer-route-edge')
+    const routedEdges = cy.edges('.routed-edge').not('.suppressed-edge')
     if (!routedEdges || routedEdges.length === 0) {
       lastOptimizationSummary = {
         mode,
@@ -325,13 +212,13 @@ export const usePertRouteOptimization = ({
     orderedEdgeIds.push(...remainingIds)
 
     const eps = 0.0001
-    const orient = (ax: number, ay: number, bx: number, by: number, cx: number, cy: number) =>
-      (bx - ax) * (cy - ay) - (by - ay) * (cx - ax)
-    const onSegment = (ax: number, ay: number, bx: number, by: number, cx: number, cy: number) =>
+    const orient = (ax: number, ay: number, bx: number, by: number, cx: number, cyValue: number) =>
+      (bx - ax) * (cyValue - ay) - (by - ay) * (cx - ax)
+    const onSegment = (ax: number, ay: number, bx: number, by: number, cx: number, cyValue: number) =>
       cx >= Math.min(ax, bx) - eps &&
       cx <= Math.max(ax, bx) + eps &&
-      cy >= Math.min(ay, by) - eps &&
-      cy <= Math.max(ay, by) + eps
+      cyValue >= Math.min(ay, by) - eps &&
+      cyValue <= Math.max(ay, by) + eps
     const segmentsIntersect = (a: Segment, b: Segment) => {
       const o1 = orient(a.x1, a.y1, a.x2, a.y2, b.x1, b.y1)
       const o2 = orient(a.x1, a.y1, a.x2, a.y2, b.x2, b.y2)
@@ -461,6 +348,10 @@ export const usePertRouteOptimization = ({
         Boolean(edge.data('edge')?.isCriticalEdge)
 
       const candidates = [
+        {
+          distances: String(edge.data('cpDistances') || '').trim(),
+          weights: String(edge.data('cpWeights') || '').trim() || '0.74',
+        },
         { distances: `${Math.round(sideHint * baseDistance * 0.65)}`, weights: '0.5' },
         { distances: `${Math.round(-sideHint * baseDistance * 0.65)}`, weights: '0.5' },
         { distances: `${Math.round(sideHint * baseDistance * 0.95)}`, weights: '0.5' },
@@ -475,12 +366,10 @@ export const usePertRouteOptimization = ({
           distances: `${Math.round(-sideHint * baseDistance * 0.7)} ${Math.round(-sideHint * baseDistance * 1.8)}`,
           weights: '0.34 0.82',
         },
-        {
-          distances: `${Math.round(sideHint * baseDistance * 1.05)} ${Math.round(-sideHint * baseDistance * 1.05)}`,
-          weights: '0.34 0.76',
-        },
-        { distances: `${Math.round(sideHint * baseDistance * 0.35)}`, weights: '0.5' },
-      ]
+      ].filter((candidate, index, all) => {
+        if (!candidate.distances) return false
+        return all.findIndex((item) => item.distances === candidate.distances && item.weights === candidate.weights) === index
+      })
 
       let chosen = false
       let bestFallback: {
@@ -506,13 +395,13 @@ export const usePertRouteOptimization = ({
 
         if (crossings > effectiveThreshold) continue
 
-        edge.data('radialCpDistances', candidate.distances)
-        edge.data('radialCpWeights', candidate.weights)
+        edge.data('cpDistances', candidate.distances)
+        edge.data('cpWeights', candidate.weights)
 
         const primaryDistance = Number(candidate.distances.split(/\s+/)[0] || 0)
-        const primaryWeight = Number(candidate.weights.split(/\s+/)[0] || 0.5)
-        edge.data('radialCpDistance', primaryDistance)
-        edge.data('radialCpWeight', primaryWeight)
+        const primaryWeight = Number(candidate.weights.split(/\s+/)[0] || 0.74)
+        edge.data('cpDistance', primaryDistance)
+        edge.data('cpWeight', primaryWeight)
 
         acceptedSegments.push(...candidateSegments)
         edge.removeClass('routing-hidden-edge')
@@ -530,13 +419,13 @@ export const usePertRouteOptimization = ({
             crossings: effectiveThreshold + 1,
           }
 
-          edge.data('radialCpDistances', fallback.distances)
-          edge.data('radialCpWeights', fallback.weights)
+          edge.data('cpDistances', fallback.distances)
+          edge.data('cpWeights', fallback.weights)
 
           const primaryDistance = Number(fallback.distances.split(/\s+/)[0] || 0)
-          const primaryWeight = Number(fallback.weights.split(/\s+/)[0] || 0.5)
-          edge.data('radialCpDistance', primaryDistance)
-          edge.data('radialCpWeight', primaryWeight)
+          const primaryWeight = Number(fallback.weights.split(/\s+/)[0] || 0.74)
+          edge.data('cpDistance', primaryDistance)
+          edge.data('cpWeight', primaryWeight)
 
           if (fallback.segments.length > 0) {
             acceptedSegments.push(...fallback.segments)
@@ -567,8 +456,7 @@ export const usePertRouteOptimization = ({
   }
 
   return {
-    updateRadialEdgeRouting,
-    updateOuterContourRouteNodes,
+    updateEdgeRouting,
     optimizeLayoutEdgeIntersections,
     getLastOptimizationSummary,
   }

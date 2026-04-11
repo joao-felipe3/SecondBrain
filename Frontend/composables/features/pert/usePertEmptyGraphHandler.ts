@@ -1,12 +1,10 @@
-type PertResolvedLayoutMode = 'hierarchical' | 'radial'
+type PertResolvedLayoutMode = 'hierarchical' | 'force'
 
 type HandleEmptyGraphParams = {
   cy: any
   hasEdges: boolean
   isTokenCurrent: () => boolean
   setResolvedLayoutMode: (mode: PertResolvedLayoutMode) => void
-  setRadialCenterNodeId: (nodeId: string | null) => void
-  clearRadialRingOverlay: () => void
 }
 
 export const usePertEmptyGraphHandler = () => {
@@ -15,14 +13,10 @@ export const usePertEmptyGraphHandler = () => {
     hasEdges,
     isTokenCurrent,
     setResolvedLayoutMode,
-    setRadialCenterNodeId,
-    clearRadialRingOverlay,
   }: HandleEmptyGraphParams) => {
     if (hasEdges) return false
 
     setResolvedLayoutMode('hierarchical')
-    setRadialCenterNodeId(null)
-    clearRadialRingOverlay()
 
     cy.layout({
       name: 'grid',

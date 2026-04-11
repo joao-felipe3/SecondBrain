@@ -1,6 +1,6 @@
 import type { PertDiagramEdge, PertDiagramNode } from './usePertDiagramData'
 
-type PertLayoutMode = 'auto' | 'hierarchical' | 'radial'
+type PertLayoutMode = 'auto' | 'hierarchical' | 'force'
 
 type BuildPertElementsParams = {
   nodes: PertDiagramNode[]
@@ -26,6 +26,32 @@ export const usePertElementsBuilder = () => {
   }
 
   const slackLabel = (value: number) => `S:${Number(value || 0).toFixed(1)}h`
+
+  const blendHexColor = (startHex: string, endHex: string, ratio: number) => {
+    const safeRatio = Math.max(0, Math.min(1, ratio))
+    const start = startHex.replace('#', '')
+    const end = endHex.replace('#', '')
+    const sr = Number.parseInt(start.slice(0, 2), 16)
+    const sg = Number.parseInt(start.slice(2, 4), 16)
+    const sb = Number.parseInt(start.slice(4, 6), 16)
+    const er = Number.parseInt(end.slice(0, 2), 16)
+    const eg = Number.parseInt(end.slice(2, 4), 16)
+    const eb = Number.parseInt(end.slice(4, 6), 16)
+
+    const rr = Math.round(sr + (er - sr) * safeRatio)
+    const rg = Math.round(sg + (eg - sg) * safeRatio)
+    const rb = Math.round(sb + (eb - sb) * safeRatio)
+
+    return `#${rr.toString(16).padStart(2, '0')}${rg.toString(16).padStart(2, '0')}${rb.toString(16).padStart(2, '0')}`
+  }
+
+  const semanticSlackColor = (slackHours: number, maxSlackHours: number) => {
+    const normalized = Math.max(0, Math.min(1, Number(slackHours || 0) / Math.max(0.01, maxSlackHours)))
+    if (normalized <= 0.5) {
+      return blendHexColor('#d32f2f', '#fdd835', normalized / 0.5)
+    }
+    return blendHexColor('#fdd835', '#1e88e5', (normalized - 0.5) / 0.5)
+  }
 
   const getNodeGroupKey = (node: PertDiagramNode) => {
     const pathGroup = String(node.wbsPath || '')
@@ -55,7 +81,7 @@ export const usePertElementsBuilder = () => {
   }: BuildPertElementsParams) => {
     const graphDensity = edges.length / Math.max(nodes.length, 1)
     const isDense = nodes.length > 36 || edges.length > 72 || graphDensity > 1.8
-    const isRadialIntent = layoutMode === 'radial' || (layoutMode === 'auto' && isDense)
+    const prefersForce = layoutMode === 'force' || (layoutMode === 'auto' && isDense)
     const readySet = new Set(readyNodeIds || [])
     const blockedSet = new Set(blockedNodeIds || [])
     const focusSet = new Set(focusNodeIds || [])
@@ -66,7 +92,10 @@ export const usePertElementsBuilder = () => {
     const childrenById = new Map<string, string[]>()
     const incomingByTarget = new Map<string, PertDiagramEdge[]>()
     const outgoingBySource = new Map<string, PertDiagramEdge[]>()
+    const criticalIncidentById = new Map<string, number>()
+    const nodeById = new Map<string, PertDiagramNode>()
     let maxDuration = 1
+    let maxSlack = 0.01
 
     for (const edge of edges) {
       outDegreeMap.set(edge.source, (outDegreeMap.get(edge.source) || 0) + 1)
@@ -82,13 +111,26 @@ export const usePertElementsBuilder = () => {
       const outgoing = outgoingBySource.get(edge.source) || []
       outgoing.push(edge)
       outgoingBySource.set(edge.source, outgoing)
+
+      if (edge.isCriticalEdge) {
+        criticalIncidentById.set(edge.source, (criticalIncidentById.get(edge.source) || 0) + 1)
+        criticalIncidentById.set(edge.target, (criticalIncidentById.get(edge.target) || 0) + 1)
+      }
     }
 
     for (const node of nodes) {
+      nodeById.set(node.id, node)
       maxDuration = Math.max(maxDuration, Number(node.durationHours || 0))
+      maxSlack = Math.max(maxSlack, Number(node.slack || 0))
     }
 
-    // Identify start nodes and layered distance from start to reduce long crossings.
+    const maxDependencyCount = Math.max(1, ...nodes.map((node) => {
+      const incoming = inDegreeMap.get(node.id) || 0
+      const outgoing = outDegreeMap.get(node.id) || 0
+      return incoming + outgoing
+    }))
+    const maxCriticalIncidents = Math.max(1, ...nodes.map((node) => criticalIncidentById.get(node.id) || 0))
+
     const startIds = nodes
       .filter((node) => (inDegreeMap.get(node.id) || 0) === 0)
       .map((node) => node.id)
@@ -112,7 +154,6 @@ export const usePertElementsBuilder = () => {
       }
     }
 
-    // Keep insertion order aligned with layered graph to improve crossing minimization.
     const orderedNodes = [...nodes].sort((a, b) => {
       const la = levelById.get(a.id) || 0
       const lb = levelById.get(b.id) || 0
@@ -128,7 +169,6 @@ export const usePertElementsBuilder = () => {
       return String(a.name || '').localeCompare(String(b.name || ''))
     })
 
-    // Identify parallel edges (same source-target pair) to draw them separated and avoid overlap.
     const pairCount = new Map<string, number>()
     const pairIndex = new Map<string, number>()
     const sourceCount = new Map<string, number>()
@@ -172,25 +212,13 @@ export const usePertElementsBuilder = () => {
       groupSectorIndex.set(group.key, index)
     })
 
-    const groupSectorCount = Math.max(1, groups.length)
-    const getSectorDistance = (a: number, b: number) => {
-      const raw = Math.abs(a - b)
-      return Math.min(raw, groupSectorCount - raw)
-    }
-    const getNodeSector = (nodeId: string) => {
-      const groupKey = nodeGroupKeyById.get(nodeId) || 'task'
-      return groupSectorIndex.get(groupKey) ?? (groupSectorIndex.get('Other') ?? 0)
-    }
-
     const denseBackboneEdgeIds = new Set<string>()
     if (isDense && !allEdgesVisible && !hasFocus) {
-      // Keep all high-signal edges first.
       for (const edge of edges) {
         const isPriority = edge.isCriticalEdge || readySet.has(edge.source) || readySet.has(edge.target)
         if (isPriority) denseBackboneEdgeIds.add(edge.id)
       }
 
-      // Keep at least one predecessor (or two for medium fan-in) per target to preserve graph readability.
       for (const incomingEdges of incomingByTarget.values()) {
         if (!incomingEdges.length) continue
 
@@ -209,13 +237,11 @@ export const usePertElementsBuilder = () => {
           return a.id.localeCompare(b.id)
         })
 
-        const keepCount = 1
-        for (const edge of sortedIncoming.slice(0, keepCount)) {
+        for (const edge of sortedIncoming.slice(0, 1)) {
           denseBackboneEdgeIds.add(edge.id)
         }
       }
 
-      // Keep a small subset from high fan-out sources to avoid complete loss of branch context.
       for (const outgoingEdges of outgoingBySource.values()) {
         if (outgoingEdges.length < 6) continue
 
@@ -237,98 +263,32 @@ export const usePertElementsBuilder = () => {
       }
     }
 
-    const radialAllowedEdgeIds = new Set<string>()
-    const radialPrimaryIncomingByTarget = new Map<string, string>()
-    if (isDense && isRadialIntent && !allEdgesVisible && !hasFocus) {
-      for (const [targetId, incomingEdges] of incomingByTarget.entries()) {
-        if (!incomingEdges.length) continue
-
-        const sortedIncoming = [...incomingEdges].sort((a, b) => {
-          const criticalScore = Number(Boolean(b.isCriticalEdge)) - Number(Boolean(a.isCriticalEdge))
-          if (criticalScore !== 0) return criticalScore
-
-          const priorityA = Number(Boolean(readySet.has(a.source) || readySet.has(a.target)))
-          const priorityB = Number(Boolean(readySet.has(b.source) || readySet.has(b.target)))
-          if (priorityA !== priorityB) return priorityB - priorityA
-
-          const aJump = Math.abs((levelById.get(a.target) || 0) - (levelById.get(a.source) || 0))
-          const bJump = Math.abs((levelById.get(b.target) || 0) - (levelById.get(b.source) || 0))
-          if (aJump !== bJump) return aJump - bJump
-
-          const aSourceOut = outDegreeMap.get(a.source) || 0
-          const bSourceOut = outDegreeMap.get(b.source) || 0
-          if (aSourceOut !== bSourceOut) return aSourceOut - bSourceOut
-
-          return a.id.localeCompare(b.id)
-        })
-
-        radialPrimaryIncomingByTarget.set(targetId, sortedIncoming[0].id)
-      }
-
-      const targetSecondaryCount = new Map<string, number>()
-
-      for (const outgoingEdges of outgoingBySource.values()) {
-        const keptTargetSectors = new Set<number>()
-        const sortedOutgoing = [...outgoingEdges].sort((a, b) => {
-          const aSourceLayer = levelById.get(a.source) || 0
-          const bSourceLayer = levelById.get(b.source) || 0
-          const aTargetLayer = levelById.get(a.target) || 0
-          const bTargetLayer = levelById.get(b.target) || 0
-          const aJump = Math.abs(aTargetLayer - aSourceLayer)
-          const bJump = Math.abs(bTargetLayer - bSourceLayer)
-          const aSectorDelta = getSectorDistance(getNodeSector(a.source), getNodeSector(a.target))
-          const bSectorDelta = getSectorDistance(getNodeSector(b.source), getNodeSector(b.target))
-
-          const criticalScore = Number(Boolean(b.isCriticalEdge)) - Number(Boolean(a.isCriticalEdge))
-          if (criticalScore !== 0) return criticalScore
-          if (aSectorDelta !== bSectorDelta) return aSectorDelta - bSectorDelta
-          if (aJump !== bJump) return aJump - bJump
-          return a.id.localeCompare(b.id)
-        })
-
-        let keptSecondary = 0
-        for (const edge of sortedOutgoing) {
-          const sourceLayer = levelById.get(edge.source) || 0
-          const targetLayer = levelById.get(edge.target) || 0
-          const jump = Math.abs(targetLayer - sourceLayer)
-          const targetSector = getNodeSector(edge.target)
-          const sectorDelta = getSectorDistance(getNodeSector(edge.source), targetSector)
-          const isPriority = edge.isCriticalEdge || readySet.has(edge.source) || readySet.has(edge.target)
-          const isBackbone = denseBackboneEdgeIds.has(edge.id)
-
-          if (isPriority || isBackbone) {
-            radialAllowedEdgeIds.add(edge.id)
-            keptTargetSectors.add(targetSector)
-            continue
-          }
-
-          const targetCount = targetSecondaryCount.get(edge.target) || 0
-          const touchesInnerLayer = sourceLayer <= 1 || targetLayer <= 1
-          if (
-            jump <= 0 &&
-            keptSecondary < 1 &&
-            targetCount < 1 &&
-            sectorDelta === 0 &&
-            !touchesInnerLayer &&
-            !keptTargetSectors.has(targetSector)
-          ) {
-            radialAllowedEdgeIds.add(edge.id)
-            keptSecondary += 1
-            keptTargetSectors.add(targetSector)
-            targetSecondaryCount.set(edge.target, targetCount + 1)
-          }
-        }
-      }
-    }
-
     const nodeElements = orderedNodes.map((node) => {
       const outDegree = outDegreeMap.get(node.id) || 0
+      const inDegree = inDegreeMap.get(node.id) || 0
+      const dependencyCount = inDegree + outDegree
       const durationRatio = Math.min(1, Math.max(0, Number(node.durationHours || 0) / maxDuration))
-      const riskScore = Math.min(1, (outDegree / 6) * 0.6 + durationRatio * 0.4)
-      const visualSize = 46 + riskScore * 26
+      const dependencyRatio = Math.min(1, dependencyCount / Math.max(1, maxDependencyCount))
+      const criticalIncidentRatio = Math.min(1, (criticalIncidentById.get(node.id) || 0) / maxCriticalIncidents)
+      const slackRiskRatio = node.isCritical
+        ? 1
+        : Math.max(0, 1 - Math.min(1, Number(node.slack || 0) / Math.max(2, maxSlack)))
+      const importanceScore = Math.min(
+        1,
+        dependencyRatio * 0.38 +
+        durationRatio * 0.24 +
+        criticalIncidentRatio * 0.26 +
+        slackRiskRatio * 0.12,
+      )
+      const emphasizedImportance = Math.pow(importanceScore, 1.55)
+      const criticalSizeBoost = node.isCritical ? 0.08 : 0
+      const sizeRatio = Math.min(1, emphasizedImportance + criticalSizeBoost)
+      const visualSize = 22 + sizeRatio * 126
       const layer = levelById.get(node.id) || 0
       const groupKey = getNodeGroupKey(node)
       const isStartNode = startSet.has(node.id)
+      const slackColor = semanticSlackColor(Number(node.slack || 0), maxSlack)
+      const slackBorderWidth = 2.8 + slackRiskRatio * 2.2
 
       return {
         data: {
@@ -340,17 +300,21 @@ export const usePertElementsBuilder = () => {
           groupKey,
           isStartNode,
           durationHours: node.durationHours,
-          outDegree: outDegree,
-          riskScore: riskScore,
-          visualSize: visualSize,
+          dependencyCount,
+          outDegree,
+          inDegree,
+          importanceScore,
+          visualSize,
+          slackBorderWidth,
           slack: node.slack,
+          slackSemanticColor: slackColor,
           earlyStart: node.earlyStart,
           earlyFinish: node.earlyFinish,
           lateStart: node.lateStart,
           lateFinish: node.lateFinish,
           isCritical: node.isCritical,
           isConcluded: node.isConcluded,
-          node: node,
+          node,
         },
         classes: [
           isStartNode ? 'start-node' : '',
@@ -365,11 +329,7 @@ export const usePertElementsBuilder = () => {
       }
     })
 
-    const edgeElements: any[] = []
-    const outerRouteNodeElements: any[] = []
-    const outerRouteNodeIds = new Set<string>()
-
-    for (const edge of edges) {
+    const edgeElements = edges.map((edge) => {
       const key = `${edge.source}::${edge.target}`
       const index = pairIndex.get(key) || 0
       pairIndex.set(key, index + 1)
@@ -397,300 +357,70 @@ export const usePertElementsBuilder = () => {
       const isBlockedEdge = blockedSet.has(edge.target)
       const isPriorityEdge = edge.isCriticalEdge || readySet.has(edge.source) || readySet.has(edge.target)
       const isBackboneDenseEdge = denseBackboneEdgeIds.has(edge.id)
-      const sourceGroup = nodeGroupKeyById.get(edge.source) || 'task'
-      const targetGroup = nodeGroupKeyById.get(edge.target) || 'task'
-      const sourceSector = groupSectorIndex.get(sourceGroup) ?? 0
-      const targetSector = groupSectorIndex.get(targetGroup) ?? 0
-      const sectorDelta = getSectorDistance(sourceSector, targetSector)
-      const isInterSector = sourceSector !== targetSector
       const isIdleDecluttered = !hasFocus && !allEdgesVisible && !isPriorityEdge
+      const sourceDuration = Number(nodeById.get(edge.source)?.durationHours || 0)
+      const durationRatio = Math.min(1, sourceDuration / maxDuration)
+      const criticalImpact = edge.isCriticalEdge ? 1 : 0
+      const degreeImpact = Math.min(1, ((outDegreeMap.get(edge.source) || 0) + (inDegreeMap.get(edge.target) || 0)) / 10)
+      const edgeImpactScore = Math.min(1, durationRatio * 0.46 + criticalImpact * 0.36 + degreeImpact * 0.18)
+      const edgeWidth = 2.1 + edgeImpactScore * 4.5
+      const edgeArrowScale = 2.1 + edgeImpactScore * 2.4
       const shouldSuppressEdge =
         isDense &&
         !allEdgesVisible &&
         !hasFocus &&
         !isPriorityEdge &&
         !isBackboneDenseEdge
-      const shouldSuppressByRadialRule =
-        isDense &&
-        isRadialIntent &&
-        !allEdgesVisible &&
-        !hasFocus &&
-        !radialAllowedEdgeIds.has(edge.id) &&
-        radialPrimaryIncomingByTarget.get(edge.target) !== edge.id
-      const shouldSuppressLongRadialJump =
-        isDense &&
-        isRadialIntent &&
-        !allEdgesVisible &&
-        !hasFocus &&
-        isLongJump &&
-        !edge.isCriticalEdge &&
-        !isBackboneDenseEdge
-      const shouldSuppressCenterChord =
-        isDense &&
-        isRadialIntent &&
-        !allEdgesVisible &&
-        !hasFocus &&
-        isInterSector &&
-        sectorDelta >= Math.max(2, Math.floor(groupSectorCount / 2) - 1) &&
-        !edge.isCriticalEdge &&
-        !isBackboneDenseEdge &&
-        !readySet.has(edge.source) &&
-        !readySet.has(edge.target)
-      const isPrimaryIncoming = radialPrimaryIncomingByTarget.get(edge.target) === edge.id
-      const shouldSuppressInterSectorNoise =
-        isDense &&
-        isRadialIntent &&
-        !allEdgesVisible &&
-        !hasFocus &&
-        isInterSector &&
-        sectorDelta >= 2 &&
-        !isPriorityEdge &&
-        !isBackboneDenseEdge &&
-        !isPrimaryIncoming
-      const touchesInnerLayer = sourceLayer <= 1 || targetLayer <= 1
-      const shouldSuppressInnerHubCross =
-        isDense &&
-        isRadialIntent &&
-        !allEdgesVisible &&
-        !hasFocus &&
-        isInterSector &&
-        touchesInnerLayer &&
-        !isPriorityEdge &&
-        !isBackboneDenseEdge &&
-        !isPrimaryIncoming
-      const shouldSuppressAggressiveRadial =
-        isDense &&
-        isRadialIntent &&
-        !allEdgesVisible &&
-        !hasFocus &&
-        !isPriorityEdge &&
-        !isBackboneDenseEdge &&
-        (isInterSector || isLongJump || touchesInnerLayer)
       const shouldFanEdge = totalForPair > 1 || isFocusEdge || edge.isCriticalEdge || (isDense && sourceOutDegree >= 6)
-      const preferredSign = cpDistance === 0
-        ? (targetSector >= sourceSector ? 1 : -1)
-        : Math.sign(cpDistance)
-      const radialCurveStrength = isInterSector
-        ? Math.min(176, 84 + sectorDelta * 28 + Math.abs(centerOffset) * 10)
-        : Math.max(18, Math.abs(cpDistance * 0.95) + 18)
-      const radialCpDistance = preferredSign * radialCurveStrength
 
-      const shouldSuppressCombinedRaw =
-        shouldSuppressEdge ||
-        shouldSuppressByRadialRule ||
-        shouldSuppressLongRadialJump ||
-        shouldSuppressCenterChord ||
-        shouldSuppressInterSectorNoise ||
-        shouldSuppressInnerHubCross ||
-        shouldSuppressAggressiveRadial
+      const sourceGroup = nodeGroupKeyById.get(edge.source) || 'task'
+      const targetGroup = nodeGroupKeyById.get(edge.target) || 'task'
+      const sourceSector = groupSectorIndex.get(sourceGroup) ?? 0
+      const targetSector = groupSectorIndex.get(targetGroup) ?? 0
 
-      // In radial mode keep edges visible; reduce crossings by rerouting instead of hiding.
-      const shouldSuppressCombined = edge.isCriticalEdge
-        ? false
-        : (isRadialIntent ? false : shouldSuppressCombinedRaw)
+      const directionSign = cpDistance === 0 ? (targetSector >= sourceSector ? 1 : -1) : Math.sign(cpDistance)
+      const strength = Math.min(220, Math.max(16, Math.abs(cpDistance) + (prefersForce ? 26 : 14)))
+      const cpRouteDistance = Math.round(directionSign * strength)
 
-      const shouldUseOuterContourRoute =
-        false
-
-      const baseClasses = [
+      const classes = [
         edge.isCriticalEdge ? 'critical-edge' : 'regular-edge',
         shouldFanEdge ? 'fan-edge' : '',
         isDense && !edge.isCriticalEdge ? 'dense-edge' : '',
-        isDense && !edge.isCriticalEdge && !isBackboneDenseEdge ? 'radial-edge' : '',
         isFocusEdge ? 'path-edge' : '',
         isDimmedEdge ? 'path-dim-edge' : '',
         isBlockedEdge ? 'blocked-edge' : '',
         isLongJump ? 'long-edge' : '',
         isIdleDecluttered && !shouldSuppressEdge ? 'idle-edge' : '',
         isBackboneDenseEdge && !isPriorityEdge ? 'backbone-edge' : '',
-        isPrimaryIncoming && isRadialIntent && !edge.isCriticalEdge ? 'primary-incoming-edge' : '',
-        shouldSuppressCombined ? 'suppressed-edge' : '',
+        shouldSuppressEdge && !edge.isCriticalEdge ? 'suppressed-edge' : '',
         totalForPair > 1 ? 'parallel-edge' : '',
         edge.relationship === 'finish-to-start' ? 'edge-fs' : 'edge-dashed',
-      ]
+        'routed-edge',
+      ].filter(Boolean).join(' ')
 
-      if (shouldUseOuterContourRoute) {
-        const routeNodeAId = `route-${edge.id}-a`
-        const routeNodeMId = `route-${edge.id}-m`
-        const routeNodeBId = `route-${edge.id}-b`
-        const halfSector = Math.floor(groupSectorCount / 2)
-        const wrappedForward = (targetSector - sourceSector + groupSectorCount) % groupSectorCount
-        const signedSectorStep = wrappedForward === 0
-          ? 0
-          : wrappedForward > halfSector
-            ? wrappedForward - groupSectorCount
-            : wrappedForward
-        const routeSide = signedSectorStep === 0
-          ? (preferredSign === 0 ? 1 : preferredSign)
-          : (signedSectorStep > 0 ? 1 : -1)
-        const routeLane = centerOffset + fanOffset * 0.7 + targetFanOffset * 0.45 + (sectorDelta - 1) * 0.9
-
-        if (!outerRouteNodeIds.has(routeNodeAId)) {
-          outerRouteNodeIds.add(routeNodeAId)
-          outerRouteNodeElements.push({
-            data: {
-              id: routeNodeAId,
-              layer: Math.max(sourceLayer, targetLayer) + 1,
-              groupKey: 'route',
-              isRouteNode: true,
-              routeSource: edge.source,
-              routeTarget: edge.target,
-              routeSide,
-              routeLane,
-              routeRole: 'source',
-            },
-            position: { x: 0, y: 0 },
-            locked: true,
-            grabbable: false,
-            selectable: false,
-            classes: 'outer-route-node',
-          })
-        }
-
-        if (!outerRouteNodeIds.has(routeNodeBId)) {
-          outerRouteNodeIds.add(routeNodeBId)
-          outerRouteNodeElements.push({
-            data: {
-              id: routeNodeBId,
-              layer: Math.max(sourceLayer, targetLayer) + 1,
-              groupKey: 'route',
-              isRouteNode: true,
-              routeSource: edge.source,
-              routeTarget: edge.target,
-              routeSide,
-              routeLane,
-              routeRole: 'target',
-            },
-            position: { x: 0, y: 0 },
-            locked: true,
-            grabbable: false,
-            selectable: false,
-            classes: 'outer-route-node',
-          })
-        }
-
-        if (!outerRouteNodeIds.has(routeNodeMId)) {
-          outerRouteNodeIds.add(routeNodeMId)
-          outerRouteNodeElements.push({
-            data: {
-              id: routeNodeMId,
-              layer: Math.max(sourceLayer, targetLayer) + 1,
-              groupKey: 'route',
-              isRouteNode: true,
-              routeSource: edge.source,
-              routeTarget: edge.target,
-              routeSide,
-              routeLane,
-              routeRole: 'mid',
-            },
-            position: { x: 0, y: 0 },
-            locked: true,
-            grabbable: false,
-            selectable: false,
-            classes: 'outer-route-node',
-          })
-        }
-
-        edgeElements.push({
-          data: {
-            id: `${edge.id}__outer_a`,
-            source: edge.source,
-            target: routeNodeAId,
-            relation: '',
-            cpDistance,
-            radialCpDistance,
-            radialCpWeight: 0.74,
-            radialCpDistances: String(Math.round(radialCpDistance)),
-            radialCpWeights: '0.74',
-            sectorDelta,
-            sectorHint: targetSector,
-            fanOffset: centerOffset,
-            edge,
-          },
-          classes: [...baseClasses, 'outer-route-edge', 'outer-route-pre-edge'].filter(Boolean).join(' '),
-        })
-
-        edgeElements.push({
-          data: {
-            id: `${edge.id}__outer_b`,
-            source: routeNodeAId,
-            target: routeNodeMId,
-            relation: '',
-            cpDistance,
-            radialCpDistance,
-            radialCpWeight: 0.74,
-            radialCpDistances: String(Math.round(radialCpDistance)),
-            radialCpWeights: '0.74',
-            sectorDelta,
-            sectorHint: targetSector,
-            fanOffset: centerOffset,
-            edge,
-          },
-          classes: [...baseClasses, 'outer-route-edge', 'outer-route-mid-edge'].filter(Boolean).join(' '),
-        })
-
-        edgeElements.push({
-          data: {
-            id: `${edge.id}__outer_c`,
-            source: routeNodeMId,
-            target: routeNodeBId,
-            relation: '',
-            cpDistance,
-            radialCpDistance,
-            radialCpWeight: 0.74,
-            radialCpDistances: String(Math.round(radialCpDistance)),
-            radialCpWeights: '0.74',
-            sectorDelta,
-            sectorHint: targetSector,
-            fanOffset: centerOffset,
-            edge,
-          },
-          classes: [...baseClasses, 'outer-route-edge', 'outer-route-mid-edge'].filter(Boolean).join(' '),
-        })
-
-        edgeElements.push({
-          data: {
-            id: `${edge.id}__outer_d`,
-            source: routeNodeBId,
-            target: edge.target,
-            relation: isDense ? '' : relationLabel(edge.relationship),
-            cpDistance,
-            radialCpDistance,
-            radialCpWeight: 0.74,
-            radialCpDistances: String(Math.round(radialCpDistance)),
-            radialCpWeights: '0.74',
-            sectorDelta,
-            sectorHint: targetSector,
-            fanOffset: centerOffset,
-            edge,
-          },
-          classes: [...baseClasses, 'outer-route-edge', 'outer-route-post-edge'].filter(Boolean).join(' '),
-        })
-
-        continue
-      }
-
-      edgeElements.push({
+      return {
         data: {
           id: edge.id,
           source: edge.source,
           target: edge.target,
           relation: isDense ? '' : relationLabel(edge.relationship),
+          edgeWidth,
+          edgeArrowScale,
+          edgeImpactScore,
+          sourceDuration,
           cpDistance,
-          radialCpDistance,
-          radialCpWeight: 0.74,
-          radialCpDistances: String(Math.round(radialCpDistance)),
-          radialCpWeights: '0.74',
-          sectorDelta,
+          cpWeight: 0.74,
+          cpDistances: String(cpRouteDistance),
+          cpWeights: '0.74',
           sectorHint: targetSector,
           fanOffset: centerOffset,
           edge,
         },
-        classes: [...baseClasses, isRadialIntent ? 'radial-route-edge' : 'hierarchical-route-edge'].filter(Boolean).join(' '),
-      })
-    }
+        classes,
+      }
+    })
 
-    return [...nodeElements, ...outerRouteNodeElements, ...edgeElements]
+    return [...nodeElements, ...edgeElements]
   }
 
   return {

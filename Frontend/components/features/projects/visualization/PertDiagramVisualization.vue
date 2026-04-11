@@ -2,7 +2,7 @@
   <v-card elevation="1" class="pert-card">
     <v-card-title class="d-flex align-center justify-space-between flex-wrap ga-2">
       <span class="text-subtitle-1">Diagrama PERT/CPM</span>
-      <div class="d-flex align-center flex-wrap ga-2">
+      <div class="d-flex align-center flex-wrap ga-1">
         <v-btn-toggle
           v-model="layoutMode"
           mandatory
@@ -14,11 +14,11 @@
         >
           <v-btn value="auto" size="x-small">Auto</v-btn>
           <v-btn value="hierarchical" size="x-small">Hierarquico</v-btn>
-          <v-btn value="radial" size="x-small">Radial</v-btn>
+          <v-btn value="force" size="x-small">Forca</v-btn>
         </v-btn-toggle>
         <v-text-field
-          v-model.number="radialThresholdModel"
-          label="Limite"
+          v-model.number="intersectionThresholdModel"
+          label="Limite de cruzamentos"
           type="number"
           min="0"
           max="20"
@@ -29,6 +29,19 @@
           hide-details
           class="threshold-field"
         />
+        <v-text-field
+          v-model.number="impactDelayDaysModel"
+          label="Atraso simulado (dias)"
+          type="number"
+          min="1"
+          max="30"
+          step="1"
+          density="compact"
+          variant="outlined"
+          color="deep-orange"
+          hide-details
+          class="impact-delay-field"
+        />
         <v-chip
           v-if="layoutFallbackNotice"
           size="small"
@@ -37,23 +50,15 @@
         >
           {{ layoutFallbackNotice }}
         </v-chip>
-        <!-- <v-chip
-          v-if="(resolvedLayoutMode === 'radial' || resolvedLayoutMode === 'hierarchical') && radialIntersectionCount !== null"
-          size="small"
-          :color="radialIntersectionCount > 0 ? 'warning' : 'success'"
-          variant="tonal"
-        >
-          {{ radialIntersectionCount }} intersecoes estimadas
-        </v-chip> -->
         <v-chip
-          v-if="resolvedLayoutMode === 'radial' || resolvedLayoutMode === 'hierarchical'"
-          size="small"
+          v-if="resolvedLayoutMode === 'hierarchical' || resolvedLayoutMode === 'force'"
+          size="x-small"
           :color="routingHiddenEdgeCount > 0 ? 'warning' : 'success'"
           variant="tonal"
         >
           {{ routingHiddenEdgeCount }} arestas ocultas
         </v-chip>
-        <v-chip size="small" color="success" variant="tonal">{{ readyNowTaskCount }} posso fazer agora</v-chip>
+        <v-chip size="x-small" color="success" variant="tonal">{{ readyNowTaskCount }} posso fazer agora</v-chip>
       </div>
     </v-card-title>
 
@@ -71,25 +76,6 @@
       </v-alert>
       <template v-else>
         <div ref="chartWrapper" class="chart-wrapper">
-          <svg
-            v-if="showRadialRings"
-            class="radial-rings-bg"
-            :viewBox="`0 0 ${radialRingOverlay.width} ${radialRingOverlay.height}`"
-            preserveAspectRatio="xMidYMid meet"
-            aria-hidden="true"
-          >
-            <circle
-              v-for="(radius, index) in radialRingOverlay.radii"
-              :key="`ring-${index}`"
-              :cx="radialRingOverlay.cx"
-              :cy="radialRingOverlay.cy"
-              :r="radius"
-              fill="none"
-              stroke="rgba(24, 115, 128, 0.12)"
-              stroke-width="0.9"
-              stroke-dasharray="1.6 1.4"
-            />
-          </svg>
           <div ref="chartContainer" class="chart-container" />
           <div
             v-if="tooltip.visible && tooltip.node"
@@ -99,6 +85,13 @@
             <strong>{{ tooltip.node.name }}</strong>
             <span>Duracao: {{ tooltip.node.durationHours.toFixed(1) }}h</span>
             <span>Folga: {{ tooltip.node.slack.toFixed(2) }}h</span>
+            <span class="tooltip-impact">{{ getImpactMessageForNode(tooltip.node.id) }}</span>
+            <span class="tooltip-impact-meta">
+              Nos afetados: {{ getImpactSummaryForNode(tooltip.node.id)?.impactedNodeCount ?? 0 }} | Arestas impactadas: {{ getImpactSummaryForNode(tooltip.node.id)?.impactedEdgeCount ?? 0 }}
+            </span>
+            <span class="tooltip-impact-meta">
+              Caminho ate o no: {{ getImpactSummaryForNode(tooltip.node.id)?.traceNodeCount ?? 0 }} nos | {{ getImpactSummaryForNode(tooltip.node.id)?.traceEdgeCount ?? 0 }} arestas
+            </span>
             <span>ES/EF: {{ tooltip.node.earlyStart.toFixed(1) }} / {{ tooltip.node.earlyFinish.toFixed(1) }}h</span>
             <span>LS/LF: {{ tooltip.node.lateStart.toFixed(1) }} / {{ tooltip.node.lateFinish.toFixed(1) }}h</span>
           </div>
@@ -114,7 +107,6 @@ import type { PertDiagramNode, PertDiagramEdge } from '~/composables/features/pe
 import { usePertDiagramState } from '~/composables/features/pert/usePertDiagramState'
 import { usePertInteractionManager } from '~/composables/features/pert/usePertInteractionManager'
 import { usePertGeometryOptimizer } from '~/composables/features/pert/usePertGeometryOptimizer'
-import { usePertRingOverlay } from '~/composables/features/pert/usePertRingOverlay'
 import { usePertIntersectionMetrics } from '~/composables/features/pert/usePertIntersectionMetrics'
 import { usePertElementsBuilder } from '~/composables/features/pert/usePertElementsBuilder'
 import { usePertLayoutEngine } from '~/composables/features/pert/usePertLayoutEngine'
@@ -175,11 +167,6 @@ const {
 } = usePertGeometryOptimizer()
 
 const {
-  createEmptyRingOverlay,
-  computeRingOverlay,
-} = usePertRingOverlay()
-
-const {
   estimateIntersections,
 } = usePertIntersectionMetrics()
 
@@ -194,7 +181,7 @@ const {
 
 const {
   runInitialLayoutFallback,
-  runRadialRecoveryFallbacks,
+  runRecoveryFallbacks,
 } = usePertLayoutFallbacks()
 
 const {
@@ -259,14 +246,9 @@ const {
 
 const renderError = ref<string | null>(null)
 const layoutFallbackNotice = ref<string | null>(null)
-const radialIntersectionCount = ref<number | null>(null)
 const routingHiddenEdgeCount = ref<number>(0)
-const radialIntersectionThreshold = ref<number>(2)
+const edgeIntersectionThreshold = ref<number>(2)
 const resolvedLayoutMode = ref<Exclude<PertLayoutMode, 'auto'>>('hierarchical')
-const radialCenterNodeId = ref<string | null>(null)
-const radialRingOverlay = ref<{ cx: number; cy: number; radii: number[]; width: number; height: number }>({
-  ...createEmptyRingOverlay(chartContainer.value),
-})
 let cy: any = null
 let cytoscapeFactory: any = null
 let resizeObserver: ResizeObserver | null = null
@@ -274,50 +256,281 @@ let dagreRegistered = false
 let graphRenderToken = 0
 let wasContainerHidden = false
 let thresholdApplyTimer: ReturnType<typeof setTimeout> | null = null
-type PertLayoutMode = 'auto' | 'hierarchical' | 'radial'
-const layoutMode = ref<PertLayoutMode>('auto')
-const showRadialRings = computed(() =>
-  resolvedLayoutMode.value === 'radial' &&
-  radialRingOverlay.value.radii.length >= 1 &&
-  !renderError.value,
-)
 
-const normalizeRadialThreshold = (value: unknown) => {
+type PertLayoutMode = 'auto' | 'hierarchical' | 'force'
+
+type PertImpactSummary = {
+  nodeId: string
+  impactedNodeIds: Set<string>
+  impactedEdgeIds: Set<string>
+  traceNodeIds: Set<string>
+  traceEdgeIds: Set<string>
+  impactedNodeCount: number
+  impactedEdgeCount: number
+  traceNodeCount: number
+  traceEdgeCount: number
+  delayDays: number
+  slackDays: number
+  projectDelayDays: number
+  message: string
+}
+
+const layoutMode = ref<PertLayoutMode>('auto')
+
+const normalizeIntersectionThreshold = (value: unknown) => {
   const parsed = Number(value)
   if (!Number.isFinite(parsed)) return 2
   return Math.max(0, Math.min(20, Math.floor(parsed)))
 }
 
-const radialThresholdModel = computed({
-  get: () => radialIntersectionThreshold.value,
+const normalizeImpactDelayDays = (value: unknown) => {
+  const parsed = Number(value)
+  if (!Number.isFinite(parsed)) return 2
+  return Math.max(1, Math.min(30, Math.floor(parsed)))
+}
+
+const intersectionThresholdModel = computed({
+  get: () => edgeIntersectionThreshold.value,
   set: (value: unknown) => {
-    radialIntersectionThreshold.value = normalizeRadialThreshold(value)
+    edgeIntersectionThreshold.value = normalizeIntersectionThreshold(value)
   },
 })
 
+const impactDelayDays = ref<number>(2)
+const activeImpactNodeId = ref<string | null>(null)
+const selectedImpactSummary = ref<PertImpactSummary | null>(null)
+let impactPulseTimer: ReturnType<typeof setInterval> | null = null
+let impactPulseFlip = false
+
+const impactDelayDaysModel = computed({
+  get: () => impactDelayDays.value,
+  set: (value: unknown) => {
+    impactDelayDays.value = normalizeImpactDelayDays(value)
+  },
+})
 
 const {
-  updateRadialEdgeRouting,
-  updateOuterContourRouteNodes,
+  updateEdgeRouting,
   optimizeLayoutEdgeIntersections,
   getLastOptimizationSummary,
 } = usePertRouteOptimization({
   getCy: () => cy,
   getResolvedLayoutMode: () => resolvedLayoutMode.value,
-  getChartContainer: () => chartContainer.value,
   getEdges: () => props.edges,
-  getRadialEdgeIntersectionThreshold: () => radialIntersectionThreshold.value,
+  getEdgeIntersectionThreshold: () => edgeIntersectionThreshold.value,
 })
 
-const clearRadialRingOverlay = () => {
-  radialRingOverlay.value = createEmptyRingOverlay(chartContainer.value)
+const HOURS_PER_DAY = 8
+
+const buildGraphMaps = () => {
+  const nodeById = new Map<string, PertDiagramNode>()
+  const outgoingBySource = new Map<string, PertDiagramEdge[]>()
+  const incomingByTarget = new Map<string, PertDiagramEdge[]>()
+
+  for (const node of props.nodes) {
+    nodeById.set(node.id, node)
+  }
+
+  for (const edge of props.edges) {
+    const outgoing = outgoingBySource.get(edge.source) || []
+    outgoing.push(edge)
+    outgoingBySource.set(edge.source, outgoing)
+
+    const incoming = incomingByTarget.get(edge.target) || []
+    incoming.push(edge)
+    incomingByTarget.set(edge.target, incoming)
+  }
+
+  return {
+    nodeById,
+    outgoingBySource,
+    incomingByTarget,
+  }
 }
 
-const updateRadialRingOverlay = () => {
-  radialRingOverlay.value = computeRingOverlay(cy, chartContainer.value, resolvedLayoutMode.value)
+const computeImpactSummary = (nodeId: string): PertImpactSummary | null => {
+  const { nodeById, outgoingBySource, incomingByTarget } = buildGraphMaps()
+  const node = nodeById.get(nodeId)
+  if (!node) return null
+
+  const delayHours = impactDelayDays.value * HOURS_PER_DAY
+  const slackHours = Math.max(0, Number(node.slack || 0))
+  const projectDelayHours = Math.max(0, delayHours - slackHours)
+
+  const traceNodeIds = new Set<string>([nodeId])
+  const traceEdgeIds = new Set<string>()
+  const traceQueue: string[] = [nodeId]
+
+  while (traceQueue.length > 0) {
+    const current = traceQueue.shift() as string
+    const incomingEdges = incomingByTarget.get(current) || []
+
+    for (const edge of incomingEdges) {
+      traceEdgeIds.add(edge.id)
+      if (!traceNodeIds.has(edge.source)) {
+        traceNodeIds.add(edge.source)
+        traceQueue.push(edge.source)
+      }
+    }
+  }
+
+  const impactedNodeIds = new Set<string>([nodeId])
+  const impactedEdgeIds = new Set<string>()
+
+  if (projectDelayHours > 0) {
+    const queue: string[] = [nodeId]
+    while (queue.length > 0) {
+      const current = queue.shift() as string
+      const outgoing = outgoingBySource.get(current) || []
+      for (const edge of outgoing) {
+        impactedEdgeIds.add(edge.id)
+        if (!impactedNodeIds.has(edge.target)) {
+          impactedNodeIds.add(edge.target)
+          queue.push(edge.target)
+        }
+      }
+    }
+  }
+
+  const delayDays = Number((delayHours / HOURS_PER_DAY).toFixed(1))
+  const slackDays = Number((slackHours / HOURS_PER_DAY).toFixed(1))
+  const projectDelayDays = Number((projectDelayHours / HOURS_PER_DAY).toFixed(1))
+  const message = projectDelayHours > 0
+    ? `Se atrasar ${delayDays.toFixed(1)} dias -> projeto atrasa ${projectDelayDays.toFixed(1)} dias.`
+    : `Folga absorve ate ${slackDays.toFixed(1)} dias sem atrasar o projeto.`
+
+  return {
+    nodeId,
+    impactedNodeIds,
+    impactedEdgeIds,
+    traceNodeIds,
+    traceEdgeIds,
+    impactedNodeCount: impactedNodeIds.size,
+    impactedEdgeCount: impactedEdgeIds.size,
+    traceNodeCount: traceNodeIds.size,
+    traceEdgeCount: traceEdgeIds.size,
+    delayDays,
+    slackDays,
+    projectDelayDays,
+    message,
+  }
 }
 
-const estimateRadialIntersections = () => {
+
+const stopImpactPulseAnimation = () => {
+  if (impactPulseTimer) {
+    clearInterval(impactPulseTimer)
+    impactPulseTimer = null
+  }
+}
+
+const clearImpactHighlightClasses = () => {
+  if (!cy) return
+  cy.nodes('.impact-node').removeClass('impact-node')
+  cy.nodes('.impact-trace-node').removeClass('impact-trace-node')
+  cy.edges('.impact-edge').removeClass('impact-edge impact-edge-pulse-a impact-edge-pulse-b')
+  cy.edges('.impact-trace-edge').removeClass('impact-trace-edge impact-trace-pulse-a impact-trace-pulse-b')
+}
+
+const startImpactPulseAnimation = () => {
+  if (!cy) return
+  stopImpactPulseAnimation()
+  impactPulseFlip = false
+  impactPulseTimer = setInterval(() => {
+    if (!cy) return
+    const impactedEdges = cy.edges('.impact-edge')
+    const traceEdges = cy.edges('.impact-trace-edge')
+    if ((!impactedEdges || impactedEdges.length === 0) && (!traceEdges || traceEdges.length === 0)) return
+
+    if (impactedEdges && impactedEdges.length > 0) {
+      impactedEdges.toggleClass('impact-edge-pulse-a', impactPulseFlip)
+      impactedEdges.toggleClass('impact-edge-pulse-b', !impactPulseFlip)
+    }
+
+    if (traceEdges && traceEdges.length > 0) {
+      traceEdges.toggleClass('impact-trace-pulse-a', impactPulseFlip)
+      traceEdges.toggleClass('impact-trace-pulse-b', !impactPulseFlip)
+    }
+
+    impactPulseFlip = !impactPulseFlip
+  }, 680)
+}
+
+const applyImpactSummaryToGraph = (summary: PertImpactSummary | null) => {
+  if (!cy) return
+  clearImpactHighlightClasses()
+  stopImpactPulseAnimation()
+
+  if (!summary) return
+
+  summary.traceNodeIds.forEach((id) => {
+    const node = cy.$id(id)
+    if (node && !node.empty()) {
+      node.addClass('impact-trace-node')
+    }
+  })
+
+  summary.traceEdgeIds.forEach((id) => {
+    const edge = cy.$id(id)
+    if (edge && !edge.empty()) {
+      edge.addClass('impact-trace-edge')
+    }
+  })
+
+  summary.impactedNodeIds.forEach((id) => {
+    const node = cy.$id(id)
+    if (node && !node.empty()) {
+      node.addClass('impact-node')
+    }
+  })
+
+  summary.impactedEdgeIds.forEach((id) => {
+    const edge = cy.$id(id)
+    if (edge && !edge.empty()) {
+      edge.addClass('impact-edge')
+    }
+  })
+
+  if (summary.impactedEdgeIds.size > 0 || summary.traceEdgeIds.size > 0) {
+    startImpactPulseAnimation()
+  }
+}
+
+const applyImpactSimulationForNode = (nodeId: string | null) => {
+  activeImpactNodeId.value = nodeId
+  if (!nodeId) {
+    selectedImpactSummary.value = null
+    applyImpactSummaryToGraph(null)
+    return
+  }
+
+  const summary = computeImpactSummary(nodeId)
+  selectedImpactSummary.value = summary
+  applyImpactSummaryToGraph(summary)
+}
+
+const getImpactSummaryForNode = (nodeId: string) => {
+  if (!nodeId) return null
+  if (selectedImpactSummary.value?.nodeId === nodeId) {
+    return selectedImpactSummary.value
+  }
+  return computeImpactSummary(nodeId)
+}
+
+const getImpactMessageForNode = (nodeId: string) => {
+  if (!nodeId) return ''
+  return getImpactSummaryForNode(nodeId)?.message || ''
+}
+
+const syncLockedNodeImpact = () => {
+  if (lockedNodeId.value) {
+    applyImpactSimulationForNode(lockedNodeId.value)
+    return
+  }
+  applyImpactSimulationForNode(null)
+}
+
+const estimateGraphIntersections = () => {
   return estimateIntersections(cy)
 }
 
@@ -329,7 +542,6 @@ const syncRouteOptimizationSummary = () => {
 const applyGraph = (retryAttempt = 0, token?: number) => {
   if (!cy) return
 
-  radialIntersectionCount.value = null
   routingHiddenEdgeCount.value = 0
 
   const activeToken = token ?? ++graphRenderToken
@@ -354,8 +566,6 @@ const applyGraph = (retryAttempt = 0, token?: number) => {
     hasEdges: props.edges.length > 0,
     isTokenCurrent,
     setResolvedLayoutMode: (mode) => { resolvedLayoutMode.value = mode },
-    setRadialCenterNodeId: (nodeId) => { radialCenterNodeId.value = nodeId },
-    clearRadialRingOverlay,
   })) {
     return
   }
@@ -364,7 +574,9 @@ const applyGraph = (retryAttempt = 0, token?: number) => {
   const totalNodes = props.nodes.length
   const graphDensity = props.edges.length / Math.max(totalNodes, 1)
   const isDenseGraph = graphDensity > 1.8 || totalNodes > 36
-  const autoMode: Exclude<PertLayoutMode, 'auto'> = isDenseGraph && totalNodes >= 18 ? 'radial' : 'hierarchical'
+  const autoMode: Exclude<PertLayoutMode, 'auto'> = isDenseGraph && totalNodes >= 54
+    ? 'force'
+    : 'hierarchical'
   let activeMode = (layoutMode.value === 'auto' ? autoMode : layoutMode.value) as Exclude<PertLayoutMode, 'auto'>
   const graphLevels = computeGraphLevels(props.nodes, props.edges)
 
@@ -376,7 +588,6 @@ const applyGraph = (retryAttempt = 0, token?: number) => {
     fitGraph,
   } = createLayoutRunner({
     cy,
-    edges: props.edges,
     nodesCount: props.nodes.length,
     roots,
     dagreRegistered,
@@ -385,11 +596,8 @@ const applyGraph = (retryAttempt = 0, token?: number) => {
     layoutPreset,
   })
 
-  const runLayout = (
-    mode: Exclude<PertLayoutMode, 'auto'>,
-    radialVariant: 'preset' | 'concentric' | 'circle' = 'preset',
-  ) => {
-    const ok = runLayoutEngine(mode, radialVariant)
+  const runLayout = (mode: Exclude<PertLayoutMode, 'auto'>) => {
+    const ok = runLayoutEngine(mode)
     if (ok) activeMode = mode
     return ok
   }
@@ -412,8 +620,6 @@ const applyGraph = (retryAttempt = 0, token?: number) => {
   if (!initialLayout.ok) {
     applyRenderFailureState({
       setResolvedLayoutMode: (mode) => { resolvedLayoutMode.value = mode },
-      setRadialCenterNodeId: (nodeId) => { radialCenterNodeId.value = nodeId },
-      clearRadialRingOverlay,
       setRenderError: (message) => { renderError.value = message },
       message: 'Falha ao aplicar o layout do diagrama PERT.',
     })
@@ -425,7 +631,6 @@ const applyGraph = (retryAttempt = 0, token?: number) => {
     layoutFallbackNotice.value = initialLayout.notice
   }
 
-  // Cytoscape can initialize while the carousel page is hidden; force resize/fit afterwards.
   setTimeout(() => {
     if (!cy || !isTokenCurrent()) return
     const onRetry = (nextRetryAttempt: number) => {
@@ -452,14 +657,13 @@ const applyGraph = (retryAttempt = 0, token?: number) => {
       startIds: graphLevels.startIds,
       levelById: graphLevels.levelById,
       postProcess,
-      updateOuterContourRouteNodes,
-      updateRadialEdgeRouting,
+      updateEdgeRouting,
       optimizeLayoutEdgeIntersections,
       fitGraph,
     })
     syncRouteOptimizationSummary()
 
-    const recoveredLayout = runRadialRecoveryFallbacks({
+    const recoveredLayout = runRecoveryFallbacks({
       activeMode,
       hasInvalidGeometry,
       runLayout,
@@ -469,8 +673,7 @@ const applyGraph = (retryAttempt = 0, token?: number) => {
           startIds: graphLevels.startIds,
           levelById: graphLevels.levelById,
           postProcess,
-          updateOuterContourRouteNodes,
-          updateRadialEdgeRouting,
+          updateEdgeRouting,
           optimizeLayoutEdgeIntersections,
           fitGraph,
         })
@@ -497,8 +700,6 @@ const applyGraph = (retryAttempt = 0, token?: number) => {
     if (invalidGeometry) {
       applyRenderFailureState({
         setResolvedLayoutMode: (mode) => { resolvedLayoutMode.value = mode },
-        setRadialCenterNodeId: (nodeId) => { radialCenterNodeId.value = nodeId },
-        clearRadialRingOverlay,
         setRenderError: (message) => { renderError.value = message },
         message: 'Falha ao renderizar o diagrama PERT neste layout.',
       })
@@ -507,9 +708,8 @@ const applyGraph = (retryAttempt = 0, token?: number) => {
 
     const layoutState = resolveLayoutState(activeMode, graphLevels.startIds, props.nodes[0]?.id || null)
     resolvedLayoutMode.value = layoutState.resolvedLayoutMode
-    radialCenterNodeId.value = layoutState.radialCenterNodeId
 
-    const finalViewport = applyFinalViewportAndVisuals({
+    applyFinalViewportAndVisuals({
       cy,
       activeMode,
       chartContainer: chartContainer.value,
@@ -519,10 +719,13 @@ const applyGraph = (retryAttempt = 0, token?: number) => {
       ensureMinimumRenderedNodeSize,
       applyZoomLod,
       setAllEdgesForceVisible,
-      updateRadialRingOverlay,
-      estimateIntersections: estimateRadialIntersections,
+      estimateIntersections: estimateGraphIntersections,
     })
-    radialIntersectionCount.value = finalViewport.radialIntersectionCount
+
+    if (lockedNodeId.value) {
+      applyLockedFocusById(cy, lockedNodeId.value)
+    }
+    syncLockedNodeImpact()
   }, 60)
 }
 
@@ -543,8 +746,8 @@ const initGraph = async () => {
         selectedNode,
         lockedNodeId,
         selectedNodeInsights,
-        nodes: props.nodes,
-        edges: props.edges,
+        getNodes: () => props.nodes,
+        getEdges: () => props.edges,
         setAllEdgesForceVisible,
         buildNodeInsights,
         applyLockedFocusById,
@@ -557,7 +760,26 @@ const initGraph = async () => {
         clearGhosting,
         hideTooltip,
         applyZoomLod,
-        updateRadialRingOverlay,
+        onNodeHover: (node: PertDiagramNode) => {
+          if (!lockedNodeId.value && node?.id) {
+            applyImpactSimulationForNode(node.id)
+          }
+        },
+        onNodeTap: (node: PertDiagramNode) => {
+          if (node?.id) {
+            applyImpactSimulationForNode(node.id)
+          }
+        },
+        onNodeOut: () => {
+          if (lockedNodeId.value) {
+            applyImpactSimulationForNode(lockedNodeId.value)
+            return
+          }
+          applyImpactSimulationForNode(null)
+        },
+        onCanvasTap: () => {
+          applyImpactSimulationForNode(null)
+        },
       },
       createPertResizeObserver,
       getWasContainerHidden: () => wasContainerHidden,
@@ -570,7 +792,6 @@ const initGraph = async () => {
       onRegularResize: (currentCy) => {
         currentCy.resize()
         currentCy.fit(undefined, 28)
-        updateRadialRingOverlay()
       },
     })
 
@@ -585,9 +806,9 @@ const initGraph = async () => {
     if (lockedNodeId.value) {
       applyLockedFocusById(cy, lockedNodeId.value)
       buildNodeInsights(lockedNodeId.value, props.nodes, props.edges)
+      applyImpactSimulationForNode(lockedNodeId.value)
     }
     applyZoomLod(cy)
-    updateRadialRingOverlay()
   } catch (err: any) {
     renderError.value = err?.message || 'Falha ao inicializar o diagrama PERT.'
   }
@@ -601,9 +822,9 @@ onBeforeUnmount(() => {
   hideTooltip()
   lockedNodeId.value = null
   selectedNodeInsights.value = null
+  selectedImpactSummary.value = null
+  activeImpactNodeId.value = null
   resolvedLayoutMode.value = 'hierarchical'
-  radialCenterNodeId.value = null
-  clearRadialRingOverlay()
 
   if (resizeObserver) {
     resizeObserver.disconnect()
@@ -615,7 +836,10 @@ onBeforeUnmount(() => {
     thresholdApplyTimer = null
   }
 
+  stopImpactPulseAnimation()
+
   if (cy) {
+    clearImpactHighlightClasses()
     cy.destroy()
     cy = null
   }
@@ -654,7 +878,7 @@ watch(
 )
 
 watch(
-  radialIntersectionThreshold,
+  edgeIntersectionThreshold,
   () => {
     if (!cy) {
       initGraph()
@@ -672,6 +896,25 @@ watch(
     }, 140)
   },
 )
+
+watch(
+  impactDelayDays,
+  () => {
+    const targetNodeId = lockedNodeId.value || activeImpactNodeId.value
+    if (!targetNodeId) return
+    applyImpactSimulationForNode(targetNodeId)
+  },
+)
+
+watch(
+  () => [props.nodes, props.edges],
+  () => {
+    const targetNodeId = lockedNodeId.value || activeImpactNodeId.value
+    if (!targetNodeId) return
+    applyImpactSimulationForNode(targetNodeId)
+  },
+  { deep: true },
+)
 </script>
 
 <style scoped>
@@ -684,10 +927,18 @@ watch(
 }
 
 .threshold-field {
-  max-width: 96px;
+  max-width: 190px;
+}
+
+.impact-delay-field {
+  max-width: 185px;
 }
 
 .threshold-field :deep(input) {
+  text-align: right;
+}
+
+.impact-delay-field :deep(input) {
   text-align: right;
 }
 
@@ -703,16 +954,7 @@ watch(
 
 .chart-wrapper {
   position: relative;
-}
-
-.radial-rings-bg {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  z-index: 6;
-  pointer-events: none;
-  mix-blend-mode: multiply;
+  min-width: 0;
 }
 
 .graph-tooltip {
@@ -731,6 +973,16 @@ watch(
   box-shadow: 0 6px 14px rgba(0, 0, 0, 0.16);
   font-size: 0.72rem;
   line-height: 1.25;
+}
+
+.tooltip-impact {
+  color: rgba(191, 54, 12, 0.95);
+  font-weight: 600;
+}
+
+.tooltip-impact-meta {
+  margin-top: 0.05rem;
+  color: rgba(0, 0, 0, 0.72);
 }
 
 .node-info {

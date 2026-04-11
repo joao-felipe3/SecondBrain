@@ -37,7 +37,7 @@ export const usePertInteractionManager = () => {
   const applyZoomLod = (cy: any) => {
     if (!cy) return
     const zoom = cy.zoom()
-    const allNodes = cy.nodes().not('.outer-route-node')
+    const allNodes = cy.nodes()
     allNodes.removeClass('no-label')
     allNodes.removeClass('short-label')
 

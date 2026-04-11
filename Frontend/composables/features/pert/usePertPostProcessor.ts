@@ -1,6 +1,6 @@
 import type { PertLayoutPreset } from './usePertLayoutEngine'
 
-type PertResolvedLayoutMode = 'hierarchical' | 'radial'
+type PertResolvedLayoutMode = 'hierarchical' | 'force'
 
 type CreatePostProcessParams = {
   cy: any
@@ -25,8 +25,9 @@ export const usePertPostProcessor = () => {
     const postProcess = (mode: PertResolvedLayoutMode) => {
       if (!cy) return
 
-      if (mode === 'radial') {
-        separateNodeOverlaps(cy, isDenseGraph ? 28 : 18, isDenseGraph ? 18 : 11, 0.44)
+      if (mode === 'force') {
+        // In force-directed layouts we preserve organic placement and only resolve node collisions.
+        separateNodeOverlaps(cy, isDenseGraph ? 24 : 18, isDenseGraph ? 16 : 12, 0.58)
         return
       }
 

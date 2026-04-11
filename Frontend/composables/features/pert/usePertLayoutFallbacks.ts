@@ -1,10 +1,8 @@
-type PertLayoutMode = 'auto' | 'hierarchical' | 'radial'
+type PertLayoutMode = 'auto' | 'hierarchical' | 'force'
 type PertResolvedLayoutMode = Exclude<PertLayoutMode, 'auto'>
-type PertRadialVariant = 'preset' | 'concentric' | 'circle'
 
 type RunLayoutFn = (
   mode: PertResolvedLayoutMode,
-  radialVariant?: PertRadialVariant,
 ) => boolean
 
 type RunInitialLayoutFallbackParams = {
@@ -13,7 +11,7 @@ type RunInitialLayoutFallbackParams = {
   runLayout: RunLayoutFn
 }
 
-type RunRadialRecoveryParams = {
+type RunRecoveryParams = {
   activeMode: PertResolvedLayoutMode
   hasInvalidGeometry: () => boolean
   runLayout: RunLayoutFn
@@ -36,26 +34,12 @@ export const usePertLayoutFallbacks = () => {
       }
     }
 
-    if (mode === 'radial' && runLayout('radial', 'concentric')) {
-      mode = 'radial'
-      return {
-        ok: true,
-        mode,
-        notice: 'Radial alternativo ativo para manter estabilidade.' as string | null,
-      }
-    }
+    const fallbackOrder: PertResolvedLayoutMode[] = mode === 'force'
+      ? ['hierarchical']
+      : ['force']
 
-    if (mode === 'radial' && runLayout('radial', 'circle')) {
-      mode = 'radial'
-      return {
-        ok: true,
-        mode,
-        notice: 'Radial simplificado ativo para manter estabilidade.' as string | null,
-      }
-    }
-
-    const fallbackMode: PertResolvedLayoutMode = mode === 'radial' ? 'hierarchical' : 'radial'
-    if (!runLayout(fallbackMode)) {
+    const fallbackMode = fallbackOrder.find((candidate) => runLayout(candidate))
+    if (!fallbackMode) {
       return {
         ok: false,
         mode: 'hierarchical' as PertResolvedLayoutMode,
@@ -65,9 +49,11 @@ export const usePertLayoutFallbacks = () => {
 
     mode = fallbackMode
 
-    const notice = fallbackMode === 'hierarchical' && requestedLayoutMode === 'radial'
-      ? 'Radial indisponivel neste conjunto; exibindo hierarquico automaticamente.'
-      : null
+    const notice = requestedLayoutMode === 'force' && fallbackMode !== 'force'
+        ? 'Layout de forca indisponivel neste conjunto; exibindo modo alternativo automaticamente.'
+        : requestedLayoutMode === 'hierarchical' && fallbackMode !== 'hierarchical'
+          ? 'Hierarquico indisponivel neste conjunto; exibindo modo alternativo automaticamente.'
+          : null
 
     return {
       ok: true,
@@ -76,36 +62,24 @@ export const usePertLayoutFallbacks = () => {
     }
   }
 
-  const runRadialRecoveryFallbacks = ({
+  const runRecoveryFallbacks = ({
     activeMode,
     hasInvalidGeometry,
     runLayout,
     onModeApplied,
-  }: RunRadialRecoveryParams) => {
+  }: RunRecoveryParams) => {
     let mode = activeMode
     let notice: string | null = null
 
-    if (mode === 'radial' && hasInvalidGeometry()) {
-      if (runLayout('radial', 'concentric')) {
-        mode = 'radial'
-        notice = 'Radial alternativo ativo para manter estabilidade.'
-        onModeApplied('radial')
-      }
-    }
-
-    if (mode === 'radial' && hasInvalidGeometry()) {
-      if (runLayout('radial', 'circle')) {
-        mode = 'radial'
-        notice = 'Radial simplificado ativo para manter estabilidade.'
-        onModeApplied('radial')
-      }
-    }
-
-    if (mode === 'radial' && hasInvalidGeometry()) {
-      if (runLayout('hierarchical')) {
+    if (hasInvalidGeometry()) {
+      if (mode === 'force' && runLayout('hierarchical')) {
         mode = 'hierarchical'
-        notice = 'Radial instavel neste conjunto; exibindo hierarquico automaticamente.'
+        notice = 'Layout de forca instavel neste conjunto; exibindo hierarquico automaticamente.'
         onModeApplied('hierarchical')
+      } else if (mode === 'hierarchical' && runLayout('force')) {
+        mode = 'force'
+        notice = 'Layout hierarquico instavel neste conjunto; exibindo forca automaticamente.'
+        onModeApplied('force')
       }
     }
 
@@ -117,6 +91,6 @@ export const usePertLayoutFallbacks = () => {
 
   return {
     runInitialLayoutFallback,
-    runRadialRecoveryFallbacks,
+    runRecoveryFallbacks,
   }
 }

@@ -3,8 +3,8 @@ type BindPertGraphEventsParams = {
   selectedNode: { value: any }
   lockedNodeId: { value: string | null }
   selectedNodeInsights: { value: any }
-  nodes: any[]
-  edges: any[]
+  getNodes?: () => any[]
+  getEdges?: () => any[]
   setAllEdgesForceVisible: (cy: any, value: boolean) => void
   buildNodeInsights: (nodeId: string, nodes: any[], edges: any[]) => void
   applyLockedFocusById: (cy: any, nodeId: string) => void
@@ -15,7 +15,10 @@ type BindPertGraphEventsParams = {
   clearGhosting: (cy: any) => void
   hideTooltip: () => void
   applyZoomLod: (cy: any) => void
-  updateRadialRingOverlay: () => void
+  onNodeHover?: (node: any) => void
+  onNodeTap?: (node: any) => void
+  onNodeOut?: () => void
+  onCanvasTap?: () => void
 }
 
 export const usePertGraphEventBindings = () => {
@@ -24,8 +27,8 @@ export const usePertGraphEventBindings = () => {
     selectedNode,
     lockedNodeId,
     selectedNodeInsights,
-    nodes,
-    edges,
+    getNodes,
+    getEdges,
     setAllEdgesForceVisible,
     buildNodeInsights,
     applyLockedFocusById,
@@ -36,16 +39,23 @@ export const usePertGraphEventBindings = () => {
     clearGhosting,
     hideTooltip,
     applyZoomLod,
-    updateRadialRingOverlay,
+    onNodeHover,
+    onNodeTap,
+    onNodeOut,
+    onCanvasTap,
   }: BindPertGraphEventsParams) => {
+    const resolveNodes = () => getNodes ? getNodes() : []
+    const resolveEdges = () => getEdges ? getEdges() : []
+
     cy.on('tap', 'node', (event: any) => {
       const dataNode = event?.target?.data('node') || null
       selectedNode.value = dataNode
       if (dataNode) {
         setAllEdgesForceVisible(cy, true)
         lockedNodeId.value = dataNode.id
-        buildNodeInsights(dataNode.id, nodes, edges)
+        buildNodeInsights(dataNode.id, resolveNodes(), resolveEdges())
         applyLockedFocusById(cy, dataNode.id)
+        onNodeTap?.(dataNode)
         emitNodeClick(dataNode)
       }
     })
@@ -56,7 +66,10 @@ export const usePertGraphEventBindings = () => {
       applyNeighborhoodFocus(cy, node)
       selectedNode.value = node?.data('node') || null
       showTooltip(node, event)
-      if (selectedNode.value?.id) buildNodeInsights(selectedNode.value.id, nodes, edges)
+      if (selectedNode.value?.id) {
+        buildNodeInsights(selectedNode.value.id, resolveNodes(), resolveEdges())
+        onNodeHover?.(selectedNode.value)
+      }
     })
 
     cy.on('mousemove', 'node', (event: any) => {
@@ -69,6 +82,7 @@ export const usePertGraphEventBindings = () => {
       } else {
         clearGhosting(cy)
       }
+      onNodeOut?.()
       hideTooltip()
     })
 
@@ -79,12 +93,12 @@ export const usePertGraphEventBindings = () => {
         selectedNodeInsights.value = null
         lockedNodeId.value = null
         clearGhosting(cy)
+        onCanvasTap?.()
       }
     })
 
     cy.on('zoom pan', () => {
       applyZoomLod(cy)
-      updateRadialRingOverlay()
     })
   }
 

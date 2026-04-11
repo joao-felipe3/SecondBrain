@@ -15,8 +15,9 @@ const buildPertGraphStyles = () => [
       shape: 'ellipse',
       width: 'data(visualSize)',
       height: 'data(visualSize)',
-      'border-width': 1.2,
-      'border-color': '#0d47a1',
+      'border-width': 'data(slackBorderWidth)',
+      'border-color': 'data(slackSemanticColor)',
+      'border-opacity': 1,
       'z-index-compare': 'manual',
       'z-index': 30,
       opacity: 1,
@@ -26,7 +27,6 @@ const buildPertGraphStyles = () => [
     selector: '.start-node',
     style: {
       'background-color': '#fbc02d',
-      'border-color': '#f57f17',
       'border-width': 3,
       color: '#212121',
     },
@@ -35,7 +35,6 @@ const buildPertGraphStyles = () => [
     selector: '.ready-node',
     style: {
       'background-color': '#00acc1',
-      'border-color': '#006064',
       'border-width': 3,
     },
   },
@@ -43,7 +42,6 @@ const buildPertGraphStyles = () => [
     selector: '.unavailable-node',
     style: {
       'background-color': '#b0bec5',
-      'border-color': '#78909c',
       color: '#37474f',
       opacity: 0.65,
     },
@@ -84,29 +82,25 @@ const buildPertGraphStyles = () => [
   {
     selector: '.slack-critical-node',
     style: {
-      'border-color': '#c62828',
-      'border-width': 2.4,
+      'border-width': 5,
     },
   },
   {
     selector: '.slack-near-node',
     style: {
-      'border-color': '#ef6c00',
-      'border-width': 2,
+      'border-width': 4,
     },
   },
   {
     selector: '.slack-safe-node',
     style: {
-      'border-color': '#2e7d32',
-      'border-width': 1.6,
+      'border-width': 3.1,
     },
   },
   {
     selector: '.critical-node',
     style: {
       'background-color': '#d32f2f',
-      'border-color': '#8b0000',
       'border-width': 2,
     },
   },
@@ -120,14 +114,12 @@ const buildPertGraphStyles = () => [
     selector: '.done-node',
     style: {
       'background-color': '#2e7d32',
-      'border-color': '#1b5e20',
     },
   },
   {
     selector: 'node.unavailable-node',
     style: {
       'background-color': '#b0bec5',
-      'border-color': '#78909c',
       color: '#37474f',
       opacity: 0.65,
     },
@@ -135,32 +127,29 @@ const buildPertGraphStyles = () => [
   {
     selector: 'node.slack-critical-node',
     style: {
-      'border-color': '#c62828',
-      'border-width': 2.4,
+      'border-width': 5,
     },
   },
   {
     selector: 'node.slack-near-node',
     style: {
-      'border-color': '#ef6c00',
-      'border-width': 2,
+      'border-width': 4,
     },
   },
   {
     selector: 'node.slack-safe-node',
     style: {
-      'border-color': '#2e7d32',
-      'border-width': 1.6,
+      'border-width': 3.1,
     },
   },
   {
     selector: 'edge',
     style: {
-      width: 3.8,
+      width: 'data(edgeWidth)',
       'line-color': 'rgba(66, 66, 66, 0.62)',
       'target-arrow-color': 'rgba(66, 66, 66, 0.92)',
       'target-arrow-shape': 'triangle',
-      'target-arrow-scale': 3.7,
+      'target-arrow-scale': 'data(edgeArrowScale)',
       'curve-style': 'bezier',
       'z-index-compare': 'manual',
       'z-index': 10,
@@ -186,66 +175,12 @@ const buildPertGraphStyles = () => [
     },
   },
   {
-    selector: '.radial-route-edge',
+    selector: '.routed-edge',
     style: {
       'curve-style': 'unbundled-bezier',
-      'control-point-distances': 'data(radialCpDistances)',
-      'control-point-weights': 'data(radialCpWeights)',
-      'control-point-step-size': 62,
-    },
-  },
-  {
-    selector: '.hierarchical-route-edge',
-    style: {
-      'curve-style': 'unbundled-bezier',
-      'control-point-distances': 'data(radialCpDistances)',
-      'control-point-weights': 'data(radialCpWeights)',
+      'control-point-distances': 'data(cpDistances)',
+      'control-point-weights': 'data(cpWeights)',
       'control-point-step-size': 56,
-    },
-  },
-  {
-    selector: '.outer-route-node',
-    style: {
-      label: '',
-      width: 1,
-      height: 1,
-      opacity: 0,
-      'background-opacity': 0,
-      'border-width': 0,
-      events: 'no',
-      'z-index': 1,
-    },
-  },
-  {
-    selector: '.outer-route-edge',
-    style: {
-      'curve-style': 'segments',
-      'segment-distances': '0',
-      'segment-weights': '0.5',
-      width: 2.1,
-      opacity: 0.7,
-      'line-color': 'rgba(21, 118, 133, 0.56)',
-      'target-arrow-color': 'rgba(21, 118, 133, 0.7)',
-      'target-arrow-scale': 1.75,
-    },
-  },
-  {
-    selector: '.outer-route-pre-edge',
-    style: {
-      'target-arrow-shape': 'none',
-    },
-  },
-  {
-    selector: '.outer-route-post-edge',
-    style: {
-      'target-arrow-shape': 'triangle',
-    },
-  },
-  {
-    selector: '.outer-route-mid-edge',
-    style: {
-      'target-arrow-shape': 'none',
-      opacity: 0.7,
     },
   },
   {
@@ -254,26 +189,6 @@ const buildPertGraphStyles = () => [
       width: 1.8,
       opacity: 0.65,
       'target-arrow-scale': 1.8,
-    },
-  },
-  {
-    selector: '.radial-edge',
-    style: {
-      width: 1.2,
-      opacity: 0.75,
-      'target-arrow-shape': 'none',
-      'line-color': 'rgba(70, 70, 70, 0.36)',
-    },
-  },
-  {
-    selector: '.primary-incoming-edge',
-    style: {
-      width: 2.8,
-      opacity: 0.7,
-      'line-color': 'rgba(24, 115, 128, 0.72)',
-      'target-arrow-color': 'rgba(24, 115, 128, 0.8)',
-      'target-arrow-shape': 'triangle',
-      'target-arrow-scale': 1.7,
     },
   },
   {
@@ -306,7 +221,7 @@ const buildPertGraphStyles = () => [
   {
     selector: '.path-edge',
     style: {
-      width: 5.2,
+      width: 'mapData(edgeWidth, 2, 7, 4.6, 7.8)',
       'line-color': '#00838f',
       'target-arrow-color': '#00838f',
       opacity: 1,
@@ -347,10 +262,10 @@ const buildPertGraphStyles = () => [
   {
     selector: '.critical-edge',
     style: {
-      width: 5.2,
+      width: 'mapData(edgeWidth, 2, 7, 5.2, 8.2)',
       'line-color': '#d32f2f',
       'target-arrow-color': '#d32f2f',
-      'target-arrow-scale': 3.7,
+      'target-arrow-scale': 'mapData(edgeArrowScale, 2, 5, 3.3, 4.8)',
       opacity: 0.95,
     },
   },
@@ -370,6 +285,69 @@ const buildPertGraphStyles = () => [
     selector: '.is-highlighted',
     style: {
       opacity: 1,
+    },
+  },
+  {
+    selector: '.impact-node',
+    style: {
+      'underlay-color': 'rgba(255, 152, 0, 0.35)',
+      'underlay-opacity': 0.65,
+      'underlay-padding': 8,
+      'border-width': 4.2,
+    },
+  },
+  {
+    selector: '.impact-trace-node',
+    style: {
+      'underlay-color': 'rgba(2, 136, 209, 0.28)',
+      'underlay-opacity': 0.55,
+      'underlay-padding': 6,
+    },
+  },
+  {
+    selector: '.impact-edge',
+    style: {
+      'line-color': '#ff8f00',
+      'target-arrow-color': '#ff8f00',
+      width: 'mapData(edgeWidth, 2, 7, 4.8, 8.6)',
+      opacity: 0.96,
+    },
+  },
+  {
+    selector: '.impact-trace-edge',
+    style: {
+      'line-color': '#0288d1',
+      'target-arrow-color': '#0288d1',
+      width: 'mapData(edgeWidth, 2, 7, 3.8, 7.2)',
+      opacity: 0.88,
+    },
+  },
+  {
+    selector: '.impact-edge-pulse-a',
+    style: {
+      opacity: 0.98,
+      width: 'mapData(edgeWidth, 2, 7, 5.2, 9.2)',
+    },
+  },
+  {
+    selector: '.impact-edge-pulse-b',
+    style: {
+      opacity: 0.72,
+      width: 'mapData(edgeWidth, 2, 7, 3.8, 7.4)',
+    },
+  },
+  {
+    selector: '.impact-trace-pulse-a',
+    style: {
+      opacity: 0.96,
+      width: 'mapData(edgeWidth, 2, 7, 4.4, 7.8)',
+    },
+  },
+  {
+    selector: '.impact-trace-pulse-b',
+    style: {
+      opacity: 0.65,
+      width: 'mapData(edgeWidth, 2, 7, 3.1, 5.9)',
     },
   },
 ]

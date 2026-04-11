@@ -2,7 +2,7 @@ export const usePertGeometryOptimizer = () => {
   const reorderRowsByBarycenter = (cy: any) => {
     if (!cy) return
 
-    const allNodes = cy.nodes().not('.outer-route-node')
+    const allNodes = cy.nodes()
     if (!allNodes || allNodes.length === 0) return
 
     const byLayer = new Map<number, any[]>()
@@ -77,7 +77,7 @@ export const usePertGeometryOptimizer = () => {
   ) => {
     if (!cy) return
 
-    const allNodes = cy.nodes().not('.outer-route-node')
+    const allNodes = cy.nodes()
     if (!allNodes || allNodes.length === 0) return
 
     const rowTolerance = 26
@@ -125,7 +125,7 @@ export const usePertGeometryOptimizer = () => {
   ) => {
     if (!cy) return
 
-    const nodes = cy.nodes().not('.outer-route-node').toArray()
+    const nodes = cy.nodes().toArray()
     if (!nodes || nodes.length < 2) return
 
     for (let iteration = 0; iteration < iterations; iteration += 1) {
@@ -177,7 +177,7 @@ export const usePertGeometryOptimizer = () => {
 
   const normalizeWideAspect = (cy: any, maxAspectRatio = 1.9, minCompression = 0.58) => {
     if (!cy) return
-    const nodes = cy.nodes().not('.outer-route-node')
+    const nodes = cy.nodes()
     if (!nodes || nodes.length === 0) return
 
     const bounds = nodes.boundingBox()
@@ -202,7 +202,7 @@ export const usePertGeometryOptimizer = () => {
   const ensureMinimumRenderedNodeSize = (cy: any, minRenderedPx = 22, maxZoom = 2.8) => {
     if (!cy) return
 
-    const nodes = cy.nodes().not('.outer-route-node')
+    const nodes = cy.nodes()
     if (!nodes || nodes.length === 0) return
 
     const sizes = nodes

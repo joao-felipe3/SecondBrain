@@ -13,7 +13,6 @@ export {
 	usePertDiagramState,
 	usePertInteractionManager,
 	usePertGeometryOptimizer,
-	usePertRingOverlay,
 	usePertIntersectionMetrics,
 	usePertElementsBuilder,
 	usePertLayoutEngine,

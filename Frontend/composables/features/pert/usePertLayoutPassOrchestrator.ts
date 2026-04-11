@@ -1,12 +1,11 @@
-type PertResolvedLayoutMode = 'hierarchical' | 'radial'
+type PertResolvedLayoutMode = 'hierarchical' | 'force'
 
 type ApplyLayoutPassParams = {
   mode: PertResolvedLayoutMode
   startIds: string[]
   levelById: Map<string, number>
   postProcess: (mode: PertResolvedLayoutMode) => void
-  updateOuterContourRouteNodes: (force?: boolean) => void
-  updateRadialEdgeRouting: (force?: boolean) => void
+  updateEdgeRouting: (force?: boolean) => void
   optimizeLayoutEdgeIntersections: (
     mode: PertResolvedLayoutMode,
     startIds: string[],
@@ -21,17 +20,13 @@ export const usePertLayoutPassOrchestrator = () => {
     startIds,
     levelById,
     postProcess,
-    updateOuterContourRouteNodes,
-    updateRadialEdgeRouting,
+    updateEdgeRouting,
     optimizeLayoutEdgeIntersections,
     fitGraph,
   }: ApplyLayoutPassParams) => {
     postProcess(mode)
 
-    if (mode === 'radial') {
-      updateOuterContourRouteNodes(true)
-      updateRadialEdgeRouting(true)
-    }
+    updateEdgeRouting(true)
 
     optimizeLayoutEdgeIntersections(mode, startIds, levelById)
     fitGraph()

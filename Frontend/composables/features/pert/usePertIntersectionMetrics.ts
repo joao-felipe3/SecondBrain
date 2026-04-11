@@ -33,17 +33,15 @@ export const usePertIntersectionMetrics = () => {
         { x: Number(sourcePos?.x || 0), y: Number(sourcePos?.y || 0) },
       ]
 
-      if (!edge.hasClass('outer-route-edge')) {
-        try {
-          const cps = typeof edge.controlPoints === 'function' ? edge.controlPoints() : []
-          if (Array.isArray(cps) && cps.length) {
-            cps.forEach((cp: any) => {
-              points.push({ x: Number(cp?.x || 0), y: Number(cp?.y || 0) })
-            })
-          }
-        } catch {
-          // Ignore control-point access failures and fallback to source-target chord.
+      try {
+        const cps = typeof edge.controlPoints === 'function' ? edge.controlPoints() : []
+        if (Array.isArray(cps) && cps.length) {
+          cps.forEach((cp: any) => {
+            points.push({ x: Number(cp?.x || 0), y: Number(cp?.y || 0) })
+          })
         }
+      } catch {
+        // Ignore control-point access failures and fallback to source-target chord.
       }
 
       points.push({ x: Number(targetPos?.x || 0), y: Number(targetPos?.y || 0) })
