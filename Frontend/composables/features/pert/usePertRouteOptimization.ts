@@ -1,4 +1,4 @@
-import type { PertDiagramEdge } from '~/composables/features/usePertDiagramData'
+import type { PertDiagramEdge } from '~/composables/features/pert/usePertDiagramData'
 
 type PertResolvedLayoutMode = 'hierarchical' | 'radial'
 
@@ -8,6 +8,16 @@ type UsePertRouteOptimizationParams = {
   getChartContainer: () => HTMLElement | null
   getEdges: () => PertDiagramEdge[]
   radialEdgeIntersectionThreshold?: number
+  getRadialEdgeIntersectionThreshold?: () => number
+}
+
+type RouteOptimizationSummary = {
+  mode: PertResolvedLayoutMode
+  threshold: number
+  totalRoutableEdges: number
+  acceptedWithinThreshold: number
+  hiddenByThreshold: number
+  criticalFallbackKept: number
 }
 
 type Segment = {
@@ -26,7 +36,25 @@ export const usePertRouteOptimization = ({
   getChartContainer,
   getEdges,
   radialEdgeIntersectionThreshold = 1,
+  getRadialEdgeIntersectionThreshold,
 }: UsePertRouteOptimizationParams) => {
+  const resolveIntersectionThreshold = () => {
+    const raw = getRadialEdgeIntersectionThreshold
+      ? getRadialEdgeIntersectionThreshold()
+      : radialEdgeIntersectionThreshold
+    if (!Number.isFinite(raw)) return 0
+    return Math.max(0, Math.min(20, Math.floor(raw)))
+  }
+
+  let lastOptimizationSummary: RouteOptimizationSummary = {
+    mode: 'radial',
+    threshold: resolveIntersectionThreshold(),
+    totalRoutableEdges: 0,
+    acceptedWithinThreshold: 0,
+    hiddenByThreshold: 0,
+    criticalFallbackKept: 0,
+  }
+
   const updateRadialEdgeRouting = (force = false) => {
     const cy = getCy()
     if (!cy || (!force && getResolvedLayoutMode() !== 'radial')) return
@@ -197,11 +225,23 @@ export const usePertRouteOptimization = ({
     const cy = getCy()
     if (!cy) return
 
+    const effectiveThreshold = resolveIntersectionThreshold()
+
     const edgeSelector = mode === 'radial' ? '.radial-route-edge' : '.hierarchical-route-edge'
     const routedEdges = cy.edges(edgeSelector)
       .not('.suppressed-edge')
       .not('.outer-route-edge')
-    if (!routedEdges || routedEdges.length === 0) return
+    if (!routedEdges || routedEdges.length === 0) {
+      lastOptimizationSummary = {
+        mode,
+        threshold: effectiveThreshold,
+        totalRoutableEdges: 0,
+        acceptedWithinThreshold: 0,
+        hiddenByThreshold: 0,
+        criticalFallbackKept: 0,
+      }
+      return
+    }
 
     routedEdges.removeClass('routing-hidden-edge')
 
@@ -213,7 +253,17 @@ export const usePertRouteOptimization = ({
       }
     })
 
-    if (edgeByLogicalId.size === 0) return
+    if (edgeByLogicalId.size === 0) {
+      lastOptimizationSummary = {
+        mode,
+        threshold: effectiveThreshold,
+        totalRoutableEdges: 0,
+        acceptedWithinThreshold: 0,
+        hiddenByThreshold: 0,
+        criticalFallbackKept: 0,
+      }
+      return
+    }
 
     const outgoingBySource = new Map<string, PertDiagramEdge[]>()
     for (const edge of getEdges()) {
@@ -386,6 +436,9 @@ export const usePertRouteOptimization = ({
     }
 
     const acceptedSegments: Segment[] = []
+    let acceptedWithinThreshold = 0
+    let hiddenByThreshold = 0
+    let criticalFallbackKept = 0
 
     for (const logicalId of orderedEdgeIds) {
       const edge = edgeByLogicalId.get(logicalId)
@@ -451,7 +504,7 @@ export const usePertRouteOptimization = ({
           }
         }
 
-        if (crossings > radialEdgeIntersectionThreshold) continue
+        if (crossings > effectiveThreshold) continue
 
         edge.data('radialCpDistances', candidate.distances)
         edge.data('radialCpWeights', candidate.weights)
@@ -464,6 +517,7 @@ export const usePertRouteOptimization = ({
         acceptedSegments.push(...candidateSegments)
         edge.removeClass('routing-hidden-edge')
         chosen = true
+        acceptedWithinThreshold += 1
         break
       }
 
@@ -473,7 +527,7 @@ export const usePertRouteOptimization = ({
             distances: `${Math.round(sideHint * baseDistance * 0.65)}`,
             weights: '0.5',
             segments: [] as Segment[],
-            crossings: radialEdgeIntersectionThreshold + 1,
+            crossings: effectiveThreshold + 1,
           }
 
           edge.data('radialCpDistances', fallback.distances)
@@ -489,17 +543,33 @@ export const usePertRouteOptimization = ({
           }
 
           edge.removeClass('routing-hidden-edge')
+          criticalFallbackKept += 1
           continue
         }
 
         edge.addClass('routing-hidden-edge')
+        hiddenByThreshold += 1
       }
     }
+
+    lastOptimizationSummary = {
+      mode,
+      threshold: effectiveThreshold,
+      totalRoutableEdges: orderedEdgeIds.length,
+      acceptedWithinThreshold,
+      hiddenByThreshold,
+      criticalFallbackKept,
+    }
+  }
+
+  const getLastOptimizationSummary = () => {
+    return lastOptimizationSummary
   }
 
   return {
     updateRadialEdgeRouting,
     updateOuterContourRouteNodes,
     optimizeLayoutEdgeIntersections,
+    getLastOptimizationSummary,
   }
 }

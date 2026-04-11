@@ -45,7 +45,7 @@ const buildPertGraphStyles = () => [
       'background-color': '#b0bec5',
       'border-color': '#78909c',
       color: '#37474f',
-      opacity: 0.45,
+      opacity: 0.65,
     },
   },
   {
@@ -57,7 +57,7 @@ const buildPertGraphStyles = () => [
   {
     selector: '.path-dim',
     style: {
-      opacity: 0.24,
+      opacity: 0.44,
     },
   },
   {
@@ -129,7 +129,7 @@ const buildPertGraphStyles = () => [
       'background-color': '#b0bec5',
       'border-color': '#78909c',
       color: '#37474f',
-      opacity: 0.45,
+      opacity: 0.65,
     },
   },
   {
@@ -223,7 +223,7 @@ const buildPertGraphStyles = () => [
       'segment-distances': '0',
       'segment-weights': '0.5',
       width: 2.1,
-      opacity: 0.54,
+      opacity: 0.7,
       'line-color': 'rgba(21, 118, 133, 0.56)',
       'target-arrow-color': 'rgba(21, 118, 133, 0.7)',
       'target-arrow-scale': 1.75,
@@ -245,14 +245,14 @@ const buildPertGraphStyles = () => [
     selector: '.outer-route-mid-edge',
     style: {
       'target-arrow-shape': 'none',
-      opacity: 0.42,
+      opacity: 0.7,
     },
   },
   {
     selector: '.dense-edge',
     style: {
       width: 1.8,
-      opacity: 0.4,
+      opacity: 0.65,
       'target-arrow-scale': 1.8,
     },
   },
@@ -260,7 +260,7 @@ const buildPertGraphStyles = () => [
     selector: '.radial-edge',
     style: {
       width: 1.2,
-      opacity: 0.58,
+      opacity: 0.75,
       'target-arrow-shape': 'none',
       'line-color': 'rgba(70, 70, 70, 0.36)',
     },
@@ -280,7 +280,7 @@ const buildPertGraphStyles = () => [
     selector: '.backbone-edge',
     style: {
       width: 3,
-      opacity: 0.52,
+      opacity: 0.65,
       'line-color': 'rgba(32, 120, 132, 0.75)',
       'target-arrow-color': 'rgba(32, 120, 132, 0.9)',
       'target-arrow-scale': 2.2,
@@ -290,7 +290,7 @@ const buildPertGraphStyles = () => [
     selector: '.idle-edge',
     style: {
       width: 2.2,
-      opacity: 0.4,
+      opacity: 0.6,
       'target-arrow-scale': 1.75,
       'line-color': 'rgba(90, 90, 90, 0.34)',
       'target-arrow-color': 'rgba(90, 90, 90, 0.5)',
@@ -300,7 +300,7 @@ const buildPertGraphStyles = () => [
     selector: '.long-edge',
     style: {
       'line-style': 'dashed',
-      opacity: 0.24,
+      opacity: 0.4,
     },
   },
   {
@@ -315,13 +315,13 @@ const buildPertGraphStyles = () => [
   {
     selector: '.path-dim-edge',
     style: {
-      opacity: 0.14,
+      opacity: 0.35,
     },
   },
   {
     selector: '.blocked-edge',
     style: {
-      opacity: 0.16,
+      opacity: 0.3,
     },
   },
   {
@@ -363,7 +363,7 @@ const buildPertGraphStyles = () => [
   {
     selector: '.is-dimmed',
     style: {
-      opacity: 0.14,
+      opacity: 0.3,
     },
   },
   {

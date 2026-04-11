@@ -16,6 +16,19 @@
           <v-btn value="hierarchical" size="x-small">Hierarquico</v-btn>
           <v-btn value="radial" size="x-small">Radial</v-btn>
         </v-btn-toggle>
+        <v-text-field
+          v-model.number="radialThresholdModel"
+          label="Limite"
+          type="number"
+          min="0"
+          max="20"
+          step="1"
+          density="compact"
+          variant="outlined"
+          color="primary"
+          hide-details
+          class="threshold-field"
+        />
         <v-chip
           v-if="layoutFallbackNotice"
           size="small"
@@ -24,13 +37,21 @@
         >
           {{ layoutFallbackNotice }}
         </v-chip>
-        <v-chip
+        <!-- <v-chip
           v-if="(resolvedLayoutMode === 'radial' || resolvedLayoutMode === 'hierarchical') && radialIntersectionCount !== null"
           size="small"
           :color="radialIntersectionCount > 0 ? 'warning' : 'success'"
           variant="tonal"
         >
           {{ radialIntersectionCount }} intersecoes estimadas
+        </v-chip> -->
+        <v-chip
+          v-if="resolvedLayoutMode === 'radial' || resolvedLayoutMode === 'hierarchical'"
+          size="small"
+          :color="routingHiddenEdgeCount > 0 ? 'warning' : 'success'"
+          variant="tonal"
+        >
+          {{ routingHiddenEdgeCount }} arestas ocultas
         </v-chip>
         <v-chip size="small" color="success" variant="tonal">{{ readyNowTaskCount }} posso fazer agora</v-chip>
       </div>
@@ -89,28 +110,28 @@
 
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
-import type { PertDiagramNode, PertDiagramEdge } from '~/composables/features/usePertDiagramData'
-import { usePertDiagramState } from '~/composables/features/usePertDiagramState'
-import { usePertInteractionManager } from '~/composables/features/usePertInteractionManager'
-import { usePertGeometryOptimizer } from '~/composables/features/usePertGeometryOptimizer'
-import { usePertRingOverlay } from '~/composables/features/usePertRingOverlay'
-import { usePertIntersectionMetrics } from '~/composables/features/usePertIntersectionMetrics'
-import { usePertElementsBuilder } from '~/composables/features/usePertElementsBuilder'
-import { usePertLayoutEngine } from '~/composables/features/usePertLayoutEngine'
-import { usePertLayoutFallbacks } from '~/composables/features/usePertLayoutFallbacks'
-import { usePertRenderFinalizer } from '~/composables/features/usePertRenderFinalizer'
-import { usePertRetryCoordinator } from '~/composables/features/usePertRetryCoordinator'
-import { usePertLayoutPassOrchestrator } from '~/composables/features/usePertLayoutPassOrchestrator'
-import { usePertRenderFailureState } from '~/composables/features/usePertRenderFailureState'
-import { usePertEmptyGraphHandler } from '~/composables/features/usePertEmptyGraphHandler'
-import { usePertPostProcessor } from '~/composables/features/usePertPostProcessor'
-import { usePertCytoscapeBootstrap } from '~/composables/features/usePertCytoscapeBootstrap'
-import { usePertGraphResizeObserver } from '~/composables/features/usePertGraphResizeObserver'
-import { usePertGraphEventBindings } from '~/composables/features/usePertGraphEventBindings'
-import { usePertRouteOptimization } from '~/composables/features/usePertRouteOptimization'
-import { usePertGraphTopology } from '~/composables/features/usePertGraphTopology'
-import { usePertTooltip } from '~/composables/features/usePertTooltip'
-import { usePertGraphInitializer } from '~/composables/features/usePertGraphInitializer'
+import type { PertDiagramNode, PertDiagramEdge } from '~/composables/features/pert/usePertDiagramData'
+import { usePertDiagramState } from '~/composables/features/pert/usePertDiagramState'
+import { usePertInteractionManager } from '~/composables/features/pert/usePertInteractionManager'
+import { usePertGeometryOptimizer } from '~/composables/features/pert/usePertGeometryOptimizer'
+import { usePertRingOverlay } from '~/composables/features/pert/usePertRingOverlay'
+import { usePertIntersectionMetrics } from '~/composables/features/pert/usePertIntersectionMetrics'
+import { usePertElementsBuilder } from '~/composables/features/pert/usePertElementsBuilder'
+import { usePertLayoutEngine } from '~/composables/features/pert/usePertLayoutEngine'
+import { usePertLayoutFallbacks } from '~/composables/features/pert/usePertLayoutFallbacks'
+import { usePertRenderFinalizer } from '~/composables/features/pert/usePertRenderFinalizer'
+import { usePertRetryCoordinator } from '~/composables/features/pert/usePertRetryCoordinator'
+import { usePertLayoutPassOrchestrator } from '~/composables/features/pert/usePertLayoutPassOrchestrator'
+import { usePertRenderFailureState } from '~/composables/features/pert/usePertRenderFailureState'
+import { usePertEmptyGraphHandler } from '~/composables/features/pert/usePertEmptyGraphHandler'
+import { usePertPostProcessor } from '~/composables/features/pert/usePertPostProcessor'
+import { usePertCytoscapeBootstrap } from '~/composables/features/pert/usePertCytoscapeBootstrap'
+import { usePertGraphResizeObserver } from '~/composables/features/pert/usePertGraphResizeObserver'
+import { usePertGraphEventBindings } from '~/composables/features/pert/usePertGraphEventBindings'
+import { usePertRouteOptimization } from '~/composables/features/pert/usePertRouteOptimization'
+import { usePertGraphTopology } from '~/composables/features/pert/usePertGraphTopology'
+import { usePertTooltip } from '~/composables/features/pert/usePertTooltip'
+import { usePertGraphInitializer } from '~/composables/features/pert/usePertGraphInitializer'
 
 const props = defineProps<{
   nodes: PertDiagramNode[]
@@ -239,6 +260,8 @@ const {
 const renderError = ref<string | null>(null)
 const layoutFallbackNotice = ref<string | null>(null)
 const radialIntersectionCount = ref<number | null>(null)
+const routingHiddenEdgeCount = ref<number>(0)
+const radialIntersectionThreshold = ref<number>(2)
 const resolvedLayoutMode = ref<Exclude<PertLayoutMode, 'auto'>>('hierarchical')
 const radialCenterNodeId = ref<string | null>(null)
 const radialRingOverlay = ref<{ cx: number; cy: number; radii: number[]; width: number; height: number }>({
@@ -250,6 +273,7 @@ let resizeObserver: ResizeObserver | null = null
 let dagreRegistered = false
 let graphRenderToken = 0
 let wasContainerHidden = false
+let thresholdApplyTimer: ReturnType<typeof setTimeout> | null = null
 type PertLayoutMode = 'auto' | 'hierarchical' | 'radial'
 const layoutMode = ref<PertLayoutMode>('auto')
 const showRadialRings = computed(() =>
@@ -258,19 +282,31 @@ const showRadialRings = computed(() =>
   !renderError.value,
 )
 
-const RADIAL_EDGE_INTERSECTION_THRESHOLD = 2
+const normalizeRadialThreshold = (value: unknown) => {
+  const parsed = Number(value)
+  if (!Number.isFinite(parsed)) return 2
+  return Math.max(0, Math.min(20, Math.floor(parsed)))
+}
+
+const radialThresholdModel = computed({
+  get: () => radialIntersectionThreshold.value,
+  set: (value: unknown) => {
+    radialIntersectionThreshold.value = normalizeRadialThreshold(value)
+  },
+})
 
 
 const {
   updateRadialEdgeRouting,
   updateOuterContourRouteNodes,
   optimizeLayoutEdgeIntersections,
+  getLastOptimizationSummary,
 } = usePertRouteOptimization({
   getCy: () => cy,
   getResolvedLayoutMode: () => resolvedLayoutMode.value,
   getChartContainer: () => chartContainer.value,
   getEdges: () => props.edges,
-  radialEdgeIntersectionThreshold: RADIAL_EDGE_INTERSECTION_THRESHOLD,
+  getRadialEdgeIntersectionThreshold: () => radialIntersectionThreshold.value,
 })
 
 const clearRadialRingOverlay = () => {
@@ -285,10 +321,16 @@ const estimateRadialIntersections = () => {
   return estimateIntersections(cy)
 }
 
+const syncRouteOptimizationSummary = () => {
+  const summary = getLastOptimizationSummary()
+  routingHiddenEdgeCount.value = summary.hiddenByThreshold
+}
+
 const applyGraph = (retryAttempt = 0, token?: number) => {
   if (!cy) return
 
   radialIntersectionCount.value = null
+  routingHiddenEdgeCount.value = 0
 
   const activeToken = token ?? ++graphRenderToken
   if (activeToken !== graphRenderToken) return
@@ -415,6 +457,7 @@ const applyGraph = (retryAttempt = 0, token?: number) => {
       optimizeLayoutEdgeIntersections,
       fitGraph,
     })
+    syncRouteOptimizationSummary()
 
     const recoveredLayout = runRadialRecoveryFallbacks({
       activeMode,
@@ -431,6 +474,7 @@ const applyGraph = (retryAttempt = 0, token?: number) => {
           optimizeLayoutEdgeIntersections,
           fitGraph,
         })
+        syncRouteOptimizationSummary()
       },
     })
 
@@ -566,6 +610,11 @@ onBeforeUnmount(() => {
     resizeObserver = null
   }
 
+  if (thresholdApplyTimer) {
+    clearTimeout(thresholdApplyTimer)
+    thresholdApplyTimer = null
+  }
+
   if (cy) {
     cy.destroy()
     cy = null
@@ -603,6 +652,26 @@ watch(
     applyGraph()
   },
 )
+
+watch(
+  radialIntersectionThreshold,
+  () => {
+    if (!cy) {
+      initGraph()
+      return
+    }
+
+    if (thresholdApplyTimer) {
+      clearTimeout(thresholdApplyTimer)
+      thresholdApplyTimer = null
+    }
+
+    thresholdApplyTimer = setTimeout(() => {
+      thresholdApplyTimer = null
+      applyGraph()
+    }, 140)
+  },
+)
 </script>
 
 <style scoped>
@@ -612,6 +681,14 @@ watch(
 
 .layout-toggle :deep(.v-btn) {
   text-transform: none;
+}
+
+.threshold-field {
+  max-width: 96px;
+}
+
+.threshold-field :deep(input) {
+  text-align: right;
 }
 
 .chart-container {

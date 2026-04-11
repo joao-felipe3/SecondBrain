@@ -15,13 +15,42 @@ export class CacheService {
 
   private initializeRedis(): void {
     try {
-      const redisUrl = process.env.REDIS_URL;
+      const redisUrl = process.env.REDIS_URL?.trim();
       if (redisUrl) {
         // Dynamically require to avoid hard dependency at compile-time
         // eslint-disable-next-line @typescript-eslint/no-var-requires
         const IORedis = require('ioredis');
-        this.redisClient = new IORedis(redisUrl);
-        console.log('[CacheService] Redis cache enabled');
+        const redisClient = new IORedis(redisUrl, {
+          lazyConnect: true,
+          enableOfflineQueue: false,
+          maxRetriesPerRequest: 1,
+          connectTimeout: 2000,
+        });
+
+        const disableRedis = (): void => {
+          if (this.redisClient !== redisClient) return;
+
+          this.redisClient = null;
+          try {
+            redisClient.removeAllListeners();
+            redisClient.disconnect();
+          } catch {
+            // Ignore shutdown errors and keep the in-memory fallback active.
+          }
+        };
+
+        redisClient.on('error', disableRedis);
+        redisClient.on('close', disableRedis);
+        redisClient.on('end', disableRedis);
+
+        this.redisClient = redisClient;
+        void redisClient.connect()
+          .then(() => {
+            if (this.redisClient === redisClient) {
+              console.log('[CacheService] Redis cache enabled');
+            }
+          })
+          .catch(() => disableRedis());
       }
     } catch (err) {
       // Redis not available — fallback to in-memory cache

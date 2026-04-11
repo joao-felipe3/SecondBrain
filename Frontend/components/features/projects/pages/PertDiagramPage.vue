@@ -97,7 +97,7 @@
 import { computed, onMounted, ref, watch } from 'vue'
 import type { Project } from '~/models/Project'
 import { useDisplay } from 'vuetify'
-import { usePertDiagramData, type PertDiagramNode, type PertDiagramEdge } from '~/composables/features/usePertDiagramData'
+import { usePertDiagramData, type PertDiagramNode, type PertDiagramEdge } from '~/composables/features/pert/usePertDiagramData'
 import { useApi } from '~/composables/api'
 import PertDiagramVisualization from '../visualization/PertDiagramVisualization.vue'
 

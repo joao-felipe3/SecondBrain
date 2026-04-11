@@ -1,4 +1,4 @@
-import type { PertDiagramEdge, PertDiagramNode } from '~/composables/features/usePertDiagramData'
+import type { PertDiagramEdge, PertDiagramNode } from '~/composables/features/pert/usePertDiagramData'
 
 export type PertGraphLevels = {
   levelById: Map<string, number>
