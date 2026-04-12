@@ -458,6 +458,9 @@ export class ProjectsService {
 			name: String(task?.title || task?.name || 'Task'),
 			duration: toMinutes(task),
 			dependencies: [],
+			dependencyEdges: [],
+			parentWbsNodeId: task?.parentWbsNodeId ? String(task.parentWbsNodeId) : undefined,
+			wbsPath: task?.wbsPath ? String(task.wbsPath) : undefined,
 		}));
 
 		const nodeById = new Map<string, TaskNode>();
@@ -468,7 +471,13 @@ export class ProjectsService {
 			const dependsOnTaskId = String(dep?.dependsOnTaskId || '').trim();
 			if (!taskId || !dependsOnTaskId) continue;
 			const node = nodeById.get(taskId);
-			if (node) node.dependencies.push(dependsOnTaskId);
+			if (node) {
+				node.dependencies.push(dependsOnTaskId);
+				node.dependencyEdges?.push({
+					predecessorId: dependsOnTaskId,
+					relationship: this.cpmService.normalizeRelationship(dep?.relationship),
+				});
+			}
 		}
 
 		const analysis = this.cpmService.calculateCriticalPath(taskNodes);
@@ -592,6 +601,7 @@ export class ProjectsService {
 			criticalPath: analysis.criticalPath,
 			alerts: analysis.alerts,
 			diagnostics: analysis.diagnostics,
+			packageCriticality: analysis.packageCriticality,
 		};
 	}
 
@@ -630,6 +640,9 @@ export class ProjectsService {
 			name: String(task?.title || task?.name || 'Task'),
 			duration: toMinutes(task),
 			dependencies: [],
+			dependencyEdges: [],
+			parentWbsNodeId: task?.parentWbsNodeId ? String(task.parentWbsNodeId) : undefined,
+			wbsPath: task?.wbsPath ? String(task.wbsPath) : undefined,
 		}));
 
 		const nodeById = new Map<string, TaskNode>();
@@ -640,7 +653,13 @@ export class ProjectsService {
 			const dependsOnTaskId = String(dep?.dependsOnTaskId || '').trim();
 			if (!taskId || !dependsOnTaskId) continue;
 			const node = nodeById.get(taskId);
-			if (node) node.dependencies.push(dependsOnTaskId);
+			if (node) {
+				node.dependencies.push(dependsOnTaskId);
+				node.dependencyEdges?.push({
+					predecessorId: dependsOnTaskId,
+					relationship: this.cpmService.normalizeRelationship(dep?.relationship),
+				});
+			}
 		}
 
 		const analysis = this.cpmService.calculateCriticalPath(taskNodes);
@@ -752,6 +771,7 @@ export class ProjectsService {
 				maxParallelism: round2(analysis.diagnostics?.impliedParallelism || 0),
 			},
 			diagnostics: analysis.diagnostics,
+			packageCriticality: analysis.packageCriticality,
 		};
 	}
 

@@ -3,11 +3,19 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { DependencyType, TaskDependency, TaskDependencyDocument } from '../schemas/task-dependency.schema';
 
+export interface TaskDependencyEdge {
+  predecessorId: string;
+  relationship: DependencyType;
+}
+
 export interface TaskNode {
   id: string;
   name: string;
   duration: number; // Tempo esperado em minutos (capturado via PERT)
   dependencies: string[]; // IDs de predecessoras
+  dependencyEdges?: TaskDependencyEdge[];
+  parentWbsNodeId?: string;
+  wbsPath?: string;
 
   // Calculados:
   earlyStart?: number;
@@ -18,11 +26,24 @@ export interface TaskNode {
   isCritical?: boolean;
 }
 
+export interface PackageCriticality {
+  packageId: string;
+  packagePath?: string;
+  taskCount: number;
+  criticalTaskCount: number;
+  criticalRatio: number;
+  minSlack: number;
+  criticalDuration: number;
+  criticalPathTaskCount: number;
+  score: number;
+}
+
 export interface CPMAnalysis {
   criticalPath: string[];
   projectDuration: number;
   tasksByImpact: TaskNode[];
   alerts: string[];
+  packageCriticality?: PackageCriticality[];
   diagnostics?: {
     taskCount: number;
     criticalCount: number;
@@ -48,6 +69,11 @@ export interface CPMAnalysis {
     };
     topUnlockers?: Array<{ taskId: string; taskName: string; outDegree: number }>;
     topBottlenecks?: Array<{ taskId: string; taskName: string; inDegree: number }>;
+    validation?: {
+      missingDependencyRefs: number;
+      missingDependencySamples?: Array<{ taskId: string; dependsOnTaskId: string }>;
+      reliability: 'high' | 'medium' | 'low';
+    };
   };
 }
 
@@ -66,7 +92,126 @@ export interface TaskMetrics {
 export class CPMService {
   private readonly logger = new Logger(CPMService.name);
 
-  private buildCriticalPathSequence(tasks: TaskNode[], projectDuration: number): string[] {
+  private getDependencyEdges(task: TaskNode): TaskDependencyEdge[] {
+    const normalized: TaskDependencyEdge[] = [];
+    const seen = new Set<string>();
+
+    const explicitEdges = Array.isArray(task.dependencyEdges) ? task.dependencyEdges : [];
+    for (const edge of explicitEdges) {
+      const predecessorId = String((edge as any)?.predecessorId ?? '').trim();
+      if (!predecessorId) continue;
+      if (seen.has(predecessorId)) continue;
+      seen.add(predecessorId);
+      normalized.push({
+        predecessorId,
+        relationship: this.normalizeRelationship((edge as any)?.relationship),
+      });
+    }
+
+    const fallbackDeps = Array.isArray(task.dependencies) ? task.dependencies : [];
+    for (const depId of fallbackDeps) {
+      const predecessorId = String(depId ?? '').trim();
+      if (!predecessorId) continue;
+      if (seen.has(predecessorId)) continue;
+      seen.add(predecessorId);
+      normalized.push({
+        predecessorId,
+        relationship: DependencyType.FINISH_TO_START,
+      });
+    }
+
+    return normalized;
+  }
+
+  private buildEdgeMap(tasks: TaskNode[]): Map<string, TaskDependencyEdge[]> {
+    const edgeMap = new Map<string, TaskDependencyEdge[]>();
+    for (const task of tasks) {
+      edgeMap.set(task.id, this.getDependencyEdges(task));
+    }
+    return edgeMap;
+  }
+
+  private computePackageCriticality(tasks: TaskNode[], criticalPath: string[]): PackageCriticality[] {
+    const criticalPathSet = new Set(criticalPath);
+    const grouped = new Map<string, { path?: string; tasks: TaskNode[] }>();
+
+    for (const task of tasks) {
+      const packageId = String(task.parentWbsNodeId || task.wbsPath || 'unassigned');
+      const existing = grouped.get(packageId) || { path: task.wbsPath, tasks: [] };
+      existing.tasks.push(task);
+      if (!existing.path && task.wbsPath) existing.path = task.wbsPath;
+      grouped.set(packageId, existing);
+    }
+
+    if (grouped.size === 0) return [];
+
+    const byPackage = [...grouped.entries()].map(([packageId, group]) => {
+      const totalTaskCount = group.tasks.length;
+      const criticalTasks = group.tasks.filter((t) => Boolean(t.isCritical));
+      const criticalTaskCount = criticalTasks.length;
+      const criticalRatio = totalTaskCount > 0 ? criticalTaskCount / totalTaskCount : 0;
+
+      let minSlack = Number.POSITIVE_INFINITY;
+      for (const t of group.tasks) {
+        if (typeof t.slack === 'number') minSlack = Math.min(minSlack, t.slack);
+      }
+      if (!Number.isFinite(minSlack)) minSlack = 0;
+
+      const criticalDuration = criticalTasks.reduce((sum, t) => sum + (Number(t.duration) || 0), 0);
+      const criticalPathTaskCount = group.tasks.reduce(
+        (count, task) => count + (criticalPathSet.has(task.id) ? 1 : 0),
+        0,
+      );
+
+      return {
+        packageId,
+        packagePath: group.path,
+        taskCount: totalTaskCount,
+        criticalTaskCount,
+        criticalRatio,
+        minSlack,
+        criticalDuration,
+        criticalPathTaskCount,
+        score: 0,
+      };
+    });
+
+    const maxCriticalDuration = Math.max(...byPackage.map((item) => item.criticalDuration), 0);
+
+    const scored = byPackage.map((item) => {
+      const criticalRatioScore = item.criticalRatio * 100;
+      const slackRiskScore = (1 - Math.min(1, Math.max(0, item.minSlack) / 8)) * 100;
+      const durationScore = maxCriticalDuration > 0 ? (item.criticalDuration / maxCriticalDuration) * 100 : 0;
+      const score = criticalRatioScore * 0.3 + slackRiskScore * 0.2 + durationScore * 0.5;
+
+      return {
+        packageId: item.packageId,
+        packagePath: item.packagePath,
+        taskCount: item.taskCount,
+        criticalTaskCount: item.criticalTaskCount,
+        criticalRatio: Math.round(item.criticalRatio * 1000) / 10,
+        minSlack: Math.round(item.minSlack * 100) / 100,
+        criticalDuration: Math.round(item.criticalDuration * 100) / 100,
+        criticalPathTaskCount: item.criticalPathTaskCount,
+        score: Math.round(score * 100) / 100,
+      };
+    });
+
+    scored.sort((a, b) => {
+      if (b.score !== a.score) return b.score - a.score;
+      if (b.criticalRatio !== a.criticalRatio) return b.criticalRatio - a.criticalRatio;
+      if (a.minSlack !== b.minSlack) return a.minSlack - b.minSlack;
+      return a.packageId.localeCompare(b.packageId);
+    });
+
+    return scored;
+  }
+
+  private buildCriticalPathSequence(
+    tasks: TaskNode[],
+    projectDuration: number,
+    edgeMap: Map<string, TaskDependencyEdge[]>,
+  ): string[] {
     const taskById = new Map<string, TaskNode>();
     for (const t of tasks) taskById.set(t.id, t);
 
@@ -97,29 +242,47 @@ export class CPMService {
       visited.add(cur.id);
       path.push(cur.id);
 
-      const deps = Array.isArray(cur.dependencies) ? cur.dependencies : [];
+      const deps = edgeMap.get(cur.id) || [];
       if (deps.length === 0) break;
 
       const es = typeof cur.earlyStart === 'number' ? cur.earlyStart : 0;
+      const ef = typeof cur.earlyFinish === 'number' ? cur.earlyFinish : es + (cur.duration || 0);
       let bestPred: TaskNode | undefined;
       let bestScore = -Infinity;
 
-      for (const predId of deps) {
-        const pred = taskById.get(predId);
+      for (const dep of deps) {
+        const pred = taskById.get(dep.predecessorId);
         if (!pred || typeof pred.earlyFinish !== 'number') continue;
 
-        // Prefer predecessors that line up with ES (finish-to-start on the longest path)
-        const aligns = Math.abs((pred.earlyFinish ?? 0) - es) <= eps;
-        const score = (aligns ? 1_000_000 : 0) + (pred.earlyFinish ?? 0);
+        const predES = typeof pred.earlyStart === 'number' ? pred.earlyStart : 0;
+        const predEF = typeof pred.earlyFinish === 'number' ? pred.earlyFinish : predES + (pred.duration || 0);
+
+        let aligns = false;
+        let timelineRef = predEF;
+
+        if (dep.relationship === DependencyType.START_TO_START) {
+          aligns = Math.abs(predES - es) <= eps;
+          timelineRef = predES;
+        } else if (dep.relationship === DependencyType.FINISH_TO_FINISH) {
+          aligns = Math.abs(predEF - ef) <= eps;
+          timelineRef = predEF;
+        } else {
+          aligns = Math.abs(predEF - es) <= eps;
+          timelineRef = predEF;
+        }
+
+        const criticalBonus = Math.abs(Number(pred.slack ?? Number.POSITIVE_INFINITY)) < 0.1 ? 1_000_000_000 : 0;
+        const alignmentBonus = aligns ? 1_000_000 : 0;
+        const score = criticalBonus + alignmentBonus + timelineRef;
         if (score > bestScore) {
           bestScore = score;
+          bestPred = pred;
+        } else if (score === bestScore && bestPred && pred.id.localeCompare(bestPred.id) < 0) {
           bestPred = pred;
         }
       }
 
       if (!bestPred) break;
-      // If it doesn't align at all, stop to avoid producing a misleading chain.
-      if (typeof bestPred.earlyFinish === 'number' && Math.abs(bestPred.earlyFinish - es) > eps) break;
       cur = bestPred;
     }
 
@@ -200,7 +363,7 @@ export class CPMService {
     return upserted + modified;
   }
 
-  private normalizeRelationship(input?: string): DependencyType {
+  normalizeRelationship(input?: string): DependencyType {
     const raw = String(input ?? '').trim();
     const lowered = raw.toLowerCase();
 
@@ -264,14 +427,30 @@ export class CPMService {
       duration: t.duration / 60, // Minutos → Horas
     }));
 
+    const edgeMap = this.buildEdgeMap(tasksInHours);
+    const taskIds = new Set(tasksInHours.map((t) => t.id));
+    let missingDependencyRefs = 0;
+    const missingDependencySamples: Array<{ taskId: string; dependsOnTaskId: string }> = [];
+    for (const t of tasksInHours) {
+      const deps = edgeMap.get(t.id) || [];
+      for (const dep of deps) {
+        if (!taskIds.has(dep.predecessorId)) {
+          missingDependencyRefs++;
+          if (missingDependencySamples.length < 5) {
+            missingDependencySamples.push({ taskId: t.id, dependsOnTaskId: dep.predecessorId });
+          }
+        }
+      }
+    }
+
     // 1. Forward pass: calcula ES e EF
-    const forward = this.forwardPass(tasksInHours);
+    const forward = this.forwardPass(tasksInHours, edgeMap);
 
     // 2. Determina duração do projeto
     const projectDuration = Math.max(...tasksInHours.map(t => t.earlyFinish || 0));
 
     // 3. Backward pass: calcula LS e LF
-    const backward = this.backwardPass(tasksInHours, projectDuration);
+    const backward = this.backwardPass(tasksInHours, projectDuration, edgeMap);
 
     // 4. Calcula folga e identifica críticas
     const criticalTasks = tasksInHours.filter(t => {
@@ -292,12 +471,46 @@ export class CPMService {
       cycleDetected: forward.hasCycle || backward.hasCycle,
       unprocessedForward: forward.unprocessed,
       unprocessedBackward: backward.unprocessed,
+      missingDependencyRefs,
     });
 
-    // Ordena por impacto (slack crescente = mais crítica)
-    const tasksByImpact = [...tasksInHours].sort((a, b) => (a.slack || 0) - (b.slack || 0));
+    const indegree = new Map<string, number>();
+    const outdegree = new Map<string, number>();
+    let edgeCount = 0;
+    let depSum = 0;
+    for (const t of tasksInHours) {
+      indegree.set(t.id, 0);
+      outdegree.set(t.id, 0);
+    }
+    for (const t of tasksInHours) {
+      const deps = edgeMap.get(t.id) || [];
+      depSum += deps.length;
+      for (const dep of deps) {
+        if (!taskIds.has(dep.predecessorId)) continue;
+        edgeCount++;
+        indegree.set(t.id, (indegree.get(t.id) || 0) + 1);
+        outdegree.set(dep.predecessorId, (outdegree.get(dep.predecessorId) || 0) + 1);
+      }
+    }
 
-    const criticalPathSequence = this.buildCriticalPathSequence(tasksInHours, projectDuration);
+    // Ordena por impacto (slack crescente = mais crítica) com desempate determinístico
+    const tasksByImpact = [...tasksInHours].sort((a, b) => {
+      const slackDiff = (a.slack || 0) - (b.slack || 0);
+      if (Math.abs(slackDiff) > 0.01) return slackDiff;
+
+      const aInDegree = indegree.get(a.id) || 0;
+      const bInDegree = indegree.get(b.id) || 0;
+      if (aInDegree !== bInDegree) return bInDegree - aInDegree;
+
+      if (a.duration !== b.duration) return (b.duration || 0) - (a.duration || 0);
+
+      const byName = String(a.name || '').localeCompare(String(b.name || ''));
+      if (byName !== 0) return byName;
+
+      return a.id.localeCompare(b.id);
+    });
+
+    const criticalPathSequence = this.buildCriticalPathSequence(tasksInHours, projectDuration, edgeMap);
 
     const taskById = new Map<string, TaskNode>();
     for (const t of tasksInHours) taskById.set(t.id, t);
@@ -309,26 +522,6 @@ export class CPMService {
       return slack >= 0 && slack < 2; // hours
     }).length;
 
-    // Basic graph stats (ignore missing deps)
-    const taskIds = new Set(tasksInHours.map((t) => t.id));
-    let edgeCount = 0;
-    const indegree = new Map<string, number>();
-    const outdegree = new Map<string, number>();
-    let depSum = 0;
-    for (const t of tasksInHours) {
-      indegree.set(t.id, 0);
-      outdegree.set(t.id, 0);
-    }
-    for (const t of tasksInHours) {
-      const deps = Array.isArray(t.dependencies) ? t.dependencies : [];
-      depSum += deps.length;
-      for (const depId of deps) {
-        if (!taskIds.has(depId)) continue;
-        edgeCount++;
-        indegree.set(t.id, (indegree.get(t.id) || 0) + 1);
-        outdegree.set(depId, (outdegree.get(depId) || 0) + 1);
-      }
-    }
     const startNodeCount = [...indegree.values()].filter((v) => v === 0).length;
     const endNodeCount = [...outdegree.values()].filter((v) => v === 0).length;
 
@@ -369,11 +562,22 @@ export class CPMService {
         inDegree: Number(deg ?? 0),
       }));
 
+    const effectiveCriticalPath = criticalPathSequence.length > 0 ? criticalPathSequence : criticalTasks.map(t => t.id);
+    const packageCriticality = this.computePackageCriticality(tasksInHours, effectiveCriticalPath);
+
+    const reliability: 'high' | 'medium' | 'low' =
+      forward.hasCycle || backward.hasCycle
+        ? 'low'
+        : missingDependencyRefs > 0
+          ? 'medium'
+          : 'high';
+
     return {
       criticalPath: criticalPathSequence.length > 0 ? criticalPathSequence : criticalTasks.map(t => t.id),
       projectDuration: Math.round(projectDuration * 100) / 100, // Arredonda a 2 casas decimais
       tasksByImpact,
       alerts,
+      packageCriticality,
       diagnostics: {
         taskCount: tasksInHours.length,
         criticalCount: criticalTasks.length,
@@ -394,6 +598,11 @@ export class CPMService {
         slackBuckets,
         topUnlockers,
         topBottlenecks,
+        validation: {
+          missingDependencyRefs,
+          missingDependencySamples,
+          reliability,
+        },
       },
     };
   }
@@ -401,27 +610,33 @@ export class CPMService {
   /**
    * Forward pass: calcula ES (Early Start) e EF (Early Finish)
    */
-  private forwardPass(tasks: TaskNode[]): { hasCycle: boolean; unprocessed: number } {
+  private forwardPass(
+    tasks: TaskNode[],
+    edgeMap: Map<string, TaskDependencyEdge[]>,
+  ): { hasCycle: boolean; unprocessed: number } {
     const taskMap = new Map<string, TaskNode>();
     for (const t of tasks) taskMap.set(t.id, t);
 
     const indegree = new Map<string, number>();
-    const adj = new Map<string, string[]>(); // precedence edges: depId -> taskId
-    const maxPredFinish = new Map<string, number>();
+    const dependents = new Map<string, Array<{ successorId: string; relationship: DependencyType }>>();
+    const maxConstraintStart = new Map<string, number>();
 
     for (const t of tasks) {
       indegree.set(t.id, 0);
-      adj.set(t.id, []);
-      maxPredFinish.set(t.id, 0);
+      dependents.set(t.id, []);
+      maxConstraintStart.set(t.id, 0);
     }
 
     // Build graph
     for (const t of tasks) {
-      const deps = Array.isArray(t.dependencies) ? t.dependencies : [];
-      for (const depId of deps) {
-        if (!taskMap.has(depId)) continue;
+      const deps = edgeMap.get(t.id) || [];
+      for (const dep of deps) {
+        if (!taskMap.has(dep.predecessorId)) continue;
         indegree.set(t.id, (indegree.get(t.id) || 0) + 1);
-        adj.get(depId)!.push(t.id);
+        dependents.get(dep.predecessorId)!.push({
+          successorId: t.id,
+          relationship: dep.relationship,
+        });
       }
     }
 
@@ -435,18 +650,28 @@ export class CPMService {
       const id = queue.shift()!;
       const t = taskMap.get(id);
       if (!t) continue;
-      const es = maxPredFinish.get(id) || 0;
+      const es = Math.max(0, maxConstraintStart.get(id) || 0);
       t.earlyStart = es;
       t.earlyFinish = es + t.duration;
       processed++;
 
-      for (const dependentId of adj.get(id) || []) {
-        const nextMax = Math.max(maxPredFinish.get(dependentId) || 0, t.earlyFinish || 0);
-        maxPredFinish.set(dependentId, nextMax);
+      for (const dep of dependents.get(id) || []) {
+        const dependent = taskMap.get(dep.successorId);
+        if (!dependent) continue;
 
-        const newDeg = (indegree.get(dependentId) || 0) - 1;
-        indegree.set(dependentId, newDeg);
-        if (newDeg === 0) queue.push(dependentId);
+        let candidateStart = t.earlyFinish || 0;
+        if (dep.relationship === DependencyType.START_TO_START) {
+          candidateStart = t.earlyStart || 0;
+        } else if (dep.relationship === DependencyType.FINISH_TO_FINISH) {
+          candidateStart = (t.earlyFinish || 0) - (dependent.duration || 0);
+        }
+
+        const nextMax = Math.max(maxConstraintStart.get(dep.successorId) || 0, candidateStart);
+        maxConstraintStart.set(dep.successorId, nextMax);
+
+        const newDeg = (indegree.get(dep.successorId) || 0) - 1;
+        indegree.set(dep.successorId, newDeg);
+        if (newDeg === 0) queue.push(dep.successorId);
       }
     }
 
@@ -463,27 +688,31 @@ export class CPMService {
   /**
    * Backward pass: calcula LS (Late Start) e LF (Late Finish)
    */
-  private backwardPass(tasks: TaskNode[], projectDuration: number): { hasCycle: boolean; unprocessed: number } {
+  private backwardPass(
+    tasks: TaskNode[],
+    projectDuration: number,
+    edgeMap: Map<string, TaskDependencyEdge[]>,
+  ): { hasCycle: boolean; unprocessed: number } {
     const taskMap = new Map<string, TaskNode>();
     for (const t of tasks) taskMap.set(t.id, t);
 
     const outdegree = new Map<string, number>();
-    const dependentsAdj = new Map<string, string[]>(); // depId -> list of dependents
-    const minSuccStart = new Map<string, number>();
+    const predecessorBounds = new Map<string, { maxLateFinish: number; maxLateStart: number }>();
 
     for (const t of tasks) {
       outdegree.set(t.id, 0);
-      dependentsAdj.set(t.id, []);
-      minSuccStart.set(t.id, projectDuration);
+      predecessorBounds.set(t.id, {
+        maxLateFinish: projectDuration,
+        maxLateStart: projectDuration - t.duration,
+      });
     }
 
-    // Build dependents adjacency and outdegree
+    // Build outdegree (valid successors only)
     for (const t of tasks) {
-      const deps = Array.isArray(t.dependencies) ? t.dependencies : [];
-      for (const depId of deps) {
-        if (!taskMap.has(depId)) continue;
-        dependentsAdj.get(depId)!.push(t.id);
-        outdegree.set(depId, (outdegree.get(depId) || 0) + 1);
+      const deps = edgeMap.get(t.id) || [];
+      for (const dep of deps) {
+        if (!taskMap.has(dep.predecessorId)) continue;
+        outdegree.set(dep.predecessorId, (outdegree.get(dep.predecessorId) || 0) + 1);
       }
     }
 
@@ -498,22 +727,44 @@ export class CPMService {
       const t = taskMap.get(id);
       if (!t) continue;
 
-      const hasDependents = (dependentsAdj.get(id) || []).length > 0;
-      const lf = hasDependents ? (minSuccStart.get(id) ?? projectDuration) : projectDuration;
+      const bounds = predecessorBounds.get(id) || {
+        maxLateFinish: projectDuration,
+        maxLateStart: projectDuration - t.duration,
+      };
+      const lfLimit = Number.isFinite(bounds.maxLateFinish) ? bounds.maxLateFinish : projectDuration;
+      const lsLimit = Number.isFinite(bounds.maxLateStart) ? bounds.maxLateStart : projectDuration - t.duration;
+
+      const ls = Math.min(lsLimit, lfLimit - t.duration);
+      const lf = ls + t.duration;
+
       t.lateFinish = lf;
-      t.lateStart = lf - t.duration;
+      t.lateStart = ls;
       processed++;
 
       // Update predecessors (dependencies)
-      const preds = Array.isArray(t.dependencies) ? t.dependencies : [];
-      for (const predId of preds) {
-        if (!taskMap.has(predId)) continue;
-        const nextMin = Math.min(minSuccStart.get(predId) ?? projectDuration, t.lateStart ?? projectDuration);
-        minSuccStart.set(predId, nextMin);
+      const preds = edgeMap.get(id) || [];
+      for (const pred of preds) {
+        const predecessor = taskMap.get(pred.predecessorId);
+        if (!predecessor) continue;
 
-        const newDeg = (outdegree.get(predId) || 0) - 1;
-        outdegree.set(predId, newDeg);
-        if (newDeg === 0) queue.push(predId);
+        const predBounds = predecessorBounds.get(pred.predecessorId) || {
+          maxLateFinish: projectDuration,
+          maxLateStart: projectDuration - predecessor.duration,
+        };
+
+        if (pred.relationship === DependencyType.START_TO_START) {
+          predBounds.maxLateStart = Math.min(predBounds.maxLateStart, t.lateStart ?? projectDuration);
+        } else if (pred.relationship === DependencyType.FINISH_TO_FINISH) {
+          predBounds.maxLateFinish = Math.min(predBounds.maxLateFinish, t.lateFinish ?? projectDuration);
+        } else {
+          predBounds.maxLateFinish = Math.min(predBounds.maxLateFinish, t.lateStart ?? projectDuration);
+        }
+
+        predecessorBounds.set(pred.predecessorId, predBounds);
+
+        const newDeg = (outdegree.get(pred.predecessorId) || 0) - 1;
+        outdegree.set(pred.predecessorId, newDeg);
+        if (newDeg === 0) queue.push(pred.predecessorId);
       }
     }
 
@@ -533,13 +784,17 @@ export class CPMService {
   private generateAlerts(
     allTasks: TaskNode[],
     criticalTasks: TaskNode[],
-    context?: { cycleDetected?: boolean; unprocessedForward?: number; unprocessedBackward?: number },
+    context?: {
+      cycleDetected?: boolean;
+      unprocessedForward?: number;
+      unprocessedBackward?: number;
+      missingDependencyRefs?: number;
+    },
   ): string[] {
     const alerts: string[] = [];
 
     if (criticalTasks.length === 0) {
       alerts.push('⚠️ Nenhuma tarefa crítica encontrada - verifique as dependências');
-      return alerts;
     }
 
     // Alerta sobre número de críticas
@@ -578,6 +833,11 @@ export class CPMService {
       alerts.push('✅ Sem ciclos detectados - dependências consistentes.');
     }
 
+    const missingRefs = Number(context?.missingDependencyRefs || 0);
+    if (missingRefs > 0) {
+      alerts.push(`⚠️ ${missingRefs} referência(s) para predecessoras ausentes foram ignoradas no cálculo.`);
+    }
+
     return alerts;
   }
 
@@ -585,6 +845,9 @@ export class CPMService {
    * Detecta ciclos nas dependências (não devem existir)
    */
   private hasCycle(tasks: TaskNode[]): boolean {
+    const taskById = new Map<string, TaskNode>();
+    for (const task of tasks) taskById.set(task.id, task);
+
     const visited = new Set<string>();
     const recursionStack = new Set<string>();
 
@@ -592,13 +855,15 @@ export class CPMService {
       visited.add(taskId);
       recursionStack.add(taskId);
 
-      const task = tasks.find(t => t.id === taskId);
-      if (!task || !task.dependencies) {
+      const task = taskById.get(taskId);
+      if (!task) {
         recursionStack.delete(taskId);
         return false;
       }
 
-      for (const depId of task.dependencies) {
+      for (const dep of this.getDependencyEdges(task)) {
+        const depId = dep.predecessorId;
+        if (!taskById.has(depId)) continue;
         if (!visited.has(depId)) {
           if (dfs(depId)) return true;
         } else if (recursionStack.has(depId)) {

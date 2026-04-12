@@ -40,6 +40,17 @@ export interface GanttDataResponse {
   criticalPath: string[]
   alerts: string[]
   diagnostics?: Record<string, any>
+  packageCriticality?: Array<{
+    packageId: string
+    packagePath?: string
+    taskCount: number
+    criticalTaskCount: number
+    criticalRatio: number
+    minSlack: number
+    criticalDuration: number
+    criticalPathTaskCount: number
+    score: number
+  }>
 }
 
 export function useGanttData(getProjectId: () => string) {

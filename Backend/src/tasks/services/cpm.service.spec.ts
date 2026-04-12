@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { getModelToken } from '@nestjs/mongoose';
 import { CPMService, TaskNode } from './cpm.service';
 import { TaskDependency } from '../schemas/task-dependency.schema';
+import { DependencyType } from '../schemas/task-dependency.schema';
 
 describe('CPMService - Critical Path Method', () => {
   let service: CPMService;
@@ -199,7 +200,107 @@ describe('CPMService - Critical Path Method', () => {
 
       // Deve logar warning, não crashar
       const analysis = service.calculateCriticalPath(tasks);
-      expect(analysis.alerts).toContain(expect.stringContaining('risco') || 'Possível');
+      expect(analysis.alerts.some((a) => String(a).toLowerCase().includes('ciclo'))).toBe(true);
+    });
+  });
+
+  describe('relationship-aware scheduling', () => {
+    it('deve respeitar relacionamento START_TO_START (SS)', () => {
+      const tasks: TaskNode[] = [
+        {
+          id: 'A',
+          name: 'A',
+          duration: 300, // 5h
+          dependencies: [],
+        },
+        {
+          id: 'B',
+          name: 'B',
+          duration: 180, // 3h
+          dependencies: ['A'],
+          dependencyEdges: [{ predecessorId: 'A', relationship: DependencyType.START_TO_START }],
+        },
+      ];
+
+      const analysis = service.calculateCriticalPath(tasks);
+      const taskA = analysis.tasksByImpact.find((t) => t.id === 'A');
+      const taskB = analysis.tasksByImpact.find((t) => t.id === 'B');
+
+      expect(taskA).toBeDefined();
+      expect(taskB).toBeDefined();
+      expect(taskA?.earlyStart).toBeCloseTo(0, 6);
+      expect(taskB?.earlyStart).toBeCloseTo(0, 6);
+      expect(taskB?.earlyFinish).toBeCloseTo(3, 6);
+    });
+
+    it('deve respeitar relacionamento FINISH_TO_FINISH (FF)', () => {
+      const tasks: TaskNode[] = [
+        {
+          id: 'A',
+          name: 'A',
+          duration: 300, // 5h
+          dependencies: [],
+        },
+        {
+          id: 'C',
+          name: 'C',
+          duration: 120, // 2h
+          dependencies: ['A'],
+          dependencyEdges: [{ predecessorId: 'A', relationship: DependencyType.FINISH_TO_FINISH }],
+        },
+      ];
+
+      const analysis = service.calculateCriticalPath(tasks);
+      const taskA = analysis.tasksByImpact.find((t) => t.id === 'A');
+      const taskC = analysis.tasksByImpact.find((t) => t.id === 'C');
+
+      expect(taskA).toBeDefined();
+      expect(taskC).toBeDefined();
+      expect(taskA?.earlyFinish).toBeCloseTo(5, 6);
+      expect(taskC?.earlyFinish).toBeCloseTo(5, 6);
+      expect(taskC?.earlyStart).toBeCloseTo(3, 6);
+    });
+  });
+
+  describe('package criticality scoring', () => {
+    it('deve retornar criticidade agregada por pacote WBS', () => {
+      const tasks: TaskNode[] = [
+        {
+          id: 'A1',
+          name: 'Design',
+          duration: 120,
+          dependencies: [],
+          parentWbsNodeId: 'pkg-design',
+          wbsPath: 'Root > Design',
+        },
+        {
+          id: 'B1',
+          name: 'Build Core',
+          duration: 360,
+          dependencies: ['A1'],
+          parentWbsNodeId: 'pkg-build',
+          wbsPath: 'Root > Build',
+        },
+        {
+          id: 'B2',
+          name: 'Build Integration',
+          duration: 300,
+          dependencies: ['B1'],
+          parentWbsNodeId: 'pkg-build',
+          wbsPath: 'Root > Build',
+        },
+      ];
+
+      const analysis = service.calculateCriticalPath(tasks);
+
+      expect(Array.isArray(analysis.packageCriticality)).toBe(true);
+      expect((analysis.packageCriticality || []).length).toBeGreaterThan(0);
+
+      const buildPackage = (analysis.packageCriticality || []).find((p) => p.packageId === 'pkg-build');
+      expect(buildPackage).toBeDefined();
+      expect((buildPackage?.taskCount || 0)).toBe(2);
+      expect((buildPackage?.criticalTaskCount || 0)).toBeGreaterThan(0);
+      expect(typeof buildPackage?.score).toBe('number');
     });
   });
 

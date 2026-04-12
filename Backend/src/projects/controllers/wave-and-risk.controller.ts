@@ -15,7 +15,7 @@ import { RollingWaveService } from '../services/rolling-wave.service'
 import { RiskService } from '../services/risk.service'
 import { EVMService } from '../services/evm.service'
 import { TasksService } from '../../tasks/tasks.service'
-import { CPMService, TaskNode } from '../../tasks/services/cpm.service'
+import { CPMService, TaskNode, TaskDependencyEdge } from '../../tasks/services/cpm.service'
 import { CreateWaveDto, UpdateWaveDto } from '../dto/wave.dto'
 import { CreateRiskDto, UpdateRiskDto, AssessRisksDto } from '../dto/risk.dto'
 import { RecordProjectProgressDto } from '../dto/evm.dto'
@@ -39,7 +39,11 @@ export class WaveAndRiskController {
     return String(error)
   }
 
-  private mapTaskToNode(task: any, dependencyMap: Map<string, string[]>): TaskNode {
+  private mapTaskToNode(
+    task: any,
+    dependencyMap: Map<string, string[]>,
+    dependencyEdgeMap: Map<string, TaskDependencyEdge[]>,
+  ): TaskNode {
     const taskId = String(task?._id ?? task?.id)
     const pertMinutes = Number(task?.pertExpectedMinutes || 0)
     const pomodoroMinutes = Math.max(1, Number(task?.pomodorosPlanned || 0)) * 25
@@ -50,6 +54,9 @@ export class WaveAndRiskController {
       name: String(task?.name || 'Task'),
       duration,
       dependencies: dependencyMap.get(taskId) || [],
+      dependencyEdges: dependencyEdgeMap.get(taskId) || [],
+      parentWbsNodeId: task?.parentWbsNodeId ? String(task.parentWbsNodeId) : undefined,
+      wbsPath: task?.wbsPath ? String(task.wbsPath) : undefined,
     }
   }
 
@@ -508,17 +515,25 @@ export class WaveAndRiskController {
       ])
 
       const dependencyMap = new Map<string, string[]>()
+      const dependencyEdgeMap = new Map<string, TaskDependencyEdge[]>()
       for (const dep of dependencies as any[]) {
         const taskId = String(dep.taskId)
         const dependsOnTaskId = String(dep.dependsOnTaskId)
         const existing = dependencyMap.get(taskId) || []
         existing.push(dependsOnTaskId)
         dependencyMap.set(taskId, existing)
+
+        const existingEdges = dependencyEdgeMap.get(taskId) || []
+        existingEdges.push({
+          predecessorId: dependsOnTaskId,
+          relationship: this.cpmService.normalizeRelationship(dep?.relationship),
+        })
+        dependencyEdgeMap.set(taskId, existingEdges)
       }
 
       const taskNodes: TaskNode[] = (tasks as any[])
         .filter((task) => !task?.isConcluded)
-        .map((task) => this.mapTaskToNode(task, dependencyMap))
+        .map((task) => this.mapTaskToNode(task, dependencyMap, dependencyEdgeMap))
 
       const cpmAnalysis = this.cpmService.calculateCriticalPath(taskNodes)
       const taskNameById = new Map<string, string>(

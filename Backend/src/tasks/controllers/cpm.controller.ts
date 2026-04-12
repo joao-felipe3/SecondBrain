@@ -1031,6 +1031,9 @@ export class CPMController {
       name: (task as any).title || (task as any).name || 'Task',
       duration: (task as any).pertExpectedMinutes || (task as any).estimatedMinutes || 60, // Fallback se PERT não calculado
       dependencies: [], // Será preenchido abaixo
+      dependencyEdges: [],
+      parentWbsNodeId: (task as any).parentWbsNodeId ? String((task as any).parentWbsNodeId) : undefined,
+      wbsPath: (task as any).wbsPath ? String((task as any).wbsPath) : undefined,
     }));
 
     // Buscar todas as dependências do projeto
@@ -1045,7 +1048,13 @@ export class CPMController {
       const depId = String(dep?.dependsOnTaskId ?? '').trim();
       if (!taskId || !depId) continue;
       const taskNode = nodeById.get(taskId);
-      if (taskNode) taskNode.dependencies.push(depId);
+      if (taskNode) {
+        taskNode.dependencies.push(depId);
+        taskNode.dependencyEdges?.push({
+          predecessorId: depId,
+          relationship: this.cpmService.normalizeRelationship(dep?.relationship),
+        });
+      }
     }
 
     // Calcular CPM
@@ -1137,12 +1146,19 @@ export class CPMController {
       name: (task as any).title || (task as any).name || 'Task',
       duration: (task as any).pertExpectedMinutes || (task as any).estimatedMinutes || 60,
       dependencies: [],
+      dependencyEdges: [],
+      parentWbsNodeId: (task as any).parentWbsNodeId ? String((task as any).parentWbsNodeId) : undefined,
+      wbsPath: (task as any).wbsPath ? String((task as any).wbsPath) : undefined,
     };
 
     // Buscar dependências
     const dependencies = await this.cpmService.getDependencies(projectId);
     const taskDeps = dependencies.filter(d => d.taskId.toString() === taskId);
     taskNode.dependencies = taskDeps.map(d => d.dependsOnTaskId.toString());
+    taskNode.dependencyEdges = taskDeps.map((d: any) => ({
+      predecessorId: String(d.dependsOnTaskId),
+      relationship: this.cpmService.normalizeRelationship(d.relationship),
+    }));
 
     // Calcular CPM completo do projeto para ter contexto correto
     const projectTasks = await this.tasksService.findByProjectId(projectId);
@@ -1151,6 +1167,9 @@ export class CPMController {
       name: (t as any).title || (t as any).name || 'Task',
       duration: (t as any).pertExpectedMinutes || (t as any).estimatedMinutes || 60,
       dependencies: [],
+      dependencyEdges: [],
+      parentWbsNodeId: (t as any).parentWbsNodeId ? String((t as any).parentWbsNodeId) : undefined,
+      wbsPath: (t as any).wbsPath ? String((t as any).wbsPath) : undefined,
     }));
 
     const nodeById = new Map<string, TaskNode>();
@@ -1160,7 +1179,13 @@ export class CPMController {
       const depIdStr = String(dep?.dependsOnTaskId ?? '').trim();
       if (!taskIdStr || !depIdStr) continue;
       const node = nodeById.get(taskIdStr);
-      if (node) node.dependencies.push(depIdStr);
+      if (node) {
+        node.dependencies.push(depIdStr);
+        node.dependencyEdges?.push({
+          predecessorId: depIdStr,
+          relationship: this.cpmService.normalizeRelationship(dep?.relationship),
+        });
+      }
     }
 
     // Calcular CPM
