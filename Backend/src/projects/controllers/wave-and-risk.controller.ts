@@ -457,6 +457,46 @@ export class WaveAndRiskController {
     }
   }
 
+  @Get('evm/metric-preferences')
+  async getMetricPreferences(@Param('projectId') projectId: string) {
+    try {
+      return await this.evmService.getDashboardPreferences(projectId)
+    } catch (error) {
+      throw new HttpException(
+        `Erro ao buscar preferencias de metricas EVM: ${this.getErrorMessage(error)}`,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      )
+    }
+  }
+
+  @Patch('evm/metric-preferences')
+  async updateMetricPreferences(
+    @Param('projectId') projectId: string,
+    @Body()
+    body: {
+      mode?: 'auto' | 'manual'
+      manualVisibility?: {
+        spi?: boolean
+        plannedVsEarned?: boolean
+        completedHours?: boolean
+        consistency?: boolean
+        planAdherence?: boolean
+        trend?: boolean
+        perceivedProgress?: boolean
+        remainingHours?: boolean
+      }
+    },
+  ) {
+    try {
+      return await this.evmService.saveDashboardPreferences(projectId, body)
+    } catch (error) {
+      throw new HttpException(
+        `Erro ao atualizar preferencias de metricas EVM: ${this.getErrorMessage(error)}`,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      )
+    }
+  }
+
   @Get('next-best-action')
   async getNextBestAction(@Param('projectId') projectId: string) {
     try {

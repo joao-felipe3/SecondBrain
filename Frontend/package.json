@@ -12,10 +12,10 @@
   "dependencies": {
     "@mdi/font": "^7.4.47",
     "@vueuse/nuxt": "^12.3.0",
-    "axios": "^1.9.0",
-       "cytoscape": "^3.33.1",
+    "axios": "^1.15.0",
+    "cytoscape": "^3.33.1",
     "cytoscape-dagre": "^2.5.0",
-      "cytoscape-popper": "^4.0.1",
+    "cytoscape-popper": "^4.0.1",
     "dagre": "^0.8.5",
     "echarts": "^6.0.0",
     "formdata-polyfill": "^4.0.10",

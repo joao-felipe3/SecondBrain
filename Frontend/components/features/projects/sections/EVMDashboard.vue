@@ -11,7 +11,7 @@
       </v-alert>
 
       <div class="kpi-grid mb-4">
-        <v-tooltip text="SPI (Schedule Performance Index): mede se o ritmo de entrega esta acima ou abaixo do planejado." location="top">
+        <v-tooltip v-if="metricRelevance.spi.visible" text="SPI (Schedule Performance Index): mede se o ritmo de entrega esta acima ou abaixo do planejado." location="top">
           <template #activator="{ props }">
             <v-card v-bind="props" variant="tonal" :color="spiColor" class="kpi-card">
               <v-card-text>
@@ -22,7 +22,7 @@
           </template>
         </v-tooltip>
 
-        <v-tooltip text="PV (Planned Value): valor planejado acumulado para o momento atual." location="top">
+        <v-tooltip v-if="metricRelevance.plannedVsEarned.visible" text="PV (Planned Value): valor planejado acumulado para o momento atual." location="top">
           <template #activator="{ props }">
             <v-card v-bind="props" variant="tonal" color="primary" class="kpi-card">
               <v-card-text>
@@ -33,7 +33,7 @@
           </template>
         </v-tooltip>
 
-        <v-tooltip text="EV (Earned Value): valor agregado acumulado com base no progresso real." location="top">
+        <v-tooltip v-if="metricRelevance.plannedVsEarned.visible" text="EV (Earned Value): valor agregado acumulado com base no progresso real." location="top">
           <template #activator="{ props }">
             <v-card v-bind="props" variant="tonal" color="indigo" class="kpi-card">
               <v-card-text>
@@ -44,45 +44,67 @@
           </template>
         </v-tooltip>
 
-        <v-card variant="tonal" color="info" class="kpi-card">
+        <v-card v-if="metricRelevance.completedHours.visible" variant="tonal" color="info" class="kpi-card">
           <v-card-text>
             <div class="kpi-label">Horas Concluidas</div>
             <div class="kpi-value">{{ formatHours(summary.totals.completedHours) }}</div>
           </v-card-text>
         </v-card>
 
-        <v-card variant="tonal" color="teal" class="kpi-card">
+        <v-card v-if="metricRelevance.consistency.visible" variant="tonal" color="teal" class="kpi-card">
           <v-card-text>
             <div class="kpi-label">Consistencia Semanal</div>
             <div class="kpi-value">{{ formatPercent(summary.personalMetrics.consistencyScore) }}</div>
           </v-card-text>
         </v-card>
 
-        <v-card variant="tonal" color="cyan" class="kpi-card">
+        <v-card v-if="metricRelevance.planAdherence.visible" variant="tonal" color="cyan" class="kpi-card">
           <v-card-text>
             <div class="kpi-label">Aderencia ao Plano</div>
             <div class="kpi-value">{{ formatPercent(summary.personalMetrics.planAdherence) }}</div>
           </v-card-text>
         </v-card>
 
-        <v-card variant="tonal" color="deep-purple" class="kpi-card">
+        <v-card v-if="metricRelevance.trend.visible" variant="tonal" color="deep-purple" class="kpi-card">
           <v-card-text>
             <div class="kpi-label">Tendencia</div>
             <div class="kpi-value">{{ trendLabel }}</div>
           </v-card-text>
         </v-card>
 
-        <v-card variant="tonal" color="pink" class="kpi-card">
+        <v-card v-if="metricRelevance.perceivedProgress.visible" variant="tonal" color="pink" class="kpi-card">
           <v-card-text>
             <div class="kpi-label">Valor Percebido</div>
             <div class="kpi-value">{{ formatPercent(summary.personalMetrics.perceivedValueScore) }}</div>
           </v-card-text>
         </v-card>
 
-        <v-card variant="tonal" color="amber" class="kpi-card">
+        <v-card v-if="metricRelevance.remainingHours.visible" variant="tonal" color="amber" class="kpi-card">
           <v-card-text>
             <div class="kpi-label">Restante</div>
             <div class="kpi-value">{{ formatHours(forecast.remainingHours) }}</div>
+          </v-card-text>
+        </v-card>
+
+        <v-card variant="tonal" color="blue-grey" class="kpi-card">
+          <v-card-text>
+            <div class="kpi-label">Esforco Equilibrado</div>
+            <div class="kpi-value">{{ formatPercent(summary.personalMetrics.effortBalanceScore) }}</div>
+          </v-card-text>
+        </v-card>
+
+        <v-card variant="tonal" color="green" class="kpi-card">
+          <v-card-text>
+            <div class="kpi-label">Marcos Concluidos</div>
+            <div class="kpi-value">
+              <template v-if="summary.milestoneProgress.totalMilestones > 0">
+                {{ summary.milestoneProgress.completedMilestones }}/{{ summary.milestoneProgress.totalMilestones }}
+                ({{ formatPercent(summary.milestoneProgress.completionRate) }})
+              </template>
+              <template v-else>
+                Sem marcos
+              </template>
+            </div>
           </v-card-text>
         </v-card>
       </div>
@@ -182,10 +204,40 @@ interface EVMSummary {
   }
   personalMetrics: {
     consistencyScore: number
+    effortBalanceScore: number
     planAdherence: number
     completionTrend: 'acelerando' | 'estavel' | 'desacelerando' | 'insuficiente'
     perceivedValueScore: number
     actionHint: string
+  }
+  milestoneProgress: {
+    totalMilestones: number
+    completedMilestones: number
+    completionRate: number
+    activeMilestoneLabel: string | null
+  }
+  dashboardPreferences: {
+    mode: 'auto' | 'manual'
+    manualVisibility: {
+      spi: boolean
+      plannedVsEarned: boolean
+      completedHours: boolean
+      consistency: boolean
+      planAdherence: boolean
+      trend: boolean
+      perceivedProgress: boolean
+      remainingHours: boolean
+    }
+  }
+  metricRelevance: {
+    spi: { visible: boolean; reason: string }
+    plannedVsEarned: { visible: boolean; reason: string }
+    completedHours: { visible: boolean; reason: string }
+    consistency: { visible: boolean; reason: string }
+    planAdherence: { visible: boolean; reason: string }
+    trend: { visible: boolean; reason: string }
+    perceivedProgress: { visible: boolean; reason: string }
+    remainingHours: { visible: boolean; reason: string }
   }
 }
 
@@ -216,10 +268,40 @@ const emptySummary: EVMSummary = {
   },
   personalMetrics: {
     consistencyScore: 100,
+    effortBalanceScore: 100,
     planAdherence: 100,
     completionTrend: 'insuficiente',
     perceivedValueScore: 100,
     actionHint: 'Registre progresso para gerar recomendacoes personalizadas.',
+  },
+  milestoneProgress: {
+    totalMilestones: 0,
+    completedMilestones: 0,
+    completionRate: 0,
+    activeMilestoneLabel: null,
+  },
+  dashboardPreferences: {
+    mode: 'auto',
+    manualVisibility: {
+      spi: true,
+      plannedVsEarned: true,
+      completedHours: true,
+      consistency: true,
+      planAdherence: true,
+      trend: true,
+      perceivedProgress: true,
+      remainingHours: true,
+    },
+  },
+  metricRelevance: {
+    spi: { visible: true, reason: '' },
+    plannedVsEarned: { visible: true, reason: '' },
+    completedHours: { visible: true, reason: '' },
+    consistency: { visible: true, reason: '' },
+    planAdherence: { visible: true, reason: '' },
+    trend: { visible: true, reason: '' },
+    perceivedProgress: { visible: true, reason: '' },
+    remainingHours: { visible: true, reason: '' },
   },
 }
 
@@ -232,6 +314,7 @@ const summary = ref<EVMSummary>({ ...emptySummary })
 
 const forecast = computed(() => summary.value.forecast)
 const spi = computed(() => summary.value.spi || 1)
+const metricRelevance = computed(() => summary.value.metricRelevance || emptySummary.metricRelevance)
 
 const trendLabel = computed(() => {
   const map: Record<EVMSummary['personalMetrics']['completionTrend'], string> = {
@@ -362,7 +445,10 @@ watch(
 
 const formatIndex = (value: number) => value.toFixed(2)
 const formatHours = (value: number) => `${value.toFixed(1)}h`
-const formatPercent = (value: number) => `${Math.round(value)}%`
+const formatPercent = (value: number) => {
+  if (!Number.isFinite(value)) return '0%'
+  return `${Math.round(value)}%`
+}
 const formatValue = (value: number) => value.toFixed(1)
 </script>
 

@@ -28,8 +28,48 @@ export interface EVMCurve {
   dates: string[]
 }
 
+export interface EVMDashboardManualVisibility {
+  spi: boolean
+  plannedVsEarned: boolean
+  completedHours: boolean
+  consistency: boolean
+  planAdherence: boolean
+  trend: boolean
+  perceivedProgress: boolean
+  remainingHours: boolean
+}
+
+export interface EVMDashboardPreferences {
+  mode: 'auto' | 'manual'
+  manualVisibility: EVMDashboardManualVisibility
+}
+
+export interface EVMMetricVisibility {
+  visible: boolean
+  reason: string
+}
+
+export interface EVMMetricRelevance {
+  spi: EVMMetricVisibility
+  plannedVsEarned: EVMMetricVisibility
+  completedHours: EVMMetricVisibility
+  consistency: EVMMetricVisibility
+  planAdherence: EVMMetricVisibility
+  trend: EVMMetricVisibility
+  perceivedProgress: EVMMetricVisibility
+  remainingHours: EVMMetricVisibility
+}
+
+export interface EVMMilestoneProgress {
+  totalMilestones: number
+  completedMilestones: number
+  completionRate: number
+  activeMilestoneLabel: string | null
+}
+
 export interface EVMPersonalMetrics {
   consistencyScore: number
+  effortBalanceScore: number
   planAdherence: number
   completionTrend: 'acelerando' | 'estavel' | 'desacelerando' | 'insuficiente'
   perceivedValueScore: number
@@ -45,4 +85,7 @@ export interface EVMSummary {
     entriesCount: number
   }
   personalMetrics: EVMPersonalMetrics
+  milestoneProgress: EVMMilestoneProgress
+  dashboardPreferences: EVMDashboardPreferences
+  metricRelevance: EVMMetricRelevance
 }

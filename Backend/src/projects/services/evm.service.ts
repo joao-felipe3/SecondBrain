@@ -4,10 +4,29 @@ import { Model, Types } from 'mongoose'
 import { ProjectProgress, ProjectProgressDocument } from '../schemas/project-progress.schema'
 import { ProjectWave, ProjectWaveDocument } from '../schemas/project-wave.schema'
 import { ProjectDocument } from '../schemas/project.schema'
-import type { EVMCurve, EVMForecast, EVMPersonalMetrics, EVMSummary } from '../dto/evm.dto'
+import type {
+  EVMCurve,
+  EVMForecast,
+  EVMDashboardManualVisibility,
+  EVMDashboardPreferences,
+  EVMMetricRelevance,
+  EVMPersonalMetrics,
+  EVMSummary,
+} from '../dto/evm.dto'
 
 @Injectable()
 export class EVMService {
+  private readonly defaultManualVisibility: EVMDashboardManualVisibility = {
+    spi: true,
+    plannedVsEarned: true,
+    completedHours: true,
+    consistency: true,
+    planAdherence: true,
+    trend: true,
+    perceivedProgress: true,
+    remainingHours: true,
+  }
+
   constructor(
     @InjectModel(ProjectProgress.name)
     private readonly projectProgressModel: Model<ProjectProgressDocument>,
@@ -16,6 +35,47 @@ export class EVMService {
     @InjectModel('Project')
     private readonly projectModel: Model<ProjectDocument>,
   ) {}
+
+  private toFiniteNumber(value: unknown, fallback = 0): number {
+    const parsed = Number(value)
+    return Number.isFinite(parsed) ? parsed : fallback
+  }
+
+  async getDashboardPreferences(projectId: string): Promise<EVMDashboardPreferences> {
+    const project = await this.projectModel
+      .findById(projectId)
+      .select({ dashboardMetricPreferences: 1 })
+      .lean()
+      .exec()
+
+    return this.normalizeDashboardPreferences((project as any)?.dashboardMetricPreferences)
+  }
+
+  async saveDashboardPreferences(
+    projectId: string,
+    input: Partial<EVMDashboardPreferences> | undefined,
+  ): Promise<EVMDashboardPreferences> {
+    const current = await this.getDashboardPreferences(projectId)
+    const normalizedInput = this.normalizeDashboardPreferences(input)
+
+    const merged: EVMDashboardPreferences = {
+      mode: normalizedInput.mode || current.mode,
+      manualVisibility: {
+        ...current.manualVisibility,
+        ...normalizedInput.manualVisibility,
+      },
+    }
+
+    await this.projectModel
+      .findByIdAndUpdate(
+        projectId,
+        { $set: { dashboardMetricPreferences: merged } },
+        { new: true },
+      )
+      .exec()
+
+    return merged
+  }
 
   async recordProgress(
     projectId: string,
@@ -143,16 +203,25 @@ export class EVMService {
   }
 
   async getEVMSummary(projectId: string): Promise<EVMSummary> {
-    const [spi, forecast, curve, entries, coreMetrics] = await Promise.all([
+    const [spi, forecast, curve, entries, coreMetrics, dashboardPreferences, milestoneProgress] = await Promise.all([
       this.calculateSPI(projectId),
       this.forecastCompletion(projectId),
       this.getEVMCurve(projectId),
       this.getProgressEntries(projectId),
       this.getCoreMetrics(projectId),
+      this.getDashboardPreferences(projectId),
+      this.getMilestoneProgress(projectId),
     ])
 
     const completedHours = coreMetrics.completedHours
     const personalMetrics = this.buildPersonalMetrics(entries, spi, coreMetrics)
+    const metricRelevance = this.resolveMetricRelevance({
+      entriesCount: entries.length,
+      spi,
+      forecast,
+      personalMetrics,
+      dashboardPreferences,
+    })
 
     return {
       spi,
@@ -163,11 +232,15 @@ export class EVMService {
         entriesCount: entries.length,
       },
       personalMetrics,
+      milestoneProgress,
+      dashboardPreferences,
+      metricRelevance,
     }
   }
 
   async getPersonalSummary(projectId: string): Promise<{
     consistencyScore: number
+    effortBalanceScore: number
     planAdherence: number
     completionTrend: EVMPersonalMetrics['completionTrend']
     perceivedValueScore: number
@@ -199,6 +272,99 @@ export class EVMService {
     }
   }
 
+  private normalizeDashboardPreferences(raw: any): EVMDashboardPreferences {
+    const mode = raw?.mode === 'manual' ? 'manual' : 'auto'
+
+    return {
+      mode,
+      manualVisibility: {
+        ...this.defaultManualVisibility,
+        ...(raw?.manualVisibility || {}),
+      },
+    }
+  }
+
+  private resolveMetricRelevance(input: {
+    entriesCount: number
+    spi: number
+    forecast: EVMForecast
+    personalMetrics: EVMPersonalMetrics
+    dashboardPreferences: EVMDashboardPreferences
+  }): EVMMetricRelevance {
+    const useManual = false
+    const manual = input.dashboardPreferences.manualVisibility
+
+    const fromManual = (key: keyof EVMDashboardManualVisibility, fallbackVisible: boolean, fallbackReason: string) => {
+      if (!useManual) {
+        return {
+          visible: fallbackVisible,
+          reason: fallbackReason,
+        }
+      }
+
+      return {
+        visible: Boolean(manual[key]),
+        reason: 'Visibilidade definida manualmente pelo usuario.',
+      }
+    }
+
+    const spiDelay = input.spi < 1
+    const needsScheduleAttention = spiDelay || input.personalMetrics.planAdherence < 95
+
+    return {
+      spi: fromManual('spi', true, 'SPI e a metrica principal de ritmo da entrega.'),
+      plannedVsEarned: fromManual(
+        'plannedVsEarned',
+        input.entriesCount > 0 && needsScheduleAttention,
+        needsScheduleAttention
+          ? 'PV x EV ajuda a decidir ajuste de plano na semana atual.'
+          : 'Projeto em ritmo saudavel; PV x EV tem baixa prioridade agora.',
+      ),
+      completedHours: fromManual(
+        'completedHours',
+        input.entriesCount > 0,
+        input.entriesCount > 0
+          ? 'Horas concluidas mostram esforco real aplicado.'
+          : 'Sem registros de progresso suficientes para horas concluidas.',
+      ),
+      consistency: fromManual(
+        'consistency',
+        input.entriesCount >= 2,
+        input.entriesCount >= 2
+          ? 'Consistencia semanal ajuda a prever estabilidade de execucao.'
+          : 'Consistencia requer pelo menos 2 registros de progresso.',
+      ),
+      planAdherence: fromManual(
+        'planAdherence',
+        input.entriesCount > 0,
+        input.entriesCount > 0
+          ? 'Aderencia mostra alinhamento com o plano atual.'
+          : 'Aderencia requer registros com PV/EV.',
+      ),
+      trend: fromManual(
+        'trend',
+        input.entriesCount >= 4,
+        input.entriesCount >= 4
+          ? 'Tendencia de evolucao orienta decisao de manter ou ajustar escopo.'
+          : 'Tendencia precisa de ao menos 4 registros para comparacao confiavel.',
+      ),
+      perceivedProgress: fromManual(
+        'perceivedProgress',
+        input.entriesCount >= 2,
+        input.entriesCount >= 2
+          ? 'Progresso percebido combina cadencia, aderencia e esforco efetivo.'
+          : 'Progresso percebido fica mais util apos multiplos registros.',
+      ),
+      remainingHours: fromManual(
+        'remainingHours',
+        input.forecast.remainingHours > 0,
+        input.forecast.remainingHours > 0
+          ? 'Horas restantes mostram carga de trabalho pendente.'
+          : 'Nao ha carga pendente estimada para este ciclo.',
+      ),
+    }
+  }
+
   private async getCoreMetrics(projectId: string): Promise<{
     pv: number
     ev: number
@@ -217,7 +383,7 @@ export class EVMService {
     const pv = scopedEntries.reduce((sum, entry) => sum + (entry.plannedValue || 0), 0)
     const completedHours = scopedEntries.reduce((sum, entry) => sum + (entry.completedHours || 0), 0)
 
-    const plannedHours = Math.max(1, activeWaveContext.plannedHours)
+    const plannedHours = Math.max(1, this.toFiniteNumber(activeWaveContext.plannedHours, 1))
     const bac = Math.max(1, pv, plannedHours)
     const progressRatio = Math.max(0, Math.min(1, completedHours / plannedHours))
     const scheduleRatio = this.getScheduleRatioByDates(activeWaveContext.startDate, activeWaveContext.endDate)
@@ -277,30 +443,46 @@ export class EVMService {
     const planAdherence = coreMetrics.pv > 0
       ? this.toBoundedScore((coreMetrics.ev / coreMetrics.pv) * 100)
       : 100
+    const effortBalanceScore = this.calculateEffortBalanceScore(coreMetrics)
 
     const completionTrend = this.calculateCompletionTrend(entries)
     const completionRatio = Math.max(0, Math.min(1, coreMetrics.completedHours / Math.max(1, coreMetrics.plannedHours)))
 
     const perceivedValueScore = this.toBoundedScore(
-      (completionRatio * 100) * 0.45
-      + consistencyScore * 0.3
-      + planAdherence * 0.25,
+      (completionRatio * 100) * 0.35
+      + consistencyScore * 0.25
+      + planAdherence * 0.25
+      + effortBalanceScore * 0.15,
     )
 
     const actionHint = this.buildActionHint({
       spi,
       consistencyScore,
+      effortBalanceScore,
       planAdherence,
       completionTrend,
     })
 
     return {
       consistencyScore,
+      effortBalanceScore,
       planAdherence,
       completionTrend,
       perceivedValueScore,
       actionHint,
     }
+  }
+
+  private calculateEffortBalanceScore(coreMetrics: {
+    completedHours: number
+    plannedHours: number
+  }): number {
+    const planned = Math.max(1, this.toFiniteNumber(coreMetrics.plannedHours, 1))
+    const completed = this.toFiniteNumber(coreMetrics.completedHours, 0)
+    const delta = Math.abs(completed - planned)
+    const ratio = delta / planned
+
+    return this.toBoundedScore(100 - ratio * 100)
   }
 
   private calculateConsistencyScore(entries: ProjectProgress[]): number {
@@ -354,9 +536,14 @@ export class EVMService {
   private buildActionHint(input: {
     spi: number
     consistencyScore: number
+    effortBalanceScore: number
     planAdherence: number
     completionTrend: 'acelerando' | 'estavel' | 'desacelerando' | 'insuficiente'
   }): string {
+    if (input.effortBalanceScore < 55) {
+      return 'Seu esforco real esta desequilibrado com o plano. Reestime carga da semana antes de adicionar novas tarefas.'
+    }
+
     if (input.consistencyScore < 55) {
       return 'Padronize uma meta minima semanal de horas para recuperar consistencia.'
     }
@@ -386,7 +573,8 @@ export class EVMService {
   }
 
   private toBoundedScore(value: number): number {
-    return Number(Math.max(0, Math.min(100, value)).toFixed(1))
+    const finiteValue = this.toFiniteNumber(value, 0)
+    return Number(Math.max(0, Math.min(100, finiteValue)).toFixed(1))
   }
 
   private getScheduleRatioByDates(
@@ -424,6 +612,37 @@ export class EVMService {
     })
   }
 
+  private async getMilestoneProgress(projectId: string): Promise<{
+    totalMilestones: number
+    completedMilestones: number
+    completionRate: number
+    activeMilestoneLabel: string | null
+  }> {
+    const waves = await this.projectWaveModel
+      .find({ projectId: new Types.ObjectId(projectId) })
+      .sort({ waveNumber: 1 })
+      .exec()
+
+    if (waves.length === 0) {
+      return {
+        totalMilestones: 0,
+        completedMilestones: 0,
+        completionRate: 0,
+        activeMilestoneLabel: null,
+      }
+    }
+
+    const completedMilestones = waves.filter((wave) => wave.status === 'completed').length
+    const activeWave = waves.find((wave) => wave.status === 'active') || null
+
+    return {
+      totalMilestones: waves.length,
+      completedMilestones,
+      completionRate: this.toBoundedScore((completedMilestones / waves.length) * 100),
+      activeMilestoneLabel: activeWave ? `Onda ${activeWave.waveNumber}` : null,
+    }
+  }
+
   private async getActiveWaveContext(projectId: string): Promise<{
     startDate: Date | null
     endDate: Date | null
@@ -437,7 +656,7 @@ export class EVMService {
         .exec(),
     ])
 
-    const fallbackPlannedHours = Math.max(1, project?.plannedHours || 1)
+    const fallbackPlannedHours = Math.max(1, this.toFiniteNumber(project?.plannedHours, 1))
     if (waves.length === 0) {
       return {
         startDate: project?.startDate ? new Date(project.startDate) : null,
@@ -457,13 +676,11 @@ export class EVMService {
 
     const totalWaveDurationMs = waves.reduce((sum, wave) => {
       const duration = new Date(wave.endDate).getTime() - new Date(wave.startDate).getTime()
-      return sum + Math.max(0, duration)
+      return sum + Math.max(0, this.toFiniteNumber(duration, 0))
     }, 0)
 
-    const activeWaveDurationMs = Math.max(
-      0,
-      new Date(activeWave.endDate).getTime() - new Date(activeWave.startDate).getTime(),
-    )
+    const activeDurationRaw = new Date(activeWave.endDate).getTime() - new Date(activeWave.startDate).getTime()
+    const activeWaveDurationMs = Math.max(0, this.toFiniteNumber(activeDurationRaw, 0))
 
     const plannedHours = totalWaveDurationMs > 0
       ? fallbackPlannedHours * (activeWaveDurationMs / totalWaveDurationMs)

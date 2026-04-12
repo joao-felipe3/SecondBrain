@@ -10,6 +10,20 @@ export interface SmartObjective {
   risks: string[];
 }
 
+export interface DashboardMetricPreferences {
+  mode: 'auto' | 'manual';
+  manualVisibility: {
+    spi: boolean;
+    plannedVsEarned: boolean;
+    completedHours: boolean;
+    consistency: boolean;
+    planAdherence: boolean;
+    trend: boolean;
+    perceivedProgress: boolean;
+    remainingHours: boolean;
+  };
+}
+
 export interface ProjectDocument extends Document {
   name: string;
   description: string;
@@ -28,6 +42,7 @@ export interface ProjectDocument extends Document {
   reward: number;
   tasks?: Array<Schema.Types.ObjectId>;
   backlogIdeas?: Array<{ text: string; createdAt: Date }>;
+  dashboardMetricPreferences?: DashboardMetricPreferences;
 }
 
 export const ProjectSchema = new Schema<ProjectDocument>({
@@ -62,4 +77,20 @@ export const ProjectSchema = new Schema<ProjectDocument>({
     text: { type: String, required: true },
     createdAt: { type: Date, required: true, default: Date.now }
   }],
+  dashboardMetricPreferences: {
+    type: {
+      mode: { type: String, enum: ['auto', 'manual'], default: 'auto' },
+      manualVisibility: {
+        spi: { type: Boolean, default: true },
+        plannedVsEarned: { type: Boolean, default: true },
+        completedHours: { type: Boolean, default: true },
+        consistency: { type: Boolean, default: true },
+        planAdherence: { type: Boolean, default: true },
+        trend: { type: Boolean, default: true },
+        perceivedProgress: { type: Boolean, default: true },
+        remainingHours: { type: Boolean, default: true },
+      },
+    },
+    required: false,
+  },
 });
