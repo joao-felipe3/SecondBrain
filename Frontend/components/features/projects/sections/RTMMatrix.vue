@@ -5,10 +5,10 @@
       <div v-if="!matrixData || matrixData.requirements.length === 0" class="text-center py-4">
         <v-icon size="48" color="grey">mdi-information</v-icon>
         <p class="text-medium-emphasis mt-2">
-          Nenhum requisito definido. Crie uma Smart Objective e gere requisitos automaticamente.
+          Nenhum item da jornada definido. Crie um objetivo e gere a jornada automaticamente.
         </p>
         <v-btn color="primary" variant="tonal" size="small" class="mt-3" @click="autoGenerateRequirements">
-          Gerar Requisitos com IA
+          Gerar Jornada com IA
         </v-btn>
       </div>
 
@@ -31,10 +31,10 @@
 
             <div class="text-caption" v-if="expandedValidation">
               <p v-if="matrixData.validation.isValid" class="text-success mb-0">
-                ✓ Todos os {{ matrixData.requirements.length }} requisito(s) rastreado(s)!
+                ✓ Todos os {{ matrixData.requirements.length }} item(ns) da jornada rastreados!
               </p>
               <p v-else class="text-warning mb-0">
-                ⚠ {{ matrixData.validation.unmappedRequirements.length }} requisito(s) sem rastreamento
+                ⚠ {{ matrixData.validation.unmappedRequirements.length }} item(ns) da jornada sem rastreamento
               </p>
             </div>
 
@@ -43,13 +43,13 @@
 
         <!-- Matrix Table -->
         <div v-if="matrixData.requirements.length > 0" class="table-container">
-          <div class="text-subtitle-2 font-weight-bold mb-2">Mapeamento Requisito × Tarefa</div>
+          <div class="text-subtitle-2 font-weight-bold mb-2">Mapeamento Jornada × Tarefa</div>
 
           <v-table class="rtm-table">
             <thead>
               <tr>
-                <th style="min-width: 150px; text-align: center;">Requisito</th>
-                <th style="width: 60px; text-align: center;">Tipo</th>
+                <th style="min-width: 150px; text-align: center;">Item da Jornada</th>
+                <th style="width: 90px; text-align: center;">Nível</th>
                 <th style="width: 60px; text-align: center;">Tarefas</th>
                 <th style="width: 40px; text-align: center;">Status</th>
               </tr>
@@ -58,7 +58,7 @@
               <tr
                 v-for="req in paginatedRequirements"
                 :key="req.id"
-                :class="{ 'unmapped-row': !isRequirementMapped(req.id) }"
+                :class="{ 'unmapped-row': !isRequirementCovered(req.id) }"
               >
 
                 <td class="requirement-cell">
@@ -76,11 +76,11 @@
                   <v-chip
                     size="x-small"
                     variant="tonal"
-                    :color="getTypeColor(req.type)"
+                    :color="getTypeColor(req.kind || req.type)"
                     class="compact-chip"
                     label
                   >
-                    {{ req.type === 'functional' ? 'Funcional' : req.type === 'non_functional' ? 'Não-Funcional' : 'Restrição' }}
+                      {{ getRequirementLevelLabel(req) }}
                   </v-chip>
                 </td>
 
@@ -100,10 +100,10 @@
                 <td class="text-center compact-cell">
                   <div class="d-flex align-center justify-center gap-1">
                     <v-icon
-                      :color="isRequirementMapped(req.id) ? 'success' : 'error'"
+                      :color="isRequirementCovered(req.id) ? 'success' : 'error'"
                       size="small"
                     >
-                      {{ isRequirementMapped(req.id) ? 'mdi-check-circle' : 'mdi-alert-circle' }}
+                      {{ isRequirementCovered(req.id) ? 'mdi-check-circle' : 'mdi-alert-circle' }}
                     </v-icon>
 
                     <v-btn
@@ -146,7 +146,7 @@
             :disabled="autoGenerating || autoMapping"
             class="expand-btn"
           >
-            <span class="btn-text">Gerar Tarefas IA</span>
+            <span class="btn-text">Gerar Ações IA</span>
           </v-btn>
           <v-btn
             v-if="matrixData.requirements.length > 0"
@@ -158,7 +158,7 @@
             :loading="loading"
             class="expand-btn"
           >
-            <span class="btn-text">Limpar Todos</span>
+            <span class="btn-text">Limpar Jornada</span>
           </v-btn>
           <v-btn
             v-if="matrixData.requirements.length > 0 && matrixData.tasks.length > 0"
@@ -171,7 +171,7 @@
             :disabled="loading || autoGenerating"
             class="expand-btn"
           >
-            <span class="btn-text">Auto-Map IA</span>
+            <span class="btn-text">Auto-Vincular IA</span>
           </v-btn>
           <v-btn
             color="primary"
@@ -193,7 +193,7 @@
             :loading="autoGenerating"
             class="expand-btn"
           >
-            <span class="btn-text">Gerar Requisitos</span>
+            <span class="btn-text">Gerar Jornada</span>
           </v-btn>
         </v-card-actions>
       </div>
@@ -202,7 +202,7 @@
     <!-- Loading -->
     <v-card-text v-else class="text-center py-8">
       <v-progress-circular indeterminate color="primary" />
-      <p class="text-medium-emphasis mt-2">Carregando matriz de rastreabilidade...</p>
+      <p class="text-medium-emphasis mt-2">Carregando matriz da jornada...</p>
     </v-card-text>
   </v-card>
 
@@ -310,6 +310,9 @@ interface Requirement {
   id: string;
   description: string;
   type: string;
+  kind?: 'objective' | 'habit' | 'stage' | 'action' | string;
+  parentItemId?: string;
+  hierarchyLevel?: number;
   status: string;
 }
 
@@ -417,7 +420,7 @@ const loadMatrix = async () => {
     const { data, error } = await get();
 
     if (error) {
-      console.error('Erro ao carregar matriz RTM:', error);
+      console.error('Erro ao carregar matriz da jornada:', error);
       return;
     }
 
@@ -442,7 +445,7 @@ const loadMatrix = async () => {
       }
     }
   } catch (err) {
-    console.error('Erro buscando matriz RTM:', err);
+    console.error('Erro buscando matriz da jornada:', err);
   } finally {
     loading.value = false;
   }
@@ -457,14 +460,14 @@ const autoGenerateRequirements = async () => {
     const { data, error } = await post({ smartObjective: props.smartObjective });
 
     if (error) {
-      console.error('Erro ao gerar requisitos:', error);
+      console.error('Erro ao gerar jornada:', error);
       return;
     }
 
     // Recarregar matriz
     await loadMatrix();
   } catch (err) {
-    console.error('Erro gerando requisitos:', err);
+    console.error('Erro gerando jornada:', err);
   } finally {
     autoGenerating.value = false;
   }
@@ -531,7 +534,7 @@ const unmapTask = async (requirementId: string, taskId: string) => {
 const deleteRequirement = async (requirementId: string) => {
   if (!requirementId) return;
 
-  const ok = window.confirm('Excluir este requisito? Essa ação não pode ser desfeita.');
+  const ok = window.confirm('Excluir este item da jornada? Essa ação não pode ser desfeita.');
   if (!ok) return;
 
   deletingRequirementId.value = requirementId;
@@ -540,13 +543,13 @@ const deleteRequirement = async (requirementId: string) => {
     const { error } = await remove();
 
     if (error) {
-      console.error('Erro ao excluir requisito:', error);
+      console.error('Erro ao excluir item da jornada:', error);
       return;
     }
 
     await loadMatrix();
   } catch (err) {
-    console.error('Erro excluindo requisito:', err);
+    console.error('Erro excluindo item da jornada:', err);
   } finally {
     deletingRequirementId.value = null;
   }
@@ -556,7 +559,7 @@ const deleteAllRequirements = async () => {
   if (!props.projectId) return;
 
   const ok = window.confirm(
-    `Excluir TODOS os ${matrixData.value?.requirements.length || 0} requisito(s)? Essa ação não pode ser desfeita.`,
+    `Excluir TODOS os ${matrixData.value?.requirements.length || 0} item(ns) da jornada? Essa ação não pode ser desfeita.`,
   );
   if (!ok) return;
 
@@ -566,13 +569,13 @@ const deleteAllRequirements = async () => {
     const { error } = await remove();
 
     if (error) {
-      console.error('Erro ao excluir todos os requisitos:', error);
+      console.error('Erro ao excluir todos os itens da jornada:', error);
       return;
     }
 
     await loadMatrix();
   } catch (err) {
-    console.error('Erro excluindo todos os requisitos:', err);
+    console.error('Erro excluindo todos os itens da jornada:', err);
   } finally {
     loading.value = false;
   }
@@ -582,7 +585,7 @@ const autoMapRequirements = async () => {
   if (!props.projectId) return;
 
   const ok = window.confirm(
-    'Auto-mapear tarefas para requisitos usando IA? Isso pode levar alguns minutos com muitas tarefas.',
+    'Auto-vincular tarefas às ações da jornada usando IA? Isso pode levar alguns minutos.',
   );
   if (!ok) return;
 
@@ -592,20 +595,20 @@ const autoMapRequirements = async () => {
     const { data, error } = await post({});
 
     if (error) {
-      console.error('Erro ao auto-mapear requisitos:', error);
+      console.error('Erro ao auto-vincular tarefas:', error);
       return;
     }
 
     if (data && data.success) {
       console.log(
-        `[Auto-Map] ${data.mappedCount} tarefas mapeadas, ${data.createdRequirementsCount} requisitos criados, ${data.coverage}% cobertura`,
+        `[Auto-Map] ${data.mappedCount} tarefas vinculadas, ${data.createdRequirementsCount} ações criadas, ${data.coverage}% cobertura`,
       );
     }
 
     // Recarregar matriz
     await loadMatrix();
   } catch (err) {
-    console.error('Erro auto-mapeando requisitos:', err);
+    console.error('Erro no auto-vínculo:', err);
   } finally {
     autoMapping.value = false;
   }
@@ -616,12 +619,12 @@ const generateTasksForUnmappedRequirements = async () => {
 
   const unmappedCount = matrixData.value?.validation.unmappedRequirements.length || 0;
   if (unmappedCount === 0) {
-    window.alert('Todos os requisitos já possuem tarefas mapeadas!');
+    window.alert('Todos os itens da jornada já possuem rastreabilidade!');
     return;
   }
 
   const ok = window.confirm(
-    `Gerar tarefas para ${unmappedCount} requisito(s) sem mapeamento? Isso pode levar alguns minutos.`,
+    `Gerar tarefas para ${unmappedCount} item(ns) sem rastreabilidade? Isso pode levar alguns minutos.`,
   );
   if (!ok) return;
 
@@ -652,10 +655,21 @@ const generateTasksForUnmappedRequirements = async () => {
   }
 };
 
-const isRequirementMapped = (requirementId: string): boolean => {
+const isRequirementCovered = (requirementId: string): boolean => {
   if (!matrixData.value) return false;
-  const tasks = matrixData.value.matrix[requirementId];
-  return Array.isArray(tasks) && tasks.length > 0;
+  return !matrixData.value.validation.unmappedRequirements.includes(requirementId);
+};
+
+const getRequirementLevelLabel = (requirement: Requirement): string => {
+  const value = String(requirement.kind || requirement.type || '').toLowerCase();
+  if (value === 'objective' || value === 'objetivo') return 'Objetivo';
+  if (value === 'habit' || value === 'habito' || value === 'hábito') return 'Hábito';
+  if (value === 'stage' || value === 'etapa') return 'Etapa';
+  if (value === 'action' || value === 'acao' || value === 'ação') return 'Ação';
+  if (value === 'functional') return 'Funcional';
+  if (value === 'non_functional') return 'Não-Funcional';
+  if (value === 'constraint') return 'Restrição';
+  return 'Item';
 };
 
 const getTasksForRequirement = (requirementId: string): string[] => {
@@ -676,7 +690,15 @@ const getUnmappedTasks = (requirementId: string): Task[] => {
 };
 
 const getTypeColor = (type: string): string => {
-  switch (type) {
+  switch (String(type || '').toLowerCase()) {
+    case 'objective':
+      return 'deep-purple';
+    case 'habit':
+      return 'primary';
+    case 'stage':
+      return 'info';
+    case 'action':
+      return 'success';
     case 'functional':
       return 'primary';
     case 'non_functional':

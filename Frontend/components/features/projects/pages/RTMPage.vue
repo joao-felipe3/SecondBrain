@@ -1,8 +1,8 @@
 <template>
   <v-sheet class="page-container" elevation="0" color="transparent" @click.stop>
-    <!-- LEFT PAGE: Matriz de Rastreabilidade -->
+    <!-- LEFT PAGE: Matriz da Jornada -->
     <v-sheet class="page left-page" elevation="0" color="transparent" @click.stop>
-      <h3 class="page-title mb-4">🔗 Matriz de Rastreabilidade</h3>
+      <h3 class="page-title mb-4">🔗 Jornada Pessoal Rastreável</h3>
 
       <RTMMatrix
         v-if="project._id"

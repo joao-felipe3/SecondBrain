@@ -11,6 +11,7 @@ export interface Task {
   pertExpectedMinutes?: number
   pertVariance?: number
   requirementIds?: string[]
+  journeyItemIds?: string[];
   rtmRisk?: boolean
   rtmRiskReason?: string
   evmProgress?: number

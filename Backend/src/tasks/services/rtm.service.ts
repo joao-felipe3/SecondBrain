@@ -1,7 +1,12 @@
 import { Injectable, Logger, Inject, forwardRef } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
-import { Requirement, RequirementDocument } from '../schemas/requirement.schema';
+import {
+  Requirement,
+  RequirementDocument,
+  RequirementType,
+  JourneyKind,
+} from '../schemas/requirement.schema';
 import { GeminiService } from '../gemini.service';
 import { TasksService } from '../tasks.service';
 
@@ -9,15 +14,31 @@ export interface RTMValidation {
   isValid: boolean;
   unmappedRequirements: string[];
   risks: string[];
-  coverage: number; // Percentual de requisitos mapeados
+  coverage: number;
 }
 
 export interface RTMMatrixData {
-  requirements: Array<{ id: string; description: string; type: string; status: string }>;
+  requirements: Array<{
+    id: string;
+    description: string;
+    type: string;
+    status: string;
+    kind: JourneyKind;
+    parentItemId?: string;
+    hierarchyLevel: number;
+  }>;
   tasks: Array<{ id: string; name: string; wbsNodeId?: string; wbsNodeName: string }>;
-  matrix: Map<string, Set<string>>; // req id -> set of task ids
+  matrix: Map<string, Set<string>>;
   validation: RTMValidation;
 }
+
+type JourneyDraft = {
+  ref: string;
+  parentRef?: string;
+  kind: JourneyKind;
+  description: string;
+  type?: RequirementType;
+};
 
 @Injectable()
 export class RTMService {
@@ -31,13 +52,82 @@ export class RTMService {
     private tasksService: TasksService,
   ) {}
 
+  private normalizeKind(value: unknown): JourneyKind {
+    const raw = String(value ?? '').trim().toLowerCase();
+    if (raw === 'objective' || raw === 'objetivo') return 'objective';
+    if (raw === 'habit' || raw === 'habito' || raw === 'hábito') return 'habit';
+    if (raw === 'stage' || raw === 'etapa') return 'stage';
+    return 'action';
+  }
+
+  private normalizeType(value: unknown, fallbackKind?: JourneyKind): RequirementType {
+    const raw = String(value ?? '').trim().toLowerCase();
+    if (raw === 'functional') return 'functional';
+    if (raw === 'non_functional' || raw === 'non-functional' || raw === 'nonfunctional') {
+      return 'non_functional';
+    }
+    if (raw === 'constraint') return 'constraint';
+    if (raw === 'objective' || raw === 'objetivo') return 'objective';
+    if (raw === 'habit' || raw === 'habito' || raw === 'hábito') return 'habit';
+    if (raw === 'stage' || raw === 'etapa') return 'stage';
+    if (raw === 'action' || raw === 'acao' || raw === 'ação') return 'action';
+    if (fallbackKind) return fallbackKind;
+    return 'action';
+  }
+
+  private levelForKind(kind: JourneyKind): number {
+    if (kind === 'objective') return 0;
+    if (kind === 'habit') return 1;
+    if (kind === 'stage') return 2;
+    return 3;
+  }
+
+  private getLinkedActions(requirement: any): string[] {
+    const modern = Array.isArray(requirement?.traceableActionItems)
+      ? requirement.traceableActionItems.map(String)
+      : [];
+    if (modern.length > 0) return modern;
+
+    const legacy = Array.isArray(requirement?.traceableItems)
+      ? requirement.traceableItems.map(String)
+      : [];
+    return legacy;
+  }
+
+  private parseJsonArray(rawResponse: string): any[] | null {
+    const cleaned = String(rawResponse || '')
+      .replace(/```json\n?/gi, '')
+      .replace(/```\n?/g, '')
+      .trim();
+
+    const tryParse = (text: string) => {
+      try {
+        const parsed = JSON.parse(text);
+        return Array.isArray(parsed) ? parsed : null;
+      } catch {
+        return null;
+      }
+    };
+
+    const direct = tryParse(cleaned);
+    if (direct) return direct;
+
+    const match = cleaned.match(/\[[\s\S]*\]/);
+    if (match?.[0]) {
+      return tryParse(match[0]);
+    }
+
+    return null;
+  }
+
   /**
-   * Gera requisitos automaticamente a partir de um Smart Objective usando IA
+   * Gera itens de jornada pessoal automaticamente a partir de um Smart Objective
+   * Compatibilidade: mantém assinatura e tipo de retorno do fluxo antigo
    */
   async generateRequirements(
     smartObjective: any,
-  ): Promise<Array<{ description: string; type: Requirement['type'] }>> {
-    this.logger.log(`Gerando requisitos para Smart Objective...`);
+  ): Promise<Array<{ description: string; type: RequirementType; kind?: JourneyKind; ref?: string; parentRef?: string }>> {
+    this.logger.log('Gerando itens de jornada para Smart Objective...');
 
     if (!smartObjective) {
       this.logger.warn('Smart Objective vazio, retornando array vazio');
@@ -45,34 +135,24 @@ export class RTMService {
     }
 
     try {
-      const smartText = (() => {
-        try {
-          return JSON.stringify(smartObjective ?? '');
-        } catch {
-          return String(smartObjective ?? '');
-        }
-      })().toLowerCase();
+      const prompt = `Você é um planejador de desenvolvimento pessoal.
 
-      // Heurística simples: quando o objetivo é de aprendizado pessoal, evite linguagem de “sistema”.
-      const isPersonalLearningObjective = /\b(aprender|estudar|idioma|língua|lingua|conversação|conversacao|hs?k|certifica|vocabul|gramát|gramat|pronún|pronun|leitura|escrita|ouvir|escutar)\b/i.test(
-        smartText,
-      );
+Objetivo:
+Gerar uma estrutura rastreável no formato objetivo -> hábito -> etapa -> ação.
 
-      const prompt = `Você é um analista de requisitos para um projeto (não necessariamente software).
+Regras:
+- Foque em projetos pessoais (aprendizado, rotina, hábitos, produtividade).
+- Gere uma árvore prática e rastreável.
+- Retorne entre 10 e 24 itens no total.
+- Cada item deve ter:
+  - ref: identificador curto único (ex: O1, H1, E1, A1)
+  - parentRef: referência do pai (null apenas para objective)
+  - kind: objective | habit | stage | action
+  - description: descrição clara, específica e mensurável
+- Ações devem ser executáveis (o que fazer de fato).
+- Sem markdown.
 
-Tarefa:
-1) Leia o Smart Objective abaixo.
-2) Gere requisitos DO PROJETO (entregáveis, resultados esperados, critérios de aceitação, atividades e restrições) que possam ser rastreados por tarefas (WBS).
-
-Regras importantes:
-- NÃO assuma que existe um sistema/software.
-- NÃO use a formulação "O sistema deve...".
-- Use linguagem neutra: "O projeto deve...".
-${isPersonalLearningObjective ? "- Este Smart Objective parece ser de APRENDIZADO PESSOAL. Então prefira requisitos como: resultados de aprendizagem (o que a pessoa será capaz de fazer), rotina/plano de estudo, métricas de progresso, e restrições (tempo/custo/prazo)." : ""}
-- Evite duplicatas. Cada requisito deve ser específico e testável.
-- Gere entre 8 e 20 itens.
-
-Smart Objective (campos):
+Smart Objective:
 - O: ${smartObjective.objective || ''}
 - Específico: ${smartObjective.specific || ''}
 - Mensurável: ${smartObjective.measurable || ''}
@@ -80,146 +160,138 @@ Smart Objective (campos):
 - Relevante: ${smartObjective.relevant || ''}
 - Temporal: ${smartObjective.temporal || ''}
 
-Formato de saída:
-Retorne SOMENTE um JSON array no formato:
+Retorne SOMENTE um JSON array:
 [
-  { "description": "...", "type": "functional|non_functional|constraint" }
-]
-Sem blocos markdown, sem texto extra.`;
+  { "ref": "O1", "parentRef": null, "kind": "objective", "description": "..." },
+  { "ref": "H1", "parentRef": "O1", "kind": "habit", "description": "..." },
+  { "ref": "E1", "parentRef": "H1", "kind": "stage", "description": "..." },
+  { "ref": "A1", "parentRef": "E1", "kind": "action", "description": "..." }
+]`;
 
       const response = await this.geminiService.generateContent(prompt, {
         responseMimeType: 'application/json',
         temperature: 0.2,
-        maxOutputTokens: 2048,
+        maxOutputTokens: 3072,
       });
 
-      // Remove markdown code blocks (```json ... ```), se vierem.
-      const cleaned = response
-        .replace(/```json\n?/gi, '')
-        .replace(/```\n?/g, '')
-        .trim();
-
-      const tryParseArray = (text: string): unknown[] | null => {
-        try {
-          const parsed = JSON.parse(text);
-          return Array.isArray(parsed) ? parsed : null;
-        } catch {
-          return null;
-        }
-      };
-
-      // 1) Tenta parse direto
-      let parsedArray = tryParseArray(cleaned);
-
-      // 2) Fallback: extrai o primeiro array JSON do texto
-      if (!parsedArray) {
-        const match = cleaned.match(/\[[\s\S]*\]/);
-        if (match?.[0]) {
-          parsedArray = tryParseArray(match[0]);
-        }
-      }
-
-      if (!parsedArray) {
+      const parsed = this.parseJsonArray(response);
+      if (!parsed) {
         this.logger.warn('Resposta da IA não contém um JSON array válido');
         return [];
       }
 
-      const normalizeType = (raw: unknown): Requirement['type'] => {
-        const value = String(raw ?? '').trim().toLowerCase();
-        if (value === 'functional') return 'functional';
-        if (value === 'non_functional' || value === 'non-functional' || value === 'nonfunctional') {
-          return 'non_functional';
-        }
-        if (value === 'constraint') return 'constraint';
-        return 'functional';
-      };
+      const normalized: JourneyDraft[] = parsed
+        .map((item: any, index: number) => {
+          const kind = this.normalizeKind(item?.kind);
+          const defaultRefPrefix = kind === 'objective' ? 'O' : kind === 'habit' ? 'H' : kind === 'stage' ? 'E' : 'A';
+          const ref = String(item?.ref ?? `${defaultRefPrefix}${index + 1}`).trim();
+          const parentRef = item?.parentRef == null ? undefined : String(item.parentRef).trim();
+          const description = String(item?.description ?? '').trim();
 
-      const normalized = parsedArray
-        .map((item: any) => ({
-          description: String(item?.description ?? '').trim(),
-          type: normalizeType(item?.type),
-        }))
-        .filter((r) => r.description.length > 0);
+          return {
+            ref,
+            parentRef,
+            kind,
+            description,
+            type: this.normalizeType(item?.type, kind),
+          };
+        })
+        .filter((item) => item.description.length > 0);
 
-      // Dedup por descrição (case-insensitive)
+      const deduped: JourneyDraft[] = [];
       const seen = new Set<string>();
-      const deduped: Array<{ description: string; type: Requirement['type'] }> = [];
-      for (const r of normalized) {
-        const key = r.description.toLowerCase();
+      for (const item of normalized) {
+        const key = `${item.kind}::${item.description.toLowerCase()}`;
         if (seen.has(key)) continue;
         seen.add(key);
-        deduped.push(r);
+        deduped.push(item);
       }
 
-      this.logger.log(`${deduped.length} requisitos extraídos com sucesso`);
-      return deduped;
+      this.logger.log(`${deduped.length} itens de jornada extraídos com sucesso`);
+      return deduped.map((item) => ({
+        description: item.description,
+        type: item.type || item.kind,
+        kind: item.kind,
+        ref: item.ref,
+        parentRef: item.parentRef,
+      }));
     } catch (error: any) {
-      this.logger.error(`Erro ao gerar requisitos: ${error?.message}`);
+      this.logger.error(`Erro ao gerar itens de jornada: ${error?.message}`);
       return [];
     }
   }
 
   /**
-   * Mapeia um requisito para uma tarefa (rastreamento)
+   * Mapeia um item da jornada (tipicamente ação) para uma tarefa
    */
   async mapRequirementToTask(
     projectId: string,
     requirementId: string,
     taskId: string,
   ): Promise<Requirement | null> {
-    this.logger.log(`Mapeando requisito ${requirementId} → tarefa ${taskId}`);
+    this.logger.log(`Mapeando item ${requirementId} -> tarefa ${taskId}`);
 
     try {
-      const requirement = await this.requirementModel.findByIdAndUpdate(
-        requirementId,
+      const requirement = await this.requirementModel.findOneAndUpdate(
         {
-          $addToSet: { traceableItems: taskId },
+          _id: new Types.ObjectId(requirementId),
+          projectId,
+        },
+        {
+          $addToSet: {
+            traceableActionItems: taskId,
+            traceableItems: taskId,
+          },
           $set: { status: 'satisfied' },
         },
         { new: true },
       );
 
       if (!requirement) {
-        this.logger.warn(`Requisito ${requirementId} não encontrado`);
+        this.logger.warn(`Item ${requirementId} não encontrado`);
         return null;
       }
 
-      this.logger.log(`Requisito ${requirementId} mapeado para tarefa ${taskId}`);
+      this.logger.log(`Item ${requirementId} mapeado para tarefa ${taskId}`);
       return requirement;
     } catch (error: any) {
-      this.logger.error(`Erro ao mapear requisito: ${error?.message}`);
+      this.logger.error(`Erro ao mapear item: ${error?.message}`);
       return null;
     }
   }
 
   /**
-   * Remove mapeamento de um requisito para uma tarefa
+   * Remove mapeamento de item para tarefa
    */
   async unmapRequirementFromTask(
     requirementId: string,
     taskId: string,
   ): Promise<Requirement | null> {
-    this.logger.log(`Removendo mapeamento: requisito ${requirementId} ← tarefa ${taskId}`);
+    this.logger.log(`Removendo mapeamento: item ${requirementId} <- tarefa ${taskId}`);
 
     try {
       const requirement = await this.requirementModel.findByIdAndUpdate(
         requirementId,
-        { $pull: { traceableItems: taskId } },
+        {
+          $pull: {
+            traceableActionItems: taskId,
+            traceableItems: taskId,
+          },
+        },
         { new: true },
       );
 
       if (!requirement) {
-        this.logger.warn(`Requisito ${requirementId} não encontrado`);
+        this.logger.warn(`Item ${requirementId} não encontrado`);
         return null;
       }
 
-      // Se não houver mais tarefas mapeadas, marcar como 'open'
-      if (requirement.traceableItems.length === 0) {
+      if (this.getLinkedActions(requirement).length === 0) {
         requirement.status = 'open';
         await requirement.save();
       }
 
-      this.logger.log(`Mapeamento removido de requisito ${requirementId}`);
+      this.logger.log(`Mapeamento removido do item ${requirementId}`);
       return requirement;
     } catch (error: any) {
       this.logger.error(`Erro ao remover mapeamento: ${error?.message}`);
@@ -228,52 +300,97 @@ Sem blocos markdown, sem texto extra.`;
   }
 
   /**
-   * Valida a RTM do projeto - identifica requisitos não mapeados
+   * Valida rastreabilidade da jornada pessoal
    */
   async validateRTM(projectId: string): Promise<RTMValidation> {
-    this.logger.log(`Validando RTM para projeto ${projectId}`);
+    this.logger.log(`Validando jornada para projeto ${projectId}`);
 
     try {
-      const requirements = await this.requirementModel.find({
-        projectId,
-      });
+      const requirements = await this.requirementModel.find({ projectId });
+      const total = requirements.length;
 
-      const totalRequirements = requirements.length;
-
-      if (totalRequirements === 0) {
+      if (total === 0) {
         return {
           isValid: false,
           unmappedRequirements: [],
-          risks: ['Nenhum requisito definido para o projeto'],
+          risks: ['Nenhum item de jornada definido para o projeto'],
           coverage: 0,
         };
       }
 
+      const byId = new Map<string, any>();
+      const childrenByParent = new Map<string, any[]>();
       const unmappedRequirements: string[] = [];
       const risks: string[] = [];
 
       for (const req of requirements as any[]) {
-        if (!req.traceableItems || req.traceableItems.length === 0) {
-          unmappedRequirements.push(String(req._id)); // Push ID, not description
-        } else if (req.traceableItems.length > 1) {
-          risks.push(
-            `Requisito "${req.description}" mapeado para ${req.traceableItems.length} tarefas (potencial redundância)`,
-          );
+        const id = String(req._id ?? req.id ?? '');
+        byId.set(id, req);
+      }
+
+      for (const req of requirements as any[]) {
+        const id = String(req._id ?? req.id ?? '');
+        const parentId = req.parentItemId ? String(req.parentItemId) : undefined;
+        if (!parentId) continue;
+        const list = childrenByParent.get(parentId) || [];
+        list.push(req);
+        childrenByParent.set(parentId, list);
+
+        if (!byId.has(parentId)) {
+          risks.push(`Item ${id} aponta para pai inexistente (${parentId})`);
         }
       }
 
-      const mappedCount = totalRequirements - unmappedRequirements.length;
-      const coverage = (mappedCount / totalRequirements) * 100;
+      const hasChildOfKind = (id: string, kind: JourneyKind) => {
+        const children = childrenByParent.get(id) || [];
+        return children.some((child) => this.normalizeKind(child.kind || child.type) === kind);
+      };
 
+      for (const req of requirements as any[]) {
+        const id = String(req._id ?? req.id ?? '');
+        const description = String(req.description || 'Item');
+        const kind = this.normalizeKind(req.kind || req.type);
+        const linkedActions = this.getLinkedActions(req);
+
+        if (kind === 'objective') {
+          if (!hasChildOfKind(id, 'habit')) {
+            unmappedRequirements.push(id);
+            risks.push(`Objetivo sem hábito vinculado: "${description}"`);
+          }
+          continue;
+        }
+
+        if (kind === 'habit') {
+          if (!hasChildOfKind(id, 'stage')) {
+            unmappedRequirements.push(id);
+            risks.push(`Hábito sem etapa vinculada: "${description}"`);
+          }
+          continue;
+        }
+
+        if (kind === 'stage') {
+          if (!hasChildOfKind(id, 'action')) {
+            unmappedRequirements.push(id);
+            risks.push(`Etapa sem ação vinculada: "${description}"`);
+          }
+          continue;
+        }
+
+        if (linkedActions.length === 0) {
+          unmappedRequirements.push(id);
+          risks.push(`Ação sem tarefa rastreada: "${description}"`);
+        } else if (linkedActions.length > 3) {
+          risks.push(`Ação "${description}" vinculada a ${linkedActions.length} tarefas (avaliar granularidade)`);
+        }
+      }
+
+      const mapped = total - unmappedRequirements.length;
+      const coverage = (mapped / total) * 100;
       const isValid = unmappedRequirements.length === 0;
 
       if (!isValid) {
-        risks.push(`${unmappedRequirements.length} requisito(s) não mapeado(s)`);
+        risks.push(`${unmappedRequirements.length} item(ns) da jornada sem rastreabilidade completa`);
       }
-
-      this.logger.log(
-        `RTM validada: ${coverage.toFixed(1)}% de cobertura, ${unmappedRequirements.length} não mapeado(s)`,
-      );
 
       return {
         isValid,
@@ -282,62 +399,63 @@ Sem blocos markdown, sem texto extra.`;
         coverage: Math.round(coverage * 10) / 10,
       };
     } catch (error: any) {
-      this.logger.error(`Erro ao validar RTM: ${error?.message}`);
+      this.logger.error(`Erro ao validar jornada: ${error?.message}`);
       return {
         isValid: false,
         unmappedRequirements: [],
-        risks: [`Erro ao validar RTM: ${error?.message}`],
+        risks: [`Erro ao validar jornada: ${error?.message}`],
         coverage: 0,
       };
     }
   }
 
   /**
-   * Retorna a matriz de rastreabilidade completa (requisitos × tarefas)
+   * Matriz de rastreabilidade completa da jornada
    */
-  async getRTMMatrix(
-    projectId: string,
-    tasks: any[], // Tarefas do projeto (passadas pelo controller)
-  ): Promise<RTMMatrixData> {
-    this.logger.log(`Gerando matriz RTM para projeto ${projectId}`);
+  async getRTMMatrix(projectId: string, tasks: any[]): Promise<RTMMatrixData> {
+    this.logger.log(`Gerando matriz de jornada para projeto ${projectId}`);
 
     try {
-      const requirements = await this.requirementModel.find({
-        projectId,
-      });
+      const requirements = await this.requirementModel
+        .find({ projectId })
+        .sort({ hierarchyLevel: 1, createdAt: 1, _id: 1 });
 
       const matrix = new Map<string, Set<string>>();
       for (const req of requirements as any[]) {
         const reqId = String(req._id ?? req.id ?? '');
-        const traceable = Array.isArray(req.traceableItems) ? req.traceableItems : [];
-        matrix.set(reqId, new Set(traceable.map(String)));
+        const traceable = this.getLinkedActions(req);
+        matrix.set(reqId, new Set(traceable));
       }
 
       const validation = await this.validateRTM(projectId);
 
-      const requirementsData = (requirements as any[]).map((req) => ({
-        id: String(req._id ?? req.id ?? ''),
-        description: req.description,
-        type: req.type,
-        status: req.status,
-      }));
+      const requirementsData = (requirements as any[]).map((req) => {
+        const kind = this.normalizeKind(req.kind || req.type);
+        return {
+          id: String(req._id ?? req.id ?? ''),
+          description: req.description,
+          type: req.type || kind,
+          status: req.status,
+          kind,
+          parentItemId: req.parentItemId ? String(req.parentItemId) : undefined,
+          hierarchyLevel: Number(req.hierarchyLevel ?? this.levelForKind(kind)),
+        };
+      });
 
-      // Build WBS name map for enrichment
       const wbsNameMap = new Map<string, string>();
-      
       const tasksData = (tasks as any[]).map((task) => {
         const wbsNodeId = task.parentWbsNodeId ? String(task.parentWbsNodeId) : undefined;
-        
-        // Try to get WBS name from cache or fallback to path or ID
+
         let wbsNodeName = 'Sem WBS';
         if (wbsNodeId) {
           if (wbsNameMap.has(wbsNodeId)) {
             wbsNodeName = wbsNameMap.get(wbsNodeId) || 'Sem WBS';
           } else {
-            // Strategy: use wbsPath parts or fallback to truncated ID
             if (task.wbsPath) {
-              // Extract last part of wbs path: e.g. "1 > 2 > 3" -> "3"
-              const pathParts = task.wbsPath.split('>').map((p: string) => p.trim());
+              const pathParts = String(task.wbsPath)
+                .split('>')
+                .map((p: string) => p.trim())
+                .filter(Boolean);
               wbsNodeName = pathParts[pathParts.length - 1] || wbsNodeId.slice(0, 12);
             } else {
               wbsNodeName = `WBS: ${wbsNodeId.slice(0, 12)}`;
@@ -354,10 +472,6 @@ Sem blocos markdown, sem texto extra.`;
         };
       });
 
-      this.logger.log(
-        `Matriz RTM gerada: ${requirements.length} requisitos × ${tasks.length} tarefas`,
-      );
-
       return {
         requirements: requirementsData,
         tasks: tasksData,
@@ -365,7 +479,7 @@ Sem blocos markdown, sem texto extra.`;
         validation,
       };
     } catch (error: any) {
-      this.logger.error(`Erro ao gerar matriz RTM: ${error?.message}`);
+      this.logger.error(`Erro ao gerar matriz de jornada: ${error?.message}`);
       return {
         requirements: [],
         tasks: [],
@@ -381,73 +495,113 @@ Sem blocos markdown, sem texto extra.`;
   }
 
   /**
-   * Salva requisitos para um projeto (bulk insert)
+   * Salva itens de jornada do projeto
    */
   async saveRequirements(
     projectId: string,
-    requirementsData: Array<{ description: string; type?: string; source?: string }>,
+    requirementsData: Array<{
+      description: string;
+      type?: string;
+      source?: string;
+      kind?: string;
+      ref?: string;
+      parentRef?: string;
+    }>,
   ): Promise<RequirementDocument[]> {
-    this.logger.log(`Salvando ${requirementsData.length} requisitos para projeto ${projectId}`);
+    this.logger.log(`Salvando ${requirementsData.length} itens de jornada para projeto ${projectId}`);
 
     try {
-      const requirements = await this.requirementModel.insertMany(
-        requirementsData.map((req) => ({
-          projectId,
-          description: req.description,
-          type: req.type || 'functional',
-          source: req.source || 'manual',
-          traceableItems: [],
-          status: 'open',
-        })),
-      );
+      const refToId = new Map<string, string>();
+      const insertedIds = new Set<string>();
+      const prepared = requirementsData
+        .map((item, index) => {
+          const kind = this.normalizeKind(item.kind || item.type);
+          const type = this.normalizeType(item.type, kind);
+          const ref = String(item.ref || `${kind.slice(0, 1).toUpperCase()}${index + 1}`).trim();
+          const parentRef = item.parentRef ? String(item.parentRef).trim() : undefined;
+          const description = String(item.description || '').trim();
+          return {
+            ref,
+            parentRef,
+            description,
+            kind,
+            type,
+            hierarchyLevel: this.levelForKind(kind),
+            source: item.source || 'manual',
+          };
+        })
+        .filter((item) => item.description.length > 0);
 
-      this.logger.log(`${requirements.length} requisitos salvos com sucesso`);
-      return requirements as RequirementDocument[];
+      const orderedByLevel = prepared.sort((a, b) => a.hierarchyLevel - b.hierarchyLevel);
+      const inserted: RequirementDocument[] = [];
+
+      for (const item of orderedByLevel) {
+        const dedupKey = `${item.kind}::${item.description.toLowerCase()}`;
+        if (insertedIds.has(dedupKey)) continue;
+
+        let parentItemId: string | undefined;
+        if (item.parentRef && refToId.has(item.parentRef)) {
+          parentItemId = refToId.get(item.parentRef);
+        }
+
+        const created = await this.requirementModel.create({
+          projectId,
+          description: item.description,
+          title: item.description,
+          type: item.type,
+          kind: item.kind,
+          hierarchyLevel: item.hierarchyLevel,
+          parentItemId,
+          source: item.source,
+          traceableItems: [],
+          traceableActionItems: [],
+          status: 'open',
+        });
+
+        inserted.push(created as RequirementDocument);
+        refToId.set(item.ref, String((created as any)._id));
+        insertedIds.add(dedupKey);
+      }
+
+      this.logger.log(`${inserted.length} itens de jornada salvos com sucesso`);
+      return inserted;
     } catch (error: any) {
-      this.logger.error(`Erro ao salvar requisitos: ${error?.message}`);
+      this.logger.error(`Erro ao salvar itens de jornada: ${error?.message}`);
       return [];
     }
   }
 
-  /**
-   * Obtém todos os requisitos de um projeto
-   */
   async getRequirements(projectId: string): Promise<RequirementDocument[]> {
-    return this.requirementModel.find({ projectId });
+    return this.requirementModel
+      .find({ projectId })
+      .sort({ hierarchyLevel: 1, createdAt: 1, _id: 1 });
   }
 
-  /**
-   * Deleta um requisito
-   */
   async deleteRequirement(requirementId: string): Promise<boolean> {
     try {
       const result = await this.requirementModel.findByIdAndDelete(requirementId);
       return !!result;
     } catch (error: any) {
-      this.logger.error(`Erro ao deletar requisito: ${error?.message}`);
+      this.logger.error(`Erro ao deletar item de jornada: ${error?.message}`);
       return false;
     }
   }
 
-  /**
-   * Deleta todos os requisitos de um projeto
-   */
   async deleteAllRequirements(projectId: string): Promise<number> {
     try {
       const result = await this.requirementModel.deleteMany({ projectId });
       this.logger.log(
-        `[delete-all-req] projectId=${projectId} ${result.deletedCount} requisitos deletados`,
+        `[delete-all-journey] projectId=${projectId} ${result.deletedCount} itens deletados`,
       );
       return result.deletedCount || 0;
     } catch (error: any) {
-      this.logger.error(`Erro ao deletar todos os requisitos: ${error?.message}`);
+      this.logger.error(`Erro ao deletar todos os itens de jornada: ${error?.message}`);
       return 0;
     }
   }
 
   /**
-   * Auto-mapeia requisitos para tarefas usando IA + cria requisitos para tarefas órfãs
-   * Atinge 100% de cobertura de tarefas
+   * Auto-vincula tarefas às ações da jornada e cria ações órfãs quando necessário
    */
   async autoMapRequirementsToTasks(
     projectId: string,
@@ -461,13 +615,14 @@ Sem blocos markdown, sem texto extra.`;
   }> {
     const startedAt = Date.now();
     this.logger.log(
-      `[auto-map] projectId=${projectId} iniciando mapeamento automático de ${tasks.length} tarefas`,
+      `[auto-map] projectId=${projectId} iniciando auto-vinculo de ${tasks.length} tarefas`,
     );
 
     try {
-      // 1. Buscar requisitos atuais
-      const requirements = await this.requirementModel.find({ projectId });
-      if (requirements.length === 0) {
+      const allItems = await this.requirementModel.find({ projectId });
+      const actionItems = allItems.filter((item: any) => this.normalizeKind(item.kind || item.type) === 'action');
+
+      if (allItems.length === 0) {
         return {
           mappedCount: 0,
           createdRequirementsCount: 0,
@@ -476,29 +631,35 @@ Sem blocos markdown, sem texto extra.`;
             isValid: false,
             coverage: 0,
             unmappedRequirements: [],
-            risks: ['Nenhum requisito encontrado. Gere requisitos primeiro.'],
+            risks: ['Nenhum item de jornada encontrado. Gere a estrutura primeiro.'],
           },
-          message: 'Falha: nenhum requisito disponível para mapear.',
+          message: 'Falha: nenhum item de jornada disponível para mapear.',
         };
       }
 
-      // 1.5 Pré-processamento: identificar tarefas JÁ mapeadas para evitar redundância
+      if (actionItems.length === 0) {
+        return {
+          mappedCount: 0,
+          createdRequirementsCount: 0,
+          coverage: 0,
+          validation: {
+            isValid: false,
+            coverage: 0,
+            unmappedRequirements: [],
+            risks: ['Nenhuma ação disponível para receber tarefas.'],
+          },
+          message: 'Falha: não há ações na jornada para vincular tarefas.',
+        };
+      }
+
       const alreadyMappedTaskIds = new Set<string>();
-      for (const req of requirements) {
-        const traceable = Array.isArray(req.traceableItems) ? req.traceableItems : [];
-        for (const taskId of traceable) {
+      for (const item of actionItems as any[]) {
+        for (const taskId of this.getLinkedActions(item)) {
           alreadyMappedTaskIds.add(String(taskId));
         }
       }
 
-      const tasksToMap = tasks.filter(
-        (t) => !alreadyMappedTaskIds.has(String(t._id || t.id)),
-      );
-
-      this.logger.log(
-        `[auto-map] pré-processamento: ${alreadyMappedTaskIds.size} tarefas já mapeadas, ${tasksToMap.length} tarefas para processar`,
-      );
-
+      const tasksToMap = tasks.filter((task) => !alreadyMappedTaskIds.has(String(task._id || task.id)));
       if (tasksToMap.length === 0) {
         const validation = await this.validateRTM(projectId);
         return {
@@ -506,55 +667,48 @@ Sem blocos markdown, sem texto extra.`;
           createdRequirementsCount: 0,
           coverage: validation.coverage,
           validation,
-          message: 'Todas as tarefas já estão mapeadas!',
+          message: 'Todas as tarefas já estão vinculadas às ações da jornada.',
         };
       }
 
-      // 2. Processar tarefas em lotes (max 10 por vez para não sobrecarregar Gemini)
       const batchSize = 10;
       const batches: any[][] = [];
       for (let i = 0; i < tasksToMap.length; i += batchSize) {
         batches.push(tasksToMap.slice(i, i + batchSize));
       }
 
-      const mappings: Record<string, string[]> = {}; // reqId -> [taskIds]
-      const orphanTasks: any[] = []; // Tarefas que não encaixam em nenhum requisito
+      const mappings: Record<string, string[]> = {};
+      const orphanTasks: any[] = [];
 
-      for (let batchIdx = 0; batchIdx < batches.length; batchIdx++) {
+      for (let batchIdx = 0; batchIdx < batches.length; batchIdx += 1) {
         const batch = batches[batchIdx];
-        this.logger.log(
-          `[auto-map] processando lote ${batchIdx + 1}/${batches.length} (${batch.length} tarefas)`,
-        );
 
-        // Preparar prompt para Gemini: mapear tarefas para requisitos
         const tasksDesc = batch
           .map((t) => `- "${t.title || t.name}" (ID: ${t._id || t.id})`)
           .join('\n');
 
-        const requirementsDesc = requirements
-          .map((r) => `[ID: ${r._id}] ${r.description} (tipo: ${r.type})`)
+        const actionsDesc = actionItems
+          .map((a: any) => `[ID: ${a._id}] ${a.description}`)
           .join('\n');
 
-        const prompt = `Você é um analista de rastreabilidade de requisitos.
+        const prompt = `Você é um analista de rastreabilidade para desenvolvimento pessoal.
 
-Tarefa: Mapear cada uma das tarefas abaixo para o requisito mais relevante.
-- Sempre prefira mapear a um requisito existente.
-- Marque como "ORPHAN" APENAS se a tarefa for completamente desconectada (ex: não relacionada ao objetivo).
-- Se houver dúvida, mapear a um requisito aproximado é melhor que marcar como ORPHAN.
+Vincule cada tarefa à ação da jornada mais aderente.
+- Prefira vincular a ações existentes.
+- Use "ORPHAN" somente quando nenhuma ação fizer sentido.
 
-REQUISITOS DISPONÍVEIS:
-${requirementsDesc}
+ACOES DISPONIVEIS:
+${actionsDesc}
 
-TAREFAS PARA MAPEAR:
+TAREFAS:
 ${tasksDesc}
 
-Retorne um JSON array com o mapeamento:
+Retorne JSON array:
 [
   { "taskId": "...", "requirementId": "...", "confidence": 0.7 }
 ]
 
-Se nenhum requisito encaixa (E apenas nesse caso), use "ORPHAN".
-Sem markdown, sem explicações extras, apenas JSON.`;
+Sem markdown.`;
 
         try {
           const response = await this.geminiService.generateContent(prompt, {
@@ -563,132 +717,91 @@ Sem markdown, sem explicações extras, apenas JSON.`;
             maxOutputTokens: 2048,
           });
 
-          const cleaned = response
-            .replace(/```json\n?/gi, '')
-            .replace(/```\n?/g, '')
-            .trim();
-
-          const mappingArray = JSON.parse(cleaned);
-
-          for (const mapping of mappingArray) {
-            if (mapping.requirementId === 'ORPHAN') {
-              orphanTasks.push(batch.find((t) => String(t._id || t.id) === mapping.taskId));
-            } else {
-              const reqId = String(mapping.requirementId);
-              if (!mappings[reqId]) mappings[reqId] = [];
-              mappings[reqId].push(String(mapping.taskId));
-            }
+          const mappingArray = this.parseJsonArray(response);
+          if (!mappingArray) {
+            throw new Error('Resposta JSON inválida no auto-vínculo');
           }
-        } catch (parseError) {
-          this.logger.warn(
-            `[auto-map] erro ao parsear resposta do Gemini no lote ${batchIdx + 1}, usando fallback`,
-          );
-          // Fallback: mapear para o primeiro requisito
+
+          for (const mapping of mappingArray as any[]) {
+            const taskId = String(mapping?.taskId || '');
+            if (!taskId) continue;
+
+            if (String(mapping?.requirementId || '').toUpperCase() === 'ORPHAN') {
+              const orphan = batch.find((t) => String(t._id || t.id) === taskId);
+              if (orphan) orphanTasks.push(orphan);
+              continue;
+            }
+
+            const reqId = String(mapping.requirementId);
+            if (!mappings[reqId]) mappings[reqId] = [];
+            mappings[reqId].push(taskId);
+          }
+        } catch {
+          const fallbackAction = actionItems[0] as any;
+          const fallbackActionId = String(fallbackAction._id);
+          if (!mappings[fallbackActionId]) mappings[fallbackActionId] = [];
           for (const task of batch) {
-            const firstReqId = String(requirements[0]._id);
-            if (!mappings[firstReqId]) mappings[firstReqId] = [];
-            mappings[firstReqId].push(String(task._id || task.id));
+            mappings[fallbackActionId].push(String(task._id || task.id));
           }
         }
       }
 
-      // 3. Para tarefas órfãs, criar novos requisitos (agrupadas por similaridade)
       let createdRequirementsCount = 0;
       if (orphanTasks.length > 0) {
-        this.logger.log(
-          `[auto-map] criando requisitos para ${orphanTasks.length} tarefas órfãs`,
-        );
+        const stageItems = allItems.filter((item: any) => this.normalizeKind(item.kind || item.type) === 'stage');
+        const fallbackParent = stageItems.length > 0 ? stageItems[0] : allItems[0];
+        const fallbackParentId = fallbackParent ? String((fallbackParent as any)._id) : undefined;
 
-        // Agrupar tarefas órfãs (max 5 tarefas por requisito)
-        const groupSize = Math.ceil(orphanTasks.length / 3); // Cria ~3 requisitos
-        const orphanGroups: any[][] = [];
+        const groupSize = Math.max(1, Math.ceil(orphanTasks.length / 3));
         for (let i = 0; i < orphanTasks.length; i += groupSize) {
-          orphanGroups.push(orphanTasks.slice(i, i + groupSize));
-        }
+          const group = orphanTasks.slice(i, i + groupSize);
+          const description = `Ação criada automaticamente para ${group.length} tarefa(s) órfã(s)`;
 
-        // Criar um requisito para cada grupo
-        for (const group of orphanGroups) {
-          // Usar Gemini para gerar uma descrição inteligente para o grupo de tarefas órfãs
-          const taskNames = group.map((t) => t.title || t.name).join(' | ');
-          const descriptionPrompt = `Analise este conjunto de tarefas e crie um requisito único que as agrupem semanticamente:
-
-TAREFAS:
-${group.map((t) => `- ${t.title || t.name}`).join('\n')}
-
-Retorne um JSON:
-{
-  "requirement": "uma descrição breve de requisito que capture o padrão/objetivo comum dessas tarefas"
-}
-
-Sem markdown, apenas JSON.`;
-
-          let description = `Agrupar: ${taskNames.substring(0, 100)}...`;
-
-          try {
-            const descResponse = await this.geminiService.generateContent(descriptionPrompt, {
-              responseMimeType: 'application/json',
-              temperature: 0.3,
-              maxOutputTokens: 256,
-            });
-
-            const cleaned = descResponse
-              .replace(/```json\n?/gi, '')
-              .replace(/```\n?/g, '')
-              .trim();
-
-            const parsed = JSON.parse(cleaned);
-            if (parsed.requirement && parsed.requirement.length > 5) {
-              description = parsed.requirement;
-            }
-          } catch (descError) {
-            this.logger.warn(
-              `[auto-map] erro ao gerar descrição: ${(descError as any)?.message}, usando fallback`,
-            );
-          }
-
-          const newReq = await this.requirementModel.create({
+          const newAction = await this.requirementModel.create({
             projectId,
             description,
-            type: 'functional',
+            title: description,
+            type: 'action',
+            kind: 'action',
+            hierarchyLevel: this.levelForKind('action'),
+            parentItemId: fallbackParentId,
             source: 'auto_mapped_from_orphan_tasks',
-            traceableItems: group.map((t) => String(t._id || t.id)),
+            traceableItems: group.map((task) => String(task._id || task.id)),
+            traceableActionItems: group.map((task) => String(task._id || task.id)),
             status: 'satisfied',
           });
 
-          createdRequirementsCount++;
-          this.logger.log(
-            `[auto-map] requisito criado: ${newReq._id} para ${group.length} tarefas`,
+          mappings[String((newAction as any)._id)] = group.map((task) => String(task._id || task.id));
+          createdRequirementsCount += 1;
+        }
+      }
+
+      let mappedCount = 0;
+      for (const [itemId, taskIds] of Object.entries(mappings)) {
+        if (!taskIds.length) continue;
+        try {
+          await this.requirementModel.updateOne(
+            { _id: new Types.ObjectId(itemId) },
+            {
+              $addToSet: {
+                traceableItems: { $each: taskIds },
+                traceableActionItems: { $each: taskIds },
+              },
+              $set: { status: 'satisfied' },
+            },
+          );
+          mappedCount += taskIds.length;
+        } catch (updateError: any) {
+          this.logger.warn(
+            `[auto-map] erro ao atualizar item ${itemId}: ${updateError?.message}`,
           );
         }
       }
 
-      // 4. Atualizar mapeamentos dos requisitos existentes
-      let mappedCount = 0;
-      for (const [reqId, taskIds] of Object.entries(mappings)) {
-        if (taskIds.length > 0) {
-          try {
-            await this.requirementModel.updateOne(
-              { _id: new Types.ObjectId(reqId) },
-              {
-                $addToSet: { traceableItems: { $each: taskIds } },
-                status: 'satisfied',
-              },
-            );
-            mappedCount += taskIds.length;
-          } catch (updateError: any) {
-            this.logger.warn(
-              `[auto-map] erro ao atualizar requisito ${reqId}: ${updateError?.message}`,
-            );
-          }
-        }
-      }
-
-      // 5. Validar RTM final
       const validation = await this.validateRTM(projectId);
-
       const elapsed = Date.now() - startedAt;
       this.logger.log(
-        `[auto-map] projectId=${projectId} completo: ${mappedCount} tarefas mapeadas, ${createdRequirementsCount} requisitos criados, ${validation.coverage}% cobertura - ${elapsed}ms`,
+        `[auto-map] projectId=${projectId} completo: ${mappedCount} tarefas vinculadas, ${createdRequirementsCount} ações criadas, ${validation.coverage}% cobertura - ${elapsed}ms`,
       );
 
       return {
@@ -696,7 +809,7 @@ Sem markdown, apenas JSON.`;
         createdRequirementsCount,
         coverage: validation.coverage,
         validation,
-        message: `Mapeamento automático concluído: ${mappedCount} tarefas mapeadas + ${createdRequirementsCount} requisitos criados. Cobertura: ${validation.coverage}%`,
+        message: `Auto-vínculo concluído: ${mappedCount} tarefa(s) vinculada(s) + ${createdRequirementsCount} ação(ões) criada(s). Cobertura: ${validation.coverage}%`,
       };
     } catch (error: any) {
       this.logger.error(`[auto-map] projectId=${projectId} erro: ${error?.message}`);
@@ -716,7 +829,7 @@ Sem markdown, apenas JSON.`;
   }
 
   /**
-   * Gera tarefas para requisitos que não possuem mapeamento (órfãos)
+   * Gera tarefas para ações da jornada que ainda não têm rastreabilidade
    */
   async generateTasksForUnmappedRequirements(
     projectId: string,
@@ -727,10 +840,9 @@ Sem markdown, apenas JSON.`;
     message: string;
   }> {
     const startedAt = Date.now();
-    this.logger.log(`[gen-tasks] projectId=${projectId} gerando tarefas para requisitos órfãos`);
+    this.logger.log(`[gen-tasks] projectId=${projectId} gerando tarefas para ações órfãs`);
 
     try {
-      // 1. Validar RTM para identificar requisitos órfãos
       const validation = await this.validateRTM(projectId);
 
       if (validation.unmappedRequirements.length === 0) {
@@ -738,66 +850,55 @@ Sem markdown, apenas JSON.`;
           createdTasksCount: 0,
           coverage: validation.coverage,
           validation,
-          message: 'Todos os requisitos já possuem tarefas mapeadas!',
+          message: 'Todos os itens da jornada já possuem rastreabilidade.',
         };
       }
 
-      // 2. Buscar requisitos órfãos
-      const orphanRequirementIds = validation.unmappedRequirements;
       const requirements = await this.requirementModel.find({
-        _id: { $in: orphanRequirementIds },
+        _id: { $in: validation.unmappedRequirements },
       });
 
-      this.logger.log(
-        `[gen-tasks] encontrados ${requirements.length} requisitos órfãos para gerar tarefas`,
-      );
+      const actionItems = requirements.filter((item: any) => this.normalizeKind(item.kind || item.type) === 'action');
+      if (actionItems.length === 0) {
+        return {
+          createdTasksCount: 0,
+          coverage: validation.coverage,
+          validation,
+          message: 'Não há ações órfãs; complete primeiro a hierarquia objetivo -> hábito -> etapa -> ação.',
+        };
+      }
 
       let createdTasksCount = 0;
 
-      // 3. Para cada requisito órfão, gerar 1-2 tarefas práticas
-      for (const req of requirements) {
-        const prompt = `Você é um especialista em planejamento de projetos (WBS).
+      for (const req of actionItems as any[]) {
+        const prompt = `Você é um especialista em planejamento pessoal.
 
-Requisito do projeto que precisa de tarefas:
+Ação da jornada:
 "${req.description}"
 
-Tarefa: Gere 1-2 tarefas CONCRETAS e PRÁTICAS que atendam este requisito. Cada tarefa deve ser uma atividade específica/acionável que a pessoa possa executar.
-
-Retorne um JSON array:
+Gere 1-2 tarefas práticas e executáveis para cumprir essa ação.
+Retorne JSON array:
 [
-  { "title": "Breve descrição da tarefa (máx 100 chars)", "description": "Descrição mais detalhada" }
+  { "title": "...", "description": "..." }
 ]
-
-Sem markdown, apenas JSON.`;
+Sem markdown.`;
 
         try {
           const response = await this.geminiService.generateContent(prompt, {
             responseMimeType: 'application/json',
-            temperature: 0.4,
+            temperature: 0.35,
             maxOutputTokens: 512,
           });
 
-          const cleaned = response
-            .replace(/```json\n?/gi, '')
-            .replace(/```\n?/g, '')
-            .trim();
+          const tasksToCreate = this.parseJsonArray(response);
+          if (!tasksToCreate || tasksToCreate.length === 0) continue;
 
-          const tasksToCreate = JSON.parse(cleaned);
-
-          if (!Array.isArray(tasksToCreate)) {
-            this.logger.warn(
-              `[gen-tasks] resposta inválida do Gemini para requisito ${req._id}`,
-            );
-            continue;
-          }
-
-          // 4. Criar as tarefas no banco
           const taskIds: string[] = [];
-          for (const taskData of tasksToCreate) {
+          for (const taskData of tasksToCreate as any[]) {
             try {
               const createDto: any = {
-                name: String(taskData.title || 'Nova Tarefa'),
-                description: String(taskData.description || ''),
+                name: String(taskData?.title || 'Nova Tarefa'),
+                description: String(taskData?.description || ''),
                 project: projectId,
                 pomodorosPlanned: 3,
                 deadline: new Date(),
@@ -805,56 +906,48 @@ Sem markdown, apenas JSON.`;
                 late: false,
                 recurrency: 'none',
                 notification: new Date(),
+                requirementIds: [String(req._id)],
+                journeyItemIds: [String(req._id)],
               };
 
               const newTask = await this.tasksService.create(createDto);
-
-              taskIds.push(String(newTask._id));
-              createdTasksCount++;
-              this.logger.log(
-                `[gen-tasks] tarefa criada: ${newTask._id} para requisito ${req._id}`,
-              );
+              taskIds.push(String((newTask as any)._id));
+              createdTasksCount += 1;
             } catch (taskError: any) {
-              this.logger.warn(
-                `[gen-tasks] erro ao criar tarefa: ${taskError?.message}`,
-              );
+              this.logger.warn(`[gen-tasks] erro ao criar tarefa: ${taskError?.message}`);
             }
           }
 
-          // 5. Mapear as novas tarefas ao requisito
           if (taskIds.length > 0) {
             await this.requirementModel.updateOne(
               { _id: new Types.ObjectId(String(req._id)) },
               {
-                $addToSet: { traceableItems: { $each: taskIds } },
-                status: 'satisfied',
+                $addToSet: {
+                  traceableItems: { $each: taskIds },
+                  traceableActionItems: { $each: taskIds },
+                },
+                $set: { status: 'satisfied' },
               },
-            );
-
-            this.logger.log(
-              `[gen-tasks] ${taskIds.length} tarefas mapeadas ao requisito ${req._id}`,
             );
           }
         } catch (genError: any) {
           this.logger.warn(
-            `[gen-tasks] erro ao gerar tarefas para requisito ${req._id}: ${genError?.message}`,
+            `[gen-tasks] erro ao gerar tarefas para ação ${req._id}: ${genError?.message}`,
           );
         }
       }
 
-      // 6. Revalidar RTM final
       const finalValidation = await this.validateRTM(projectId);
-
       const elapsed = Date.now() - startedAt;
       this.logger.log(
-        `[gen-tasks] projectId=${projectId} concluído: ${createdTasksCount} tarefas criadas, ${finalValidation.coverage}% cobertura final - ${elapsed}ms`,
+        `[gen-tasks] projectId=${projectId} concluído: ${createdTasksCount} tarefas criadas, ${finalValidation.coverage}% cobertura - ${elapsed}ms`,
       );
 
       return {
         createdTasksCount,
         coverage: finalValidation.coverage,
         validation: finalValidation,
-        message: `${createdTasksCount} tarefas geradas para requisitos órfãos. Cobertura final: ${finalValidation.coverage}%`,
+        message: `${createdTasksCount} tarefa(s) gerada(s) para ações órfãs. Cobertura final: ${finalValidation.coverage}%`,
       };
     } catch (error: any) {
       this.logger.error(`[gen-tasks] projectId=${projectId} erro: ${error?.message}`);

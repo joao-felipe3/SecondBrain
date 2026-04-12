@@ -31,6 +31,7 @@ export interface TaskDocument extends Document {
   contextTag?: string;
   themeTag?: string[];
   requirementIds?: string[];
+  journeyItemIds?: string[];
   rtmRisk?: boolean;
   rtmRiskReason?: string;
   evmProgress?: number;
@@ -73,6 +74,7 @@ export const TaskSchema = new Schema<TaskDocument>({
   contextTag: { type: String },
   themeTag: { type: [String] },
   requirementIds: { type: [String] },
+  journeyItemIds: { type: [String] },
   rtmRisk: { type: Boolean },
   rtmRiskReason: { type: String },
   evmProgress: { type: Number },

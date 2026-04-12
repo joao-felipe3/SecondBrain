@@ -4,7 +4,7 @@ import { RTMService } from '../services/rtm.service';
 import { TasksService } from '../tasks.service';
 import { RequirementDocument } from '../schemas/requirement.schema';
 
-@ApiTags('RTM - Rastreabilidade de Requisitos')
+@ApiTags('RTM - Rastreabilidade da Jornada Pessoal')
 @ApiBearerAuth()
 @Controller('projects')
 export class RTMController {
@@ -16,17 +16,17 @@ export class RTMController {
   ) {}
 
   /**
-   * Gera requisitos automaticamente a partir de um Smart Objective
+   * Gera itens de jornada automaticamente a partir de um Smart Objective
    */
   @Post(':projectId/requirements/auto-generate')
   @ApiOperation({
-    summary: 'Gerar requisitos automaticamente com IA',
+    summary: 'Gerar itens da jornada automaticamente com IA',
     description:
-      'Analisa um Smart Objective e extrai uma lista de requisitos funcionais, não-funcionais e restrições usando Gemini.',
+      'Analisa um Smart Objective e extrai uma estrutura objetivo -> hábito -> etapa -> ação usando Gemini.',
   })
   @ApiResponse({
     status: 201,
-    description: 'Requisitos gerados e salvos com sucesso',
+    description: 'Itens de jornada gerados e salvos com sucesso',
   })
   async autoGenerateRequirements(
     @Param('projectId') projectId: string,
@@ -35,18 +35,18 @@ export class RTMController {
     const startedAt = Date.now();
 
     this.logger.log(
-      `[auto-gen-req] projectId=${projectId} iniciando geração automática de requisitos`,
+      `[auto-gen-req] projectId=${projectId} iniciando geração automática de itens de jornada`,
     );
 
     try {
-      // 1. Gerar requisitos com IA
+      // 1. Gerar itens da jornada com IA
       const generatedReqs = await this.rtmService.generateRequirements(body.smartObjective);
 
       if (generatedReqs.length === 0) {
-        this.logger.warn(`[auto-gen-req] projectId=${projectId} nenhum requisito gerado`);
+        this.logger.warn(`[auto-gen-req] projectId=${projectId} nenhum item gerado`);
         return {
           success: false,
-          message: 'Nenhum requisito foi gerado. Tente novamente ou forneça um Smart Objective mais detalhado.',
+          message: 'Nenhum item da jornada foi gerado. Tente novamente com um Smart Objective mais detalhado.',
           requirements: [],
         };
       }
@@ -57,6 +57,9 @@ export class RTMController {
         generatedReqs.map((req: any) => ({
           description: req.description,
           type: req.type,
+          kind: req.kind,
+          ref: req.ref,
+          parentRef: req.parentRef,
           source: 'auto_generated_from_smart_objective',
         })),
       );
@@ -65,7 +68,7 @@ export class RTMController {
       const validation = await this.rtmService.validateRTM(projectId);
 
       this.logger.log(
-        `[auto-gen-req] projectId=${projectId} ${saved.length} requisitos salvos (${validation.coverage.toFixed(1)}% cobertura) - ${
+        `[auto-gen-req] projectId=${projectId} ${saved.length} itens salvos (${validation.coverage.toFixed(1)}% cobertura) - ${
           Date.now() - startedAt
         }ms`,
       );
@@ -77,6 +80,9 @@ export class RTMController {
           id: req._id?.toString() || req.id,
           description: req.description,
           type: req.type,
+          kind: req.kind,
+          parentItemId: req.parentItemId ? String(req.parentItemId) : undefined,
+          hierarchyLevel: req.hierarchyLevel,
           status: req.status,
         })),
         validation,
@@ -101,7 +107,7 @@ export class RTMController {
   @ApiOperation({
     summary: 'Obter matriz de rastreabilidade (RTM)',
     description:
-      'Retorna uma matriz requisitos × tarefas mostrando quais tarefas rastreiam cada requisito.',
+      'Retorna uma matriz de jornada × tarefas mostrando quais tarefas rastreiam cada ação.',
   })
   @ApiResponse({
     status: 200,
@@ -163,12 +169,12 @@ export class RTMController {
   }
 
   /**
-   * Mapeia um requisito para uma tarefa (rastreamento)
+   * Mapeia um item da jornada para uma tarefa (rastreamento)
    */
   @Post(':projectId/requirements/map')
   @ApiOperation({
-    summary: 'Mapear requisito para tarefa',
-    description: 'Associa uma tarefa a um requisito para rastreabilidade.',
+    summary: 'Mapear item da jornada para tarefa',
+    description: 'Associa uma tarefa a um item da jornada para rastreabilidade.',
   })
   @ApiResponse({
     status: 200,
@@ -190,7 +196,7 @@ export class RTMController {
       );
 
       if (!result) {
-        return { success: false, message: 'Requisito não encontrado' };
+        return { success: false, message: 'Item da jornada não encontrado' };
       }
 
       // Revalidar
@@ -203,6 +209,9 @@ export class RTMController {
           id: (result as RequirementDocument)._id?.toString(),
           description: result.description,
           traceableItems: result.traceableItems,
+          traceableActionItems: (result as any).traceableActionItems,
+          kind: (result as any).kind,
+          hierarchyLevel: (result as any).hierarchyLevel,
           status: result.status,
         },
         validation,
@@ -214,12 +223,12 @@ export class RTMController {
   }
 
   /**
-   * Remove mapeamento de um requisito
+   * Remove mapeamento de um item da jornada
    */
   @Post(':projectId/requirements/unmap')
   @ApiOperation({
-    summary: 'Remover mapeamento de um requisito',
-    description: 'Remove a associação de uma tarefa a um requisito.',
+    summary: 'Remover mapeamento de um item da jornada',
+    description: 'Remove a associação de uma tarefa a um item da jornada.',
   })
   @ApiResponse({
     status: 200,
@@ -240,7 +249,7 @@ export class RTMController {
       );
 
       if (!result) {
-        return { success: false, message: 'Requisito não encontrado' };
+        return { success: false, message: 'Item da jornada não encontrado' };
       }
 
       // Revalidar
@@ -253,6 +262,9 @@ export class RTMController {
           id: (result as RequirementDocument)._id?.toString(),
           description: result.description,
           traceableItems: result.traceableItems,
+          traceableActionItems: (result as any).traceableActionItems,
+          kind: (result as any).kind,
+          hierarchyLevel: (result as any).hierarchyLevel,
           status: result.status,
         },
         validation,
@@ -264,16 +276,16 @@ export class RTMController {
   }
 
   /**
-   * Deletar um requisito
+   * Deletar um item da jornada
    */
   @Delete('requirements/:requirementId')
   @ApiOperation({
-    summary: 'Deletar requisito',
-    description: 'Remove um requisito do projeto.',
+    summary: 'Deletar item da jornada',
+    description: 'Remove um item da jornada do projeto.',
   })
   @ApiResponse({
     status: 200,
-    description: 'Requisito deletado com sucesso',
+    description: 'Item da jornada deletado com sucesso',
   })
   async deleteRequirement(@Param('requirementId') requirementId: string) {
     this.logger.log(`[delete-req] req=${requirementId}`);
@@ -282,10 +294,10 @@ export class RTMController {
       const deleted = await this.rtmService.deleteRequirement(requirementId);
 
       if (!deleted) {
-        return { success: false, message: 'Requisito não encontrado' };
+        return { success: false, message: 'Item da jornada não encontrado' };
       }
 
-      return { success: true, message: 'Requisito deletado com sucesso' };
+      return { success: true, message: 'Item da jornada deletado com sucesso' };
     } catch (error: any) {
       this.logger.error(`[delete-req] erro: ${error?.message}`);
       return { success: false, error: error?.message };
@@ -293,16 +305,16 @@ export class RTMController {
   }
 
   /**
-   * Deletar todos os requisitos de um projeto
+   * Deletar todos os itens da jornada de um projeto
    */
   @Delete(':projectId/requirements')
   @ApiOperation({
-    summary: 'Deletar todos os requisitos do projeto',
-    description: 'Remove todos os requisitos de um projeto.',
+    summary: 'Deletar todos os itens da jornada do projeto',
+    description: 'Remove todos os itens da jornada de um projeto.',
   })
   @ApiResponse({
     status: 200,
-    description: 'Todos os requisitos deletados com sucesso',
+    description: 'Todos os itens da jornada deletados com sucesso',
   })
   async deleteAllRequirements(@Param('projectId') projectId: string) {
     this.logger.log(`[delete-all-req] projectId=${projectId}`);
@@ -312,7 +324,7 @@ export class RTMController {
 
       return {
         success: true,
-        message: `${count} requisito(s) deletado(s) com sucesso`,
+        message: `${count} item(ns) da jornada deletado(s) com sucesso`,
         count,
       };
     } catch (error: any) {
@@ -326,8 +338,8 @@ export class RTMController {
    */
   @Get(':projectId/requirements')
   @ApiOperation({
-    summary: 'Listar requisitos do projeto',
-    description: 'Retorna todos os requisitos de um projeto.',
+    summary: 'Listar itens da jornada do projeto',
+    description: 'Retorna todos os itens da jornada de um projeto.',
   })
   @ApiResponse({
     status: 200,
@@ -345,8 +357,12 @@ export class RTMController {
           id: req._id?.toString() || req.id,
           description: req.description,
           type: req.type,
+          kind: req.kind,
+          parentItemId: req.parentItemId ? String(req.parentItemId) : undefined,
+          hierarchyLevel: req.hierarchyLevel,
           status: req.status,
           traceableItems: req.traceableItems,
+          traceableActionItems: req.traceableActionItems,
         })),
         validation,
       };
@@ -361,9 +377,9 @@ export class RTMController {
    */
   @Post(':projectId/requirements/auto-map')
   @ApiOperation({
-    summary: 'Auto-mapear requisitos para tarefas com IA',
+    summary: 'Auto-vincular ações da jornada para tarefas com IA',
     description:
-      'Usa IA para mapear automaticamente cada tarefa a um requisito. Cria novos requisitos para tarefas órfãs. Atinge 100% de cobertura.',
+      'Usa IA para vincular automaticamente cada tarefa a uma ação da jornada. Cria novas ações para tarefas órfãs quando necessário.',
   })
   @ApiResponse({
     status: 200,
@@ -423,9 +439,9 @@ export class RTMController {
    */
   @Post(':projectId/tasks/auto-generate-from-unmapped-requirements')
   @ApiOperation({
-    summary: 'Gerar tarefas para requisitos órfãos',
+    summary: 'Gerar tarefas para ações órfãs da jornada',
     description:
-      'Para cada requisito que não possui tarefa mapeada, usa IA para gerar 1-2 tarefas práticas que o atendem.',
+      'Para cada ação sem tarefa vinculada, usa IA para gerar 1-2 tarefas práticas.',
   })
   @ApiResponse({
     status: 200,

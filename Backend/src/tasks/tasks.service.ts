@@ -308,16 +308,20 @@ export class TasksService {
     fallbackTask?: TaskDocument | null,
   ) {
     const requirementIds = dto.requirementIds ?? fallbackTask?.requirementIds ?? [];
+    const journeyItemIds =
+      dto.journeyItemIds ??
+      ((fallbackTask as any)?.journeyItemIds as string[] | undefined) ??
+      [];
     const hasWbsLink = Boolean(dto.parentWbsNodeId || fallbackTask?.parentWbsNodeId || dto.wbsPath || fallbackTask?.wbsPath);
 
-    if (requirementIds.length > 0 || hasWbsLink) {
+    if (requirementIds.length > 0 || journeyItemIds.length > 0 || hasWbsLink) {
       dto.rtmRisk = false;
       dto.rtmRiskReason = undefined;
       return;
     }
 
     dto.rtmRisk = true;
-    dto.rtmRiskReason = 'Micro-tarefa sem vínculo a requisito ou WBS (risco de gold plating).';
+    dto.rtmRiskReason = 'Ação sem vínculo com item da jornada pessoal (objetivo/hábito/etapa/ação) ou WBS.';
   }
 
   private applyEvmMetrics(
