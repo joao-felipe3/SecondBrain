@@ -47,6 +47,9 @@ export class WBSService {
     achievable: string;
     relevant: string;
     temporal: string;
+    weeklyHours?: number;
+    budgetHours?: number;
+    weeksAvailable?: number;
     summary?: string;
   }): Promise<WBSNodeDto[]> {
     return this.generation.generate(smartObjective);

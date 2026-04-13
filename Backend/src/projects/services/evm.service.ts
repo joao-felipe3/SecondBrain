@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common'
+import { BadRequestException, Injectable } from '@nestjs/common'
 import { InjectModel } from '@nestjs/mongoose'
 import { Model, Types } from 'mongoose'
 import { ProjectProgress, ProjectProgressDocument } from '../schemas/project-progress.schema'
@@ -9,6 +9,7 @@ import type {
   EVMForecast,
   EVMDashboardManualVisibility,
   EVMDashboardPreferences,
+  EVMDashboardPreferencesInput,
   EVMMetricRelevance,
   EVMPersonalMetrics,
   EVMSummary,
@@ -41,7 +42,15 @@ export class EVMService {
     return Number.isFinite(parsed) ? parsed : fallback
   }
 
+  private assertValidObjectId(value: string, fieldName: string): void {
+    if (!Types.ObjectId.isValid(value)) {
+      throw new BadRequestException(`${fieldName} invalido`)
+    }
+  }
+
   async getDashboardPreferences(projectId: string): Promise<EVMDashboardPreferences> {
+    this.assertValidObjectId(projectId, 'projectId')
+
     const project = await this.projectModel
       .findById(projectId)
       .select({ dashboardMetricPreferences: 1 })
@@ -53,8 +62,10 @@ export class EVMService {
 
   async saveDashboardPreferences(
     projectId: string,
-    input: Partial<EVMDashboardPreferences> | undefined,
+    input: EVMDashboardPreferencesInput | undefined,
   ): Promise<EVMDashboardPreferences> {
+    this.assertValidObjectId(projectId, 'projectId')
+
     const current = await this.getDashboardPreferences(projectId)
     const normalizedInput = this.normalizeDashboardPreferences(input)
 
@@ -84,6 +95,11 @@ export class EVMService {
     date?: string,
     metadata?: { source?: 'manual' | 'pomodoro' | 'completion'; taskId?: string },
   ): Promise<ProjectProgress> {
+    this.assertValidObjectId(projectId, 'projectId')
+    if (metadata?.taskId) {
+      this.assertValidObjectId(metadata.taskId, 'taskId')
+    }
+
     return this.projectProgressModel.create({
       projectId: new Types.ObjectId(projectId),
       date: date ? new Date(date) : new Date(),
@@ -95,6 +111,8 @@ export class EVMService {
   }
 
   async getProgressEntries(projectId: string): Promise<ProjectProgress[]> {
+    this.assertValidObjectId(projectId, 'projectId')
+
     return this.projectProgressModel
       .find({ projectId: new Types.ObjectId(projectId) })
       .sort({ date: 1, createdAt: 1 })
@@ -102,6 +120,9 @@ export class EVMService {
   }
 
   async deleteProgressEntry(projectId: string, entryId: string): Promise<boolean> {
+    this.assertValidObjectId(projectId, 'projectId')
+    this.assertValidObjectId(entryId, 'entryId')
+
     const result = await this.projectProgressModel
       .deleteOne({ _id: new Types.ObjectId(entryId), projectId: new Types.ObjectId(projectId) })
       .exec()
@@ -110,12 +131,16 @@ export class EVMService {
   }
 
   async calculateSPI(projectId: string): Promise<number> {
+    this.assertValidObjectId(projectId, 'projectId')
+
     const metrics = await this.getCoreMetrics(projectId)
     if (metrics.pv <= 0) return 1
     return Number((metrics.ev / metrics.pv).toFixed(4))
   }
 
   async forecastCompletion(projectId: string): Promise<EVMForecast> {
+    this.assertValidObjectId(projectId, 'projectId')
+
     const [entries, metrics, project, activeWaveContext] = await Promise.all([
       this.getProgressEntries(projectId),
       this.getCoreMetrics(projectId),
@@ -150,6 +175,8 @@ export class EVMService {
   }
 
   async getEVMCurve(projectId: string): Promise<EVMCurve> {
+    this.assertValidObjectId(projectId, 'projectId')
+
     const entries = await this.getProgressEntries(projectId)
     if (entries.length === 0) {
       return { plannedValue: [], actualValue: [], dates: [] }
@@ -203,6 +230,8 @@ export class EVMService {
   }
 
   async getEVMSummary(projectId: string): Promise<EVMSummary> {
+    this.assertValidObjectId(projectId, 'projectId')
+
     const [spi, forecast, curve, entries, coreMetrics, dashboardPreferences, milestoneProgress] = await Promise.all([
       this.calculateSPI(projectId),
       this.forecastCompletion(projectId),
@@ -248,6 +277,8 @@ export class EVMService {
     paceStatus: 'saudavel' | 'atencao' | 'critico'
     focusMessage: string
   }> {
+    this.assertValidObjectId(projectId, 'projectId')
+
     const summary = await this.getEVMSummary(projectId)
     const { personalMetrics, spi } = summary
 

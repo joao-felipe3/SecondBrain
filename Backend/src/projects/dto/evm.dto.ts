@@ -44,6 +44,11 @@ export interface EVMDashboardPreferences {
   manualVisibility: EVMDashboardManualVisibility
 }
 
+export type EVMDashboardPreferencesInput = {
+  mode?: EVMDashboardPreferences['mode']
+  manualVisibility?: Partial<EVMDashboardManualVisibility>
+}
+
 export interface EVMMetricVisibility {
   visible: boolean
   reason: string

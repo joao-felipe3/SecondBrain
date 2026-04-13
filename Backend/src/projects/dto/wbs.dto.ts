@@ -1,4 +1,4 @@
-import { IsString, IsNumber, IsOptional, IsArray, IsEnum, IsBoolean } from 'class-validator';
+import { IsString, IsNumber, IsOptional, IsArray, IsEnum, IsBoolean, IsIn } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
@@ -67,6 +67,16 @@ export class GenerateWBSDto {
   @IsOptional()
   @IsString()
   summary?: string;
+
+  @ApiPropertyOptional({ description: 'Weekly available hours for execution capacity' })
+  @IsOptional()
+  @IsNumber()
+  weeklyHours?: number;
+
+  @ApiPropertyOptional({ description: 'Optional explicit global budget hours for WBS generation' })
+  @IsOptional()
+  @IsNumber()
+  budgetHours?: number;
 }
 
 export class SaveWBSDto {
@@ -205,4 +215,20 @@ export class AuditLeafDiscrepancyDto {
     contextTag?: string;
     cognitiveMode?: string;
   }>;
+}
+
+export class ResolveWBSBudgetDto {
+  @ApiProperty({ description: 'WBS nodes to resolve against a budget', type: [WBSNodeDto] })
+  @IsArray()
+  @Type(() => WBSNodeDto)
+  nodes: WBSNodeDto[];
+
+  @ApiProperty({ description: 'Target global budget hours for WBS leaves' })
+  @IsNumber()
+  budgetHours: number;
+
+  @ApiProperty({ description: 'Resolution strategy for over-budget trees', enum: ['normalize', 'reject'] })
+  @IsString()
+  @IsIn(['normalize', 'reject'])
+  strategy: 'normalize' | 'reject';
 }

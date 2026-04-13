@@ -6,6 +6,7 @@ export interface SmartObjective {
   achievable: string;
   relevant: string;
   temporal: string;
+  weeklyHours?: number;
   summary: string;
   risks: string[];
 }
@@ -63,6 +64,7 @@ export const ProjectSchema = new Schema<ProjectDocument>({
       achievable: { type: String },
       relevant: { type: String },
       temporal: { type: String },
+      weeklyHours: { type: Number },
       summary: { type: String },
       risks: [{ type: String }]
     },

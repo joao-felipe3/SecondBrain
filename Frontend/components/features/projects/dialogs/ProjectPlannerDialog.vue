@@ -1,5 +1,5 @@
 <template>
-  <v-dialog v-model="isOpen" width="800" persistent>
+  <v-dialog v-model="isOpen" width="800" max-height="90vh" persistent>
     <v-card>
       <v-card-title class="d-flex align-center justify-space-between">
         <span>🤖 Planejamento com IA - {{ phaseTitle }}</span>
@@ -7,6 +7,17 @@
       </v-card-title>
 
       <v-card-text class="pa-6">
+        <v-alert
+          v-if="showError"
+          type="error"
+          variant="tonal"
+          class="mb-4"
+          closable
+          @click:close="showError = false"
+        >
+          {{ errorMessage }}
+        </v-alert>
+
         <!-- Fase 1: Perguntas Catchball (uma por vez) -->
         <div v-if="phase === 1">
           <div v-if="questions.length > 0">
@@ -135,6 +146,18 @@
               <p class="smart-content">{{ smartObjective.temporal }}</p>
             </div>
 
+            <div class="smart-card mb-3">
+              <div class="smart-label">🕒 Capacidade Semanal</div>
+              <p class="smart-content">
+                <span v-if="smartObjective.weeklyHours && smartObjective.weeklyHours > 0">
+                  {{ smartObjective.weeklyHours }}h por semana
+                </span>
+                <span v-else>
+                  Não informada. Gere/replaneje o SMART para incluir horas por semana antes da WBS.
+                </span>
+              </p>
+            </div>
+
             <div v-if="smartObjective.risks && smartObjective.risks.length > 0" class="smart-card">
               <div class="smart-label">⚠️ Riscos Identificados</div>
               <ul class="risks-list">
@@ -151,6 +174,42 @@
           <v-alert type="info" variant="tonal" class="mb-4">
             📊 WBS gerada a partir do objetivo SMART.
             <span class="text-caption d-block mt-1">Regra 8/80: cada pacote de trabalho deve ter entre 8h e 80h estimadas. Depois, convertemos em micro-tarefas (≤3h) para execução.</span>
+          </v-alert>
+
+          <v-alert
+            v-if="budgetValidation"
+            :type="budgetValidation.overBudget ? 'warning' : 'success'"
+            variant="tonal"
+            class="mb-4"
+          >
+            <div>
+              <strong>Budget global:</strong>
+              {{ budgetValidation.totalLeafHours.toFixed(1) }}h / {{ budgetValidation.budgetHours.toFixed(1) }}h
+              ({{ budgetValidation.utilizationPct.toFixed(1) }}%).
+            </div>
+            <div v-if="budgetValidation.overBudget" class="text-caption mt-1">
+              Excesso de {{ budgetValidation.deltaHours.toFixed(1) }}h. Escolha como deseja resolver antes de salvar/converter.
+            </div>
+            <div v-if="budgetValidation.overBudget" class="d-flex flex-wrap gap-2 mt-3">
+              <v-btn
+                color="warning"
+                variant="flat"
+                size="small"
+                :loading="resolvingBudget"
+                @click="resolveBudget('normalize')"
+              >
+                Normalizar para o budget
+              </v-btn>
+              <v-btn
+                color="error"
+                variant="outlined"
+                size="small"
+                :disabled="resolvingBudget"
+                @click="resolveBudget('reject')"
+              >
+                Rejeitar e voltar ao SMART
+              </v-btn>
+            </div>
           </v-alert>
 
           <div v-if="wbsNodes.length > 0">
@@ -242,7 +301,7 @@
           v-if="phase === 2"
           @click="generateWBS"
           color="primary"
-          :disabled="loading"
+          :disabled="loading || !smartObjective?.weeklyHours || smartObjective.weeklyHours <= 0"
         >
           <v-icon start>mdi-file-tree</v-icon>
           Gerar WBS
@@ -259,7 +318,7 @@
           v-if="phase === 3"
           @click="convertAndClose"
           color="primary"
-          :disabled="loading || wbsNodes.length === 0"
+          :disabled="loading || wbsNodes.length === 0 || !!budgetValidation?.overBudget"
         >
           <v-icon start>mdi-check-all</v-icon>
           Converter em Micro-tarefas (≤3h) e Concluir
@@ -268,7 +327,7 @@
           v-if="phase === 3"
           @click="saveWBSAndClose"
           color="success"
-          :disabled="loading || wbsNodes.length === 0"
+          :disabled="loading || wbsNodes.length === 0 || !!budgetValidation?.overBudget"
         >
           Salvar WBS
         </v-btn>
@@ -287,6 +346,7 @@ interface SmartObjective {
   achievable: string
   relevant: string
   temporal: string
+  weeklyHours?: number
   summary: string
   risks: string[]
 }
@@ -336,10 +396,33 @@ interface WBSNodeUI {
 }
 interface WBSValidation {
   valid: boolean
-  violations: { nodeName: string; hours: number; reason: string }[]
+  violations: { nodeName?: string; hours?: number; reason?: string }[]
+}
+interface WBSBudgetValidation {
+  budgetHours: number
+  totalLeafHours: number
+  overBudget: boolean
+  deltaHours: number
+  utilizationPct: number
+  weeklyHours?: number
+  weeksAvailable?: number
 }
 const wbsNodes = ref<WBSNodeUI[]>([])
 const wbsValidation = ref<WBSValidation | null>(null)
+const budgetValidation = ref<WBSBudgetValidation | null>(null)
+const resolvingBudget = ref(false)
+const showError = ref(false)
+const errorMessage = ref('')
+
+function setError(message: string) {
+  errorMessage.value = message
+  showError.value = true
+}
+
+function clearError() {
+  errorMessage.value = ''
+  showError.value = false
+}
 
 // Carrega perguntas automaticamente quando o dialog abre
 watch(() => props.modelValue, (newValue) => {
@@ -463,10 +546,11 @@ function previousPhase() {
 async function generateQuestions() {
   // Validate projectId before making any API calls
   if (!props.projectId || String(props.projectId).trim() === 'undefined' || String(props.projectId).trim() === '') {
-    showError.value = true
-    errorMessage.value = '❌ Erro: Project ID não definido. Salve o projeto antes de usar o planejador com IA.'
+    setError('❌ Erro: Project ID não definido. Salve o projeto antes de usar o planejador com IA.')
     return
   }
+
+  clearError()
 
   loading.value = true
   loadingMessage.value = 'Gerando perguntas estratégicas...'
@@ -499,10 +583,11 @@ async function generateQuestions() {
 async function generateSmartObjective() {
   // Validate projectId before making any API calls
   if (!props.projectId || String(props.projectId).trim() === 'undefined' || String(props.projectId).trim() === '') {
-    showError.value = true
-    errorMessage.value = '❌ Erro: Project ID não definido. Salve o projeto antes de continuar.'
+    setError('❌ Erro: Project ID não definido. Salve o projeto antes de continuar.')
     return
   }
+
+  clearError()
 
   loading.value = true
   loadingMessage.value = 'Gerando objetivo SMART...'
@@ -515,6 +600,9 @@ async function generateSmartObjective() {
     })
 
     smartObjective.value = response.data.smart
+    if (!smartObjective.value?.weeklyHours || smartObjective.value.weeklyHours <= 0) {
+      setError('Informe horas semanais no SMART antes de gerar WBS. Replaneje se necessário.')
+    }
     phase.value = 2
   } catch (error) {
     console.error('Erro ao gerar objetivo SMART:', error)
@@ -559,10 +647,17 @@ async function generateWBS() {
   if (!smartObjective.value) return
   
   if (!props.projectId || String(props.projectId).trim() === 'undefined') {
-    showError.value = true
-    errorMessage.value = '❌ Erro: Project ID não definido. Salve o projeto antes de gerar WBS.'
+    setError('❌ Erro: Project ID não definido. Salve o projeto antes de gerar WBS.')
     return
   }
+
+  const weeklyHours = Number(smartObjective.value.weeklyHours)
+  if (!Number.isFinite(weeklyHours) || weeklyHours <= 0) {
+    setError('Defina horas semanais no SMART antes de gerar WBS.')
+    return
+  }
+
+  clearError()
   
   loading.value = true
   loadingMessage.value = 'Gerando WBS a partir do objetivo SMART...'
@@ -574,20 +669,32 @@ async function generateWBS() {
       measurable: smartObjective.value.measurable,
       achievable: smartObjective.value.achievable,
       relevant: smartObjective.value.relevant,
-      temporal: smartObjective.value.temporal
+      temporal: smartObjective.value.temporal,
+      weeklyHours,
     })
 
-    wbsNodes.value = response.data.wbs || response.data
+    const responseData = response.data || {}
+    const nodes = responseData.nodes || responseData.wbs || (Array.isArray(responseData) ? responseData : [])
+
+    if (!Array.isArray(nodes)) {
+      throw new Error('Resposta inválida da geração WBS')
+    }
+
+    wbsNodes.value = nodes
+    wbsValidation.value = responseData.validation || null
+    budgetValidation.value = responseData.budgetValidation || null
     phase.value = 3
 
     // Validate
-    try {
-      const valResponse = await $api.post(`/projects/${props.projectId}/wbs/validate`, {
-        nodes: wbsNodes.value
-      })
-      wbsValidation.value = valResponse.data
-    } catch {
-      wbsValidation.value = null
+    if (!wbsValidation.value) {
+      try {
+        const valResponse = await $api.post(`/projects/${props.projectId}/wbs/validate`, {
+          nodes: wbsNodes.value
+        })
+        wbsValidation.value = valResponse.data
+      } catch {
+        wbsValidation.value = null
+      }
     }
   } catch (error) {
     console.error('Erro ao gerar WBS:', error)
@@ -599,10 +706,16 @@ async function generateWBS() {
 
 async function convertAndClose() {
   if (!props.projectId || String(props.projectId).trim() === 'undefined') {
-    showError.value = true
-    errorMessage.value = '❌ Erro: Project ID não definido. Salve o projeto antes de converter para tarefas.'
+    setError('❌ Erro: Project ID não definido. Salve o projeto antes de converter para tarefas.')
     return
   }
+
+  if (budgetValidation.value?.overBudget) {
+    setError('Resolva o estouro de budget da WBS antes de converter para micro-tarefas.')
+    return
+  }
+
+  clearError()
   
   loading.value = true
   loadingMessage.value = 'Convertendo WBS em tarefas...'
@@ -634,10 +747,16 @@ async function convertAndClose() {
 
 async function saveWBSAndClose() {
   if (!props.projectId || String(props.projectId).trim() === 'undefined') {
-    showError.value = true
-    errorMessage.value = '❌ Erro: Project ID não definido. Salve o projeto antes de salvar WBS.'
+    setError('❌ Erro: Project ID não definido. Salve o projeto antes de salvar WBS.')
     return
   }
+
+  if (budgetValidation.value?.overBudget) {
+    setError('Resolva o estouro de budget da WBS antes de salvar.')
+    return
+  }
+
+  clearError()
   
   loading.value = true
   loadingMessage.value = 'Salvando WBS...'
@@ -668,6 +787,45 @@ function saveAndClose() {
   handleClose()
 }
 
+async function resolveBudget(strategy: 'normalize' | 'reject') {
+  if (!props.projectId || !budgetValidation.value) return
+
+  resolvingBudget.value = true
+  try {
+    const { $api } = useNuxtApp() as any
+    const response = await $api.post(`/projects/${props.projectId}/wbs/resolve-budget`, {
+      nodes: wbsNodes.value,
+      budgetHours: budgetValidation.value.budgetHours,
+      strategy,
+    })
+
+    const data = response.data || {}
+    if (strategy === 'reject') {
+      wbsNodes.value = []
+      wbsValidation.value = null
+      budgetValidation.value = null
+      phase.value = 2
+      setError('WBS rejeitada por excesso de budget. Ajuste/replaneje o SMART e gere novamente.')
+      return
+    }
+
+    if (Array.isArray(data.nodes)) {
+      wbsNodes.value = data.nodes
+    }
+    wbsValidation.value = data.validation || wbsValidation.value
+    budgetValidation.value = data.budgetValidation || budgetValidation.value
+
+    if (!budgetValidation.value?.overBudget) {
+      clearError()
+    }
+  } catch (error) {
+    console.error('Erro ao resolver budget da WBS:', error)
+    setError('Não foi possível resolver o budget da WBS. Tente novamente.')
+  } finally {
+    resolvingBudget.value = false
+  }
+}
+
 function handleClose() {
   // Reset
   phase.value = 1
@@ -681,6 +839,9 @@ function handleClose() {
   currentAnswer.value = ''
   suggestedAnswer.value = ''
   answerEdited.value = false
+  budgetValidation.value = null
+  resolvingBudget.value = false
+  clearError()
   isOpen.value = false
 }
 </script>

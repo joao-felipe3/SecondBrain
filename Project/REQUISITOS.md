@@ -1,7 +1,7 @@
 # 📋 Acompanhamento de Requisitos - Second Brain
 
 > **Última atualização:** 06/04/2026  
-> **Status do Projeto:** MVP + Fase 1 89% Completa (Eficiência)
+> **Status do Projeto:** MVP + Fase 1 100% Completa (Eficiência)
 
 ---
 
@@ -10,17 +10,18 @@
 | Fase | Total | Prototipado | Frontend | Backend | QA | Progresso |
 |------|-------|-------------|----------|---------|-----|-----------|
 | Fase 0 - MVP | 14 | 14/14 ✅ | 14/14 ✅ | 14/14 ✅ | 14/14 ✅ | 🟢 100% |
-| Fase 1 - Eficiência | 28 | 25/28 ✅ | 25/28 ✅ | 25/28 ✅ | 25/28 ✅ | 🟡 89% |
-| Fase 2 - Micro-Tarefas | 18 | 0/18 | 0/18 | 0/18 | 0/18 | ⬜ 0% |
+| Fase 1 - Eficiência | 29 | 29/29 ✅ | 29/29 ✅ | 29/29 ✅ | 29/29 ✅ | 🟢 100% |
+| Fase 2 - Micro-Tarefas | 22 | 0/22 | 0/22 | 0/22 | 0/22 | ⬜ 0% |
 | Fase 3 - Produtividade Avançada | 18 | 0/18 | 0/18 | 0/18 | 0/18 | ⬜ 0% |
 | Fase 4 - Gamificação Essencial | 17 | 0/17 | 0/17 | 0/17 | 0/17 | ⬜ 0% |
-| Fase 5 - Narrativa e Motor RPG | 34 | 0/34 | 0/34 | 0/34 | 0/34 | ⬜ 0% |
-| Fase 6 - Monitoramento e Interpretação Assistida | 8 | 0/8 | 0/8 | 0/8 | 0/8 | ⬜ 0% |
-| Fase 7 - Arquitetura Cognitiva | 23 | 0/23 | 0/23 | 0/23 | 0/23 | ⬜ 0% |
-| Fase 8 - IA Autônoma e Guardião do OS | 22 | 0/22 | 0/22 | 0/22 | 0/22 | ⬜ 0% |
-| Fase 9 - Espelho Metacognitivo e Energia Biológica | 29 | 0/29 | 0/29 | 0/29 | 0/29 | ⬜ 0% |
-| Fase 10 - Rotina Invisível, Âncoras e Desligamento | 24 | 0/24 | 0/24 | 0/24 | 0/24 | ⬜ 0% |
-| Fase 11 - Polimento e Segurança | 8 | 0/8 | 0/8 | 0/8 | 0/8 | ⬜ 0% |
+| Fase 5 - Criação de Projetos com Agente | 9 | 0/9 | 0/9 | 0/9 | 0/9 | ⬜ 0% |
+| Fase 6 - Narrativa e Motor RPG | 34 | 0/34 | 0/34 | 0/34 | 0/34 | ⬜ 0% |
+| Fase 7 - Monitoramento e Interpretação Assistida | 8 | 0/8 | 0/8 | 0/8 | 0/8 | ⬜ 0% |
+| Fase 8 - Arquitetura Cognitiva | 23 | 0/23 | 0/23 | 0/23 | 0/23 | ⬜ 0% |
+| Fase 9 - IA Autônoma e Guardião do OS | 22 | 0/22 | 0/22 | 0/22 | 0/22 | ⬜ 0% |
+| Fase 10 - Espelho Metacognitivo e Energia Biológica | 29 | 0/29 | 0/29 | 0/29 | 0/29 | ⬜ 0% |
+| Fase 11 - Rotina Invisível, Âncoras e Desligamento | 24 | 0/24 | 0/24 | 0/24 | 0/24 | ⬜ 0% |
+| Fase 12 - Polimento e Segurança | 8 | 0/8 | 0/8 | 0/8 | 0/8 | ⬜ 0% |
 
 
 ---
@@ -139,15 +140,13 @@
 
 | # | Requisito | Tipo | Protótipo | Frontend | Backend | QA |
 |---|-----------|------|:---------:|:--------:|:-------:|:--:|
-| 29 | Corrigir criação/edição e de projetos para melhorar a experiência de usuário | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
-| 30 | Corrigir botão de catchball e melhorar geração de pacotes WBS pois está sempre entre 500-600h | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
-| 31 | Melhorar a UI das páginas 3-4, 5-6 e 7-8 para ficar mais de acordo com a temática fantasia medieval | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 30 | Corrigir botão de catchball e melhorar geração de pacotes WBS pois está sempre entre 500-600h | Funcional | ✅ | ✅ | ✅ | ✅ |
 
 ---
 
 ## ⚙️ Micro-Tarefas - Gerenciamento de Tarefas de Curta Duração (≤3h)
 
-> **Objetivo:** Integrar LLM para garantir excelência operacional, rastreabilidade e eficiência em tarefas de curta duração, evitando erros humanos e "gold plating", aplicando técnicas de qualidade, PERT adaptado, RTM simplificada e feedback contínuo.
+> **Objetivo:** Integrar LLM para garantir excelência operacional, rastreabilidade e eficiência em tarefas de curta duração e hábitos recorrentes, evitando erros humanos e "gold plating", aplicando técnicas de qualidade, PERT adaptado, RTM simplificada, recorrência estruturada e feedback contínuo.
 
 ### Gold Standard Checklists
 
@@ -192,6 +191,15 @@
 |---|-----------|------|:---------:|:--------:|:-------:|:--:|
 | 18 | Detectar anomalias: alerta quando tempo gasto exceder TE (Tempo Esperado) em 25% | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
 
+### Hábitos e Recorrência
+
+| # | Requisito | Tipo | Protótipo | Frontend | Backend | QA |
+|---|-----------|------|:---------:|:--------:|:-------:|:--:|
+| 19 | Permitir criar micro-tarefas como hábitos recorrentes com regra estruturada de recorrência (frequência, intervalo, dias da semana, data final e exceções) | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 20 | Gerar automaticamente a próxima ocorrência do hábito ao concluir, adiar ou pular uma instância, sem duplicação manual | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 21 | Permitir editar apenas uma ocorrência ou toda a série recorrente e encerrar a recorrência sem apagar histórico | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 22 | Exibir aderência do hábito, streak e lembretes configuráveis, com opção de pausar e retomar a série sem quebrá-la | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+
 ---
 
 ## 🔄 Fase 3 - Produtividade Avançada
@@ -212,7 +220,7 @@
 |---|-----------|------|:---------:|:--------:|:-------:|:--:|
 | 4 | Criar tarefa em 1 linha (Quick Add) com preenchimento automático de campos padrão | Não Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
 | 5 | Interpretar texto do Quick Add (ex.: data “amanhã”, prioridade “alta”) e sugerir valores | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
-| 6 | Templates de tarefas/projetos (campos e subtarefas padrão) para repetir rotinas | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 6 | Templates de tarefas/projetos/hábitos (campos e subtarefas padrão) para repetir rotinas | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
 
 ### Busca, Filtros e Organização
 
@@ -310,7 +318,37 @@
 | 17 | Inventário/Biblioteca de Loot: listar, buscar e “equipar” itens para acelerar tarefas futuras (inclui tags e reutilização) | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
 
 ---
-## 🧙 Fase 5 - Narrativa e Motor RPG (SRS)
+## 🤖 Fase 5 - Criação Estratégica de Projetos com Agente de IA
+
+> **Objetivo:** Transformar o LLM num Cientista Autônomo e Mentor que não apenas divide tarefas, mas executa uma pesquisa estruturada e ativa de mercado (potencializada por Deep Research Pro e Gemini Embedding 2), oferecendo trilhas de conhecimento e dados reais (benchmarking) antes do início da jornada no Second Brain.
+
+### Curadoria de Rotas Pessoais (Deep Research Pro)
+
+| # | Requisito | Tipo | Protótipo | Frontend | Backend | QA |
+|---|-----------|------|:---------:|:--------:|:-------:|:--:|
+| 1 | Iniciar a Concepção de Projeto em modo "Pesquisa Autônoma" | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 2 | **Curriculum Builder (Trilhas de Aprendizado):** Varredura autônoma na web (Reddit, cursos, fóruns) para propor os pilares e marcos cruciais sugeridos pelo consenso de especialistas no momento da geração da WBS | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 3 | **Estimativas Guiadas a Dados (Fallacy Guard):** Pesquisar quanto tempo executores reais levam para concluir metas similares, calibrando as estimativas Otimista/Pessimista (PERT) contra o viés natural do usuário ou do LLM | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+
+### Micro-RAG Exclusivo do Projeto e Starter Pack
+
+| # | Requisito | Tipo | Protótipo | Frontend | Backend | QA |
+|---|-----------|------|:---------:|:--------:|:-------:|:--:|
+| 4 | **Starter Pack (Mapeamento de Autoridade):** Localizar automaticamente os 3 a 5 guias ou metodologias definitivas da comunidade para o projeto e indexá-los | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 5 | **Micro-RAG Específico (Gemini Embedding 2):** Processar, extrair e gerar embeddings exclusivos em uma base isolada daquele projeto, para atuar como tutor hiper-parametrizado do usuário durante a execução | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+
+### Pre-Mortem Autônomo e Checklists
+
+| # | Requisito | Tipo | Protótipo | Frontend | Backend | QA |
+|---|-----------|------|:---------:|:--------:|:-------:|:--:|
+| 6 | **Pre-Mortem Orientado a Riscos Reais:** A IA realiza pesquisa direcionada em fóruns sobre "motivos mais comuns de falência/lesão/desistência" no domínio da meta do projeto | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 7 | **Injeção Pró-ativa de Mitigação:** Transformar cada gatilho de falha relevante em tarefas corretivas dentro da árvore do projeto com *Loot Drops* de prevenção | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 8 | **Gold Standard Checklists Normativos:** Busca profunda de requisitos legais atualizados (visto, exigências governamentais, processos ou custos logísticos) e transformação automática em checklists estritos nas tarefas folha | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 9 | **Validação Total:** Dashboard iterativo para aceitar, recusar e ajustar em batch tudo que a Inteligência pesquisou antes de concretizar no cronograma | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+
+---
+
+## 🧙 Fase 6 - Narrativa e Motor RPG (SRS)
 
 > **Objetivo:** Transformar tarefas e projetos em um loop de gameplay consistente (dungeons, bosses, estados de combate, buffs/debuffs), com requisitos técnicos claros (workers assíncronos, FSM, WebSockets, cron jobs) e integração com o sistema de energia/recuperação (Fase 9) para não virar "if/else" nem travar a UI.
 
@@ -346,7 +384,7 @@
 | 16 | Se faltar menos de 24h, usar `Threat_Level` para drenar "Sanidade" e disparar notificação push severa ("O Golem está em fúria! Defenda-se!") | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
 | 17 | Notificações push devem ser configuráveis (opt-in) e respeitar privacidade/quiet hours | Não Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
 
-### 4) Integração com Energia do Personagem (dependência da Fase 9)
+### 4) Integração com Energia do Personagem (dependência da Fase 10)
 
 | # | Requisito | Tipo | Protótipo | Frontend | Backend | QA |
 |---|-----------|------|:---------:|:--------:|:-------:|:--:|
@@ -379,7 +417,7 @@
 | 34 | Progresso visual (Landmark) ao invés de barra de porcentagem | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
 
 ---
-## 📡 Fase 6 - Monitoramento e Interpretação Assistida (IA)
+## 📡 Fase 7 - Monitoramento e Interpretação Assistida (IA)
 
 > **Objetivo:** Adicionar monitoramento (manual + automatizável), classificação assistida por IA e intervenções leves — **sem** tornar o sistema dependente do desktop/OS. Integrações com Guardião do OS (Fase 8) entram como fonte opcional de sinais.
 
@@ -413,7 +451,7 @@
 
 ---
 
-## 🧩 Fase 7 - Arquitetura Cognitiva e Psicologia Comportamental
+## 🧩 Fase 8 - Arquitetura Cognitiva e Psicologia Comportamental
 
 > **Objetivo:** Estruturar o app para respeitar limites cognitivos e reforçar motivação sustentável (competência, autonomia), engajamento saudável (Zeigarnik/Hook) e foco (Flow) — reduzindo fadiga mental e aumentando consistência.
 
@@ -468,7 +506,7 @@
 
 ---
 
-## 🧠 Fase 8 - IA Autônoma, Memória Semântica e Guardião do OS
+## 🧠 Fase 9 - IA Autônoma, Memória Semântica e Guardião do OS
 
 > **Objetivo:** Evoluir o SecondBrain de “app com IA” para um **sistema agentivo** com memória (RAG) e automação segura, capaz de planejar, lembrar contexto, adaptar-se ao usuário e intervir contra distrações — com controle, privacidade e *feature flags*.
 
@@ -517,7 +555,7 @@
 ---
 
 
-## 🧠 Fase 9 - Espelho Metacognitivo, Energia Biológica e Game Master Preditivo
+## 🧠 Fase 10 - Espelho Metacognitivo, Energia Biológica e Game Master Preditivo
 
 > **Objetivo:** Substituir o “app-capataz” por um sistema que **investiga gargalos**, **calibra energia** (HRV/Sono/Estresse + RPE) e **ajusta o plano** para evitar esgotamento — com gamificação (Mana/Rested XP) e privacidade por padrão.
 
@@ -578,7 +616,7 @@
 
 ---
 
-## 🧭 Fase 10 - Rotina Invisível, Âncoras e Desligamento (Anti-Tábula Rasa)
+## 🧭 Fase 11 - Rotina Invisível, Âncoras e Desligamento (Anti-Tábula Rasa)
 
 > **Objetivo:** Corrigir a “Falácia da Tábula Rasa”: o dia **não** começa com 24h em branco. Ele já nasce com grande parte do orçamento comprometido (aulas, deslocamento, alimentação, sono, manutenção). Esta fase adiciona mecânicas para **planejar capacidade real**, inserir hábitos por **ancoragem (habit stacking)**, proteger blocos do **Maker’s Schedule (timeboxing)** e encerrar o dia com o ritual da **Taverna (Save/Shutdown)**.
 
@@ -633,7 +671,7 @@
 
 ---
 
-## 🏰 Fase 11 - Polimento e Segurança
+## 🏰 Fase 12 - Polimento e Segurança
 
 ### Usabilidade
 

@@ -1,7 +1,7 @@
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { TaskDocument } from '../tasks/schemas/task.schema';
-import { Controller, Get, Post, Body, Patch, Param, Delete, NotFoundException, Query, HttpException, HttpStatus } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, NotFoundException, Query, HttpException, HttpStatus, BadRequestException } from '@nestjs/common';
 import { ProjectsService } from './projects.service';
 import { CreateProjectDto } from './dto/create-project.dto';
 import { UpdateProjectDto } from './dto/update-project.dto';
@@ -12,7 +12,7 @@ import { WBSService } from './wbs/wbs.service';
 import { WbsValidationService } from './wbs/services/wbs-validation.service';
 import { TaskConversionService } from './wbs/services/task-conversion.service';
 import { AuditService } from './wbs/services/audit.service';
-import { GenerateWBSDto, SaveWBSDto, SuggestDecompositionDto, ConvertWBSToTasksDto, GetLeafNodesDto, GenerateTasksForLeafDto, AuditLeafDiscrepancyDto } from './dto/wbs.dto';
+import { GenerateWBSDto, SaveWBSDto, SuggestDecompositionDto, ConvertWBSToTasksDto, GetLeafNodesDto, GenerateTasksForLeafDto, AuditLeafDiscrepancyDto, ResolveWBSBudgetDto } from './dto/wbs.dto';
 import { TasksService } from '../tasks/tasks.service';
 import { LeafTasksBufferService } from './leaf-tasks-buffer.service';
 import { createHash } from 'crypto';
@@ -50,6 +50,40 @@ export class ProjectsController {
 			model: preferences?.modelOverride || process.env.GEMINI_MODEL || process.env.WBS_GEMINI_MODEL || undefined,
 		};
 		return `leafbuf:${projectId}:${this.hashKey(fingerprint)}`;
+	}
+
+	private extractTargetDate(temporal: string | undefined, fallbackDeadline?: Date): Date {
+		const text = String(temporal || '');
+
+		const iso = text.match(/\b(\d{4})-(\d{2})-(\d{2})\b/);
+		if (iso) {
+			const parsed = new Date(`${iso[1]}-${iso[2]}-${iso[3]}T00:00:00`);
+			if (!Number.isNaN(parsed.getTime())) return parsed;
+		}
+
+		const br = text.match(/\b(\d{2})\/(\d{2})\/(\d{4})\b/);
+		if (br) {
+			const parsed = new Date(`${br[3]}-${br[2]}-${br[1]}T00:00:00`);
+			if (!Number.isNaN(parsed.getTime())) return parsed;
+		}
+
+		if (fallbackDeadline) {
+			const parsed = new Date(fallbackDeadline);
+			if (!Number.isNaN(parsed.getTime())) return parsed;
+		}
+
+		const fallback = new Date();
+		fallback.setDate(fallback.getDate() + 28);
+		return fallback;
+	}
+
+	private buildBudgetContext(targetDate: Date, weeklyHours: number): { budgetHours: number; weeksAvailable: number } {
+		const now = new Date();
+		const msPerDay = 24 * 60 * 60 * 1000;
+		const days = Math.max(1, Math.ceil((targetDate.getTime() - now.getTime()) / msPerDay));
+		const weeksAvailable = Math.max(1, Math.ceil(days / 7));
+		const budgetHours = Math.max(1, Math.round(weeksAvailable * weeklyHours * 10) / 10);
+		return { budgetHours, weeksAvailable };
 	}
 
 	@Get(':id/tasks')
@@ -186,10 +220,36 @@ export class ProjectsController {
 		const project = await this.projectsService.findOne(id);
 		if (!project) throw new NotFoundException('Project not found');
 
-		const nodes = await this.wbsService.generateWBS(dto);
-		const validation = this.validation.validateTree(nodes);
+		const weeklyHours = Number(dto.weeklyHours ?? project.smartObjective?.weeklyHours);
+		if (!Number.isFinite(weeklyHours) || weeklyHours <= 0) {
+			throw new BadRequestException('Weekly hours are required to generate WBS budget. Update SMART objective first.');
+		}
 
-		return { nodes, validation };
+		const targetDate = this.extractTargetDate(dto.temporal, project.deadline);
+		const context = this.buildBudgetContext(targetDate, weeklyHours);
+		const budgetHours = Number.isFinite(Number(dto.budgetHours)) && Number(dto.budgetHours) > 0
+			? Number(dto.budgetHours)
+			: context.budgetHours;
+
+		const generationInput = {
+			...dto,
+			weeklyHours,
+			budgetHours,
+			weeksAvailable: context.weeksAvailable,
+		};
+
+		const nodes = await this.wbsService.generateWBS(generationInput);
+		const validation = this.validation.validateTree(nodes);
+		const budgetValidation = this.validation.validateBudget(nodes, budgetHours, {
+			weeklyHours,
+			weeksAvailable: context.weeksAvailable,
+		});
+
+		return {
+			nodes,
+			validation,
+			budgetValidation,
+		};
 	}
 
 	@Post(':id/save-wbs')
@@ -229,6 +289,44 @@ export class ProjectsController {
 		@Body() dto: SaveWBSDto
 	) {
 		return this.validation.validateTree(dto.nodes);
+	}
+
+	@Post(':id/wbs/resolve-budget')
+	@ApiOperation({ summary: 'Resolve over-budget WBS by normalizing or rejecting' })
+	@ApiResponse({ status: 200, description: 'Budget resolution result.' })
+	async resolveWBSBudget(
+		@Param('id') id: string,
+		@Body() dto: ResolveWBSBudgetDto,
+	) {
+		const project = await this.projectsService.findOne(id);
+		if (!project) throw new NotFoundException('Project not found');
+
+		if (!Number.isFinite(Number(dto.budgetHours)) || Number(dto.budgetHours) <= 0) {
+			throw new BadRequestException('Invalid budgetHours for WBS resolution.');
+		}
+
+		if (dto.strategy === 'reject') {
+			const budgetValidation = this.validation.validateBudget(dto.nodes, Number(dto.budgetHours));
+			return {
+				nodes: dto.nodes,
+				validation: this.validation.validateTree(dto.nodes),
+				budgetValidation,
+				resolved: false,
+				strategy: dto.strategy,
+			};
+		}
+
+		const normalizedNodes = this.validation.normalizeTreeToBudget(dto.nodes, Number(dto.budgetHours));
+		const validation = this.validation.validateTree(normalizedNodes);
+		const budgetValidation = this.validation.validateBudget(normalizedNodes, Number(dto.budgetHours));
+
+		return {
+			nodes: normalizedNodes,
+			validation,
+			budgetValidation,
+			resolved: true,
+			strategy: dto.strategy,
+		};
 	}
 
 	@Post(':id/wbs/suggest-decomposition')

@@ -103,6 +103,7 @@ Respostas do usuário às perguntas estratégicas:
 ${answers.map((answer, i) => `${i + 1}. ${answer}`).join('\n')}
 
 Agora, crie um objetivo SMART (Specific, Measurable, Achievable, Relevant, Temporal) para este projeto.
+IMPORTANTE: inclua explicitamente a capacidade semanal de execução em horas (weeklyHours), baseada nas respostas do usuário.
 
 Retorne APENAS um objeto JSON no seguinte formato, sem texto adicional:
 {
@@ -111,6 +112,7 @@ Retorne APENAS um objeto JSON no seguinte formato, sem texto adicional:
   "achievable": "Análise de viabilidade com recursos disponíveis",
   "relevant": "Por que este projeto é importante para o negócio",
   "temporal": "Prazo específico com data de conclusão",
+  "weeklyHours": 12,
   "summary": "Resumo executivo em 1-2 frases",
   "risks": ["risco 1", "risco 2", "risco 3"]
 }`;
@@ -204,6 +206,7 @@ Retorne APENAS um objeto JSON no seguinte formato, sem texto adicional:
       cleanResponse = cleanResponse.trim();
       
       const smartObj = JSON.parse(cleanResponse);
+      const weeklyHours = Number(smartObj.weeklyHours);
       
       return {
         specific: smartObj.specific || '',
@@ -211,6 +214,7 @@ Retorne APENAS um objeto JSON no seguinte formato, sem texto adicional:
         achievable: smartObj.achievable || '',
         relevant: smartObj.relevant || '',
         temporal: smartObj.temporal || '',
+        ...(Number.isFinite(weeklyHours) && weeklyHours > 0 ? { weeklyHours } : {}),
         summary: smartObj.summary || '',
         risks: Array.isArray(smartObj.risks) ? smartObj.risks : []
       };

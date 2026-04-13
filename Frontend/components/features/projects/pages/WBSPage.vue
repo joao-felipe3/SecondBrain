@@ -428,6 +428,7 @@ async function generateWBS() {
       relevant: smart.relevant,
       temporal: smart.temporal,
       summary: smart.summary,
+      weeklyHours: Number.isFinite(Number(smart.weeklyHours)) ? Number(smart.weeklyHours) : undefined,
     })
     
     wbsNodes.value = response.data.nodes
@@ -437,7 +438,8 @@ async function generateWBS() {
     await saveWBS()
   } catch (error) {
     console.error('Erro ao gerar WBS:', error)
-    alert('Erro ao gerar WBS. Tente novamente.')
+    const message = (error as any)?.response?.data?.message
+    alert(typeof message === 'string' ? message : 'Erro ao gerar WBS. Tente novamente.')
   } finally {
     generating.value = false
   }

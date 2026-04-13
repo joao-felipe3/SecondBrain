@@ -21,8 +21,15 @@ export class WbsGenerationService {
     achievable: string;
     relevant: string;
     temporal: string;
+    weeklyHours?: number;
+    budgetHours?: number;
+    weeksAvailable?: number;
     summary?: string;
   }): Promise<WBSNodeDto[]> {
+    const hasBudgetContext = Number.isFinite(Number(smartObjective.budgetHours)) && Number(smartObjective.budgetHours) > 0;
+    const weeklyHours = Number(smartObjective.weeklyHours);
+    const weeksAvailable = Number(smartObjective.weeksAvailable);
+
     const prompt = `Você é um consultor de gestão de projetos especializado em WBS (Work Breakdown Structure) segundo PMBOK.
 
 Baseado no objetivo SMART abaixo, gere uma WBS hierárquica CONCISA para o projeto.
@@ -33,6 +40,9 @@ Objetivo SMART:
 - Atingível: ${smartObjective.achievable}
 - Relevante: ${smartObjective.relevant}
 - Temporal: ${smartObjective.temporal}
+${Number.isFinite(weeklyHours) && weeklyHours > 0 ? `- Capacidade semanal: ${weeklyHours}h/semana` : ''}
+${hasBudgetContext ? `- Budget global alvo da WBS: ${Number(smartObjective.budgetHours).toFixed(1)}h` : ''}
+${Number.isFinite(weeksAvailable) && weeksAvailable > 0 ? `- Janela temporal estimada: ${Math.round(weeksAvailable)} semanas` : ''}
 ${smartObjective.summary ? `- Resumo: ${smartObjective.summary}` : ''}
 
 REGRAS IMPORTANTES:
@@ -44,6 +54,7 @@ REGRAS IMPORTANTES:
 6. Nós intermediários: estimatedHours = soma dos filhos
 7. Use nomes claros e descritivos mas CURTOS
 8. Descrições BREVES (máximo 1 linha)
+${hasBudgetContext ? `9. A soma total dos nós folha deve ficar o mais próximo possível de ${Number(smartObjective.budgetHours).toFixed(1)}h sem ultrapassar significativamente o budget` : ''}
 
 Retorne APENAS um array JSON válido e completo, sem texto adicional:
 [

@@ -15,7 +15,7 @@
           color="primary"
           size="large"
           prepend-icon="mdi-robot"
-          block
+          class="start-planning-btn"
           @click="openPlannerDialog"
         >
           Iniciar Planejamento com IA
@@ -154,6 +154,13 @@
           />
 
           <SmartDetailCard
+            v-if="project.smartObjective.weeklyHours"
+            title="🕒 Capacidade Semanal"
+            :content="`${project.smartObjective.weeklyHours}h por semana`"
+            color="teal-lighten-5"
+          />
+
+          <SmartDetailCard
             v-if="project.smartObjective.risks?.length"
             title="⚠️ Riscos Identificados"
             :risks="project.smartObjective.risks"
@@ -166,7 +173,7 @@
     <!-- Dialog de Planejamento -->
     <ProjectPlannerDialog
       v-model="showPlannerDialog"
-      :project-id="getProjectId(project)"
+      :project-id="resolveProjectId(project)"
       :project-name="project?.name || ''"
       :project-description="project?.description || ''"
       :short-term-goal="project?.shortTermGoal"
@@ -182,7 +189,6 @@ import { ref, reactive, watch } from 'vue'
 import type { PropType } from 'vue'
 import ProjectPlannerDialog from '../dialogs/ProjectPlannerDialog.vue'
 import SmartDetailCard from '../sections/SmartDetailCard.vue'
-import { getProjectId } from '~/composables/features/useProjectEditing'
 
 interface SmartObjective {
   specific: string
@@ -190,11 +196,17 @@ interface SmartObjective {
   achievable: string
   relevant: string
   temporal: string
+  weeklyHours?: number
   summary: string
   risks: string[]
 }
 
 type Project = Record<string, any>
+
+function resolveProjectId(project: Project | null): string {
+  const value = project?._id ?? project?.id ?? ''
+  return value ? String(value) : ''
+}
 
 const props = defineProps({
   project: { type: Object as PropType<Project | null>, default: null },
@@ -212,6 +224,7 @@ const local = reactive<any>({
     achievable: '',
     relevant: '',
     temporal: '',
+    weeklyHours: undefined,
     summary: '',
     risks: []
   }
@@ -226,6 +239,9 @@ watch(() => props.project, (val) => {
       achievable: val.smartObjective.achievable || '',
       relevant: val.smartObjective.relevant || '',
       temporal: val.smartObjective.temporal || '',
+      weeklyHours: Number.isFinite(Number(val.smartObjective.weeklyHours))
+        ? Number(val.smartObjective.weeklyHours)
+        : undefined,
       summary: val.smartObjective.summary || '',
       risks: val.smartObjective.risks || []
     }
@@ -287,10 +303,15 @@ function handleSmartObjectiveUpdated() {
 .ai-planning-prompt {
   text-align: center;
   padding: 2rem;
-  height: 100%;
+  min-height: 250px;
   display: flex;
   flex-direction: column;
   justify-content: center;
+  align-items: center;
+}
+
+.start-planning-btn {
+  width: min(100%, 380px);
 }
 
 .smart-content {

@@ -4,6 +4,7 @@ export class SmartObjectiveDto {
   achievable: string;    
   relevant: string;      
   temporal: string;      
+  weeklyHours?: number;
   summary: string;       
   risks: string[];       
 }

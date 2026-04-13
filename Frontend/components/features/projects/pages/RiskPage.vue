@@ -17,9 +17,18 @@
     <v-sheet class="page right-page" elevation="0" color="transparent" @click.stop>
       <h3 class="page-title mb-4">📊 EVM e Performance</h3>
       <EVMDashboard
-        :project-id="project._id || 'default'"
+        v-if="project._id"
+        :project-id="project._id"
         :planned-hours="project.plannedHours || 0"
       />
+      <v-alert
+        v-else
+        type="info"
+        variant="tonal"
+        density="comfortable"
+      >
+        Selecione um projeto valido para carregar o dashboard EVM.
+      </v-alert>
     </v-sheet>
   </v-sheet>
 </template>
