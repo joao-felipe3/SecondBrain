@@ -1,8 +1,23 @@
+export interface ChecklistItem {
+  item: string
+  completed: boolean
+  order: number
+}
+
+export interface RecurringRule {
+  frequency: string
+  interval: number
+  daysOfWeek?: number[]
+  endDate?: Date
+  exceptions?: Date[]
+}
+
 export interface Task {
   _id: string
   name: string
   description?: string
   definitionOfDone?: string
+  checklist?: Array<string | ChecklistItem>
   pomodorosDid?: number
   pomodorosPlanned: number
   pertOptimisticMinutes?: number
@@ -23,6 +38,7 @@ export interface Task {
   priority?: number
   difficult?: number
   project?: string
+  parentTaskId?: string
   parentWbsNodeId?: string
   wbsPath?: string
   generationBatchId?: string
@@ -34,6 +50,9 @@ export interface Task {
   recurrency: string
   notification: Date
   microTaskType?: string
+  parentRecurringId?: string
+  isRecurringInstance?: boolean
+  recurringRule?: RecurringRule
   cognitiveMode?: string
   contextTag?: string
   themeTag?: string[]

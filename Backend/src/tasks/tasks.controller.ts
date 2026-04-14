@@ -15,6 +15,9 @@ import {
 import { Observable } from 'rxjs';
 import { TasksService } from './tasks.service';
 import { CreateTaskDto } from './dto/create-task.dto';
+import { CreateMicroTaskDto } from './dto/create-micro-task.dto';
+import { UpdateChecklistDto } from './dto/update-checklist.dto';
+import { UpdateRecurringRuleDto } from './dto/update-recurring-rule.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
 import { GenerateAiSuggestionsDto } from './dto/generate-ai-suggestions.dto';
 import { PertEstimateDto, PertEstimateResponseDto } from './dto/pert-estimate.dto';
@@ -178,6 +181,20 @@ export class TasksController {
     return this.tasksService.create(createTaskDto);
   }
 
+  @Post('micro')
+  @ApiOperation({ summary: 'Criar uma micro-task com checklist auto-gerado' })
+  @ApiResponse({ status: 201, description: 'Micro-task criada com sucesso.' })
+  createMicroTask(@Body() createMicroTaskDto: CreateMicroTaskDto) {
+    return this.tasksService.createMicroTask(createMicroTaskDto);
+  }
+
+  @Post('micro/recurring')
+  @ApiOperation({ summary: 'Criar micro-task recorrente (base inicial)' })
+  @ApiResponse({ status: 201, description: 'Micro-task recorrente criada com sucesso.' })
+  createRecurringMicroTask(@Body() createMicroTaskDto: CreateMicroTaskDto) {
+    return this.tasksService.createRecurringMicroTask(createMicroTaskDto);
+  }
+
   @Get()
   @ApiOperation({ summary: 'Listar todas as tasks' })
   @ApiResponse({ status: 200, description: 'Lista de tasks retornada com sucesso.' })
@@ -192,6 +209,33 @@ export class TasksController {
   @ApiResponse({ status: 200, description: 'Sugestões geradas com sucesso.' })
   async generateAiSuggestions(@Body() generateDto: GenerateAiSuggestionsDto) {
     return this.tasksService.generateAiSuggestions(generateDto);
+  }
+
+  @Get('micro/:id')
+  @ApiOperation({ summary: 'Buscar uma micro-task por id' })
+  @ApiResponse({ status: 200, description: 'Micro-task retornada com sucesso.' })
+  findMicroTask(@Param('id') id: string) {
+    return this.tasksService.findMicroTask(id);
+  }
+
+  @Post(':id/checklist')
+  @ApiOperation({ summary: 'Atualizar checklist de uma micro-task' })
+  @ApiResponse({ status: 200, description: 'Checklist atualizado com sucesso.' })
+  updateMicroTaskChecklist(
+    @Param('id') id: string,
+    @Body() body: UpdateChecklistDto,
+  ) {
+    return this.tasksService.updateMicroTaskChecklist(id, body.checklist);
+  }
+
+  @Patch(':id/recurring-rule')
+  @ApiOperation({ summary: 'Atualizar regra de recorrência de uma task' })
+  @ApiResponse({ status: 200, description: 'Regra de recorrência atualizada com sucesso.' })
+  updateRecurringRule(
+    @Param('id') id: string,
+    @Body() body: UpdateRecurringRuleDto,
+  ) {
+    return this.tasksService.updateRecurringRule(id, body.recurringRule);
   }
 
   @Sse('ai-suggestions-stream')
@@ -291,11 +335,14 @@ export class TasksController {
   ): Promise<PertEstimateResponseDto> {
     try {
       return await this.tasksService.savePertEstimate(id, pertEstimateDto);
-    } catch (error) {
-      if (error.message.includes('não encontrada')) {
-        throw new NotFoundException(error.message);
+    } catch (error: unknown) {
+      const message =
+        error instanceof Error ? error.message : 'Erro ao salvar estimativa PERT';
+
+      if (message.includes('não encontrada')) {
+        throw new NotFoundException(message);
       }
-      throw new BadRequestException(error.message);
+      throw new BadRequestException(message);
     }
   }
 }

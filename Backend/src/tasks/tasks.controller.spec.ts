@@ -1,6 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { beforeEach, describe, expect, it, jest } from '@jest/globals';
 import { TasksController } from './tasks.controller';
 import { TasksService } from './tasks.service';
+import { CPMService } from './services/cpm.service';
+import { DependencyInferenceService } from './services/dependency-inference.service';
 
 describe('TasksController', () => {
   let controller: TasksController;
@@ -13,14 +16,32 @@ describe('TasksController', () => {
           provide: TasksService,
           useValue: {
             create: jest.fn(),
+            createMicroTask: jest.fn(),
+            createRecurringMicroTask: jest.fn(),
             findAll: jest.fn(),
+            findMicroTask: jest.fn(),
             findOne: jest.fn(),
             update: jest.fn(),
+            updateMicroTaskChecklist: jest.fn(),
+            updateRecurringRule: jest.fn(),
             remove: jest.fn(),
             markAsConcluded: jest.fn(),
             incrementPomodorosDid: jest.fn(),
             generateAiSuggestions: jest.fn(),
             generateAiSuggestionsWithProgress: jest.fn(),
+          },
+        },
+        {
+          provide: CPMService,
+          useValue: {
+            upsertDependencies: jest.fn(),
+          },
+        },
+        {
+          provide: DependencyInferenceService,
+          useValue: {
+            inferHeuristicPhases: jest.fn().mockReturnValue([]),
+            inferWithAi: jest.fn(async () => []),
           },
         },
       ],

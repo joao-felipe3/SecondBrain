@@ -1,10 +1,24 @@
 import { Schema, Document } from 'mongoose';
 
+export interface TaskChecklistItem {
+  item: string;
+  completed: boolean;
+  order: number;
+}
+
+export interface TaskRecurringRule {
+  frequency: string;
+  interval: number;
+  daysOfWeek?: number[];
+  endDate?: Date;
+  exceptions?: Date[];
+}
+
 export interface TaskDocument extends Document {
   name: string;
   description?: string;
   definitionOfDone?: string;
-  checklist?: string[];
+  checklist?: Array<string | TaskChecklistItem>;
   deadline: Date;
   pomodorosPlanned: number;
   pomodorosDid?: number;
@@ -16,6 +30,7 @@ export interface TaskDocument extends Document {
   priority?: number;
   difficult?: number;
   project?: string;
+  parentTaskId?: string;
   parentWbsNodeId?: string;
   wbsPath?: string;
   generationBatchId?: string;
@@ -27,6 +42,9 @@ export interface TaskDocument extends Document {
   recurrency: string;
   notification: Date;
   microTaskType?: string;
+  parentRecurringId?: string;
+  isRecurringInstance?: boolean;
+  recurringRule?: TaskRecurringRule;
   cognitiveMode?: string;
   contextTag?: string;
   themeTag?: string[];
@@ -46,7 +64,7 @@ export const TaskSchema = new Schema<TaskDocument>({
   name: { type: String, required: true },
   description: { type: String },
   definitionOfDone: { type: String },
-  checklist: { type: [String] },
+  checklist: { type: [Schema.Types.Mixed] },
   // Required, but we provide a default to support AI-generated tasks that omit it.
   deadline: { type: Date, required: true, default: Date.now },
   pomodorosPlanned: { type: Number, required: true },
@@ -59,6 +77,7 @@ export const TaskSchema = new Schema<TaskDocument>({
   priority: { type: Number },
   difficult: { type: Number },
   project: { type: Schema.Types.ObjectId, ref: 'Project' },
+  parentTaskId: { type: Schema.Types.ObjectId, ref: 'Task' },
   parentWbsNodeId: { type: String },
   wbsPath: { type: String },
   generationBatchId: { type: String },
@@ -70,6 +89,18 @@ export const TaskSchema = new Schema<TaskDocument>({
   recurrency: { type: String, required: true, default: 'no-recurrence' },
   notification: { type: Date },
   microTaskType: { type: String },
+  parentRecurringId: { type: Schema.Types.ObjectId, ref: 'Task' },
+  isRecurringInstance: { type: Boolean, default: false },
+  recurringRule: {
+    type: {
+      frequency: { type: String },
+      interval: { type: Number },
+      daysOfWeek: { type: [Number] },
+      endDate: { type: Date },
+      exceptions: { type: [Date] },
+    },
+    _id: false,
+  },
   cognitiveMode: { type: String },
   contextTag: { type: String },
   themeTag: { type: [String] },
@@ -88,3 +119,6 @@ export const TaskSchema = new Schema<TaskDocument>({
 TaskSchema.index({ project: 1, generationBatchId: 1 });
 TaskSchema.index({ project: 1, parentWbsNodeId: 1 });
 TaskSchema.index({ project: 1, themeTag: 1 });
+TaskSchema.index({ project: 1, microTaskType: 1 });
+TaskSchema.index({ parentTaskId: 1 });
+TaskSchema.index({ parentRecurringId: 1 });

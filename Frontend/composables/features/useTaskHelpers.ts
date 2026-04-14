@@ -15,6 +15,12 @@ export default function useTaskHelpers() {
       prize: 50,
       recurrency: null,
       notification: null,
+      microTaskType: null,
+      checklist: [],
+      autoGenerateChecklist: true,
+      pertOptimisticMinutes: null,
+      pertMostLikelyMinutes: null,
+      pertPessimisticMinutes: null,
     }
   }
 

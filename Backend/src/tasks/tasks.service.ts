@@ -2,6 +2,8 @@ import { Injectable, NotFoundException, Inject, forwardRef, BadRequestException 
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { CreateTaskDto } from './dto/create-task.dto';
+import { ChecklistItemDto, RecurringRuleDto } from './dto/create-task.dto';
+import { CreateMicroTaskDto } from './dto/create-micro-task.dto';
 import { TaskDocument } from './schemas/task.schema';
 import { ProjectDocument } from '../projects/schemas/project.schema';
 import { ProjectsService } from '../projects/projects.service';
@@ -120,8 +122,62 @@ export class TasksService {
     return inserted;
   }
 
-  // ... (outros métodos como create, findAll, etc. permanecem os mesmos)
-  async create(createTaskDto: CreateTaskDto): Promise<TaskDocument> {
+  calculatePERT(optimistic: number, mostLikely: number, pessimistic: number) {
+    const expected = (optimistic + 4 * mostLikely + pessimistic) / 6;
+    const variance = Math.pow((pessimistic - optimistic) / 6, 2);
+    return {
+      expected: Math.round(expected),
+      variance: Number(variance.toFixed(2)),
+    };
+  }
+
+  private validatePertInput(dto: Partial<CreateTaskDto>) {
+    const o = dto.pertOptimisticMinutes;
+    const m = dto.pertMostLikelyMinutes;
+    const p = dto.pertPessimisticMinutes;
+
+    if (o === undefined && m === undefined && p === undefined) return;
+    if (o === undefined || m === undefined || p === undefined) {
+      throw new BadRequestException(
+        'Para PERT manual, informe pertOptimisticMinutes, pertMostLikelyMinutes e pertPessimisticMinutes.',
+      );
+    }
+    if (!(o > 0 && m > 0 && p > 0)) {
+      throw new BadRequestException('Valores PERT devem ser maiores que zero.');
+    }
+    if (!(o < m && m < p)) {
+      throw new BadRequestException('PERT inválido: use optimistic < mostLikely < pessimistic.');
+    }
+  }
+
+  private normalizeChecklist(
+    checklist?: Array<string | ChecklistItemDto>,
+  ): Array<{ item: string; completed: boolean; order: number }> | undefined {
+    if (!Array.isArray(checklist) || checklist.length === 0) return undefined;
+
+    const normalized = checklist
+      .map((entry, index) => {
+        if (typeof entry === 'string') {
+          const item = entry.trim();
+          if (!item) return null;
+          return { item, completed: false, order: index };
+        }
+
+        if (!entry || typeof entry !== 'object') return null;
+        const item = String(entry.item || '').trim();
+        if (!item) return null;
+        return {
+          item,
+          completed: Boolean(entry.completed),
+          order: Number.isFinite(entry.order) ? Number(entry.order) : index,
+        };
+      })
+      .filter(Boolean) as Array<{ item: string; completed: boolean; order: number }>;
+
+    return normalized.length > 0 ? normalized : undefined;
+  }
+
+  private async createTaskCore(createTaskDto: CreateTaskDto): Promise<TaskDocument> {
     if (createTaskDto.project && typeof createTaskDto.project === 'string') {
       const value = createTaskDto.project as string;
       // tenta como ObjectId primeiro
@@ -139,7 +195,7 @@ export class TasksService {
       }
       createTaskDto.project = projectDoc._id as import('mongoose').Types.ObjectId;
     }
-    
+
     // Calculate PERT estimates when possible
     this.applyPertEstimates(createTaskDto);
 
@@ -154,16 +210,126 @@ export class TasksService {
     const difficult = createTaskDto.difficult || 0;
     createTaskDto.prize = priority * 5 + difficult * 2;
     createTaskDto.experience = priority * 2 + difficult * 5;
-    
+
     const createdTask = new this.taskModel(createTaskDto);
     const savedTask = await createdTask.save();
-    
+
     // Recalculate project stats after creating task
     if (savedTask.project) {
       await this.projectsService.recalculateProjectStats(savedTask.project.toString());
     }
-    
+
     return savedTask;
+  }
+
+  // ... (outros métodos como create, findAll, etc. permanecem os mesmos)
+  async create(createTaskDto: CreateTaskDto): Promise<TaskDocument> {
+    if (createTaskDto.microTaskType) {
+      return this.createMicroTask({
+        ...createTaskDto,
+        autoGenerateChecklist: true,
+      });
+    }
+
+    return this.createTaskCore(createTaskDto);
+  }
+
+  async createMicroTask(createMicroTaskDto: CreateMicroTaskDto): Promise<TaskDocument> {
+    this.validatePertInput(createMicroTaskDto);
+
+    const payload: CreateTaskDto = {
+      ...createMicroTaskDto,
+      checklist: this.normalizeChecklist(createMicroTaskDto.checklist),
+      isRecurringInstance: Boolean(createMicroTaskDto.isRecurringInstance),
+    };
+
+    const shouldGenerateChecklist =
+      createMicroTaskDto.autoGenerateChecklist !== false &&
+      (!payload.checklist || payload.checklist.length === 0);
+
+    if (shouldGenerateChecklist) {
+      const generated = await this.generateChecklistViaCopilot(
+        payload.name,
+        payload.description,
+        payload.microTaskType,
+      );
+      payload.checklist = this.normalizeChecklist(generated);
+    }
+
+    return this.createTaskCore(payload);
+  }
+
+  async generateChecklistViaCopilot(
+    taskName: string,
+    description?: string,
+    microTaskType?: string,
+  ): Promise<string[]> {
+    return this.geminiService.generateChecklistForTask(taskName, description, microTaskType);
+  }
+
+  async updateMicroTaskChecklist(
+    id: string,
+    checklist: Array<string | ChecklistItemDto>,
+  ): Promise<TaskDocument> {
+    if (!id || !Types.ObjectId.isValid(id)) {
+      throw new BadRequestException(`ID inválido: ${id}`);
+    }
+
+    const normalizedChecklist = this.normalizeChecklist(checklist);
+    if (!normalizedChecklist || normalizedChecklist.length === 0) {
+      throw new BadRequestException('Checklist inválido: informe pelo menos um item.');
+    }
+
+    const updatedTask = await this.taskModel
+      .findByIdAndUpdate(
+        id,
+        { checklist: normalizedChecklist },
+        { new: true },
+      )
+      .exec();
+
+    if (!updatedTask) {
+      throw new NotFoundException(`Task with id ${id} not found`);
+    }
+
+    return updatedTask;
+  }
+
+  async findMicroTask(id: string): Promise<TaskDocument> {
+    const task = await this.findOne(id);
+    if (!task) {
+      throw new NotFoundException(`Task with id ${id} not found`);
+    }
+    return task;
+  }
+
+  async createRecurringMicroTask(createMicroTaskDto: CreateMicroTaskDto): Promise<TaskDocument> {
+    const recurringRule = createMicroTaskDto.recurringRule as RecurringRuleDto | undefined;
+    if (!recurringRule?.frequency || !recurringRule?.interval) {
+      throw new BadRequestException('recurringRule inválida: frequency e interval são obrigatórios.');
+    }
+
+    return this.createMicroTask({
+      ...createMicroTaskDto,
+      isRecurringInstance: false,
+    });
+  }
+
+  async updateRecurringRule(id: string, recurringRule: RecurringRuleDto): Promise<TaskDocument> {
+    if (!id || !Types.ObjectId.isValid(id)) {
+      throw new BadRequestException(`ID inválido: ${id}`);
+    }
+    if (!recurringRule?.frequency || !recurringRule?.interval) {
+      throw new BadRequestException('recurringRule inválida: frequency e interval são obrigatórios.');
+    }
+
+    const updatedTask = await this.taskModel
+      .findByIdAndUpdate(id, { recurringRule }, { new: true })
+      .exec();
+    if (!updatedTask) {
+      throw new NotFoundException(`Task with id ${id} not found`);
+    }
+    return updatedTask;
   }
 
   async findAll(): Promise<TaskDocument[]> {

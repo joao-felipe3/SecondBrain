@@ -1,11 +1,25 @@
+export interface TaskChecklistItem {
+  item: string;
+  completed: boolean;
+  order: number;
+}
+
+export interface TaskRecurringRule {
+  frequency: string;
+  interval: number;
+  daysOfWeek?: number[];
+  endDate?: Date;
+  exceptions?: Date[];
+}
+
 export class Task {
-  id: String; 
-  name: String;
-  description?: String; 
-  definitionOfDone?: String;
-  checklist?: String[];
+  id!: string;
+  name!: string;
+  description?: string;
+  definitionOfDone?: string;
+  checklist?: Array<string | TaskChecklistItem>;
   pomodorosDid?: number;
-  pomodorosPlanned: number;
+  pomodorosPlanned!: number;
   pertOptimisticMinutes?: number;
   pertMostLikelyMinutes?: number;
   pertPessimisticMinutes?: number;
@@ -20,24 +34,28 @@ export class Task {
   evmEarnedValueMinutes?: number;
   evmSchedulePerformanceIndex?: number;
   evmAlert?: string;
-  deadline: Date;
-  priority?: number; 
+  deadline!: Date;
+  priority?: number;
   difficult?: number;
-  project?: String;
-  parentWbsNodeId?: String;
-  wbsPath?: String;
-  generationBatchId?: String;
-  milestoneId?: String;
-  experience: number;
-  isConcluded: Boolean;
-  late: Boolean;
-  prize: number;
-  recurrency: String;
-  notification: Date;
-  microTaskType?: String;
-  cognitiveMode?: String;
-  contextTag?: String;
-  themeTag?: String[];
+  project?: string;
+  parentTaskId?: string;
+  parentWbsNodeId?: string;
+  wbsPath?: string;
+  generationBatchId?: string;
+  milestoneId?: string;
+  experience!: number;
+  isConcluded!: boolean;
+  late!: boolean;
+  prize!: number;
+  recurrency!: string;
+  notification!: Date;
+  microTaskType?: string;
+  parentRecurringId?: string;
+  isRecurringInstance?: boolean;
+  recurringRule?: TaskRecurringRule;
+  cognitiveMode?: string;
+  contextTag?: string;
+  themeTag?: string[];
   createdAt?: Date;
 }
     

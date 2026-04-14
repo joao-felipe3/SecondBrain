@@ -20,6 +20,11 @@ export const useTaskStore = defineStore('task', {
     
     tasksByProject: (state) => (projectId: string) => 
       state.tasks.filter(t => t.project === projectId),
+
+    getMicroTasksForProject: (state) => (projectId: string) =>
+      state.tasks.filter(
+        t => t.project === projectId && !!t.microTaskType,
+      ),
   },
 
   actions: {
@@ -48,6 +53,35 @@ export const useTaskStore = defineStore('task', {
         console.error('Erro ao criar tarefa:', error)
         return null
       }
+    },
+
+    async createMicroTask(newTask: Partial<Task>) {
+      const { post } = useApi('/tasks/micro')
+      const { data, error } = await post(newTask)
+
+      if (!error && data) {
+        this.tasks.push(data)
+        return data
+      }
+
+      console.error('Erro ao criar micro-tarefa:', error)
+      return null
+    },
+
+    async updateMicroTaskChecklist(id: string, checklist: Task['checklist']) {
+      const { post } = useApi(`/tasks/${id}/checklist`)
+      const { data, error } = await post({ checklist })
+
+      if (!error && data) {
+        const index = this.tasks.findIndex(t => t._id === id)
+        if (index !== -1) {
+          this.tasks[index] = data
+        }
+        return data
+      }
+
+      console.error('Erro ao atualizar checklist da micro-tarefa:', error)
+      return null
     },
 
     async updateTask(id: string, updatedData: Partial<Task>) {

@@ -115,6 +115,9 @@ import { ref, computed, watch } from 'vue';
 
 interface Props {
   taskId?: string;
+  optimisticMinutes?: number | null;
+  mostLikelyMinutes?: number | null;
+  pessimisticMinutes?: number | null;
   initialOptimistic?: number;
   initialMostLikely?: number;
   initialPessimistic?: number;
@@ -122,13 +125,19 @@ interface Props {
 
 const props = withDefaults(defineProps<Props>(), {
   taskId: '',
+  optimisticMinutes: null,
+  mostLikelyMinutes: null,
+  pessimisticMinutes: null,
   initialOptimistic: 0,
   initialMostLikely: 0,
   initialPessimistic: 0,
 });
 
 const emit = defineEmits<{
-  error?: [error: string];
+  (event: 'update:optimisticMinutes', value: number | undefined): void;
+  (event: 'update:mostLikelyMinutes', value: number | undefined): void;
+  (event: 'update:pessimisticMinutes', value: number | undefined): void;
+  (event: 'error', error: string): void;
 }>();
 
 // Estado
@@ -138,13 +147,40 @@ const pessimisticHours = ref(0);
 
 // Inicializar com valores passados (converter de minutos para horas)
 watch(
-  () => [props.initialOptimistic, props.initialMostLikely, props.initialPessimistic],
-  ([o, m, p]) => {
+  () => [
+    props.optimisticMinutes ?? props.initialOptimistic,
+    props.mostLikelyMinutes ?? props.initialMostLikely,
+    props.pessimisticMinutes ?? props.initialPessimistic,
+  ],
+  ([rawO, rawM, rawP]) => {
+    const o = Number(rawO || 0);
+    const m = Number(rawM || 0);
+    const p = Number(rawP || 0);
+
     if (o > 0) optimisticHours.value = o / 60;
+    else optimisticHours.value = 0;
+
     if (m > 0) mostLikelyHours.value = m / 60;
+    else mostLikelyHours.value = 0;
+
     if (p > 0) pessimisticHours.value = p / 60;
+    else pessimisticHours.value = 0;
   },
-  { immediate: true }
+  { immediate: true },
+);
+
+watch(
+  [optimisticHours, mostLikelyHours, pessimisticHours],
+  ([o, m, p]) => {
+    const optimistic = Number.isFinite(o) && o > 0 ? Math.round(o * 60) : undefined;
+    const mostLikely = Number.isFinite(m) && m > 0 ? Math.round(m * 60) : undefined;
+    const pessimistic = Number.isFinite(p) && p > 0 ? Math.round(p * 60) : undefined;
+
+    emit('update:optimisticMinutes', optimistic);
+    emit('update:mostLikelyMinutes', mostLikely);
+    emit('update:pessimisticMinutes', pessimistic);
+  },
+  { immediate: true },
 );
 
 // Validações

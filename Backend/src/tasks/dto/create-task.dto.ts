@@ -1,11 +1,25 @@
 import { Types } from 'mongoose';
 
+export interface ChecklistItemDto {
+  item: string;
+  completed?: boolean;
+  order?: number;
+}
+
+export interface RecurringRuleDto {
+  frequency: string;
+  interval: number;
+  daysOfWeek?: number[];
+  endDate?: Date;
+  exceptions?: Date[];
+}
+
 export class CreateTaskDto {
-  name: string;
+  name!: string;
   description?: string; 
   definitionOfDone?: string;
-  checklist?: string[];
-  pomodorosPlanned: number;
+  checklist?: Array<string | ChecklistItemDto>;
+  pomodorosPlanned!: number;
   pomodorosDid?: number;
   pertOptimisticMinutes?: number;
   pertMostLikelyMinutes?: number;
@@ -21,21 +35,25 @@ export class CreateTaskDto {
   evmEarnedValueMinutes?: number;
   evmSchedulePerformanceIndex?: number;
   evmAlert?: string;
-  deadline: Date;
+  deadline!: Date;
   priority?: number; 
   difficult?: number;
-  project: string | Types.ObjectId;
+  project!: string | Types.ObjectId;
+  parentTaskId?: string | Types.ObjectId;
   parentWbsNodeId?: string;
   wbsPath?: string;
   generationBatchId?: string;
   milestoneId?: string;
   experience?: number; // Calculado automaticamente: priority * 2 + difficult * 5
-  isConcluded: boolean;
-  late: boolean;
+  isConcluded!: boolean;
+  late!: boolean;
   prize?: number; // Calculado automaticamente: priority * 5 + difficult * 2
-  recurrency: string;
-  notification: Date;
+  recurrency!: string;
+  notification!: Date;
   microTaskType?: string;
+  parentRecurringId?: string | Types.ObjectId;
+  isRecurringInstance?: boolean;
+  recurringRule?: RecurringRuleDto;
   cognitiveMode?: string;
   contextTag?: string;
   themeTag?: string[];
