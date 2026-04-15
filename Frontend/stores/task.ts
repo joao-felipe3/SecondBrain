@@ -97,6 +97,44 @@ export const useTaskStore = defineStore('task', {
       return null
     },
 
+    /**
+     * Sprint 2: Update a single checklist item by index
+     */
+    async updateMicroTaskChecklistItem(taskId: string, itemIndex: number, completed: boolean) {
+      const { patch } = useApi(`/tasks/${taskId}/checklist/${itemIndex}`)
+      const { data, error } = await patch({ completed })
+
+      if (!error && data) {
+        const taskIndex = this.tasks.findIndex(t => t._id === taskId)
+        if (taskIndex !== -1) {
+          this.tasks[taskIndex] = data
+        }
+        return data
+      }
+
+      console.error('Erro ao atualizar item do checklist:', error)
+      return null
+    },
+
+    /**
+     * Sprint 2: Update full checklist with new items
+     */
+    async updateMicroTaskChecklistFull(id: string, checklist: Task['checklist']) {
+      const { post } = useApi(`/tasks/${id}/checklist`)
+      const { data, error } = await post({ checklist })
+
+      if (!error && data) {
+        const index = this.tasks.findIndex(t => t._id === id)
+        if (index !== -1) {
+          this.tasks[index] = data
+        }
+        return data
+      }
+
+      console.error('Erro ao atualizar checklist completo:', error)
+      return null
+    },
+
     async updateTask(id: string, updatedData: Partial<Task>) {
       const { patch } = useApi(`/tasks/${id}`)
       const { data, error } = await patch(updatedData)

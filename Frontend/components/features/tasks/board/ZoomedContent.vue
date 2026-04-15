@@ -13,6 +13,12 @@
         create-or-edit="Edit"
         v-model:is-valid="isFormValid"
       />
+      
+      <!-- Micro-Task Details Section -->
+      <MicroTaskDetailSection
+        v-if="props.task?.microTaskType"
+        :task="props.task"
+      />
     </div>
     
     <div class="sticky-actions">
@@ -32,6 +38,7 @@
   import { ref } from 'vue'
   import SvgCloseButton from '../../../ui/svg/CloseButton.vue'
   import TaskForm from '../forms/TaskForm.vue'
+  import MicroTaskDetailSection from '../page/MicroTaskDetailSection.vue'
   import SvgButton from '../../../ui/svg/Button.vue'
   
   const props = defineProps({
