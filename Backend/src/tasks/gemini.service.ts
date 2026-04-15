@@ -274,6 +274,58 @@ export class GeminiService {
   }
 
   /**
+   * Gera checklist enriquecido com contexto histórico.
+   * Sprint 2: Baseado em tarefas similares concluídas para melhor qualidade.
+   *
+   * @param taskName Nome da tarefa
+   * @param description Descrição da tarefa
+   * @param microTaskType Tipo de micro-tarefa
+   * @param historicalContext Texto resumido de tarefas similares concluídas
+   * @returns Array com itens do checklist
+   */
+  async generateChecklistWithHistory(
+    taskName: string,
+    description?: string,
+    microTaskType?: string,
+    historicalContext?: string,
+  ): Promise<string[]> {
+    // Se não há histórico, fallback para geração simples
+    if (!historicalContext || historicalContext.trim() === '') {
+      return this.generateChecklistForTask(taskName, description, microTaskType);
+    }
+
+    const key = this.getChecklistCacheKey(taskName, microTaskType);
+    const cached = await this.getChecklistCache(key);
+    if (cached && cached.length > 0) return cached;
+
+    const prompt = [
+      'Gere um checklist objetivo para uma micro-tarefa, baseado no histórico de tarefas similares.',
+      `Tipo: ${microTaskType || 'generic'}`,
+      `Nome: ${taskName}`,
+      `Descricao: ${description || ''}`,
+      historicalContext,
+      'Use o histórico para criar um checklist mais preciso. Retorne APENAS um JSON array de strings com 3 a 8 itens.',
+    ].join('\n');
+
+    try {
+      const response = await this.generateContent(prompt, {
+        responseMimeType: 'application/json',
+        maxOutputTokens: 500,
+        temperature: 0.3,
+      });
+
+      const parsed = this.parseChecklistResponse(response);
+      const finalChecklist = parsed.length >= 3 ? parsed : this.getChecklistFallback(microTaskType);
+      await this.setChecklistCache(key, finalChecklist);
+      return finalChecklist;
+    } catch {
+      const fallback = this.getChecklistFallback(microTaskType);
+      await this.setChecklistCache(key, fallback);
+      return fallback;
+    }
+  }
+
+  /**
    * Whether this service will actually request/allow JSON-mode (responseMimeType).
    * For Gemma models this is typically false.
    */

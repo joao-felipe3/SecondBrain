@@ -228,6 +228,18 @@ export class TasksController {
     return this.tasksService.updateMicroTaskChecklist(id, body.checklist);
   }
 
+  @Patch(':id/checklist/:itemId')
+  @ApiOperation({ summary: 'Atualizar um item específico do checklist (Sprint 2)' })
+  @ApiResponse({ status: 200, description: 'Item do checklist atualizado com sucesso.' })
+  @ApiResponse({ status: 404, description: 'Tarefa ou item não encontrado.' })
+  async updateChecklistItem(
+    @Param('id') taskId: string,
+    @Param('itemId') itemId: string,
+    @Body() body: { completed: boolean },
+  ) {
+    return this.tasksService.updateChecklistItem(taskId, itemId, body.completed);
+  }
+
   @Patch(':id/recurring-rule')
   @ApiOperation({ summary: 'Atualizar regra de recorrência de uma task' })
   @ApiResponse({ status: 200, description: 'Regra de recorrência atualizada com sucesso.' })

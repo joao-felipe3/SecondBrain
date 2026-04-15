@@ -31,11 +31,22 @@
 
   <v-row dense v-if="task.microTaskType">
     <v-col cols="12">
-      <div class="text-subtitle-2 mb-2">Checklist</div>
+      <div class="checklist-section-header">
+        <div class="text-subtitle-2">Checklist</div>
+        <div v-if="checklistItems.length > 0" class="checklist-progress-label">
+          {{ completedCount }}/{{ checklistItems.length }} {{ completionPercentage }}%
+        </div>
+      </div>
+      <div
+        v-if="completionPercentage > 0"
+        class="checklist-progress-bar"
+        :style="{ width: `${completionPercentage}%` }"
+      />
       <div
         v-for="(item, index) in checklistItems"
         :key="`checklist-item-${index}`"
         class="checklist-row"
+        :class="{ 'checklist-completed': item.completed }"
       >
         <input
           v-model="item.completed"
@@ -47,6 +58,7 @@
           placeholder="Item"
           variant="underlined"
           class="flex-1 checklist-item-input"
+          :class="{ 'strikethrough': item.completed }"
           density="comfortable"
           hide-details="auto"
         />
@@ -304,6 +316,17 @@ const isValidDate = (dateStr) => {
   return !isNaN(date.getTime())
 }
 
+// Sprint 2: Checklist progress tracking
+const completedCount = computed(() => {
+  if (!Array.isArray(checklistItems.value)) return 0
+  return checklistItems.value.filter(item => Boolean(item.completed)).length
+})
+
+const completionPercentage = computed(() => {
+  if (checklistItems.value.length === 0) return 0
+  return Math.round((completedCount.value / checklistItems.value.length) * 100)
+})
+
 const isPertValidForMicroTask = computed(() => {
   if (!props.task.microTaskType) return true
 
@@ -411,6 +434,45 @@ watch(
 :deep(.checklist-item-input .v-field__outline),
 :deep(.checklist-item-input .v-field__overlay) {
   display: none;
+}
+
+/* Sprint 2: Enhanced Checklist Styling */
+.checklist-section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+  gap: 12px;
+}
+
+.checklist-progress-label {
+  font-size: 12px;
+  color: #666;
+  background: #f5f5f5;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-weight: 500;
+}
+
+.checklist-progress-bar {
+  height: 4px;
+  background: #4caf50;
+  border-radius: 2px;
+  margin-bottom: 12px;
+  transition: width 0.3s ease;
+}
+
+.checklist-row.checklist-completed {
+  opacity: 0.7;
+}
+
+:deep(.checklist-item-input.strikethrough .v-field__input) {
+  text-decoration: line-through;
+  color: #999;
+}
+
+:deep(.checklist-item-input.strikethrough .v-input__control) {
+  color: #999;
 }
 </style>
 

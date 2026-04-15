@@ -9,6 +9,7 @@ import { ProjectDocument } from '../projects/schemas/project.schema';
 import { ProjectsService } from '../projects/projects.service';
 import { GenerateAiSuggestionsDto, AiTaskSuggestionDto, AiSuggestionsResponseDto, AiSuggestionsProgressDto } from './dto/generate-ai-suggestions.dto';
 import { GeminiService } from './gemini.service';
+import { ChecklistService } from './checklist.service';
 import { PertService } from './services/pert.service';
 import { PertEstimateDto, PertEstimateResponseDto } from './dto/pert-estimate.dto';
 import { EVMService } from '../projects/services/evm.service';
@@ -23,6 +24,7 @@ export class TasksService {
     @Inject(forwardRef(() => EVMService))
     private readonly evmService: EVMService,
     private readonly geminiService: GeminiService, // Injeta o GeminiService
+    private readonly checklistService: ChecklistService, // Sprint 2: Validação e histórico de checklist
     private readonly pertService: PertService, // Injeta o PertService
   ) {}
 
@@ -237,23 +239,50 @@ export class TasksService {
   async createMicroTask(createMicroTaskDto: CreateMicroTaskDto): Promise<TaskDocument> {
     this.validatePertInput(createMicroTaskDto);
 
+    const checklistWasProvided = Object.prototype.hasOwnProperty.call(
+      createMicroTaskDto,
+      'checklist',
+    );
+
     const payload: CreateTaskDto = {
       ...createMicroTaskDto,
       checklist: this.normalizeChecklist(createMicroTaskDto.checklist),
       isRecurringInstance: Boolean(createMicroTaskDto.isRecurringInstance),
     };
 
+    if (
+      checklistWasProvided &&
+      createMicroTaskDto.autoGenerateChecklist === false &&
+      (!payload.checklist || payload.checklist.length === 0)
+    ) {
+      throw new BadRequestException(
+        'Checklist inválido: informe ao menos um item válido ou habilite autoGenerateChecklist.',
+      );
+    }
+
     const shouldGenerateChecklist =
       createMicroTaskDto.autoGenerateChecklist !== false &&
       (!payload.checklist || payload.checklist.length === 0);
 
     if (shouldGenerateChecklist) {
-      const generated = await this.generateChecklistViaCopilot(
+      // Sprint 2: Gera checklist com contexto histórico
+      const generated = await this.generateChecklistViaCopilotWithHistory(
         payload.name,
         payload.description,
         payload.microTaskType,
+        payload.project,
       );
       payload.checklist = this.normalizeChecklist(generated);
+    }
+
+    // Sprint 2: Valida estrutura do checklist se gerado ou fornecido
+    if (payload.checklist && payload.checklist.length > 0) {
+      const validation = this.checklistService.validateChecklistStructure(
+        payload.checklist.map((item) => ({ item: item.item, completed: item.completed })),
+      );
+      if (!validation.isValid) {
+        throw new BadRequestException(validation.reason);
+      }
     }
 
     return this.createTaskCore(payload);
@@ -264,6 +293,53 @@ export class TasksService {
     description?: string,
     microTaskType?: string,
   ): Promise<string[]> {
+    return this.geminiService.generateChecklistForTask(taskName, description, microTaskType);
+  }
+
+  /**
+   * Sprint 2: Gera checklist enriquecido com contexto histórico.
+   * Busca tarefas similares concluídas e injeta no prompt do Gemini.
+   *
+   * @param taskName Nome da tarefa
+   * @param description Descrição da tarefa
+   * @param microTaskType Tipo de micro-tarefa
+   * @param projectId ID do projeto (para buscar histórico)
+   * @returns Array com itens do checklist
+   */
+  async generateChecklistViaCopilotWithHistory(
+    taskName: string,
+    description?: string,
+    microTaskType?: string,
+    projectId?: any,
+  ): Promise<string[]> {
+    // Tenta buscar histórico se projectId fornecido
+    let historicalContext = '';
+    if (projectId && typeof projectId === 'string') {
+      const similarTasks = await this.checklistService.findSimilarTasksInProject(
+        projectId,
+        microTaskType,
+        3,
+      );
+      historicalContext = this.checklistService.enrichHistoryContext(similarTasks);
+    } else if (projectId && typeof projectId === 'object' && projectId._id) {
+      const similarTasks = await this.checklistService.findSimilarTasksInProject(
+        projectId._id.toString(),
+        microTaskType,
+        3,
+      );
+      historicalContext = this.checklistService.enrichHistoryContext(similarTasks);
+    }
+
+    // Gera checklist com ou sem histórico
+    if (historicalContext) {
+      return this.geminiService.generateChecklistWithHistory(
+        taskName,
+        description,
+        microTaskType,
+        historicalContext,
+      );
+    }
+
     return this.geminiService.generateChecklistForTask(taskName, description, microTaskType);
   }
 
@@ -295,12 +371,95 @@ export class TasksService {
     return updatedTask;
   }
 
+  /**
+   * Sprint 2: Atualiza um item específico do checklist.
+   * Útil para toggle de completed via frontend sem reenviar lista inteira.
+   *
+   * @param taskId ID da tarefa
+   * @param itemIndex Índice do item no array checklist
+   * @param completed Novo valor de completed
+   * @returns Tarefa atualizada
+   */
+  async updateChecklistItem(
+    taskId: string,
+    itemIndex: string,
+    completed: boolean,
+  ): Promise<TaskDocument> {
+    if (!taskId || !Types.ObjectId.isValid(taskId)) {
+      throw new BadRequestException(`ID inválido: ${taskId}`);
+    }
+
+    const index = parseInt(itemIndex, 10);
+    if (!Number.isFinite(index) || index < 0) {
+      throw new BadRequestException(`Item ID inválido: ${itemIndex}`);
+    }
+
+    const task = await this.taskModel.findById(taskId).exec();
+    if (!task) {
+      throw new NotFoundException(`Task with id ${taskId} not found`);
+    }
+
+    if (!Array.isArray(task.checklist) || task.checklist.length === 0) {
+      throw new BadRequestException('Tarefa não possui checklist');
+    }
+
+    if (index >= task.checklist.length) {
+      throw new BadRequestException(`Item index ${index} fora do intervalo (checklist tem ${task.checklist.length} itens)`);
+    }
+
+    // Atualiza item específico
+    task.checklist[index].completed = Boolean(completed);
+
+    // Calcula progresso para resposta
+    const completionPercentage = this.checklistService.calculateCompletionPercentage(task.checklist);
+
+    const updatedTask = await task.save();
+
+    // Retorna com progresso incluído
+    return {
+      ...updatedTask.toObject(),
+      completionPercentage,
+    } as any;
+  }
+
   async findMicroTask(id: string): Promise<TaskDocument> {
     const task = await this.findOne(id);
     if (!task) {
       throw new NotFoundException(`Task with id ${id} not found`);
     }
     return task;
+  }
+
+  /**
+   * Sprint 2: Valida se tarefa pode ser concluída.
+   * Se a tarefa possui checklist, todos os itens devem estar completos (100%).
+   *
+   * @param taskId ID da tarefa
+   * @returns ValidationResult - isValid=true se pode concluir, false com reason se não
+   */
+  async validateCompletionRequirements(taskId: string): Promise<{ isValid: boolean; reason?: string }> {
+    if (!taskId || !Types.ObjectId.isValid(taskId)) {
+      return {
+        isValid: false,
+        reason: `ID inválido: ${taskId}`,
+      };
+    }
+
+    const task = await this.taskModel.findById(taskId).exec();
+    if (!task) {
+      return {
+        isValid: false,
+        reason: `Tarefa com id ${taskId} não encontrada`,
+      };
+    }
+
+    // Se tarefa não tem checklist, permitir conclusão
+    if (!Array.isArray(task.checklist) || task.checklist.length === 0) {
+      return { isValid: true };
+    }
+
+    // Se tem checklist, validar 100% de conclusão
+    return this.checklistService.validateChecklistCompletion(task.checklist);
   }
 
   async createRecurringMicroTask(createMicroTaskDto: CreateMicroTaskDto): Promise<TaskDocument> {
@@ -564,6 +723,12 @@ export class TasksService {
 
     if (task.isConcluded) {
       return task;
+    }
+
+    // Sprint 2: Valida requisitos de conclusão (checklist 100% se tem)
+    const completionValidation = await this.validateCompletionRequirements(id);
+    if (!completionValidation.isValid) {
+      throw new BadRequestException(completionValidation.reason);
     }
 
     const currentPomodorosDid = Math.max(0, task.pomodorosDid || 0);

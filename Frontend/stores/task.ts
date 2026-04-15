@@ -25,6 +25,19 @@ export const useTaskStore = defineStore('task', {
       state.tasks.filter(
         t => t.project === projectId && !!t.microTaskType,
       ),
+
+    /**
+     * Sprint 2: Get completion percentage for a micro-task's checklist
+     */
+    getChecklistProgress: (state) => (taskId: string) => {
+      const task = state.tasks.find(t => t._id === taskId)
+      if (!task || !Array.isArray(task.checklist) || task.checklist.length === 0) {
+        return 0
+      }
+
+      const completed = task.checklist.filter((item: any) => item.completed).length
+      return Math.round((completed / task.checklist.length) * 100)
+    },
   },
 
   actions: {
