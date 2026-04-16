@@ -244,16 +244,17 @@ export class TasksService {
       'checklist',
     );
 
+    const normalizedChecklist = this.normalizeChecklist(createMicroTaskDto.checklist);
     const payload: CreateTaskDto = {
       ...createMicroTaskDto,
-      checklist: this.normalizeChecklist(createMicroTaskDto.checklist),
+      checklist: normalizedChecklist as any,
       isRecurringInstance: Boolean(createMicroTaskDto.isRecurringInstance),
     };
 
     if (
       checklistWasProvided &&
       createMicroTaskDto.autoGenerateChecklist === false &&
-      (!payload.checklist || payload.checklist.length === 0)
+      (!normalizedChecklist || normalizedChecklist.length === 0)
     ) {
       throw new BadRequestException(
         'Checklist inválido: informe ao menos um item válido ou habilite autoGenerateChecklist.',
@@ -276,9 +277,9 @@ export class TasksService {
     }
 
     // Sprint 2: Valida estrutura do checklist se gerado ou fornecido
-    if (payload.checklist && payload.checklist.length > 0) {
+    if (normalizedChecklist && normalizedChecklist.length > 0) {
       const validation = this.checklistService.validateChecklistStructure(
-        payload.checklist.map((item) => ({ item: item.item, completed: item.completed })),
+        normalizedChecklist.map((item) => ({ item: item.item, completed: item.completed })),
       );
       if (!validation.isValid) {
         throw new BadRequestException(validation.reason);
@@ -407,11 +408,20 @@ export class TasksService {
       throw new BadRequestException(`Item index ${index} fora do intervalo (checklist tem ${task.checklist.length} itens)`);
     }
 
-    // Atualiza item específico
-    task.checklist[index].completed = Boolean(completed);
+    // Type guard: apenas objetos TaskChecklistItem têm 'completed'
+    const checklistItem = task.checklist[index];
+    if (typeof checklistItem === 'string') {
+      throw new BadRequestException(`Item ${index} é uma string, não objeto com completed`);
+    }
 
-    // Calcula progresso para resposta
-    const completionPercentage = this.checklistService.calculateCompletionPercentage(task.checklist);
+    // Atualiza item específico
+    (checklistItem as any).completed = Boolean(completed);
+
+    // Calcula progresso para resposta (filtra apenas objetos com 'completed')
+    const checklistItems = task.checklist.filter(
+      (item): item is Exclude<typeof item, string> => typeof item !== 'string',
+    );
+    const completionPercentage = this.checklistService.calculateCompletionPercentage(checklistItems);
 
     const updatedTask = await task.save();
 
@@ -458,8 +468,11 @@ export class TasksService {
       return { isValid: true };
     }
 
-    // Se tem checklist, validar 100% de conclusão
-    return this.checklistService.validateChecklistCompletion(task.checklist);
+    // Se tem checklist, validar 100% de conclusão (filtra apenas objetos com 'completed')
+    const checklistItems = task.checklist.filter(
+      (item): item is Exclude<typeof item, string> => typeof item !== 'string',
+    );
+    return this.checklistService.validateChecklistCompletion(checklistItems);
   }
 
   async createRecurringMicroTask(createMicroTaskDto: CreateMicroTaskDto): Promise<TaskDocument> {

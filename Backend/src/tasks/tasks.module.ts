@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { TasksService } from './tasks.service';
 import { GeminiService } from './gemini.service'; // Importa o GeminiService
+import { ChecklistService } from './checklist.service'; // Sprint 2: Importa ChecklistService
 import { PertService } from './services/pert.service';
 import { CPMService } from './services/cpm.service';
 import { DependencyInferenceService } from './services/dependency-inference.service';
@@ -45,7 +46,7 @@ import { ProjectsModule } from '../projects/projects.module';
     forwardRef(() => ProjectsModule)
   ],
   controllers: [TasksController, CPMController, BufferController, RTMController], // NOVO: Adiciona RTMController
-  providers: [TasksService, GeminiService, PertService, CPMService, DependencyInferenceService, BufferService, RTMService], // NOVO: Adiciona RTMService
-  exports: [TasksService, GeminiService, PertService, CPMService, DependencyInferenceService, BufferService, RTMService], // NOVO: Adiciona RTMService aos exports
+  providers: [TasksService, GeminiService, ChecklistService, PertService, CPMService, DependencyInferenceService, BufferService, RTMService], // Sprint 2: Adiciona ChecklistService
+  exports: [TasksService, GeminiService, ChecklistService, PertService, CPMService, DependencyInferenceService, BufferService, RTMService], // Sprint 2: Adiciona ChecklistService aos exports
 })
 export class TasksModule {}

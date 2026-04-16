@@ -62,7 +62,8 @@ export class ChecklistService {
           microTaskType: microTaskType,
           status: 'completed',
           createdAt: { $gte: thirtyDaysAgo },
-          checklist: { $exists: true, $ne: null, $ne: [] },
+          checklist: { $exists: true, $ne: null, $type: 'array' },
+          'checklist.0': { $exists: true },
         })
         .select('name description checklist')
         .limit(limit)
