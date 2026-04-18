@@ -45,6 +45,12 @@ jspm_packages/
 # Snowpack dependency directory (https://snowpack.dev/)
 web_modules/
 
+
+.agents/
+GEMINI.md
+skills-lock.json
+nanobanana-output/
+
 # TypeScript cache
 *.tsbuildinfo
 

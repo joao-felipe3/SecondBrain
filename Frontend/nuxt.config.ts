@@ -5,6 +5,7 @@ import vuetify from "vite-plugin-vuetify";
 export default defineNuxtConfig({
   compatibilityDate: '2024-11-01',
   devtools: { enabled: true },
+  modules: ['@domscribe/nuxt', '@vueuse/nuxt'],
   alias: {
     // IMPORTANT: do NOT point '@' to filesystem root ("/") on Windows.
     // It can make module resolution crawl the whole drive and hit Vite-node timeouts.
@@ -43,8 +44,6 @@ export default defineNuxtConfig({
       external: ['form-data']    // garante que form-data não vá pro client
     }
   },
-
-  modules: ["@vueuse/nuxt"],
 
   app: {
     head: {

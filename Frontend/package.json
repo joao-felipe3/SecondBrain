@@ -21,6 +21,7 @@
     "formdata-polyfill": "^4.0.10",
     "lucide-vue-next": "^0.510.0",
     "nuxt": "^3.20.1",
+    "phaser": "^4.0.0",
     "pinia": "^3.0.2",
     "sass": "^1.88.0",
     "sass-loader": "^13.3.3",
@@ -31,6 +32,7 @@
     "vuetify": "^3.8.4"
   },
   "devDependencies": {
+    "@domscribe/nuxt": "^0.5.2",
     "autoprefixer": "^10.4.20",
     "eslint": "^9.17.0",
     "eslint-config-prettier": "^9.1.0",
