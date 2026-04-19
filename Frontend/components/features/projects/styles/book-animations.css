@@ -28,29 +28,17 @@
 
 /* Page stay centered during scroll */
 @keyframes stay-centered { 
-  entry 0% { 
+  0% { 
     opacity: 0; 
     translate: -100%; 
   } 
-  entry 75% { 
+  75% { 
     opacity: 0; 
     translate: -25%; 
   } 
-  entry 100% { 
+  100% { 
     opacity: 1; 
     translate: 0%; 
-  } 
-  exit 0% { 
-    opacity: 1; 
-    translate: 0%; 
-  } 
-  exit 50% { 
-    opacity: 0; 
-    translate: 50%; 
-  } 
-  exit 100% { 
-    opacity: 0; 
-    translate: 100%; 
   } 
 }
 

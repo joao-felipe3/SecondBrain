@@ -1,90 +1,100 @@
 <template>
   <div 
     :class="['task-paper', { 'hover-enabled': !zoomed2 }]"
-    :style="[positionStyle, { cursor: zoomed2 ? 'default' : 'pointer' }]" 
+    :style="[props.positionStyle, { cursor: zoomed2 ? 'default' : 'pointer' }]" 
     @click="handleZoomClick" 
   >
     <v-img 
       src="/svg/old-paper-4.svg" 
       alt="Old Paper" 
-      :width="zoomed ? 520 : 160" 
-      :height="zoomed ? 650 : 200" 
-      style="z-index: 3;" 
+      :width="props.zoomed ? 520 : 160" 
+      :height="props.zoomed ? 650 : 200" 
+      :style="zoomed2 ? { opacity: 0, pointerEvents: 'none', zIndex: 3 } : { zIndex: 3 }"
     />
-    <SvgProjectStamp :zoomed="zoomed" :colors="colors" />
+    <SvgProjectStamp :zoomed="props.zoomed" :colors="props.colors" style="z-index: 400;"/>
 
     <Transition name="fade-slide" mode="out-in">
       <template v-if="zoomed2">
         <ZoomedContent 
-          :task="task"
-          :projects="projects"
+          :task="props.task"
+          :projects="props.projects"
           :deadline="deadline"
           :notification="notification"
           :createOrEdit="createOrEdit"
           @edit="editAndClose"
           @delete="deleteAndClose"
-          @close="$emit('close-zoom')"
+          @close="emit('close-zoom')"
         />
       </template>
       <template v-else>
-        <TaskPreview :task="task" @fall-complete="handleCompleteFall"/>
+        <TaskPreview :task="props.task" @fall-complete="handleCompleteFall"/>
       </template>
     </Transition>
   </div>
 </template>
 
-<script setup>
-import { ref, watchEffect, onMounted } from 'vue'
+<script setup lang="ts">
+import { ref, watch, onMounted } from 'vue'
 import SvgProjectStamp from '../../../ui/svg/ProjectStamp.vue'
 import ZoomedContent from './ZoomedContent.vue'
 import TaskPreview from './TaskPreview.vue'
 
-const { task, positionStyle, colors, zoomed, create, projects } = defineProps(['task', 'positionStyle', 'colors', 'zoomed', 'create', 'projects'])
-const emit = defineEmits(['edit-task', 'delete-task', 'close-zoom', 'fall-complete']);
+interface Props {
+  task: any
+  positionStyle: any
+  colors: any
+  zoomed: boolean
+  create: boolean
+  projects: any[]
+}
+
+const props = defineProps<Props>()
+const emit = defineEmits(['edit-task', 'delete-task', 'close-zoom', 'fall-complete', 'zoom'])
 
 
 const editAndClose = () => {
-  emit('edit-task', task);
+  emit('edit-task', props.task)
 };
 
 const deleteAndClose = () => {
-  emit('delete-task', task._id);
+  emit('delete-task', props.task?._id)
 };
 
 const handleCompleteFall = () => {
-  emit('fall-complete', task._id);
+  emit('fall-complete', props.task?._id)
 };
 
 const zoomed2 = ref(false)
 const createOrEdit = ref('')
 
-watchEffect(() => {
-  setTimeout(() => {
-      zoomed2.value = zoomed;
-    }, 10)
-})
+watch(
+  () => props.zoomed,
+  (val) => {
+    zoomed2.value = !!val
+  },
+  { immediate: true }
+)
 
-function handleZoomClick(event) {
-  if (zoomed2) return;
-
-  // Garante que o clique foi na div principal, não em um filho
-  if (event.target === event.currentTarget) {
-    $emit('zoom', task);
-  }
+function handleZoomClick() {
+  if (zoomed2.value) return
+  emit('zoom', props.task)
 }
 
 const deadline = ref(null)
 const notification = ref(null)
 
 onMounted(() => {
-  if (task.deadline) deadline.value = task.deadline;
-  if (task.notification) notification.value = task.notification;
+  if (props.task?.deadline) deadline.value = props.task.deadline
+  if (props.task?.notification) notification.value = props.task.notification
 })
 
-watchEffect(() => {
-  if (create) createOrEdit.value = 'Create';
-  else createOrEdit.value = 'Edit'
-})
+watch(
+  () => props.create,
+  (val) => {
+    createOrEdit.value = val ? 'Create' : 'Edit'
+  },
+  { immediate: true }
+)
 
 </script>
 
@@ -120,6 +130,7 @@ watchEffect(() => {
 }
 
 .task-paper {
+  position: relative;
   transition: transform 0.2s ease;
 }
 

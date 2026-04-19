@@ -75,7 +75,7 @@
   --sprite-f: 7; 
   --sprite-fr: 12; 
   --sprite-as: calc(var(--sprite-f) / var(--sprite-fr) * 1s); 
-  --sprite-r: round(up, calc(var(--sprite-f) / var(--sprite-c)), 1); 
+  --sprite-r: 2; 
   --sprite-sh: calc(var(--sprite-h) / var(--sprite-r)); 
   --sprite-th: calc(var(--sprite-sh) / 2); 
   --sprite-ar: calc(var(--sprite-th) / var(--sprite-sh)); 
@@ -160,9 +160,9 @@
   
   /* Sprite frame calculations */
   --sprite-fe: calc(var(--sprite-f) * (var(--slides) - 1)); 
-  --sprite-fs-n: mod(var(--sprite-fs), var(--sprite-f)); 
-  --row: calc(round(down, calc(calc(var(--sprite-tw) * var(--sprite-fs-n)) / var(--sprite-uw)), 1) * var(--sprite-th)); 
-  --col: mod(calc(var(--sprite-tw) * var(--sprite-fs-n)), var(--sprite-uw)); 
+  --sprite-fs-n: var(--sprite-fs); 
+  --row: calc((var(--sprite-tw) * var(--sprite-fs-n)) / var(--sprite-uw) * var(--sprite-th)); 
+  --col: calc(var(--sprite-tw) * var(--sprite-fs-n)); 
   
   background-position: calc(-1px * var(--col)) calc(-1px * var(--row)); 
   animation: frame var(--sprite-as) linear 0s normal none running; 

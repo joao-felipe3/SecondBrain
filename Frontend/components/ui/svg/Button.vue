@@ -93,6 +93,7 @@
           : (isPressing ? 'translate(-50%, -50%) translate(-2px, 4px)' : 'translate(-50%, -50%)'),
         transition: 'transform 0.2s ease',
         fontSize: props.labelSize + 'px',
+        fontFamily: 'Irish Grover, cursive',
       }"
     >
       {{ label }}
