@@ -1,48 +1,66 @@
 <template>
   <div class="pert-tab">
     <div v-if="task" class="pert-container">
-      <h3 class="pert-title">⏱️ Estimativas PERT</h3>
+      <h1 class="text-center py-2" >Estimativas PERT</h1>
 
       <!-- Inputs -->
-      <div class="pert-inputs">
-        <div class="pert-input-group">
-          <label>Otimista (min):</label>
-          <input
-            v-model.number="optimistic"
-            type="number"
-            min="0"
-            class="pert-input"
-            @change="validateAndRecalculate"
-          />
-        </div>
+      <v-row dense class="pert-inputs">
+        <v-col cols="12" sm="4">
+          <div class="custom-input">
+            <v-text-field
+              :model-value="optimistic"
+              @update:model-value="(val) => (optimistic = toNumber(val))"
+              type="number"
+              min="0"
+              label="Otimista (min)"
+              variant="solo-filled"
+              density="comfortable"
+              hide-details
+            />
+          </div>
+        </v-col>
 
-        <div class="pert-input-group">
-          <label>Provável (min):</label>
-          <input
-            v-model.number="likely"
-            type="number"
-            min="0"
-            class="pert-input"
-            @change="validateAndRecalculate"
-          />
-        </div>
+        <v-col cols="12" sm="4">
+          <div class="custom-input">
+            <v-text-field
+              :model-value="likely"
+              @update:model-value="(val) => (likely = toNumber(val))"
+              type="number"
+              min="0"
+              label="Provável (min)"
+              variant="solo-filled"
+              density="comfortable"
+              hide-details
+            />
+          </div>
+        </v-col>
 
-        <div class="pert-input-group">
-          <label>Pessimista (min):</label>
-          <input
-            v-model.number="pessimistic"
-            type="number"
-            min="0"
-            class="pert-input"
-            @change="validateAndRecalculate"
-          />
-        </div>
-      </div>
+        <v-col cols="12" sm="4">
+          <div class="custom-input">
+            <v-text-field
+              :model-value="pessimistic"
+              @update:model-value="(val) => (pessimistic = toNumber(val))"
+              type="number"
+              min="0"
+              label="Pessimista (min)"
+              variant="solo-filled"
+              density="comfortable"
+              hide-details
+            />
+          </div>
+        </v-col>
+      </v-row>
 
       <!-- Validation Error -->
-      <div v-if="validationError" class="validation-error">
+      <v-alert
+        v-if="validationError"
+        type="error"
+        variant="tonal"
+        density="comfortable"
+        class="validation-error"
+      >
         {{ validationError }}
-      </div>
+      </v-alert>
 
       <!-- Calculated Values -->
       <div class="pert-outputs">
@@ -70,14 +88,14 @@
       </div>
 
       <!-- Save Button -->
-      <button class="save-pert-btn" @click="savePertEstimates" :disabled="!!validationError">
+      <v-btn color="success" variant="flat" @click="savePertEstimates" :disabled="!!validationError">
         💾 Salvar Estimativas
-      </button>
+      </v-btn>
 
       <!-- Suggest via LLM (futuro) -->
-      <button class="suggest-btn" @click="suggestEstimates" disabled>
+      <v-btn variant="text" @click="suggestEstimates" disabled>
         💡 Sugerir estimativas (em breve)
-      </button>
+      </v-btn>
     </div>
     <div v-else class="empty-state">
       <p>Nenhuma tarefa selecionada</p>
@@ -86,7 +104,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { useTaskStore } from '~/stores/task'
 
 interface Props {
@@ -101,19 +119,35 @@ const props = withDefaults(defineProps<Props>(), {
 
 const taskStore = useTaskStore()
 
+const taskId = computed(() => props.task?._id ?? props.task?.id)
+
 // Reactive data
 const optimistic = ref<number>(0)
 const likely = ref<number>(0)
 const pessimistic = ref<number>(0)
 const validationError = ref<string>('')
 
-// Initialize from task
-onMounted(() => {
-  if (props.task) {
-    optimistic.value = props.task.pertOptimisticMinutes || 0
-    likely.value = props.task.pertMostLikelyMinutes || 0
-    pessimistic.value = props.task.pertPessimisticMinutes || 0
-  }
+const toNumber = (value: unknown): number => {
+  if (value == null || value === '') return 0
+  const num = typeof value === 'number' ? value : Number(value)
+  return Number.isFinite(num) ? num : 0
+}
+
+// Initialize/sync from task
+watch(
+  () => props.task,
+  (t) => {
+    optimistic.value = t?.pertOptimisticMinutes || 0
+    likely.value = t?.pertMostLikelyMinutes || 0
+    pessimistic.value = t?.pertPessimisticMinutes || 0
+    validationError.value = ''
+  },
+  { immediate: true },
+)
+
+watch([optimistic, likely, pessimistic], () => {
+  // Mantém a validação responsiva enquanto digita
+  validateAndRecalculate()
 })
 
 // Computed properties
@@ -177,9 +211,10 @@ const validateAndRecalculate = () => {
 
 const savePertEstimates = async () => {
   validateAndRecalculate()
-  if (validationError.value || !props.task?.id) return
+  const id = taskId.value
+  if (validationError.value || !id) return
 
-  await taskStore.updateTask(props.task.id, {
+  await taskStore.updateTask(id, {
     pertOptimisticMinutes: optimistic.value,
     pertMostLikelyMinutes: likely.value,
     pertPessimisticMinutes: pessimistic.value,
@@ -219,78 +254,22 @@ const suggestEstimates = () => {
   margin: 0;
 }
 
-.pert-title {
-  font-size: 18px;
-  font-weight: 600;
-  margin: 0;
-  color: #3e2723;
-}
-
 /* Inputs */
 .pert-inputs {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-.pert-input-group {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.pert-input-group label {
-  font-size: 13px;
-  font-weight: 500;
-  color: #3e2723;
-}
-
-.pert-input {
-  padding: 8px 10px;
-  font-family: 'Irish Grover', cursive;
-  font-size: 14px;
-  border: 1px solid #d4a574;
-  border-radius: 3px;
-  background: #fafaf8;
-  color: #3e2723;
-  transition:
-    border-color 0.2s ease,
-    background 0.2s ease;
-}
-
-.pert-input:focus {
-  outline: none;
-  border-color: #b8934a;
-  background: #ffffff;
-}
-
-.pert-input::-webkit-outer-spin-button,
-.pert-input::-webkit-inner-spin-button {
-  -webkit-appearance: none;
   margin: 0;
-}
-
-.pert-input {
-  -moz-appearance: textfield;
 }
 
 /* Validation Error */
 .validation-error {
-  padding: 10px 12px;
-  background: #ffe0e0;
-  border: 1px solid #f44336;
-  border-radius: 3px;
-  color: #c92a2a;
   font-size: 12px;
-  line-height: 1.4;
 }
 
 /* Outputs */
 .pert-outputs {
-  background: #fafaf8;
-  border: 1px solid #ede4d8;
-  border-radius: 3px;
-  padding: 1rem;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  padding: 0 1.5rem;
 }
 
 .pert-outputs h4 {
@@ -311,10 +290,10 @@ const suggestEstimates = () => {
 }
 
 .output-row.recommended {
-  background: rgba(126, 197, 118, 0.1);
-  padding: 0.75rem;
-  border-radius: 3px;
-  border: 1px solid #c8e6c9;
+  background: transparent;
+  padding: 0.5rem 0;
+  border-radius: 0;
+  border: none;
 }
 
 .output-label {
@@ -327,53 +306,6 @@ const suggestEstimates = () => {
   font-size: 13px;
   color: #3e2723;
   font-weight: 600;
-}
-
-/* Buttons */
-.save-pert-btn,
-.suggest-btn {
-  padding: 10px 12px;
-  border-radius: 3px;
-  font-family: 'Irish Grover', cursive;
-  font-size: 13px;
-  cursor: pointer;
-  transition:
-    background 0.2s ease,
-    opacity 0.2s ease;
-  border: 1px solid #d4a574;
-}
-
-.save-pert-btn:disabled,
-.suggest-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.save-pert-btn {
-  background: #7ec576;
-  color: white;
-  border-color: #5fa855;
-}
-
-.save-pert-btn:hover:not(:disabled) {
-  background: #6bb15f;
-}
-
-.save-pert-btn:active:not(:disabled) {
-  background: #5a9850;
-}
-
-.suggest-btn {
-  background: #f5e6d3;
-  color: #3e2723;
-}
-
-.suggest-btn:hover:not(:disabled) {
-  background: #ede4d8;
-}
-
-.suggest-btn:active:not(:disabled) {
-  background: #e8dcc8;
 }
 
 .empty-state {

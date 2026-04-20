@@ -29,71 +29,7 @@
     </v-col>
   </v-row>
 
-  <v-row dense v-if="task.microTaskType">
-    <v-col cols="12">
-      <div class="checklist-section-header">
-        <div class="text-subtitle-2">Checklist</div>
-        <div v-if="checklistItems.length > 0" class="checklist-progress-label">
-          {{ completedCount }}/{{ checklistItems.length }} {{ completionPercentage }}%
-        </div>
-      </div>
-      <div
-        v-if="completionPercentage > 0"
-        class="checklist-progress-bar"
-        :style="{ width: `${completionPercentage}%` }"
-      />
-      <div
-        v-for="(item, index) in checklistItems"
-        :key="`checklist-item-${index}`"
-        class="checklist-row"
-        :class="{ 'checklist-completed': item.completed }"
-      >
-        <input
-          v-model="item.completed"
-          type="checkbox"
-          class="checklist-native-checkbox"
-        />
-        <v-text-field
-          v-model="item.item"
-          placeholder="Item"
-          variant="underlined"
-          class="flex-1 checklist-item-input"
-          :class="{ 'strikethrough': item.completed }"
-          density="comfortable"
-          hide-details="auto"
-        />
-        <v-btn
-          icon="mdi-delete"
-          variant="text"
-          color="error"
-          :disabled="checklistItems.length <= 1"
-          @click="removeChecklistItem(index)"
-        />
-      </div>
-      <v-btn
-        size="small"
-        variant="text"
-        prepend-icon="mdi-plus"
-        @click="addChecklistItem"
-      >
-        Adicionar item
-      </v-btn>
-    </v-col>
-  </v-row>
-
-  <CommonEffortSelect v-model="task.pomodorosPlanned" />
-
-  <!-- PERT Estimation Section -->
-  <PERTEstimationCard
-    v-if="props.task._id || task.microTaskType"
-    :task-id="props.task._id"
-    v-model:optimistic-minutes="task.pertOptimisticMinutes"
-    v-model:most-likely-minutes="task.pertMostLikelyMinutes"
-    v-model:pessimistic-minutes="task.pertPessimisticMinutes"
-    :initial-optimistic="props.task.pertOptimisticMinutes || 0"
-    :initial-most-likely="props.task.pertMostLikelyMinutes || 0"
-    :initial-pessimistic="props.task.pertPessimisticMinutes || 0"
-  />
+  <CommonEffortSelect class="mt-n4" v-model="task.pomodorosPlanned" />
 </template>
 
 <script setup>
@@ -103,7 +39,6 @@ import CommonSlider from '../../../shared/fields/Slider.vue'
 import CommonDatePickerField from '../../../shared/fields/DatePickerField.vue'
 import CommonSelect from '../../../shared/fields/Select.vue'
 import CommonEffortSelect from '../../../shared/fields/EffortSelect.vue'
-import PERTEstimationCard from '../widgets/PERTEstimationCard.vue'
 
 const props = defineProps({
   task: {
@@ -168,95 +103,16 @@ const recurrencyOptions = [
 
 const microTaskTypeOptions = ['None', 'subtask', 'habit', 'quick', 'complex']
 const microTaskTypeUi = ref(props.task.microTaskType || 'None')
-const checklistItems = ref([{ item: '', completed: false, order: 0 }])
-let syncingChecklistFromTask = false
-
-function checklistToUiItems(items) {
-  if (!Array.isArray(items) || items.length === 0) {
-    return [{ item: '', completed: false, order: 0 }]
-  }
-
-  const normalized = items
-    .map((entry, index) => {
-      if (typeof entry === 'string') {
-        return { item: entry, completed: false, order: index }
-      }
-      if (entry && typeof entry === 'object') {
-        return {
-          item: String(entry.item || ''),
-          completed: Boolean(entry.completed),
-          order: Number.isFinite(entry.order) ? Number(entry.order) : index,
-        }
-      }
-      return null
-    })
-    .filter(Boolean)
-
-  return normalized.length > 0
-    ? normalized
-    : [{ item: '', completed: false, order: 0 }]
-}
-
-function checklistToTaskItems(items) {
-  if (!Array.isArray(items)) return []
-  return items
-    .map((entry, index) => ({
-      item: String(entry.item || '').trim(),
-      completed: Boolean(entry.completed),
-      order: index,
-    }))
-    .filter((entry) => entry.item.length > 0)
-}
-
-function addChecklistItem() {
-  checklistItems.value.push({
-    item: '',
-    completed: false,
-    order: checklistItems.value.length,
-  })
-}
-
-function removeChecklistItem(index) {
-  if (checklistItems.value.length <= 1) return
-  checklistItems.value.splice(index, 1)
-  checklistItems.value = checklistItems.value.map((entry, idx) => ({
-    ...entry,
-    order: idx,
-  }))
-}
-
-watch(
-  () => props.task.checklist,
-  (value) => {
-    syncingChecklistFromTask = true
-    checklistItems.value = checklistToUiItems(value)
-    syncingChecklistFromTask = false
-  },
-  { immediate: true, deep: true },
-)
-
-watch(
-  checklistItems,
-  (value) => {
-    if (syncingChecklistFromTask) return
-    const normalized = checklistToTaskItems(value)
-    props.task.checklist = normalized.length > 0 ? normalized : undefined
-    props.task.autoGenerateChecklist = normalized.length === 0
-  },
-  { deep: true },
-)
 
 watch(microTaskTypeUi, (value) => {
   props.task.microTaskType = value === 'None' ? undefined : value
   if (!props.task.microTaskType) {
     props.task.checklist = undefined
-    checklistItems.value = [{ item: '', completed: false, order: 0 }]
     props.task.autoGenerateChecklist = true
     return
   }
-  if (!Array.isArray(props.task.checklist) || props.task.checklist.length === 0) {
-    checklistItems.value = [{ item: '', completed: false, order: 0 }]
-  }
+  const hasChecklist = Array.isArray(props.task.checklist) && props.task.checklist.length > 0
+  props.task.autoGenerateChecklist = !hasChecklist
 })
 
 watch(localDeadline, (val) => {
@@ -316,42 +172,12 @@ const isValidDate = (dateStr) => {
   return !isNaN(date.getTime())
 }
 
-// Sprint 2: Checklist progress tracking
-const completedCount = computed(() => {
-  if (!Array.isArray(checklistItems.value)) return 0
-  return checklistItems.value.filter(item => Boolean(item.completed)).length
-})
-
-const completionPercentage = computed(() => {
-  if (checklistItems.value.length === 0) return 0
-  return Math.round((completedCount.value / checklistItems.value.length) * 100)
-})
-
-const isPertValidForMicroTask = computed(() => {
-  if (!props.task.microTaskType) return true
-
-  const optimistic = Number(props.task.pertOptimisticMinutes)
-  const mostLikely = Number(props.task.pertMostLikelyMinutes)
-  const pessimistic = Number(props.task.pertPessimisticMinutes)
-
-  const hasAny = [optimistic, mostLikely, pessimistic].some(v => Number.isFinite(v) && v > 0)
-  if (!hasAny) return true
-
-  if (![optimistic, mostLikely, pessimistic].every(v => Number.isFinite(v) && v > 0)) {
-    return false
-  }
-
-  return optimistic < mostLikely && mostLikely < pessimistic
-})
-
-
 const isFormValid = computed(() => {
   return (
     props.task.name?.trim() !== '' &&
     props.task.recurrency?.trim() !== '' &&
     isValidDate(localDeadline.value) &&
-    props.task.pomodorosPlanned > 0 &&
-    isPertValidForMicroTask.value
+    props.task.pomodorosPlanned > 0
   )
 })
 
@@ -361,9 +187,6 @@ watch(
     props.task.recurrency,
     props.task.pomodorosPlanned,
     localDeadline.value,
-    props.task.pertOptimisticMinutes,
-    props.task.pertMostLikelyMinutes,
-    props.task.pertPessimisticMinutes,
     props.task.microTaskType,
   ],
   () => {
@@ -374,105 +197,4 @@ watch(
 )
 
 </script>
-
-<style scoped>
-.checklist-row {
-  width: 100%;
-  display: grid;
-  grid-template-columns: 18px minmax(0, 1fr) 32px;
-  column-gap: 4px;
-  align-items: center;
-  direction: ltr;
-}
-
-.checklist-item-input {
-  min-width: 0;
-  margin-top: -12px;
-}
-
-.checklist-native-checkbox {
-  -webkit-appearance: none;
-  appearance: none;
-  width: 14px;
-  height: 14px;
-  margin: 0;
-  cursor: pointer;
-  background: transparent;
-  border: 1.5px solid #8f6f4f;
-  border-radius: 2px;
-  display: inline-grid;
-  place-content: center;
-}
-
-.checklist-native-checkbox::before {
-  content: '';
-  width: 8px;
-  height: 8px;
-  transform: scale(0);
-  transition: transform 0.12s ease-in-out;
-  clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0%, 43% 62%);
-  background: #5f1a35;
-}
-
-.checklist-native-checkbox:checked {
-  background: transparent;
-}
-
-.checklist-native-checkbox:checked::before {
-  transform: scale(1);
-}
-
-:deep(.checklist-item-input .v-field) {
-  background: transparent !important;
-  box-shadow: none !important;
-}
-
-:deep(.checklist-item-input .v-field__input) {
-  padding-left: 0;
-}
-
-:deep(.checklist-item-input .v-field__outline),
-:deep(.checklist-item-input .v-field__overlay) {
-  display: none;
-}
-
-/* Sprint 2: Enhanced Checklist Styling */
-.checklist-section-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 8px;
-  gap: 12px;
-}
-
-.checklist-progress-label {
-  font-size: 12px;
-  color: #666;
-  background: #f5f5f5;
-  padding: 2px 8px;
-  border-radius: 4px;
-  font-weight: 500;
-}
-
-.checklist-progress-bar {
-  height: 4px;
-  background: #4caf50;
-  border-radius: 2px;
-  margin-bottom: 12px;
-  transition: width 0.3s ease;
-}
-
-.checklist-row.checklist-completed {
-  opacity: 0.7;
-}
-
-:deep(.checklist-item-input.strikethrough .v-field__input) {
-  text-decoration: line-through;
-  color: #999;
-}
-
-:deep(.checklist-item-input.strikethrough .v-input__control) {
-  color: #999;
-}
-</style>
 

@@ -90,7 +90,7 @@
 
       <!-- Info: Edit in Task Form -->
       <div class="edit-info">
-        💡 To edit this checklist, go back to the Task Form
+        💡 Para editar este checklist, vá para a aba Checklist
       </div>
     </div>
 

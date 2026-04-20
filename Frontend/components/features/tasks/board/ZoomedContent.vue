@@ -10,9 +10,13 @@
         :key="tab.id"
         class="pergaminho-folha"
         :class="{ active: activeTab === tab.id }"
-        :style="getSheetStyle(tab.id)"
+        :style="getSheetVars(tab.id)"
         @click="onSheetClick(tab.id)"
+        :title="activeTab === tab.id ? '' : `Abrir ${tab.label}`"
       >
+        <div v-if="activeTab !== tab.id" class="peek-hint" aria-hidden="true">
+          <span class="peek-label">{{ tab.label }}</span>
+        </div>
         <div class="sheet-content">
           <component
             :is="tab.component"
@@ -67,14 +71,20 @@ const emit = defineEmits(['delete', 'close', 'edit'])
 
 // Configuração das abas
 const tabs: TabConfig[] = [
-  { id: 'editar', label: '✏️ Editar', icon: '✏️', component: EditarTab },
-  { id: 'checklist', label: '✓ Checklist', icon: '✓', component: ChecklistTab },
-  { id: 'pert', label: '⏱️ PERT', icon: '⏱️', component: PertTab },
-  { id: 'historico', label: '🕐 Histórico', icon: '🕐', component: HistoryTab },
+  { id: 'editar', label: 'Editar', icon: '✏️', component: EditarTab },
+  { id: 'checklist', label: 'Checklist', icon: '✓', component: ChecklistTab },
+  { id: 'pert', label: 'PERT', icon: '⏱️', component: PertTab },
+  { id: 'historico', label: 'Histórico', icon: '🕐', component: HistoryTab },
 ]
 
 // Composable para navegação
 const { activeTab, setActiveTab, nextTab, prevTab, initializeFromStorage } = useTabNavigation(tabs)
+
+defineExpose({
+  nextTab,
+  prevTab,
+  setActiveTab,
+})
 
 const PEEK_PX = 32
 const SHEET_GAP_Y = 6
@@ -90,7 +100,7 @@ const getPos = (tabId: string) => {
   return (tabIndex - ai + n) % n
 }
 
-const getSheetStyle = (tabId: string) => {
+const getSheetVars = (tabId: string) => {
   const pos = getPos(tabId)
   const y = pos * SHEET_GAP_Y
   const r = pos * SHEET_ROTATE_DEG
@@ -100,11 +110,10 @@ const getSheetStyle = (tabId: string) => {
     zIndex: String(200 - pos),
     left: '0px',
     top: '0px',
-    transform:
-      pos === 0
-        ? 'translateX(0px) translateY(0px) rotate(0deg)'
-        : `translateX(${x}px) translateY(${y}px) rotate(${r}deg)`,
-  }
+    '--sheet-x': `${x}px`,
+    '--sheet-y': `${y}px`,
+    '--sheet-r': `${r}deg`,
+  } as Record<string, string>
 }
 
 const onSheetClick = (tabId: string) => {
@@ -168,14 +177,71 @@ onBeforeUnmount(() => {
   user-select: none;
   transform-origin: top left;
   will-change: transform;
+  --sheet-x: 0px;
+  --sheet-y: 0px;
+  --sheet-r: 0deg;
+  --sheet-hover-x: -15px;
+  --sheet-hover-y: -15px;
+  --sheet-hover-r: 0deg;
+  transform: translateX(calc(var(--sheet-x) + var(--sheet-hover-x)))
+    translateY(calc(var(--sheet-y) + var(--sheet-hover-y)))
+    rotate(calc(var(--sheet-r) + var(--sheet-hover-r)));
   transition:
-    transform 0.5s cubic-bezier(0.25, 0.1, 0.25, 1);
+    transform 0.5s cubic-bezier(0.25, 0.1, 0.25, 1),
+    filter 0.2s ease,
+    opacity 0.2s ease;
+}
+
+.pergaminho-folha:not(.active):hover {
+  --sheet-hover-x: 0px;
+  --sheet-hover-y: -1px;
+  --sheet-hover-r: 0deg;
+  filter: brightness(1.04) saturate(1.08);
+}
+
+.pergaminho-folha.active {
+  filter: none;
+}
+
+.peek-hint {
+  position: absolute;
+  right: 0.85rem;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  pointer-events: none;
+  z-index: 5;
+}
+
+.peek-label {
+  font-size: 16px;
+  line-height: 1.2;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.25);
+  color: black;
+  background-color: #b8934a;
+  padding: 0.1rem 0.5rem;
+  border-radius: 4px;
+}
+
+.pergaminho-folha:not(.active):hover .peek-label {
+  opacity: 0.95;
+}
+
+@media (hover: none) {
+  .peek-label {
+    opacity: 0.95;
+  }
 }
 
 .sheet-content {
   height: 100%;
   box-sizing: border-box;
-  padding: 1.25rem clamp(1rem, 4vw, 2.5rem) 5rem;
+  padding: 1.25rem clamp(0.1rem, 4vw, 2.5rem) 5rem;
   overflow-y: auto;
   overflow-x: hidden;
 }

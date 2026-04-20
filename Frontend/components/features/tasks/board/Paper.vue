@@ -15,7 +15,8 @@
 
     <Transition name="fade-slide" mode="out-in">
       <template v-if="zoomed2">
-        <ZoomedContent 
+        <ZoomedContent
+          ref="zoomedContentRef"
           :task="props.task"
           :projects="props.projects"
           :deadline="deadline"
@@ -30,6 +31,29 @@
         <TaskPreview :task="props.task" @fall-complete="handleCompleteFall"/>
       </template>
     </Transition>
+
+    <!-- Hint minimalista: peeks (abas) ficam à direita no zoom -->
+    <button
+      v-if="zoomed2"
+      type="button"
+      class="peek-chevron-hint left"
+      aria-label="Aba anterior"
+      title="Aba anterior"
+      @click.stop="goPrevTab"
+    >
+      <span class="chevron-glyph">‹</span>
+    </button>
+
+    <button
+      v-if="zoomed2"
+      type="button"
+      class="peek-chevron-hint right"
+      aria-label="Próxima aba"
+      title="Próxima aba"
+      @click.stop="goNextTab"
+    >
+      <span class="chevron-glyph">›</span>
+    </button>
   </div>
 </template>
 
@@ -50,6 +74,16 @@ interface Props {
 
 const props = defineProps<Props>()
 const emit = defineEmits(['edit-task', 'delete-task', 'close-zoom', 'fall-complete', 'zoom'])
+
+const zoomedContentRef = ref<InstanceType<typeof ZoomedContent> | null>(null)
+
+const goPrevTab = () => {
+  zoomedContentRef.value?.prevTab?.()
+}
+
+const goNextTab = () => {
+  zoomedContentRef.value?.nextTab?.()
+}
 
 
 const editAndClose = () => {
@@ -132,11 +166,58 @@ watch(
 .task-paper {
   position: relative;
   transition: transform 0.2s ease;
+  overflow: visible;
 }
 
 .task-paper.hover-enabled:hover {
   transform: scale(1.05);
   z-index: 5;
+}
+
+.peek-chevron-hint {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 450;
+  font-family: 'Irish Grover', cursive;
+  font-size: 44px;
+  line-height: 1;
+  opacity: 0.98;
+  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.65));
+  cursor: pointer;
+  background: rgba(255, 255, 255, 0.65);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
+  padding: 0;
+  display: grid;
+  place-items: center;
+}
+
+.chevron-glyph {
+  display: block;
+  transform: translateY(-1px);
+}
+
+.peek-chevron-hint:hover {
+  background: rgba(255, 255, 255, 0.88);
+}
+
+.peek-chevron-hint.left {
+  left: -5rem;
+}
+
+.peek-chevron-hint.left .chevron-glyph {
+  transform: translateY(-10px) translateX(-1px);
+}
+
+.peek-chevron-hint.right {
+  right: -5rem;
+}
+
+.peek-chevron-hint.right .chevron-glyph {
+  transform: translateY(-10px) translateX(1px);
 }
 
 </style>

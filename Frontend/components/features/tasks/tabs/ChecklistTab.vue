@@ -1,46 +1,68 @@
 <template>
   <div class="checklist-tab">
-    <div v-if="task && task.checklist" class="checklist-container">
+    <div v-if="task" class="checklist-container">
       <!-- Progress Bar -->
       <div class="checklist-header">
-        <h3 class="checklist-title">✓ Checklist</h3>
+        <h1 class="text-center py-2" >✓ Checklist</h1>
         <div class="progress-wrapper">
-          <div class="progress-bar-bg">
-            <div
-              class="progress-bar-fill"
-              :style="{ width: completionPercentage + '%' }"
-              :class="progressColor"
-            />
-          </div>
+          <v-progress-linear
+            :model-value="completionPercentage"
+            height="10"
+            rounded
+            :color="progressColor"
+            class="progress-bar"
+          />
           <span class="progress-text">{{ completionPercentage }}%</span>
         </div>
       </div>
 
       <!-- Checklist Items -->
-      <div class="checklist-items">
-        <div
-          v-for="(item, idx) in task.checklist"
+      <div v-if="checklistItems.length > 0" class="checklist-items">
+        <v-row
+          v-for="(item, idx) in checklistItems"
           :key="`checklist-${idx}`"
-          class="checklist-item"
-          :class="{ completed: isItemCompleted(item) }"
+          dense
+          align="center"
+          class="checklist-row"
         >
-          <input
-            type="checkbox"
-            :checked="isItemCompleted(item)"
-            @change="toggleChecklistItem(Number(idx))"
-            class="item-checkbox"
-          />
-          <span class="item-text">{{ getItemText(item) }}</span>
-          <span v-if="isItemCompleted(item)" class="item-timestamp">
-            Completo em {{ getCompletionTime(item) }}
-          </span>
-        </div>
+          <v-col cols="auto" class="pr-0">
+            <v-checkbox
+              :model-value="isItemCompleted(item)"
+              @update:model-value="(val) => setChecklistItemCompleted(Number(idx), Boolean(val))"
+              density="comfortable"
+              hide-details
+            />
+          </v-col>
+          <v-col>
+            <div class="custom-input">
+              <v-text-field
+                :model-value="getItemText(item)"
+                variant="solo-filled"
+                density="comfortable"
+                readonly
+                hide-details
+                :class="{ 'item-completed': isItemCompleted(item) }"
+              />
+            </div>
+            <div v-if="isItemCompleted(item)" class="item-timestamp">
+              Completo em {{ getCompletionTime(item) }}
+            </div>
+          </v-col>
+        </v-row>
+      </div>
+
+      <div v-else class="empty-state">
+        <p>Nenhum checklist para esta tarefa</p>
       </div>
 
       <!-- Add new item button -->
-      <button class="add-item-btn" @click="addNewChecklistItem">
-        + Adicionar item
-      </button>
+      <v-btn
+        variant="text"
+        prepend-icon="mdi-plus"
+        @click="addNewChecklistItem"
+      >
+        Adicionar item
+      </v-btn>
     </div>
     <div v-else class="empty-state">
       <p>Nenhum checklist para esta tarefa</p>
@@ -63,6 +85,12 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 const taskStore = useTaskStore()
+
+const taskId = computed(() => props.task?._id ?? props.task?.id)
+
+const checklistItems = computed(() => {
+  return Array.isArray(props.task?.checklist) ? props.task.checklist : []
+})
 
 // Helpers
 const getItemText = (item: any): string => {
@@ -93,9 +121,9 @@ const getCompletionTime = (item: any): string => {
 
 // Computed
 const completionPercentage = computed(() => {
-  if (!props.task?.checklist || props.task.checklist.length === 0) return 0
-  const completed = props.task.checklist.filter(isItemCompleted).length
-  return Math.round((completed / props.task.checklist.length) * 100)
+  if (checklistItems.value.length === 0) return 0
+  const completed = checklistItems.value.filter(isItemCompleted).length
+  return Math.round((completed / checklistItems.value.length) * 100)
 })
 
 const progressColor = computed(() => {
@@ -107,20 +135,26 @@ const progressColor = computed(() => {
 })
 
 // Methods
-const toggleChecklistItem = async (idx: number) => {
-  if (!props.task?.id) return
+const setChecklistItemCompleted = async (idx: number | string, completed: boolean) => {
+  const id = taskId.value
+  if (!id) return
+  if (!Array.isArray(props.task?.checklist)) return
 
-  const item = props.task.checklist[idx]
+  const index = Number(idx)
+  if (!Number.isFinite(index)) return
+
+  const item = props.task.checklist[index]
+  if (item == null) return
   if (typeof item === 'string') {
-    // Se for string, converter para object com completed = true
-    props.task.checklist[idx] = {
+    // Se for string, converter para object com completed
+    props.task.checklist[index] = {
       item,
-      completed: true,
-      completedAt: new Date().toISOString(),
+      completed,
+      ...(completed ? { completedAt: new Date().toISOString() } : {}),
     }
   } else {
-    item.completed = !item.completed
-    if (item.completed) {
+    item.completed = completed
+    if (completed) {
       item.completedAt = new Date().toISOString()
     } else {
       delete item.completedAt
@@ -128,12 +162,24 @@ const toggleChecklistItem = async (idx: number) => {
   }
 
   // API call - atualiza item específico do checklist
-  const completed = isItemCompleted(props.task.checklist[idx])
-  await taskStore.updateMicroTaskChecklistItem(props.task.id, idx, completed)
+  await taskStore.updateMicroTaskChecklistItem(id, index, completed)
+}
+
+const toggleChecklistItem = async (idx: number | string) => {
+  const index = Number(idx)
+  if (!Number.isFinite(index)) return
+
+  const current = checklistItems.value[index]
+  if (current == null) return
+  await setChecklistItemCompleted(index, !isItemCompleted(current))
 }
 
 const addNewChecklistItem = async () => {
-  if (!props.task?.id) return
+  const id = taskId.value
+  if (!id) return
+  if (!Array.isArray(props.task?.checklist)) {
+    props.task.checklist = []
+  }
 
   const newItem = {
     item: 'Novo item',
@@ -143,7 +189,7 @@ const addNewChecklistItem = async () => {
   props.task.checklist.push(newItem)
 
   // Atualizar toda a tarefa com o novo checklist
-  await taskStore.updateTask(props.task.id, {
+  await taskStore.updateTask(id, {
     checklist: props.task.checklist,
   })
 }
@@ -175,13 +221,6 @@ const addNewChecklistItem = async () => {
   gap: 0.75rem;
 }
 
-.checklist-title {
-  font-size: 18px;
-  font-weight: 600;
-  margin: 0;
-  color: #3e2723;
-}
-
 /* Progress Bar */
 .progress-wrapper {
   display: flex;
@@ -189,36 +228,8 @@ const addNewChecklistItem = async () => {
   gap: 0.75rem;
 }
 
-.progress-bar-bg {
+.progress-bar {
   flex: 1;
-  height: 12px;
-  background: #e8dcc8;
-  border: 1px solid #d4a574;
-  border-radius: 6px;
-  overflow: hidden;
-}
-
-.progress-bar-fill {
-  height: 100%;
-  background: #7ec576;
-  transition: width 0.4s ease-out, background 0.3s ease;
-  border-radius: 6px;
-}
-
-.progress-bar-fill.success {
-  background: #4caf50;
-}
-
-.progress-bar-fill.info {
-  background: #2196f3;
-}
-
-.progress-bar-fill.warning {
-  background: #ff9800;
-}
-
-.progress-bar-fill.error {
-  background: #f44336;
 }
 
 .progress-text {
@@ -232,84 +243,24 @@ const addNewChecklistItem = async () => {
 .checklist-items {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: 0.25rem;
   padding: 0;
 }
 
-.checklist-item {
-  display: flex;
-  align-items: flex-start;
-  gap: 0.75rem;
-  padding: 0.75rem;
-  border: 1px solid #ede4d8;
-  border-radius: 3px;
-  background: #fafaf8;
-  transition:
-    background 0.2s ease,
-    opacity 0.2s ease;
+.checklist-row {
+  margin: 0;
 }
 
-.checklist-item.completed {
-  opacity: 0.7;
-  background: #f0f0f0;
-}
-
-.checklist-item.completed .item-text {
+.item-completed :deep(input) {
   text-decoration: line-through;
-  color: #9a8a7a;
+  opacity: 0.8;
 }
 
-.checklist-item:hover {
-  background: #f5f1eb;
-}
-
-.item-checkbox {
-  flex-shrink: 0;
-  width: 18px;
-  height: 18px;
-  margin-top: 2px;
-  cursor: pointer;
-  accent-color: #7ec576;
-}
-
-.item-text {
-  flex: 1;
-  font-size: 14px;
-  color: #3e2723;
-  word-break: break-word;
-  padding: 2px 0;
-}
 
 .item-timestamp {
-  flex-shrink: 0;
   font-size: 11px;
-  color: #a6794a;
-  white-space: nowrap;
-}
-
-/* Add button */
-.add-item-btn {
-  padding: 8px 12px;
-  background: #f5e6d3;
-  border: 1px dashed #d4a574;
-  border-radius: 3px;
-  color: #a6794a;
-  font-family: 'Irish Grover', cursive;
-  font-size: 13px;
-  cursor: pointer;
-  transition:
-    background 0.2s ease,
-    border-color 0.2s ease;
-}
-
-.add-item-btn:hover {
-  background: #ede4d8;
-  border-color: #b8934a;
-  color: #3e2723;
-}
-
-.add-item-btn:active {
-  background: #e8dcc8;
+  opacity: 0.75;
+  margin-top: 2px;
 }
 
 .empty-state {
