@@ -23,6 +23,10 @@ export class GeminiService {
   private checklistCache = new Map<string, { value: string[]; exp: number }>();
   private checklistRedisClient: any = null;
   private readonly checklistCacheTtlSeconds = 60 * 60;
+  
+  // PERT Suggestions cache
+  private pertCache = new Map<string, { value: any; exp: number }>();
+  private readonly pertCacheTtlSeconds = 24 * 60 * 60; // 24 hours
 
   constructor(private readonly configService: ConfigService) {
     // Support either GEMINI_API_KEY or GOOGLE_API_KEY (backwards compatibility)
@@ -324,6 +328,218 @@ export class GeminiService {
       return fallback;
     }
   }
+
+  // ============= PERT Estimates Cache Methods =============
+
+  private getPertCacheKey(taskType: string, description: string): string {
+    const type = String(taskType || 'generic').trim().toLowerCase();
+    const desc = String(description || '')
+      .trim()
+      .toLowerCase()
+      .substring(0, 100) // Limita tamanho
+      .replace(/\s+/g, ' ');
+    return `pert:${type}:${desc}`;
+  }
+
+  private async getPertCache(key: string): Promise<any | null> {
+    try {
+      if (this.checklistRedisClient) {
+        const raw = await this.checklistRedisClient.get(key);
+        if (!raw) return null;
+        return JSON.parse(raw);
+      }
+    } catch {
+      // fallback to memory
+    }
+
+    const local = this.pertCache.get(key);
+    if (!local) return null;
+    if (Date.now() > local.exp) {
+      this.pertCache.delete(key);
+      return null;
+    }
+    return local.value;
+  }
+
+  private async setPertCache(key: string, value: any): Promise<void> {
+    try {
+      if (this.checklistRedisClient) {
+        await this.checklistRedisClient.set(
+          key,
+          JSON.stringify(value),
+          'EX',
+          this.pertCacheTtlSeconds,
+        );
+        return;
+      }
+    } catch {
+      // fallback to memory
+    }
+
+    this.pertCache.set(key, {
+      value,
+      exp: Date.now() + this.pertCacheTtlSeconds * 1000,
+    });
+  }
+
+  /**
+   * Retorna estimativas PERT padrão por tipo de tarefa
+   * Usado como fallback quando LLM não está disponível
+   */
+  private getPertFallback(taskType: string): { optimistic: number; likely: number; pessimistic: number } {
+    const type = String(taskType || 'generic').toLowerCase();
+    
+    const fallbacks: Record<string, { optimistic: number; likely: number; pessimistic: number }> = {
+      subtask: { optimistic: 5, likely: 15, pessimistic: 30 },
+      quick: { optimistic: 5, likely: 10, pessimistic: 20 },
+      complex: { optimistic: 30, likely: 60, pessimistic: 120 },
+      habit: { optimistic: 3, likely: 8, pessimistic: 15 },
+      generic: { optimistic: 10, likely: 20, pessimistic: 45 },
+    };
+
+    return fallbacks[type] || fallbacks['generic'];
+  }
+
+  /**
+   * Calcula as métricas PERT (TE, desvio padrão) a partir de O, M, P
+   */
+  private calculatePertMetrics(optimistic: number, likely: number, pessimistic: number) {
+    const expectedTime = (optimistic + 4 * likely + pessimistic) / 6;
+    const range = pessimistic - optimistic;
+    const variance = Math.pow(range / 6, 2);
+    const standardDeviation = Math.sqrt(variance);
+
+    return {
+      expectedTime: Math.round(expectedTime * 100) / 100,
+      variance: Math.round(variance * 100) / 100,
+      standardDeviation: Math.round(standardDeviation * 100) / 100,
+    };
+  }
+
+  /**
+   * Sugerindo estimativas PERT via Gemini
+   * Sprint 3: Utiliza LLM para gerar sugestões de O, M, P em minutos
+   *
+   * @param taskType Tipo de tarefa: 'subtask', 'quick', 'complex', 'habit'
+   * @param description Descrição da tarefa
+   * @param projectContext Contexto opcional do projeto (para melhorar sugestão)
+   * @returns {optimistic, likely, pessimistic, expectedTime, standardDeviation, recommendation, fromLLM}
+   */
+  async suggestPertEstimates(
+    taskType: string,
+    description: string,
+    projectContext?: string,
+  ): Promise<{
+    optimistic: number;
+    likely: number;
+    pessimistic: number;
+    expectedTime: number;
+    standardDeviation: number;
+    recommendation: string;
+    fromLLM: boolean;
+  }> {
+    // Tenta cache primeiro
+    const cacheKey = this.getPertCacheKey(taskType, description);
+    const cached = await this.getPertCache(cacheKey);
+    if (cached) {
+      return cached;
+    }
+
+    // Tenta LLM
+    const prompt = [
+      'Você é um especialista em estimativas de software usando técnica PERT.',
+      `Tarefa: ${description}`,
+      `Tipo: ${taskType}`,
+      projectContext ? `Contexto: ${projectContext}` : '',
+      '',
+      'Estime APENAS 3 valores em minutos (inteiros positivos):',
+      '- O (Otimista): melhor caso, sem atrasos',
+      '- M (Mais Provável): caso normal, alguns atrasos esperados',
+      '- P (Pessimista): pior caso, muitos atrasos',
+      '',
+      'Validação: O <= M <= P (obrigatório)',
+      'Retorne APENAS um JSON válido, sem explicações:',
+      '{"optimistic": número, "likely": número, "pessimistic": número}',
+    ]
+      .filter(Boolean)
+      .join('\n');
+
+    try {
+      const response = await this.generateContent(prompt, {
+        responseMimeType: 'application/json',
+        maxOutputTokens: 200,
+        temperature: 0.3,
+      });
+
+      const parsed = JSON.parse(response);
+      const { optimistic, likely, pessimistic } = parsed;
+
+      // Valida valores
+      if (
+        typeof optimistic !== 'number' ||
+        typeof likely !== 'number' ||
+        typeof pessimistic !== 'number' ||
+        optimistic <= 0 ||
+        likely <= 0 ||
+        pessimistic <= 0 ||
+        optimistic > likely ||
+        likely > pessimistic
+      ) {
+        throw new Error('Valores PERT inválidos');
+      }
+
+      const metrics = this.calculatePertMetrics(optimistic, likely, pessimistic);
+      const recommendation = this.getPertRecommendation(metrics.standardDeviation, metrics.expectedTime);
+
+      const result = {
+        optimistic,
+        likely,
+        pessimistic,
+        expectedTime: metrics.expectedTime,
+        standardDeviation: metrics.standardDeviation,
+        recommendation,
+        fromLLM: true,
+      };
+
+      await this.setPertCache(cacheKey, result);
+      return result;
+    } catch (error) {
+      // Fallback para valores padrão
+      const fallback = this.getPertFallback(taskType);
+      const metrics = this.calculatePertMetrics(fallback.optimistic, fallback.likely, fallback.pessimistic);
+      const recommendation = this.getPertRecommendation(metrics.standardDeviation, metrics.expectedTime);
+
+      const result = {
+        optimistic: fallback.optimistic,
+        likely: fallback.likely,
+        pessimistic: fallback.pessimistic,
+        expectedTime: metrics.expectedTime,
+        standardDeviation: metrics.standardDeviation,
+        recommendation,
+        fromLLM: false,
+      };
+
+      await this.setPertCache(cacheKey, result);
+      return result;
+    }
+  }
+
+  /**
+   * Gera recomendação sobre a qualidade/confiança da estimativa
+   */
+  private getPertRecommendation(standardDeviation: number, expectedTime: number): string {
+    const coefficientOfVariation = standardDeviation / expectedTime;
+
+    if (coefficientOfVariation > 0.5) {
+      return '⚠️ Alta incerteza. Considere decompor esta tarefa em sub-tarefas menores.';
+    }
+    if (coefficientOfVariation > 0.3) {
+      return '⚡ Incerteza moderada. Monitore o progresso de perto e ajuste o plano conforme necessário.';
+    }
+    return '✅ Incerteza baixa. Estimativa confiável.';
+  }
+
+  // ============= End PERT Cache Methods =============
 
   /**
    * Whether this service will actually request/allow JSON-mode (responseMimeType).

@@ -92,10 +92,37 @@
         💾 Salvar Estimativas
       </v-btn>
 
-      <!-- Suggest via LLM (futuro) -->
-      <v-btn variant="text" @click="suggestEstimates" disabled>
-        💡 Sugerir estimativas (em breve)
+      <!-- Suggest via LLM -->
+      <v-btn 
+        color="info" 
+        variant="outlined" 
+        @click="suggestEstimates"
+        :loading="suggestLoading"
+        :disabled="suggestLoading || !(task?.name || task?.title)"
+      >
+        💡 Sugerir estimativas
       </v-btn>
+
+      <!-- Suggestion Status -->
+      <v-alert
+        v-if="suggestionError"
+        type="error"
+        variant="tonal"
+        density="comfortable"
+        class="mt-2"
+      >
+        {{ suggestionError }}
+      </v-alert>
+
+      <v-alert
+        v-if="suggestionSuccess"
+        type="success"
+        variant="tonal"
+        density="comfortable"
+        class="mt-2"
+      >
+        ✅ Sugestões carregadas! Verifique os valores abaixo.
+      </v-alert>
     </div>
     <div v-else class="empty-state">
       <p>Nenhuma tarefa selecionada</p>
@@ -104,28 +131,41 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, toRefs } from 'vue'
 import { useTaskStore } from '~/stores/task'
+import { useApiFetch } from '~/composables/useApi'
 
 interface Props {
   task?: any
   projects?: any[]
 }
 
-const props = withDefaults(defineProps<Props>(), {
-  task: () => null,
-  projects: () => [],
-})
+interface PertSuggestionResponse {
+  optimistic: number
+  likely: number
+  pessimistic: number
+  expectedTime: number
+  standardDeviation: number
+  recommendation: string
+  fromLLM: boolean
+}
+
+const props = defineProps<Props>()
+const { task, projects } = toRefs(props)
 
 const taskStore = useTaskStore()
+const { fetch } = useApiFetch()
 
-const taskId = computed(() => props.task?._id ?? props.task?.id)
+const taskId = computed(() => task.value?._id ?? task.value?.id)
 
 // Reactive data
 const optimistic = ref<number>(0)
 const likely = ref<number>(0)
 const pessimistic = ref<number>(0)
 const validationError = ref<string>('')
+const suggestLoading = ref(false)
+const suggestionError = ref<string>('')
+const suggestionSuccess = ref(false)
 
 const toNumber = (value: unknown): number => {
   if (value == null || value === '') return 0
@@ -135,12 +175,14 @@ const toNumber = (value: unknown): number => {
 
 // Initialize/sync from task
 watch(
-  () => props.task,
+  task,
   (t) => {
     optimistic.value = t?.pertOptimisticMinutes || 0
     likely.value = t?.pertMostLikelyMinutes || 0
     pessimistic.value = t?.pertPessimisticMinutes || 0
     validationError.value = ''
+    suggestionError.value = ''
+    suggestionSuccess.value = false
   },
   { immediate: true },
 )
@@ -148,6 +190,10 @@ watch(
 watch([optimistic, likely, pessimistic], () => {
   // Mantém a validação responsiva enquanto digita
   validateAndRecalculate()
+  // Limpa status de sucesso ao editar
+  if (suggestionSuccess.value) {
+    suggestionSuccess.value = false
+  }
 })
 
 // Computed properties
@@ -173,9 +219,9 @@ const pertStdDev = computed(() => {
 })
 
 const suggestedDeadline = computed(() => {
-  if (!props.task?.deadline) return 'N/A'
+  if (!task.value?.deadline) return 'N/A'
   try {
-    const deadline = new Date(props.task.deadline)
+    const deadline = new Date(task.value.deadline)
     const teNdays = Math.ceil(pertExpected.value / 480) // Assuming 8h = 480min work day
     const suggested = new Date(deadline)
     suggested.setDate(suggested.getDate() + teNdays)
@@ -221,16 +267,64 @@ const savePertEstimates = async () => {
   })
 
   // Atualizar local
-  if (props.task) {
-    props.task.pertOptimisticMinutes = optimistic.value
-    props.task.pertMostLikelyMinutes = likely.value
-    props.task.pertPessimisticMinutes = pessimistic.value
+  if (task.value) {
+    task.value.pertOptimisticMinutes = optimistic.value
+    task.value.pertMostLikelyMinutes = likely.value
+    task.value.pertPessimisticMinutes = pessimistic.value
   }
 }
 
-const suggestEstimates = () => {
-  // TODO: Call LLM service to suggest estimates
-  console.log('Sugerir estimativas via LLM')
+/**
+ * Sprint 3: Sugerir estimativas via LLM (Gemini)
+ * Chama POST /tasks/micro/suggest-estimates e preenche campos automaticamente
+ */
+const suggestEstimates = async () => {
+  const taskTitle = task.value?.name || task.value?.title
+  if (!taskTitle) {
+    suggestionError.value = 'Tarefa não possui título'
+    return
+  }
+
+  suggestLoading.value = true
+  suggestionError.value = ''
+  suggestionSuccess.value = false
+
+  try {
+    // Determina o tipo de tarefa (micro-task type)
+    // Pode ser enviado via props ou derivado do task.microTaskType
+    const taskType = task.value?.microTaskType || 'quick'
+    const projectName = projects.value?.find((p) => p._id === task.value?.project)?.name || ''
+
+    const response = (await fetch('/tasks/micro/suggest-estimates', {
+      method: 'POST',
+      body: {
+        taskType,
+        description: taskTitle,
+        projectContext: projectName,
+      },
+    })) as PertSuggestionResponse
+
+    // Preenche os campos com as sugestões
+    optimistic.value = Math.round(response.optimistic)
+    likely.value = Math.round(response.likely)
+    pessimistic.value = Math.round(response.pessimistic)
+
+    suggestionSuccess.value = true
+    suggestionError.value = ''
+
+    // Auto-limpa sucesso após 5 segundos
+    setTimeout(() => {
+      suggestionSuccess.value = false
+    }, 5000)
+  } catch (error: any) {
+    suggestionError.value =
+      error?.data?.message ||
+      error?.message ||
+      'Erro ao gerar sugestões. Tente novamente.'
+    suggestionSuccess.value = false
+  } finally {
+    suggestLoading.value = false
+  }
 }
 </script>
 
@@ -252,11 +346,21 @@ const suggestEstimates = () => {
   gap: 1.5rem;
   padding: 0;
   margin: 0;
+  position: relative;
+}
+
+/* Garantir que botões funcionem */
+.pert-container :deep(.v-btn) {
+  position: relative;
+  z-index: 2;
+  pointer-events: auto !important;
 }
 
 /* Inputs */
 .pert-inputs {
   margin: 0;
+  position: relative;
+  z-index: 1;
 }
 
 /* Validation Error */

@@ -21,6 +21,7 @@ import { UpdateRecurringRuleDto } from './dto/update-recurring-rule.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
 import { GenerateAiSuggestionsDto } from './dto/generate-ai-suggestions.dto';
 import { PertEstimateDto, PertEstimateResponseDto } from './dto/pert-estimate.dto';
+import { SuggestPertDto, PertSuggestionResponseDto, UpdatePertDto } from './dto/suggest-pert.dto';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { CPMService } from './services/cpm.service';
 import { DependencyInferenceService } from './services/dependency-inference.service';
@@ -195,6 +196,20 @@ export class TasksController {
     return this.tasksService.createRecurringMicroTask(createMicroTaskDto);
   }
 
+  @Post('micro/suggest-estimates')
+  @ApiOperation({ 
+    summary: 'Sugerir estimativas PERT via LLM',
+    description: 'Gera sugestões automáticas de estimativas Otimista, Provável e Pessimista usando IA. Retorna valores em minutos.'
+  })
+  @ApiResponse({ status: 200, description: 'Sugestões geradas com sucesso.', type: PertSuggestionResponseDto })
+  async suggestPertEstimates(@Body() suggestDto: SuggestPertDto) {
+    return this.tasksService.suggestPertEstimates(
+      suggestDto.taskType,
+      suggestDto.description,
+      suggestDto.projectContext,
+    );
+  }
+
   @Get()
   @ApiOperation({ summary: 'Listar todas as tasks' })
   @ApiResponse({ status: 200, description: 'Lista de tasks retornada com sucesso.' })
@@ -248,6 +263,19 @@ export class TasksController {
     @Body() body: UpdateRecurringRuleDto,
   ) {
     return this.tasksService.updateRecurringRule(id, body.recurringRule);
+  }
+
+  @Patch(':id/pert')
+  @ApiOperation({ 
+    summary: 'Atualizar estimativas PERT de uma tarefa',
+    description: 'Permite editar as estimativas PERT (Otimista, Provável, Pessimista) após a criação. Recalcula automaticamente o TE e deadline.'
+  })
+  @ApiResponse({ status: 200, description: 'Estimativas PERT atualizadas com sucesso.' })
+  updatePert(
+    @Param('id') id: string,
+    @Body() updatePertDto: UpdatePertDto,
+  ) {
+    return this.tasksService.updatePert(id, updatePertDto);
   }
 
   @Sse('ai-suggestions-stream')

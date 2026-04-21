@@ -504,6 +504,103 @@ export class TasksService {
     return updatedTask;
   }
 
+  /**
+   * Sprint 3: Sugerir estimativas PERT via Gemini LLM
+   * @param taskType Tipo de tarefa ('subtask', 'quick', 'complex', 'habit')
+   * @param description Descrição da tarefa
+   * @param projectContext Contexto opcional do projeto
+   * @returns Sugestões de O, M, P, TE, desvio padrão, recomendação
+   */
+  async suggestPertEstimates(
+    taskType: string,
+    description: string,
+    projectContext?: string,
+  ): Promise<any> {
+    return this.geminiService.suggestPertEstimates(taskType, description, projectContext);
+  }
+
+  /**
+   * Sprint 3: Atualizar estimativas PERT de uma tarefa existente
+   * @param taskId ID da tarefa
+   * @param updatePertDto DTO com pertOptimistic, pertLikely, pertPessimistic em minutos
+   * @returns Tarefa atualizada com PERT recalculado
+   */
+  async updatePert(
+    taskId: string,
+    updatePertDto: {
+      pertOptimisticMinutes: number;
+      pertMostLikelyMinutes: number;
+      pertPessimisticMinutes: number;
+    },
+  ): Promise<TaskDocument> {
+    if (!taskId || !Types.ObjectId.isValid(taskId)) {
+      throw new BadRequestException(`ID inválido: ${taskId}`);
+    }
+
+    const { pertOptimisticMinutes: O, pertMostLikelyMinutes: M, pertPessimisticMinutes: P } = updatePertDto;
+
+    // Validações
+    if (typeof O !== 'number' || typeof M !== 'number' || typeof P !== 'number') {
+      throw new BadRequestException('Todos os valores PERT devem ser números');
+    }
+    if (!(O > 0 && M > 0 && P > 0)) {
+      throw new BadRequestException('Valores PERT devem ser maiores que zero');
+    }
+    if (!(O <= M && M <= P)) {
+      throw new BadRequestException('Ordem inválida: Otimista ≤ Provável ≤ Pessimista');
+    }
+
+    // Calcula TE e variância
+    const expectedTime = (O + 4 * M + P) / 6;
+    const range = P - O;
+    const variance = Math.pow(range / 6, 2);
+    const standardDeviation = Math.sqrt(variance);
+
+    // Calcula novo deadline com 10% de margem
+    const task = await this.taskModel.findById(taskId).exec();
+    if (!task) {
+      throw new NotFoundException(`Task with id ${taskId} not found`);
+    }
+
+    const createdAt = task.createdAt || new Date();
+    const deadline = this.calculateDeadline(createdAt, expectedTime);
+
+    // Atualiza task
+    const updatedTask = await this.taskModel
+      .findByIdAndUpdate(
+        taskId,
+        {
+          pertOptimisticMinutes: O,
+          pertMostLikelyMinutes: M,
+          pertPessimisticMinutes: P,
+          pertExpectedMinutes: Math.round(expectedTime * 100) / 100,
+          pertVariance: Math.round(variance * 100) / 100,
+          deadline,
+        },
+        { new: true },
+      )
+      .exec();
+
+    if (!updatedTask) {
+      throw new NotFoundException(`Task with id ${taskId} not found`);
+    }
+
+    return updatedTask;
+  }
+
+  /**
+   * Calcula deadline baseado em TE + margem de 10%
+   * @param createdAt Data de criação da tarefa
+   * @param expectedTimeMinutes Tempo esperado em minutos
+   * @returns Data de deadline
+   */
+  private calculateDeadline(createdAt: Date, expectedTimeMinutes: number): Date {
+    // Arredonda para próxima hora cheia
+    const hoursNeeded = Math.ceil((expectedTimeMinutes * 1.1) / 60);
+    const deadlineMs = createdAt.getTime() + hoursNeeded * 60 * 60 * 1000;
+    return new Date(deadlineMs);
+  }
+
   async findAll(): Promise<TaskDocument[]> {
     return await this.taskModel.find().exec();
   }
