@@ -22,6 +22,7 @@ import { UpdateTaskDto } from './dto/update-task.dto';
 import { GenerateAiSuggestionsDto } from './dto/generate-ai-suggestions.dto';
 import { PertEstimateDto, PertEstimateResponseDto } from './dto/pert-estimate.dto';
 import { SuggestPertDto, PertSuggestionResponseDto, UpdatePertDto } from './dto/suggest-pert.dto';
+import { MoveTaskStatusDto } from './dto/move-task-status.dto'; // Sprint 4
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { CPMService } from './services/cpm.service';
 import { DependencyInferenceService } from './services/dependency-inference.service';
@@ -322,6 +323,60 @@ export class TasksController {
         }
       })();
     });
+  }
+
+  @Patch(':id/status')
+  @ApiOperation({ 
+    summary: 'Mover task para novo status (Kanban board)',
+    description: 'Move a task entre colunas do Kanban. Se status="done", valida checklist e marca como concluída. Outros status apenas atualizam a ordem.'
+  })
+  @ApiResponse({ status: 200, description: 'Task movida com sucesso.' })
+  @ApiResponse({ status: 400, description: 'Validação falhou (checklist incompleto ao mover para done, ou task concluída tentando sair de done).' })
+  @ApiResponse({ status: 404, description: 'Task não encontrada.' })
+  async moveTaskStatus(
+    @Param('id') id: string,
+    @Body() body: MoveTaskStatusDto,
+  ) {
+    return this.tasksService.moveTaskStatus(id, body.status);
+  }
+
+  @Get(':id/lineage')
+  @ApiOperation({ 
+    summary: 'Buscar lineage de uma task (ancestrais + filhos)',
+    description: 'Retorna cadeia de tasks parentes até a raiz e lista de filhos diretos.'
+  })
+  @ApiResponse({ status: 200, description: 'Lineage retornada com sucesso.' })
+  @ApiResponse({ status: 404, description: 'Task não encontrada.' })
+  async getTaskLineage(@Param('id') id: string) {
+    return this.tasksService.getTaskLineage(id);
+  }
+
+  @Post(':id/completion-feedback')
+  @ApiOperation({ 
+    summary: 'Gerar feedback de conclusão via LLM',
+    description: 'Gera feedback automático (catchball) para uma task concluída e persiste no banco.'
+  })
+  @ApiResponse({ status: 200, description: 'Feedback gerado com sucesso.' })
+  @ApiResponse({ status: 400, description: 'Task não está concluída.' })
+  @ApiResponse({ status: 404, description: 'Task não encontrada.' })
+  async generateCompletionFeedback(@Param('id') id: string) {
+    const feedback = await this.tasksService.generateCompletionFeedback(id);
+    return { feedback };
+  }
+
+  @Get(':id/completion-feedback')
+  @ApiOperation({ 
+    summary: 'Buscar último feedback de conclusão',
+    description: 'Retorna o feedback mais recente de uma task (gerado via LLM).'
+  })
+  @ApiResponse({ status: 200, description: 'Feedback retornado (pode ser null se não existir).' })
+  @ApiResponse({ status: 404, description: 'Task não encontrada.' })
+  async getCompletionFeedback(@Param('id') id: string) {
+    const task = await this.tasksService.findOne(id);
+    if (!task) throw new NotFoundException('Task not found');
+    
+    const feedback = await this.tasksService.getCompletionFeedback(id);
+    return feedback;
   }
 
   // ===== ROTAS GENÉRICAS COM :id DEVEM VIR POR ÚLTIMO =====

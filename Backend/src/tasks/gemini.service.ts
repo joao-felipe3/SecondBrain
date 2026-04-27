@@ -933,4 +933,39 @@ Retorne de 3 a 5 tarefas relevantes. Responda APENAS com o array JSON, nada mais
 
     return prompt;
   }
+
+  async generateCompletionFeedback(taskName: string, taskDescription?: string): Promise<string> {
+    try {
+      const model = this.genAI.getGenerativeModel({
+        model: this.model,
+        safetySettings: [
+          {
+            category: HarmCategory.HARM_CATEGORY_UNSPECIFIED,
+            threshold: HarmBlockThreshold.BLOCK_NONE,
+          },
+        ],
+      });
+
+      const prompt = `
+Você é um mentor de produtividade e aprendizado.
+
+Uma pessoa acabou de completar a seguinte tarefa:
+- **Nome**: ${taskName}
+${taskDescription ? `- **Descrição**: ${taskDescription}` : ''}
+
+Gere um feedback construtivo e breve (2-3 linhas) que:
+1. Reconheça o esforço e progresso
+2. Destaque um aprendizado ou padrão observado
+3. Ofereça uma sugestão leve para melhorar próximos passos
+
+Responda em Português (Brasil), de forma amigável mas profissional. Sem emojis, sem exageros.`;
+
+      const result = await model.generateContent(prompt);
+      const text = result.response.text().trim();
+      return text;
+    } catch (error: any) {
+      console.error('Erro ao gerar feedback de conclusão:', error?.message);
+      throw error;
+    }
+  }
 }

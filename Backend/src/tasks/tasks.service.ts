@@ -19,6 +19,7 @@ export class TasksService {
   constructor(
     @InjectModel('Task') private readonly taskModel: Model<TaskDocument>,
     @InjectModel('Project') private readonly projectModel: Model<ProjectDocument>,
+    @InjectModel('TaskCompletionFeedback') private readonly feedbackModel: Model<any>,
     @Inject(forwardRef(() => ProjectsService))
     private readonly projectsService: ProjectsService,
     @Inject(forwardRef(() => EVMService))
@@ -851,6 +852,18 @@ export class TasksService {
       task.pomodorosDid = plannedPomodoros;
     }
 
+    const projectId = task.project?.toString();
+    if (projectId) {
+      const maxOrder = await this.taskModel
+        .findOne({ project: projectId, status: 'done' })
+        .sort({ kanbanOrder: -1 })
+        .select('kanbanOrder')
+        .exec();
+      task.status = 'done';
+      task.kanbanOrder = (maxOrder?.kanbanOrder || 0) + 1;
+      task.statusUpdatedAt = new Date();
+    }
+
     this.applyEvmMetrics(task);
     const updatedTask = await task.save();
 
@@ -1317,5 +1330,195 @@ export class TasksService {
 
     // 4. Retornar as métricas calculadas
     return pertMetrics;
+  }
+
+  async moveTaskStatus(id: string, toStatus: 'todo' | 'doing' | 'review' | 'done'): Promise<TaskDocument> {
+    if (!id || !Types.ObjectId.isValid(id)) {
+      throw new BadRequestException(`ID inválido: ${id}`);
+    }
+
+    const task = await this.taskModel.findById(id).exec();
+    if (!task) {
+      throw new NotFoundException(`Task with id ${id} not found`);
+    }
+
+    // Rule: if task is concluded, it must stay in 'done' status
+    if (task.isConcluded && toStatus !== 'done') {
+      throw new BadRequestException('Tarefa concluída não pode ser movida para fora de "done"');
+    }
+
+    // If moving to 'done', use the conclude endpoint (with checklist validation)
+    if (toStatus === 'done') {
+      return this.markAsConcluded(id);
+    }
+
+    // For other statuses: update status, statusUpdatedAt, and kanbanOrder
+    const projectId = task.project?.toString();
+    const maxOrder = await this.taskModel
+      .findOne({ project: projectId, status: toStatus })
+      .sort({ kanbanOrder: -1 })
+      .select('kanbanOrder')
+      .exec();
+
+    const nextOrder = (maxOrder?.kanbanOrder || 0) + 1;
+
+    const updatedTask = await this.taskModel
+      .findByIdAndUpdate(
+        id,
+        {
+          status: toStatus,
+          statusUpdatedAt: new Date(),
+          kanbanOrder: nextOrder,
+        },
+        { new: true },
+      )
+      .exec();
+
+    if (!updatedTask) {
+      throw new NotFoundException(`Task with id ${id} not found`);
+    }
+
+    return updatedTask;
+  }
+
+  /**
+   * Get task lineage (parent chain + children)
+   */
+  async getTaskLineage(id: string, maxDepth: number = 50): Promise<{
+    ancestors: any[];
+    children: any[];
+    warnings: string[];
+  }> {
+    if (!id || !Types.ObjectId.isValid(id)) {
+      throw new BadRequestException(`ID inválido: ${id}`);
+    }
+
+    const task = await this.taskModel.findById(id).exec();
+    if (!task) {
+      throw new NotFoundException(`Task with id ${id} not found`);
+    }
+
+    const warnings: string[] = [];
+    const ancestors: any[] = [];
+    let current = task;
+    let depth = 0;
+
+    // Build ancestor chain (parents)
+    while (current.parentTaskId && depth < maxDepth) {
+      const parent = await this.taskModel.findById(current.parentTaskId).exec();
+      if (!parent) break;
+
+      ancestors.unshift({
+        _id: parent._id,
+        name: parent.name,
+        status: parent.status || 'todo',
+      });
+
+      current = parent;
+      depth++;
+    }
+
+    if (depth >= maxDepth) {
+      warnings.push(`Ancestor chain depth limit (${maxDepth}) reached`);
+    }
+
+    // Get direct children
+    const children = await this.taskModel
+      .find({ parentTaskId: id })
+      .select('_id name status')
+      .exec();
+
+    return {
+      ancestors,
+      children: children.map((c) => ({
+        _id: c._id,
+        name: c.name,
+        status: c.status || 'todo',
+      })),
+      warnings,
+    };
+  }
+
+  /**
+   * Generate completion feedback via LLM and persist
+   */
+  async generateCompletionFeedback(id: string): Promise<string> {
+    if (!id || !Types.ObjectId.isValid(id)) {
+      throw new BadRequestException(`ID inválido: ${id}`);
+    }
+
+    const task = await this.taskModel.findById(id).exec();
+    if (!task) {
+      throw new NotFoundException(`Task with id ${id} not found`);
+    }
+
+    if (!task.isConcluded) {
+      throw new BadRequestException('Task deve estar concluída para gerar feedback');
+    }
+
+    const inputSnapshot = {
+      name: task.name,
+      description: task.description,
+      checklist: task.checklist,
+      pomodoros: task.pomodorosDid,
+      experience: task.experience,
+      difficulty: task.difficult,
+    };
+
+    try {
+      // Use GeminiService to generate feedback
+      const feedback = await this.geminiService.generateCompletionFeedback(
+        task.name,
+        task.description,
+      );
+
+      // Persist feedback
+      const savedFeedback = await this.feedbackModel.create({
+        task: task._id,
+        project: task.project,
+        modelName: 'gemini-2.0-flash',
+        promptVersion: 'v1',
+        inputSnapshot,
+        feedback,
+      });
+
+      return feedback;
+    } catch (error: any) {
+      // Save error state
+      await this.feedbackModel.create({
+        task: task._id,
+        project: task.project,
+        modelName: 'gemini-2.0-flash',
+        promptVersion: 'v1',
+        inputSnapshot,
+        error: error?.message || 'Unknown error',
+      });
+
+      throw new Error(`Failed to generate feedback: ${error?.message}`);
+    }
+  }
+
+  /**
+   * Retrieve latest completion feedback for task
+   */
+  async getCompletionFeedback(id: string): Promise<{ feedback: string; createdAt: Date } | null> {
+    if (!id || !Types.ObjectId.isValid(id)) {
+      throw new BadRequestException(`ID inválido: ${id}`);
+    }
+
+    const feedback = await this.feedbackModel
+      .findOne({ task: id, feedback: { $exists: true, $ne: null } })
+      .sort({ createdAt: -1 })
+      .select('feedback createdAt')
+      .exec();
+
+    if (!feedback) {
+      return null;
+    }
+
+    return {
+      feedback: feedback.feedback,
+      createdAt: feedback.createdAt || new Date(),
+    };
   }
 }

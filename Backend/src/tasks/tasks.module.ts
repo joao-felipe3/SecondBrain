@@ -28,6 +28,8 @@ import { ProjectBufferSchema } from './schemas/project-buffer.schema'; // NOVO: 
 import { ProjectBuffer } from './entities/project-buffer.entity'; // NOVO: Importa entidade de buffer
 import { RequirementSchema } from './schemas/requirement.schema'; // NOVO: Importa schema de requisito
 import { Requirement } from './entities/requirement.entity'; // NOVO: Importa entidade de requisito
+import { TaskCompletionFeedbackSchema } from './schemas/task-completion-feedback.schema'; // Sprint 4: Importa schema de feedback
+import { TaskCompletionFeedback } from './entities/task-completion-feedback.entity'; // Sprint 4: Importa entidade de feedback
 import { forwardRef } from '@nestjs/common';
 import { ProjectsModule } from '../projects/projects.module';
 
@@ -42,6 +44,7 @@ import { ProjectsModule } from '../projects/projects.module';
       { name: TaskDependency.name, schema: TaskDependencySchema },
       { name: ProjectBuffer.name, schema: ProjectBufferSchema }, // NOVO: Adiciona ProjectBuffer
       { name: Requirement.name, schema: RequirementSchema }, // NOVO: Adiciona Requirement
+      { name: TaskCompletionFeedback.name, schema: TaskCompletionFeedbackSchema }, // Sprint 4: Adiciona TaskCompletionFeedback
     ]), 
     forwardRef(() => ProjectsModule)
   ],

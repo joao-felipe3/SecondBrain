@@ -57,6 +57,9 @@ export interface TaskDocument extends Document {
   evmEarnedValueMinutes?: number;
   evmSchedulePerformanceIndex?: number;
   evmAlert?: string;
+  status?: 'todo' | 'doing' | 'review' | 'done';
+  statusUpdatedAt?: Date;
+  kanbanOrder?: number;
   createdAt?: Date;
 }
 
@@ -113,12 +116,17 @@ export const TaskSchema = new Schema<TaskDocument>({
   evmEarnedValueMinutes: { type: Number },
   evmSchedulePerformanceIndex: { type: Number },
   evmAlert: { type: String },
+  status: { type: String, enum: ['todo', 'doing', 'review', 'done'], default: 'todo' },
+  statusUpdatedAt: { type: Date, default: Date.now },
+  kanbanOrder: { type: Number, default: 0 },
   createdAt: { type: Date, default: Date.now },
 });
 
+// Indexes
 TaskSchema.index({ project: 1, generationBatchId: 1 });
 TaskSchema.index({ project: 1, parentWbsNodeId: 1 });
 TaskSchema.index({ project: 1, themeTag: 1 });
 TaskSchema.index({ project: 1, microTaskType: 1 });
 TaskSchema.index({ parentTaskId: 1 });
 TaskSchema.index({ parentRecurringId: 1 });
+TaskSchema.index({ project: 1, status: 1, kanbanOrder: 1 });
