@@ -1,5 +1,5 @@
 <template>
-  <v-col cols="4" class="py-1 d-flex flex-column justify-center task-sidebar">
+  <v-col cols="3" class="py-1 d-flex flex-column justify-center task-sidebar">
     <TaskProjectList :projects="projects" />
     <WoodPanel
       title="Calendar"
@@ -24,6 +24,8 @@
 .task-sidebar {
   height: 100vh;
   overflow: visible;
+  margin-left: -2.5%;
+  z-index: -1;
 }
 
 @media (max-width: 960px) {

@@ -12,6 +12,9 @@ export { default as TaskZoomedContent } from './board/ZoomedContent.vue'
 export { default as TaskStatsCard } from './board/StatsCard.vue'
 export { default as TaskBackgroundDecor } from './board/BackgroundDecor.vue'
 
+// Kanban (Sprint 4)
+export { default as TaskKanbanBoard } from './kanban/KanbanBoard.vue'
+
 // Widget components (reusable widgets)
 export { default as TaskCalendar } from './widgets/Calendar.vue'
 export { default as TaskProjectList } from './widgets/ProjectList.vue'

@@ -16,31 +16,45 @@ export function useZoomController({ emit, state }: { emit: EmitFn; state: ZoomSt
   const { animateZoomIn, animateZoomOut } = useZoomAnimation()
 
   async function zoomIntoTask(event: MouseEvent, task: Task) {
-    const paper = event.currentTarget as HTMLElement
+    const target = event.currentTarget as HTMLElement | null
+    const paper = (target?.querySelector?.('.task-paper') as HTMLElement | null) ?? target
+    if (!paper) return
+
     state.originalRect.value = paper.getBoundingClientRect()
     state.createRef.value = true
+    // Lock UI interactions (ex.: drag-and-drop) as soon as zoom begins.
+    state.zoomed.value = true
     emit('zoom-in')
 
     await animateZoomIn(paper)
     state.zoomedTask.value = task
-    state.zoomed.value = true
   }
 
   async function zoomOutTask() {
+    const zoomedEl = document.querySelector('.zoomed-task-paper')
+    const originalRect = state.originalRect.value
+
+    const shouldRemoveLastTask = state.create.value && state.createRef.value
+    const zoomedTaskId = state.zoomedTask.value?._id
+
+    // Start the animation FIRST while the element is still mounted.
+    const animationPromise =
+      zoomedEl instanceof HTMLElement && originalRect
+        ? animateZoomOut(zoomedEl, originalRect)
+        : Promise.resolve()
+
+    // Immediately unlock the board/UI (prevents the “lag” feeling).
     state.zoomed.value = false
     emit('zoom-out')
 
-    if (state.create.value && state.createRef.value) {
-      emit('remove-last-task', state.zoomedTask.value?._id)
-    }
-
-    const zoomedEl = document.querySelector('.zoomed-task-paper')
+    // Tear down the overlay while the clone animates back to its origin.
     state.zoomedTask.value = null
 
-    if (zoomedEl instanceof HTMLElement && state.originalRect.value) {
-      await animateZoomOut(zoomedEl, state.originalRect.value)
+    if (shouldRemoveLastTask) {
+      emit('remove-last-task', zoomedTaskId)
     }
 
+    await animationPromise
     state.originalRect.value = null
   }
 

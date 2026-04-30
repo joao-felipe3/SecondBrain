@@ -1,41 +1,25 @@
 <template>
-  <client-only>
-    <transition name="zoom" appear>
-      <div
-        :key="zoomed"
-        class="background-base"
-        :class="{
-          'zoomed-bg': zoomed,
-          'zoomed-active': zoomed,
-          'local-bg': !zoomed
-        }"
-      />
-    </transition>
+  <div class="decor-container">
+    <client-only>
+      <transition name="zoom" appear>
+        <div
+          :key="zoomed"
+          class="background-base"
+          :class="{
+            'zoomed-bg': zoomed,
+            'zoomed-active': zoomed,
+            'local-bg': !zoomed
+          }"
+        />
+      </transition>
 
-    <!-- Camada escura ao dar zoom -->
-    <transition name="fade" appear>
-      <div v-if="zoomed" class="dark-overlay" />
-    </transition>
+      <!-- Camada escura ao dar zoom -->
+      <transition name="fade" appear>
+        <div v-if="zoomed" class="dark-overlay" />
+      </transition>
 
-    <!-- Papel decorativo com título -->
-    <v-img
-      src="svg/old-paper-3.svg"
-      alt="Old Paper"
-      width="14%"
-      class="decor-paper"
-      contain
-    />
-
-    <svg class="decor-title" viewBox="0 0 300 150">
-      <defs> <path id="curve" d="M10,90 Q150,10 290,90" fill="transparent"/> </defs>
-      <text fill="black" font-size="40" font-family="'Irish Grover', cursive" font-weight="600">
-        <textPath href="#curve" startOffset="50%" text-anchor="middle">
-          Tasks
-        </textPath>
-      </text>
-    </svg>
-
-  </client-only>
+    </client-only>
+  </div>
 </template>
 
 <script setup>
@@ -45,6 +29,12 @@
 </script>
 
 <style scoped>
+.decor-container {
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
 .dark-overlay {
   position: fixed;
   inset: 0;
@@ -97,20 +87,5 @@
 }
 .zoom-enter-to, .zoom-leave-from {
   transform: translate(8%, -20%) scale(2);
-}
-
-.decor-paper {
-  position: absolute;
-  top: 21.5%;
-  left: 38.5%;
-  z-index: 10;
-}
-.decor-title {
-  position: absolute;
-  top: 19.5%;
-  left: 33%;
-  width: 25%;
-  height: auto;
-  z-index: 11;
 }
 </style>

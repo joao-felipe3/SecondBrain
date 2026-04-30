@@ -1,5 +1,5 @@
 <template>
-  <v-row dense class="gap-x-2 fill-height" :class="{ 'ml-n4': !isMobile }" style="height: 100%;">
+  <v-row dense class="fill-height ml-n8" style="height: 100%;">
     <TaskMain
       :tasks="tasks"
       :allTasks="allTasks"
@@ -7,9 +7,11 @@
       :zoomed="zoomed"
       :initialZoomedTask="newlyCreatedTask"
       :isMobile="isMobile"
+      :viewMode="viewMode"
       @zoom-in="onZoomStart"
       @zoom-out="onZoomEnd"
       @remove-last-task="removeLastTask"
+      @task-moved="handleTaskMoved"
       @task-created="handleTaskCreated"
     />
     <TaskSidebar v-if="!isMobile" :projects="projects" />
@@ -27,6 +29,7 @@ import TaskSidebar from '../../components/features/tasks/layout/Sidebar.vue'
 // Responsive
 const MOBILE_BREAKPOINT = 960
 const isMobile = ref(false)
+const viewMode = ref('kanban')
 
 function checkMobile() {
   isMobile.value = window.innerWidth < MOBILE_BREAKPOINT
@@ -55,8 +58,17 @@ onBeforeUnmount(() => {
 
 async function loadInitialTasks() {
   await taskStore.loadTasks()
-  allTasks.value = taskStore.tasks // Keep all tasks
-  tasks.value = taskStore.tasks
+  // Copy arrays to ensure Vue updates even when Pinia mutates items in-place.
+  allTasks.value = taskStore.tasks.slice() // Keep all tasks
+  tasks.value = taskStore.tasks.slice()
+    .filter(task => task.isConcluded !== true)
+    .sort((a, b) => new Date(a.deadline).getTime() - new Date(b.deadline).getTime())
+}
+
+function handleTaskMoved() {
+  // Kanban updates the store; resync local refs so props passed down update immediately.
+  allTasks.value = taskStore.tasks.slice()
+  tasks.value = taskStore.tasks.slice()
     .filter(task => task.isConcluded !== true)
     .sort((a, b) => new Date(a.deadline).getTime() - new Date(b.deadline).getTime())
 }

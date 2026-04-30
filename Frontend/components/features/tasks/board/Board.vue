@@ -32,7 +32,7 @@
         :zoomed="zoomed"
         :create="create"
         :colors="getProjectColors(zoomedTask.project, projects)"
-        @close="zoomedTask = null"
+        @close="zoomOutTask"
         @close-zoom="zoomOutTask"
         @edit-task="handleEdit"
         @delete-task="handleDelete"
