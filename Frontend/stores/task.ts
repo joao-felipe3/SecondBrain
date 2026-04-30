@@ -199,5 +199,45 @@ export const useTaskStore = defineStore('task', {
     removeTaskById(id: string) {
       this.tasks = this.tasks.filter(t => t._id !== id)
     },
+
+    /**
+     * Sprint 4: Move task to new Kanban status
+     * If status='done': calls PATCH /tasks/:id/conclude (with checklist validation)
+     * Otherwise: calls PATCH /tasks/:id/status
+     */
+    async setTaskStatus(id: string, toStatus: 'todo' | 'doing' | 'review' | 'done') {
+      try {
+        let data: Task | null = null
+        let error: any = null
+
+        if (toStatus === 'done') {
+          // Moving to done = concluding the task
+          const { patch } = useApi(`/tasks/${id}/conclude`)
+          const result = await patch()
+          data = result.data
+          error = result.error
+        } else {
+          // Moving to other status
+          const { patch } = useApi(`/tasks/${id}/status`)
+          const result = await patch({ status: toStatus })
+          data = result.data
+          error = result.error
+        }
+
+        if (!error && data) {
+          const index = this.tasks.findIndex(t => t._id === id)
+          if (index !== -1) {
+            this.tasks[index] = data
+          }
+          return { success: true, data }
+        } else {
+          console.error('Erro ao mover tarefa para status:', error)
+          return { success: false, error: error?.message || 'Unknown error' }
+        }
+      } catch (err: any) {
+        console.error('Erro ao setTaskStatus:', err)
+        return { success: false, error: err?.message || 'Unknown error' }
+      }
+    },
   }
 })

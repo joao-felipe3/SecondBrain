@@ -7,6 +7,7 @@ import { ProjectsService } from '../projects/projects.service';
 import { GeminiService } from './gemini.service';
 import { EVMService } from '../projects/services/evm.service';
 import { PertService } from './services/pert.service';
+import { ChecklistService } from './checklist.service';
 import { beforeEach, describe, expect, it, jest } from '@jest/globals';
 
 describe('TasksService', () => {
@@ -14,6 +15,8 @@ describe('TasksService', () => {
   let taskModelMock: any;
   let projectsServiceMock: { recalculateProjectStats: jest.Mock };
   let geminiServiceMock: any;
+  let checklistServiceMock: any;
+  let feedbackModelMock: any;
 
   const baseMicroTaskDto = {
     name: 'Criar endpoint de micro-task',
@@ -54,16 +57,42 @@ describe('TasksService', () => {
           'Executar tarefa',
           'Validar entrega',
         ]),
+      generateChecklistWithHistory: jest
+        .fn()
+        .mockImplementation(async () => [
+          'Preparar contexto',
+          'Executar tarefa',
+          'Validar entrega',
+        ]),
     };
+
+    checklistServiceMock = {
+      validateChecklistStructure: (jest.fn() as any).mockReturnValue({ isValid: true }),
+      findSimilarTasksInProject: (jest.fn() as any).mockResolvedValue([] as any),
+      enrichHistoryContext: (jest.fn() as any).mockReturnValue(''),
+      calculateCompletionPercentage: (jest.fn() as any).mockReturnValue(0),
+      validateChecklistCompletion: (jest.fn() as any).mockImplementation((items: any[]) => {
+        const normalized = Array.isArray(items) ? items : [];
+        const isValid = normalized.every((it) => Boolean(it?.completed) === true);
+        return {
+          isValid,
+          reason: isValid ? undefined : 'Checklist incompleto: complete todos os itens antes de concluir.',
+        };
+      }),
+    };
+
+    feedbackModelMock = {};
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         TasksService,
         { provide: getModelToken('Task'), useValue: taskModelMock },
         { provide: getModelToken('Project'), useValue: {} },
+        { provide: getModelToken('TaskCompletionFeedback'), useValue: feedbackModelMock },
         { provide: ProjectsService, useValue: projectsServiceMock },
         { provide: GeminiService, useValue: geminiServiceMock },
         { provide: EVMService, useValue: { recordProgress: jest.fn() } },
+        { provide: ChecklistService, useValue: checklistServiceMock },
         { provide: PertService, useValue: { calculatePertMetrics: jest.fn() } },
       ],
     }).compile();
@@ -156,41 +185,46 @@ describe('TasksService', () => {
   describe('validateCompletionRequirements', () => {
     it('deve permitir conclusão de tarefa sem checklist', async () => {
       const taskId = new Types.ObjectId();
-      const mockTaskFind = jest
-        .fn()
-        .mockResolvedValue({ _id: taskId, checklist: [] });
-      const mockTaskModel = {
-        findById: jest.fn().mockReturnValue({ exec: mockTaskFind }),
-      };
-
-      const serviceWithMock = { ...service, taskModel: mockTaskModel };
+      const mockTaskFind = (jest.fn() as any).mockResolvedValue({
+        _id: taskId,
+        checklist: [],
+      });
+      (taskModelMock as any).findById = jest.fn().mockReturnValue({ exec: mockTaskFind });
       const result = await service.validateCompletionRequirements(taskId.toString());
 
       expect(result.isValid).toBe(true);
     });
 
+    it('deve rejeitar conclusão quando checklist legado está como string[] (0%)', async () => {
+      const taskId = new Types.ObjectId();
+      const mockTaskFind = (jest.fn() as any).mockResolvedValue({
+        _id: taskId,
+        checklist: ['Item 1', 'Item 2', 'Item 3'],
+      });
+      (taskModelMock as any).findById = jest.fn().mockReturnValue({ exec: mockTaskFind });
+
+      const result = await service.validateCompletionRequirements(taskId.toString());
+      expect(result.isValid).toBe(false);
+      expect(result.reason || '').toContain('Checklist incompleto');
+    });
+
     it('deve rejeitar conclusão com checklist incompleto (50%)', async () => {
       const taskId = new Types.ObjectId();
-      const mockTaskFind = jest.fn().mockResolvedValue({
+      const mockTaskFind = (jest.fn() as any).mockResolvedValue({
         _id: taskId,
         checklist: [
           { item: 'item1', completed: true },
           { item: 'item2', completed: false },
         ],
       });
-      const mockTaskModel = {
-        findById: jest.fn().mockReturnValue({ exec: mockTaskFind }),
-      };
+      (taskModelMock as any).findById = jest.fn().mockReturnValue({ exec: mockTaskFind });
 
       // Nota: Isso é um teste simplificado. Para teste completo, seria necessário
       // mockear corretamente o taskModel do service
       const result = await service.validateCompletionRequirements(taskId.toString());
 
-      // Esperamos falha se há itens não completos
-      if (result.reason) {
-        expect(result.isValid).toBe(false);
-        expect(result.reason).toContain('incompleto');
-      }
+      expect(result.isValid).toBe(false);
+      expect(result.reason || '').toContain('incompleto');
     });
 
     it('deve rejeitar ID inválido', async () => {
@@ -209,7 +243,7 @@ describe('TasksService', () => {
           { item: 'item1', completed: false, order: 0 },
           { item: 'item2', completed: false, order: 1 },
         ],
-        save: jest.fn().mockResolvedValue({
+        save: (jest.fn() as any).mockResolvedValue({
           checklist: [
             { item: 'item1', completed: true, order: 0 },
             { item: 'item2', completed: false, order: 1 },
@@ -217,9 +251,8 @@ describe('TasksService', () => {
         }),
       };
 
-      const mockTaskModel = {
-        findById: jest.fn().mockReturnValue({ exec: jest.fn().mockResolvedValue(mockTask) }),
-      };
+      const execFind = (jest.fn() as any).mockResolvedValue(mockTask);
+      (taskModelMock as any).findById = jest.fn().mockReturnValue({ exec: execFind });
 
       // Nota: Este é um teste estrutural. Para teste completo, seria necessário
       // configurar completamente o service com mocks de dependências Sprint 2
@@ -233,14 +266,12 @@ describe('TasksService', () => {
 
     it('deve rejeitar index fora do range', async () => {
       const taskId = new Types.ObjectId();
-      const mockTaskFind = jest.fn().mockResolvedValue({
+      const mockTaskFind = (jest.fn() as any).mockResolvedValue({
         _id: taskId,
         checklist: [{ item: 'item1', completed: false }],
       });
 
-      const mockTaskModel = {
-        findById: jest.fn().mockReturnValue({ exec: mockTaskFind }),
-      };
+      (taskModelMock as any).findById = jest.fn().mockReturnValue({ exec: mockTaskFind });
 
       // Este teste valida a lógica de validação de bounds
     });

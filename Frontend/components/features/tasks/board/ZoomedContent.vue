@@ -53,8 +53,6 @@ import EditarTab from '../tabs/EditarTab.vue'
 import ChecklistTab from '../tabs/ChecklistTab.vue'
 import PertTab from '../tabs/PertTab.vue'
 import HistoryTab from '../tabs/HistoryTab.vue'
-import LineageTab from '../tabs/LineageTab.vue'
-import ValueTab from '../tabs/ValueTab.vue'
 import FeedbackTab from '../tabs/FeedbackTab.vue'
 import Button from '../../../ui/svg/Button.vue'
 
@@ -78,8 +76,6 @@ const tabs: TabConfig[] = [
   { id: 'checklist', label: 'Checklist', icon: '✓', component: ChecklistTab },
   { id: 'pert', label: 'PERT', icon: '⏱️', component: PertTab },
   { id: 'historico', label: 'Histórico', icon: '🕐', component: HistoryTab },
-  { id: 'lineage', label: 'Genealogia', icon: '🔗', component: LineageTab },
-  { id: 'valor', label: 'Valor', icon: '⭐', component: ValueTab },
   { id: 'feedback', label: 'Feedback', icon: '💬', component: FeedbackTab },
 ]
 

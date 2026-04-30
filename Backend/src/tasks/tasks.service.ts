@@ -469,10 +469,20 @@ export class TasksService {
       return { isValid: true };
     }
 
-    // Se tem checklist, validar 100% de conclusão (filtra apenas objetos com 'completed')
-    const checklistItems = task.checklist.filter(
-      (item): item is Exclude<typeof item, string> => typeof item !== 'string',
-    );
+    // Se tem checklist, validar 100% de conclusão.
+    // Importante: checklists antigos podem estar salvos como `string[]`.
+    // Esses itens precisam contar como NÃO concluídos (equivalente a completed=false),
+    // senão a tarefa consegue ser concluída sem completar nada.
+    const checklistItems = task.checklist.map((entry: any) => {
+      if (typeof entry === 'string') {
+        return { completed: false };
+      }
+      if (entry && typeof entry === 'object') {
+        return { completed: Boolean(entry.completed) };
+      }
+      return { completed: false };
+    });
+
     return this.checklistService.validateChecklistCompletion(checklistItems);
   }
 
@@ -1476,8 +1486,8 @@ export class TasksService {
       const savedFeedback = await this.feedbackModel.create({
         task: task._id,
         project: task.project,
-        modelName: 'gemini-2.0-flash',
-        promptVersion: 'v1',
+        modelName: this.geminiService.getModelName(),
+        promptVersion: 'v2',
         inputSnapshot,
         feedback,
       });
@@ -1488,8 +1498,8 @@ export class TasksService {
       await this.feedbackModel.create({
         task: task._id,
         project: task.project,
-        modelName: 'gemini-2.0-flash',
-        promptVersion: 'v1',
+        modelName: this.geminiService.getModelName(),
+        promptVersion: 'v2',
         inputSnapshot,
         error: error?.message || 'Unknown error',
       });

@@ -1,35 +1,37 @@
 <template>
-  <h1 class="text-center py-2">{{ createOrEdit }} Task</h1>
+  <div class="task-form" v-bind="$attrs">
+    <h1 class="text-center py-2">{{ createOrEdit }} Task</h1>
 
-  <CommonTextField v-model="task.name" label="Quest Title" :required="true"/>
-  <CommonDescriptionField v-model="task.description"/>
+    <CommonTextField v-model="task.name" label="Quest Title" :required="true"/>
+    <CommonDescriptionField v-model="task.description"/>
 
-  <v-row>
-    <v-col cols="6"><CommonSlider v-model="task.difficult" label="Difficulty" /></v-col>
-    <v-col cols="6"><CommonSlider v-model="task.priority" label="Priority" /></v-col>
-  </v-row>
+    <v-row>
+      <v-col cols="6"><CommonSlider v-model="task.difficult" label="Difficulty" /></v-col>
+      <v-col cols="6"><CommonSlider v-model="task.priority" label="Priority" /></v-col>
+    </v-row>
 
-  <v-row dense>
-    <v-col cols="6"><CommonDatePickerField label="Deadline" v-model="localDeadline" :formatted="formattedDeadline" :minDate="getYesterday()" :required="true" /></v-col>
-    <v-col cols="6"><CommonDatePickerField label="Notification" v-model="localNotification" :formatted="formattedNotification" placeholder="Selecione a data" :minDate="getYesterday()"/></v-col>
-  </v-row>
+    <v-row dense>
+      <v-col cols="6"><CommonDatePickerField label="Deadline" v-model="localDeadline" :formatted="formattedDeadline" :minDate="getYesterday()" :required="true" /></v-col>
+      <v-col cols="6"><CommonDatePickerField label="Notification" v-model="localNotification" :formatted="formattedNotification" placeholder="Selecione a data" :minDate="getYesterday()"/></v-col>
+    </v-row>
 
-  <v-row dense class="mt-n3 mb-n4">
-    <v-col cols="6"><CommonSelect v-model="task.project" label="Project" :items="projectNames" :required="true" /></v-col>
-    <v-col cols="6"><CommonSelect v-model="task.recurrency" label="Recurrency" :items="recurrencyOptions" :required="true" /></v-col>
-  </v-row>
+    <v-row dense class="mt-n3 mb-n4">
+      <v-col cols="6"><CommonSelect v-model="task.project" label="Project" :items="projectNames" :required="true" /></v-col>
+      <v-col cols="6"><CommonSelect v-model="task.recurrency" label="Recurrency" :items="recurrencyOptions" :required="true" /></v-col>
+    </v-row>
 
-  <v-row dense class="mt-1 mb-1">
-    <v-col cols="6">
-      <CommonSelect
-        v-model="microTaskTypeUi"
-        label="Task Type"
-        :items="microTaskTypeOptions"
-      />
-    </v-col>
-  </v-row>
+    <v-row dense class="mt-1 mb-1">
+      <v-col cols="6">
+        <CommonSelect
+          v-model="microTaskTypeUi"
+          label="Task Type"
+          :items="microTaskTypeOptions"
+        />
+      </v-col>
+    </v-row>
 
-  <CommonEffortSelect class="mt-n4" v-model="task.pomodorosPlanned" />
+    <CommonEffortSelect class="mt-n4" v-model="task.pomodorosPlanned" />
+  </div>
 </template>
 
 <script setup>

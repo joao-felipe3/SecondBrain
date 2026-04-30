@@ -57,4 +57,8 @@ export interface Task {
   contextTag?: string
   themeTag?: string[]
   createdAt?: Date
+  // Sprint 4: Kanban persistence
+  status?: 'todo' | 'doing' | 'review' | 'done'
+  statusUpdatedAt?: Date
+  kanbanOrder?: number
 }

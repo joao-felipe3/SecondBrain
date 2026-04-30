@@ -935,34 +935,122 @@ Retorne de 3 a 5 tarefas relevantes. Responda APENAS com o array JSON, nada mais
   }
 
   async generateCompletionFeedback(taskName: string, taskDescription?: string): Promise<string> {
+    const normalize = (value: unknown) => String(value ?? '').replace(/\s+/g, ' ').trim();
+
+    const sanitizeTextFallback = (raw: string): string => {
+      const text = String(raw ?? '').trim();
+      if (!text) return '';
+
+      // If the model leaked meta-structure, try to salvage only the final draft.
+      const draftMatch = text.match(/\bDraft\s*:\s*([\s\S]+)$/i);
+      const afterDraft = draftMatch?.[1]?.trim();
+      if (afterDraft) {
+        const cleaned = afterDraft
+          .split('\n')
+          .map((l) => l.trim())
+          .filter(Boolean)
+          .join(' ');
+        return cleaned;
+      }
+
+      // Otherwise, drop obvious meta lines and keep last meaningful paragraph.
+      const lines = text
+        .split('\n')
+        .map((l) => l.trim())
+        .filter(Boolean)
+        .filter((l) => {
+          if (/^\*\s*role\s*:/i.test(l)) return false;
+          if (/^\*\s*completed task\s*:/i.test(l)) return false;
+          if (/^\*\s*description\s*:/i.test(l)) return false;
+          if (/^\*\s*goal\s*:/i.test(l)) return false;
+          if (/^\*\s*requirements\s*:/i.test(l)) return false;
+          if (/^\*\s*constraints\s*:/i.test(l)) return false;
+          if (/^\*\s*attempt\s*\d+/i.test(l)) return false;
+          if (/^\*\s*check\s*:?/i.test(l)) return false;
+          return true;
+        });
+      if (lines.length === 0) return text;
+      return lines.slice(-3).join(' ');
+    };
+
+    const buildFinalText = (praise: string, learning: string, nextStep: string) => {
+      const parts = [praise, learning, nextStep].map((p) => normalize(p)).filter(Boolean);
+      // Prefer 2–3 short lines for the UI.
+      return parts.slice(0, 3).join('\n');
+    };
+
     try {
-      const model = this.genAI.getGenerativeModel({
-        model: this.model,
-        safetySettings: [
-          {
-            category: HarmCategory.HARM_CATEGORY_UNSPECIFIED,
-            threshold: HarmBlockThreshold.BLOCK_NONE,
-          },
-        ],
+      const prompt = [
+        'Você é um mentor de produtividade e aprendizado.',
+        '',
+        'Contexto: uma pessoa acabou de concluir uma tarefa.',
+        `Nome da tarefa: ${normalize(taskName)}`,
+        taskDescription ? `Descrição: ${normalize(taskDescription)}` : '',
+        '',
+        'TAREFA:',
+        'Gere um feedback curto e útil em Português (Brasil), amigável mas profissional.',
+        'Sem emojis. Sem exageros. Não repita o contexto.',
+        '',
+        'FORMATO OBRIGATÓRIO:',
+        'Responda APENAS com um JSON válido (sem markdown, sem texto fora do JSON).',
+        'O JSON deve conter EXATAMENTE estas chaves (todas strings):',
+        '- "praise": reconhecimento do esforço/progresso (1 frase curta)',
+        '- "learning": aprendizado/padrão observado (1 frase curta)',
+        '- "nextStep": sugestão leve do próximo passo (1 frase curta)',
+        '- "finalText": versão final em 2-3 linhas, usando as 3 frases acima',
+        '',
+        'Regras:',
+        '- finalText deve ter quebras de linha (\\n) entre as frases.',
+        '- Não inclua listas, bullets, tentativas, rascunhos, checagens, nem as palavras "Role", "Attempt", "Draft".',
+      ]
+        .filter(Boolean)
+        .join('\n');
+
+      const raw = await this.generateContent(prompt, {
+        responseMimeType: 'application/json',
+        temperature: 0.4,
+        topK: 1,
+        topP: 1,
+        maxOutputTokens: 512,
       });
 
-      const prompt = `
-Você é um mentor de produtividade e aprendizado.
+      // Happy path: JSON
+      try {
+        const parsed = JSON.parse(raw);
+        const praise = normalize(parsed?.praise);
+        const learning = normalize(parsed?.learning);
+        const nextStep = normalize(parsed?.nextStep);
+        let finalText = String(parsed?.finalText ?? '').trim();
+        if (!finalText) {
+          finalText = buildFinalText(praise, learning, nextStep);
+        } else {
+          // Ensure it stays 2-3 lines max.
+          finalText = finalText
+            .split(/\r?\n/)
+            .map((l) => l.trim())
+            .filter(Boolean)
+            .slice(0, 3)
+            .join('\n');
+        }
 
-Uma pessoa acabou de completar a seguinte tarefa:
-- **Nome**: ${taskName}
-${taskDescription ? `- **Descrição**: ${taskDescription}` : ''}
+        const payload = {
+          praise,
+          learning,
+          nextStep,
+          finalText,
+        };
 
-Gere um feedback construtivo e breve (2-3 linhas) que:
-1. Reconheça o esforço e progresso
-2. Destaque um aprendizado ou padrão observado
-3. Ofereça uma sugestão leve para melhorar próximos passos
-
-Responda em Português (Brasil), de forma amigável mas profissional. Sem emojis, sem exageros.`;
-
-      const result = await model.generateContent(prompt);
-      const text = result.response.text().trim();
-      return text;
+        return JSON.stringify(payload);
+      } catch {
+        // Fallback: plain text
+        const cleaned = sanitizeTextFallback(raw);
+        return JSON.stringify({
+          praise: '',
+          learning: '',
+          nextStep: '',
+          finalText: cleaned,
+        });
+      }
     } catch (error: any) {
       console.error('Erro ao gerar feedback de conclusão:', error?.message);
       throw error;
