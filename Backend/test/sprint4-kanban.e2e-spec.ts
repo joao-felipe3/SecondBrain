@@ -180,6 +180,12 @@ describe('Sprint 4: Kanban Board E2E Tests', () => {
     it('should generate feedback when task moved to done', async () => {
       const taskId = 'test-feedback-task';
 
+      // Move to review first, then to done (triggers generateCompletionFeedback asynchronously in real impl)
+      await request(app.getHttpServer())
+        .patch(`/tasks/${taskId}/status`)
+        .send({ status: 'review' })
+        .expect(200);
+
       // Move to done (triggers generateCompletionFeedback asynchronously in real impl)
       await request(app.getHttpServer())
         .patch(`/tasks/${taskId}/status`)
@@ -261,7 +267,12 @@ describe('Sprint 4: Kanban Board E2E Tests', () => {
           .expect(200);
       }
 
-      // Now move to done should succeed
+      // Review first, then move to done should succeed
+      await request(app.getHttpServer())
+        .patch(`/tasks/${taskId}/status`)
+        .send({ status: 'review' })
+        .expect(200);
+
       await request(app.getHttpServer())
         .patch(`/tasks/${taskId}/status`)
         .send({ status: 'done' })

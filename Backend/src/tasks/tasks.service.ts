@@ -11,6 +11,7 @@ import { GenerateAiSuggestionsDto, AiTaskSuggestionDto, AiSuggestionsResponseDto
 import { GeminiService } from './gemini.service';
 import { ChecklistService } from './checklist.service';
 import { PertService } from './services/pert.service';
+import { FeedbackService } from './feedback.service';
 import { PertEstimateDto, PertEstimateResponseDto } from './dto/pert-estimate.dto';
 import { EVMService } from '../projects/services/evm.service';
 
@@ -27,6 +28,7 @@ export class TasksService {
     private readonly geminiService: GeminiService, // Injeta o GeminiService
     private readonly checklistService: ChecklistService, // Sprint 2: Validação e histórico de checklist
     private readonly pertService: PertService, // Injeta o PertService
+    private readonly feedbackService: FeedbackService,
   ) {}
 
   async recalculateProjectStats(projectId: string): Promise<void> {
@@ -846,6 +848,10 @@ export class TasksService {
       return task;
     }
 
+    if ((task.status || 'todo') !== 'review') {
+      throw new BadRequestException('Tarefa precisa estar em "review" antes de ser concluída');
+    }
+
     // Sprint 2: Valida requisitos de conclusão (checklist 100% se tem)
     const completionValidation = await this.validateCompletionRequirements(id);
     if (!completionValidation.isValid) {
@@ -1342,7 +1348,10 @@ export class TasksService {
     return pertMetrics;
   }
 
-  async moveTaskStatus(id: string, toStatus: 'todo' | 'doing' | 'review' | 'done'): Promise<TaskDocument> {
+  async moveTaskStatus(
+    id: string,
+    move: { status: 'todo' | 'doing' | 'review' | 'done'; toOrder?: number; toIndex?: number; fromStatus?: string; fromOrder?: number },
+  ): Promise<TaskDocument> {
     if (!id || !Types.ObjectId.isValid(id)) {
       throw new BadRequestException(`ID inválido: ${id}`);
     }
@@ -1351,6 +1360,8 @@ export class TasksService {
     if (!task) {
       throw new NotFoundException(`Task with id ${id} not found`);
     }
+
+    const toStatus = move.status;
 
     // Rule: if task is concluded, it must stay in 'done' status
     if (task.isConcluded && toStatus !== 'done') {
@@ -1362,15 +1373,47 @@ export class TasksService {
       return this.markAsConcluded(id);
     }
 
-    // For other statuses: update status, statusUpdatedAt, and kanbanOrder
+    // Compute target kanbanOrder
     const projectId = task.project?.toString();
-    const maxOrder = await this.taskModel
-      .findOne({ project: projectId, status: toStatus })
-      .sort({ kanbanOrder: -1 })
-      .select('kanbanOrder')
-      .exec();
 
-    const nextOrder = (maxOrder?.kanbanOrder || 0) + 1;
+    let targetOrder: number | undefined = undefined;
+    if (typeof move.toOrder === 'number' && Number.isFinite(move.toOrder)) {
+      targetOrder = move.toOrder;
+    }
+
+    // If toIndex provided, compute order between neighbors
+    if (targetOrder === undefined && typeof move.toIndex === 'number' && projectId) {
+      const destinationTasks = await this.taskModel
+        .find({ project: projectId, status: toStatus })
+        .sort({ kanbanOrder: 1 })
+        .select('kanbanOrder')
+        .exec();
+
+      const idx = Math.max(0, Math.floor(move.toIndex));
+      const len = destinationTasks.length;
+
+      if (len === 0) {
+        targetOrder = 1;
+      } else if (idx <= 0) {
+        targetOrder = (destinationTasks[0].kanbanOrder || 0) - 1;
+      } else if (idx >= len) {
+        targetOrder = (destinationTasks[len - 1].kanbanOrder || 0) + 1;
+      } else {
+        const prev = destinationTasks[idx - 1].kanbanOrder || 0;
+        const next = destinationTasks[idx].kanbanOrder || prev + 2;
+        targetOrder = (prev + next) / 2;
+      }
+    }
+
+    // Fallback: append to end of column
+    if (targetOrder === undefined) {
+      const maxOrder = await this.taskModel
+        .findOne({ project: projectId, status: toStatus })
+        .sort({ kanbanOrder: -1 })
+        .select('kanbanOrder')
+        .exec();
+      targetOrder = (maxOrder?.kanbanOrder || 0) + 1;
+    }
 
     const updatedTask = await this.taskModel
       .findByIdAndUpdate(
@@ -1378,7 +1421,7 @@ export class TasksService {
         {
           status: toStatus,
           statusUpdatedAt: new Date(),
-          kanbanOrder: nextOrder,
+          kanbanOrder: targetOrder,
         },
         { new: true },
       )
@@ -1450,6 +1493,111 @@ export class TasksService {
   }
 
   /**
+   * Retorna todos os descendentes (filhos, netos, etc.) de uma task
+   */
+  async getDescendants(id: string, maxDepth: number = 1000): Promise<any[]> {
+    if (!id || !Types.ObjectId.isValid(id)) {
+      throw new BadRequestException(`ID inválido: ${id}`);
+    }
+
+    const root = await this.taskModel.findById(id).exec();
+    if (!root) {
+      throw new NotFoundException(`Task with id ${id} not found`);
+    }
+
+    const descendants: any[] = [];
+    const stack: Array<{ id: string; depth: number }> = [{ id, depth: 0 }];
+
+    while (stack.length > 0) {
+      const { id: currentId, depth } = stack.pop()!;
+      if (depth >= maxDepth) continue;
+
+      const children = await this.taskModel.find({ parentTaskId: currentId }).select('_id name status experience isConcluded').exec();
+      for (const child of children) {
+        descendants.push({
+          _id: child._id,
+          name: child.name,
+          status: child.status || 'todo',
+          experience: Number((child as any).experience) || 0,
+          isConcluded: Boolean((child as any).isConcluded),
+        });
+        stack.push({ id: String(child._id), depth: depth + 1 });
+      }
+    }
+
+    return descendants;
+  }
+
+  /**
+   * Calcula a contribuição de valor (XP) desta tarefa para o objetivo raiz.
+   * Método pragmático: encontra a raiz (top ancestor), soma XP de todas as tasks concluídas
+   * dentro da árvore do root e soma XP concluída dentro do subtree desta task.
+   * Retorna percentuais e detalhamento simples.
+   */
+  async calculateValueContribution(id: string): Promise<{
+    contributionPercent: number;
+    subtreeCompletedXP: number;
+    totalCompletedXP: number;
+    breakdown: Array<{ _id: any; experience: number; isConcluded: boolean }>;
+  }> {
+    if (!id || !Types.ObjectId.isValid(id)) {
+      throw new BadRequestException(`ID inválido: ${id}`);
+    }
+
+    const task = await this.taskModel.findById(id).exec();
+    if (!task) {
+      throw new NotFoundException(`Task with id ${id} not found`);
+    }
+
+    // Encontra root (top ancestor)
+    let current: any = task;
+    while (current.parentTaskId) {
+      const parent = await this.taskModel.findById(current.parentTaskId).exec();
+      if (!parent) break;
+      current = parent;
+    }
+    const rootId = String(current._id ?? id);
+
+    // Pega todos os descendentes do root (inclui filhos diretos e recursivos)
+    const rootDescendants = await this.getDescendants(rootId, 5000);
+
+    // Inclui o root também na lista para cálculo, caso tenha experience
+    const rootTask = await this.taskModel.findById(rootId).select('_id experience isConcluded').exec();
+
+    const allNodes = [] as Array<{ _id: any; experience: number; isConcluded: boolean }>;
+    if (rootTask) {
+      allNodes.push({ _id: rootTask._id, experience: Number((rootTask as any).experience) || 0, isConcluded: Boolean((rootTask as any).isConcluded) });
+    }
+    for (const d of rootDescendants) {
+      allNodes.push({ _id: d._id, experience: Number(d.experience) || 0, isConcluded: Boolean(d.isConcluded) });
+    }
+
+    const totalCompletedXP = allNodes.reduce((s, n) => s + (n.isConcluded ? Number(n.experience || 0) : 0), 0);
+
+    // Obter subtree do task (inclui o próprio task + seus descendentes)
+    const subtreeDescendants = await this.getDescendants(id, 5000);
+    const subtreeNodes = [] as Array<{ _id: any; experience: number; isConcluded: boolean }>;
+    const taskSel = await this.taskModel.findById(id).select('_id experience isConcluded').exec();
+    if (taskSel) {
+      subtreeNodes.push({ _id: taskSel._id, experience: Number((taskSel as any).experience) || 0, isConcluded: Boolean((taskSel as any).isConcluded) });
+    }
+    for (const d of subtreeDescendants) {
+      subtreeNodes.push({ _id: d._id, experience: Number(d.experience) || 0, isConcluded: Boolean(d.isConcluded) });
+    }
+
+    const subtreeCompletedXP = subtreeNodes.reduce((s, n) => s + (n.isConcluded ? Number(n.experience || 0) : 0), 0);
+
+    const contributionPercent = totalCompletedXP > 0 ? (subtreeCompletedXP / totalCompletedXP) * 100 : 0;
+
+    return {
+      contributionPercent: Math.round(contributionPercent * 100) / 100,
+      subtreeCompletedXP,
+      totalCompletedXP,
+      breakdown: subtreeNodes,
+    };
+  }
+
+  /**
    * Generate completion feedback via LLM and persist
    */
   async generateCompletionFeedback(id: string): Promise<string> {
@@ -1474,37 +1622,21 @@ export class TasksService {
       experience: task.experience,
       difficulty: task.difficult,
     };
-
+    // Delegate to FeedbackService which returns structured feedback
     try {
-      // Use GeminiService to generate feedback
-      const feedback = await this.geminiService.generateCompletionFeedback(
-        task.name,
-        task.description,
-      );
-
-      // Persist feedback
-      const savedFeedback = await this.feedbackModel.create({
-        task: task._id,
-        project: task.project,
-        modelName: this.geminiService.getModelName(),
-        promptVersion: 'v2',
-        inputSnapshot,
-        feedback,
-      });
-
-      return feedback;
-    } catch (error: any) {
-      // Save error state
+      const structured = await this.feedbackService.generateFeedbackOnCompletion(task, task.checklist, task.pomodorosDid ? task.pomodorosDid * 25 : undefined);
+      return JSON.stringify(structured);
+    } catch (err: any) {
+      // Persist error for audit
       await this.feedbackModel.create({
         task: task._id,
         project: task.project,
         modelName: this.geminiService.getModelName(),
-        promptVersion: 'v2',
+        promptVersion: 'catchball-v1',
         inputSnapshot,
-        error: error?.message || 'Unknown error',
+        error: String(err?.message ?? err),
       });
-
-      throw new Error(`Failed to generate feedback: ${error?.message}`);
+      throw err;
     }
   }
 

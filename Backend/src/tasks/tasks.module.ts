@@ -30,6 +30,7 @@ import { RequirementSchema } from './schemas/requirement.schema'; // NOVO: Impor
 import { Requirement } from './entities/requirement.entity'; // NOVO: Importa entidade de requisito
 import { TaskCompletionFeedbackSchema } from './schemas/task-completion-feedback.schema'; // Sprint 4: Importa schema de feedback
 import { TaskCompletionFeedback } from './entities/task-completion-feedback.entity'; // Sprint 4: Importa entidade de feedback
+import { FeedbackService } from './feedback.service';
 import { forwardRef } from '@nestjs/common';
 import { ProjectsModule } from '../projects/projects.module';
 
@@ -49,7 +50,7 @@ import { ProjectsModule } from '../projects/projects.module';
     forwardRef(() => ProjectsModule)
   ],
   controllers: [TasksController, CPMController, BufferController, RTMController], // NOVO: Adiciona RTMController
-  providers: [TasksService, GeminiService, ChecklistService, PertService, CPMService, DependencyInferenceService, BufferService, RTMService], // Sprint 2: Adiciona ChecklistService
-  exports: [TasksService, GeminiService, ChecklistService, PertService, CPMService, DependencyInferenceService, BufferService, RTMService], // Sprint 2: Adiciona ChecklistService aos exports
+  providers: [TasksService, GeminiService, ChecklistService, PertService, CPMService, DependencyInferenceService, BufferService, RTMService, /* new */ FeedbackService], // Sprint 2: Adiciona ChecklistService
+  exports: [TasksService, GeminiService, ChecklistService, PertService, CPMService, DependencyInferenceService, BufferService, RTMService, FeedbackService], // Sprint 2: Adiciona ChecklistService aos exports
 })
 export class TasksModule {}

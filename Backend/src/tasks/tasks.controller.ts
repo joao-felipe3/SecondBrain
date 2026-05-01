@@ -337,7 +337,7 @@ export class TasksController {
     @Param('id') id: string,
     @Body() body: MoveTaskStatusDto,
   ) {
-    return this.tasksService.moveTaskStatus(id, body.status);
+    return this.tasksService.moveTaskStatus(id, body);
   }
 
   @Get(':id/lineage')
@@ -349,6 +349,16 @@ export class TasksController {
   @ApiResponse({ status: 404, description: 'Task não encontrada.' })
   async getTaskLineage(@Param('id') id: string) {
     return this.tasksService.getTaskLineage(id);
+  }
+
+  @Get(':id/value-contribution')
+  @ApiOperation({
+    summary: 'Calcular contribuição de valor (XP) da task para o objetivo raiz',
+    description: 'Retorna percentual de contribuição com base em XP de tasks concluídas na árvore do objetivo.'
+  })
+  @ApiResponse({ status: 200, description: 'Contribuição calculada com sucesso.' })
+  async getValueContribution(@Param('id') id: string) {
+    return this.tasksService.calculateValueContribution(id);
   }
 
   @Post(':id/completion-feedback')

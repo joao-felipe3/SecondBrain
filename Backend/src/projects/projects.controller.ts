@@ -94,6 +94,19 @@ export class ProjectsController {
 		// return this.taskModel.find({ project: id }).exec();
 	}
 
+	@Get(':id/micro-tasks')
+	@ApiOperation({ summary: 'Get micro-tasks for project, optionally filtered by status and ordered for Kanban' })
+	@ApiResponse({ status: 200, description: 'Micro-tasks returned.' })
+	async getMicroTasks(
+		@Param('id') id: string,
+		@Query('status') status?: string,
+	) {
+		const query: any = { project: id };
+		if (status) query.status = String(status);
+		// Primary: kanbanOrder asc, Secondary: priority desc, Tertiary: deadline asc
+		return this.taskModel.find(query).sort({ kanbanOrder: 1, priority: -1, deadline: 1 }).exec();
+	}
+
 	@Get(':id/gantt-data')
 	@ApiOperation({ summary: 'Get timeline data for Gantt chart visualization' })
 	@ApiResponse({ status: 200, description: 'Gantt data retrieved successfully.' })
