@@ -8,6 +8,7 @@
       v-for="(task, index) in (showAllTasks ? tasks : tasks.slice(0, maxVisibleTasks))"
       :key="task._id"
       :task="task"
+      :tasks="tasks"
       :projects="projects"
       :data-task-id="task._id"
       :colors="getProjectColors(task.project, projects)"
@@ -28,6 +29,7 @@
         class="zoomed-task-paper"
         :key="zoomed ? 'edit' : 'view'" 
         :task="zoomedTask"
+        :tasks="tasks"
         :projects="projects"
         :zoomed="zoomed"
         :create="create"
@@ -36,6 +38,8 @@
         @close-zoom="zoomOutTask"
         @edit-task="handleEdit"
         @delete-task="handleDelete"
+        @navigate-task="handleNavigateTask"
+        @navigate-context="handleNavigateContext"
       />
     </div>
   </transition>
@@ -43,6 +47,7 @@
 
 <script setup>
 import { ref, watch, onMounted, onBeforeUnmount } from 'vue'
+import { useRoute, useRouter } from '#imports'
 import TaskPaper from './Paper.vue'
 import { useTaskPosition } from '~/composables/ui/useTaskPosition'
 import { getProjectColors } from '~/composables/utils/useColor'
@@ -80,6 +85,51 @@ const { handleEdit, handleDelete, handleCompleteFall } = useTaskActions({
   createRef: zoomState.createRef,
   create: zoomState.create
 })
+
+const router = useRouter()
+const route = useRoute()
+
+function handleNavigateTask(taskId) {
+  const nextTask = (tasks || []).find((task) => task?._id === taskId)
+  if (!nextTask) return
+
+  zoomState.zoomedTask.value = nextTask
+  zoomState.zoomed.value = true
+  zoomState.create.value = false
+  zoomState.createRef.value = false
+  emit('zoom-in')
+}
+
+async function handleNavigateContext(payload) {
+  const level = String(payload?.level || '')
+  const project = projects.value.find((p) => p.name === payload.projectId)
+  const projectId = String(project?._id || '')
+  const wbsNodeId = String(payload?.wbsNodeId || '')
+
+  if ((level === 'objective' || level === 'project') && projectId) {
+    await router.push({
+      path: '/projects',
+      query: {
+        projectId,
+        focus: level,
+        from: 'task-lineage',
+      },
+    })
+    return
+  }
+
+  if (level === 'wbs' && wbsNodeId) {
+    await router.replace({
+      path: route.path,
+      query: {
+        ...route.query,
+        projectId,
+        wbsNodeId,
+        focus: 'wbs',
+      },
+    })
+  }
+}
 
 const containerRef = ref(null)
 const maxVisibleTasks = ref(tasks.length)

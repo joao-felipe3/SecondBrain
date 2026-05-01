@@ -16,18 +16,18 @@
       <v-row class="sprite-wrapper" no-gutters align="center" style="min-height: 60vh;">
         <v-col class="d-flex justify-center">
           <v-sheet class="book" elevation="2" color="transparent">
+            <v-sheet class="sprite" elevation="0" color="transparent"></v-sheet>
             <div ref="carouselEl" class="carousel" :style="{ '--slides': `${TOTAL_SLIDES}` }">
-              <v-sheet class="sprite" elevation="0" color="transparent"></v-sheet>
-              <v-sheet :class="['carousel-item', { active: currentIndex === 0 }]" elevation="0" color="transparent"><GeneralInfoPage :project="displayProject || {}" :editing="editing" @update-field="updateField" /></v-sheet>
-              <v-sheet :class="['carousel-item', { active: currentIndex === 1 }]" elevation="0" color="transparent"><SmartObjectivesPage :project="displayProject || {}" :editing="editing" @update-field="updateField" @smart-objective-updated="reloadProject" /></v-sheet>
-              <v-sheet :class="['carousel-item', { active: currentIndex === 2 }]" elevation="0" color="transparent"><WBSPage :project="displayProject || {}" :editing="editing" @wbs-updated="reloadProject" /></v-sheet>
-              <v-sheet :class="['carousel-item', { active: currentIndex === 3 }]" elevation="0" color="transparent"><CriticalPathPage :project="displayProject || {}" :editing="editing" @update-field="updateField" /></v-sheet>
-              <v-sheet :class="['carousel-item', { active: currentIndex === 4 }]" elevation="0" color="transparent"><RTMPage :project="displayProject as Project" :editing="editing" /></v-sheet>
-              <v-sheet :class="['carousel-item', { active: currentIndex === 5 }]" elevation="0" color="transparent"><RiskPage :project="displayProject as Project" :editing="editing" /></v-sheet>
-              <v-sheet :class="['carousel-item', { active: currentIndex === 6 }]" elevation="0" color="transparent"><GanttPage :project="displayProject as Project" :editing="editing" /></v-sheet>
-              <v-sheet :class="['carousel-item', { active: currentIndex === 7 }]" elevation="0" color="transparent"><PertDiagramPage :project="displayProject as Project" :editing="editing" /></v-sheet>
-              <v-sheet :class="['carousel-item', { active: currentIndex === 8 }]" elevation="0" color="transparent"><XMatrixPage :project="displayProject as Project" :editing="editing" /></v-sheet>
-              <v-sheet :class="['carousel-item', { active: currentIndex === 9 }]" elevation="0" color="transparent"><BacklogAndProgress :project="displayProject || {}" :editing="editing" @update-field="updateField" /></v-sheet>
+              <v-sheet :class="['carousel-item', { active: currentIndex === 0 }]" elevation="0" color="transparent"><GeneralInfoPage :project="renderProject || {}" :editing="editing" @update-field="updateField" /></v-sheet>
+              <v-sheet :class="['carousel-item', { active: currentIndex === 1 }]" elevation="0" color="transparent"><SmartObjectivesPage :project="renderProject || {}" :editing="editing" @update-field="updateField" @smart-objective-updated="reloadProject" /></v-sheet>
+              <v-sheet :class="['carousel-item', { active: currentIndex === 2 }]" elevation="0" color="transparent"><WBSPage :project="renderProject || {}" :editing="editing" @wbs-updated="reloadProject" /></v-sheet>
+              <v-sheet :class="['carousel-item', { active: currentIndex === 3 }]" elevation="0" color="transparent"><CriticalPathPage :project="renderProject || {}" :editing="editing" @update-field="updateField" /></v-sheet>
+              <v-sheet :class="['carousel-item', { active: currentIndex === 4 }]" elevation="0" color="transparent"><RTMPage :project="renderProject as Project" :editing="editing" /></v-sheet>
+              <v-sheet :class="['carousel-item', { active: currentIndex === 5 }]" elevation="0" color="transparent"><RiskPage :project="renderProject as Project" :editing="editing" /></v-sheet>
+              <v-sheet :class="['carousel-item', { active: currentIndex === 6 }]" elevation="0" color="transparent"><GanttPage :project="renderProject as Project" :editing="editing" /></v-sheet>
+              <v-sheet :class="['carousel-item', { active: currentIndex === 7 }]" elevation="0" color="transparent"><PertDiagramPage :project="renderProject as Project" :editing="editing" /></v-sheet>
+              <v-sheet :class="['carousel-item', { active: currentIndex === 8 }]" elevation="0" color="transparent"><XMatrixPage :project="renderProject as Project" :editing="editing" /></v-sheet>
+              <v-sheet :class="['carousel-item', { active: currentIndex === 9 }]" elevation="0" color="transparent"><BacklogAndProgress :project="renderProject || {}" :editing="editing" @update-field="updateField" /></v-sheet>
             </div>
           </v-sheet>
         </v-col>
@@ -102,6 +102,30 @@ const { carouselEl, currentIndex, atStart, atEnd, go, updateIndex, attach, detac
 const { sparkles, createSparkles, clearSparkles } = useSparkles()
 const projectRef = toRef(props, 'project')
 const { editing, saving, draft, displayProject, isValid, startEdit: startEditInner, cancelEdit: cancelEditInner, updateField, reset: resetEditing } = useProjectEditing(projectRef)
+
+const renderProject = computed(() => {
+  const project = displayProject.value
+  if (!project) return null
+
+  const smartObjective = project.smartObjective
+  const hasSmartObjective = Boolean(
+    smartObjective && (
+      smartObjective.summary?.trim() ||
+      smartObjective.specific?.trim() ||
+      smartObjective.measurable?.trim() ||
+      smartObjective.achievable?.trim() ||
+      smartObjective.relevant?.trim() ||
+      smartObjective.temporal?.trim() ||
+      (Array.isArray(smartObjective.risks) && smartObjective.risks.length > 0) ||
+      Number.isFinite(Number(smartObjective.weeklyHours))
+    )
+  )
+
+  return {
+    ...project,
+    smartObjective: hasSmartObjective ? smartObjective : null
+  }
+})
 
 // Editing wrappers glue to props
 const startEdit = () => startEditInner(props.project)
@@ -217,6 +241,7 @@ onBeforeUnmount(() => {
 // Open/close effects
 watch(() => props.isOpen, async (open) => {
   if (open) {
+    console.log('BookModal: props.project on open ->', props.project)
     await nextTick()
     reset()
     createSparkles()
@@ -229,6 +254,10 @@ watch(() => props.isOpen, async (open) => {
     clearSparkles()
     detach()
   }
+})
+
+watch(() => renderProject.value, (val) => {
+  console.log('BookModal: displayProject changed ->', val)
 })
 </script>
 

@@ -25,16 +25,8 @@
       </template>
     </div>
     <div class="d-flex flex-row align-center" style="gap: 8px; width: fit-content; margin-top: -0.55rem;">
-      <SvgEffortButton class="mt-" @click="handleEffort"/>
-      <SvgButton 
-        label="Complete"
-        :width="72"
-        :height="50"
-        @click="handleComplete"
-        :labelSize="12"
-        labelMarginTop="-55%"
-        labelMarginLeft="7.5%"
-      />
+      <SvgEffortButton class="mt-2" @click="handleEffort"/>
+      <div class="checklist">✅ Checklist: <strong>{{ checklistCompleted }}/{{ checklistTotal }}</strong></div>
     </div>
   </div>
 </template>
@@ -42,8 +34,7 @@
 <script setup>
 import { ref, onMounted, nextTick, watch, onBeforeUnmount, computed } from 'vue'
 import SvgEffortButton from '../../../ui/svg/EffortButton.vue'
-import SvgButton from '../../../ui/svg/Button.vue'
-import useDateFormat from '~/composables/utils/useDateFormat'
+
 import { useTaskStore } from '~/stores/task'
 
 const { task } = defineProps(['task']);
@@ -67,6 +58,18 @@ const formattedPertDeadline = computed(() => {
     return 'N/A'
   }
 })
+
+const checklistTotal = computed(() => {
+  if (!task.checklist || !Array.isArray(task.checklist)) return 0
+  return task.checklist.length
+})
+
+const checklistCompleted = computed(() => {
+  if (!task.checklist || !Array.isArray(task.checklist)) return 0
+  return task.checklist.filter((it) => (typeof it === 'object' ? !!it.completed : false)).length
+})
+
+const teDisplay = computed(() => (task.pertExpectedMinutes ? `${task.pertExpectedMinutes}min` : '—'))
 
 function checkTruncated() {
   const el = titleRef.value
@@ -210,5 +213,11 @@ function getDeadlineColor(date) {
   pointer-events: none;
   text-align: center;
   text-shadow: 1px 1px 1px rgba(0, 0, 0, 1);
+}
+.checklist {
+  font-size: 11px;
+  margin-top: 2px;
+  margin-left: -6px;
+  color: #5d4037;
 }
 </style>

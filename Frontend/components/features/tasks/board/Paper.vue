@@ -18,6 +18,7 @@
         <ZoomedContent
           ref="zoomedContentRef"
           :task="props.task"
+          :tasks="props.tasks"
           :projects="props.projects"
           :deadline="deadline"
           :notification="notification"
@@ -25,6 +26,8 @@
           @edit="editAndClose"
           @delete="deleteAndClose"
           @close="emit('close-zoom')"
+          @navigate-task="emit('navigate-task', $event)"
+          @navigate-context="emit('navigate-context', $event)"
         />
       </template>
       <template v-else>
@@ -65,6 +68,7 @@ import TaskPreview from './TaskPreview.vue'
 
 interface Props {
   task: any
+  tasks?: any[]
   positionStyle: any
   colors: any
   zoomed: boolean
@@ -73,7 +77,7 @@ interface Props {
 }
 
 const props = defineProps<Props>()
-const emit = defineEmits(['edit-task', 'delete-task', 'close-zoom', 'fall-complete', 'zoom'])
+const emit = defineEmits(['edit-task', 'delete-task', 'close-zoom', 'fall-complete', 'zoom', 'navigate-task', 'navigate-context'])
 
 const zoomedContentRef = ref<InstanceType<typeof ZoomedContent> | null>(null)
 

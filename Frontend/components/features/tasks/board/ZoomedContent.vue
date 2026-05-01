@@ -21,8 +21,11 @@
           <component
             :is="tab.component"
             :task="props.task"
+            :tasks="props.tasks"
             :projects="props.projects"
             :key="`${tab.id}-${props.task?._id ?? props.task?.id ?? ''}`"
+            @navigate-task="$emit('navigate-task', $event)"
+            @navigate-context="$emit('navigate-context', $event)"
           />
         </div>
       </div>
@@ -54,27 +57,33 @@ import ChecklistTab from '../tabs/ChecklistTab.vue'
 import PertTab from '../tabs/PertTab.vue'
 import HistoryTab from '../tabs/HistoryTab.vue'
 import FeedbackTab from '../tabs/FeedbackTab.vue'
+import LineageTab from '../tabs/LineageTab.vue'
+import ValueTab from '../tabs/ValueTab.vue'
 import Button from '../../../ui/svg/Button.vue'
 
 
 interface Props {
   task?: any
+  tasks?: any[]
   projects?: any[]
   createOrEdit?: string
 }
 
 const props = withDefaults(defineProps<Props>(), {
   task: () => ({}),
+  tasks: () => [],
   projects: () => [],
 })
 
-const emit = defineEmits(['delete', 'close', 'edit'])
+const emit = defineEmits(['delete', 'close', 'edit', 'navigate-task', 'navigate-context'])
 
 // Configuração das abas
 const tabs: TabConfig[] = [
   { id: 'editar', label: 'Editar', icon: '✏️', component: EditarTab },
   { id: 'checklist', label: 'Checklist', icon: '✓', component: ChecklistTab },
   { id: 'pert', label: 'PERT', icon: '⏱️', component: PertTab },
+  { id: 'valor', label: 'Valor', icon: '🎯', component: ValueTab },
+  { id: 'lineage', label: 'Lineage', icon: '🧭', component: LineageTab },
   { id: 'historico', label: 'Histórico', icon: '🕐', component: HistoryTab },
   { id: 'feedback', label: 'Feedback', icon: '💬', component: FeedbackTab },
 ]

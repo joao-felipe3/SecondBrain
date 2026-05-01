@@ -26,7 +26,7 @@
             v-for="(task, idx) in visibleTasksByStatus[col.status]"
             :key="task._id"
             class="kanban-card-wrapper"
-            :class="{ dragging: draggingTaskId === task._id }"
+            :class="{ dragging: draggingTaskId === task._id, moving: movingTaskId === task._id }"
             :data-task-id="task._id"
             :style="getCardJitterStyle(idx)"
             @click="zoomIntoTask($event, task)"
@@ -50,6 +50,7 @@
             <div class="kanban-card-scale">
               <TaskPaper
                 :task="task"
+                :tasks="props.tasks"
                 :positionStyle="{}"
                 :projects="projects"
                 :zoomed="false"
@@ -72,6 +73,7 @@
           class="zoomed-task-paper"
           :key="zoomed ? 'edit' : 'view'"
           :task="zoomedTask"
+          :tasks="props.tasks"
           :positionStyle="{}"
           :projects="projects"
           :zoomed="zoomed"
@@ -81,6 +83,8 @@
           @close-zoom="zoomOutTask"
           @edit-task="handleEdit"
           @delete-task="handleDelete"
+          @navigate-task="handleNavigateTask"
+          @navigate-context="(p) => handleNavigateContext(p)"
         />
       </div>
     </transition>
@@ -144,6 +148,40 @@ const { handleEdit, handleDelete } = useTaskActions({
   createRef: zoomState.createRef,
   create: zoomState.create,
 })
+
+function handleNavigateTask(taskId: string) {
+  const nextTask = (props.tasks || []).find((task: any) => task?._id === taskId)
+  if (!nextTask) return
+
+  zoomState.zoomedTask.value = nextTask as any
+  zoomState.zoomed.value = true
+  zoomState.create.value = false
+  zoomState.createRef.value = false
+  emit('zoom-in')
+}
+
+function handleNavigateContext(payload: any) {
+  // Reuse Board's approach: if objective/project -> open /projects, if wbs -> set query
+  const level = String(payload?.level || '')
+  const project = props.projects.find((p) => p.name === payload.projectId)
+  const projectId = String(project?._id || '')
+  const wbsNodeId = String(payload?.wbsNodeId || '')
+
+  if ((level === 'objective' || level === 'project') && projectId) {
+    // open projects page
+    window.location.href = `/projects?projectId=${encodeURIComponent(projectId)}&focus=${level}&from=task-lineage`
+    return
+  }
+
+  if (level === 'wbs' && wbsNodeId) {
+    const params = new URLSearchParams(window.location.search)
+    if (projectId) params.set('projectId', projectId)
+    params.set('wbsNodeId', wbsNodeId)
+    params.set('focus', 'wbs')
+    const url = `${window.location.pathname}?${params.toString()}`
+    window.history.replaceState({}, '', url)
+  }
+}
 
 const isLocked = computed(() => !!zoomed.value)
 
@@ -298,6 +336,7 @@ watch(
 
 const draggingTaskId = ref<string | null>(null)
 const draggingFromStatus = ref<KanbanColumnStatus | null>(null)
+const movingTaskId = ref<string | null>(null)
 
 function getMoveBlockReason(task: any, toStatus: KanbanColumnStatus) {
   // Mirror backend rule: concluded tasks must stay in 'done'.
@@ -423,7 +462,9 @@ async function onDropOnColumn(e: DragEvent, toStatus: KanbanColumnStatus) {
 
   // Use store to move task status (calls backend API)
   const taskStore = useTaskStore()
+  movingTaskId.value = taskId
   const { success, error } = await taskStore.setTaskStatus(taskId, toStatus)
+  movingTaskId.value = null
 
   if (success) {
     emit('task-moved', {
@@ -446,7 +487,7 @@ async function onDropOnColumn(e: DragEvent, toStatus: KanbanColumnStatus) {
 .kanban-root {
   position: relative;
   width: 100%;
-  height: 65vh;
+  height: 65.5vh;
   overflow: visible;
   z-index: 3;
 }
@@ -490,6 +531,10 @@ async function onDropOnColumn(e: DragEvent, toStatus: KanbanColumnStatus) {
 
 .kanban-column[data-status="doing"] {
   --kanban-tint: rgba(var(--v-theme-warning), 0.15);
+}
+
+.kanban-column[data-status="review"] {
+  --kanban-tint: rgba(var(--v-theme-info), 0.16);
 }
 
 .kanban-column[data-status="done"] {
@@ -583,7 +628,7 @@ async function onDropOnColumn(e: DragEvent, toStatus: KanbanColumnStatus) {
 
 .kanban-card-scale {
   display: inline-block;
-  --paper-scale: 0.9;
+  --paper-scale: 0.85;
   --paper-tilt: 0deg;
   --paper-lift: 0px;
   transform: scale(var(--paper-scale)) rotate(var(--paper-tilt)) translateY(var(--paper-lift));
@@ -593,6 +638,10 @@ async function onDropOnColumn(e: DragEvent, toStatus: KanbanColumnStatus) {
 
 .kanban-card-wrapper.dragging {
   opacity: 0.35;
+}
+
+.kanban-card-wrapper.moving {
+  opacity: 0.82;
 }
 
 .kanban-drag-preview {

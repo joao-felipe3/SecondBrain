@@ -46,7 +46,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onBeforeUnmount } from 'vue'
+import { ref, onMounted, onBeforeUnmount, watch } from 'vue'
+import { useRoute } from '#imports'
 import ProjectPanel from '../../components/features/projects/ProjectPanel.vue'
 import Book from '../../components/ui/svg/Book.vue'
 import BookShelf from '../../components/ui/svg/BookShelf.vue'
@@ -68,6 +69,36 @@ function checkMobile() {
 onMounted(() => {
   checkMobile()
   window.addEventListener('resize', checkMobile)
+  // Open project modal if URL contains projectId & focus
+  const route = useRoute()
+  const q = route.query
+  const projectId = String(q.projectId || '')
+  const focus = String(q.focus || '')
+  if (projectId) {
+    // wait for projects to be loaded (useProjects onMounted triggers load)
+    const unwatch = watch(projects, async (newVal) => {
+      if (newVal && newVal.length) {
+        const p = newVal.find((pr: any) => String(pr._id ?? pr.id) === projectId)
+        if (p) {
+          // Try to fetch full project details before opening modal
+          try {
+            const mod = await import('~/composables/api')
+            const { useApi } = mod as typeof import('~/composables/api')
+            const api = useApi(`/projects/${projectId}`)
+            const { data, error } = await api.get()
+            if (!error && data) {
+              openModal(data, false)
+            } else {
+              openModal(p, false)
+            }
+          } catch (err) {
+            openModal(p, false)
+          }
+        }
+        unwatch()
+      }
+    })
+  }
 })
 
 onBeforeUnmount(() => {
