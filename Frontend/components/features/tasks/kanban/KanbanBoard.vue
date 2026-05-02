@@ -168,18 +168,22 @@ function handleNavigateContext(payload: any) {
   const wbsNodeId = String(payload?.wbsNodeId || '')
 
   if ((level === 'objective' || level === 'project') && projectId) {
-    // open projects page
-    window.location.href = `/projects?projectId=${encodeURIComponent(projectId)}&focus=${level}&from=task-lineage`
+    // open projects page with appropriate slide focus
+    const focusParam = level === 'objective' ? 'objective' : 'project'
+    window.location.href = `/projects?projectId=${encodeURIComponent(projectId)}&focus=${focusParam}&from=task-lineage`
     return
   }
 
   if (level === 'wbs' && wbsNodeId) {
-    const params = new URLSearchParams(window.location.search)
+    // Redirect to projects page with focus on WBS and include wbsNodeId
+    // If we have projectId, include it; otherwise still redirect so projects page can handle wbs-only focus
+    const params = new URLSearchParams()
     if (projectId) params.set('projectId', projectId)
     params.set('wbsNodeId', wbsNodeId)
     params.set('focus', 'wbs')
-    const url = `${window.location.pathname}?${params.toString()}`
-    window.history.replaceState({}, '', url)
+    params.set('from', 'task-lineage')
+    const url = `/projects?${params.toString()}`
+    window.location.href = url
   }
 }
 

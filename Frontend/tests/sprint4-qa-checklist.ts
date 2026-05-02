@@ -88,11 +88,8 @@ export const SPRINT4_QA_CHECKLIST = {
       steps: [
         '1. Open task zoom',
         '2. Click "Valor" tab (⭐ icon)',
-        '3. Verify XP/experience points display',
-        '4. Verify prize/reward display',
-        '5. Verify effort metrics (Pomodoros, TE)',
-        '6. Verify EVM metrics if available',
-        '7. Verify difficulty and priority badges',
+        '3. Verify EVM metrics if available',
+        '4. Verify difficulty and priority badges',
       ],
       expectedResult: 'Value tab displays all metrics without errors',
       status: '⬜ Not Started',

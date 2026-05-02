@@ -5,10 +5,12 @@ export function useProjectModal() {
   const isModalOpen = ref(false)
   const selectedProject = ref<Project | null>(null)
   const startInEdit = ref(false)
+  const focusedSlide = ref(0)
 
-  function openModal(project: Project, editMode = false) {
+  function openModal(project: Project, editMode = false, slideIndex = 0) {
     selectedProject.value = project
     startInEdit.value = editMode
+    focusedSlide.value = slideIndex
     isModalOpen.value = true
   }
 
@@ -43,6 +45,7 @@ export function useProjectModal() {
     isModalOpen,
     selectedProject,
     startInEdit,
+    focusedSlide,
     openModal,
     closeModal,
     createNewProject

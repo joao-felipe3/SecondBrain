@@ -102,7 +102,7 @@ onMounted(() => {
   flex-direction: column;
   overflow-y: auto;
   overflow-x: hidden;
-  padding: 2rem;
+  padding: 1.5rem 1.25rem;
 }
 .lineage-empty,
 .lineage-error {

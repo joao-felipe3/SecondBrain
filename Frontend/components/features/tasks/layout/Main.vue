@@ -5,26 +5,26 @@
     </v-row>
     <!-- Papel decorativo com título -->
     <transition name="fade" appear>
-          <div v-if="!zoomed" class="decor-header">
-            <v-img
-              src="svg/old-paper-3.svg"
-              alt="Old Paper"
-              width="17%"
-              class="decor-paper"
-              contain
-            />
+      <div v-if="!zoomed" class="decor-header">
+        <v-img
+          src="svg/old-paper-3.svg"
+          alt="Old Paper"
+          width="17%"
+          class="decor-paper"
+          contain
+        />
 
-            <svg class="decor-title" viewBox="0 0 300 150">
-              <defs>
-                <path id="curve" d="M10,90 Q150,10 290,90" fill="transparent" />
-              </defs>
-              <text fill="black" font-size="48" font-family="'Irish Grover', cursive" font-weight="600">
-                <textPath href="#curve" startOffset="50%" text-anchor="middle">
-                  Tasks
-                </textPath>
-              </text>
-            </svg>
-        </div>
+        <svg class="decor-title" viewBox="0 0 300 150" width="100%" height="100%">
+          <defs>
+            <path id="curve" d="M10,90 Q150,10 290,90" fill="transparent" />
+          </defs>
+          <text fill="#2c1810" font-size="48" font-family="'Irish Grover', cursive" font-weight="700" letter-spacing="2">
+            <textPath href="#curve" startOffset="50%" text-anchor="middle">
+              Tasks
+            </textPath>
+          </text>
+        </svg>
+      </div>
     </transition>
     <v-row class="pa-0 w-100 mb-2 mt-4 task-board-row" style="flex: 1 1 auto; overflow: hidden;">
       <div class="task-bg-layer">
@@ -148,5 +148,6 @@
   height: auto;
   z-index: 11;
   pointer-events: none;
+  filter: drop-shadow(1px 1px 2px rgba(0, 0, 0, 0.1));
 }
 </style>

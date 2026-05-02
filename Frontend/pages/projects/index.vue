@@ -31,6 +31,7 @@
       :isOpen="isModalOpen"
       :project="selectedProject"
       :startInEdit="startInEdit"
+      :focusedSlide="focusedSlide"
       @close="closeModal"
       @updated="onUpdated"
       @deleted="onDeleted"
@@ -74,6 +75,15 @@ onMounted(() => {
   const q = route.query
   const projectId = String(q.projectId || '')
   const focus = String(q.focus || '')
+  
+  // Map focus to slide index: project=0, objective=1, wbs=2
+  const focusMap: Record<string, number> = {
+    project: 0,
+    objective: 1,
+    wbs: 2
+  }
+  const slideIndex = focusMap[focus] ?? 0
+  
   if (projectId) {
     // wait for projects to be loaded (useProjects onMounted triggers load)
     const unwatch = watch(projects, async (newVal) => {
@@ -87,12 +97,12 @@ onMounted(() => {
             const api = useApi(`/projects/${projectId}`)
             const { data, error } = await api.get()
             if (!error && data) {
-              openModal(data, false)
+              openModal(data, false, slideIndex)
             } else {
-              openModal(p, false)
+              openModal(p, false, slideIndex)
             }
           } catch (err) {
-            openModal(p, false)
+            openModal(p, false, slideIndex)
           }
         }
         unwatch()
@@ -107,7 +117,7 @@ onBeforeUnmount(() => {
 
 // Composables
 const { projects, projectColors, updateProject, removeProject, removeProjectById } = useProjects()
-const { isModalOpen, selectedProject, startInEdit, openModal, closeModal, createNewProject } = useProjectModal()
+const { isModalOpen, selectedProject, startInEdit, focusedSlide, openModal, closeModal, createNewProject } = useProjectModal()
 const { showDeleteDialog, projectToDelete, requestDelete, confirmDelete } = useProjectDelete()
 
 // Local state

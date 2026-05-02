@@ -88,7 +88,8 @@ const TOTAL_SLIDES = 10
 const props = defineProps({
   isOpen: { type: Boolean, default: false },
   project: { type: Object as PropType<Project | null>, default: null },
-  startInEdit: { type: Boolean, default: false }
+  startInEdit: { type: Boolean, default: false },
+  focusedSlide: { type: Number, default: 0 }
 })
 const emit = defineEmits(['close', 'updated', 'deleted'])
 
@@ -242,10 +243,17 @@ onBeforeUnmount(() => {
 watch(() => props.isOpen, async (open) => {
   if (open) {
     console.log('BookModal: props.project on open ->', props.project)
+    console.log('BookModal: focusedSlide ->', props.focusedSlide)
     await nextTick()
     reset()
     createSparkles()
     attach()
+    // Navigate to focused slide if not 0
+    if (props.focusedSlide > 0) {
+      setTimeout(() => {
+        go(props.focusedSlide)
+      }, 50)
+    }
     if (props.startInEdit) {
       // Start editing for create flow or quick edit
       startEdit()
