@@ -848,11 +848,7 @@ export class TasksService {
       return task;
     }
 
-    if ((task.status || 'todo') !== 'review') {
-      throw new BadRequestException('Tarefa precisa estar em "review" antes de ser concluída');
-    }
-
-    // Sprint 2: Valida requisitos de conclusão (checklist 100% se tem)
+    // Sprint 2: Valida requisitos de conclusão (checklist 100% se houver)
     const completionValidation = await this.validateCompletionRequirements(id);
     if (!completionValidation.isValid) {
       throw new BadRequestException(completionValidation.reason);

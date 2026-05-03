@@ -17,27 +17,22 @@
       </div>
 
       <div class="feedback-content">
-        <template v-if="structuredFeedback">
-          <p class="feedback-final">{{ displayFinalText }}</p>
-
+        <template v-if="feedbackFields.length">
           <div class="feedback-fields">
-            <div v-if="structuredFeedback.praise" class="feedback-field">
-              <div class="feedback-field-label">Reconhecimento</div>
-              <div class="feedback-field-value">{{ structuredFeedback.praise }}</div>
-            </div>
-            <div v-if="structuredFeedback.learning" class="feedback-field">
-              <div class="feedback-field-label">Aprendizado</div>
-              <div class="feedback-field-value">{{ structuredFeedback.learning }}</div>
-            </div>
-            <div v-if="structuredFeedback.nextStep" class="feedback-field feedback-field-next-step">
-              <div class="feedback-field-label">Proximo passo recomendado</div>
-              <div class="feedback-field-value">{{ structuredFeedback.nextStep }}</div>
+            <div
+              v-for="field in feedbackFields"
+              :key="field.key"
+              class="feedback-field"
+              :class="{ 'feedback-field-next-step': field.key === 'suggestion' || field.key === 'nextStep' }"
+            >
+              <div class="feedback-field-label">{{ field.label }}</div>
+              <div class="feedback-field-value">{{ field.value }}</div>
             </div>
           </div>
         </template>
 
         <template v-else>
-          <p>{{ displayFinalText }}</p>
+          <p>{{ rawFeedbackText }}</p>
         </template>
       </div>
 
@@ -81,11 +76,10 @@ interface Props {
   projects?: any[]
 }
 
-type StructuredFeedback = {
-  praise?: string
-  learning?: string
-  nextStep?: string
-  finalText?: string
+type FeedbackField = {
+  key: string
+  label: string
+  value: string
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -110,23 +104,7 @@ const decodeEscapedText = (value: string): string => {
     .trim()
 }
 
-const extractEmbeddedFields = (value: string): Partial<StructuredFeedback> => {
-  const src = String(value ?? '')
-  if (!src) return {}
-
-  const nextStepMatch = src.match(/"nextStep"\s*:\s*"([\s\S]*?)"\s*,\s*"finalText"/i)
-  const finalTextMatch = src.match(/"finalText"\s*:\s*"([\s\S]*?)"\s*}\s*$/i)
-
-  const nextStep = nextStepMatch?.[1] ? decodeEscapedText(nextStepMatch[1]) : ''
-  const finalText = finalTextMatch?.[1] ? decodeEscapedText(finalTextMatch[1]) : ''
-
-  return {
-    nextStep: normalizeValue(nextStep),
-    finalText: normalizeValue(finalText),
-  }
-}
-
-const parseStructuredFeedback = (input: string): StructuredFeedback | null => {
+const parseFeedbackObject = (input: string): Record<string, unknown> | null => {
   const raw = String(input ?? '').trim()
   if (!raw) return null
 
@@ -146,42 +124,19 @@ const parseStructuredFeedback = (input: string): StructuredFeedback | null => {
     candidates.push(withoutFence.slice(firstBrace, lastBrace + 1).trim())
   }
 
-  const toStructured = (obj: any): StructuredFeedback | null => {
-    if (!obj || typeof obj !== 'object') return null
-    const praise = normalizeValue(obj.praise)
-    const learning = normalizeValue(obj.learning)
-    let nextStep = normalizeValue(obj.nextStep)
-    let finalText = normalizeValue(obj.finalText)
-
-    // Some legacy payloads serialize an inner pseudo-JSON inside finalText.
-    if ((!nextStep || !finalText) && finalText.includes('"nextStep"')) {
-      const embedded = extractEmbeddedFields(finalText)
-      nextStep = nextStep || normalizeValue(embedded.nextStep)
-      finalText = normalizeValue(embedded.finalText) || finalText
-    }
-
-    // If finalText still looks like raw key/value noise, keep only message lines.
-    if (finalText.includes('"finalText"') || finalText.includes('"nextStep"')) {
-      const embedded = extractEmbeddedFields(finalText)
-      nextStep = nextStep || normalizeValue(embedded.nextStep)
-      finalText = normalizeValue(embedded.finalText) || finalText
-    }
-
-    if (!praise && !learning && !nextStep && !finalText) return null
-    return { praise, learning, nextStep, finalText }
-  }
-
   for (const candidate of candidates) {
     try {
       const parsed = JSON.parse(candidate)
-      const structured = toStructured(parsed)
-      if (structured) return structured
+      if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
+        return parsed as Record<string, unknown>
+      }
 
       if (typeof parsed === 'string') {
         try {
           const reparsed = JSON.parse(parsed)
-          const restructured = toStructured(reparsed)
-          if (restructured) return restructured
+          if (reparsed && typeof reparsed === 'object' && !Array.isArray(reparsed)) {
+            return reparsed as Record<string, unknown>
+          }
         } catch {
           // ignore and continue
         }
@@ -194,13 +149,74 @@ const parseStructuredFeedback = (input: string): StructuredFeedback | null => {
   return null
 }
 
-const structuredFeedback = computed<StructuredFeedback | null>(() => {
-  return parseStructuredFeedback(rawFeedbackText.value)
+const feedbackObject = computed<Record<string, unknown> | null>(() => {
+  return parseFeedbackObject(rawFeedbackText.value)
 })
 
-const displayFinalText = computed(() => {
-  if (structuredFeedback.value?.finalText) return structuredFeedback.value.finalText
-  return rawFeedbackText.value
+const labelMap: Record<string, string> = {
+  celebration: 'Celebracao',
+  validation: 'Validacao',
+  question: 'Pergunta',
+  suggestion: 'Proximo passo recomendado',
+  praise: 'Reconhecimento',
+  learning: 'Aprendizado',
+  nextStep: 'Proximo passo recomendado',
+  finalText: 'Resumo final',
+}
+
+const orderedKeys = [
+  'celebration',
+  'validation',
+  'question',
+  'suggestion',
+  'praise',
+  'learning',
+  'nextStep',
+  'finalText',
+]
+
+const humanizeKey = (key: string) => {
+  if (!key) return 'Campo'
+  return key
+    .replace(/([a-z0-9])([A-Z])/g, '$1 $2')
+    .replace(/[_-]+/g, ' ')
+    .replace(/^./, (c) => c.toUpperCase())
+}
+
+const formatFieldValue = (value: unknown): string => {
+  if (typeof value === 'string') return normalizeValue(decodeEscapedText(value))
+  if (typeof value === 'number' || typeof value === 'boolean') return String(value)
+  if (value == null) return ''
+
+  try {
+    return JSON.stringify(value, null, 2)
+  } catch {
+    return String(value)
+  }
+}
+
+const feedbackFields = computed<FeedbackField[]>(() => {
+  const obj = feedbackObject.value
+  if (!obj) return []
+
+  const entries = Object.entries(obj)
+  const priority = new Map(orderedKeys.map((k, i) => [k, i]))
+
+  return entries
+    .map(([key, value]) => {
+      return {
+        key,
+        label: labelMap[key] || humanizeKey(key),
+        value: formatFieldValue(value),
+      }
+    })
+    .filter((field) => field.value)
+    .sort((a, b) => {
+      const aIdx = priority.has(a.key) ? (priority.get(a.key) as number) : Number.MAX_SAFE_INTEGER
+      const bIdx = priority.has(b.key) ? (priority.get(b.key) as number) : Number.MAX_SAFE_INTEGER
+      if (aIdx !== bIdx) return aIdx - bIdx
+      return a.label.localeCompare(b.label)
+    })
 })
 
 const formatDate = (date: Date | string | undefined) => {
@@ -286,7 +302,7 @@ onMounted(() => {
   flex-direction: column;
   overflow-y: auto;
   overflow-x: hidden;
-  padding: 2rem;
+  padding: 1.25rem 1rem;
   gap: 10px;
 }
 
@@ -342,7 +358,7 @@ onMounted(() => {
 
 .feedback-content {
   padding: 12px 14px;
-  max-height: 280px;
+  max-height: 440px;
   overflow-y: auto;
 }
 
@@ -353,10 +369,6 @@ onMounted(() => {
   word-break: break-word;
   line-height: 1.35;
   font-size: 15px;
-}
-
-.feedback-final {
-  margin-bottom: 10px;
 }
 
 .feedback-fields {

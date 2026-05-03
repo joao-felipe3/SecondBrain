@@ -89,6 +89,14 @@
       </div>
     </transition>
 
+    <!-- Completion Feedback Modal -->
+    <CompletionFeedbackModal
+      :is-open="completionModalOpen"
+      :task="completionModalTask"
+      @close="completionModalOpen = false"
+      @confirmed="handleFeedbackConfirmed"
+    />
+
     <ClientOnly>
       <v-snackbar
         v-model="snackbarOpen"
@@ -106,6 +114,7 @@
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import type { Task } from '~/models/Task'
 import TaskPaper from '../board/Paper.vue'
+import CompletionFeedbackModal from '../modals/CompletionFeedbackModal.vue'
 import { getProjectColors } from '~/composables/utils/useColor'
 import { useZoomState } from '~/composables/ui/useZoomState'
 import { useZoomController } from '~/composables/ui/useZoomController'
@@ -191,6 +200,8 @@ const isLocked = computed(() => !!zoomed.value)
 
 const snackbarOpen = ref(false)
 const snackbarText = ref('')
+const completionModalOpen = ref(false)
+const completionModalTask = ref<any>(null)
 
 function showSnack(message: string) {
   snackbarText.value = message
@@ -471,6 +482,12 @@ async function onDropOnColumn(e: DragEvent, toStatus: KanbanColumnStatus) {
   movingTaskId.value = null
 
   if (success) {
+    // If moving to 'done', trigger completion feedback modal
+    if (toStatus === 'done') {
+      completionModalTask.value = task
+      completionModalOpen.value = true
+    }
+
     emit('task-moved', {
       taskId,
       fromStatus,
@@ -484,6 +501,25 @@ async function onDropOnColumn(e: DragEvent, toStatus: KanbanColumnStatus) {
   }
 
   onDragEnd()
+}
+
+function handleFeedbackConfirmed(feedbackData: any) {
+  // Close modal
+  const taskId = completionModalTask.value?._id
+  completionModalOpen.value = false
+  completionModalTask.value = null
+
+  // Show success message
+  showSnack('✓ Feedback registrado! Tarefa concluída com sucesso.')
+
+  // Emit event for parent component if needed
+  if (taskId) {
+    emit('task-moved', {
+      taskId,
+      toStatus: 'done',
+      feedback: feedbackData,
+    })
+  }
 }
 </script>
 

@@ -152,6 +152,9 @@ const setChecklistItemCompleted = async (idx: number | string, completed: boolea
       completed,
       ...(completed ? { completedAt: new Date().toISOString() } : {}),
     }
+    // Persist the whole checklist when legacy string items exist (backend expects objects)
+    await taskStore.updateMicroTaskChecklistFull(id, props.task.checklist)
+    return
   } else {
     item.completed = completed
     if (completed) {

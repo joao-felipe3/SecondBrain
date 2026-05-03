@@ -231,12 +231,15 @@ export const useTaskStore = defineStore('task', {
           }
           return { success: true, data }
         } else {
-          console.error('Erro ao mover tarefa para status:', error)
-          return { success: false, error: error?.message || 'Unknown error' }
+          // Try to extract detailed message from axios error if present
+          const detailed = error?.response?.data?.message || error?.message || 'Unknown error'
+          console.error('Erro ao mover tarefa para status:', detailed, error)
+          return { success: false, error: detailed }
         }
       } catch (err: any) {
-        console.error('Erro ao setTaskStatus:', err)
-        return { success: false, error: err?.message || 'Unknown error' }
+        const detailed = err?.response?.data?.message || err?.message || 'Unknown error'
+        console.error('Erro ao setTaskStatus:', detailed, err)
+        return { success: false, error: detailed }
       }
     },
   }

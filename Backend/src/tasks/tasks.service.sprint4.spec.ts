@@ -211,7 +211,7 @@ describe('TasksService - Sprint 4: Kanban + Rastreabilidade', () => {
     it('should block moving to done if checklist incomplete', async () => {
       const incompleteTask = {
         ...mockTaskDocument,
-        status: 'review',
+        status: 'doing',
         checklist: [
           { name: 'Item 1', completed: true },
           { name: 'Item 2', completed: false },
@@ -227,7 +227,7 @@ describe('TasksService - Sprint 4: Kanban + Rastreabilidade', () => {
     it('should allow moving to done if checklist complete', async () => {
       const completeTask = {
         ...mockTaskDocument,
-        status: 'review',
+        status: 'doing',
         checklist: [
           { name: 'Item 1', completed: true },
           { name: 'Item 2', completed: true },
