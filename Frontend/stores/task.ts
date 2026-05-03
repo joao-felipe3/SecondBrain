@@ -10,6 +10,8 @@ function isRequestAborted(error: any) {
   )
 }
 
+let loadTasksPromise: Promise<void> | null = null
+
 export const useTaskStore = defineStore('task', {
   state: () => ({
     tasks: [] as Task[],
@@ -90,19 +92,28 @@ export const useTaskStore = defineStore('task', {
 
   actions: {
     async loadTasks() {
-      this.isLoading = true
-      const { get } = useApi('/tasks')
-      const { data, error } = await get()
-      
-      if (!error) {
-        this.tasks = data
-      } else {
-        if (!isRequestAborted(error)) {
-          console.error('Erro ao carregar tarefas:', error)
-        }
+      if (loadTasksPromise) {
+        return loadTasksPromise
       }
-      
-      this.isLoading = false
+
+      this.isLoading = true
+      loadTasksPromise = (async () => {
+        try {
+          const { get } = useApi('/tasks')
+          const { data, error } = await get()
+
+          if (!error) {
+            this.tasks = data
+          } else if (!isRequestAborted(error)) {
+            console.error('Erro ao carregar tarefas:', error)
+          }
+        } finally {
+          this.isLoading = false
+          loadTasksPromise = null
+        }
+      })()
+
+      return loadTasksPromise
     },
 
     async createTask(newTask: Partial<Task>) {

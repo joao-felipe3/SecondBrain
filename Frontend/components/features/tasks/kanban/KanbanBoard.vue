@@ -148,6 +148,7 @@ const emit = defineEmits([
   'remove-last-task',
   'task-moved',
   'refresh',
+  'feedback-action',
 ])
 
 // Filter state removed - now using props from parent
@@ -564,6 +565,21 @@ function handleFeedbackConfirmed(feedbackData: any) {
       toStatus: 'done',
       feedback: feedbackData,
     })
+
+    const action = feedbackData?.action
+    if (action) {
+      emit('feedback-action', {
+        taskId,
+        action,
+        payload: feedbackData,
+      })
+
+      if (action === 'raise-impediment') {
+        showSnack('Impedimento registrado no feedback.')
+      } else if (action === 'notify-dependency') {
+        showSnack('Dependência marcada no feedback.')
+      }
+    }
   }
 }
 </script>

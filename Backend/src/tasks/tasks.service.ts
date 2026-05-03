@@ -1596,7 +1596,7 @@ export class TasksService {
   /**
    * Generate completion feedback via LLM and persist
    */
-  async generateCompletionFeedback(id: string): Promise<string> {
+  async generateCompletionFeedback(id: string, payload?: any): Promise<string> {
     if (!id || !Types.ObjectId.isValid(id)) {
       throw new BadRequestException(`ID inválido: ${id}`);
     }
@@ -1618,6 +1618,35 @@ export class TasksService {
       experience: task.experience,
       difficulty: task.difficult,
     };
+
+    const isUserFeedbackPayload =
+      payload && typeof payload === 'object' && (
+        'celebration' in payload ||
+        'validation' in payload ||
+        'question' in payload ||
+        'impediments' in payload ||
+        'selectedSteps' in payload ||
+        'action' in payload
+      );
+
+    if (isUserFeedbackPayload) {
+      const feedbackText = JSON.stringify(payload);
+
+      await this.feedbackModel.create({
+        task: task._id,
+        project: task.project,
+        modelName: 'user-feedback',
+        promptVersion: 'catchball-user-v1',
+        inputSnapshot: {
+          ...inputSnapshot,
+          userFeedback: payload,
+        },
+        feedback: feedbackText,
+      });
+
+      return feedbackText;
+    }
+
     // Delegate to FeedbackService which returns structured feedback
     try {
       const structured = await this.feedbackService.generateFeedbackOnCompletion(task, task.checklist, task.pomodorosDid ? task.pomodorosDid * 25 : undefined);

@@ -240,6 +240,47 @@ describe('Sprint 4: Kanban Board E2E Tests', () => {
       // Should return the most recent one (by createdAt)
       expect(response.body.feedback).toBe(second.body.feedback);
     });
+
+    it('should persist user-submitted completion feedback after concluding a task', async () => {
+      const createRes = await request(app.getHttpServer())
+        .post('/tasks')
+        .send({
+          name: 'Task with user feedback',
+          description: 'E2E feedback persistence test',
+          project: 'feedback-project',
+        })
+        .expect(201);
+
+      const taskId = createRes.body._id;
+
+      await request(app.getHttpServer())
+        .patch(`/tasks/${taskId}/conclude`)
+        .expect(200);
+
+      const userFeedbackPayload = {
+        celebration: 'Entrega concluída com sucesso',
+        validation: 'Checklist validado e revisão final aprovada',
+        question: 'Houve algum impedimento?',
+        impediments: 'Nenhum impeditivo relevante',
+        impedimentType: 'none',
+        action: null,
+        selectedSteps: [{ title: 'Registrar no board', description: 'Atualizar status final' }],
+      };
+
+      const postResponse = await request(app.getHttpServer())
+        .post(`/tasks/${taskId}/completion-feedback`)
+        .send(userFeedbackPayload)
+        .expect(200);
+
+      expect(postResponse.body.feedback).toContain('Entrega concluída com sucesso');
+
+      const getResponse = await request(app.getHttpServer())
+        .get(`/tasks/${taskId}/completion-feedback`)
+        .expect(200);
+
+      expect(getResponse.body.feedback).toContain('Entrega concluída com sucesso');
+      expect(getResponse.body.feedback).toContain('Nenhum impeditivo relevante');
+    });
   });
 
   describe('Kanban Board Constraints', () => {
