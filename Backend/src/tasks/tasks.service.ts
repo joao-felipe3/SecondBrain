@@ -2,7 +2,7 @@ import { Injectable, NotFoundException, Inject, forwardRef, BadRequestException 
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { CreateTaskDto } from './dto/create-task.dto';
-import { ChecklistItemDto, RecurringRuleDto } from './dto/create-task.dto';
+import { ChecklistItemDto, RecurringRuleDto, RecurringExceptionDto } from './dto/create-task.dto';
 import { CreateMicroTaskDto } from './dto/create-micro-task.dto';
 import { TaskDocument } from './schemas/task.schema';
 import { ProjectDocument } from '../projects/schemas/project.schema';
@@ -489,15 +489,14 @@ export class TasksService {
   }
 
   async createRecurringMicroTask(createMicroTaskDto: CreateMicroTaskDto): Promise<TaskDocument> {
-    const recurringRule = createMicroTaskDto.recurringRule as RecurringRuleDto | undefined;
-    if (!recurringRule?.frequency || !recurringRule?.interval) {
-      throw new BadRequestException('recurringRule inválida: frequency e interval são obrigatórios.');
-    }
-
-    return this.createMicroTask({
+    const template = await this.createRecurringTemplate({
       ...createMicroTaskDto,
       isRecurringInstance: false,
-    });
+      recurringState: 'pending',
+    } as any);
+
+    const firstOccurrence = await this.generateNextOccurrence(template);
+    return firstOccurrence || template;
   }
 
   async updateRecurringRule(id: string, recurringRule: RecurringRuleDto): Promise<TaskDocument> {
@@ -509,12 +508,496 @@ export class TasksService {
     }
 
     const updatedTask = await this.taskModel
-      .findByIdAndUpdate(id, { recurringRule }, { new: true })
+      .findByIdAndUpdate(id, { recurringRule: this.normalizeRecurringRule(recurringRule) }, { new: true })
       .exec();
     if (!updatedTask) {
       throw new NotFoundException(`Task with id ${id} not found`);
     }
     return updatedTask;
+  }
+
+  private normalizeRecurringRule(recurringRule?: RecurringRuleDto): RecurringRuleDto {
+    if (!recurringRule?.frequency || !recurringRule?.interval) {
+      throw new BadRequestException('recurringRule inválida: frequency e interval são obrigatórios.');
+    }
+
+    const frequency = String(recurringRule.frequency).toLowerCase();
+    const allowedFrequencies = ['daily', 'weekly', 'biweekly', 'monthly', 'custom'];
+    if (!allowedFrequencies.includes(frequency)) {
+      throw new BadRequestException(`recurringRule inválida: frequency "${recurringRule.frequency}" não suportada.`);
+    }
+
+    const interval = Number(recurringRule.interval);
+    if (!Number.isFinite(interval) || interval <= 0) {
+      throw new BadRequestException('recurringRule inválida: interval deve ser maior que zero.');
+    }
+
+    if (recurringRule.endDate) {
+      const endDate = new Date(recurringRule.endDate);
+      if (Number.isNaN(endDate.getTime())) {
+        throw new BadRequestException('recurringRule inválida: endDate inválida.');
+      }
+      if (endDate.getTime() < Date.now() - 24 * 60 * 60 * 1000) {
+        throw new BadRequestException('recurringRule inválida: endDate não pode estar no passado.');
+      }
+    }
+
+    const daysOfWeek = Array.isArray(recurringRule.daysOfWeek)
+      ? recurringRule.daysOfWeek.filter((day) => Number.isInteger(day) && day >= 0 && day <= 6)
+      : undefined;
+
+    const exceptions = Array.isArray(recurringRule.exceptions)
+      ? recurringRule.exceptions
+          .map((exception): RecurringExceptionDto | null => {
+            const rawDate = exception instanceof Date
+              ? exception
+              : (exception as any)?.date;
+            const parsedDate = new Date(rawDate);
+            if (Number.isNaN(parsedDate.getTime())) {
+              return null;
+            }
+
+            const normalizedDate = new Date(parsedDate);
+            normalizedDate.setHours(0, 0, 0, 0);
+            return {
+              date: normalizedDate,
+              reason: (exception as any)?.reason,
+            };
+          })
+          .filter((exception): exception is RecurringExceptionDto => Boolean(exception))
+      : undefined;
+
+    const cleanedExceptions = exceptions
+      ? exceptions.filter((exception) => {
+          if (recurringRule.endDate) {
+            const endDate = new Date(recurringRule.endDate);
+            endDate.setHours(23, 59, 59, 999);
+            if (exception.date.getTime() > endDate.getTime()) {
+              return false;
+            }
+          }
+
+          const yesterday = new Date();
+          yesterday.setHours(0, 0, 0, 0);
+          yesterday.setDate(yesterday.getDate() - 1);
+          return exception.date.getTime() >= yesterday.getTime();
+        })
+      : undefined;
+
+    return {
+      ...recurringRule,
+      frequency,
+      interval,
+      daysOfWeek,
+      exceptions: cleanedExceptions,
+    };
+  }
+
+  private toDateKey(date: Date): string {
+    const normalized = new Date(date);
+    normalized.setHours(0, 0, 0, 0);
+    return normalized.toISOString().slice(0, 10);
+  }
+
+  private addDays(date: Date, days: number): Date {
+    const next = new Date(date);
+    next.setDate(next.getDate() + days);
+    return next;
+  }
+
+  private addMonths(date: Date, months: number): Date {
+    const next = new Date(date);
+    next.setMonth(next.getMonth() + months);
+    return next;
+  }
+
+  private isRecurringDateExcluded(date: Date, recurringRule: RecurringRuleDto): boolean {
+    const dateKey = this.toDateKey(date);
+    return Array.isArray(recurringRule.exceptions)
+      ? recurringRule.exceptions.some((exception: any) => {
+          const rawDate = exception instanceof Date ? exception : exception?.date;
+          return this.toDateKey(new Date(rawDate)) === dateKey;
+        })
+      : false;
+  }
+
+  private getRecurringSeriesRootId(task: TaskDocument): string {
+    return String(task.parentRecurringId || task._id);
+  }
+
+  private async buildRecurringOccurrenceFromTask(task: TaskDocument, nextDeadline: Date): Promise<TaskDocument> {
+    const recurringRule = this.normalizeRecurringRule(task.recurringRule as RecurringRuleDto | undefined);
+    const normalizedChecklist = Array.isArray(task.checklist)
+      ? task.checklist.map((entry: any, index: number) => {
+          if (typeof entry === 'string') {
+            return { item: entry, completed: false, order: index };
+          }
+          return {
+            item: String(entry?.item || ''),
+            completed: false,
+            order: Number.isFinite(entry?.order) ? Number(entry.order) : index,
+          };
+        }).filter((item) => item.item)
+      : [];
+
+    const occurrencePayload = {
+      name: task.name,
+      description: task.description,
+      definitionOfDone: task.definitionOfDone,
+      checklist: normalizedChecklist as any,
+      deadline: nextDeadline,
+      pomodorosPlanned: task.pomodorosPlanned,
+      pomodorosDid: 0,
+      pertOptimisticMinutes: task.pertOptimisticMinutes,
+      pertMostLikelyMinutes: task.pertMostLikelyMinutes,
+      pertPessimisticMinutes: task.pertPessimisticMinutes,
+      pertExpectedMinutes: task.pertExpectedMinutes,
+      pertVariance: task.pertVariance,
+      priority: task.priority,
+      difficult: task.difficult,
+      project: task.project as any,
+      parentTaskId: task.parentTaskId as any,
+      parentWbsNodeId: task.parentWbsNodeId,
+      wbsPath: task.wbsPath,
+      generationBatchId: task.generationBatchId,
+      milestoneId: task.milestoneId,
+      experience: task.experience,
+      isConcluded: false,
+      late: false,
+      prize: task.prize,
+      recurrency: task.recurrency,
+      notification: new Date(nextDeadline.getTime() - 60 * 60 * 1000),
+      microTaskType: task.microTaskType,
+      parentRecurringId: this.getRecurringSeriesRootId(task) as any,
+      isRecurringInstance: true,
+      recurringState: 'pending',
+      recurringRule,
+      cognitiveMode: task.cognitiveMode,
+      contextTag: task.contextTag,
+      themeTag: task.themeTag,
+      requirementIds: task.requirementIds,
+      journeyItemIds: task.journeyItemIds,
+      rtmRisk: task.rtmRisk,
+      rtmRiskReason: task.rtmRiskReason,
+      evmProgress: task.evmProgress,
+      evmPlannedValueMinutes: task.evmPlannedValueMinutes,
+      evmEarnedValueMinutes: task.evmEarnedValueMinutes,
+      evmSchedulePerformanceIndex: task.evmSchedulePerformanceIndex,
+      evmAlert: task.evmAlert,
+      status: 'todo' as any,
+      statusUpdatedAt: new Date(),
+      kanbanOrder: 0,
+    } as any as CreateTaskDto;
+
+    return this.createTaskCore(occurrencePayload);
+  }
+
+  private calculateNextRecurringDate(referenceDate: Date, recurringRule: RecurringRuleDto): Date | null {
+    const rule = this.normalizeRecurringRule(recurringRule);
+    const base = new Date(referenceDate);
+    base.setSeconds(0, 0);
+
+    let stepDays = rule.interval;
+    if (rule.frequency === 'weekly') {
+      stepDays = rule.interval * 7;
+    } else if (rule.frequency === 'biweekly') {
+      stepDays = rule.interval * 14;
+    } else if (rule.frequency === 'monthly') {
+      const monthCandidate = this.addMonths(base, rule.interval);
+      if (rule.endDate && monthCandidate.getTime() > new Date(rule.endDate).getTime()) {
+        return null;
+      }
+      return monthCandidate;
+    }
+
+    const candidate = this.addDays(base, stepDays);
+    const allowedDays = Array.isArray(rule.daysOfWeek) && rule.daysOfWeek.length > 0 ? rule.daysOfWeek : null;
+
+    for (let offset = 0; offset < 365; offset++) {
+      const probe = this.addDays(candidate, offset);
+      if (rule.endDate && probe.getTime() > new Date(rule.endDate).getTime()) {
+        return null;
+      }
+      if (allowedDays && !allowedDays.includes(probe.getDay())) {
+        continue;
+      }
+      if (this.isRecurringDateExcluded(probe, rule)) {
+        continue;
+      }
+      return probe;
+    }
+
+    return null;
+  }
+
+  async createRecurringTemplate(createMicroTaskDto: CreateMicroTaskDto): Promise<TaskDocument> {
+    const recurringRule = this.normalizeRecurringRule(createMicroTaskDto.recurringRule as RecurringRuleDto | undefined);
+    const template = await this.createMicroTask({
+      ...createMicroTaskDto,
+      recurringRule,
+      isRecurringInstance: false,
+      recurringState: 'pending',
+    } as any);
+
+    return template;
+  }
+
+  async generateNextOccurrence(taskOrId: string | TaskDocument): Promise<TaskDocument | null> {
+    const task = typeof taskOrId === 'string' ? await this.findOne(taskOrId) : taskOrId;
+    if (!task) {
+      throw new NotFoundException('Task not found');
+    }
+
+    const recurringRule = task.recurringRule ? this.normalizeRecurringRule(task.recurringRule) : undefined;
+    if (!recurringRule) {
+      return null;
+    }
+
+    const nextDeadline = this.calculateNextRecurringDate(task.deadline || task.createdAt || new Date(), recurringRule);
+    if (!nextDeadline) {
+      return null;
+    }
+
+    return this.buildRecurringOccurrenceFromTask(task, nextDeadline);
+  }
+
+  async handleTaskCompletion(taskId: string): Promise<TaskDocument | null> {
+    const task = await this.findOne(taskId);
+    if (!task) {
+      return null;
+    }
+
+    if (task.recurringRule) {
+      await this.taskModel.findByIdAndUpdate(taskId, { recurringState: 'completed' }, { new: true }).exec();
+      await this.generateNextOccurrence(task);
+    }
+
+    return task;
+  }
+
+  async handleTaskSkipped(taskId: string): Promise<TaskDocument> {
+    const task = await this.findOne(taskId);
+    if (!task) {
+      throw new NotFoundException(`Task with id ${taskId} not found`);
+    }
+
+    const updatedTask = await this.taskModel
+      .findByIdAndUpdate(
+        taskId,
+        {
+          recurringState: 'skipped',
+          isConcluded: true,
+          status: 'done',
+          statusUpdatedAt: new Date(),
+        },
+        { new: true },
+      )
+      .exec();
+
+    if (!updatedTask) {
+      throw new NotFoundException(`Task with id ${taskId} not found`);
+    }
+
+    if (updatedTask.recurringRule) {
+      await this.generateNextOccurrence(updatedTask);
+    }
+
+    return updatedTask;
+  }
+
+  async handleTaskDeferred(taskId: string, newDeadline: Date): Promise<TaskDocument> {
+    if (!taskId || !Types.ObjectId.isValid(taskId)) {
+      throw new BadRequestException(`ID inválido: ${taskId}`);
+    }
+
+    const parsedDeadline = new Date(newDeadline);
+    if (Number.isNaN(parsedDeadline.getTime())) {
+      throw new BadRequestException('newDeadline inválido');
+    }
+
+    const task = await this.taskModel.findById(taskId).exec();
+    if (!task) {
+      throw new NotFoundException(`Task with id ${taskId} not found`);
+    }
+
+    const updatedTask = await this.taskModel
+      .findByIdAndUpdate(
+        taskId,
+        {
+          deadline: parsedDeadline,
+          statusUpdatedAt: new Date(),
+        },
+        { new: true },
+      )
+      .exec();
+
+    if (!updatedTask) {
+      throw new NotFoundException(`Task with id ${taskId} not found`);
+    }
+
+    return updatedTask;
+  }
+
+  async getStreakData(parentRecurringId: string): Promise<{
+    currentStreak: number;
+    longestStreak: number;
+    aderencePercent: number;
+    lastCompletedDate: Date | null;
+  }> {
+    if (!parentRecurringId || !Types.ObjectId.isValid(parentRecurringId)) {
+      throw new BadRequestException(`ID inválido: ${parentRecurringId}`);
+    }
+
+    const seriesTasks = await this.taskModel
+      .find({
+        $or: [
+          { _id: parentRecurringId },
+          { parentRecurringId },
+        ],
+      })
+      .sort({ deadline: 1, createdAt: 1 })
+      .exec();
+
+    const recurringTasks = seriesTasks.filter((task: any) => Boolean(task?.recurringRule || task?.parentRecurringId));
+    if (recurringTasks.length === 0) {
+      return {
+        currentStreak: 0,
+        longestStreak: 0,
+        aderencePercent: 0,
+        lastCompletedDate: null,
+      };
+    }
+
+    const maintained = recurringTasks.filter((task: any) => ['completed', 'skipped'].includes(String(task?.recurringState || ''))).length;
+    const aderencePercent = Math.round((maintained / recurringTasks.length) * 100);
+
+    let currentStreak = 0;
+    for (let i = recurringTasks.length - 1; i >= 0; i--) {
+      const state = String((recurringTasks[i] as any)?.recurringState || 'pending');
+      if (state === 'completed' || state === 'skipped') {
+        currentStreak += 1;
+      } else {
+        break;
+      }
+    }
+
+    let longestStreak = 0;
+    let run = 0;
+    let lastCompletedDate: Date | null = null;
+    for (const task of recurringTasks as any[]) {
+      const state = String(task?.recurringState || 'pending');
+      if (state === 'completed' || state === 'skipped') {
+        run += 1;
+        longestStreak = Math.max(longestStreak, run);
+        if (state === 'completed') {
+          lastCompletedDate = task.deadline || task.createdAt || null;
+        }
+      } else {
+        run = 0;
+      }
+    }
+
+    return {
+      currentStreak,
+      longestStreak,
+      aderencePercent,
+      lastCompletedDate,
+    };
+  }
+
+  async getHabitsDashboard(projectId?: string): Promise<{
+    projectId?: string;
+    totalHabits: number;
+    activeHabits: number;
+    averageAderencePercent: number;
+    streaksOver7Days: number;
+    habits: Array<{
+      id: string;
+      name: string;
+      status: string;
+      currentStreak: number;
+      longestStreak: number;
+      aderencePercent: number;
+      lastCompletedDate: Date | null;
+    }>;
+  }> {
+    const query: any = {
+      $or: [
+        { microTaskType: 'habit' },
+        { recurringRule: { $exists: true, $ne: null } },
+      ],
+    };
+
+    if (projectId && Types.ObjectId.isValid(projectId)) {
+      query.project = new Types.ObjectId(projectId);
+    }
+
+    const habits = await this.taskModel.find(query).sort({ createdAt: -1 }).exec();
+    const summaries = [] as Array<{
+      id: string;
+      name: string;
+      status: string;
+      currentStreak: number;
+      longestStreak: number;
+      aderencePercent: number;
+      lastCompletedDate: Date | null;
+    }>;
+
+    for (const habit of habits as any[]) {
+      const rootId = String(habit.parentRecurringId || habit._id);
+      const streak = await this.getStreakData(rootId);
+      summaries.push({
+        id: String(habit._id),
+        name: String(habit.name || ''),
+        status: String(habit.status || 'todo'),
+        ...streak,
+      });
+    }
+
+    const activeHabits = summaries.filter((habit) => habit.status !== 'done').length;
+    const averageAderencePercent = summaries.length > 0
+      ? Math.round(summaries.reduce((sum, habit) => sum + habit.aderencePercent, 0) / summaries.length)
+      : 0;
+    const streaksOver7Days = summaries.filter((habit) => habit.currentStreak >= 7).length;
+
+    return {
+      projectId,
+      totalHabits: summaries.length,
+      activeHabits,
+      averageAderencePercent,
+      streaksOver7Days,
+      habits: summaries,
+    };
+  }
+
+  async findRecurringSeries(parentRecurringId: string): Promise<TaskDocument[]> {
+    if (!parentRecurringId || !Types.ObjectId.isValid(parentRecurringId)) {
+      throw new BadRequestException(`ID inválido: ${parentRecurringId}`);
+    }
+
+    return this.taskModel
+      .find({
+        $or: [
+          { _id: parentRecurringId },
+          { parentRecurringId },
+        ],
+      })
+      .sort({ createdAt: 1 })
+      .exec();
+  }
+
+  async deleteRecurringSeries(parentRecurringId: string): Promise<{ deletedCount: number }> {
+    const tasks = await this.findRecurringSeries(parentRecurringId);
+    let deletedCount = 0;
+
+    for (const task of tasks) {
+      const removed = await this.remove(String(task._id));
+      if (removed) {
+        deletedCount += 1;
+      }
+    }
+
+    return { deletedCount };
   }
 
   /**
@@ -883,6 +1366,10 @@ export class TasksService {
       const projectId = updatedTask.project.toString();
       await this.projectsService.incrementHoursWorked(projectId, remainingHours);
       await this.registerAutoEvmProgress(projectId, id, remainingHours, 'completion');
+    }
+
+    if (updatedTask.recurringRule) {
+      await this.handleTaskCompletion(id);
     }
 
     return updatedTask;

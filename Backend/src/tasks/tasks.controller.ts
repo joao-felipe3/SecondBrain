@@ -4,6 +4,7 @@ import {
   Post,
   Body,
   Patch,
+  Put,
   Param,
   Delete,
   NotFoundException,
@@ -257,6 +258,16 @@ export class TasksController {
   }
 
   @Patch(':id/recurring-rule')
+  @ApiOperation({ summary: 'Atualizar regra de recorrência de uma task (compat)' })
+  @ApiResponse({ status: 200, description: 'Regra de recorrência atualizada com sucesso.' })
+  updateRecurringRuleCompat(
+    @Param('id') id: string,
+    @Body() body: UpdateRecurringRuleDto,
+  ) {
+    return this.tasksService.updateRecurringRule(id, body.recurringRule);
+  }
+
+  @Put(':id/recurring-rule')
   @ApiOperation({ summary: 'Atualizar regra de recorrência de uma task' })
   @ApiResponse({ status: 200, description: 'Regra de recorrência atualizada com sucesso.' })
   updateRecurringRule(
@@ -264,6 +275,41 @@ export class TasksController {
     @Body() body: UpdateRecurringRuleDto,
   ) {
     return this.tasksService.updateRecurringRule(id, body.recurringRule);
+  }
+
+  @Post('habit/create')
+  @ApiOperation({ summary: 'Criar template recorrente e primeira ocorrência' })
+  @ApiResponse({ status: 201, description: 'Hábito recorrente criado com sucesso.' })
+  createHabit(@Body() createMicroTaskDto: CreateMicroTaskDto) {
+    return this.tasksService.createRecurringMicroTask(createMicroTaskDto);
+  }
+
+  @Post(':id/skip')
+  @ApiOperation({ summary: 'Marcar ocorrência recorrente como pulada' })
+  @ApiResponse({ status: 200, description: 'Ocorrência marcada como pulada.' })
+  skipTask(@Param('id') id: string) {
+    return this.tasksService.handleTaskSkipped(id);
+  }
+
+  @Get(':parentRecurringId/streak')
+  @ApiOperation({ summary: 'Buscar streak de uma série recorrente' })
+  @ApiResponse({ status: 200, description: 'Dados de streak retornados com sucesso.' })
+  getRecurringStreak(@Param('parentRecurringId') parentRecurringId: string) {
+    return this.tasksService.getStreakData(parentRecurringId);
+  }
+
+  @Delete(':parentRecurringId')
+  @ApiOperation({ summary: 'Remover série recorrente inteira (com confirmação)' })
+  @ApiResponse({ status: 200, description: 'Série recorrente removida com sucesso.' })
+  async deleteRecurringSeries(
+    @Param('parentRecurringId') parentRecurringId: string,
+    @Query('confirm') confirm?: string,
+  ) {
+    if (String(confirm || '').toLowerCase() !== 'true') {
+      throw new BadRequestException('Confirmação obrigatória: use ?confirm=true para remover a série.');
+    }
+
+    return this.tasksService.deleteRecurringSeries(parentRecurringId);
   }
 
   @Patch(':id/pert')
@@ -405,7 +451,7 @@ export class TasksController {
     return task;
   }
 
-  @Delete(':id')
+  @Delete('item/:id')
   remove(@Param('id') id: string) {
     const removed = this.tasksService.remove(id);
     if (!removed) throw new NotFoundException('Task not found');

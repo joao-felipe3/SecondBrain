@@ -6,12 +6,17 @@ export interface ChecklistItemDto {
   order?: number;
 }
 
+export interface RecurringExceptionDto {
+  date: Date;
+  reason?: string;
+}
+
 export interface RecurringRuleDto {
   frequency: string;
   interval: number;
   daysOfWeek?: number[];
   endDate?: Date;
-  exceptions?: Date[];
+  exceptions?: Array<Date | RecurringExceptionDto>;
 }
 
 export class CreateTaskDto {
@@ -53,8 +58,10 @@ export class CreateTaskDto {
   microTaskType?: string;
   parentRecurringId?: string | Types.ObjectId;
   isRecurringInstance?: boolean;
+  recurringState?: 'pending' | 'completed' | 'skipped';
   recurringRule?: RecurringRuleDto;
   cognitiveMode?: string;
   contextTag?: string;
   themeTag?: string[];
+  status?: 'todo' | 'doing' | 'review' | 'done';
 }

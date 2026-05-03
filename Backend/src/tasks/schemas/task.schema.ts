@@ -11,7 +11,7 @@ export interface TaskRecurringRule {
   interval: number;
   daysOfWeek?: number[];
   endDate?: Date;
-  exceptions?: Date[];
+  exceptions?: Array<Date | { date: Date; reason?: string }>;
 }
 
 export interface TaskDocument extends Document {
@@ -44,6 +44,7 @@ export interface TaskDocument extends Document {
   microTaskType?: string;
   parentRecurringId?: string;
   isRecurringInstance?: boolean;
+  recurringState?: 'pending' | 'completed' | 'skipped';
   recurringRule?: TaskRecurringRule;
   cognitiveMode?: string;
   contextTag?: string;
@@ -94,13 +95,21 @@ export const TaskSchema = new Schema<TaskDocument>({
   microTaskType: { type: String },
   parentRecurringId: { type: Schema.Types.ObjectId, ref: 'Task' },
   isRecurringInstance: { type: Boolean, default: false },
+  recurringState: { type: String, enum: ['pending', 'completed', 'skipped'], default: 'pending' },
   recurringRule: {
     type: {
       frequency: { type: String },
       interval: { type: Number },
       daysOfWeek: { type: [Number] },
       endDate: { type: Date },
-      exceptions: { type: [Date] },
+      exceptions: {
+        type: [
+          {
+            date: { type: Date, required: true },
+            reason: { type: String },
+          },
+        ],
+      },
     },
     _id: false,
   },

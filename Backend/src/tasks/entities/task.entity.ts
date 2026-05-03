@@ -9,7 +9,7 @@ export interface TaskRecurringRule {
   interval: number;
   daysOfWeek?: number[];
   endDate?: Date;
-  exceptions?: Date[];
+  exceptions?: Array<Date | { date: Date; reason?: string }>;
 }
 
 export class Task {
@@ -52,6 +52,7 @@ export class Task {
   microTaskType?: string;
   parentRecurringId?: string;
   isRecurringInstance?: boolean;
+  recurringState?: 'pending' | 'completed' | 'skipped';
   recurringRule?: TaskRecurringRule;
   cognitiveMode?: string;
   contextTag?: string;

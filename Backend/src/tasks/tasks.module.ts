@@ -11,6 +11,7 @@ import { CPMController } from './controllers/cpm.controller';
 import { BufferController } from './controllers/buffer.controller'; // NOVO: Importa BufferController
 import { RTMService } from './services/rtm.service'; // NOVO: Importa RTMService
 import { RTMController } from './controllers/rtm.controller'; // NOVO: Importa RTMController
+import { HabitsController } from './controllers/habits.controller';
 import { MongooseModule } from '@nestjs/mongoose';
 import { TaskSchema } from './schemas/task.schema';
 import { Task } from './entities/task.entity';
@@ -49,7 +50,7 @@ import { ProjectsModule } from '../projects/projects.module';
     ]), 
     forwardRef(() => ProjectsModule)
   ],
-  controllers: [TasksController, CPMController, BufferController, RTMController], // NOVO: Adiciona RTMController
+  controllers: [TasksController, CPMController, BufferController, RTMController, HabitsController], // NOVO: Adiciona RTMController
   providers: [TasksService, GeminiService, ChecklistService, PertService, CPMService, DependencyInferenceService, BufferService, RTMService, /* new */ FeedbackService], // Sprint 2: Adiciona ChecklistService
   exports: [TasksService, GeminiService, ChecklistService, PertService, CPMService, DependencyInferenceService, BufferService, RTMService, FeedbackService], // Sprint 2: Adiciona ChecklistService aos exports
 })
