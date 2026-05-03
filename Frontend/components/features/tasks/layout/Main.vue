@@ -46,8 +46,13 @@
         <ClientOnly>
           <TaskKanbanBoard
             :key="`kanban-${(allTasks || []).length}`"
-            :tasks="allTasks"
+            :tasks="filteredTasks"
             :projects="projects"
+            :project-filter="projectFilter"
+            :type-filter="typeFilter"
+            :priority-filter="priorityFilter"
+            :is-refreshing="isRefreshing"
+            :time-since-refresh="timeSinceRefresh"
             @zoom-in="$emit('zoom-in')"
             @zoom-out="$emit('zoom-out')"
             @remove-last-task="$emit('remove-last-task', $event)"
@@ -87,26 +92,107 @@
 </template>
 
 <script setup>
-  import { computed, ref } from 'vue'
+  import { computed, ref, onMounted, onBeforeUnmount } from 'vue'
   import TaskStatsCard from '../board/StatsCard.vue'
   import TaskBackgroundDecor from '../board/BackgroundDecor.vue'
   import TaskBoard from '../board/Board.vue'
   import TaskKanbanBoard from '../kanban/KanbanBoard.vue'
   import SvgButton from '../../../ui/svg/Button.vue'
+  import { useTaskStore } from '~/stores/task'
   
-  const props = defineProps(['tasks', 'projects', 'zoomed', 'initialZoomedTask', 'allTasks', 'isMobile', 'viewMode'])
+  const props = defineProps({
+    tasks: { type: Array, default: () => [] },
+    projects: { type: Array, default: () => [] },
+    zoomed: { type: Boolean, default: false },
+    initialZoomedTask: { type: Object, default: null },
+    allTasks: { type: Array, default: () => [] },
+    isMobile: { type: Boolean, default: false },
+    viewMode: { type: String, default: 'kanban' },
+    projectFilter: { type: String, default: '' },
+    typeFilter: { type: String, default: '' },
+    priorityFilter: { type: String, default: '' },
+  })
   defineEmits(['zoom-in', 'zoom-out', 'remove-last-task', 'task-created', 'task-moved'])
 
-  const showMoreAvailable = ref(false);
-  const showAllTasks = ref(false);
+  const showMoreAvailable = ref(false)
+  const showAllTasks = ref(false)
+
+  // Filter state
+  const isRefreshing = ref(false)
+  const timeSinceRefresh = ref(0)
+  let refreshInterval = null
 
   const handleShowMoreAvailable = (available) => {
-    showMoreAvailable.value = available;
-  };
+    showMoreAvailable.value = available
+  }
 
   const handleShowMoreClick = () => {
-    showAllTasks.value = true;
-  };
+    showAllTasks.value = true
+  }
+
+  // Apply filters to tasks
+  const filteredTasks = computed(() => {
+    let filtered = (props.allTasks || []).filter((task) => {
+      if (props.projectFilter && task.project !== props.projectFilter) {
+        return false
+      }
+
+      if (props.typeFilter) {
+        const taskType = task.microTaskType || 'task'
+        if (taskType !== props.typeFilter) {
+          return false
+        }
+      }
+
+      if (props.priorityFilter) {
+        const taskPriority = task.priority || 'low'
+        if (String(taskPriority) !== props.priorityFilter) {
+          return false
+        }
+      }
+
+      return true
+    })
+
+    return filtered
+  })
+
+  // Auto-refresh every 10s
+  onMounted(() => {
+    refreshInterval = setInterval(async () => {
+      timeSinceRefresh.value += 1
+      if (timeSinceRefresh.value >= 10) {
+        await manualRefresh()
+      }
+    }, 1000)
+  })
+
+  onBeforeUnmount(() => {
+    if (refreshInterval) clearInterval(refreshInterval)
+  })
+
+  async function manualRefresh() {
+    if (isRefreshing.value) return
+
+    try {
+      isRefreshing.value = true
+      const taskStore = useTaskStore()
+      await taskStore.loadTasks()
+      timeSinceRefresh.value = 0
+    } catch (err) {
+      const error = err || {}
+      const aborted =
+        error?.code === 'ERR_CANCELED' ||
+        error?.name === 'CanceledError' ||
+        error?.message?.includes?.('aborted')
+
+      if (!aborted) {
+        console.error('Erro ao atualizar tarefas:', err)
+      }
+    } finally {
+      isRefreshing.value = false
+    }
+  }
 </script>
 
 <style scoped>

@@ -127,15 +127,30 @@ type TaskStatus = 'todo' | 'doing' | 'review' | 'done'
 interface Props {
   tasks: Task[]
   projects: any[]
+  projectFilter?: string
+  typeFilter?: string
+  priorityFilter?: string
+  isRefreshing?: boolean
+  timeSinceRefresh?: number
 }
 
-const props = defineProps<Props>()
+const props = withDefaults(defineProps<Props>(), {
+  projectFilter: '',
+  typeFilter: '',
+  priorityFilter: '',
+  isRefreshing: false,
+  timeSinceRefresh: 0,
+})
+
 const emit = defineEmits([
   'zoom-in',
   'zoom-out',
   'remove-last-task',
   'task-moved',
+  'refresh',
 ])
+
+// Filter state removed - now using props from parent
 
 const columns: Array<{ status: KanbanColumnStatus; label: string }> = [
   { status: 'todo', label: 'ToDo' },
@@ -219,6 +234,36 @@ const getEffectiveStatus = (task: any): KanbanColumnStatus => {
   return 'todo'
 }
 
+// Filter tasks based on props filters
+const filteredTasks = computed(() => {
+  let filtered = (props.tasks || []).filter((task: any) => {
+    // Project filter
+    if (props.projectFilter && task.project !== props.projectFilter) {
+      return false
+    }
+
+    // Type filter (habit, subtask, etc)
+    if (props.typeFilter) {
+      const taskType = task.microTaskType || 'task'
+      if (taskType !== props.typeFilter) {
+        return false
+      }
+    }
+
+    // Priority filter
+    if (props.priorityFilter) {
+      const taskPriority = task.priority || 'low'
+      if (String(taskPriority) !== props.priorityFilter) {
+        return false
+      }
+    }
+
+    return true
+  })
+
+  return filtered
+})
+
 const tasksByStatus = computed<Record<KanbanColumnStatus, Task[]>>(() => {
   const grouped: Record<KanbanColumnStatus, Task[]> = {
     todo: [],
@@ -226,7 +271,7 @@ const tasksByStatus = computed<Record<KanbanColumnStatus, Task[]>>(() => {
     done: [],
   }
 
-  for (const task of props.tasks || []) {
+  for (const task of filteredTasks.value) {
     grouped[getEffectiveStatus(task)].push(task)
   }
 

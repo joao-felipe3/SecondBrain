@@ -2,6 +2,14 @@ import { defineStore } from 'pinia'
 import { useApi } from '../composables/api/useApi'
 import type { Task } from '~/models/Task'
 
+function isRequestAborted(error: any) {
+  return (
+    error?.code === 'ERR_CANCELED' ||
+    error?.name === 'CanceledError' ||
+    error?.message?.includes?.('aborted')
+  )
+}
+
 export const useTaskStore = defineStore('task', {
   state: () => ({
     tasks: [] as Task[],
@@ -38,6 +46,46 @@ export const useTaskStore = defineStore('task', {
       const completed = task.checklist.filter((item: any) => item.completed).length
       return Math.round((completed / task.checklist.length) * 100)
     },
+
+    /**
+     * Get tasks filtered by status and optionally by project, sorted by kanban order and priority
+     */
+    getTasksByStatus: (state) => (status: 'todo' | 'doing' | 'review' | 'done', projectId?: string) => {
+      let filtered = state.tasks.filter(t => t.status === status)
+
+      if (projectId) {
+        filtered = filtered.filter(t => t.project === projectId)
+      }
+
+      // Sort by kanbanOrder (if present), then by priority, then by createdAt
+      return filtered.sort((a, b) => {
+        if (a.kanbanOrder !== undefined && b.kanbanOrder !== undefined) {
+          return a.kanbanOrder - b.kanbanOrder
+        }
+        const priorityA = a.priority || 0
+        const priorityB = b.priority || 0
+        if (priorityA !== priorityB) return priorityB - priorityA
+        const dateA = new Date(a.createdAt || 0).getTime()
+        const dateB = new Date(b.createdAt || 0).getTime()
+        return dateB - dateA
+      })
+    },
+
+    /**
+     * Get ancestor chain (lineage) of a task by walking up parent references
+     */
+    getLineage: (state) => (taskId: string) => {
+      const lineage: Task[] = []
+      let current = state.tasks.find(t => t._id === taskId)
+
+      while (current) {
+        lineage.unshift(current)
+        if (!current.parentTaskId) break
+        current = state.tasks.find(t => t._id === current?.parentTaskId)
+      }
+
+      return lineage
+    },
   },
 
   actions: {
@@ -49,7 +97,9 @@ export const useTaskStore = defineStore('task', {
       if (!error) {
         this.tasks = data
       } else {
-        console.error('Erro ao carregar tarefas:', error)
+        if (!isRequestAborted(error)) {
+          console.error('Erro ao carregar tarefas:', error)
+        }
       }
       
       this.isLoading = false
@@ -241,6 +291,13 @@ export const useTaskStore = defineStore('task', {
         console.error('Erro ao setTaskStatus:', detailed, err)
         return { success: false, error: detailed }
       }
+    },
+
+    /**
+     * Alias for setTaskStatus with better naming semantics
+     */
+    async moveTaskToStatus(id: string, toStatus: 'todo' | 'doing' | 'review' | 'done') {
+      return this.setTaskStatus(id, toStatus)
     },
   }
 })

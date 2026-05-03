@@ -1,5 +1,5 @@
 <template>
-  <v-col :cols="isMobile ? 12 : 2" class="pa-0" :class="{ 'ml-2 mt-n4': !isMobile }">
+  <v-col :cols="isMobile ? 12 : 2" class="pa-0 sidebar-outer" :class="{ 'ml-2 mt-n4': !isMobile }">
     <v-col :cols="isMobile ? 12 : 9" class="pa-0">
       <v-container
         fluid
@@ -15,7 +15,7 @@
         />
         <h1 
           class="text-center font-weight-bold text-shadow-white"
-          :class="isMobile ? 'text-h5' : 'text-h4'"
+          :class="isMobile ? 'text-h6' : 'text-h5'"
           style="font-family: 'Irish Grover', cursive;"
         >
           Task RPG
@@ -97,5 +97,20 @@ function handleIconClick(icon) {
   aspect-ratio: unset;
   background-image: none;
   background-color: transparent;
+}
+
+/* Narrow sidebar for desktop, full width on mobile */
+.sidebar-outer {
+  width: 80px;
+  max-width: 185px;
+  min-width: 64px;
+}
+
+@media (max-width: 600px) {
+  .sidebar-outer {
+    width: 100% !important;
+    max-width: none;
+    min-width: 0;
+  }
 }
 </style>

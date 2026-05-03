@@ -13,14 +13,14 @@
     <v-img
       src="/svg/old-paper.svg"
       alt="Old Paper"
-      width="55%"
+      width="45%"
       class="position-relative"
-      style="z-index: 1; top: 4%; left: 18%"
+      style="z-index: 1; top: 4%; left: 13%"
     />
 
     <!-- Título -->
     <div
-      style="position: relative; left: 29%; font-family: 'Irish Grover', cursive; font-size: 200%; z-index: 2;"
+      style="position: relative; left: 24%; font-family: 'Irish Grover', cursive; font-size: 200%; z-index: 2;"
       :style="{ top: titleOffset }"
     >
       <strong>{{ title }}</strong>

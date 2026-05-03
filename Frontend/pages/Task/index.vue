@@ -4,6 +4,9 @@
       :tasks="tasks"
       :allTasks="allTasks"
       :projects="projects"
+      :project-filter="selectedProjectFilter"
+      :type-filter="selectedTypeFilter"
+      :priority-filter="selectedPriorityFilter"
       :zoomed="zoomed"
       :initialZoomedTask="newlyCreatedTask"
       :isMobile="isMobile"
@@ -14,7 +17,16 @@
       @task-moved="handleTaskMoved"
       @task-created="handleTaskCreated"
     />
-    <TaskSidebar v-if="!isMobile" :projects="projects" />
+    <TaskSidebar
+      v-if="!isMobile"
+      :projects="projects"
+      :project-filter="selectedProjectFilter"
+      :type-filter="selectedTypeFilter"
+      :priority-filter="selectedPriorityFilter"
+      @update:projectFilter="selectedProjectFilter = $event"
+      @update:typeFilter="selectedTypeFilter = $event"
+      @update:priorityFilter="selectedPriorityFilter = $event"
+    />
   </v-row>
 </template>
 
@@ -44,10 +56,12 @@ const newlyCreatedTask = ref(null) // Garante que o Board nunca inicie com zoom
 const taskStore = useTaskStore()
 const tasks = ref([])
 const allTasks = ref([]) // All tasks including completed ones
+const selectedProjectFilter = ref('')
+const selectedTypeFilter = ref('')
+const selectedPriorityFilter = ref('')
 
 onMounted(() => {
   newlyCreatedTask.value = null // Garante que o Board nunca inicie com zoom
-  loadInitialTasks()
   checkMobile()
   window.addEventListener('resize', checkMobile)
 })
