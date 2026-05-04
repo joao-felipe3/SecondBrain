@@ -69,6 +69,9 @@ export default defineNuxtConfig({
 
   nitro: {
     routeRules: {
+      // Disable SSR for task page to prevent hydration mismatches
+      '/task': { ssr: false },
+      '/task/**': { ssr: false },
       // Proxiar todas as rotas `/api/**` para o backend em localhost:3000
       '/api/**': {
         proxy: process.env.NITRO_API_PROXY || 'http://localhost:3000/**',

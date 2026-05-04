@@ -17,18 +17,20 @@
 
     <v-row dense class="mt-n3 mb-n4">
       <v-col cols="6"><CommonSelect v-model="task.project" label="Project" :items="projectNames" :required="true" /></v-col>
-      <v-col cols="6"><CommonSelect v-model="task.recurrency" label="Recurrency" :items="recurrencyOptions" :required="true" /></v-col>
+      <v-col cols="6"><CommonSelect v-model="microTaskTypeUi" label="Task Type" :items="microTaskTypeOptions"/></v-col>
     </v-row>
 
-    <v-row dense class="mt-1 mb-1">
-      <v-col cols="6">
-        <CommonSelect
-          v-model="microTaskTypeUi"
-          label="Task Type"
-          :items="microTaskTypeOptions"
-        />
-      </v-col>
-    </v-row>
+    <!-- Campos específicos para hábitos -->
+    <div v-if="props.isHabit">
+      <v-row dense class="mt-2 mb-2">
+        <v-col cols="6">
+          <CommonSelect v-model="props.task.recurringRule.frequency" label="Frequência" :items="['daily','weekdays','weekly','biweekly','monthly']" />
+        </v-col>
+        <v-col cols="6">
+          <CommonTextField v-model.number="props.task.target" label="Meta Semanal (dias)" />
+        </v-col>
+      </v-row>
+    </div>
 
     <CommonEffortSelect class="mt-n4" v-model="task.pomodorosPlanned" />
   </div>
@@ -58,6 +60,10 @@ const props = defineProps({
     default: 'Create'
   },
   isValid: Boolean,
+  isHabit: {
+    type: Boolean,
+    default: false,
+  },
 })
 
 const emit = defineEmits(['update:is-valid'])
@@ -130,6 +136,25 @@ watch(localNotification, (val) => {
     props.task.notification = val.toISOString();
   } else {
     props.task.notification = null
+  }
+})
+
+// Inicializa campos específicos de hábito
+if (props.isHabit) {
+  if (!props.task.recurringRule) {
+    props.task.recurringRule = { frequency: 'daily', interval: 1 }
+  }
+  if (!props.task.target) props.task.target = 5
+  if (!props.task.category) props.task.category = 'health'
+  // force microTaskType to habit when isHabit
+  microTaskTypeUi.value = 'habit'
+  props.task.microTaskType = 'habit'
+}
+
+watch(() => props.isHabit, (v) => {
+  if (v) {
+    microTaskTypeUi.value = 'habit'
+    props.task.microTaskType = 'habit'
   }
 })
 

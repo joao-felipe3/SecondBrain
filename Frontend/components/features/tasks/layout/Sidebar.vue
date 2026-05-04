@@ -25,6 +25,10 @@
     projectFilter: String,
     typeFilter: String,
     priorityFilter: String,
+    viewMode: {
+      type: String,
+      default: 'kanban',
+    },
   })
 
   defineEmits(['update:projectFilter', 'update:typeFilter', 'update:priorityFilter'])

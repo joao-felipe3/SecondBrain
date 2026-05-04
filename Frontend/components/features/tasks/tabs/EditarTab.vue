@@ -4,6 +4,7 @@
       v-if="props.task"
       :task="props.task"
       :projects="props.projects"
+      :is-habit="isHabit"
       create-or-edit="Edit"
       class="editar-form"
     />
@@ -14,6 +15,7 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue'
 import TaskForm from '../forms/TaskForm.vue'
 
 interface Props {
@@ -24,6 +26,11 @@ interface Props {
 const props = withDefaults(defineProps<Props>(), {
   task: () => null,
   projects: () => [],
+})
+
+const isHabit = computed(() => {
+  const t = props.task
+  return !!(t && (t.microTaskType === 'habit' || t.parentRecurringId || t.recurringRule))
 })
 </script>
 

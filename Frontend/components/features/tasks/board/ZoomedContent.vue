@@ -48,7 +48,7 @@
 </template>
 
 <script setup lang="ts">
-import { onBeforeUnmount, onMounted, computed } from 'vue'
+import { onBeforeUnmount, onMounted, computed, watch } from 'vue'
 import { useTabNavigation } from '~/composables/ui/useTabNavigation'
 import type { TabConfig } from '~/composables/ui/useTabNavigation'
 import SvgCloseButton from '../../../ui/svg/CloseButton.vue'
@@ -60,6 +60,8 @@ import FeedbackTab from '../tabs/FeedbackTab.vue'
 import LineageTab from '../tabs/LineageTab.vue'
 import ValueTab from '../tabs/ValueTab.vue'
 import Button from '../../../ui/svg/Button.vue'
+import HabitTimelineTab from '../tabs/HabitTimelineTab.vue'
+import HabitStatsTab from '../tabs/HabitStatsTab.vue'
 
 
 interface Props {
@@ -77,8 +79,14 @@ const props = withDefaults(defineProps<Props>(), {
 
 const emit = defineEmits(['delete', 'close', 'edit', 'navigate-task', 'navigate-context'])
 
-// Configuração das abas
-const tabs: TabConfig[] = [
+// Detectar se é um hábito
+const isHabit = computed(() => {
+  const t = props.task
+  return t?.microTaskType === 'habit' || t?.parentRecurringId || t?.recurringRule
+})
+
+// Configuração das abas para tasks
+const taskTabs: TabConfig[] = [
   { id: 'editar', label: 'Editar', icon: '✏️', component: EditarTab },
   { id: 'checklist', label: 'Checklist', icon: '✓', component: ChecklistTab },
   { id: 'pert', label: 'PERT', icon: '⏱️', component: PertTab },
@@ -88,8 +96,34 @@ const tabs: TabConfig[] = [
   { id: 'feedback', label: 'Feedback', icon: '💬', component: FeedbackTab },
 ]
 
-// Composable para navegação
-const { activeTab, setActiveTab, nextTab, prevTab, initializeFromStorage } = useTabNavigation(tabs)
+// Configuração das abas para habits
+const habitTabs: TabConfig[] = [
+  { id: 'editar', label: 'Editar', icon: '✏️', component: EditarTab },
+  { id: 'timeline', label: 'Timeline', icon: '📅', component: HabitTimelineTab },
+  { id: 'stats', label: 'Estatísticas', icon: '📊', component: HabitStatsTab },
+  { id: 'historico', label: 'Histórico', icon: '🕐', component: HistoryTab },
+  { id: 'feedback', label: 'Feedback', icon: '💬', component: FeedbackTab },
+]
+
+// Tabs dinâmicas baseado no tipo
+const tabs = computed(() => isHabit.value ? habitTabs : taskTabs)
+
+const getCurrentTabs = () => isHabit.value ? habitTabs : taskTabs
+
+// Composable para navegação - inicializa com a lista atual (array)
+const nav = useTabNavigation(getCurrentTabs())
+const { activeTab, setActiveTab, nextTab, prevTab, initializeFromStorage, tabs: navTabs } = nav
+
+// Watch para resetar tab se tipo mudar
+watch(() => isHabit.value, (newIsHabit) => {
+  const newTabs = newIsHabit ? habitTabs : taskTabs
+  // Se a aba atual não existe nas novas tabs, vai para a primeira
+  if (!newTabs.find(t => t.id === activeTab.value)) {
+    setActiveTab(newTabs[0].id)
+  }
+  // Atualiza a lista de tabs exposta pelo composable para manter UI em sincronia
+  navTabs.value = newTabs
+})
 
 defineExpose({
   nextTab,
@@ -101,12 +135,18 @@ const PEEK_PX = 32
 const SHEET_GAP_Y = 6
 const SHEET_ROTATE_DEG = 0.4
 
-const activeIndex = computed(() => tabs.findIndex(t => t.id === activeTab.value))
+
+
+const activeIndex = computed(() => {
+  const currentTabs = getCurrentTabs()
+  return currentTabs.findIndex(t => t.id === activeTab.value)
+})
 
 const getPos = (tabId: string) => {
-  const tabIndex = tabs.findIndex(t => t.id === tabId)
+  const currentTabs = getCurrentTabs()
+  const tabIndex = currentTabs.findIndex(t => t.id === tabId)
   if (tabIndex < 0) return 0
-  const n = tabs.length
+  const n = currentTabs.length
   const ai = activeIndex.value < 0 ? 0 : activeIndex.value
   return (tabIndex - ai + n) % n
 }

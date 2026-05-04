@@ -16,6 +16,22 @@ export const useTaskStore = defineStore('task', {
   state: () => ({
     tasks: [] as Task[],
     isLoading: false,
+    habitsDashboard: null as null | {
+      totalHabits: number
+      activeHabits: number
+      averageAderencePercent: number
+      streaksOver7Days: number
+      habits: Array<{
+        id: string
+        name: string
+        status: string
+        currentStreak: number
+        longestStreak: number
+        aderencePercent: number
+        lastCompletedDate: string | Date | null
+      }>
+    },
+    isHabitsLoading: false,
   }),
 
   getters: {
@@ -88,6 +104,12 @@ export const useTaskStore = defineStore('task', {
 
       return lineage
     },
+
+    recurringTasks: (state) =>
+      state.tasks.filter((task) => Boolean(task.recurringRule || task.parentRecurringId || task.microTaskType === 'habit')),
+
+    habitDashboardHabits: (state) =>
+      state.habitsDashboard?.habits || [],
   },
 
   actions: {
@@ -116,6 +138,32 @@ export const useTaskStore = defineStore('task', {
       return loadTasksPromise
     },
 
+    async loadHabitsDashboard(projectId?: string) {
+      this.isHabitsLoading = true
+
+      try {
+        const resource = projectId
+          ? `/habits/dashboard?projectId=${encodeURIComponent(projectId)}`
+          : '/habits/dashboard'
+
+        const { get } = useApi(resource)
+        const { data, error } = await get()
+
+        if (!error && data) {
+          this.habitsDashboard = data
+          return data
+        }
+
+        if (!isRequestAborted(error)) {
+          console.error('Erro ao carregar dashboard de hábitos:', error)
+        }
+
+        return null
+      } finally {
+        this.isHabitsLoading = false
+      }
+    },
+
     async createTask(newTask: Partial<Task>) {
       const { post } = useApi('/tasks')
       const { data, error } = await post(newTask)
@@ -139,6 +187,30 @@ export const useTaskStore = defineStore('task', {
       }
 
       console.error('Erro ao criar micro-tarefa:', error)
+      return null
+    },
+
+    async createHabit(newTask: Partial<Task>) {
+      const payload: Partial<Task> = {
+        ...newTask,
+        microTaskType: 'habit',
+        recurringRule: newTask.recurringRule || {
+          frequency: 'daily',
+          interval: 1,
+          daysOfWeek: [],
+          exceptions: [],
+        },
+      }
+
+      const { post } = useApi('/tasks/habit/create')
+      const { data, error } = await post(payload)
+
+      if (!error && data) {
+        this.tasks.push(data)
+        return data
+      }
+
+      console.error('Erro ao criar hábito:', error)
       return null
     },
 
@@ -309,6 +381,108 @@ export const useTaskStore = defineStore('task', {
      */
     async moveTaskToStatus(id: string, toStatus: 'todo' | 'doing' | 'review' | 'done') {
       return this.setTaskStatus(id, toStatus)
+    },
+
+    async skipRecurringTask(id: string) {
+      const { post } = useApi(`/tasks/${id}/skip`)
+      const { data, error } = await post({})
+
+      if (!error && data) {
+        const index = this.tasks.findIndex(t => t._id === id)
+        if (index !== -1) {
+          this.tasks[index] = data
+        }
+
+        if (this.habitsDashboard?.habits) {
+          const dashboardHabit = this.habitsDashboard.habits.find((habit) => habit.id === id)
+          if (dashboardHabit) {
+            dashboardHabit.status = data.status || dashboardHabit.status
+            dashboardHabit.currentStreak = Math.max(0, dashboardHabit.currentStreak)
+          }
+        }
+
+        return { success: true, data }
+      }
+
+      console.error('Erro ao pular hábito:', error)
+      return { success: false, error: error?.response?.data?.message || error?.message || 'Unknown error' }
+    },
+
+    async updateRecurringRule(id: string, recurringRule: Task['recurringRule']) {
+      const { patch } = useApi(`/tasks/${id}/recurring-rule`)
+      const { data, error } = await patch({ recurringRule })
+
+      if (!error && data) {
+        const index = this.tasks.findIndex(t => t._id === id)
+        if (index !== -1) {
+          this.tasks[index] = data
+        }
+
+        return { success: true, data }
+      }
+
+      console.error('Erro ao atualizar regra recorrente:', error)
+      return { success: false, error: error?.response?.data?.message || error?.message || 'Unknown error' }
+    },
+
+    /**
+     * Completa um hábito recorrente:
+     * 1. Move o status para "done"
+     * 2. Gera próxima ocorrência (se configurado no backend)
+     * 3. Atualiza streak e aderência
+     */
+    async handleRecurringCompletion(id: string) {
+      // Primeiro, mover para status "done"
+      const moveResult = await this.setTaskStatus(id, 'done')
+      if (!moveResult.success) {
+        return moveResult
+      }
+
+      // Se moveu com sucesso, tentar gerar próxima ocorrência
+      const { post } = useApi(`/tasks/${id}/generate-next-occurrence`)
+      const { data: nextOccurrence, error } = await post({})
+
+      if (!error && nextOccurrence) {
+        // Adicionar próxima ocorrência à lista de tasks
+        this.tasks.push(nextOccurrence)
+
+        // Atualizar aderência no dashboard se existir
+        if (this.habitsDashboard?.habits) {
+          const dashboardHabit = this.habitsDashboard.habits.find(
+            (habit) => habit.id === id || habit.id === nextOccurrence.parentRecurringId
+          )
+          if (dashboardHabit && nextOccurrence.streakData) {
+            dashboardHabit.currentStreak = nextOccurrence.streakData.currentStreak || 0
+            dashboardHabit.aderencePercent = nextOccurrence.streakData.aderencePercent || 0
+          }
+        }
+
+        return { success: true, data: { completed: moveResult.data, nextOccurrence } }
+      }
+
+      // Se não conseguiu gerar próxima, ainda assim a conclusão foi bem-sucedida
+      console.warn('Não foi possível gerar próxima ocorrência:', error?.message)
+      return { success: true, data: moveResult.data }
+    },
+
+    async deleteRecurringSeries(parentRecurringId: string) {
+      const { remove } = useApi(`/tasks/${parentRecurringId}?confirm=true`)
+      const { error } = await remove()
+
+      if (!error) {
+        this.tasks = this.tasks.filter(
+          (task) => task._id !== parentRecurringId && task.parentRecurringId !== parentRecurringId,
+        )
+
+        if (this.habitsDashboard?.habits) {
+          this.habitsDashboard.habits = this.habitsDashboard.habits.filter((habit) => habit.id !== parentRecurringId)
+        }
+
+        return { success: true }
+      }
+
+      console.error('Erro ao remover série recorrente:', error)
+      return { success: false, error: error?.response?.data?.message || error?.message || 'Unknown error' }
     },
   }
 })

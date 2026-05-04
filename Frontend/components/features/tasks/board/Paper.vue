@@ -31,7 +31,9 @@
         />
       </template>
       <template v-else>
-        <TaskPreview :task="props.task" @fall-complete="handleCompleteFall"/>
+        <!-- Renderiza preview baseado no tipo de tarefa -->
+        <TaskPreview v-if="!isHabit" :task="props.task" @fall-complete="handleCompleteFall"/>
+        <HabitPreview v-else :habit="props.task" @complete-habit="handleHabitComplete" @skip-habit="handleHabitSkip"/>
       </template>
     </Transition>
 
@@ -61,10 +63,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, onMounted } from 'vue'
+import { ref, watch, onMounted, computed } from 'vue'
 import SvgProjectStamp from '../../../ui/svg/ProjectStamp.vue'
 import ZoomedContent from './ZoomedContent.vue'
 import TaskPreview from './TaskPreview.vue'
+import HabitPreview from './HabitPreview.vue'
 
 interface Props {
   task: any
@@ -77,7 +80,7 @@ interface Props {
 }
 
 const props = defineProps<Props>()
-const emit = defineEmits(['edit-task', 'delete-task', 'close-zoom', 'fall-complete', 'zoom', 'navigate-task', 'navigate-context'])
+const emit = defineEmits(['edit-task', 'delete-task', 'close-zoom', 'fall-complete', 'zoom', 'navigate-task', 'navigate-context', 'habit-complete', 'habit-skip'])
 
 const zoomedContentRef = ref<InstanceType<typeof ZoomedContent> | null>(null)
 
@@ -101,6 +104,19 @@ const deleteAndClose = () => {
 const handleCompleteFall = () => {
   emit('fall-complete', props.task?._id)
 };
+
+const handleHabitComplete = (habitId: string) => {
+  emit('habit-complete', habitId)
+};
+
+const handleHabitSkip = (habitId: string) => {
+  emit('habit-skip', habitId)
+};
+
+// Detecta se é um hábito baseado no campo `microTaskType` ou `parentRecurringId`
+const isHabit = computed(() => {
+  return props.task?.microTaskType === 'habit' || !!props.task?.parentRecurringId || !!props.task?.recurringRule
+})
 
 const zoomed2 = ref(false)
 const createOrEdit = ref('')

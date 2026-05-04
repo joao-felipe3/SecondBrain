@@ -7,10 +7,10 @@
       :project-filter="selectedProjectFilter"
       :type-filter="selectedTypeFilter"
       :priority-filter="selectedPriorityFilter"
+      :view-mode="viewMode"
       :zoomed="zoomed"
       :initialZoomedTask="newlyCreatedTask"
       :isMobile="isMobile"
-      :viewMode="viewMode"
       @zoom-in="onZoomStart"
       @zoom-out="onZoomEnd"
       @remove-last-task="removeLastTask"
@@ -18,14 +18,16 @@
       @task-created="handleTaskCreated"
     />
     <TaskSidebar
-      v-if="!isMobile"
+      v-if="!isMobile && !zoomed"
       :projects="projects"
       :project-filter="selectedProjectFilter"
       :type-filter="selectedTypeFilter"
       :priority-filter="selectedPriorityFilter"
+      :view-mode="viewMode"
       @update:projectFilter="selectedProjectFilter = $event"
       @update:typeFilter="selectedTypeFilter = $event"
       @update:priorityFilter="selectedPriorityFilter = $event"
+      @update:viewMode="viewMode = $event"
     />
   </v-row>
 </template>

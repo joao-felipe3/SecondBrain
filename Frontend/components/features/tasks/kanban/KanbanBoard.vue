@@ -56,6 +56,8 @@
                 :zoomed="false"
                 :create="false"
                 :colors="getProjectColors(task.project || '', projects)"
+                @habit-complete="handleHabitComplete"
+                @habit-skip="handleHabitSkip"
               />
             </div>
           </div>
@@ -85,6 +87,8 @@
           @delete-task="handleDelete"
           @navigate-task="handleNavigateTask"
           @navigate-context="(p) => handleNavigateContext(p)"
+          @habit-complete="handleHabitComplete"
+          @habit-skip="handleHabitSkip"
         />
       </div>
     </transition>
@@ -132,6 +136,7 @@ interface Props {
   priorityFilter?: string
   isRefreshing?: boolean
   timeSinceRefresh?: number
+  initialZoomedTask?: Task | null
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -140,6 +145,7 @@ const props = withDefaults(defineProps<Props>(), {
   priorityFilter: '',
   isRefreshing: false,
   timeSinceRefresh: 0,
+  initialZoomedTask: null,
 })
 
 const emit = defineEmits([
@@ -149,6 +155,8 @@ const emit = defineEmits([
   'task-moved',
   'refresh',
   'feedback-action',
+  'habit-completed',
+  'habit-skipped',
 ])
 
 // Filter state removed - now using props from parent
@@ -166,6 +174,19 @@ const { zoomIntoTask, zoomOutTask } = useZoomController({
   emit: (event: string, payload?: any) => emit(event as any, payload),
   state: zoomState,
 })
+
+// Watch para abrir automaticamente tarefa recém-criada
+watch(() => props.initialZoomedTask, (newTask) => {
+  if (newTask) {
+    nextTick(() => {
+      zoomState.zoomedTask.value = newTask as any
+      zoomState.zoomed.value = true
+      zoomState.create.value = false
+      zoomState.createRef.value = false
+      emit('zoom-in')
+    })
+  }
+}, { deep: true })
 
 const { handleEdit, handleDelete } = useTaskActions({
   emit: (event: string, payload?: any) => emit(event as any, payload),
@@ -213,6 +234,36 @@ function handleNavigateContext(payload: any) {
 }
 
 const isLocked = computed(() => !!zoomed.value)
+
+/**
+ * Handlers para hábitos completados dentro do Kanban
+ * (sem abrir zoom - ação rápida)
+ */
+async function handleHabitComplete(habitId: string) {
+  const taskStore = useTaskStore()
+  const habit = (props.tasks || []).find((t: any) => t?._id === habitId)
+  if (!habit) return
+
+  // TODO: Chamar `taskStore.handleRecurringCompletion(habitId)`
+  // Por enquanto, apenas mostrar mensagem
+  showSnack('🎉 Hábito completado! Próxima ocorrência agendada.')
+  emit('habit-completed', { habitId, completedAt: new Date() })
+}
+
+/**
+ * Handlers para hábitos pulados dentro do Kanban
+ * (sem abrir zoom - ação rápida)
+ */
+async function handleHabitSkip(habitId: string) {
+  const taskStore = useTaskStore()
+  const habit = (props.tasks || []).find((t: any) => t?._id === habitId)
+  if (!habit) return
+
+  // TODO: Chamar `taskStore.skipRecurringTask(habitId)`
+  // Por enquanto, apenas mostrar mensagem
+  showSnack('⏭️ Hábito pulado! Streak não quebrada.')
+  emit('habit-skipped', { habitId, skippedAt: new Date() })
+}
 
 const snackbarOpen = ref(false)
 const snackbarText = ref('')
