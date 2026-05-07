@@ -516,7 +516,13 @@ export class TasksService {
     return updatedTask;
   }
 
-  private normalizeRecurringRule(recurringRule?: RecurringRuleDto): RecurringRuleDto {
+  private normalizeRecurringRule(
+    recurringRule?: RecurringRuleDto,
+    options?: {
+      allowPastEndDate?: boolean;
+      prunePastExceptions?: boolean;
+    },
+  ): RecurringRuleDto {
     if (!recurringRule?.frequency || !recurringRule?.interval) {
       throw new BadRequestException('recurringRule inválida: frequency e interval são obrigatórios.');
     }
@@ -537,7 +543,7 @@ export class TasksService {
       if (Number.isNaN(endDate.getTime())) {
         throw new BadRequestException('recurringRule inválida: endDate inválida.');
       }
-      if (endDate.getTime() < Date.now() - 24 * 60 * 60 * 1000) {
+      if (!options?.allowPastEndDate && endDate.getTime() < Date.now() - 24 * 60 * 60 * 1000) {
         throw new BadRequestException('recurringRule inválida: endDate não pode estar no passado.');
       }
     }
@@ -577,6 +583,10 @@ export class TasksService {
             }
           }
 
+          if (options?.prunePastExceptions === false) {
+            return true;
+          }
+
           const yesterday = new Date();
           yesterday.setHours(0, 0, 0, 0);
           yesterday.setDate(yesterday.getDate() - 1);
@@ -595,8 +605,10 @@ export class TasksService {
 
   private toDateKey(date: Date): string {
     const normalized = new Date(date);
-    normalized.setHours(0, 0, 0, 0);
-    return normalized.toISOString().slice(0, 10);
+    const year = normalized.getUTCFullYear();
+    const month = String(normalized.getUTCMonth() + 1).padStart(2, '0');
+    const day = String(normalized.getUTCDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
   }
 
   private addDays(date: Date, days: number): Date {
@@ -693,37 +705,64 @@ export class TasksService {
   }
 
   private calculateNextRecurringDate(referenceDate: Date, recurringRule: RecurringRuleDto): Date | null {
-    const rule = this.normalizeRecurringRule(recurringRule);
+    const rule = this.normalizeRecurringRule(recurringRule, {
+      allowPastEndDate: true,
+      prunePastExceptions: false,
+    });
     const base = new Date(referenceDate);
     base.setSeconds(0, 0);
 
+    // Check endDate first - if already passed, return null
+    if (rule.endDate) {
+      const endDate = new Date(rule.endDate);
+      if (base.getTime() >= endDate.getTime()) {
+        return null;
+      }
+    }
+
+    // Handle monthly separately (special logic for month boundaries)
+    if (rule.frequency === 'monthly') {
+      const monthCandidate = this.addMonths(base, rule.interval);
+      if (rule.endDate && monthCandidate.getTime() >= new Date(rule.endDate).getTime()) {
+        return null;
+      }
+      if (this.isRecurringDateExcluded(monthCandidate, rule)) {
+        // Skip and try next month
+        return this.calculateNextRecurringDate(monthCandidate, rule);
+      }
+      return monthCandidate;
+    }
+
+    // Calculate step size for daily/weekly/biweekly
     let stepDays = rule.interval;
     if (rule.frequency === 'weekly') {
       stepDays = rule.interval * 7;
     } else if (rule.frequency === 'biweekly') {
       stepDays = rule.interval * 14;
-    } else if (rule.frequency === 'monthly') {
-      const monthCandidate = this.addMonths(base, rule.interval);
-      if (rule.endDate && monthCandidate.getTime() > new Date(rule.endDate).getTime()) {
-        return null;
-      }
-      return monthCandidate;
     }
 
     const candidate = this.addDays(base, stepDays);
     const allowedDays = Array.isArray(rule.daysOfWeek) && rule.daysOfWeek.length > 0 ? rule.daysOfWeek : null;
 
+    // Search for next valid date (max 365 days forward)
     for (let offset = 0; offset < 365; offset++) {
       const probe = this.addDays(candidate, offset);
-      if (rule.endDate && probe.getTime() > new Date(rule.endDate).getTime()) {
+      
+      // Check endDate boundary
+      if (rule.endDate && probe.getTime() >= new Date(rule.endDate).getTime()) {
         return null;
       }
+      
+      // Check if day of week is allowed (for weekly/biweekly)
       if (allowedDays && !allowedDays.includes(probe.getDay())) {
         continue;
       }
+      
+      // Check if this date is excluded
       if (this.isRecurringDateExcluded(probe, rule)) {
         continue;
       }
+      
       return probe;
     }
 
@@ -858,7 +897,7 @@ export class TasksService {
       .sort({ deadline: 1, createdAt: 1 })
       .exec();
 
-    const recurringTasks = seriesTasks.filter((task: any) => Boolean(task?.recurringRule || task?.parentRecurringId));
+    const recurringTasks = seriesTasks;
     if (recurringTasks.length === 0) {
       return {
         currentStreak: 0,
@@ -911,6 +950,12 @@ export class TasksService {
     activeHabits: number;
     averageAderencePercent: number;
     streaksOver7Days: number;
+    dueTodayCount: number;
+    dueTodayHabits: Array<{
+      id: string;
+      name: string;
+      deadline: Date | null;
+    }>;
     habits: Array<{
       id: string;
       name: string;
@@ -919,6 +964,7 @@ export class TasksService {
       longestStreak: number;
       aderencePercent: number;
       lastCompletedDate: Date | null;
+      deadline: Date | null;
     }>;
   }> {
     const query: any = {
@@ -941,16 +987,22 @@ export class TasksService {
       longestStreak: number;
       aderencePercent: number;
       lastCompletedDate: Date | null;
+      deadline: Date | null;
     }>;
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
 
     for (const habit of habits as any[]) {
       const rootId = String(habit.parentRecurringId || habit._id);
       const streak = await this.getStreakData(rootId);
+      const deadline = habit.deadline ? new Date(habit.deadline) : null;
       summaries.push({
         id: String(habit._id),
         name: String(habit.name || ''),
         status: String(habit.status || 'todo'),
         ...streak,
+        deadline: deadline && !Number.isNaN(deadline.getTime()) ? deadline : null,
       });
     }
 
@@ -959,6 +1011,16 @@ export class TasksService {
       ? Math.round(summaries.reduce((sum, habit) => sum + habit.aderencePercent, 0) / summaries.length)
       : 0;
     const streaksOver7Days = summaries.filter((habit) => habit.currentStreak >= 7).length;
+    const dueTodayHabits = summaries.filter((habit) => {
+      if (habit.status === 'done' || !habit.deadline) return false;
+      const deadline = new Date(habit.deadline);
+      deadline.setHours(0, 0, 0, 0);
+      return deadline.getTime() === today.getTime();
+    }).map((habit) => ({
+      id: habit.id,
+      name: habit.name,
+      deadline: habit.deadline,
+    }));
 
     return {
       projectId,
@@ -966,6 +1028,8 @@ export class TasksService {
       activeHabits,
       averageAderencePercent,
       streaksOver7Days,
+      dueTodayCount: dueTodayHabits.length,
+      dueTodayHabits,
       habits: summaries,
     };
   }

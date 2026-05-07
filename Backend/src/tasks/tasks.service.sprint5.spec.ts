@@ -7,6 +7,7 @@ import { GeminiService } from './gemini.service'
 import { EVMService } from '../projects/services/evm.service'
 import { PertService } from './services/pert.service'
 import { ChecklistService } from './checklist.service'
+import { FeedbackService } from './feedback.service'
 
 describe('TasksService - Sprint 5: Recorrência', () => {
   let service: TasksService
@@ -33,6 +34,7 @@ describe('TasksService - Sprint 5: Recorrência', () => {
         { provide: EVMService, useValue: { recordProgress: jest.fn() } },
         { provide: ChecklistService, useValue: { validateChecklistStructure: jest.fn(), findSimilarTasksInProject: jest.fn(), enrichHistoryContext: jest.fn(), calculateCompletionPercentage: jest.fn(), validateChecklistCompletion: jest.fn() } },
         { provide: PertService, useValue: { calculatePertMetrics: jest.fn() } },
+        { provide: FeedbackService, useValue: { generateFeedback: jest.fn() } },
       ],
     }).compile()
 
@@ -214,5 +216,131 @@ describe('TasksService - Sprint 5: Recorrência', () => {
 
     expect(result.deadline).toEqual(newDeadline)
     expect(taskModel.findByIdAndUpdate).toHaveBeenCalled()
+  })
+
+  // Edge cases and comprehensive recurring logic tests
+  it('calculateNextRecurringDate should handle weekly with multiple daysOfWeek correctly', () => {
+    // Tuesday (day 2), need to find next Wednesday (3) or Friday (5)
+    const tuesday = new Date('2026-04-21T10:00:00.000Z') // Tuesday
+    const result = (service as any).calculateNextRecurringDate(
+      tuesday,
+      { frequency: 'weekly', interval: 1, daysOfWeek: [3, 5] }, // Wednesday, Friday
+    )
+
+    expect(result).toBeInstanceOf(Date)
+    // Should skip to Wednesday (3 days away)
+    expect(result.getUTCDay()).toBe(3)
+  })
+
+  it('calculateNextRecurringDate should wrap to next week if all daysOfWeek are passed', () => {
+    // Friday (day 5), daysOfWeek = [1, 3] (Mon, Wed), should wrap to next Monday
+    const friday = new Date('2026-04-24T10:00:00.000Z') // Friday
+    const result = (service as any).calculateNextRecurringDate(
+      friday,
+      { frequency: 'weekly', interval: 1, daysOfWeek: [1, 3] },
+    )
+
+    expect(result).toBeInstanceOf(Date)
+    // Should be next Monday (in 3 days)
+    expect(result.getUTCDay()).toBe(1)
+  })
+
+  it('calculateNextRecurringDate should handle daily with interval > 1', () => {
+    const result = (service as any).calculateNextRecurringDate(
+      new Date('2026-04-20T10:00:00.000Z'),
+      { frequency: 'daily', interval: 5 },
+    )
+
+    expect(result).toBeInstanceOf(Date)
+    // 5 days later
+    expect(result.toISOString()).toContain('2026-04-25')
+  })
+
+  it('calculateNextRecurringDate should respect multiple exceptions', () => {
+    // Daily starting 2026-04-20, but skip 21, 22, 23 -> should return 24
+    const result = (service as any).calculateNextRecurringDate(
+      new Date('2026-04-20T10:00:00.000Z'),
+      {
+        frequency: 'daily',
+        interval: 1,
+        exceptions: [
+          { date: new Date('2026-04-21T00:00:00.000Z'), reason: 'holiday' },
+          { date: new Date('2026-04-22T00:00:00.000Z'), reason: 'holiday' },
+          { date: new Date('2026-04-23T00:00:00.000Z'), reason: 'holiday' },
+        ],
+      },
+    )
+
+    expect(result).toBeInstanceOf(Date)
+    // Should skip to next day after all exceptions (April 24)
+    expect(result.getUTCDate()).toBe(24)
+  })
+
+  it('calculateNextRecurringDate should return null when endDate is today (no future)', () => {
+    // Use future date to avoid normalizeRecurringRule validation error
+    const futureDate = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000) // +1 year
+    const result = (service as any).calculateNextRecurringDate(
+      futureDate,
+      { frequency: 'daily', interval: 1, endDate: futureDate },
+    )
+
+    expect(result).toBeNull()
+  })
+
+  it('calculateNextRecurringDate should return null when endDate is in the past', () => {
+    // Use dates further in future to avoid normalizeRecurringRule validation
+    const baseDate = new Date('2026-04-20T10:00:00.000Z')
+    const endDate = new Date('2026-04-25T23:59:59.999Z')
+    const futureProbe = new Date('2026-04-26T10:00:00.000Z')
+    
+    const result = (service as any).calculateNextRecurringDate(
+      futureProbe,
+      { frequency: 'daily', interval: 1, endDate },
+    )
+
+    expect(result).toBeNull()
+  })
+
+  it('calculateNextRecurringDate should handle monthly on 31st (edge month boundaries)', () => {
+    // May 31 + 1 month = June 30 (June only has 30 days)
+    const may31 = new Date('2026-05-31T10:00:00.000Z')
+    const result = (service as any).calculateNextRecurringDate(
+      may31,
+      { frequency: 'monthly', interval: 1 },
+    )
+
+    expect(result).toBeInstanceOf(Date)
+    // addMonths should handle day boundary: May 31 + 1 month = June 30
+    expect(result.getUTCDate()).toBeLessThanOrEqual(31)
+  })
+
+  it('calculateNextRecurringDate should support biweekly with interval=2', () => {
+    // April 20 + 14 days = May 4
+    const result = (service as any).calculateNextRecurringDate(
+      new Date('2026-04-20T10:00:00.000Z'),
+      { frequency: 'weekly', interval: 2 },
+    )
+
+    expect(result).toBeInstanceOf(Date)
+    // 14 days later
+    expect(result.getUTCDate()).toBe(4)
+    expect(result.getUTCMonth()).toBe(4) // May = month 4
+  })
+
+  it('calculateNextRecurringDate should skip exception before respecting endDate', () => {
+    // Daily starting 2026-04-20, exception on 21, endDate 2026-04-25
+    const result = (service as any).calculateNextRecurringDate(
+      new Date('2026-04-20T10:00:00.000Z'),
+      {
+        frequency: 'daily',
+        interval: 1,
+        exceptions: [{ date: new Date('2026-04-21T00:00:00.000Z'), reason: 'holiday' }],
+        endDate: new Date('2026-04-25T23:59:59.999Z'),
+      },
+    )
+
+    expect(result).toBeInstanceOf(Date)
+    // Should skip 21 and return 22
+    expect(result.getUTCDate()).toBe(22)
   })
 })

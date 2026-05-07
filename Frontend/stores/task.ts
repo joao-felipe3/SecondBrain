@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { useApi } from '../composables/api/useApi'
+import { useApi } from '~/composables/api/useApi'
 import type { Task } from '~/models/Task'
 
 function isRequestAborted(error: any) {
@@ -21,6 +21,12 @@ export const useTaskStore = defineStore('task', {
       activeHabits: number
       averageAderencePercent: number
       streaksOver7Days: number
+      dueTodayCount: number
+      dueTodayHabits: Array<{
+        id: string
+        name: string
+        deadline: string | Date | null
+      }>
       habits: Array<{
         id: string
         name: string
@@ -29,6 +35,7 @@ export const useTaskStore = defineStore('task', {
         longestStreak: number
         aderencePercent: number
         lastCompletedDate: string | Date | null
+        deadline: string | Date | null
       }>
     },
     isHabitsLoading: false,
@@ -110,6 +117,41 @@ export const useTaskStore = defineStore('task', {
 
     habitDashboardHabits: (state) =>
       state.habitsDashboard?.habits || [],
+
+    /**
+     * Return habits optionally filtered by project or other simple filters
+     */
+    getHabits: (state) => (filters?: { projectId?: string }) => {
+      let list = state.tasks.filter((t) => t.microTaskType === 'habit' || Boolean(t.recurringRule) || Boolean(t.parentRecurringId))
+      if (filters?.projectId) {
+        list = list.filter((t) => t.project === filters.projectId)
+      }
+      return list
+    },
+
+    /**
+     * Return streak data for a recurring series from the dashboard if available
+     */
+    getStreakForHabit: (state) => (parentRecurringId: string) => {
+      if (!state.habitsDashboard || !Array.isArray(state.habitsDashboard.habits)) {
+        return { currentStreak: 0, longestStreak: 0, aderencePercent: 0 }
+      }
+      const found = state.habitsDashboard.habits.find(h => String(h.id) === String(parentRecurringId))
+      if (!found) return { currentStreak: 0, longestStreak: 0, aderencePercent: 0 }
+      return {
+        currentStreak: found.currentStreak || 0,
+        longestStreak: found.longestStreak || 0,
+        aderencePercent: found.aderencePercent || 0,
+      }
+    },
+
+    /**
+     * Habits sorted by streak (descending)
+     */
+    getHabitsByStreak: (state) => () => {
+      const list = state.habitsDashboard?.habits ? state.habitsDashboard.habits.slice() : []
+      return list.sort((a, b) => (b.currentStreak || 0) - (a.currentStreak || 0))
+    },
   },
 
   actions: {

@@ -215,14 +215,14 @@
 .decor-paper {
   position: absolute;
   top: 24%;
-  left: 41%;
+  left: 36%;
   z-index: 10;
   pointer-events: none;
 }
 .decor-title {
   position: absolute;
   top: 23%;
-  left: 37.25%;
+  left: 32.25%;
   width: 25%;
   height: auto;
   z-index: 11;
