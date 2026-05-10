@@ -36,9 +36,6 @@
             />
           </div>
         </v-card>
-
-        <!-- Settings Button -->
-        <SettingsDialog :userId="userId" @settings-updated="handleSettingsUpdated" />
       </v-container>
     </v-col>
     <v-col v-if="!isMobile" cols="2" />
@@ -48,9 +45,7 @@
 <script setup>
 import { GoalIcon, CalendarDaysIcon, ChartNoAxesCombinedIcon } from 'lucide-vue-next'
 import { useRouter } from 'vue-router'
-import { computed } from 'vue'
 import SvgIconButton from '../ui/svg/IconButton.vue'
-import SettingsDialog from '../shared/dialogs/SettingsDialog.vue'
 
 const props = defineProps({
   activeIcon: String,
@@ -61,14 +56,6 @@ const props = defineProps({
 })
 const emit = defineEmits(['update:activeIcon'])
 const router = useRouter()
-
-// Get userId from localStorage or context (assuming it's stored there)
-const userId = computed(() => {
-  if (typeof window !== 'undefined') {
-    return localStorage.getItem('userId') || 'default-user'
-  }
-  return 'default-user'
-})
 
 const sidebarIcons = [
   { icon: GoalIcon, name: 'goal', route: '/task' },
@@ -81,12 +68,6 @@ function handleIconClick(icon) {
   if (icon.route) {
     router.push(icon.route)
   }
-}
-
-function handleSettingsUpdated(settings) {
-  console.log('Settings updated:', settings)
-  // Emit event or trigger any necessary updates
-  emit('settings-updated', settings)
 }
 </script>
 

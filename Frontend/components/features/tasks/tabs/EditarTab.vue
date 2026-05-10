@@ -7,6 +7,7 @@
       :is-habit="isHabit"
       create-or-edit="Edit"
       class="editar-form"
+      @update:is-valid="(v) => emit('form-valid', v)"
     />
     <div v-else class="empty-state">
       <p>Nenhuma tarefa selecionada</p>
@@ -27,6 +28,8 @@ const props = withDefaults(defineProps<Props>(), {
   task: () => null,
   projects: () => [],
 })
+
+const emit = defineEmits(['form-valid'])
 
 const isHabit = computed(() => {
   const t = props.task

@@ -2,6 +2,25 @@ import { defineStore } from 'pinia'
 import { useApi } from '~/composables/api/useApi'
 import type { Task } from '~/models/Task'
 
+function cleanPayload<T>(value: T): T {
+  if (Array.isArray(value)) {
+    return value
+      .map((v) => cleanPayload(v))
+      .filter((v) => v !== null && v !== undefined) as any
+  }
+
+  if (value && typeof value === 'object') {
+    const out: any = {}
+    for (const [key, v] of Object.entries(value as any)) {
+      if (v === null || v === undefined) continue
+      out[key] = cleanPayload(v)
+    }
+    return out
+  }
+
+  return value
+}
+
 function isRequestAborted(error: any) {
   return (
     error?.code === 'ERR_CANCELED' ||
@@ -208,7 +227,15 @@ export const useTaskStore = defineStore('task', {
 
     async createTask(newTask: Partial<Task>) {
       const { post } = useApi('/tasks')
-      const { data, error } = await post(newTask)
+      const payload: any = cleanPayload({
+        ...newTask,
+        pomodorosPlanned:
+          newTask.pomodorosPlanned === null || newTask.pomodorosPlanned === undefined
+            ? 1
+            : newTask.pomodorosPlanned,
+      })
+
+      const { data, error } = await post(payload)
       
       if (!error && data) {
         this.tasks.push(data)
@@ -221,7 +248,14 @@ export const useTaskStore = defineStore('task', {
 
     async createMicroTask(newTask: Partial<Task>) {
       const { post } = useApi('/tasks/micro')
-      const { data, error } = await post(newTask)
+      const payload: any = cleanPayload({
+        ...newTask,
+        pomodorosPlanned:
+          newTask.pomodorosPlanned === null || newTask.pomodorosPlanned === undefined
+            ? 1
+            : newTask.pomodorosPlanned,
+      })
+      const { data, error } = await post(payload)
 
       if (!error && data) {
         this.tasks.push(data)
@@ -245,7 +279,14 @@ export const useTaskStore = defineStore('task', {
       }
 
       const { post } = useApi('/tasks/habit/create')
-      const { data, error } = await post(payload)
+      const cleaned: any = cleanPayload({
+        ...payload,
+        pomodorosPlanned:
+          payload.pomodorosPlanned === null || payload.pomodorosPlanned === undefined
+            ? 1
+            : payload.pomodorosPlanned,
+      })
+      const { data, error } = await post(cleaned)
 
       if (!error && data) {
         this.tasks.push(data)

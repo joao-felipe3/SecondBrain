@@ -20,14 +20,41 @@
       <v-col cols="6"><CommonSelect v-model="microTaskTypeUi" label="Task Type" :items="microTaskTypeOptions"/></v-col>
     </v-row>
 
-    <!-- Campos específicos para hábitos -->
-    <div v-if="props.isHabit">
-      <v-row dense class="mt-2 mb-2">
+    <!-- Campos específicos para hábitos - aparece dinamicamente -->
+    <div v-if="isHabitLocal" class="habit-section">
+      <v-row dense >
         <v-col cols="6">
-          <CommonSelect v-model="props.task.recurringRule.frequency" label="Frequência" :items="['daily','weekdays','weekly','biweekly','monthly']" />
+          <CommonSelect 
+            v-model="task.recurringRule.frequency" 
+            label="Frequency" 
+            :items="['daily','weekdays','weekly','biweekly','monthly']" 
+          />
         </v-col>
         <v-col cols="6">
-          <CommonTextField v-model.number="props.task.target" label="Meta Semanal (dias)" />
+          <CommonTextField 
+            v-model.number="task.recurringRule.interval" 
+            label="Interval" 
+            type="number"
+            min="1"
+          />
+        </v-col>
+      </v-row>
+      <v-row dense class="mt-n3">
+        <v-col cols="6">
+          <CommonTextField 
+            v-model.number="task.target" 
+            label="Weekly Target (days)" 
+            type="number"
+            min="1"
+            max="7"
+          />
+        </v-col>
+        <v-col cols="6">
+          <CommonSelect 
+            v-model="task.category" 
+            label="Category" 
+            :items="['health', 'productivity', 'learning', 'fitness', 'mindfulness', 'other']"
+          />
         </v-col>
       </v-row>
     </div>
@@ -37,6 +64,7 @@
 </template>
 
 <script setup>
+import { computed, ref, watch } from 'vue'
 import CommonTextField from '../../../shared/fields/TextField.vue'
 import CommonDescriptionField from '../../../shared/fields/DescriptionField.vue'
 import CommonSlider from '../../../shared/fields/Slider.vue'
@@ -67,9 +95,9 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['update:is-valid'])
+
 // Derived list of project names for the select
 const projectNames = computed(() => (props.projects || []).map(p => p.name).filter(Boolean))
-
 
 const localDeadline = ref(props.task.deadline)
 const localNotification = ref(props.task.notification)
@@ -101,26 +129,36 @@ function formatDateToDDMMYYYY(date) {
   return `${day}/${month}/${year}`
 }
 
-const recurrencyOptions = [
-  'Daily',
-  'Weekly',
-  'Monthly',
-  'Yearly',
-  'Doesn\'t Repeat',
-]
-
 const microTaskTypeOptions = ['None', 'subtask', 'habit', 'quick', 'complex']
 const microTaskTypeUi = ref(props.task.microTaskType || 'None')
 
+// Backend requires `pomodorosPlanned` (Number). If the user hasn't selected effort yet,
+// default to 1 to prevent POST /tasks 400.
+if (props.task && (props.task.pomodorosPlanned === null || props.task.pomodorosPlanned === undefined)) {
+  props.task.pomodorosPlanned = 1
+}
+
+// Computed property para detectar se é hábito baseado no microTaskType OU no prop
+const isHabitLocal = computed(() => {
+  return microTaskTypeUi.value === 'habit' || props.isHabit
+})
+
 watch(microTaskTypeUi, (value) => {
   props.task.microTaskType = value === 'None' ? undefined : value
-  if (!props.task.microTaskType) {
-    props.task.checklist = undefined
-    props.task.autoGenerateChecklist = true
-    return
+  
+  // Inicializar campos de hábito quando selecionado
+  if (value === 'habit') {
+    if (!props.task.recurringRule) {
+      props.task.recurringRule = { frequency: 'daily', interval: 1 }
+    }
+    if (!props.task.target) props.task.target = 5
+    if (!props.task.category) props.task.category = 'health'
+  } else {
+    // Limpar campos de hábito quando não é mais hábito
+    if (props.task.checklist === undefined) {
+      props.task.autoGenerateChecklist = true
+    }
   }
-  const hasChecklist = Array.isArray(props.task.checklist) && props.task.checklist.length > 0
-  props.task.autoGenerateChecklist = !hasChecklist
 })
 
 watch(localDeadline, (val) => {
@@ -139,7 +177,7 @@ watch(localNotification, (val) => {
   }
 })
 
-// Inicializa campos específicos de hábito
+// Inicializa campos específicos de hábito se já é hábito (editando existente)
 if (props.isHabit) {
   if (!props.task.recurringRule) {
     props.task.recurringRule = { frequency: 'daily', interval: 1 }
@@ -202,7 +240,6 @@ const isValidDate = (dateStr) => {
 const isFormValid = computed(() => {
   return (
     props.task.name?.trim() !== '' &&
-    props.task.recurrency?.trim() !== '' &&
     isValidDate(localDeadline.value) &&
     props.task.pomodorosPlanned > 0
   )
@@ -211,7 +248,6 @@ const isFormValid = computed(() => {
 watch(
   () => [
     props.task.name,
-    props.task.recurrency,
     props.task.pomodorosPlanned,
     localDeadline.value,
     props.task.microTaskType,
@@ -222,6 +258,33 @@ watch(
   },
   { immediate: true }
 )
-
 </script>
+
+<style scoped>
+.task-form {
+  padding: 1rem;
+}
+
+.habit-section {
+  background: linear-gradient(135deg, rgba(255, 241, 118, 0.1) 0%, rgba(255, 193, 7, 0.08) 100%);
+  animation: slideIn 0.3s ease-out;
+  margin-top: 1rem;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+
+.habit-label {
+  font-family: 'Irish Grover', cursive;
+}
+</style>
 

@@ -26,6 +26,7 @@
             :key="`${tab.id}-${props.task?._id ?? props.task?.id ?? ''}`"
             @navigate-task="$emit('navigate-task', $event)"
             @navigate-context="$emit('navigate-context', $event)"
+            @form-valid="onFormValid"
           />
         </div>
       </div>
@@ -37,7 +38,7 @@
           <Button label="Delete" @click="$emit('delete')" :disabled="false"/>
         </v-col>
         <v-col cols="6" class="py-0 px-2">
-          <Button :label="props.createOrEdit" @click="$emit('edit')" :disabled="false" />
+          <Button :label="props.createOrEdit" @click="$emit('edit')" :disabled="!isFormValid" />
         </v-col>
       </v-row>
     </div>
@@ -48,7 +49,7 @@
 </template>
 
 <script setup lang="ts">
-import { onBeforeUnmount, onMounted, computed, watch } from 'vue'
+import { onBeforeUnmount, onMounted, computed, watch, ref } from 'vue'
 import { useTabNavigation } from '~/composables/ui/useTabNavigation'
 import type { TabConfig } from '~/composables/ui/useTabNavigation'
 import SvgCloseButton from '../../../ui/svg/CloseButton.vue'
@@ -78,6 +79,12 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 const emit = defineEmits(['delete', 'close', 'edit', 'navigate-task', 'navigate-context'])
+
+const isFormValid = ref(true)
+
+const onFormValid = (valid: boolean) => {
+  isFormValid.value = valid
+}
 
 // Detectar se é um hábito
 const isHabit = computed(() => {

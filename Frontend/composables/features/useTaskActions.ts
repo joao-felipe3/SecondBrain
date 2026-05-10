@@ -13,12 +13,21 @@ export function useTaskActions(params: {
 
   async function handleEdit(task: Task) {
     const { _id, ...data } = task
-    if (create.value) {
-      await taskStore.createTask(data)
+    const isCreate = create.value || !_id
+
+    if (isCreate) {
+      const type = (task as any)?.microTaskType
+      if (type === 'habit') {
+        await taskStore.createHabit(data as any)
+      } else if (type) {
+        await taskStore.createMicroTask(data as any)
+      } else {
+        await taskStore.createTask(data)
+      }
       emit('remove-last-task')
       createRef.value = false
     } else {
-      await taskStore.updateTask(_id, task)
+      await taskStore.updateTask(_id as any, task)
     }
     zoomOutTask()
   }

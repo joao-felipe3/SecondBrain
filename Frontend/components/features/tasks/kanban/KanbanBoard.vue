@@ -181,8 +181,10 @@ watch(() => props.initialZoomedTask, (newTask) => {
     nextTick(() => {
       zoomState.zoomedTask.value = newTask as any
       zoomState.zoomed.value = true
-      zoomState.create.value = false
-      zoomState.createRef.value = false
+      // If the task has no id yet, it's a NEW task being created.
+      // This flag is used by `useTaskActions.handleEdit` to decide between POST(create) and PATCH(update).
+      zoomState.create.value = !(newTask as any)?._id
+      zoomState.createRef.value = true
       emit('zoom-in')
     })
   }
