@@ -34,6 +34,11 @@ import { TaskCompletionFeedback } from './entities/task-completion-feedback.enti
 import { FeedbackService } from './feedback.service';
 import { forwardRef } from '@nestjs/common';
 import { ProjectsModule } from '../projects/projects.module';
+import { TaskAlertSchema } from './schemas/task-alert.schema';
+import { TaskAlert } from './entities/task-alert.entity';
+import { AlertsService } from './services/alerts.service';
+import { DeviationDetectionService } from './services/deviation-detection.service';
+import { AlertsController } from './controllers/alerts.controller';
 
 @Module({
   imports: [
@@ -47,11 +52,36 @@ import { ProjectsModule } from '../projects/projects.module';
       { name: ProjectBuffer.name, schema: ProjectBufferSchema }, // NOVO: Adiciona ProjectBuffer
       { name: Requirement.name, schema: RequirementSchema }, // NOVO: Adiciona Requirement
       { name: TaskCompletionFeedback.name, schema: TaskCompletionFeedbackSchema }, // Sprint 4: Adiciona TaskCompletionFeedback
+      { name: TaskAlert.name, schema: TaskAlertSchema },
     ]), 
     forwardRef(() => ProjectsModule)
   ],
-  controllers: [TasksController, CPMController, BufferController, RTMController, HabitsController], // NOVO: Adiciona RTMController
-  providers: [TasksService, GeminiService, ChecklistService, PertService, CPMService, DependencyInferenceService, BufferService, RTMService, /* new */ FeedbackService], // Sprint 2: Adiciona ChecklistService
-  exports: [TasksService, GeminiService, ChecklistService, PertService, CPMService, DependencyInferenceService, BufferService, RTMService, FeedbackService], // Sprint 2: Adiciona ChecklistService aos exports
+  controllers: [TasksController, CPMController, BufferController, RTMController, HabitsController, AlertsController], // NOVO: Adiciona RTMController
+  providers: [
+    TasksService,
+    GeminiService,
+    ChecklistService,
+    PertService,
+    CPMService,
+    DependencyInferenceService,
+    BufferService,
+    RTMService,
+    FeedbackService,
+    AlertsService,
+    DeviationDetectionService,
+  ], // Sprint 2: Adiciona ChecklistService
+  exports: [
+    TasksService,
+    GeminiService,
+    ChecklistService,
+    PertService,
+    CPMService,
+    DependencyInferenceService,
+    BufferService,
+    RTMService,
+    FeedbackService,
+    AlertsService,
+    DeviationDetectionService,
+  ], // Sprint 2: Adiciona ChecklistService aos exports
 })
 export class TasksModule {}

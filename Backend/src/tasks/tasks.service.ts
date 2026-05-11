@@ -14,6 +14,8 @@ import { PertService } from './services/pert.service';
 import { FeedbackService } from './feedback.service';
 import { PertEstimateDto, PertEstimateResponseDto } from './dto/pert-estimate.dto';
 import { EVMService } from '../projects/services/evm.service';
+import { AlertsService } from './services/alerts.service';
+import { DeviationDetectionService } from './services/deviation-detection.service';
 
 @Injectable()
 export class TasksService {
@@ -29,6 +31,8 @@ export class TasksService {
     private readonly checklistService: ChecklistService, // Sprint 2: Validação e histórico de checklist
     private readonly pertService: PertService, // Injeta o PertService
     private readonly feedbackService: FeedbackService,
+    private readonly alertsService: AlertsService,
+    private readonly deviationDetectionService: DeviationDetectionService,
   ) {}
 
   async recalculateProjectStats(projectId: string): Promise<void> {
@@ -486,6 +490,65 @@ export class TasksService {
     });
 
     return this.checklistService.validateChecklistCompletion(checklistItems);
+  }
+
+  async getValidationErrors(taskId: string): Promise<{ valid: boolean; errors: string[] }> {
+    if (!taskId || !Types.ObjectId.isValid(taskId)) {
+      return { valid: false, errors: [`Invalid id: ${taskId}`] };
+    }
+
+    const task = await this.taskModel.findById(taskId).exec();
+    if (!task) {
+      return { valid: false, errors: [`Task not found: ${taskId}`] };
+    }
+
+    const errors: string[] = [];
+    const isHabit = task.microTaskType === 'habit' || Boolean(task.parentRecurringId) || Boolean(task.recurringRule);
+
+    if (!isHabit && Array.isArray(task.checklist) && task.checklist.length > 0) {
+      const checklistItems = task.checklist.map((entry: any) => {
+        if (typeof entry === 'string') {
+          return { completed: false };
+        }
+        if (entry && typeof entry === 'object') {
+          return { completed: Boolean(entry.completed) };
+        }
+        return { completed: false };
+      });
+
+      const checklistResult = this.checklistService.validateChecklistCompletion(checklistItems as any);
+      if (!checklistResult.isValid) {
+        errors.push(checklistResult.reason || 'Checklist incomplete');
+      }
+    }
+
+    if (!isHabit && task.microTaskType && !Number.isFinite(task.pertExpectedMinutes || 0)) {
+      errors.push('PERT estimate missing');
+    }
+
+    return { valid: errors.length === 0, errors };
+  }
+
+  async checkDeviationAndCreateAlert(taskId: string): Promise<{ alertCreated: boolean; alert?: any }> {
+    const deviation = await this.deviationDetectionService.generateDeviationAlert(taskId);
+    if (!deviation) {
+      return { alertCreated: false };
+    }
+
+    const task = await this.taskModel.findById(taskId).exec();
+    if (!task) {
+      return { alertCreated: false };
+    }
+
+    const created = await this.alertsService.createAlert({
+      taskId: task._id as any,
+      projectId: task.project as any,
+      type: 'warning',
+      message: deviation.message || 'Time deviation detected',
+      recommendation: deviation.recommendation,
+    });
+
+    return { alertCreated: true, alert: created };
   }
 
   async createRecurringMicroTask(createMicroTaskDto: CreateMicroTaskDto): Promise<TaskDocument> {
@@ -1501,6 +1564,8 @@ export class TasksService {
       await this.projectsService.incrementHoursWorked(projectId, remainingHours);
       await this.registerAutoEvmProgress(projectId, id, remainingHours, 'completion');
     }
+
+    await this.checkDeviationAndCreateAlert(id);
 
     if (updatedTask.recurringRule) {
       await this.handleTaskCompletion(id);

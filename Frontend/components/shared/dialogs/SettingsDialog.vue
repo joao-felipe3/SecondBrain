@@ -1,25 +1,27 @@
 <template>
   <v-dialog v-model="dialog" max-width="400px" @update:model-value="onDialogChange">
     <template #activator="{ props: activatorProps }">
-      <v-btn
-        icon="mdi-bell"
-        variant="text"
-        size="small"
-        v-bind="activatorProps"
-        @click="openDialog"
-        class="notification-btn"
-      >
-        <v-icon
-          v-if="!isSilenced"
+      <slot name="activator" :props="activatorProps" :open="openDialog" :is-silenced="isSilenced">
+        <v-btn
+          icon="mdi-bell"
+          variant="text"
           size="small"
-          class="bell-icon"
-        >mdi-bell</v-icon>
-        <v-icon
-          v-else
-          size="small"
-          class="bell-icon-muted"
-        >mdi-bell-off</v-icon>
-      </v-btn>
+          v-bind="activatorProps"
+          @click="openDialog"
+          class="notification-btn"
+        >
+          <v-icon
+            v-if="!isSilenced"
+            size="small"
+            class="bell-icon"
+          >mdi-bell</v-icon>
+          <v-icon
+            v-else
+            size="small"
+            class="bell-icon-muted"
+          >mdi-bell-off</v-icon>
+        </v-btn>
+      </slot>
     </template>
 
     <v-card class="settings-card">

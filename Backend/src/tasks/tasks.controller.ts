@@ -386,6 +386,20 @@ export class TasksController {
     return this.tasksService.moveTaskStatus(id, body);
   }
 
+  @Post(':id/check-deviation')
+  @ApiOperation({ summary: 'Check time deviation and create alert if needed' })
+  @ApiResponse({ status: 200, description: 'Deviation check completed.' })
+  async checkDeviation(@Param('id') id: string) {
+    return this.tasksService.checkDeviationAndCreateAlert(id);
+  }
+
+  @Get(':id/validation-errors')
+  @ApiOperation({ summary: 'Return pre-completion validation errors' })
+  @ApiResponse({ status: 200, description: 'Validation errors returned.' })
+  async getValidationErrors(@Param('id') id: string) {
+    return this.tasksService.getValidationErrors(id);
+  }
+
   @Get(':id/lineage')
   @ApiOperation({ 
     summary: 'Buscar lineage de uma task (ancestrais + filhos)',

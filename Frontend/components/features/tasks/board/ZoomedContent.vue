@@ -3,6 +3,8 @@
     key="pergaminhos-content"
     class="zoomed-content-wrapper"
   >
+    <ValidationErrorBanner :task-id="props.task?._id" />
+
     <!-- Stack de folhas (pergaminhos empilhados) -->
     <div class="pergaminho-stack">
       <div
@@ -63,6 +65,7 @@ import ValueTab from '../tabs/ValueTab.vue'
 import Button from '../../../ui/svg/Button.vue'
 import HabitTimelineTab from '../tabs/HabitTimelineTab.vue'
 import HabitStatsTab from '../tabs/HabitStatsTab.vue'
+import ValidationErrorBanner from '../ui/ValidationErrorBanner.vue'
 
 
 interface Props {
