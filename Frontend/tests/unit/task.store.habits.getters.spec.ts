@@ -25,14 +25,14 @@ describe('Task Store - habit getters', () => {
       { _id: 't1', name: 'Normal', project: 'p1', microTaskType: 'task' } as any,
       { _id: 'h1', name: 'Habit', project: 'p1', microTaskType: 'habit' } as any,
       { _id: 'r1', name: 'Recurring instance', project: 'p2', parentRecurringId: 'series-1' } as any,
-      { _id: 'tpl', name: 'Recurring template', project: 'p1', recurringRule: { frequency: 'daily', interval: 1 } } as any,
+      { _id: 'tpl', name: 'Recurring template', project: 'p1', isRecurringInstance: false, recurringRule: { frequency: 'daily', interval: 1 } } as any,
     ]
 
     const all = store.getHabits()
-    expect(all.map((t: any) => t._id).sort()).toEqual(['h1', 'r1', 'tpl'].sort())
+    expect(all.map((t: any) => t._id).sort()).toEqual(['h1', 'r1'].sort())
 
     const onlyP1 = store.getHabits({ projectId: 'p1' })
-    expect(onlyP1.map((t: any) => t._id).sort()).toEqual(['h1', 'tpl'].sort())
+    expect(onlyP1.map((t: any) => t._id).sort()).toEqual(['h1'].sort())
   })
 
   it('getStreakForHabit should return dashboard streak data when present', () => {

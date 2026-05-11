@@ -195,6 +195,21 @@ describe('TasksService', () => {
       expect(result.isValid).toBe(true);
     });
 
+    it('deve permitir conclusão de hábito sem checklist', async () => {
+      const taskId = new Types.ObjectId();
+      const mockTaskFind = (jest.fn() as any).mockResolvedValue({
+        _id: taskId,
+        microTaskType: 'habit',
+        recurringRule: { frequency: 'daily', interval: 1 },
+        checklist: [],
+      });
+      (taskModelMock as any).findById = jest.fn().mockReturnValue({ exec: mockTaskFind });
+
+      const result = await service.validateCompletionRequirements(taskId.toString());
+
+      expect(result.isValid).toBe(true);
+    });
+
     it('deve rejeitar conclusão quando checklist legado está como string[] (0%)', async () => {
       const taskId = new Types.ObjectId();
       const mockTaskFind = (jest.fn() as any).mockResolvedValue({

@@ -46,7 +46,7 @@ describe('TasksService - Sprint 5: Recorrência', () => {
     const occurrence = { _id: new Types.ObjectId(), parentRecurringId: template._id }
 
     jest.spyOn(service, 'createRecurringTemplate').mockResolvedValue(template as any)
-    jest.spyOn(service, 'generateNextOccurrence').mockResolvedValue(occurrence as any)
+    jest.spyOn(service as any, 'buildRecurringOccurrenceFromTask').mockResolvedValue(occurrence as any)
 
     const result = await service.createRecurringMicroTask({
       name: 'Daily habit',
@@ -64,7 +64,7 @@ describe('TasksService - Sprint 5: Recorrência', () => {
 
     expect(result).toBe(occurrence)
     expect(service.createRecurringTemplate).toHaveBeenCalledTimes(1)
-    expect(service.generateNextOccurrence).toHaveBeenCalledWith(template)
+    expect((service as any).buildRecurringOccurrenceFromTask).toHaveBeenCalledTimes(1)
   })
 
   it('handleTaskSkipped should mark occurrence skipped and create next one when recurring', async () => {

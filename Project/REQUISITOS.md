@@ -335,6 +335,7 @@
 | 20 | Ao detectar 3 dias seguidos de baixa conclusão, oferecer (opt-in) “modo vitórias pequenas” por 24–72h (missões muito fáceis com reforço aumentado) | Gamificação | ⬜ | ⬜ | ⬜ | ⬜ |
 
 ---
+
 ## 🤖 Fase 5 - Criação Estratégica de Projetos com Agente de IA
 
 > **Objetivo:** Transformar o LLM num Cientista Autônomo e Mentor que não apenas divide tarefas, mas executa uma pesquisa estruturada e ativa de mercado (potencializada por Deep Research Pro e Gemini Embedding 2), oferecendo trilhas de conhecimento e dados reais (benchmarking) antes do início da jornada no Second Brain.

@@ -288,6 +288,17 @@ const getEffectiveStatus = (task: any): KanbanColumnStatus => {
   return 'todo'
 }
 
+function isDoneVisible(task: any): boolean {
+  const updatedAt = task?.statusUpdatedAt || task?.updatedAt || task?.createdAt
+  if (!updatedAt) return true
+
+  const updatedMs = new Date(updatedAt).getTime()
+  if (!Number.isFinite(updatedMs)) return true
+
+  const oneDayMs = 24 * 60 * 60 * 1000
+  return Date.now() - updatedMs <= oneDayMs
+}
+
 // Filter tasks based on props filters
 const filteredTasks = computed(() => {
   let filtered = (props.tasks || []).filter((task: any) => {
@@ -326,7 +337,11 @@ const tasksByStatus = computed<Record<KanbanColumnStatus, Task[]>>(() => {
   }
 
   for (const task of filteredTasks.value) {
-    grouped[getEffectiveStatus(task)].push(task)
+    const status = getEffectiveStatus(task)
+    if (status === 'done' && !isDoneVisible(task)) {
+      continue
+    }
+    grouped[status].push(task)
   }
 
   return grouped
@@ -453,13 +468,16 @@ const draggingFromStatus = ref<KanbanColumnStatus | null>(null)
 const movingTaskId = ref<string | null>(null)
 
 function getMoveBlockReason(task: any, toStatus: KanbanColumnStatus) {
+  const isHabit = task?.microTaskType === 'habit' || Boolean(task?.parentRecurringId) || Boolean(task?.recurringRule)
+
   // Mirror backend rule: concluded tasks must stay in 'done'.
   if (task?.isConcluded && toStatus !== 'done') {
     return 'Tarefa concluída não pode ser movida para fora de "Concluído".'
   }
 
-  // Mirror backend rule: moving to done uses conclude flow, which requires 100% checklist if checklist exists.
-  if (toStatus === 'done') {
+  // Mirror backend rule: moving to done uses conclude flow.
+  // Habits do not require checklist completion to be concluded.
+  if (toStatus === 'done' && !isHabit) {
     const checklist = task?.checklist
     if (Array.isArray(checklist) && checklist.length > 0) {
       // Checklist can be stored as `string[]` (legacy) or objects with { completed }.

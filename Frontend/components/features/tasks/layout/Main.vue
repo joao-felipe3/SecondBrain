@@ -126,6 +126,12 @@
   // Apply filters to tasks
   const filteredTasks = computed(() => {
     let filtered = (props.allTasks || []).filter((task) => {
+      // Hide recurring templates (recurringRule + isRecurringInstance=false).
+      // Backend creates template + first occurrence; Kanban should show only occurrences.
+      if (task?.recurringRule && task?.isRecurringInstance === false && !task?.parentRecurringId) {
+        return false
+      }
+
       if (props.projectFilter && task.project !== props.projectFilter) {
         return false
       }

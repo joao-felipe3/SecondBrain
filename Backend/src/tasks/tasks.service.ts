@@ -495,7 +495,20 @@ export class TasksService {
       recurringState: 'pending',
     } as any);
 
-    const firstOccurrence = await this.generateNextOccurrence(template);
+    // IMPORTANT: First occurrence should be on the start date (deadline provided / today),
+    // not on the *next* interval date. Otherwise the UI shows two papers (template=day0 + occurrence=day1).
+    const recurringRule = template.recurringRule ? this.normalizeRecurringRule(template.recurringRule as any) : undefined;
+    if (!recurringRule) {
+      return template;
+    }
+
+    const referenceStart = new Date((createMicroTaskDto as any)?.deadline || template.deadline || template.createdAt || new Date());
+    const firstDeadline = this.calculateFirstRecurringDate(referenceStart, recurringRule);
+    if (!firstDeadline) {
+      return template;
+    }
+
+    const firstOccurrence = await this.buildRecurringOccurrenceFromTask(template, firstDeadline);
     return firstOccurrence || template;
   }
 
@@ -763,6 +776,58 @@ export class TasksService {
         continue;
       }
       
+      return probe;
+    }
+
+    return null;
+  }
+
+  /**
+   * Returns the first valid recurring date on/after the provided start date.
+   * Used when creating the series so the first occurrence is "today" (or the chosen start),
+   * instead of being shifted by one interval.
+   */
+  private calculateFirstRecurringDate(startDate: Date, recurringRule: RecurringRuleDto): Date | null {
+    const rule = this.normalizeRecurringRule(recurringRule, {
+      allowPastEndDate: true,
+      prunePastExceptions: false,
+    });
+
+    const base = new Date(startDate);
+    base.setSeconds(0, 0);
+
+    if (rule.endDate) {
+      const endDate = new Date(rule.endDate);
+      if (base.getTime() > endDate.getTime()) {
+        return null;
+      }
+    }
+
+    // Monthly: start on base's date if allowed; if excluded, jump to next month candidate.
+    if (rule.frequency === 'monthly') {
+      if (!this.isRecurringDateExcluded(base, rule)) {
+        return base;
+      }
+      return this.calculateNextRecurringDate(base, rule);
+    }
+
+    const allowedDays = Array.isArray(rule.daysOfWeek) && rule.daysOfWeek.length > 0 ? rule.daysOfWeek : null;
+
+    for (let offset = 0; offset < 365; offset++) {
+      const probe = this.addDays(base, offset);
+
+      if (rule.endDate && probe.getTime() > new Date(rule.endDate).getTime()) {
+        return null;
+      }
+
+      if (allowedDays && !allowedDays.includes(probe.getDay())) {
+        continue;
+      }
+
+      if (this.isRecurringDateExcluded(probe, rule)) {
+        continue;
+      }
+
       return probe;
     }
 
@@ -1395,10 +1460,15 @@ export class TasksService {
       return task;
     }
 
+    const isHabit = task.microTaskType === 'habit' || Boolean(task.parentRecurringId) || Boolean(task.recurringRule);
+
     // Sprint 2: Valida requisitos de conclusão (checklist 100% se houver)
-    const completionValidation = await this.validateCompletionRequirements(id);
-    if (!completionValidation.isValid) {
-      throw new BadRequestException(completionValidation.reason);
+    // Hábits recorrentes sem checklist podem concluir normalmente.
+    if (!isHabit) {
+      const completionValidation = await this.validateCompletionRequirements(id);
+      if (!completionValidation.isValid) {
+        throw new BadRequestException(completionValidation.reason);
+      }
     }
 
     const currentPomodorosDid = Math.max(0, task.pomodorosDid || 0);

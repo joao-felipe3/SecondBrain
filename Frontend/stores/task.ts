@@ -2,6 +2,13 @@ import { defineStore } from 'pinia'
 import { useApi } from '~/composables/api/useApi'
 import type { Task } from '~/models/Task'
 
+function isRecurringTemplate(task: Partial<Task> | null | undefined): boolean {
+  // Template recorrente: possui recurringRule, mas NÃO é uma ocorrência.
+  // O backend cria template (isRecurringInstance: false) + ocorrência (isRecurringInstance: true).
+  // O template não deve aparecer no Kanban para não duplicar papers.
+  return Boolean(task?.recurringRule) && task?.isRecurringInstance === false && !task?.parentRecurringId
+}
+
 function cleanPayload<T>(value: T): T {
   if (Array.isArray(value)) {
     return value
@@ -61,21 +68,21 @@ export const useTaskStore = defineStore('task', {
   }),
 
   getters: {
-    activeTasks: (state) => state.tasks.filter(t => !t.isConcluded),
+    activeTasks: (state) => state.tasks.filter(t => !isRecurringTemplate(t) && !t.isConcluded),
     
-    completedTasks: (state) => state.tasks.filter(t => t.isConcluded),
+    completedTasks: (state) => state.tasks.filter(t => !isRecurringTemplate(t) && t.isConcluded),
     
-    lateTasks: (state) => state.tasks.filter(t => t.late && !t.isConcluded),
+    lateTasks: (state) => state.tasks.filter(t => !isRecurringTemplate(t) && t.late && !t.isConcluded),
     
     getTaskById: (state) => (id: string) => 
       state.tasks.find(t => t._id === id),
     
     tasksByProject: (state) => (projectId: string) => 
-      state.tasks.filter(t => t.project === projectId),
+      state.tasks.filter(t => !isRecurringTemplate(t) && t.project === projectId),
 
     getMicroTasksForProject: (state) => (projectId: string) =>
       state.tasks.filter(
-        t => t.project === projectId && !!t.microTaskType,
+        t => !isRecurringTemplate(t) && t.project === projectId && !!t.microTaskType,
       ),
 
     /**
@@ -95,7 +102,7 @@ export const useTaskStore = defineStore('task', {
      * Get tasks filtered by status and optionally by project, sorted by kanban order and priority
      */
     getTasksByStatus: (state) => (status: 'todo' | 'doing' | 'review' | 'done', projectId?: string) => {
-      let filtered = state.tasks.filter(t => t.status === status)
+      let filtered = state.tasks.filter(t => !isRecurringTemplate(t) && t.status === status)
 
       if (projectId) {
         filtered = filtered.filter(t => t.project === projectId)
@@ -132,7 +139,10 @@ export const useTaskStore = defineStore('task', {
     },
 
     recurringTasks: (state) =>
-      state.tasks.filter((task) => Boolean(task.recurringRule || task.parentRecurringId || task.microTaskType === 'habit')),
+      state.tasks.filter((task) =>
+        !isRecurringTemplate(task) &&
+        Boolean(task.recurringRule || task.parentRecurringId || task.microTaskType === 'habit'),
+      ),
 
     habitDashboardHabits: (state) =>
       state.habitsDashboard?.habits || [],
@@ -141,7 +151,10 @@ export const useTaskStore = defineStore('task', {
      * Return habits optionally filtered by project or other simple filters
      */
     getHabits: (state) => (filters?: { projectId?: string }) => {
-      let list = state.tasks.filter((t) => t.microTaskType === 'habit' || Boolean(t.recurringRule) || Boolean(t.parentRecurringId))
+      let list = state.tasks.filter((t) =>
+        !isRecurringTemplate(t) &&
+        (t.microTaskType === 'habit' || Boolean(t.recurringRule) || Boolean(t.parentRecurringId)),
+      )
       if (filters?.projectId) {
         list = list.filter((t) => t.project === filters.projectId)
       }
