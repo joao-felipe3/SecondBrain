@@ -861,4 +861,72 @@ function handleFeedbackConfirmed(feedbackData: any) {
 .zoom-fade-leave-to {
   opacity: 0;
 }
+
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+  .kanban-columns {
+    gap: 0.3rem;
+    padding: 0.5rem;
+  }
+
+  .kanban-column {
+    flex: 0 0 45%;
+    min-width: 200px;
+  }
+
+  .kanban-column-header {
+    padding: 0.1rem 0.4rem;
+    font-size: 13px;
+  }
+
+  .kanban-title {
+    font-size: 13px;
+  }
+
+  .kanban-count {
+    font-size: 11px;
+    min-width: 20px;
+    text-align: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .kanban-columns {
+    gap: 0.2rem;
+    padding: 0.3rem;
+  }
+
+  .kanban-column {
+    flex: 0 0 90%;
+    min-width: 150px;
+  }
+
+  .kanban-card-wrapper {
+    margin-bottom: 8px !important;
+  }
+
+  .kanban-column-header {
+    padding: 0.08rem 0.3rem;
+    font-size: 12px;
+  }
+
+  .kanban-title {
+    font-size: 12px;
+  }
+
+  .kanban-count {
+    font-size: 10px;
+  }
+
+  .kanban-drag-handle {
+    font-size: 12px;
+    padding: 4px 6px;
+  }
+
+  .zoom-container {
+    max-width: 95vw;
+    max-height: 95vh;
+    border-radius: 0;
+  }
+}
 </style>

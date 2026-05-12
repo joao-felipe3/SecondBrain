@@ -55,7 +55,15 @@ export class AlertsService {
 
     const limit = Number.isFinite(options?.limit) ? Number(options?.limit) : 50;
 
-    return this.alertModel.find(query).sort({ createdAt: -1 }).limit(limit).exec();
+    // Build index hint for optimized query (userId + isRead + createdAt)
+    const alerts = await this.alertModel
+      .find(query)
+      .sort({ createdAt: -1 })
+      .limit(limit)
+      .hint({ userId: 1, isRead: 1, createdAt: -1 })
+      .exec();
+
+    return alerts;
   }
 
   async markRead(id: string, userId?: string): Promise<TaskAlertDocument | null> {

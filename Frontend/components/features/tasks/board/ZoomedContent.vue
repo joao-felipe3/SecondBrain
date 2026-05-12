@@ -1,11 +1,13 @@
 <template>
-  <div
-    key="pergaminhos-content"
-    class="zoomed-content-wrapper"
-  >
-    <ValidationErrorBanner :task-id="props.task?._id" />
+  <div key="pergaminhos-content" class="layout-container">
+    <!-- Alertas ao lado direito -->
+    <div class="alerts-container">
+      <DeviationWarningAlert :task-id="props.task?._id" />
+      <ValidationErrorBanner :task-id="props.task?._id" />
+    </div>
 
     <!-- Stack de folhas (pergaminhos empilhados) -->
+    <div class="zoomed-content-wrapper">
     <div class="pergaminho-stack">
       <div
         v-for="tab in tabs"
@@ -47,6 +49,7 @@
 
     <!-- Close button no topo direito -->
     <SvgCloseButton @close="$emit('close')" class="close-button-top" />
+    </div>
   </div>
 </template>
 
@@ -66,6 +69,7 @@ import Button from '../../../ui/svg/Button.vue'
 import HabitTimelineTab from '../tabs/HabitTimelineTab.vue'
 import HabitStatsTab from '../tabs/HabitStatsTab.vue'
 import ValidationErrorBanner from '../ui/ValidationErrorBanner.vue'
+import DeviationWarningAlert from '../ui/DeviationWarningAlert.vue'
 
 
 interface Props {
@@ -210,6 +214,22 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped>
+.alerts-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  pointer-events: none;
+  padding: 2rem;
+  width: 32%;
+
+}
+
+.alerts-container > * {
+  pointer-events: auto;
+}
+
 .zoomed-content-wrapper {
   position: absolute;
   inset: 0;
@@ -344,5 +364,82 @@ onBeforeUnmount(() => {
   top: 1.2rem;
   right: 1.2rem;
   z-index: 400;
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+  .alerts-container {
+    padding: 0.5rem;
+  }
+
+  .zoomed-content-wrapper {
+    padding: 0.5rem;
+  }
+
+  .pergaminho-stack {
+    inset: 0.5rem 0.5rem 0.2rem 0.5rem;
+  }
+
+  .pergaminho-folha {
+    background-size: 100% 100%;
+  }
+
+  .sheet-content {
+    padding: 1rem clamp(0.5rem, 3vw, 1.5rem) 3rem;
+    font-size: 14px;
+  }
+
+  .peek-label {
+    font-size: 12px;
+    padding: 0.05rem 0.3rem;
+  }
+
+  .sticky-actions {
+    width: min(100%, calc(100% - 1rem));
+    bottom: 0.6rem;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+
+  .close-button-top {
+    top: 0.6rem;
+    right: 0.6rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .alerts-container {
+    padding: 0.3rem;
+  }
+
+  .zoomed-content-wrapper {
+    padding: 0.3rem;
+    inset: 0;
+  }
+
+  .pergaminho-stack {
+    inset: 0.3rem 0.3rem 0.15rem 0.3rem;
+  }
+
+  .sheet-content {
+    padding: 0.75rem 1rem 2.5rem 1rem;
+    font-size: 13px;
+  }
+
+  .peek-label {
+    display: none;
+  }
+
+  .sticky-actions {
+    width: calc(100% - 0.6rem);
+    bottom: 0.3rem;
+  }
+
+  .close-button-top {
+    top: 0.3rem;
+    right: 0.3rem;
+    width: 24px;
+    height: 24px;
+  }
 }
 </style>
