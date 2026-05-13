@@ -1,7 +1,7 @@
 # 📋 Acompanhamento de Requisitos - Second Brain
 
-> **Última atualização:** 12/04/2026  
-> **Status do Projeto:** MVP + Fase 1 100% Completa (Eficiência)
+> **Última atualização:** 13/05/2026  
+> **Status do Projeto:** MVP + Fase 1 + Fase 2 100% Completas
 
 ---
 
@@ -11,16 +11,16 @@
 |------|-------|-------------|----------|---------|-----|-----------|
 | Fase 0 - MVP | 14 | 14/14 ✅ | 14/14 ✅ | 14/14 ✅ | 14/14 ✅ | 🟢 100% |
 | Fase 1 - Eficiência | 29 | 29/29 ✅ | 29/29 ✅ | 29/29 ✅ | 29/29 ✅ | 🟢 100% |
-| Fase 2 - Micro-Tarefas | 22 | 0/22 | 0/22 | 0/22 | 0/22 | ⬜ 0% |
+| Fase 2 - Micro-Tarefas | 22 | 22/22 ✅ | 22/22 ✅ | 22/22 ✅ | 22/22 ✅ | 🟢 100% |
 | Fase 3 - Produtividade Avançada | 22 | 0/22 | 0/22 | 0/22 | 0/22 | ⬜ 0% |
 | Fase 4 - Gamificação Essencial | 20 | 0/20 | 0/20 | 0/20 | 0/20 | ⬜ 0% |
 | Fase 5 - Criação de Projetos com Agente | 9 | 0/9 | 0/9 | 0/9 | 0/9 | ⬜ 0% |
-| Fase 6 - Rotina Invisível, Âncoras e Desligamento | 28 | 0/28 | 0/28 | 0/28 | 0/28 | ⬜ 0% |
-| Fase 7 - Narrativa e Motor RPG | 34 | 0/34 | 0/34 | 0/34 | 0/34 | ⬜ 0% |
+| Fase 6 - Rotina Invisível, Âncoras e Desligamento | 31 | 0/31 | 0/31 | 0/31 | 0/31 | ⬜ 0% |
+| Fase 7 - Narrativa e Motor RPG | 37 | 0/37 | 0/37 | 0/37 | 0/37 | ⬜ 0% |
 | Fase 8 - Monitoramento e Interpretação Assistida | 10 | 0/10 | 0/10 | 0/10 | 0/10 | ⬜ 0% |
 | Fase 9 - Arquitetura Cognitiva | 28 | 0/28 | 0/28 | 0/28 | 0/28 | ⬜ 0% |
-| Fase 10 - IA Autônoma e Guardião do OS | 22 | 0/22 | 0/22 | 0/22 | 0/22 | ⬜ 0% |
-| Fase 11 - Espelho Metacognitivo e Energia Biológica | 32 | 0/32 | 0/32 | 0/32 | 0/32 | ⬜ 0% |
+| Fase 10 - IA Autônoma e Guardião do OS | 30 | 0/30 | 0/30 | 0/30 | 0/30 | ⬜ 0% |
+| Fase 11 - Espelho Metacognitivo e Energia Biológica | 44 | 0/44 | 0/44 | 0/44 | 0/44 | ⬜ 0% |
 | Fase 12 - Polimento e Segurança | 10 | 0/10 | 0/10 | 0/10 | 0/10 | ⬜ 0% |
 
 
@@ -152,53 +152,53 @@
 
 | # | Requisito | Tipo | Protótipo | Frontend | Backend | QA |
 |---|-----------|------|:---------:|:--------:|:-------:|:--:|
-| 1 | Geração automática de checklist padrão ouro via LLM ao criar micro-tarefa | Funcional | ✅ | ⬜ | ✅ | ⬜ |
-| 2 | Checklist deve conter passos críticos, critérios de sucesso e validações baseados em histórico/padrões | Funcional | ✅ | ⬜ | ✅ | ⬜ |
-| 3 | Visualizar e editar checklist antes de iniciar tarefa | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
-| 4 | Marcar itens do checklist como concluído durante execução da tarefa | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
-| 5 | Validação obrigatória de checklist antes de marcar tarefa como concluída | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 1 | Geração automática de checklist padrão ouro via LLM ao criar micro-tarefa | Funcional | ✅ | ✅ | ✅ | ✅ |
+| 2 | Checklist deve conter passos críticos, critérios de sucesso e validações baseados em histórico/padrões | Funcional | ✅ | ✅ | ✅ | ✅ |
+| 3 | Visualizar e editar checklist antes de iniciar tarefa | Funcional | ✅ | ✅ | ✅ | ✅ |
+| 4 | Marcar itens do checklist como concluído durante execução da tarefa | Funcional | ✅ | ✅ | ✅ | ✅ |
+| 5 | Validação obrigatória de checklist antes de marcar tarefa como concluída | Funcional | ✅ | ✅ | ✅ | ✅ |
 
 ### Estimativa PERT em Micro-Escala
 
 | # | Requisito | Tipo | Protótipo | Frontend | Backend | QA |
 |---|-----------|------|:---------:|:--------:|:-------:|:--:|
-| 6 | Captura de três estimativas em minutos: Otimista, Provável e Pessimista para micro-tarefas | Funcional | ✅ | ⬜ | ✅ | ⬜ |
-| 7 | Cálculo automático de TE (Tempo Esperado) em minutos usando fórmula PERT: TE = (O + 4M + P) / 6 | Funcional | ✅ | ⬜ | ✅ | ⬜ |
-| 8 | Exibir deadline realista baseado em TE calculado | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
-| 9 | Sugestão automática pelo LLM de estimativas realistas para tipos comuns de tarefas | Funcional | ⬜ | ⬜ | ✅ | ⬜ |
+| 6 | Captura de três estimativas em minutos: Otimista, Provável e Pessimista para micro-tarefas | Funcional | ✅ | ✅ | ✅ | ✅ |
+| 7 | Cálculo automático de TE (Tempo Esperado) em minutos usando fórmula PERT: TE = (O + 4M + P) / 6 | Funcional | ✅ | ✅ | ✅ | ✅ |
+| 8 | Exibir deadline realista baseado em TE calculado | Funcional | ✅ | ✅ | ✅ | ✅ |
+| 9 | Sugestão automática pelo LLM de estimativas realistas para tipos comuns de tarefas | Funcional | ✅ | ✅ | ✅ | ✅ |
 
 ### Rastreabilidade e Linhagem Visual (RTM Simplificada)
 
 | # | Requisito | Tipo | Protótipo | Frontend | Backend | QA |
 |---|-----------|------|:---------:|:--------:|:-------:|:--:|
-| 10 | Vincular visualmente cada micro-tarefa ao seu "Requisito Pai" ou "Objetivo Estratégico" | Funcional | ⬜ | ⬜ | ✅ | ⬜ |
-| 11 | Visualização de linhagem: ao clicar na tarefa, mostrar a cadeia de rastreabilidade até o objetivo | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
-| 12 | Rastreabilidade bidirecional: alertar sobre impactos "rio abaixo" ao deletar ou adiar tarefa | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
-| 13 | Indicador visual de valor agregado: mostrar quanto cada micro-tarefa contribui para o objetivo maior | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 10 | Vincular visualmente cada micro-tarefa ao seu "Requisito Pai" ou "Objetivo Estratégico" | Funcional | ✅ | ✅ | ✅ | ✅ |
+| 11 | Visualização de linhagem: ao clicar na tarefa, mostrar a cadeia de rastreabilidade até o objetivo | Funcional | ✅ | ✅ | ✅ | ✅ |
+| 12 | Rastreabilidade bidirecional: alertar sobre impactos "rio abaixo" ao deletar ou adiar tarefa | Funcional | ✅ | ✅ | ✅ | ✅ |
+| 13 | Indicador visual de valor agregado: mostrar quanto cada micro-tarefa contribui para o objetivo maior | Funcional | ✅ | ✅ | ✅ | ✅ |
 
 ### Kanban Pessoal com Catchball Visual
 
 | # | Requisito | Tipo | Protótipo | Frontend | Backend | QA |
 |---|-----------|------|:---------:|:--------:|:-------:|:--:|
-| 14 | Interface Kanban para fluxo diário de micro-tarefas (ToDo, Fazendo, Revisão, Concluído) | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
-| 15 | Arrastar e soltar tarefas entre colunas do Kanban | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
-| 16 | Ao mover tarefa para "Concluído", LLM actua como "receptor da bola" com feedback automático | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
-| 17 | Feedback automático: LLM valida checklist, pergunta sobre impedimentos e sugere melhorias (PDCA) | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 14 | Interface Kanban para fluxo diário de micro-tarefas (ToDo, Fazendo, Revisão, Concluído) | Funcional | ✅ | ✅ | ✅ | ✅ |
+| 15 | Arrastar e soltar tarefas entre colunas do Kanban | Funcional | ✅ | ✅ | ✅ | ✅ |
+| 16 | Ao mover tarefa para "Concluído", LLM actua como "receptor da bola" com feedback automático | Funcional | ✅ | ✅ | ✅ | ✅ |
+| 17 | Feedback automático: LLM valida checklist, pergunta sobre impedimentos e sugere melhorias (PDCA) | Funcional | ✅ | ✅ | ✅ | ✅ |
 
 ### Alertas de Micro-Desvios (EVM Preditivo)
 
 | # | Requisito | Tipo | Protótipo | Frontend | Backend | QA |
 |---|-----------|------|:---------:|:--------:|:-------:|:--:|
-| 18 | Detectar anomalias: alerta quando tempo gasto exceder TE (Tempo Esperado) em 25% | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 18 | Detectar anomalias: alerta quando tempo gasto exceder TE (Tempo Esperado) em 25% | Funcional | ✅ | ✅ | ✅ | ✅ |
 
 ### Hábitos e Recorrência
 
 | # | Requisito | Tipo | Protótipo | Frontend | Backend | QA |
 |---|-----------|------|:---------:|:--------:|:-------:|:--:|
-| 19 | Permitir criar micro-tarefas como hábitos recorrentes com regra estruturada de recorrência (frequência, intervalo, dias da semana, data final e exceções) | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
-| 20 | Gerar automaticamente a próxima ocorrência do hábito ao concluir, adiar ou pular uma instância, sem duplicação manual | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
-| 21 | Permitir editar apenas uma ocorrência ou toda a série recorrente e encerrar a recorrência sem apagar histórico | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
-| 22 | Exibir aderência do hábito, streak e lembretes configuráveis, com opção de pausar e retomar a série sem quebrá-la | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 19 | Permitir criar micro-tarefas como hábitos recorrentes com regra estruturada de recorrência (frequência, intervalo, dias da semana, data final e exceções) | Funcional | ✅ | ✅ | ✅ | ✅ |
+| 20 | Gerar automaticamente a próxima ocorrência do hábito ao concluir, adiar ou pular uma instância, sem duplicação manual | Funcional | ✅ | ✅ | ✅ | ✅ |
+| 21 | Permitir editar apenas uma ocorrência ou toda a série recorrente e encerrar a recorrência sem apagar histórico | Funcional | ✅ | ✅ | ✅ | ✅ |
+| 22 | Exibir aderência do hábito, streak e lembretes configuráveis, com opção de pausar e retomar a série sem quebrá-la | Funcional | ✅ | ✅ | ✅ | ✅ |
 
 ---
 
@@ -427,6 +427,9 @@
 | 26 | No ritual da Taverna, exigir escolher destino para pendências: (a) ancorar amanhã, (b) parking lot (sem notificação), (c) arquivar, (d) quebrar em micro-passos | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
 | 27 | “Dívida de manutenção”: se Durabilidade ficar baixa por X dias, gerar plano de recuperação com 2–3 Upkeeps mínimos e bloquear sugestão de Quests pesadas (com bypass) | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
 | 28 | Sugestão automática da “Primeira Quest pós-âncora” (1 item) para reduzir decisão na hora, com opção “trocar” | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 29 | **Rotina Invisível + Âncoras avançadas como “programa fixo”**: modelar sono, refeições, deslocamento, aquecimento, treino e cooldown como pipeline do dia (visível e editável) | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 30 | **Warm-up e Cooldown**: antes do Bloco Maker, 30–90s de intenção/material/“primeiro toque”; após, 30–60s de próximo passo + descarregar intrusões | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 31 | **Kit de treino pronto (preparação de material)**: Quests profundas podem ter “equipamento” obrigatório (links, arquivos, ambiente); sem kit, sugerir preparar antes de iniciar | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
 
 ---
 
@@ -497,6 +500,14 @@
 | 32 | Escolha narrativa ao concluir projeto grande | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
 | 33 | NPC "Bardo" que escreve crônica semanal baseada nas tarefas | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
 | 34 | Progresso visual (Landmark) ao invés de barra de porcentagem | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+
+### Novos requisitos propostos (arcos, gates e cenas)
+
+| # | Requisito | Tipo | Protótipo | Frontend | Backend | QA |
+|---|-----------|------|:---------:|:--------:|:-------:|:--:|
+| 35 | **Training Arcs (3 atos)**: Ato 1 base (rotina + drills fáceis), Ato 2 intensificação (sprints/boss gates/skill checks), Ato 3 prova (desafio final real) | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 36 | **Boss com pré-requisitos (gates)**: chefe só é enfrentável se cumprir 2–3 critérios (ex.: X sessões, Y drills, durabilidade mínima) | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 37 | **Cenas com o Mestre (eventos semanais)**: 1×/semana, conversa curta guiada (“o que aprendeu?”, “o que ajustar?”) que atualiza o PTI | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
 
 ---
 ## 📡 Fase 8 - Monitoramento e Interpretação Assistida (IA)
@@ -651,6 +662,24 @@
 | 21 | Intervenção configurável: trazer app ao foco/tela cheia e renderizar a intenção (“Ler 1 página…”) com opção de bypass | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
 | 22 | Modo seguro: permitir pausar/whitelist e registrar logs locais sem enviar dados sensíveis por padrão | Não Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
 
+### Novos requisitos propostos (diagnóstico, PTI e playbook)
+
+| # | Requisito | Tipo | Protótipo | Frontend | Backend | QA |
+|---|-----------|------|:---------:|:--------:|:-------:|:--:|
+| 23 | **Diagnóstico inicial (baseline)**: onboarding mede rotina invisível, energia, objetivos, restrições e estilo (manhã/noite). Saída: perfil + “scouting report” | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 24 | **Plano de Treino Individual (PTI) em ciclos (4–8 semanas)**: 1 skill principal, 1 skill de suporte, 1 rotina de manutenção + métricas (consistência, deep work, taxa de conclusão, qualidade subjetiva) | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 25 | **Playbook de técnicas pessoais**: repositório de protocolos do tipo “quando eu travo, eu faço X” (5-min start, ugly draft, decomposição, respiração, revisão rápida) | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 26 | **Zettelkasten + Loot drops operacionais**: quando surgir um padrão, o Mestre cria uma nota/técnica reutilizável, linka ao contexto e sugere reuso em tarefas similares | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+
+### Novos requisitos propostos (RL e nivelamento dinâmico de metas)
+
+| # | Requisito | Tipo | Protótipo | Frontend | Backend | QA |
+|---|-----------|------|:---------:|:--------:|:-------:|:--:|
+| 27 | **Nivelamento dinâmico para Flow**: manter desafio adaptativo (nem tédio, nem ansiedade) calibrando dificuldade/meta por tarefa e por dia | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 28 | **Definir o agente de RL**: modelar espaço de estado (fadiga inferida, complexidade, prazo, histórico), ações (decompor, reduzir/elevar desafio, sugerir apoio, mudar prazo) e recompensa (engajamento + conclusão com qualidade) | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 29 | **Treino/serving de política com segurança**: registrar eventos, treinar política (ex.: DQN/multi-objetivo) com limites e rollback; operar inicialmente em modo “somente sugestão” | Não Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 30 | **Auditoria e transparência do nivelamento**: UI “Por que sugeriu isso?” mostra qual sinal/heurística/política influenciou (com toggles por módulo) e permite o usuário corrigir (“isso foi fácil/difícil”) | Usabilidade | ⬜ | ⬜ | ⬜ | ⬜ |
+
 ---
 
 
@@ -720,6 +749,28 @@
 | 31 | Ao identificar padrão recorrente (ex.: interrupções à noite), gerar plano de coping “Se X, então Y” e pedir confirmação para virar regra ativa | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
 | 32 | Após concluir tarefa muito acima/abaixo do TE, perguntar “o que enganou a estimativa?” (opções) e salvar o motivo para melhorar previsões | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
 
+### Novos requisitos propostos (treino, carga e procrastinação)
+
+| # | Requisito | Tipo | Protótipo | Frontend | Backend | QA |
+|---|-----------|------|:---------:|:--------:|:-------:|:--:|
+| 33 | **Periodização automática**: semanas pesadas/médias/leves (deload) + dias de recuperação deliberada integrando Blocos Maker e Quests de Recuperação | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 34 | **Replanejamento por evidência**: se aderência cair ou energia cair, ajustar o plano (reduz volume, troca exercícios, muda horários) sem culpa, com justificativa e bypass | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 35 | **Debriefing pós-treino (padrão esportivo)**: após sessão/quest importante registrar o que funcionou, onde travou, obstáculo real e 1 correção | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 36 | **Diário de treino (Training Log)**: timeline de sessões com métricas mínimas (duração, foco, interrupções, RPE, qualidade 1–5) | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 37 | **Placar de consistência e carga (training load)**: painel de carga semanal + alerta de risco de overtraining (burnout) com sugestão de deload | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 38 | **Análise de padrão de procrastinação**: detectar gatilhos (hora, tipo, energia baixa, tarefa ambígua) e sugerir contramedidas (coping plans) | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+
+### Novos requisitos propostos (periodização da produtividade e autorregulação)
+
+| # | Requisito | Tipo | Protótipo | Frontend | Backend | QA |
+|---|-----------|------|:---------:|:--------:|:-------:|:--:|
+| 39 | **Periodização do trabalho (macro/meso/microciclos)**: suportar ciclos de preparação, intensificação e recuperação para diferentes “atributos cognitivos” (ex.: escrita, estudo, execução, manutenção) | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 40 | **Periodização conjugada**: planejar blocos focando 1–2 atributos principais enquanto outros ficam em manutenção, com regras explícitas de volume/intensidade | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 41 | **Readiness (prontidão) diária**: calcular prontidão combinando biometria (HRV/sono/atividade) + sinais do app (RPE, logs, interrupções) com consentimento e fallback manual | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 42 | **Autorregulação estilo DAPRE**: ajustar “carga cognitiva prescrita” do dia com base no desempenho imediato (ex.: cumprimento parcial, fricção alta, RPE alto), sugerindo deload e recuperação ativa cognitiva | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 43 | **CTL/ATL/TSB (analogia cognitiva)**: modelar carga crônica, fadiga aguda e balanço de estresse para prever risco de burnout e recomendar substituições (work-heavy → recuperação ativa) | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 44 | **Detecção de estresse multimodal (opt-in)**: usar padrões de sono/biometria e sinais semânticos (ex.: tags/diário/check-ins) para rebaixar carga sugerida e priorizar manutenção/recuperação com transparência e bypass | Não Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+
 
 ## 🏰 Fase 12 - Polimento e Segurança
 
@@ -760,6 +811,8 @@
 
 | Data | Descrição |
 |------|-----------|
+| 13/05/2026 | Adicionados requisitos de Periodização da Produtividade/Autorregulação (readiness, DAPRE, CTL/ATL/TSB) na Fase 11 e de RL/Nivelamento Dinâmico (Flow) na Fase 10. |
+| 13/05/2026 | Fase 2 (Micro-Tarefas) sincronizada para 100% (requisitos + resumo). Ideias de Mestre/PTI, Rotina de Elite, Playbook/Zettelkasten e Arcos Narrativos foram encaixadas como novos requisitos nas fases 6, 7, 10 e 11. |
 | 28/01/2026 | Documento criado com status atual do MVP |
 | 22/02/2026 | Reorganização das fases: dividir a antiga Fase 4 em Fase 4 (Gamificação Manual-First) + Fase 5 (Monitoramento/IA) e renumerar fases seguintes até Fase 9 |
 | 07/05/2026 | Reordenar roadmap: mover “Rotina Invisível/Âncoras/Desligamento” para logo após a Fase 5 e renumerar fases subsequentes |
