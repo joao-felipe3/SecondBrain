@@ -1,6 +1,6 @@
 # 📋 Acompanhamento de Requisitos - Second Brain
 
-> **Última atualização:** 13/05/2026  
+> **Última atualização:** 18/05/2026  
 > **Status do Projeto:** MVP + Fase 1 + Fase 2 100% Completas
 
 ---
@@ -13,13 +13,13 @@
 | Fase 1 - Eficiência | 29 | 29/29 ✅ | 29/29 ✅ | 29/29 ✅ | 29/29 ✅ | 🟢 100% |
 | Fase 2 - Micro-Tarefas | 22 | 22/22 ✅ | 22/22 ✅ | 22/22 ✅ | 22/22 ✅ | 🟢 100% |
 | Fase 3 - Produtividade Avançada | 22 | 0/22 | 0/22 | 0/22 | 0/22 | ⬜ 0% |
-| Fase 4 - Gamificação Essencial | 20 | 0/20 | 0/20 | 0/20 | 0/20 | ⬜ 0% |
+| Fase 4 - Gamificação Essencial | 25 | 0/25 | 0/25 | 0/25 | 0/25 | ⬜ 0% |
 | Fase 5 - Criação de Projetos com Agente | 9 | 0/9 | 0/9 | 0/9 | 0/9 | ⬜ 0% |
 | Fase 6 - Rotina Invisível, Âncoras e Desligamento | 31 | 0/31 | 0/31 | 0/31 | 0/31 | ⬜ 0% |
-| Fase 7 - Narrativa e Motor RPG | 37 | 0/37 | 0/37 | 0/37 | 0/37 | ⬜ 0% |
+| Fase 7 - Narrativa e Motor RPG | 42 | 0/42 | 0/42 | 0/42 | 0/42 | ⬜ 0% |
 | Fase 8 - Monitoramento e Interpretação Assistida | 10 | 0/10 | 0/10 | 0/10 | 0/10 | ⬜ 0% |
 | Fase 9 - Arquitetura Cognitiva | 28 | 0/28 | 0/28 | 0/28 | 0/28 | ⬜ 0% |
-| Fase 10 - IA Autônoma e Guardião do OS | 30 | 0/30 | 0/30 | 0/30 | 0/30 | ⬜ 0% |
+| Fase 10 - IA Autônoma e Guardião do OS | 36 | 0/36 | 0/36 | 0/36 | 0/36 | ⬜ 0% |
 | Fase 11 - Espelho Metacognitivo e Energia Biológica | 44 | 0/44 | 0/44 | 0/44 | 0/44 | ⬜ 0% |
 | Fase 12 - Polimento e Segurança | 10 | 0/10 | 0/10 | 0/10 | 0/10 | ⬜ 0% |
 
@@ -334,6 +334,16 @@
 | 19 | Limitar mecânicas de streak com “streak congelável” (1–2 freezes/mês) para reduzir efeito all-or-nothing após quebra | Gamificação | ⬜ | ⬜ | ⬜ | ⬜ |
 | 20 | Ao detectar 3 dias seguidos de baixa conclusão, oferecer (opt-in) “modo vitórias pequenas” por 24–72h (missões muito fáceis com reforço aumentado) | Gamificação | ⬜ | ⬜ | ⬜ | ⬜ |
 
+### Novos requisitos propostos (Relatório analítico: Octalysis e anti-gaming)
+
+| # | Requisito | Tipo | Protótipo | Frontend | Backend | QA |
+|---|-----------|------|:---------:|:--------:|:-------:|:--:|
+| 21 | Mapear as mecânicas do app para os 8 Core Drives do Octalysis (White/Black Hat, Left/Right Brain), mantendo um “mapa de motivação” por feature para guiar decisões de design | Gamificação | ⬜ | ⬜ | ⬜ | ⬜ |
+| 22 | Ancorar o sistema prioritariamente em White Hat (significado, desenvolvimento, criatividade) e limitar o uso de Black Hat (escassez/evitação) com controles por usuário: intensidade, janelas e opção de desligar | Não Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 23 | Anti-“gaming the system”: recompensas e progressão devem ser ponderadas por impacto (dificuldade/custo estimado, tempo em foco, conclusão de itens-chave) e não por volume de micro-tarefas | Gamificação | ⬜ | ⬜ | ⬜ | ⬜ |
+| 24 | Detectar padrão de exploração (ex.: excesso de tarefas triviais em sequência) e aplicar contramedidas: retornos decrescentes, aviso “isso está virando ruído” e sugestão de 1 Quest profunda (opt-in) | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 25 | Multiplicador de recompensa por “Trabalho Profundo/Flow”: concluir uma Quest profunda (ou bloco de foco) deve render mais do que múltiplas micro-tarefas; regra e pesos configuráveis e transparentes | Gamificação | ⬜ | ⬜ | ⬜ | ⬜ |
+
 ---
 
 ## 🤖 Fase 5 - Criação Estratégica de Projetos com Agente de IA
@@ -509,6 +519,16 @@
 | 36 | **Boss com pré-requisitos (gates)**: chefe só é enfrentável se cumprir 2–3 critérios (ex.: X sessões, Y drills, durabilidade mínima) | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
 | 37 | **Cenas com o Mestre (eventos semanais)**: 1×/semana, conversa curta guiada (“o que aprendeu?”, “o que ajustar?”) que atualiza o PTI | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
 
+### Novos requisitos propostos (Relatório analítico: skill trees utilitárias e meta-progressão)
+
+| # | Requisito | Tipo | Protótipo | Frontend | Backend | QA |
+|---|-----------|------|:---------:|:--------:|:-------:|:--:|
+| 38 | Implementar Árvores de Habilidades (Skill Trees) em que os nós desbloqueiam **utilidades reais do app** (features/algoritmos/buffs) e não apenas cosméticos (ex.: ordenação, breakdown, congelar streak) | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 39 | Definir classes metodológicas em que cada classe altera o comportamento do motor (regras, bônus e ferramentas), mantendo o motor desacoplado (Strategy/Decorator) | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 40 | Meta-progressão “Roguelite”: em “Game Over” diário/por projeto, preservar skills/itens essenciais e perder apenas bônus de curto prazo (ex.: combos), com configuração e explicação clara | Gamificação | ⬜ | ⬜ | ⬜ | ⬜ |
+| 41 | Desbloqueios por evidência: skills relevantes devem exigir dados reais (ex.: X sessões, consistência, conclusão de Quests profundas) para evitar grind artificial por micro-tarefas | Gamificação | ⬜ | ⬜ | ⬜ | ⬜ |
+| 42 | A geração narrativa deve consumir **contexto estruturado** (entidades e vínculos entre projetos/tarefas) em vez de depender de histórico longo, preservando consistência de “reinos/facções” e evitando deriva | Não Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+
 ---
 ## 📡 Fase 8 - Monitoramento e Interpretação Assistida (IA)
 
@@ -680,6 +700,17 @@
 | 29 | **Treino/serving de política com segurança**: registrar eventos, treinar política (ex.: DQN/multi-objetivo) com limites e rollback; operar inicialmente em modo “somente sugestão” | Não Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
 | 30 | **Auditoria e transparência do nivelamento**: UI “Por que sugeriu isso?” mostra qual sinal/heurística/política influenciou (com toggles por módulo) e permite o usuário corrigir (“isso foi fácil/difícil”) | Usabilidade | ⬜ | ⬜ | ⬜ | ⬜ |
 
+### Novos requisitos propostos (Relatório analítico: state-driven generation, knowledge graph e agendamento procedural)
+
+| # | Requisito | Tipo | Protótipo | Frontend | Backend | QA |
+|---|-----------|------|:---------:|:--------:|:-------:|:--:|
+| 31 | Adotar arquitetura “State Authority” vs “Semantic Generator”: o banco mantém o estado lógico real; o LLM gera apenas semântica dentro de restrições e **não altera** estado/números sem validação | Não Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 32 | Implementar um Orquestrador/Controller que monta contexto mínimo e estrito para o LLM (sem histórico longo), registra inputs/constraints/seed e reduz risco de deriva narrativa | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 33 | Aplicar “Schema Validation Gate” a toda saída do LLM que vira entidade/UI: validar, rejeitar e reprocessar; fallback determinístico quando exceder tentativas | Não Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 34 | Implementar Knowledge Graph de projetos/tarefas e recuperar subgrafo relevante para geração narrativa/RAG, mantendo coerência de longo prazo | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 35 | Implementar Agendamento Procedural: gerar “masmorra do dia” (sequência de tarefas/timeboxes) com algoritmo determinístico (seed + constraints de energia, prazos, custo) e permitir ajustes manuais | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 36 | Versionar e auditar gerações de agenda/narrativa: armazenar generationVersion, seed, constraints e diffs; permitir replay e rollback seguro | Não Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+
 ---
 
 
@@ -811,6 +842,7 @@
 
 | Data | Descrição |
 |------|-----------|
+| 18/05/2026 | Requisitos do relatório analítico convertidos e inseridos nas fases 4 (Octalysis/anti-gaming), 7 (skill trees/meta-progressão) e 10 (state-driven generation/knowledge graph/agendamento procedural) + atualização dos totais no resumo. |
 | 13/05/2026 | Adicionados requisitos de Periodização da Produtividade/Autorregulação (readiness, DAPRE, CTL/ATL/TSB) na Fase 11 e de RL/Nivelamento Dinâmico (Flow) na Fase 10. |
 | 13/05/2026 | Fase 2 (Micro-Tarefas) sincronizada para 100% (requisitos + resumo). Ideias de Mestre/PTI, Rotina de Elite, Playbook/Zettelkasten e Arcos Narrativos foram encaixadas como novos requisitos nas fases 6, 7, 10 e 11. |
 | 28/01/2026 | Documento criado com status atual do MVP |
