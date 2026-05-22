@@ -1,5 +1,5 @@
 import { Injectable, Inject, forwardRef } from '@nestjs/common';
-import { GeminiService } from '../../tasks/gemini.service';
+import { GeminiService } from '../../ai/gemini.service';
 import { SmartObjectiveDto } from '../dto/smart-objective.dto';
 
 @Injectable()
