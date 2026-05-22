@@ -8,7 +8,7 @@ import { TaskDocument } from './schemas/task.schema';
 import { ProjectDocument } from '../projects/schemas/project.schema';
 import { ProjectsService } from '../projects/projects.service';
 import { GenerateAiSuggestionsDto, AiTaskSuggestionDto, AiSuggestionsResponseDto, AiSuggestionsProgressDto } from './dto/generate-ai-suggestions.dto';
-import { GeminiService } from './gemini.service';
+import { GeminiService } from '../ai/gemini.service';
 import { ChecklistService } from './checklist.service';
 import { PertService } from './services/pert.service';
 import { FeedbackService } from './feedback.service';
