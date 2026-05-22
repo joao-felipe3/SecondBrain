@@ -1,6 +1,6 @@
 import { Injectable, Inject, forwardRef } from '@nestjs/common';
 import { createHash } from 'crypto';
-import { GeminiService } from '../../../tasks/gemini.service';
+import { GeminiService } from '../../../../ai/gemini.service';
 import { WBSNodeDto } from '../../dto/wbs.dto';
 import { AuditService, CacheService, DraftGenerationService } from './index';
 import {

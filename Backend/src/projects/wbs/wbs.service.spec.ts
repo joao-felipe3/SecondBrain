@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getModelToken } from '@nestjs/mongoose';
 import { WBSService } from './wbs.service';
-import { GeminiService } from '../../tasks/gemini.service';
+import { GeminiService } from '../../../ai/gemini.service';
 import { WBSNodeDto } from '../dto/wbs.dto';
 
 describe('WBSService', () => {
