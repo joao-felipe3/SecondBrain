@@ -20,6 +20,7 @@ import { RiskService } from './services/risk.service';
 import { EVMService } from './services/evm.service';
 import { WaveAndRiskController } from './controllers/wave-and-risk.controller';
 import { XMatrixSnapshot, XMatrixSnapshotSchema } from './schemas/x-matrix-snapshot.schema';
+import { ProjectsXMatrixService } from './services/projects-x-matrix.service';
 
 
 @Module({
@@ -37,7 +38,7 @@ import { XMatrixSnapshot, XMatrixSnapshotSchema } from './schemas/x-matrix-snaps
     WBSModule,
   ],
   controllers: [ProjectsController, WaveAndRiskController],
-  providers: [ProjectsService, LeafTasksBufferService, RollingWaveService, RiskService, EVMService],
+  providers: [ProjectsService, ProjectsXMatrixService, LeafTasksBufferService, RollingWaveService, RiskService, EVMService],
   exports: [ProjectsService, RollingWaveService, RiskService, EVMService]
 })
 export class ProjectsModule {}
