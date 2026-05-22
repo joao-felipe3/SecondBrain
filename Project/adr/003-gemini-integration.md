@@ -34,8 +34,8 @@ Integrar a Gemini API por meio de uma camada de serviço centralizada (ex.: `Gem
   - e ter fallback quando inválida.
 
 ## Onde no código
-- Serviço central: [Backend/src/tasks/gemini.service.ts](../../Backend/src/tasks/gemini.service.ts)
-- Testes (mocks/contratos): [Backend/src/tasks/gemini.service.spec.ts](../../Backend/src/tasks/gemini.service.spec.ts), [Backend/src/tasks/gemini.service.pert.spec.ts](../../Backend/src/tasks/gemini.service.pert.spec.ts)
+- Serviço central: [Backend/src/ai/gemini.service.ts](../../Backend/src/ai/gemini.service.ts)
+- Testes (mocks/contratos): [Backend/src/ai/gemini.service.spec.ts](../../Backend/src/ai/gemini.service.spec.ts), [Backend/src/ai/gemini.service.pert.spec.ts](../../Backend/src/ai/gemini.service.pert.spec.ts)
 
 ### Cache
 - Respostas de IA que são **repetidas** (ex.: sugestões idênticas) podem ser cacheadas.
