@@ -1,0 +1,35 @@
+@startuml c4-system-context
+' C4 System Context (SecondBrain)
+
+left to right direction
+
+skinparam backgroundColor #FFFFFF
+skinparam rectangleBorderColor #333333
+skinparam rectangleFontColor #111111
+
+skinparam rectangle {
+	RoundCorner 8
+}
+
+rectangle "User" as user
+
+rectangle "SecondBrain" as secondbrain {
+	rectangle "Nuxt Frontend\n(Web App)" as frontend
+	rectangle "NestJS API\n(REST)" as api
+}
+
+rectangle "MongoDB\n(Database)" as mongo
+rectangle "Google Gemini API\n(LLM Provider)" as gemini
+
+user --> frontend : Uses (browser)
+frontend --> api : HTTPS / JSON (REST)
+api --> mongo : Read/Write (Mongoose)
+api --> gemini : AI suggestions (SDK)
+
+note right of api
+	In-memory cache (Map + TTL)
+	- Used for repeated LLM results and WBS drafts
+	- No distributed/shared cache across instances
+end note
+
+@enduml

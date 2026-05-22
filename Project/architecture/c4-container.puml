@@ -1,0 +1,47 @@
+@startuml c4-container
+' C4 Container (SecondBrain)
+
+left to right direction
+
+skinparam backgroundColor #FFFFFF
+skinparam rectangleBorderColor #333333
+skinparam rectangleFontColor #111111
+
+skinparam rectangle {
+	RoundCorner 8
+}
+
+rectangle "User" as user
+
+rectangle "SecondBrain" as secondbrain {
+	rectangle "Nuxt Frontend\n(Vue / Nuxt 3)\n(SSR Web App)" as frontend
+
+	rectangle "NestJS API\n(TypeScript)\n(REST)" as api {
+		rectangle "TasksModule" as tasks
+		rectangle "ProjectsModule" as projects
+		rectangle "SettingsModule" as settings
+
+		rectangle "GeminiService\n(LLM integration)" as gemsvc
+		rectangle "In-memory Cache\n(Map + TTL)" as cache
+
+		tasks --> gemsvc : Generate checklist / embeddings / PERT
+		projects --> gemsvc : WBS + planning helpers
+		gemsvc --> cache : Get/Set (TTL)
+	}
+}
+
+rectangle "MongoDB\n(Database)" as mongo
+rectangle "Google Gemini API\n(LLM Provider)" as gemini
+
+user --> frontend : Uses (browser)
+frontend --> api : HTTPS / JSON
+api --> mongo : Read/Write (Mongoose ODM)
+gemsvc --> gemini : SDK calls
+
+note bottom of cache
+	Cache is per-process memory.
+	If running multiple API instances,
+	results are not shared.
+end note
+
+@enduml

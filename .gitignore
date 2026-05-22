@@ -128,3 +128,9 @@ dist
 .yarn/build-state.yml
 .yarn/install-state.gz
 .pnp.*
+
+# Copilot Agents, Skills and Hooks (internal configuration)
+AGENTS.md
+SKILLS.md
+HOOKS.md
+.github/instructions/
