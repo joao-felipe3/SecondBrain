@@ -1,7 +1,7 @@
 import { Injectable, Inject, forwardRef } from '@nestjs/common';
 import { createHash } from 'crypto';
 import { z } from 'zod';
-import { GeminiService } from '../../../../ai/gemini.service';
+import { GeminiService } from '../../../ai/gemini.service';
 import { WBSNodeDto } from '../../dto/wbs.dto';
 import { CacheService, PromptBuilderService, ThemeExtractionService } from './index';
 import { extractJsonArray, extractJsonObject } from '../utils/json-parser.util';

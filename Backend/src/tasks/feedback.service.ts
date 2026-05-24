@@ -1,7 +1,7 @@
 import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
-import { GeminiService } from './gemini.service';
+import { GeminiService } from '../ai/gemini.service';
 
 @Injectable()
 export class FeedbackService {

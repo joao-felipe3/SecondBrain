@@ -1,8 +1,9 @@
-﻿import { Injectable } from '@nestjs/common';
+﻿import { Injectable, Inject, forwardRef } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { WBSNodeDocument } from '../schemas/wbs-node.schema';
 import { WBSNodeDto } from '../dto/wbs.dto';
+import { GeminiService } from '../../ai/gemini.service';
 import {
   WbsPersistenceService,
   WbsGenerationService,
@@ -24,10 +25,90 @@ export class WBSService {
   constructor(
     @InjectModel('WBSNode')
     private readonly wbsNodeModel: Model<WBSNodeDocument>,
+    @Inject(forwardRef(() => GeminiService))
+    private readonly geminiService: GeminiService,
     private readonly persistence: WbsPersistenceService,
     private readonly generation: WbsGenerationService,
     private readonly orchestrator: WbsConversionOrchestrationService,
   ) {} 
+
+  validateWBSNode(node: WBSNodeDto): { valid: boolean; reason?: string } {
+    const isLeaf = !node.children || node.children.length === 0;
+    if (!isLeaf) {
+      return { valid: true };
+    }
+
+    if (node.estimatedHours < 8) {
+      return {
+        valid: false,
+        reason: `"${node.name}" é muito pequeno (${node.estimatedHours}h). Pacotes de trabalho devem ter no mínimo 8 horas. Combine com outras tarefas ou aumente o escopo.`,
+      };
+    }
+
+    if (node.estimatedHours > 80) {
+      return {
+        valid: false,
+        reason: `"${node.name}" é muito grande (${node.estimatedHours}h). Pacotes de trabalho devem ter no máximo 80 horas. Decomponha em sub-pacotes menores.`,
+      };
+    }
+
+    return { valid: true };
+  }
+
+  validateWBS(nodes: WBSNodeDto[]): { valid: boolean; violations: Array<{ valid: boolean; reason?: string }> } {
+    const violations: Array<{ valid: boolean; reason?: string }> = [];
+
+    const traverse = (nodeList: WBSNodeDto[]) => {
+      for (const node of nodeList) {
+        const result = this.validateWBSNode(node);
+        if (!result.valid) {
+          violations.push(result);
+        }
+        if (node.children && node.children.length > 0) {
+          traverse(node.children);
+        }
+      }
+    };
+
+    traverse(nodes);
+    return { valid: violations.length === 0, violations };
+  }
+
+  async suggestDecomposition(node: {
+    name: string;
+    description?: string;
+    estimatedHours: number;
+  }): Promise<string> {
+    const prompt = `Você é um consultor de gestão de projetos especializado em WBS (Work Breakdown Structure).
+
+O seguinte pacote de trabalho viola a regra 8/80 (deve ter entre 8 e 80 horas):
+
+Nome: "${node.name}"
+Descrição: "${node.description || 'Sem descrição'}"
+Horas Estimadas: ${node.estimatedHours}h
+
+${node.estimatedHours > 80
+  ? `Este pacote é MUITO GRANDE (${node.estimatedHours}h > 80h). Sugira como decompor em sub-pacotes menores, cada um entre 8-80 horas.`
+  : `Este pacote é MUITO PEQUENO (${node.estimatedHours}h < 8h). Sugira como combinar com outras atividades ou expandir o escopo para atingir pelo menos 8 horas.`
+}
+
+Retorne APENAS um array JSON com os sub-pacotes sugeridos:
+[{
+  "name": "Nome do sub-pacote",
+  "description": "Descrição",
+  "estimatedHours": 20,
+  "level": 3,
+  "order": 1,
+  "children": []
+}]`;
+
+    try {
+      return await this.geminiService.generateContent(prompt);
+    } catch (error) {
+      console.error('Erro ao gerar sugestão de decomposição:', error);
+      throw new Error('Não foi possível gerar sugestão de decomposição');
+    }
+  }
 
   
   // Extract all leaf nodes from WBS tree with their full paths

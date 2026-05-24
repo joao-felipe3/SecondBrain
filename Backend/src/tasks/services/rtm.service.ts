@@ -7,7 +7,7 @@ import {
   RequirementType,
   JourneyKind,
 } from '../schemas/requirement.schema';
-import { GeminiService } from '../gemini.service';
+import { GeminiService } from '../../ai/gemini.service';
 import { TasksService } from '../tasks.service';
 
 export interface RTMValidation {

@@ -2,7 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { getModelToken } from '@nestjs/mongoose';
 import { RTMService } from './rtm.service';
 import { Requirement } from '../schemas/requirement.schema';
-import { GeminiService } from '../gemini.service';
+import { GeminiService } from '../../ai/gemini.service';
 
 describe('RTMService', () => {
   let service: RTMService;

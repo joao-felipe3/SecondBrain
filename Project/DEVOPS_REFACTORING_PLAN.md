@@ -155,33 +155,6 @@ Reduzir `Backend/src/projects/projects.service.ts` de ~804 linhas para ~300 linh
 
 ## Sprint 5: Patterns & Consolidation (0/20h)
 
-### Documentação de Guias
-
-#### 1. **`CONTRIBUTING.md`** - Como contribuir
-- Setup local environment
-- Code style guide
-- PR process
-- Issue templates
-
-#### 2. **`CONVENTIONS.md`** - Padrões de código
-- Naming conventions (camelCase para vars, PascalCase para classes)
-- File organization
-- Import sorting
-- Error handling patterns
-
-#### 3. **`TESTING_STRATEGY.md`** - Estratégia de testes
-- Unit tests (Jest + ts-jest)
-- Integration tests (MongoDB Memory Server)
-- E2E tests (Supertest)
-- Coverage targets (80%+ code, 100% critical paths)
-- Mocking patterns
-
-#### 4. **`PERFORMANCE_GUIDE.md`** - Otimização
-- Queries MongoDB (indexes, projections)
-- Caching strategy (in-memory)
-- Monitoramento
-- Profiling tools
-
 ### Templates de Componentes
 
 #### Service Template
@@ -257,27 +230,44 @@ indent_size = 2
 }
 ```
 
----
+## Sprint 6: LLM Wiki — Knowledge Base (RAG) (10/20h)
 
-## Estimativas Totais
+### Objetivo
+Criar uma camada de consulta semântica para a documentação do repositório (ADRs, DEVOPS, guias, README por módulo) utilizando RAG (retrieval-augmented generation) e embeddings.
 
-| Sprint | Horas | Status | Progresso |
-|--------|-------|--------|-----------|
-| Sprint 1: Documentação | 30 | ✅ Completo | 100% |
-| Sprint 2: TasksService | 40 | ⏳ Próximo | 0% |
-| Sprint 3: ProjectsService | 35 | ⏳ Futuro | 0% |
-| Sprint 4: CI/CD | 25 | 🚀 Em progresso | 60% |
-| Sprint 5: Patterns | 20 | ⏳ Futuro | 0% |
-| **TOTAL** | **150h** | | **20%** |
+### Por que
+- Centralizar decisões arquiteturais e documentos de referência em uma base pesquisável.
+- Permitir respostas contextualizadas e consistentes via LLM para suporte a devs e automações CI.
 
----
+### Entregáveis
+- Estrutura de fontes sob `docs/wiki/` e lista de arquivos autorizados para indexação.
+- Serviço `AiWikiService` em `Backend/src/ai/ai-wiki.service.ts` + controller para query RAG.
+- Script de indexação `scripts/index-wiki.ts` (gera embeddings com Gemini + armazena em vector DB local/chroma).
+- Workflow GitHub Action para reindexação incremental em push (opcional/incremental).
+- Testes unitários do indexer e contrato de respostas (mock do LLM).
 
-## Próximas Ações
+### Componentes e design mínimo
+- Fonte: arquivos Markdown/ADR/MD no repositório (`docs/`, `Project/`, `Backend/src/**/README.md`).
+- Embeddings: Gemini embeddings (ou provider configurável).
+- Vector DB: Chroma local (developer mode) ou integração opcional com Pinecone/Milvus.
+- API: Endpoint `POST /ai/wiki-query` → recebe `query`, faz retrieval, concatena contexto e chama LLM.
+- Segurança: lista de exclusão (glob) para evitar indexar secrets, `node_modules`, `.env`.
 
-1. ✅ Sprint 1 concluído - Documentação de base implementada
-2. 🚀 Iniciar Sprint 2 - Refactoring TasksService
-3. 🔄 Continuar Sprint 4 - security.yml e analyze.yml
-4. 📋 Preparar Sprint 3 - Design de ProjectsService refactoring
+### CI / Automação
+- GitHub Action `wiki-index.yml` (executa `scripts/index-wiki.ts` em push para `docs/**` e `Project/**`).
+- Job incremental que só reindexa arquivos modificados (diff-based).
+
+### Critérios de aceitação
+- Endpoint de consulta retorna evidências (sources) com scores e trecho resumido.
+- Pipeline de indexação rodando localmente com instruções claras em README.
+- Política de privacidade/documentos sensíveis definida e aplicada (exclusões automatizadas).
+
+### Riscos e mitigação
+- Custo de embeddings: usar modo local/chroma para POC; configurar billing-aware provider para produção.
+- Privacidade: nunca indexar arquivos listados em `.gitignore`/`.secrets-ignore` e validar antes de reindex.
+
+### Estimativa
+- POC: 10h (indexer + endpoint local + docs). Produção básica: 20h (CI, testes, hardening).
 
 ---
 

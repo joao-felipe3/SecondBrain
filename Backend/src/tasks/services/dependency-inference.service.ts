@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { z } from 'zod';
-import { GeminiService } from '../gemini.service';
+import { GeminiService } from '../../ai/gemini.service';
 import { extractJsonObject } from '../../projects/wbs/utils/json-parser.util';
 
 export type InferenceTask = {

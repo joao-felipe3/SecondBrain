@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { TasksService } from './tasks.service';
-import { GeminiService } from './gemini.service'; // Importa o GeminiService
+import { GeminiService } from '../ai/gemini.service'; // Importa o GeminiService
 import { ChecklistService } from './checklist.service'; // Sprint 2: Importa ChecklistService
 import { PertService } from './services/pert.service';
 import { CPMService } from './services/cpm.service';

@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getModelToken } from '@nestjs/mongoose';
 import { TasksService } from './tasks.service';
-import { GeminiService } from './gemini.service';
+import { GeminiService } from '../ai/gemini.service';
 import { ChecklistService } from './checklist.service';
 import { PertService } from './services/pert.service';
 import { BadRequestException, NotFoundException } from '@nestjs/common';

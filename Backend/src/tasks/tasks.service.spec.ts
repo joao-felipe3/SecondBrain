@@ -4,7 +4,7 @@ import { BadRequestException } from '@nestjs/common';
 import { Types } from 'mongoose';
 import { TasksService } from './tasks.service';
 import { ProjectsService } from '../projects/projects.service';
-import { GeminiService } from './gemini.service';
+import { GeminiService } from '../ai/gemini.service';
 import { EVMService } from '../projects/services/evm.service';
 import { PertService } from './services/pert.service';
 import { ChecklistService } from './checklist.service';

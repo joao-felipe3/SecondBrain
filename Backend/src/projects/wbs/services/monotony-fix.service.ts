@@ -1,5 +1,5 @@
 import { Injectable, Inject, forwardRef } from '@nestjs/common';
-import { GeminiService } from '../../../../ai/gemini.service';
+import { GeminiService } from '../../../ai/gemini.service';
 import { WBSNodeDto } from '../../dto/wbs.dto';
 import { MonotonyDetectionService } from './monotony-detection.service';
 import { extractJsonArray } from '../utils/json-parser.util';
