@@ -3,22 +3,26 @@ import { getModelToken } from '@nestjs/mongoose';
 import { RTMService } from './rtm.service';
 import { Requirement } from '../schemas/requirement.schema';
 import { GeminiService } from '../../ai/gemini.service';
+import { TasksService } from '../tasks.service';
+import { Types } from 'mongoose';
 
 describe('RTMService', () => {
   let service: RTMService;
   let mockModel: any;
   let mockGeminiService: any;
 
-  const mockProjectId = 'project-123';
-  const mockRequirementId = 'req-123';
-  const mockTaskId = 'task-456';
+  const mockProjectId = new Types.ObjectId().toString();
+  const mockRequirementId = new Types.ObjectId().toString();
+  const mockTaskId = new Types.ObjectId().toString();
 
   beforeEach(async () => {
     mockModel = {
       find: jest.fn(),
+      findOneAndUpdate: jest.fn(),
       findByIdAndUpdate: jest.fn(),
       findByIdAndDelete: jest.fn(),
       insertMany: jest.fn(),
+      create: jest.fn(),
     };
 
     mockGeminiService = {
@@ -35,6 +39,10 @@ describe('RTMService', () => {
         {
           provide: GeminiService,
           useValue: mockGeminiService,
+        },
+        {
+          provide: TasksService,
+          useValue: { create: jest.fn() },
         },
       ],
     }).compile();
@@ -115,7 +123,7 @@ describe('RTMService', () => {
         save: jest.fn(),
       };
 
-      mockModel.findByIdAndUpdate.mockResolvedValue(mockRequirement);
+      mockModel.findOneAndUpdate.mockResolvedValue(mockRequirement);
 
       // Act
       const result = await service.mapRequirementToTask(
@@ -127,10 +135,13 @@ describe('RTMService', () => {
       // Assert
       expect(result).not.toBeNull();
       expect(result!.traceableItems).toContain(mockTaskId);
-      expect(mockModel.findByIdAndUpdate).toHaveBeenCalledWith(
-        mockRequirementId,
+      expect(mockModel.findOneAndUpdate).toHaveBeenCalledWith(
+        {
+          _id: expect.any(Types.ObjectId),
+          projectId: mockProjectId,
+        },
         expect.objectContaining({
-          $addToSet: { traceableItems: mockTaskId },
+          $addToSet: { traceableItems: mockTaskId, traceableActionItems: mockTaskId },
           $set: { status: 'satisfied' },
         }),
         { new: true },
@@ -139,7 +150,7 @@ describe('RTMService', () => {
 
     it('deve retornar null se requisito não existir', async () => {
       // Arrange
-      mockModel.findByIdAndUpdate.mockResolvedValue(null);
+      mockModel.findOneAndUpdate.mockResolvedValue(null);
 
       // Act
       const result = await service.mapRequirementToTask(
@@ -176,7 +187,7 @@ describe('RTMService', () => {
       expect(result).not.toBeNull();
       expect(mockModel.findByIdAndUpdate).toHaveBeenCalledWith(
         mockRequirementId,
-        { $pull: { traceableItems: mockTaskId } },
+        { $pull: { traceableItems: mockTaskId, traceableActionItems: mockTaskId } },
         { new: true },
       );
     });
@@ -237,7 +248,7 @@ describe('RTMService', () => {
         {
           _id: 'req-1',
           description: 'Requisito compartilhado',
-          traceableItems: ['task-1', 'task-2', 'task-3'],
+          traceableItems: ['task-1', 'task-2', 'task-3', 'task-4'],
         },
       ];
 
@@ -247,7 +258,7 @@ describe('RTMService', () => {
       const result = await service.validateRTM(mockProjectId);
 
       // Assert
-      expect(result.risks.some((r) => r.includes('3 tarefas'))).toBe(true);
+      expect(result.risks.some((r) => r.includes('4 tarefas'))).toBe(true);
     });
   });
 
@@ -269,7 +280,11 @@ describe('RTMService', () => {
         { _id: 'task-2', title: 'Tarefa 2' },
       ];
 
-      mockModel.find.mockResolvedValue(mockRequirements);
+      mockModel.find
+        .mockReturnValueOnce({
+          sort: jest.fn().mockReturnValue(mockRequirements),
+        })
+        .mockResolvedValueOnce(mockRequirements as any);
 
       // Act
       const result = await service.getRTMMatrix(mockProjectId, mockTasks);
@@ -306,14 +321,16 @@ describe('RTMService', () => {
         { _id: 'id2', ...requirementsData[1] },
       ];
 
-      mockModel.insertMany.mockResolvedValue(mockSavedRequirements);
+      mockModel.create
+        .mockResolvedValueOnce(mockSavedRequirements[0])
+        .mockResolvedValueOnce(mockSavedRequirements[1]);
 
       // Act
       const result = await service.saveRequirements(mockProjectId, requirementsData);
 
       // Assert
       expect(result.length).toBe(2);
-      expect(mockModel.insertMany).toHaveBeenCalled();
+      expect(mockModel.create).toHaveBeenCalled();
     });
   });
 

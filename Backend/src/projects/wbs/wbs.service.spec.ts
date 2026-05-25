@@ -3,14 +3,24 @@ import { getModelToken } from '@nestjs/mongoose';
 import { WBSService } from './wbs.service';
 import { GeminiService } from '../../ai/gemini.service';
 import { WBSNodeDto } from '../dto/wbs.dto';
+import {
+  WbsPersistenceService,
+  WbsGenerationService,
+  WbsConversionOrchestrationService,
+} from './services';
 
 describe('WBSService', () => {
   let service: WBSService;
   let geminiService: GeminiService;
+  let generationService: WbsGenerationService;
   let wbsNodeModel: any;
 
   const mockGeminiService = {
     generateContent: jest.fn(),
+  };
+
+  const mockGenerationService = {
+    generate: jest.fn(),
   };
 
   const mockWBSNodeModel = {
@@ -52,6 +62,18 @@ describe('WBSService', () => {
           useValue: mockGeminiService,
         },
         {
+          provide: WbsPersistenceService,
+          useValue: { resetProject: jest.fn(), saveTree: jest.fn() },
+        },
+        {
+          provide: WbsGenerationService,
+          useValue: mockGenerationService,
+        },
+        {
+          provide: WbsConversionOrchestrationService,
+          useValue: { generateTasksForSingleLeaf: jest.fn(), generateTasksForLeaves: jest.fn() },
+        },
+        {
           provide: getModelToken('WBSNode'),
           useValue: MockModel,
         },
@@ -60,6 +82,7 @@ describe('WBSService', () => {
 
     service = module.get<WBSService>(WBSService);
     geminiService = module.get<GeminiService>(GeminiService);
+    generationService = module.get<WbsGenerationService>(WbsGenerationService);
     wbsNodeModel = module.get(getModelToken('WBSNode'));
   });
 
@@ -241,7 +264,7 @@ describe('WBSService', () => {
         },
       ]);
 
-      mockGeminiService.generateContent.mockResolvedValue(mockWBS);
+      mockGenerationService.generate.mockResolvedValue(JSON.parse(mockWBS));
 
       const result = await service.generateWBS({
         specific: 'Criar e-commerce com 500 produtos',
@@ -254,13 +277,15 @@ describe('WBSService', () => {
       expect(result).toHaveLength(1);
       expect(result[0].name).toBe('Desenvolvimento');
       expect(result[0].children).toHaveLength(2);
-      expect(mockGeminiService.generateContent).toHaveBeenCalledTimes(1);
+      expect(mockGenerationService.generate).toHaveBeenCalledTimes(1);
     });
 
     it('should handle Gemini response with markdown code blocks', async () => {
       const mockWBS = '```json\n[{"name":"Dev","level":1,"estimatedHours":40,"children":[]}]\n```';
 
-      mockGeminiService.generateContent.mockResolvedValue(mockWBS);
+      mockGenerationService.generate.mockResolvedValue([
+        { name: 'Dev', level: 1, estimatedHours: 40, children: [] },
+      ]);
 
       const result = await service.generateWBS({
         specific: 'Test',
@@ -275,7 +300,7 @@ describe('WBSService', () => {
     });
 
     it('should throw error on invalid Gemini response', async () => {
-      mockGeminiService.generateContent.mockResolvedValue('invalid json');
+      mockGenerationService.generate.mockRejectedValue(new Error('invalid json'));
 
       await expect(
         service.generateWBS({

@@ -8,6 +8,9 @@ import { GeminiService } from '../ai/gemini.service';
 import { EVMService } from '../projects/services/evm.service';
 import { PertService } from './services/pert.service';
 import { ChecklistService } from './checklist.service';
+import { FeedbackService } from './feedback.service';
+import { AlertsService } from './services/alerts.service';
+import { DeviationDetectionService } from './services/deviation-detection.service';
 import { beforeEach, describe, expect, it, jest } from '@jest/globals';
 
 describe('TasksService', () => {
@@ -94,6 +97,9 @@ describe('TasksService', () => {
         { provide: EVMService, useValue: { recordProgress: jest.fn() } },
         { provide: ChecklistService, useValue: checklistServiceMock },
         { provide: PertService, useValue: { calculatePertMetrics: jest.fn() } },
+        { provide: FeedbackService, useValue: { generateFeedback: jest.fn() } },
+        { provide: AlertsService, useValue: { createAlert: jest.fn() } },
+        { provide: DeviationDetectionService, useValue: { generateDeviationAlert: jest.fn() } },
       ],
     }).compile();
 

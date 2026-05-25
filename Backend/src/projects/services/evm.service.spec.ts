@@ -1,4 +1,5 @@
 import { EVMService } from './evm.service'
+import { Types } from 'mongoose'
 
 describe('EVMService', () => {
   let service: EVMService
@@ -20,12 +21,14 @@ describe('EVMService', () => {
       plannedHours: 20,
     })
 
-    const result = await service.calculateSPI('project-1')
+    const projectId = new Types.ObjectId().toString()
+    const result = await service.calculateSPI(projectId)
 
     expect(result).toBe(0.9)
   })
 
   it('getEVMSummary should include personal metrics for personal projects', async () => {
+    const projectId = new Types.ObjectId().toString()
     const entries = [
       {
         date: new Date('2026-03-01').toISOString(),
@@ -65,6 +68,25 @@ describe('EVMService', () => {
       dates: ['2026-03-01', '2026-03-08', '2026-03-15', '2026-03-22'],
     })
     jest.spyOn(service, 'getProgressEntries').mockResolvedValue(entries as any)
+    jest.spyOn(service as any, 'getDashboardPreferences').mockResolvedValue({
+      mode: 'auto',
+      manualVisibility: {
+        spi: true,
+        plannedVsEarned: true,
+        completedHours: true,
+        consistency: true,
+        planAdherence: true,
+        trend: true,
+        perceivedProgress: true,
+        remainingHours: true,
+      },
+    })
+    jest.spyOn(service as any, 'getMilestoneProgress').mockResolvedValue({
+      totalMilestones: 0,
+      completedMilestones: 0,
+      overallPercent: 0,
+      nextMilestone: null,
+    })
     jest.spyOn(service as any, 'getCoreMetrics').mockResolvedValue({
       pv: 80,
       ev: 55,
@@ -73,7 +95,7 @@ describe('EVMService', () => {
       plannedHours: 40,
     })
 
-    const summary = await service.getEVMSummary('project-1')
+    const summary = await service.getEVMSummary(projectId)
 
     expect(summary.totals.completedHours).toBe(21)
     expect(summary.personalMetrics).toBeDefined()

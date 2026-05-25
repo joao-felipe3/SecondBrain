@@ -640,7 +640,7 @@ export class TasksService {
             }
 
             const normalizedDate = new Date(parsedDate);
-            normalizedDate.setHours(0, 0, 0, 0);
+            normalizedDate.setUTCHours(0, 0, 0, 0);
             return {
               date: normalizedDate,
               reason: (exception as any)?.reason,
@@ -653,7 +653,7 @@ export class TasksService {
       ? exceptions.filter((exception) => {
           if (recurringRule.endDate) {
             const endDate = new Date(recurringRule.endDate);
-            endDate.setHours(23, 59, 59, 999);
+            endDate.setUTCHours(23, 59, 59, 999);
             if (exception.date.getTime() > endDate.getTime()) {
               return false;
             }
@@ -689,13 +689,13 @@ export class TasksService {
 
   private addDays(date: Date, days: number): Date {
     const next = new Date(date);
-    next.setDate(next.getDate() + days);
+    next.setUTCDate(next.getUTCDate() + days);
     return next;
   }
 
   private addMonths(date: Date, months: number): Date {
     const next = new Date(date);
-    next.setMonth(next.getMonth() + months);
+    next.setUTCMonth(next.getUTCMonth() + months);
     return next;
   }
 
@@ -830,7 +830,7 @@ export class TasksService {
       }
       
       // Check if day of week is allowed (for weekly/biweekly)
-      if (allowedDays && !allowedDays.includes(probe.getDay())) {
+      if (allowedDays && !allowedDays.includes(probe.getUTCDay())) {
         continue;
       }
       
@@ -883,7 +883,7 @@ export class TasksService {
         return null;
       }
 
-      if (allowedDays && !allowedDays.includes(probe.getDay())) {
+      if (allowedDays && !allowedDays.includes(probe.getUTCDay())) {
         continue;
       }
 

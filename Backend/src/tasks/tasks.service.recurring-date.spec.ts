@@ -8,6 +8,8 @@ import { EVMService } from '../projects/services/evm.service'
 import { PertService } from './services/pert.service'
 import { ChecklistService } from './checklist.service'
 import { FeedbackService } from './feedback.service'
+import { AlertsService } from './services/alerts.service'
+import { DeviationDetectionService } from './services/deviation-detection.service'
 
 /**
  * Unit tests for calculateNextRecurringDate private method
@@ -55,6 +57,8 @@ describe('TasksService - calculateNextRecurringDate Logic', () => {
         },
         { provide: PertService, useValue: { calculatePertMetrics: jest.fn() } },
         { provide: FeedbackService, useValue: { generateFeedback: jest.fn() } },
+        { provide: AlertsService, useValue: { createAlert: jest.fn() } },
+        { provide: DeviationDetectionService, useValue: { generateDeviationAlert: jest.fn() } },
       ],
     }).compile()
 
@@ -106,9 +110,9 @@ describe('TasksService - calculateNextRecurringDate Logic', () => {
         frequency: 'daily',
         interval: 1,
         exceptions: [
-          { date: new Date('2026-04-21T00:00:00.000Z'), reason: 'holiday' },
-          { date: new Date('2026-04-22T00:00:00.000Z'), reason: 'holiday' },
-          { date: new Date('2026-04-23T00:00:00.000Z'), reason: 'holiday' },
+          { date: new Date(2026, 3, 21), reason: 'holiday' },
+          { date: new Date(2026, 3, 22), reason: 'holiday' },
+          { date: new Date(2026, 3, 23), reason: 'holiday' },
         ],
       },
     )
@@ -151,7 +155,7 @@ describe('TasksService - calculateNextRecurringDate Logic', () => {
       {
         frequency: 'daily',
         interval: 1,
-        exceptions: [{ date: new Date('2026-04-21T00:00:00.000Z'), reason: 'holiday' }],
+        exceptions: [{ date: new Date(2026, 3, 21), reason: 'holiday' }],
         endDate: new Date('2026-04-25T23:59:59.999Z'),
       },
     )
@@ -194,7 +198,7 @@ describe('TasksService - calculateNextRecurringDate Logic', () => {
       {
         frequency: 'daily',
         interval: 1,
-        exceptions: [{ date: new Date('2026-04-21T00:00:00.000Z'), reason: 'holiday' }],
+        exceptions: [{ date: new Date(2026, 3, 21), reason: 'holiday' }],
       },
     )
 
