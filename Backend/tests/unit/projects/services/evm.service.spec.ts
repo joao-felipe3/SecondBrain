@@ -1,4 +1,4 @@
-import { EVMService } from './evm.service'
+import { EVMService } from '@src/projects/services/evm.service'
 import { Types } from 'mongoose'
 
 describe('EVMService', () => {

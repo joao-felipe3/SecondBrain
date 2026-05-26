@@ -57,6 +57,8 @@ $ npm run start:prod
 
 ## Run tests
 
+Unit tests are centralized under `tests/unit`.
+
 ```bash
 # unit tests
 $ npm run test

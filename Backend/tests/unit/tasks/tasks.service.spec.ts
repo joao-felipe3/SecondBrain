@@ -2,15 +2,15 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { getModelToken } from '@nestjs/mongoose';
 import { BadRequestException } from '@nestjs/common';
 import { Types } from 'mongoose';
-import { TasksService } from './tasks.service';
-import { ProjectsService } from '../projects/projects.service';
-import { GeminiService } from '../ai/gemini.service';
-import { EVMService } from '../projects/services/evm.service';
-import { PertService } from './services/pert.service';
-import { ChecklistService } from './checklist.service';
-import { FeedbackService } from './feedback.service';
-import { AlertsService } from './services/alerts.service';
-import { DeviationDetectionService } from './services/deviation-detection.service';
+import { TasksService } from '@src/tasks/tasks.service';
+import { ProjectsService } from '@src/projects/projects.service';
+import { GeminiService } from '@src/ai/gemini.service';
+import { EVMService } from '@src/projects/services/evm.service';
+import { PertService } from '@src/tasks/services/pert.service';
+import { ChecklistService } from '@src/tasks/checklist.service';
+import { FeedbackService } from '@src/tasks/feedback.service';
+import { AlertsService } from '@src/tasks/services/alerts.service';
+import { DeviationDetectionService } from '@src/tasks/services/deviation-detection.service';
 import { beforeEach, describe, expect, it, jest } from '@jest/globals';
 
 describe('TasksService', () => {

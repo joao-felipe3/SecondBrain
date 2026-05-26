@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getModelToken } from '@nestjs/mongoose';
-import { ChecklistService } from './checklist.service';
+import { ChecklistService } from '@src/tasks/checklist.service';
 import { Types } from 'mongoose';
 
 describe('ChecklistService', () => {

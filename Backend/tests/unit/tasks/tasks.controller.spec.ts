@@ -1,9 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { beforeEach, describe, expect, it, jest } from '@jest/globals';
-import { TasksController } from './tasks.controller';
-import { TasksService } from './tasks.service';
-import { CPMService } from './services/cpm.service';
-import { DependencyInferenceService } from './services/dependency-inference.service';
+import { TasksController } from '@src/tasks/tasks.controller';
+import { TasksService } from '@src/tasks/tasks.service';
+import { CPMService } from '@src/tasks/services/cpm.service';
+import { DependencyInferenceService } from '@src/tasks/services/dependency-inference.service';
 
 describe('TasksController', () => {
   let controller: TasksController;

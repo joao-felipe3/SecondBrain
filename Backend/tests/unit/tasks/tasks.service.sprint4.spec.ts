@@ -1,15 +1,15 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { TasksService } from './tasks.service';
+import { TasksService } from '@src/tasks/tasks.service';
 import { getModelToken } from '@nestjs/mongoose';
 import { BadRequestException } from '@nestjs/common';
-import { GeminiService } from '../ai/gemini.service';
-import { ChecklistService } from './checklist.service';
-import { ProjectsService } from '../projects/projects.service';
-import { EVMService } from '../projects/services/evm.service';
-import { PertService } from './services/pert.service';
-import { FeedbackService } from './feedback.service';
-import { AlertsService } from './services/alerts.service';
-import { DeviationDetectionService } from './services/deviation-detection.service';
+import { GeminiService } from '@src/ai/gemini.service';
+import { ChecklistService } from '@src/tasks/checklist.service';
+import { ProjectsService } from '@src/projects/projects.service';
+import { EVMService } from '@src/projects/services/evm.service';
+import { PertService } from '@src/tasks/services/pert.service';
+import { FeedbackService } from '@src/tasks/feedback.service';
+import { AlertsService } from '@src/tasks/services/alerts.service';
+import { DeviationDetectionService } from '@src/tasks/services/deviation-detection.service';
 import { Types } from 'mongoose';
 
 describe('TasksService - Sprint 4: Kanban + Rastreabilidade', () => {

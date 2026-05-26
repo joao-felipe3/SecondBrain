@@ -1,14 +1,14 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { ProjectsController } from './projects.controller';
+import { ProjectsController } from '@src/projects/projects.controller';
 import { getModelToken } from '@nestjs/mongoose';
-import { ProjectsService } from './projects.service';
-import { PlanningService } from './planning/planning.service';
-import { WBSService } from './wbs/wbs.service';
-import { WbsValidationService } from './wbs/services/wbs-validation.service';
-import { TaskConversionService } from './wbs/services/task-conversion.service';
-import { AuditService } from './wbs/services/audit.service';
-import { TasksService } from '../tasks/tasks.service';
-import { LeafTasksBufferService } from './leaf-tasks-buffer.service';
+import { ProjectsService } from '@src/projects/projects.service';
+import { PlanningService } from '@src/projects/planning/planning.service';
+import { WBSService } from '@src/projects/wbs/wbs.service';
+import { WbsValidationService } from '@src/projects/wbs/services/wbs-validation.service';
+import { TaskConversionService } from '@src/projects/wbs/services/task-conversion.service';
+import { AuditService } from '@src/projects/wbs/services/audit.service';
+import { TasksService } from '@src/tasks/tasks.service';
+import { LeafTasksBufferService } from '@src/projects/leaf-tasks-buffer.service';
 
 describe('ProjectsController', () => {
   let controller: ProjectsController;

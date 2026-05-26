@@ -1,8 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getModelToken } from '@nestjs/mongoose';
-import { CPMService, TaskNode } from './cpm.service';
-import { TaskDependency } from '../schemas/task-dependency.schema';
-import { DependencyType } from '../schemas/task-dependency.schema';
+import { CPMService, TaskNode } from '@src/tasks/services/cpm.service';
+import { TaskDependency } from '@src/tasks/schemas/task-dependency.schema';
+import { DependencyType } from '@src/tasks/schemas/task-dependency.schema';
 
 describe('CPMService - Critical Path Method', () => {
   let service: CPMService;

@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ConfigService } from '@nestjs/config';
 import { beforeEach, describe, expect, it, jest } from '@jest/globals';
-import { GeminiService } from './gemini.service';
+import { GeminiService } from '@src/ai/gemini.service';
 
 describe('GeminiService', () => {
   let service: GeminiService;
