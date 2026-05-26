@@ -1,7 +1,7 @@
 import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import request = require('supertest');
-import { AppModule } from '../src/app.module';
+import { AppModule } from '../../src/app.module';
 
 /**
  * Sprint 4 E2E Test Suite: Kanban + Rastreabilidade

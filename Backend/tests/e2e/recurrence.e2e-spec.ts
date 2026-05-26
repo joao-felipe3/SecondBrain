@@ -2,7 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing'
 import { INestApplication } from '@nestjs/common'
 import request = require('supertest')
 import { App } from 'supertest/types'
-import { AppModule } from './../src/app.module'
+import { AppModule } from '../../src/app.module'
 
 describe('Sprint 5: Recurrence E2E', () => {
   let app: INestApplication<App>

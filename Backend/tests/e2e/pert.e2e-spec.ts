@@ -2,8 +2,8 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import request = require('supertest');
 import { Types } from 'mongoose';
-import { AppModule } from '../src/app.module';
-import { TasksService } from '../src/tasks/tasks.service';
+import { AppModule } from '../../src/app.module';
+import { TasksService } from '../../src/tasks/tasks.service';
 
 describe('Sprint 3: PERT Suggestions and Estimation (e2e)', () => {
   let app: INestApplication;

@@ -4,7 +4,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { request } from 'supertest';
 import { TasksController } from './tasks.controller';
 import { TasksService } from './tasks.service';
-import { GeminiService } from '../src/ai/gemini.service';
+import { GeminiService } from '../../src/ai/gemini.service';
 import { ChecklistService } from './checklist.service';
 import { ProjectsService } from '../projects/projects.service';
 import { PertService } from './services/pert.service';
