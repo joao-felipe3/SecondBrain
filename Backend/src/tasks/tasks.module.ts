@@ -31,7 +31,7 @@ import { RequirementSchema } from './schemas/requirement.schema'; // NOVO: Impor
 import { Requirement } from './entities/requirement.entity'; // NOVO: Importa entidade de requisito
 import { TaskCompletionFeedbackSchema } from './schemas/task-completion-feedback.schema'; // Sprint 4: Importa schema de feedback
 import { TaskCompletionFeedback } from './entities/task-completion-feedback.entity'; // Sprint 4: Importa entidade de feedback
-import { FeedbackService } from './feedback.service';
+import { FeedbackService } from './services/feedback.service';
 import { forwardRef } from '@nestjs/common';
 import { ProjectsModule } from '../projects/projects.module';
 import { TaskAlertSchema } from './schemas/task-alert.schema';

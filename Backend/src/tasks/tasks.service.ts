@@ -11,7 +11,7 @@ import { GenerateAiSuggestionsDto, AiTaskSuggestionDto, AiSuggestionsResponseDto
 import { GeminiService } from '../ai/gemini.service';
 import { ChecklistService } from './checklist.service';
 import { PertService } from './services/pert.service';
-import { FeedbackService } from './feedback.service';
+import { FeedbackService } from './services/feedback.service';
 import { PertEstimateDto, PertEstimateResponseDto } from './dto/pert-estimate.dto';
 import { EVMService } from '../projects/services/evm.service';
 import { AlertsService } from './services/alerts.service';

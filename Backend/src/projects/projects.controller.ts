@@ -14,7 +14,7 @@ import { TaskConversionService } from './wbs/services/task-conversion.service';
 import { AuditService } from './wbs/services/audit.service';
 import { GenerateWBSDto, SaveWBSDto, SuggestDecompositionDto, ConvertWBSToTasksDto, GetLeafNodesDto, GenerateTasksForLeafDto, AuditLeafDiscrepancyDto, ResolveWBSBudgetDto } from './dto/wbs.dto';
 import { TasksService } from '../tasks/tasks.service';
-import { LeafTasksBufferService } from './leaf-tasks-buffer.service';
+import { LeafTasksBufferService } from './services/leaf-tasks-buffer.service';
 import { createHash } from 'crypto';
 import { CreateXMatrixDto } from './dto/x-matrix.dto';
 

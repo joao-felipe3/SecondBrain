@@ -9,7 +9,7 @@ import { forwardRef } from '@nestjs/common';
 import { TasksModule } from '../tasks/tasks.module';
 import { PlanningModule } from './planning/planning.module';
 import { WBSModule } from './wbs/wbs.module';
-import { LeafTasksBufferService } from './leaf-tasks-buffer.service';
+import { LeafTasksBufferService } from './services/leaf-tasks-buffer.service';
 import { ProjectWaveSchema } from './schemas/project-wave.schema';
 import { ProjectWave } from './schemas/project-wave.schema';
 import { RiskSchema } from './schemas/risk.schema';
