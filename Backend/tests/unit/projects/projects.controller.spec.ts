@@ -8,7 +8,7 @@ import { WbsValidationService } from '../../../src/projects/wbs/services/wbs-val
 import { TaskConversionService } from '../../../src/projects/wbs/services/task-conversion.service';
 import { AuditService } from '../../../src/projects/wbs/services/audit.service';
 import { TasksService } from '../../../src/tasks/tasks.service';
-import { LeafTasksBufferService } from '../../../src/projects/leaf-tasks-buffer.service';
+import { LeafTasksBufferService } from '../../../src/projects/services/leaf-tasks-buffer.service';
 
 describe('ProjectsController', () => {
   let controller: ProjectsController;
