@@ -1,16 +1,16 @@
 import { Module } from '@nestjs/common';
 import { TasksService } from './tasks.service';
-import { GeminiService } from '../ai/gemini.service'; // Importa o GeminiService
-import { ChecklistService } from './checklist.service'; // Sprint 2: Importa ChecklistService
+import { GeminiService } from '../ai/gemini.service';
+import { ChecklistService } from './services/checklist.service';
 import { PertService } from './services/pert.service';
 import { CPMService } from './services/cpm.service';
 import { DependencyInferenceService } from './services/dependency-inference.service';
-import { BufferService } from './services/buffer.service'; // NOVO: Importa BufferService
+import { BufferService } from './services/buffer.service';
 import { TasksController } from './tasks.controller';
 import { CPMController } from './controllers/cpm.controller';
-import { BufferController } from './controllers/buffer.controller'; // NOVO: Importa BufferController
-import { RTMService } from './services/rtm.service'; // NOVO: Importa RTMService
-import { RTMController } from './controllers/rtm.controller'; // NOVO: Importa RTMController
+import { BufferController } from './controllers/buffer.controller';
+import { RTMService } from './services/rtm.service';
+import { RTMController } from './controllers/rtm.controller';
 import { HabitsController } from './controllers/habits.controller';
 import { MongooseModule } from '@nestjs/mongoose';
 import { TaskSchema } from './schemas/task.schema';
@@ -25,12 +25,12 @@ import { ProjectSchema } from '../projects/schemas/project.schema';
 import { Project } from '../projects/entities/project.entity';
 import { TaskDependencySchema } from './schemas/task-dependency.schema';
 import { TaskDependency } from './schemas/task-dependency.schema';
-import { ProjectBufferSchema } from './schemas/project-buffer.schema'; // NOVO: Importa schema de buffer
-import { ProjectBuffer } from './entities/project-buffer.entity'; // NOVO: Importa entidade de buffer
-import { RequirementSchema } from './schemas/requirement.schema'; // NOVO: Importa schema de requisito
-import { Requirement } from './entities/requirement.entity'; // NOVO: Importa entidade de requisito
-import { TaskCompletionFeedbackSchema } from './schemas/task-completion-feedback.schema'; // Sprint 4: Importa schema de feedback
-import { TaskCompletionFeedback } from './entities/task-completion-feedback.entity'; // Sprint 4: Importa entidade de feedback
+import { ProjectBufferSchema } from './schemas/project-buffer.schema';
+import { ProjectBuffer } from './entities/project-buffer.entity';
+import { RequirementSchema } from './schemas/requirement.schema';
+import { Requirement } from './entities/requirement.entity';
+import { TaskCompletionFeedbackSchema } from './schemas/task-completion-feedback.schema';
+import { TaskCompletionFeedback } from './entities/task-completion-feedback.entity';
 import { FeedbackService } from './services/feedback.service';
 import { forwardRef } from '@nestjs/common';
 import { ProjectsModule } from '../projects/projects.module';
@@ -49,14 +49,14 @@ import { AlertsController } from './controllers/alerts.controller';
       { name: MicroTaskSimilarityCache.name, schema: MicroTaskSimilarityCacheSchema },
       { name: Project.name, schema: ProjectSchema },
       { name: TaskDependency.name, schema: TaskDependencySchema },
-      { name: ProjectBuffer.name, schema: ProjectBufferSchema }, // NOVO: Adiciona ProjectBuffer
-      { name: Requirement.name, schema: RequirementSchema }, // NOVO: Adiciona Requirement
-      { name: TaskCompletionFeedback.name, schema: TaskCompletionFeedbackSchema }, // Sprint 4: Adiciona TaskCompletionFeedback
+      { name: ProjectBuffer.name, schema: ProjectBufferSchema },
+      { name: Requirement.name, schema: RequirementSchema },
+      { name: TaskCompletionFeedback.name, schema: TaskCompletionFeedbackSchema },
       { name: TaskAlert.name, schema: TaskAlertSchema },
     ]), 
     forwardRef(() => ProjectsModule)
   ],
-  controllers: [TasksController, CPMController, BufferController, RTMController, HabitsController, AlertsController], // NOVO: Adiciona RTMController
+  controllers: [TasksController, CPMController, BufferController, RTMController, HabitsController, AlertsController],
   providers: [
     TasksService,
     GeminiService,

@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { GeminiService } from '@src/ai/gemini.service';
+import { GeminiService } from '../../../src/ai/gemini.service';
 import { ConfigService } from '@nestjs/config';
 
 describe('GeminiService - PERT Estimation (Unit Tests)', () => {

@@ -9,7 +9,7 @@ import { ProjectDocument } from '../projects/schemas/project.schema';
 import { ProjectsService } from '../projects/projects.service';
 import { GenerateAiSuggestionsDto, AiTaskSuggestionDto, AiSuggestionsResponseDto, AiSuggestionsProgressDto } from './dto/generate-ai-suggestions.dto';
 import { GeminiService } from '../ai/gemini.service';
-import { ChecklistService } from './checklist.service';
+import { ChecklistService } from './services/checklist.service';
 import { PertService } from './services/pert.service';
 import { FeedbackService } from './services/feedback.service';
 import { PertEstimateDto, PertEstimateResponseDto } from './dto/pert-estimate.dto';

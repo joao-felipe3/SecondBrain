@@ -1,13 +1,13 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getModelToken } from '@nestjs/mongoose';
-import { WBSService } from '@src/projects/wbs/wbs.service';
-import { GeminiService } from '@src/ai/gemini.service';
-import { WBSNodeDto } from '@src/projects/dto/wbs.dto';
+import { WBSService } from '../../../../src/projects/wbs/wbs.service';
+import { GeminiService } from '../../../../src/ai/gemini.service';
+import { WBSNodeDto } from '../../../../src/projects/dto/wbs.dto';
 import {
   WbsPersistenceService,
   WbsGenerationService,
   WbsConversionOrchestrationService,
-} from '@src/projects/wbs/services';
+} from '../../../../src/projects/wbs/services';
 
 describe('WBSService', () => {
   let service: WBSService;

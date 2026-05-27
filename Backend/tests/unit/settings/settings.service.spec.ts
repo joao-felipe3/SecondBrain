@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getModelToken } from '@nestjs/mongoose';
-import { SettingsService } from '@src/settings/settings.service';
-import { Settings } from '@src/settings/settings.schema';
+import { SettingsService } from '../../../src/settings/settings.service';
+import { Settings } from '../../../src/settings/settings.schema';
 
 describe('SettingsService', () => {
   let service: SettingsService;

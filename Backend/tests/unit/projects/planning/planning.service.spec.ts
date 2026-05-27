@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { PlanningService } from '@src/projects/planning/planning.service';
-import { GeminiService } from '@src/ai/gemini.service';
+import { PlanningService } from '../../../../src/projects/planning/planning.service';
+import { GeminiService } from '../../../../src/ai/gemini.service';
 
 describe('PlanningService', () => {
   let service: PlanningService;

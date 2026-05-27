@@ -1,9 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getModelToken } from '@nestjs/mongoose';
-import { ProjectsService } from '@src/projects/projects.service';
-import { ProjectWave } from '@src/projects/schemas/project-wave.schema';
-import { CPMService } from '@src/tasks/services/cpm.service';
-import { ProjectsXMatrixService } from '@src/projects/services/projects-x-matrix.service';
+import { ProjectsService } from '../../../src/projects/projects.service';
+import { ProjectWave } from '../../../src/projects/schemas/project-wave.schema';
+import { CPMService } from '../../../src/tasks/services/cpm.service';
+import { ProjectsXMatrixService } from '../../../src/projects/services/projects-x-matrix.service';
 
 describe('ProjectsService', () => {
   let service: ProjectsService;
