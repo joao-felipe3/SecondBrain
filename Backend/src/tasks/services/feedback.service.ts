@@ -2,11 +2,13 @@ import { Injectable, BadRequestException, NotFoundException } from '@nestjs/comm
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { GeminiService } from '../../ai/gemini.service';
+import { TaskDocument } from '../schemas/task.schema';
 
 @Injectable()
 export class FeedbackService {
   constructor(
     private readonly geminiService: GeminiService,
+    @InjectModel('Task') private readonly taskModel: Model<TaskDocument>,
     @InjectModel('TaskCompletionFeedback') private readonly feedbackModel: Model<any>,
   ) {}
 
@@ -154,5 +156,97 @@ export class FeedbackService {
         { title: 'Revisar checklist', description: 'Verificar itens não concluídos e atualizar definição de pronto.' },
       ];
     }
+  }
+
+  async generateCompletionFeedback(id: string, payload?: any): Promise<string> {
+    if (!id || !Types.ObjectId.isValid(id)) {
+      throw new BadRequestException(`ID inválido: ${id}`);
+    }
+
+    const task = await this.taskModel.findById(id).exec();
+    if (!task) {
+      throw new NotFoundException(`Task with id ${id} not found`);
+    }
+
+    if (!task.isConcluded) {
+      throw new BadRequestException('Task deve estar concluída para gerar feedback');
+    }
+
+    const inputSnapshot = {
+      name: task.name,
+      description: task.description,
+      checklist: task.checklist,
+      pomodoros: task.pomodorosDid,
+      experience: task.experience,
+      difficulty: task.difficult,
+    };
+
+    const isUserFeedbackPayload =
+      payload && typeof payload === 'object' && (
+        'celebration' in payload ||
+        'validation' in payload ||
+        'question' in payload ||
+        'impediments' in payload ||
+        'selectedSteps' in payload ||
+        'action' in payload
+      );
+
+    if (isUserFeedbackPayload) {
+      const feedbackText = JSON.stringify(payload);
+
+      await this.feedbackModel.create({
+        task: task._id,
+        project: task.project,
+        modelName: 'user-feedback',
+        promptVersion: 'catchball-user-v1',
+        inputSnapshot: {
+          ...inputSnapshot,
+          userFeedback: payload,
+        },
+        feedback: feedbackText,
+      });
+
+      return feedbackText;
+    }
+
+    try {
+      const structured = await this.generateFeedbackOnCompletion(
+        task,
+        task.checklist,
+        task.pomodorosDid ? task.pomodorosDid * 25 : undefined,
+      );
+      return JSON.stringify(structured);
+    } catch (err: any) {
+      await this.feedbackModel.create({
+        task: task._id,
+        project: task.project,
+        modelName: this.geminiService.getModelName(),
+        promptVersion: 'catchball-v1',
+        inputSnapshot,
+        error: String(err?.message ?? err),
+      });
+      throw err;
+    }
+  }
+
+  async getCompletionFeedback(id: string): Promise<{ feedback: string; createdAt: Date } | null> {
+    if (!id || !Types.ObjectId.isValid(id)) {
+      throw new BadRequestException(`ID inválido: ${id}`);
+    }
+
+    const feedback = await this.feedbackModel
+      .findOne({ task: id, feedback: { $exists: true, $ne: null } })
+      .sort({ createdAt: -1 })
+      .select('feedback createdAt')
+      .exec();
+
+    if (!feedback) {
+      return null;
+    }
+
+    return {
+      feedback: feedback.feedback,
+      createdAt: feedback.createdAt || new Date(),
+    };
   }
 }

@@ -17,7 +17,9 @@ import { Observable } from 'rxjs';
 import { TasksService } from './tasks.service';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { CreateMicroTaskDto } from './dto/create-micro-task.dto';
+import { CreateBulkTasksDto } from './dto/create-bulk-tasks.dto';
 import { UpdateChecklistDto } from './dto/update-checklist.dto';
+import { UpdateChecklistItemDto } from './dto/update-checklist-item.dto';
 import { UpdateRecurringRuleDto } from './dto/update-recurring-rule.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
 import { GenerateAiSuggestionsDto } from './dto/generate-ai-suggestions.dto';
@@ -42,19 +44,7 @@ export class TasksController {
   @ApiResponse({ status: 201, description: 'Tasks criadas com sucesso.' })
   async createBulk(
     @Body()
-    body: {
-      tasks: CreateTaskDto[];
-      autoDependencies?: {
-        /**
-         * none: não cria dependências
-         * within-leaf: cria sequência linear dentro de cada parentWbsNodeId (leaf)
-         * within-and-between-leafs: além do dentro do leaf, conecta o 1º do próximo leaf ao último do leaf anterior (na ordem enviada)
-         */
-        mode?: 'none' | 'within-leaf' | 'within-and-between-leafs' | 'heuristic-phases' | 'ai-per-leaf';
-        relationship?: string;
-        reason?: string;
-      };
-    },
+    body: CreateBulkTasksDto,
   ) {
     const tasks = Array.isArray(body?.tasks) ? body.tasks : [];
     if (tasks.length === 0) {
@@ -252,7 +242,7 @@ export class TasksController {
   async updateChecklistItem(
     @Param('id') taskId: string,
     @Param('itemId') itemId: string,
-    @Body() body: { completed: boolean },
+    @Body() body: UpdateChecklistItemDto,
   ) {
     return this.tasksService.updateChecklistItem(taskId, itemId, body.completed);
   }

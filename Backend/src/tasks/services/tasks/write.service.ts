@@ -1,0 +1,165 @@
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
+import { CreateTaskDto } from '../../dto/create-task.dto';
+import { TaskDocument } from '../../schemas/task.schema';
+import { ProjectDocument } from '../../../projects/schemas/project.schema';
+import { ProjectsService } from '../../../projects/projects.service';
+import { TasksMetricsService } from './metrics.service';
+import { CreateManyTasksOptionsDto } from '../../dto/create-many-tasks-options.dto';
+
+@Injectable()
+export class TasksWriteService {
+  constructor(
+    @InjectModel('Task') private readonly taskModel: Model<TaskDocument>,
+    @InjectModel('Project') private readonly projectModel: Model<ProjectDocument>,
+    private readonly projectsService: ProjectsService,
+    private readonly metricsService: TasksMetricsService,
+  ) {}
+
+  async createMany(
+    createTaskDtos: CreateTaskDto[],
+    options?: CreateManyTasksOptionsDto,
+  ): Promise<TaskDocument[]> {
+    const dtos = Array.isArray(createTaskDtos) ? createTaskDtos : [];
+    if (dtos.length === 0) return [];
+
+    const resolveProject = Boolean(options?.resolveProject);
+    const shouldRecalculateStats = Boolean(options?.recalculateProjectStats);
+    const ordered = Boolean(options?.ordered);
+
+    if (resolveProject) {
+      for (const dto of dtos) {
+        await this.resolveProject(dto);
+      }
+    }
+
+    for (const dto of dtos) {
+      this.applyDerivedFields(dto);
+    }
+
+    let inserted: TaskDocument[] = [];
+    try {
+      inserted = await this.taskModel.insertMany(dtos, { ordered });
+    } catch (err: any) {
+      inserted = (err?.insertedDocs as TaskDocument[]) || [];
+
+      const writeErrors = Array.isArray(err?.writeErrors) ? err.writeErrors.length : undefined;
+      // eslint-disable-next-line no-console
+      console.warn('[TasksWriteService][createMany] insertMany error (partial inserts possible)', {
+        message: err?.message,
+        inserted: inserted.length,
+        writeErrors,
+      });
+    }
+
+    if (shouldRecalculateStats) {
+      const uniqueProjectIds = new Set(
+        inserted
+          .map((t: any) => t?.project?.toString?.() ?? t?.project)
+          .filter(Boolean),
+      );
+
+      for (const pid of uniqueProjectIds) {
+        await this.projectsService.recalculateProjectStats(String(pid));
+      }
+    }
+
+    return inserted;
+  }
+
+  async createTaskCore(createTaskDto: CreateTaskDto): Promise<TaskDocument> {
+    await this.resolveProject(createTaskDto);
+    this.applyDerivedFields(createTaskDto);
+
+    const createdTask = new this.taskModel(createTaskDto);
+    const savedTask = await createdTask.save();
+
+    if (savedTask.project) {
+      await this.projectsService.recalculateProjectStats(savedTask.project.toString());
+    }
+
+    return savedTask;
+  }
+
+  async update(id: string, updateTaskDto: Partial<CreateTaskDto>): Promise<TaskDocument | null> {
+    if (!id || id === 'null' || id === 'undefined' || !/^[a-f\d]{24}$/i.test(id)) {
+      throw new BadRequestException(`ID inválido: ${id}`);
+    }
+
+    const oldTask = await this.taskModel.findById(id).exec();
+    const oldProjectId = oldTask?.project?.toString();
+
+    await this.resolveProject(updateTaskDto as CreateTaskDto);
+
+    this.applyDerivedFields(updateTaskDto);
+
+    const updatedTask = await this.taskModel.findByIdAndUpdate(id, updateTaskDto, { new: true }).exec();
+
+    if (updatedTask) {
+      const newProjectId = updatedTask.project?.toString();
+
+      if (oldProjectId && oldProjectId !== newProjectId) {
+        await this.projectsService.recalculateProjectStats(oldProjectId);
+      }
+      if (newProjectId) {
+        await this.projectsService.recalculateProjectStats(newProjectId);
+      }
+    }
+
+    return updatedTask;
+  }
+
+  async remove(id: string): Promise<boolean> {
+    if (!id || id === 'null' || id === 'undefined' || !/^[a-f\d]{24}$/i.test(id)) {
+      throw new BadRequestException(`ID inválido: ${id}`);
+    }
+
+    const task = await this.taskModel.findById(id).exec();
+    if (!task) {
+      throw new NotFoundException(`Task com ID ${id} não encontrada`);
+    }
+
+    const projectId = task?.project?.toString();
+    const result = await this.taskModel.findByIdAndDelete(id).exec();
+
+    if (result && projectId) {
+      await this.projectsService.recalculateProjectStats(projectId);
+    }
+
+    return result !== null;
+  }
+
+  private async resolveProject(createTaskDto: CreateTaskDto): Promise<void> {
+    if (!createTaskDto.project || typeof createTaskDto.project !== 'string') {
+      return;
+    }
+
+    const value = createTaskDto.project as string;
+    const isObjectId = /^[a-f\d]{24}$/i.test(value);
+    let projectDoc: ProjectDocument | null = null;
+
+    if (isObjectId) {
+      projectDoc = await this.projectModel.findById(value).exec();
+    }
+    if (!projectDoc) {
+      projectDoc = await this.projectModel.findOne({ name: value }).exec();
+    }
+    if (!projectDoc) {
+      throw new NotFoundException(`Project not found by id or name '${value}'`);
+    }
+
+    createTaskDto.project = projectDoc._id as import('mongoose').Types.ObjectId;
+  }
+
+  private applyDerivedFields(dto: Partial<CreateTaskDto>): void {
+    this.metricsService.applyPertEstimates(dto);
+    this.metricsService.applyRtmRisk(dto);
+    this.metricsService.applyEvmMetrics(dto);
+
+    const priority = (dto.priority as number) || 0;
+    const difficult = (dto.difficult as number) || 0;
+    dto.prize = priority * 5 + difficult * 2;
+    dto.experience = priority * 2 + difficult * 5;
+  }
+}

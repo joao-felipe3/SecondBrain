@@ -32,6 +32,16 @@ import { Requirement } from './entities/requirement.entity';
 import { TaskCompletionFeedbackSchema } from './schemas/task-completion-feedback.schema';
 import { TaskCompletionFeedback } from './entities/task-completion-feedback.entity';
 import { FeedbackService } from './services/feedback.service';
+import { TasksRecurringService } from './services/tasks/recurring.service';
+import { TasksInputService } from './services/tasks/input.service';
+import { TasksAiSuggestionsService } from './services/tasks/ai-suggestions.service';
+import { TasksHabitsService } from './services/tasks/habits.service';
+import { TasksMetricsService } from './services/tasks/metrics.service';
+import { TasksHierarchyService } from './services/tasks/hierarchy.service';
+import { TasksChecklistService } from './services/tasks/checklist.service';
+import { TasksCompletionService } from './services/tasks/completion.service';
+import { TasksPertService } from './services/tasks/tasks-pert.service';
+import { TasksWriteService } from './services/tasks/write.service';
 import { forwardRef } from '@nestjs/common';
 import { ProjectsModule } from '../projects/projects.module';
 import { TaskAlertSchema } from './schemas/task-alert.schema';
@@ -61,7 +71,16 @@ import { AlertsController } from './controllers/alerts.controller';
     TasksService,
     GeminiService,
     ChecklistService,
+    TasksInputService,
+    TasksAiSuggestionsService,
+    TasksHabitsService,
+    TasksMetricsService,
+    TasksHierarchyService,
+    TasksChecklistService,
+    TasksPertService,
+    TasksWriteService,
     PertService,
+    TasksCompletionService,
     CPMService,
     DependencyInferenceService,
     BufferService,
@@ -69,12 +88,22 @@ import { AlertsController } from './controllers/alerts.controller';
     FeedbackService,
     AlertsService,
     DeviationDetectionService,
+    TasksRecurringService,
   ], // Sprint 2: Adiciona ChecklistService
   exports: [
     TasksService,
     GeminiService,
     ChecklistService,
+    TasksInputService,
+    TasksAiSuggestionsService,
+    TasksHabitsService,
+    TasksMetricsService,
+    TasksHierarchyService,
+    TasksChecklistService,
+    TasksPertService,
+    TasksWriteService,
     PertService,
+    TasksCompletionService,
     CPMService,
     DependencyInferenceService,
     BufferService,
@@ -82,6 +111,7 @@ import { AlertsController } from './controllers/alerts.controller';
     FeedbackService,
     AlertsService,
     DeviationDetectionService,
+    TasksRecurringService,
   ], // Sprint 2: Adiciona ChecklistService aos exports
 })
 export class TasksModule {}
