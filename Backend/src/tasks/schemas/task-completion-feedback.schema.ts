@@ -11,17 +11,16 @@ export interface TaskCompletionFeedbackDocument extends Document {
   createdAt?: Date;
 }
 
-export const TaskCompletionFeedbackSchema =
-  new Schema<TaskCompletionFeedbackDocument>({
-    task: { type: Schema.Types.ObjectId, ref: 'Task', required: true },
-    project: { type: Schema.Types.ObjectId, ref: 'Project' },
-    modelName: { type: String },
-    promptVersion: { type: String },
-    inputSnapshot: { type: Schema.Types.Mixed },
-    feedback: { type: String },
-    error: { type: String },
-    createdAt: { type: Date, default: Date.now },
-  });
+export const TaskCompletionFeedbackSchema = new Schema<TaskCompletionFeedbackDocument>({
+  task: { type: Schema.Types.ObjectId, ref: 'Task', required: true },
+  project: { type: Schema.Types.ObjectId, ref: 'Project' },
+  modelName: { type: String },
+  promptVersion: { type: String },
+  inputSnapshot: { type: Schema.Types.Mixed },
+  feedback: { type: String },
+  error: { type: String },
+  createdAt: { type: Date, default: Date.now },
+});
 
 // Index for quick lookup: find latest feedback for a task
 TaskCompletionFeedbackSchema.index({ task: 1, createdAt: -1 });

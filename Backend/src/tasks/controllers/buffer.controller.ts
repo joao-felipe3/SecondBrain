@@ -1,18 +1,5 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Param,
-  Body,
-  Logger,
-  Inject,
-  forwardRef,
-} from '@nestjs/common';
-import {
-  BufferService,
-  TaskMetrics,
-  BufferAlert,
-} from '../services/buffer.service';
+import { Controller, Get, Post, Param, Body, Logger, Inject, forwardRef } from '@nestjs/common';
+import { BufferService, TaskMetrics, BufferAlert } from '../services/buffer.service';
 import { CPMService, TaskNode, CPMAnalysis } from '../services/cpm.service';
 import { TasksService } from '../tasks.service';
 
@@ -60,18 +47,15 @@ export class BufferController {
       }
 
       // Calcular CPM
-      const analysis: CPMAnalysis =
-        this.cpmService.calculateCriticalPath(taskNodes);
+      const analysis: CPMAnalysis = this.cpmService.calculateCriticalPath(taskNodes);
 
       // Convertir a TaskMetrics para BufferService
-      const taskMetrics: TaskMetrics[] = (analysis.tasksByImpact || []).map(
-        (task: any) => ({
-          taskId: task.id,
-          estimatedHours: task.duration || 0,
-          variance: task.variance || 0,
-          isCritical: task.isCritical,
-        }),
-      );
+      const taskMetrics: TaskMetrics[] = (analysis.tasksByImpact || []).map((task: any) => ({
+        taskId: task.id,
+        estimatedHours: task.duration || 0,
+        variance: task.variance || 0,
+        isCritical: task.isCritical,
+      }));
 
       // Calcular buffer
       const buffer = await this.bufferService.calculateProjectBuffer(
@@ -136,15 +120,9 @@ export class BufferController {
    * Registra consumo de buffer (cuando se completan tareas)
    */
   @Post('projects/:projectId/consume')
-  async consumeBuffer(
-    @Param('projectId') projectId: string,
-    @Body() body: { hoursUsed: number },
-  ) {
+  async consumeBuffer(@Param('projectId') projectId: string, @Body() body: { hoursUsed: number }) {
     try {
-      const status = await this.bufferService.consumeBuffer(
-        projectId,
-        body.hoursUsed,
-      );
+      const status = await this.bufferService.consumeBuffer(projectId, body.hoursUsed);
 
       return {
         success: true,
@@ -180,8 +158,7 @@ export class BufferController {
           status: {
             percentageUsed: status.percentageUsed,
             isHealthy: status.percentageUsed < 50,
-            isWarning:
-              status.percentageUsed >= 50 && status.percentageUsed < 75,
+            isWarning: status.percentageUsed >= 50 && status.percentageUsed < 75,
             isCritical: status.percentageUsed >= 75,
           },
         },
@@ -225,9 +202,7 @@ export class BufferController {
         history,
       };
     } catch (error: any) {
-      this.logger.error(
-        `Error obteniendo histórico del buffer: ${error.message}`,
-      );
+      this.logger.error(`Error obteniendo histórico del buffer: ${error.message}`);
       return { success: false, error: error.message };
     }
   }

@@ -20,11 +20,7 @@ import { CreateProjectDto } from './dto/create-project.dto';
 import { UpdateProjectDto } from './dto/update-project.dto';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { PlanningService } from './planning/planning.service';
-import {
-  CatchballRequestDto,
-  RefineObjectiveDto,
-  SuggestAnswerDto,
-} from './dto/smart-objective.dto';
+import { CatchballRequestDto, RefineObjectiveDto, SuggestAnswerDto } from './dto/smart-objective.dto';
 import { WBSService } from './wbs/wbs.service';
 import { WbsValidationService } from './wbs/services/wbs-validation.service';
 import { TaskConversionService } from './wbs/services/task-conversion.service';
@@ -87,10 +83,7 @@ export class ProjectsController {
     return `leafbuf:${projectId}:${this.hashKey(fingerprint)}`;
   }
 
-  private extractTargetDate(
-    temporal: string | undefined,
-    fallbackDeadline?: Date,
-  ): Date {
+  private extractTargetDate(temporal: string | undefined, fallbackDeadline?: Date): Date {
     const text = String(temporal || '');
 
     const iso = text.match(/\b(\d{4})-(\d{2})-(\d{2})\b/);
@@ -121,15 +114,9 @@ export class ProjectsController {
   ): { budgetHours: number; weeksAvailable: number } {
     const now = new Date();
     const msPerDay = 24 * 60 * 60 * 1000;
-    const days = Math.max(
-      1,
-      Math.ceil((targetDate.getTime() - now.getTime()) / msPerDay),
-    );
+    const days = Math.max(1, Math.ceil((targetDate.getTime() - now.getTime()) / msPerDay));
     const weeksAvailable = Math.max(1, Math.ceil(days / 7));
-    const budgetHours = Math.max(
-      1,
-      Math.round(weeksAvailable * weeklyHours * 10) / 10,
-    );
+    const budgetHours = Math.max(1, Math.round(weeksAvailable * weeklyHours * 10) / 10);
     return { budgetHours, weeksAvailable };
   }
 
@@ -143,21 +130,14 @@ export class ProjectsController {
 
   @Get(':id/micro-tasks')
   @ApiOperation({
-    summary:
-      'Get micro-tasks for project, optionally filtered by status and ordered for Kanban',
+    summary: 'Get micro-tasks for project, optionally filtered by status and ordered for Kanban',
   })
   @ApiResponse({ status: 200, description: 'Micro-tasks returned.' })
-  async getMicroTasks(
-    @Param('id') id: string,
-    @Query('status') status?: string,
-  ) {
+  async getMicroTasks(@Param('id') id: string, @Query('status') status?: string) {
     const query: any = { project: id };
     if (status) query.status = String(status);
     // Primary: kanbanOrder asc, Secondary: priority desc, Tertiary: deadline asc
-    return this.taskModel
-      .find(query)
-      .sort({ kanbanOrder: 1, priority: -1, deadline: 1 })
-      .exec();
+    return this.taskModel.find(query).sort({ kanbanOrder: 1, priority: -1, deadline: 1 }).exec();
   }
 
   @Get(':id/gantt-data')
@@ -166,16 +146,11 @@ export class ProjectsController {
     status: 200,
     description: 'Gantt data retrieved successfully.',
   })
-  async getGanttData(
-    @Param('id') id: string,
-    @Query('includeCompleted') includeCompleted?: string,
-  ) {
+  async getGanttData(@Param('id') id: string, @Query('includeCompleted') includeCompleted?: string) {
     const include =
       includeCompleted === undefined
         ? true
-        : !['false', '0', 'no'].includes(
-            String(includeCompleted).toLowerCase(),
-          );
+        : !['false', '0', 'no'].includes(String(includeCompleted).toLowerCase());
 
     return this.projectsService.getGanttData(id, {
       includeCompleted: include,
@@ -197,9 +172,7 @@ export class ProjectsController {
     const include =
       includeCompleted === undefined
         ? true
-        : !['false', '0', 'no'].includes(
-            String(includeCompleted).toLowerCase(),
-          );
+        : !['false', '0', 'no'].includes(String(includeCompleted).toLowerCase());
 
     return this.projectsService.getPertDiagramData(id, {
       includeCompleted: include,
@@ -208,8 +181,7 @@ export class ProjectsController {
 
   @Post(':id/create-x-matrix')
   @ApiOperation({
-    summary:
-      'Create fractal X-Matrix (Norte/Estrategico/Tatico) using WBS L1/L2 initiatives and waves',
+    summary: 'Create fractal X-Matrix (Norte/Estrategico/Tatico) using WBS L1/L2 initiatives and waves',
   })
   @ApiResponse({ status: 200, description: 'X-Matrix generated successfully.' })
   async createXMatrix(@Param('id') id: string, @Body() dto: CreateXMatrixDto) {
@@ -231,10 +203,7 @@ export class ProjectsController {
     summary: 'Start AI-assisted project planning with Catchball',
   })
   @ApiResponse({ status: 200, description: 'Catchball questions generated.' })
-  async planProjectWithAI(
-    @Param('id') id: string,
-    @Body() dto: CatchballRequestDto,
-  ) {
+  async planProjectWithAI(@Param('id') id: string, @Body() dto: CatchballRequestDto) {
     const project = await this.projectsService.findOne(id);
     if (!project) throw new NotFoundException('Project not found');
 
@@ -269,17 +238,11 @@ export class ProjectsController {
   @Post(':id/refine-objective')
   @ApiOperation({ summary: 'Generate SMART objectives from Catchball answers' })
   @ApiResponse({ status: 200, description: 'SMART objectives generated.' })
-  async refineObjective(
-    @Param('id') id: string,
-    @Body() dto: RefineObjectiveDto,
-  ) {
+  async refineObjective(@Param('id') id: string, @Body() dto: RefineObjectiveDto) {
     const project = await this.projectsService.findOne(id);
     if (!project) throw new NotFoundException('Project not found');
 
-    const smart = await this.planningService.generateSmartObjective(
-      dto.conversationId,
-      dto.answers,
-    );
+    const smart = await this.planningService.generateSmartObjective(dto.conversationId, dto.answers);
 
     // Atualiza o projeto com os objetivos SMART
     await this.projectsService.update(id, {
@@ -301,9 +264,7 @@ export class ProjectsController {
     const project = await this.projectsService.findOne(id);
     if (!project) throw new NotFoundException('Project not found');
 
-    const weeklyHours = Number(
-      dto.weeklyHours ?? project.smartObjective?.weeklyHours,
-    );
+    const weeklyHours = Number(dto.weeklyHours ?? project.smartObjective?.weeklyHours);
     if (!Number.isFinite(weeklyHours) || weeklyHours <= 0) {
       throw new BadRequestException(
         'Weekly hours are required to generate WBS budget. Update SMART objective first.',
@@ -326,14 +287,10 @@ export class ProjectsController {
 
     const nodes = await this.wbsService.generateWBS(generationInput);
     const validation = this.validation.validateTree(nodes);
-    const budgetValidation = this.validation.validateBudget(
-      nodes,
-      budgetHours,
-      {
-        weeklyHours,
-        weeksAvailable: context.weeksAvailable,
-      },
-    );
+    const budgetValidation = this.validation.validateBudget(nodes, budgetHours, {
+      weeklyHours,
+      weeksAvailable: context.weeksAvailable,
+    });
 
     return {
       nodes,
@@ -349,10 +306,7 @@ export class ProjectsController {
     const project = await this.projectsService.findOne(id);
     if (!project) throw new NotFoundException('Project not found');
 
-    console.log(
-      '📥 WBS recebida do frontend:',
-      JSON.stringify(dto.nodes.slice(0, 2), null, 2),
-    );
+    console.log('📥 WBS recebida do frontend:', JSON.stringify(dto.nodes.slice(0, 2), null, 2));
 
     const saved = await this.wbsService.saveWBS(id, dto.nodes);
     return { saved: saved.length, message: 'WBS salva com sucesso' };
@@ -383,25 +337,16 @@ export class ProjectsController {
     summary: 'Resolve over-budget WBS by normalizing or rejecting',
   })
   @ApiResponse({ status: 200, description: 'Budget resolution result.' })
-  async resolveWBSBudget(
-    @Param('id') id: string,
-    @Body() dto: ResolveWBSBudgetDto,
-  ) {
+  async resolveWBSBudget(@Param('id') id: string, @Body() dto: ResolveWBSBudgetDto) {
     const project = await this.projectsService.findOne(id);
     if (!project) throw new NotFoundException('Project not found');
 
-    if (
-      !Number.isFinite(Number(dto.budgetHours)) ||
-      Number(dto.budgetHours) <= 0
-    ) {
+    if (!Number.isFinite(Number(dto.budgetHours)) || Number(dto.budgetHours) <= 0) {
       throw new BadRequestException('Invalid budgetHours for WBS resolution.');
     }
 
     if (dto.strategy === 'reject') {
-      const budgetValidation = this.validation.validateBudget(
-        dto.nodes,
-        Number(dto.budgetHours),
-      );
+      const budgetValidation = this.validation.validateBudget(dto.nodes, Number(dto.budgetHours));
       return {
         nodes: dto.nodes,
         validation: this.validation.validateTree(dto.nodes),
@@ -411,15 +356,9 @@ export class ProjectsController {
       };
     }
 
-    const normalizedNodes = this.validation.normalizeTreeToBudget(
-      dto.nodes,
-      Number(dto.budgetHours),
-    );
+    const normalizedNodes = this.validation.normalizeTreeToBudget(dto.nodes, Number(dto.budgetHours));
     const validation = this.validation.validateTree(normalizedNodes);
-    const budgetValidation = this.validation.validateBudget(
-      normalizedNodes,
-      Number(dto.budgetHours),
-    );
+    const budgetValidation = this.validation.validateBudget(normalizedNodes, Number(dto.budgetHours));
 
     return {
       nodes: normalizedNodes,
@@ -435,10 +374,7 @@ export class ProjectsController {
     summary: 'Suggest decomposition for a WBS node violating 8/80',
   })
   @ApiResponse({ status: 200, description: 'Decomposition suggestion.' })
-  async suggestDecomposition(
-    @Param('id') id: string,
-    @Body() dto: SuggestDecompositionDto,
-  ) {
+  async suggestDecomposition(@Param('id') id: string, @Body() dto: SuggestDecompositionDto) {
     const suggestion = await this.validation.suggestDecomposition(dto);
     return { suggestion };
   }
@@ -448,10 +384,7 @@ export class ProjectsController {
     summary: 'Convert WBS leaf nodes into project tasks with AI enrichment',
   })
   @ApiResponse({ status: 200, description: 'Tasks created from WBS.' })
-  async convertWBSToTasks(
-    @Param('id') id: string,
-    @Body() dto: ConvertWBSToTasksDto,
-  ) {
+  async convertWBSToTasks(@Param('id') id: string, @Body() dto: ConvertWBSToTasksDto) {
     const project = await this.projectsService.findOne(id);
     if (!project) throw new NotFoundException('Project not found');
 
@@ -468,9 +401,7 @@ export class ProjectsController {
       },
     );
 
-    console.log(
-      `✅ ${result.createdTasks.length} micro-tarefas criadas com sucesso`,
-    );
+    console.log(`✅ ${result.createdTasks.length} micro-tarefas criadas com sucesso`);
 
     return {
       message:
@@ -483,15 +414,9 @@ export class ProjectsController {
       auditsApplied: result.auditsApplied,
       summary: {
         totalTasks: result.createdTasks.length,
-        totalPomodoros: result.createdTasks.reduce(
-          (sum, t: any) => sum + (t.pomodorosPlanned || 0),
-          0,
-        ),
+        totalPomodoros: result.createdTasks.reduce((sum, t: any) => sum + (t.pomodorosPlanned || 0), 0),
         estimatedHours: (
-          result.createdTasks.reduce(
-            (sum, t: any) => sum + (t.pomodorosPlanned || 0),
-            0,
-          ) * 0.5
+          result.createdTasks.reduce((sum, t: any) => sum + (t.pomodorosPlanned || 0), 0) * 0.5
         ).toFixed(1),
       },
     };
@@ -499,8 +424,7 @@ export class ProjectsController {
 
   @Post(':id/wbs/leaf-nodes')
   @ApiOperation({
-    summary:
-      'Get all leaf nodes from WBS tree with their paths (for interactive generation)',
+    summary: 'Get all leaf nodes from WBS tree with their paths (for interactive generation)',
   })
   @ApiResponse({ status: 200, description: 'List of leaf nodes with paths' })
   async getLeafNodes(@Param('id') id: string, @Body() dto: GetLeafNodesDto) {
@@ -509,10 +433,7 @@ export class ProjectsController {
     return {
       leafNodes,
       total: leafNodes.length,
-      totalHours: leafNodes.reduce(
-        (sum, leaf) => sum + (leaf.node.estimatedHours || 0),
-        0,
-      ),
+      totalHours: leafNodes.reduce((sum, leaf) => sum + (leaf.node.estimatedHours || 0), 0),
     };
   }
 
@@ -524,37 +445,22 @@ export class ProjectsController {
     status: 200,
     description: 'Tasks generated for the leaf node',
   })
-  async generateTasksForLeaf(
-    @Param('id') id: string,
-    @Body() dto: GenerateTasksForLeafDto,
-  ) {
+  async generateTasksForLeaf(@Param('id') id: string, @Body() dto: GenerateTasksForLeafDto) {
     const project = await this.projectsService.findOne(id);
     if (!project) throw new NotFoundException('Project not found');
 
     console.log(`🔄 Gerando tasks para leaf: "${dto.leafNode.name}"...`);
 
     const preferences = dto.preferences || {};
-    const currentKey = this.buildLeafBufferKey(
-      id,
-      dto.leafNode as any,
-      dto.nodePath,
-      preferences,
-    );
+    const currentKey = this.buildLeafBufferKey(id, dto.leafNode as any, dto.nodePath, preferences);
 
     // Start prefetch for upcoming leaves in parallel (buffer).
-    const prefetchLeafs = Array.isArray(dto.prefetchLeafs)
-      ? dto.prefetchLeafs
-      : [];
+    const prefetchLeafs = Array.isArray(dto.prefetchLeafs) ? dto.prefetchLeafs : [];
     for (const p of prefetchLeafs) {
       if (!p?.leafNode || !p?.nodePath) continue;
       // Skip if user accidentally included current leaf.
       if (String(p.nodePath) === String(dto.nodePath)) continue;
-      const key = this.buildLeafBufferKey(
-        id,
-        p.leafNode as any,
-        p.nodePath,
-        preferences,
-      );
+      const key = this.buildLeafBufferKey(id, p.leafNode as any, p.nodePath, preferences);
       this.leafBuffer.prefetch(key, id, async () => {
         return this.wbsService.generateTasksForSingleLeaf(
           p.leafNode,
@@ -571,9 +477,7 @@ export class ProjectsController {
     // If current leaf is already prefetched, consume it instantly.
     // Safety: only do this for interactive preview (saveTasks=false), so we never skip persistence.
     const shouldUseBuffer = !(dto.saveTasks || false);
-    const buffered = shouldUseBuffer
-      ? await this.leafBuffer.consume<any>(currentKey)
-      : null;
+    const buffered = shouldUseBuffer ? await this.leafBuffer.consume<any>(currentKey) : null;
     if (buffered) {
       console.log(`⚡ Buffer hit for leaf: "${dto.leafNode.name}"`);
       console.log(`✅ ${buffered.tasks?.length || 0} tasks preparadas`);
@@ -606,9 +510,7 @@ export class ProjectsController {
               : 'Rate limit do Gemini. Aguarde e tente novamente.',
             code: 'RATE_LIMIT',
             isQuotaExceeded: !!err?.isQuotaExceeded,
-            retryAfterMs: Number.isFinite(retryAfterMs)
-              ? retryAfterMs
-              : undefined,
+            retryAfterMs: Number.isFinite(retryAfterMs) ? retryAfterMs : undefined,
             model: err?.model,
           },
           HttpStatus.TOO_MANY_REQUESTS,
@@ -617,9 +519,7 @@ export class ProjectsController {
       throw err;
     }
 
-    console.log(
-      `✅ ${result.tasks.length} tasks ${dto.saveTasks ? 'criadas' : 'preparadas'}`,
-    );
+    console.log(`✅ ${result.tasks.length} tasks ${dto.saveTasks ? 'criadas' : 'preparadas'}`);
 
     return {
       ...result,
@@ -637,10 +537,7 @@ export class ProjectsController {
     status: 200,
     description: 'Audit result with diagnosis and suggested action.',
   })
-  async auditLeafDiscrepancy(
-    @Param('id') id: string,
-    @Body() dto: AuditLeafDiscrepancyDto,
-  ) {
+  async auditLeafDiscrepancy(@Param('id') id: string, @Body() dto: AuditLeafDiscrepancyDto) {
     const project = await this.projectsService.findOne(id);
     if (!project) throw new NotFoundException('Project not found');
 
@@ -681,17 +578,11 @@ export class ProjectsController {
     summary:
       'Delete a project by id. Use ?deleteTasks=true to delete associated tasks, or ?deleteTasks=false to just unlink them.',
   })
-  async remove(
-    @Param('id') id: string,
-    @Query('deleteTasks') deleteTasks?: string,
-  ) {
+  async remove(@Param('id') id: string, @Query('deleteTasks') deleteTasks?: string) {
     // If deleteTasks parameter is provided, use removeWithOptions
     if (deleteTasks !== undefined) {
       const shouldDeleteTasks = deleteTasks === 'true';
-      const result = await this.projectsService.removeWithOptions(
-        id,
-        shouldDeleteTasks,
-      );
+      const result = await this.projectsService.removeWithOptions(id, shouldDeleteTasks);
       if (!result.deleted) throw new NotFoundException('Project not found');
       return {
         message: `Project removed successfully. ${shouldDeleteTasks ? 'Deleted' : 'Unlinked'} ${result.tasksAffected} task(s).`,
@@ -738,8 +629,7 @@ export class ProjectsController {
     const results: any[] = [];
     for (const project of projects) {
       const projectId = (project as any)._id.toString();
-      const updated =
-        await this.projectsService.recalculateProjectStats(projectId);
+      const updated = await this.projectsService.recalculateProjectStats(projectId);
       // Skip if project was deleted during the loop
       if (updated) {
         results.push({

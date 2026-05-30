@@ -37,9 +37,7 @@ export class TasksAiSuggestionsService {
   /**
    * Versao original que retorna Promise (mantida para compatibilidade)
    */
-  async generateAiSuggestions(
-    dto: GenerateAiSuggestionsDto,
-  ): Promise<AiSuggestionsResponseDto> {
+  async generateAiSuggestions(dto: GenerateAiSuggestionsDto): Promise<AiSuggestionsResponseDto> {
     return this.generateAiSuggestionsInternal(dto, null);
   }
 
@@ -76,10 +74,7 @@ export class TasksAiSuggestionsService {
     });
 
     // Funcao helper para emitir progresso
-    const emitProgress = (
-      status: 'loading' | 'success' | 'error' | 'partial',
-      message: string,
-    ) => {
+    const emitProgress = (status: 'loading' | 'success' | 'error' | 'partial', message: string) => {
       if (onProgress) {
         onProgress({
           currentIteration,
@@ -98,9 +93,7 @@ export class TasksAiSuggestionsService {
 
       // Busca as tarefas ja existentes no projeto para calcular horas ja planejadas
       if (dto.projectId) {
-        const existingTasks = await this.taskModel
-          .find({ project: dto.projectId })
-          .exec();
+        const existingTasks = await this.taskModel.find({ project: dto.projectId }).exec();
 
         // Calcula horas ja planejadas (pomodoros * 0.5h)
         alreadyPlannedHours = existingTasks.reduce((total, task) => {
@@ -131,9 +124,7 @@ export class TasksAiSuggestionsService {
 
         const suggestions = this.safeParseGeminiJson(aiResponse);
         if (suggestions.length === 0) {
-          console.warn(
-            'A resposta da IA esta vazia ou malformada, retornando fallback.',
-          );
+          console.warn('A resposta da IA esta vazia ou malformada, retornando fallback.');
           const mockSuggestions = this.generateMockSuggestions(dto);
           allSuggestions.push(...mockSuggestions);
           return createResponse(
@@ -143,10 +134,7 @@ export class TasksAiSuggestionsService {
         }
 
         allSuggestions.push(...(suggestions as AiTaskSuggestionDto[]));
-        currentHours = allSuggestions.reduce(
-          (sum, t) => sum + (t.pomodoros || 0) * 0.5,
-          0,
-        );
+        currentHours = allSuggestions.reduce((sum, t) => sum + (t.pomodoros || 0) * 0.5, 0);
         return createResponse('success', 'Sugestoes geradas com sucesso');
       }
 
@@ -157,10 +145,7 @@ export class TasksAiSuggestionsService {
         console.log(
           `Projeto ja atingiu o target (${alreadyPlannedHours.toFixed(1)}h >= ${targetHours}h). Nao gerando novas tarefas.`,
         );
-        return createResponse(
-          'success',
-          'Projeto ja atingiu o total de horas planejadas',
-        );
+        return createResponse('success', 'Projeto ja atingiu o total de horas planejadas');
       }
 
       console.log(
@@ -171,16 +156,10 @@ export class TasksAiSuggestionsService {
       let consecutiveRateLimits = 0;
       const interIterationDelayMs = 3000; // delay fixo entre iteracoes para reduzir 429
 
-      while (
-        currentHours < remainingHours &&
-        currentIteration < maxIterations
-      ) {
+      while (currentHours < remainingHours && currentIteration < maxIterations) {
         currentIteration++;
 
-        emitProgress(
-          'loading',
-          `Gerando lote ${currentIteration}/${maxIterations}...`,
-        );
+        emitProgress('loading', `Gerando lote ${currentIteration}/${maxIterations}...`);
 
         console.log(
           `Iteracao ${currentIteration}: ${currentHours.toFixed(1)}h de ${remainingHours.toFixed(1)}h geradas`,
@@ -188,12 +167,8 @@ export class TasksAiSuggestionsService {
 
         // Delay de 1 segundo entre requisicoes para evitar rate limiting (429)
         if (currentIteration > 1) {
-          console.log(
-            `Aguardando ${interIterationDelayMs}ms antes da proxima requisicao...`,
-          );
-          await new Promise((resolve) =>
-            setTimeout(resolve, interIterationDelayMs),
-          );
+          console.log(`Aguardando ${interIterationDelayMs}ms antes da proxima requisicao...`);
+          await new Promise((resolve) => setTimeout(resolve, interIterationDelayMs));
         }
 
         // Gera em lotes menores para reduzir risco de 429 e consumo de tokens
@@ -228,28 +203,21 @@ export class TasksAiSuggestionsService {
         const suggestions = this.safeParseGeminiJson(aiResponse);
 
         if (suggestions.length === 0) {
-          console.warn(
-            'A resposta da IA esta vazia ou malformada nesta iteracao.',
-          );
+          console.warn('A resposta da IA esta vazia ou malformada nesta iteracao.');
           // Continua tentando nas proximas iteracoes ao inves de quebrar
           continue;
         }
 
         // Filtra duplicatas por nome (case-insensitive)
-        const newSuggestions = (suggestions as AiTaskSuggestionDto[]).filter(
-          (newTask) => {
-            const normalizedName = newTask.name.toLowerCase().trim();
-            return !existingTaskNames.some(
-              (existingName) =>
-                existingName.toLowerCase().trim() === normalizedName,
-            );
-          },
-        );
+        const newSuggestions = (suggestions as AiTaskSuggestionDto[]).filter((newTask) => {
+          const normalizedName = newTask.name.toLowerCase().trim();
+          return !existingTaskNames.some(
+            (existingName) => existingName.toLowerCase().trim() === normalizedName,
+          );
+        });
 
         if (newSuggestions.length === 0) {
-          console.warn(
-            'Nenhuma nova tarefa foi gerada (todas sao duplicatas).',
-          );
+          console.warn('Nenhuma nova tarefa foi gerada (todas sao duplicatas).');
           break;
         }
 
@@ -295,19 +263,11 @@ export class TasksAiSuggestionsService {
           `Erro parcial: ${allSuggestions.length} tarefas geradas antes do erro`,
         );
       }
-      console.warn(
-        'Usando fallback de mock por ausencia de sugestoes acumuladas.',
-      );
+      console.warn('Usando fallback de mock por ausencia de sugestoes acumuladas.');
       const mockSuggestions = this.generateMockSuggestions(dto);
       allSuggestions.push(...mockSuggestions);
-      currentHours = allSuggestions.reduce(
-        (sum, t) => sum + (t.pomodoros || 0) * 0.5,
-        0,
-      );
-      return createResponse(
-        'error',
-        'Falha na IA. Usando sugestoes de fallback.',
-      );
+      currentHours = allSuggestions.reduce((sum, t) => sum + (t.pomodoros || 0) * 0.5, 0);
+      return createResponse('error', 'Falha na IA. Usando sugestoes de fallback.');
     }
   }
 
@@ -378,9 +338,7 @@ export class TasksAiSuggestionsService {
       }
       return [];
     } catch (secondError) {
-      console.warn(
-        'Segundo parse tambem falhou, tentando extrair objetos manualmente...',
-      );
+      console.warn('Segundo parse tambem falhou, tentando extrair objetos manualmente...');
     }
 
     // Ultima tentativa: extrair objetos individualmente usando regex
@@ -400,28 +358,21 @@ export class TasksAiSuggestionsService {
       }
 
       if (objects.length > 0) {
-        console.log(
-          `Extraidos ${objects.length} objetos manualmente do JSON malformado`,
-        );
+        console.log(`Extraidos ${objects.length} objetos manualmente do JSON malformado`);
         return objects;
       }
     } catch {
       // Falhou completamente
     }
 
-    console.error(
-      'Nao foi possivel parsear a resposta do Gemini:',
-      cleaned.substring(0, 200),
-    );
+    console.error('Nao foi possivel parsear a resposta do Gemini:', cleaned.substring(0, 200));
     return [];
   }
 
   /**
    * Fallback para gerar sugestoes mockadas inteligentes quando a IA nao esta disponivel.
    */
-  private generateMockSuggestions(
-    dto: GenerateAiSuggestionsDto,
-  ): AiTaskSuggestionDto[] {
+  private generateMockSuggestions(dto: GenerateAiSuggestionsDto): AiTaskSuggestionDto[] {
     const keywords =
       `${dto.projectName} ${dto.shortTermGoal} ${dto.midTermGoal} ${dto.longTermGoal} ${dto.userPrompt}`.toLowerCase();
     const suggestions: AiTaskSuggestionDto[] = [];
@@ -451,11 +402,7 @@ export class TasksAiSuggestionsService {
         selected: false,
       });
     }
-    if (
-      keywords.includes('ui') ||
-      keywords.includes('frontend') ||
-      keywords.includes('design')
-    ) {
+    if (keywords.includes('ui') || keywords.includes('frontend') || keywords.includes('design')) {
       suggestions.push({
         name: 'Criar prototipo de baixa fidelidade da UI',
         deadline: getDatePlusDays(2),

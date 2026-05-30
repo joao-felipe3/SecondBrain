@@ -1,10 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import {
-  ProjectBuffer,
-  ProjectBufferDocument,
-} from '../schemas/project-buffer.schema';
+import { ProjectBuffer, ProjectBufferDocument } from '../schemas/project-buffer.schema';
 
 export interface TaskMetrics {
   taskId: string;
@@ -61,16 +58,10 @@ export class BufferService {
     const criticalTasks = tasks.filter((t) => criticalPath.includes(t.taskId));
 
     // 2. Calcular duración total del camino crítico
-    const criticalPathDuration = criticalTasks.reduce(
-      (sum, t) => sum + t.estimatedHours,
-      0,
-    );
+    const criticalPathDuration = criticalTasks.reduce((sum, t) => sum + t.estimatedHours, 0);
 
     // 3. Calcular varianza total (suma de varianzas)
-    const totalVariance = criticalTasks.reduce(
-      (sum, t) => sum + (t.variance || 0),
-      0,
-    );
+    const totalVariance = criticalTasks.reduce((sum, t) => sum + (t.variance || 0), 0);
 
     // Diagnóstico: log detalhado das tarefas críticas
     const criticalTasksDebug = criticalTasks.map((t) => ({
@@ -111,9 +102,7 @@ export class BufferService {
     );
 
     if (!bufferDoc) {
-      this.logger.error(
-        `Failed to create/update buffer for project ${projectId}`,
-      );
+      this.logger.error(`Failed to create/update buffer for project ${projectId}`);
       return null;
     }
 
@@ -127,13 +116,8 @@ export class BufferService {
   /**
    * Registra consumo de buffer cuando se completan tareas
    */
-  async consumeBuffer(
-    projectId: string,
-    hoursUsed: number,
-  ): Promise<BufferStatus> {
-    this.logger.log(
-      `Consumiendo ${hoursUsed}h de buffer para proyecto: ${projectId}`,
-    );
+  async consumeBuffer(projectId: string, hoursUsed: number): Promise<BufferStatus> {
+    this.logger.log(`Consumiendo ${hoursUsed}h de buffer para proyecto: ${projectId}`);
 
     const buffer = await this.bufferModel.findOneAndUpdate(
       { projectId },
@@ -211,8 +195,7 @@ export class BufferService {
       alerts.push({
         severity: 'critical',
         message: '🚨 Buffer completamente consumido',
-        recommendation:
-          'El proyecto está en riesgo. Se requiere intervención gerencial inmediata.',
+        recommendation: 'El proyecto está en riesgo. Se requiere intervención gerencial inmediata.',
         percentageUsed: status.percentageUsed,
       });
     }
@@ -223,9 +206,7 @@ export class BufferService {
   /**
    * Reseta el consumo de buffer (para recálculos)
    */
-  async resetBufferConsumption(
-    projectId: string,
-  ): Promise<ProjectBuffer | null> {
+  async resetBufferConsumption(projectId: string): Promise<ProjectBuffer | null> {
     const buffer = await this.bufferModel.findOneAndUpdate(
       { projectId },
       { consumed: 0 },
@@ -282,18 +263,12 @@ export class BufferService {
   }
 
   private getBufferStatusFromDoc(buffer: ProjectBufferDocument): BufferStatus {
-    const percentageUsed =
-      buffer.projectBuffer > 0
-        ? (buffer.consumed / buffer.projectBuffer) * 100
-        : 0;
+    const percentageUsed = buffer.projectBuffer > 0 ? (buffer.consumed / buffer.projectBuffer) * 100 : 0;
 
     return {
       total: Math.round(buffer.projectBuffer * 10) / 10,
       consumed: Math.round(buffer.consumed * 10) / 10,
-      remaining: Math.max(
-        0,
-        Math.round((buffer.projectBuffer - buffer.consumed) * 10) / 10,
-      ),
+      remaining: Math.max(0, Math.round((buffer.projectBuffer - buffer.consumed) * 10) / 10),
       percentageUsed: Math.round(percentageUsed * 100) / 100,
       isAlert: percentageUsed >= buffer.threshold,
     };

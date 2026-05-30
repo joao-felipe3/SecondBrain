@@ -23,15 +23,8 @@ import { UpdateChecklistItemDto } from './dto/update-checklist-item.dto';
 import { UpdateRecurringRuleDto } from './dto/update-recurring-rule.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
 import { GenerateAiSuggestionsDto } from './dto/generate-ai-suggestions.dto';
-import {
-  PertEstimateDto,
-  PertEstimateResponseDto,
-} from './dto/pert-estimate.dto';
-import {
-  SuggestPertDto,
-  PertSuggestionResponseDto,
-  UpdatePertDto,
-} from './dto/suggest-pert.dto';
+import { PertEstimateDto, PertEstimateResponseDto } from './dto/pert-estimate.dto';
+import { SuggestPertDto, PertSuggestionResponseDto, UpdatePertDto } from './dto/suggest-pert.dto';
 import { MoveTaskStatusDto } from './dto/move-task-status.dto'; // Sprint 4
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { CPMService } from './services/cpm.service';
@@ -55,9 +48,7 @@ export class TasksController {
   ) {
     const tasks = Array.isArray(body?.tasks) ? body.tasks : [];
     if (tasks.length === 0) {
-      throw new BadRequestException(
-        'Body inválido: "tasks" deve ser um array não-vazio',
-      );
+      throw new BadRequestException('Body inválido: "tasks" deve ser um array não-vazio');
     }
 
     // Inserção em lote, preservando a ordem para que possamos gerar dependências coerentes.
@@ -69,8 +60,7 @@ export class TasksController {
 
     const mode = body?.autoDependencies?.mode ?? 'none';
     const relationship = body?.autoDependencies?.relationship;
-    const reason =
-      body?.autoDependencies?.reason ?? 'Auto-generated dependency (bulk save)';
+    const reason = body?.autoDependencies?.reason ?? 'Auto-generated dependency (bulk save)';
 
     let dependencyOps = 0;
     if (mode !== 'none' && inserted.length >= 2) {
@@ -101,9 +91,7 @@ export class TasksController {
 
       for (let gi = 0; gi < groups.length; gi++) {
         const g = groups[gi];
-        const projectId = String(
-          g.tasks[0]?.project?.toString?.() ?? g.tasks[0]?.project ?? '',
-        ).trim();
+        const projectId = String(g.tasks[0]?.project?.toString?.() ?? g.tasks[0]?.project ?? '').trim();
         if (!projectId) continue;
 
         // within-leaf chain
@@ -161,9 +149,7 @@ export class TasksController {
               dependsOnTaskId: String(prevLast._id),
               projectId,
               relationship,
-              reason:
-                body?.autoDependencies?.reason ??
-                'Auto: WBS leaf sequence (bulk save)',
+              reason: body?.autoDependencies?.reason ?? 'Auto: WBS leaf sequence (bulk save)',
               isAutoIdentified: true,
             });
           }
@@ -177,9 +163,7 @@ export class TasksController {
     return {
       insertedCount: inserted.length,
       autoDependenciesCreatedOrUpdated: dependencyOps,
-      taskIds: inserted
-        .map((t: any) => String(t?._id ?? t?.id ?? ''))
-        .filter(Boolean),
+      taskIds: inserted.map((t: any) => String(t?._id ?? t?.id ?? '')).filter(Boolean),
     };
   }
 
@@ -240,8 +224,7 @@ export class TasksController {
 
   @Post('ai-suggestions')
   @ApiOperation({
-    summary:
-      'Gerar sugestões de tarefas usando IA baseado nos objetivos do projeto',
+    summary: 'Gerar sugestões de tarefas usando IA baseado nos objetivos do projeto',
   })
   @ApiResponse({ status: 200, description: 'Sugestões geradas com sucesso.' })
   async generateAiSuggestions(@Body() generateDto: GenerateAiSuggestionsDto) {
@@ -264,10 +247,7 @@ export class TasksController {
     status: 200,
     description: 'Checklist atualizado com sucesso.',
   })
-  updateMicroTaskChecklist(
-    @Param('id') id: string,
-    @Body() body: UpdateChecklistDto,
-  ) {
+  updateMicroTaskChecklist(@Param('id') id: string, @Body() body: UpdateChecklistDto) {
     return this.tasksService.updateMicroTaskChecklist(id, body.checklist);
   }
 
@@ -285,11 +265,7 @@ export class TasksController {
     @Param('itemId') itemId: string,
     @Body() body: UpdateChecklistItemDto,
   ) {
-    return this.tasksService.updateChecklistItem(
-      taskId,
-      itemId,
-      body.completed,
-    );
+    return this.tasksService.updateChecklistItem(taskId, itemId, body.completed);
   }
 
   @Patch(':id/recurring-rule')
@@ -300,10 +276,7 @@ export class TasksController {
     status: 200,
     description: 'Regra de recorrência atualizada com sucesso.',
   })
-  updateRecurringRuleCompat(
-    @Param('id') id: string,
-    @Body() body: UpdateRecurringRuleDto,
-  ) {
+  updateRecurringRuleCompat(@Param('id') id: string, @Body() body: UpdateRecurringRuleDto) {
     return this.tasksService.updateRecurringRule(id, body.recurringRule);
   }
 
@@ -313,10 +286,7 @@ export class TasksController {
     status: 200,
     description: 'Regra de recorrência atualizada com sucesso.',
   })
-  updateRecurringRule(
-    @Param('id') id: string,
-    @Body() body: UpdateRecurringRuleDto,
-  ) {
+  updateRecurringRule(@Param('id') id: string, @Body() body: UpdateRecurringRuleDto) {
     return this.tasksService.updateRecurringRule(id, body.recurringRule);
   }
 
@@ -360,9 +330,7 @@ export class TasksController {
     @Query('confirm') confirm?: string,
   ) {
     if (String(confirm || '').toLowerCase() !== 'true') {
-      throw new BadRequestException(
-        'Confirmação obrigatória: use ?confirm=true para remover a série.',
-      );
+      throw new BadRequestException('Confirmação obrigatória: use ?confirm=true para remover a série.');
     }
 
     return this.tasksService.deleteRecurringSeries(parentRecurringId);
@@ -447,10 +415,7 @@ export class TasksController {
       'Validação falhou (checklist incompleto ao mover para done, ou task concluída tentando sair de done).',
   })
   @ApiResponse({ status: 404, description: 'Task não encontrada.' })
-  async moveTaskStatus(
-    @Param('id') id: string,
-    @Body() body: MoveTaskStatusDto,
-  ) {
+  async moveTaskStatus(@Param('id') id: string, @Body() body: MoveTaskStatusDto) {
     return this.tasksService.moveTaskStatus(id, body);
   }
 
@@ -471,8 +436,7 @@ export class TasksController {
   @Get(':id/lineage')
   @ApiOperation({
     summary: 'Buscar lineage de uma task (ancestrais + filhos)',
-    description:
-      'Retorna cadeia de tasks parentes até a raiz e lista de filhos diretos.',
+    description: 'Retorna cadeia de tasks parentes até a raiz e lista de filhos diretos.',
   })
   @ApiResponse({ status: 200, description: 'Lineage retornada com sucesso.' })
   @ApiResponse({ status: 404, description: 'Task não encontrada.' })
@@ -497,25 +461,20 @@ export class TasksController {
   @Post(':id/completion-feedback')
   @ApiOperation({
     summary: 'Gerar feedback de conclusão via LLM',
-    description:
-      'Gera feedback automático (catchball) para uma task concluída e persiste no banco.',
+    description: 'Gera feedback automático (catchball) para uma task concluída e persiste no banco.',
   })
   @ApiResponse({ status: 200, description: 'Feedback gerado com sucesso.' })
   @ApiResponse({ status: 400, description: 'Task não está concluída.' })
   @ApiResponse({ status: 404, description: 'Task não encontrada.' })
   async generateCompletionFeedback(@Param('id') id: string, @Body() body: any) {
-    const feedback = await this.tasksService.generateCompletionFeedback(
-      id,
-      body,
-    );
+    const feedback = await this.tasksService.generateCompletionFeedback(id, body);
     return { feedback };
   }
 
   @Get(':id/completion-feedback')
   @ApiOperation({
     summary: 'Buscar último feedback de conclusão',
-    description:
-      'Retorna o feedback mais recente de uma task (gerado via LLM).',
+    description: 'Retorna o feedback mais recente de uma task (gerado via LLM).',
   })
   @ApiResponse({
     status: 200,
@@ -586,10 +545,7 @@ export class TasksController {
     try {
       return await this.tasksService.savePertEstimate(id, pertEstimateDto);
     } catch (error: unknown) {
-      const message =
-        error instanceof Error
-          ? error.message
-          : 'Erro ao salvar estimativa PERT';
+      const message = error instanceof Error ? error.message : 'Erro ao salvar estimativa PERT';
 
       if (message.includes('não encontrada')) {
         throw new NotFoundException(message);

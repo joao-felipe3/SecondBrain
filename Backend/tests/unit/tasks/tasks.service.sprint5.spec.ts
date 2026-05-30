@@ -168,12 +168,8 @@ describe('TasksService - Sprint 5: Recorrência', () => {
       parentRecurringId: template._id,
     };
 
-    jest
-      .spyOn(service, 'createRecurringTemplate')
-      .mockResolvedValue(template as any);
-    jest
-      .spyOn(recurringService, 'buildOccurrencePayload')
-      .mockReturnValue(occurrence as any);
+    jest.spyOn(service, 'createRecurringTemplate').mockResolvedValue(template as any);
+    jest.spyOn(recurringService, 'buildOccurrencePayload').mockReturnValue(occurrence as any);
 
     const result = await service.createRecurringMicroTask({
       name: 'Daily habit',
@@ -297,57 +293,51 @@ describe('TasksService - Sprint 5: Recorrência', () => {
   });
 
   it('calculateNextRecurringDate should support biweekly', () => {
-    const result = recurringService.calculateNextRecurringDate(
-      new Date('2026-04-20T10:00:00.000Z'),
-      { frequency: 'biweekly', interval: 1 },
-    );
+    const result = recurringService.calculateNextRecurringDate(new Date('2026-04-20T10:00:00.000Z'), {
+      frequency: 'biweekly',
+      interval: 1,
+    });
 
     expect(result).toBeInstanceOf(Date);
     expect(result!.toISOString()).toContain('2026-05-04');
   });
 
   it('calculateNextRecurringDate should support monthly', () => {
-    const result = recurringService.calculateNextRecurringDate(
-      new Date('2026-04-20T10:00:00.000Z'),
-      { frequency: 'monthly', interval: 1 },
-    );
+    const result = recurringService.calculateNextRecurringDate(new Date('2026-04-20T10:00:00.000Z'), {
+      frequency: 'monthly',
+      interval: 1,
+    });
 
     expect(result).toBeInstanceOf(Date);
     expect(result!.toISOString()).toContain('2026-05-20');
   });
 
   it('calculateNextRecurringDate should support custom interval', () => {
-    const result = recurringService.calculateNextRecurringDate(
-      new Date('2026-04-20T10:00:00.000Z'),
-      { frequency: 'custom', interval: 3 },
-    );
+    const result = recurringService.calculateNextRecurringDate(new Date('2026-04-20T10:00:00.000Z'), {
+      frequency: 'custom',
+      interval: 3,
+    });
 
     expect(result).toBeInstanceOf(Date);
     expect(result!.toISOString()).toContain('2026-04-23');
   });
 
   it('calculateNextRecurringDate should return null when endDate is exceeded', () => {
-    const result = recurringService.calculateNextRecurringDate(
-      new Date('2026-04-20T10:00:00.000Z'),
-      {
-        frequency: 'daily',
-        interval: 1,
-        endDate: new Date('2026-04-20T23:59:59.999Z'),
-      },
-    );
+    const result = recurringService.calculateNextRecurringDate(new Date('2026-04-20T10:00:00.000Z'), {
+      frequency: 'daily',
+      interval: 1,
+      endDate: new Date('2026-04-20T23:59:59.999Z'),
+    });
 
     expect(result).toBeNull();
   });
 
   it('calculateNextRecurringDate should skip exception dates', () => {
-    const result = recurringService.calculateNextRecurringDate(
-      new Date('2026-04-20T10:00:00.000Z'),
-      {
-        frequency: 'daily',
-        interval: 1,
-        exceptions: [{ date: new Date(2026, 3, 21), reason: 'holiday' }],
-      },
-    );
+    const result = recurringService.calculateNextRecurringDate(new Date('2026-04-20T10:00:00.000Z'), {
+      frequency: 'daily',
+      interval: 1,
+      exceptions: [{ date: new Date(2026, 3, 21), reason: 'holiday' }],
+    });
 
     expect(result).toBeInstanceOf(Date);
     expect(result!.toISOString()).toContain('2026-04-22');
@@ -401,10 +391,10 @@ describe('TasksService - Sprint 5: Recorrência', () => {
   });
 
   it('calculateNextRecurringDate should handle daily with interval > 1', () => {
-    const result = recurringService.calculateNextRecurringDate(
-      new Date('2026-04-20T10:00:00.000Z'),
-      { frequency: 'daily', interval: 5 },
-    );
+    const result = recurringService.calculateNextRecurringDate(new Date('2026-04-20T10:00:00.000Z'), {
+      frequency: 'daily',
+      interval: 5,
+    });
 
     expect(result).toBeInstanceOf(Date);
     // 5 days later
@@ -413,18 +403,15 @@ describe('TasksService - Sprint 5: Recorrência', () => {
 
   it('calculateNextRecurringDate should respect multiple exceptions', () => {
     // Daily starting 2026-04-20, but skip 21, 22, 23 -> should return 24
-    const result = recurringService.calculateNextRecurringDate(
-      new Date('2026-04-20T10:00:00.000Z'),
-      {
-        frequency: 'daily',
-        interval: 1,
-        exceptions: [
-          { date: new Date(2026, 3, 21), reason: 'holiday' },
-          { date: new Date(2026, 3, 22), reason: 'holiday' },
-          { date: new Date(2026, 3, 23), reason: 'holiday' },
-        ],
-      },
-    );
+    const result = recurringService.calculateNextRecurringDate(new Date('2026-04-20T10:00:00.000Z'), {
+      frequency: 'daily',
+      interval: 1,
+      exceptions: [
+        { date: new Date(2026, 3, 21), reason: 'holiday' },
+        { date: new Date(2026, 3, 22), reason: 'holiday' },
+        { date: new Date(2026, 3, 23), reason: 'holiday' },
+      ],
+    });
 
     expect(result).toBeInstanceOf(Date);
     // Should skip to next day after all exceptions (April 24)
@@ -473,10 +460,10 @@ describe('TasksService - Sprint 5: Recorrência', () => {
 
   it('calculateNextRecurringDate should support biweekly with interval=2', () => {
     // April 20 + 14 days = May 4
-    const result = recurringService.calculateNextRecurringDate(
-      new Date('2026-04-20T10:00:00.000Z'),
-      { frequency: 'weekly', interval: 2 },
-    );
+    const result = recurringService.calculateNextRecurringDate(new Date('2026-04-20T10:00:00.000Z'), {
+      frequency: 'weekly',
+      interval: 2,
+    });
 
     expect(result).toBeInstanceOf(Date);
     // 14 days later
@@ -486,15 +473,12 @@ describe('TasksService - Sprint 5: Recorrência', () => {
 
   it('calculateNextRecurringDate should skip exception before respecting endDate', () => {
     // Daily starting 2026-04-20, exception on 21, endDate 2026-04-25
-    const result = recurringService.calculateNextRecurringDate(
-      new Date('2026-04-20T10:00:00.000Z'),
-      {
-        frequency: 'daily',
-        interval: 1,
-        exceptions: [{ date: new Date(2026, 3, 21), reason: 'holiday' }],
-        endDate: new Date('2026-04-25T23:59:59.999Z'),
-      },
-    );
+    const result = recurringService.calculateNextRecurringDate(new Date('2026-04-20T10:00:00.000Z'), {
+      frequency: 'daily',
+      interval: 1,
+      exceptions: [{ date: new Date(2026, 3, 21), reason: 'holiday' }],
+      endDate: new Date('2026-04-25T23:59:59.999Z'),
+    });
 
     expect(result).toBeInstanceOf(Date);
     // Should skip 21 and return 22

@@ -6,10 +6,7 @@ import {
   normalizeCognitiveMode,
   normalizeMicroTaskType,
 } from '../utils/normalizers.util';
-import {
-  extractDefinitionOfDone,
-  extractChecklistSteps,
-} from '../utils/wbs-helpers.util';
+import { extractDefinitionOfDone, extractChecklistSteps } from '../utils/wbs-helpers.util';
 
 @Injectable()
 export class DraftProcessingService {
@@ -186,18 +183,14 @@ export class DraftProcessingService {
 
       indices.forEach((idx, localIdx) => {
         const microTaskType = normalizeMicroTaskType(workflow[localIdx]);
-        const cognitiveMode = normalizeCognitiveMode(
-          progressiveMode(localIdx, total),
-        );
+        const cognitiveMode = normalizeCognitiveMode(progressiveMode(localIdx, total));
         drafts[idx] = {
           ...drafts[idx],
           microTaskType,
           cognitiveMode,
           contextTag:
-            String(
-              drafts[idx].contextTag ||
-                mapCognitiveModeToContextTag(cognitiveMode),
-            ).trim() || undefined,
+            String(drafts[idx].contextTag || mapCognitiveModeToContextTag(cognitiveMode)).trim() ||
+            undefined,
         };
       });
     }
@@ -235,9 +228,7 @@ export class DraftProcessingService {
     const chunks = chunkMinutes.length;
 
     // Normalize first (keeps existing microTaskType/theme decisions when present)
-    const normalized = drafts.map((d, idx) =>
-      this.normalizeDraft(d, idx, chunks),
-    );
+    const normalized = drafts.map((d, idx) => this.normalizeDraft(d, idx, chunks));
     if (chunks <= 1) return normalized;
 
     // Milestones/checkpoints: every ~5h (within 4–6h) for big leaves.
@@ -266,14 +257,10 @@ export class DraftProcessingService {
     let cumulative = 0;
     return normalized.map((d, idx) => {
       cumulative += chunkMinutes[idx];
-      const milestoneIndex = Math.max(
-        1,
-        Math.ceil(cumulative / milestoneEveryMinutes),
-      );
+      const milestoneIndex = Math.max(1, Math.ceil(cumulative / milestoneEveryMinutes));
 
       if (milestoneRequired && checkpointIndices.has(idx)) {
-        const checkpointType =
-          milestoneIndex % 2 === 0 ? 'consolidate' : 'test';
+        const checkpointType = milestoneIndex % 2 === 0 ? 'consolidate' : 'test';
         const cognitiveMode = normalizeCognitiveMode(
           d.cognitiveMode || mapMicroTaskTypeToCognitiveMode(checkpointType),
         );
@@ -283,9 +270,7 @@ export class DraftProcessingService {
           microTaskType: checkpointType,
           cognitiveMode,
           contextTag:
-            String(
-              d.contextTag || mapCognitiveModeToContextTag(cognitiveMode),
-            ).trim() || undefined,
+            String(d.contextTag || mapCognitiveModeToContextTag(cognitiveMode)).trim() || undefined,
         };
       }
 
@@ -332,15 +317,11 @@ export class DraftProcessingService {
         normalizedChecklist && normalizedChecklist.length >= 2
           ? normalizedChecklist
           : extractChecklistSteps(normalizedDescription),
-      definitionOfDone:
-        normalizedDefinitionOfDone ||
-        extractDefinitionOfDone(normalizedDescription),
+      definitionOfDone: normalizedDefinitionOfDone || extractDefinitionOfDone(normalizedDescription),
       microTaskType,
       cognitiveMode,
       contextTag:
-        String(
-          d.contextTag || mapCognitiveModeToContextTag(cognitiveMode),
-        ).trim() || undefined,
+        String(d.contextTag || mapCognitiveModeToContextTag(cognitiveMode)).trim() || undefined,
     };
   }
 }

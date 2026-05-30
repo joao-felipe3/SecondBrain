@@ -1,18 +1,5 @@
-import {
-  Controller,
-  Post,
-  Get,
-  Delete,
-  Param,
-  Body,
-  Logger,
-} from '@nestjs/common';
-import {
-  ApiTags,
-  ApiOperation,
-  ApiResponse,
-  ApiBearerAuth,
-} from '@nestjs/swagger';
+import { Controller, Post, Get, Delete, Param, Body, Logger } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { RTMService } from '../services/rtm.service';
 import { TasksService } from '../tasks.service';
 import { RequirementDocument } from '../schemas/requirement.schema';
@@ -53,14 +40,10 @@ export class RTMController {
 
     try {
       // 1. Gerar itens da jornada com IA
-      const generatedReqs = await this.rtmService.generateRequirements(
-        body.smartObjective,
-      );
+      const generatedReqs = await this.rtmService.generateRequirements(body.smartObjective);
 
       if (generatedReqs.length === 0) {
-        this.logger.warn(
-          `[auto-gen-req] projectId=${projectId} nenhum item gerado`,
-        );
+        this.logger.warn(`[auto-gen-req] projectId=${projectId} nenhum item gerado`);
         return {
           success: false,
           message:
@@ -107,9 +90,7 @@ export class RTMController {
         timestamp: new Date().toISOString(),
       };
     } catch (error: any) {
-      this.logger.error(
-        `[auto-gen-req] projectId=${projectId} erro: ${error?.message}`,
-      );
+      this.logger.error(`[auto-gen-req] projectId=${projectId} erro: ${error?.message}`);
       return {
         success: false,
         error: error?.message,
@@ -124,8 +105,7 @@ export class RTMController {
   @Get(':projectId/rtm-matrix')
   @ApiOperation({
     summary: 'Obter matriz de rastreabilidade (RTM)',
-    description:
-      'Retorna uma matriz de jornada × tarefas mostrando quais tarefas rastreiam cada ação.',
+    description: 'Retorna uma matriz de jornada × tarefas mostrando quais tarefas rastreiam cada ação.',
   })
   @ApiResponse({
     status: 200,
@@ -164,9 +144,7 @@ export class RTMController {
       this.logger.debug(
         `[rtm-matrix] WBS Distribution: ${JSON.stringify(Array.from(wbsDistribution.entries()))}`,
       );
-      this.logger.debug(
-        `[rtm-matrix] Sample tasks: ${JSON.stringify(matrixData.tasks.slice(0, 3))}`,
-      );
+      this.logger.debug(`[rtm-matrix] Sample tasks: ${JSON.stringify(matrixData.tasks.slice(0, 3))}`);
 
       return {
         success: true,
@@ -178,9 +156,7 @@ export class RTMController {
         timestamp: new Date().toISOString(),
       };
     } catch (error: any) {
-      this.logger.error(
-        `[rtm-matrix] projectId=${projectId} erro: ${error?.message}`,
-      );
+      this.logger.error(`[rtm-matrix] projectId=${projectId} erro: ${error?.message}`);
       return {
         success: false,
         error: error?.message,
@@ -194,8 +170,7 @@ export class RTMController {
   @Post(':projectId/requirements/map')
   @ApiOperation({
     summary: 'Mapear item da jornada para tarefa',
-    description:
-      'Associa uma tarefa a um item da jornada para rastreabilidade.',
+    description: 'Associa uma tarefa a um item da jornada para rastreabilidade.',
   })
   @ApiResponse({
     status: 200,
@@ -205,9 +180,7 @@ export class RTMController {
     @Param('projectId') projectId: string,
     @Body() body: { requirementId: string; taskId: string },
   ) {
-    this.logger.log(
-      `[map-req] projectId=${projectId} req=${body.requirementId} task=${body.taskId}`,
-    );
+    this.logger.log(`[map-req] projectId=${projectId} req=${body.requirementId} task=${body.taskId}`);
 
     try {
       const result = await this.rtmService.mapRequirementToTask(
@@ -238,9 +211,7 @@ export class RTMController {
         validation,
       };
     } catch (error: any) {
-      this.logger.error(
-        `[map-req] projectId=${projectId} erro: ${error?.message}`,
-      );
+      this.logger.error(`[map-req] projectId=${projectId} erro: ${error?.message}`);
       return { success: false, error: error?.message };
     }
   }
@@ -261,15 +232,10 @@ export class RTMController {
     @Param('projectId') projectId: string,
     @Body() body: { requirementId: string; taskId: string },
   ) {
-    this.logger.log(
-      `[unmap-req] projectId=${projectId} req=${body.requirementId} task=${body.taskId}`,
-    );
+    this.logger.log(`[unmap-req] projectId=${projectId} req=${body.requirementId} task=${body.taskId}`);
 
     try {
-      const result = await this.rtmService.unmapRequirementFromTask(
-        body.requirementId,
-        body.taskId,
-      );
+      const result = await this.rtmService.unmapRequirementFromTask(body.requirementId, body.taskId);
 
       if (!result) {
         return { success: false, message: 'Item da jornada não encontrado' };
@@ -293,9 +259,7 @@ export class RTMController {
         validation,
       };
     } catch (error: any) {
-      this.logger.error(
-        `[unmap-req] projectId=${projectId} erro: ${error?.message}`,
-      );
+      this.logger.error(`[unmap-req] projectId=${projectId} erro: ${error?.message}`);
       return { success: false, error: error?.message };
     }
   }
@@ -353,9 +317,7 @@ export class RTMController {
         count,
       };
     } catch (error: any) {
-      this.logger.error(
-        `[delete-all-req] projectId=${projectId} erro: ${error?.message}`,
-      );
+      this.logger.error(`[delete-all-req] projectId=${projectId} erro: ${error?.message}`);
       return { success: false, error: error?.message };
     }
   }
@@ -394,9 +356,7 @@ export class RTMController {
         validation,
       };
     } catch (error: any) {
-      this.logger.error(
-        `[list-req] projectId=${projectId} erro: ${error?.message}`,
-      );
+      this.logger.error(`[list-req] projectId=${projectId} erro: ${error?.message}`);
       return { success: false, error: error?.message };
     }
   }
@@ -417,9 +377,7 @@ export class RTMController {
   async autoMapRequirementsToTasks(@Param('projectId') projectId: string) {
     const startedAt = Date.now();
 
-    this.logger.log(
-      `[auto-map] projectId=${projectId} iniciando mapeamento automático`,
-    );
+    this.logger.log(`[auto-map] projectId=${projectId} iniciando mapeamento automático`);
 
     try {
       // 1. Buscar tarefas do projeto
@@ -436,10 +394,7 @@ export class RTMController {
       }
 
       // 2. Executar mapeamento automático
-      const result = await this.rtmService.autoMapRequirementsToTasks(
-        projectId,
-        tasks,
-      );
+      const result = await this.rtmService.autoMapRequirementsToTasks(projectId, tasks);
 
       this.logger.log(
         `[auto-map] projectId=${projectId} resultado: ${result.mappedCount} mapeadas, ${result.createdRequirementsCount} novos req, ${result.coverage}% cobertura - ${
@@ -457,9 +412,7 @@ export class RTMController {
         timestamp: new Date().toISOString(),
       };
     } catch (error: any) {
-      this.logger.error(
-        `[auto-map] projectId=${projectId} erro: ${error?.message}`,
-      );
+      this.logger.error(`[auto-map] projectId=${projectId} erro: ${error?.message}`);
       return {
         success: false,
         error: error?.message,
@@ -476,25 +429,19 @@ export class RTMController {
   @Post(':projectId/tasks/auto-generate-from-unmapped-requirements')
   @ApiOperation({
     summary: 'Gerar tarefas para ações órfãs da jornada',
-    description:
-      'Para cada ação sem tarefa vinculada, usa IA para gerar 1-2 tarefas práticas.',
+    description: 'Para cada ação sem tarefa vinculada, usa IA para gerar 1-2 tarefas práticas.',
   })
   @ApiResponse({
     status: 200,
     description: 'Tarefas geradas e mapeadas com sucesso',
   })
-  async generateTasksForUnmappedRequirements(
-    @Param('projectId') projectId: string,
-  ) {
+  async generateTasksForUnmappedRequirements(@Param('projectId') projectId: string) {
     const startedAt = Date.now();
 
-    this.logger.log(
-      `[gen-tasks] projectId=${projectId} gerando tarefas para requisitos órfãos`,
-    );
+    this.logger.log(`[gen-tasks] projectId=${projectId} gerando tarefas para requisitos órfãos`);
 
     try {
-      const result =
-        await this.rtmService.generateTasksForUnmappedRequirements(projectId);
+      const result = await this.rtmService.generateTasksForUnmappedRequirements(projectId);
 
       this.logger.log(
         `[gen-tasks] projectId=${projectId} resultado: ${result.createdTasksCount} tarefas criadas, ${result.coverage}% cobertura - ${
@@ -511,9 +458,7 @@ export class RTMController {
         timestamp: new Date().toISOString(),
       };
     } catch (error: any) {
-      this.logger.error(
-        `[gen-tasks] projectId=${projectId} erro: ${error?.message}`,
-      );
+      this.logger.error(`[gen-tasks] projectId=${projectId} erro: ${error?.message}`);
       return {
         success: false,
         error: error?.message,

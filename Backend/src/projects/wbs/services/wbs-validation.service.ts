@@ -76,9 +76,7 @@ export class WbsValidationService {
       leaves.reduce((sum, node) => sum + (Number(node.estimatedHours) || 0), 0),
     );
     const safeBudget =
-      Number.isFinite(Number(budgetHours)) && Number(budgetHours) > 0
-        ? Number(budgetHours)
-        : 0;
+      Number.isFinite(Number(budgetHours)) && Number(budgetHours) > 0 ? Number(budgetHours) : 0;
     const deltaHours = this.roundHours(totalLeafHours - safeBudget);
     const overBudget = safeBudget > 0 ? totalLeafHours > safeBudget : false;
 
@@ -87,37 +85,22 @@ export class WbsValidationService {
       totalLeafHours,
       overBudget,
       deltaHours,
-      utilizationPct:
-        safeBudget > 0
-          ? this.roundHours((totalLeafHours / safeBudget) * 100)
-          : 0,
+      utilizationPct: safeBudget > 0 ? this.roundHours((totalLeafHours / safeBudget) * 100) : 0,
       ...(context?.weeklyHours ? { weeklyHours: context.weeklyHours } : {}),
-      ...(context?.weeksAvailable
-        ? { weeksAvailable: context.weeksAvailable }
-        : {}),
+      ...(context?.weeksAvailable ? { weeksAvailable: context.weeksAvailable } : {}),
     };
   }
 
-  normalizeTreeToBudget(
-    nodes: WBSNodeDto[],
-    budgetHours: number,
-  ): WBSNodeDto[] {
+  normalizeTreeToBudget(nodes: WBSNodeDto[], budgetHours: number): WBSNodeDto[] {
     const normalized = this.cloneNodes(nodes);
     const leaves = this.collectLeafNodes(normalized);
     const safeBudget = Number(budgetHours);
 
-    if (
-      !Number.isFinite(safeBudget) ||
-      safeBudget <= 0 ||
-      leaves.length === 0
-    ) {
+    if (!Number.isFinite(safeBudget) || safeBudget <= 0 || leaves.length === 0) {
       return normalized;
     }
 
-    const currentTotal = leaves.reduce(
-      (sum, node) => sum + (Number(node.estimatedHours) || 0),
-      0,
-    );
+    const currentTotal = leaves.reduce((sum, node) => sum + (Number(node.estimatedHours) || 0), 0);
     if (!Number.isFinite(currentTotal) || currentTotal <= 0) {
       return normalized;
     }
@@ -128,10 +111,7 @@ export class WbsValidationService {
       leaf.estimatedHours = this.roundHours(Math.min(80, Math.max(8, scaled)));
     }
 
-    let adjustedTotal = leaves.reduce(
-      (sum, node) => sum + (Number(node.estimatedHours) || 0),
-      0,
-    );
+    let adjustedTotal = leaves.reduce((sum, node) => sum + (Number(node.estimatedHours) || 0), 0);
     let guard = 0;
 
     while (Math.abs(adjustedTotal - safeBudget) > 0.1 && guard < 1000) {
@@ -196,10 +176,7 @@ export class WbsValidationService {
       return node.estimatedHours;
     }
 
-    const total = node.children.reduce(
-      (sum, child) => sum + this.recalculateNodeHours(child),
-      0,
-    );
+    const total = node.children.reduce((sum, child) => sum + this.recalculateNodeHours(child), 0);
     node.estimatedHours = this.roundHours(total);
     return node.estimatedHours;
   }

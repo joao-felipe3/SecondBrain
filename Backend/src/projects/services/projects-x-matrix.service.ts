@@ -1,25 +1,11 @@
 import { InjectModel } from '@nestjs/mongoose';
-import {
-  BadRequestException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { Model, Types } from 'mongoose';
 import { TaskDocument } from '../../tasks/schemas/task.schema';
 import { ProjectDocument } from '../schemas/project.schema';
-import {
-  ProjectWave,
-  type ProjectWaveDocument,
-} from '../schemas/project-wave.schema';
-import {
-  CreateXMatrixDto,
-  type XMatrixResponseDto,
-  type XMatrixStrength,
-} from '../dto/x-matrix.dto';
-import {
-  XMatrixSnapshot,
-  type XMatrixSnapshotDocument,
-} from '../schemas/x-matrix-snapshot.schema';
+import { ProjectWave, type ProjectWaveDocument } from '../schemas/project-wave.schema';
+import { CreateXMatrixDto, type XMatrixResponseDto, type XMatrixStrength } from '../dto/x-matrix.dto';
+import { XMatrixSnapshot, type XMatrixSnapshotDocument } from '../schemas/x-matrix-snapshot.schema';
 
 @Injectable()
 export class ProjectsXMatrixService {
@@ -152,10 +138,7 @@ export class ProjectsXMatrixService {
     };
   }
 
-  private inferInitiativeFromWbsPath(
-    path: string | undefined,
-    levels: Set<number>,
-  ): string | null {
+  private inferInitiativeFromWbsPath(path: string | undefined, levels: Set<number>): string | null {
     const raw = String(path || '').trim();
     if (!raw) return null;
 
@@ -171,10 +154,7 @@ export class ProjectsXMatrixService {
     return selected.join(' > ');
   }
 
-  async createXMatrix(
-    projectId: string,
-    dto: CreateXMatrixDto,
-  ): Promise<XMatrixResponseDto> {
+  async createXMatrix(projectId: string, dto: CreateXMatrixDto): Promise<XMatrixResponseDto> {
     if (
       !projectId ||
       projectId === 'null' ||
@@ -188,23 +168,16 @@ export class ProjectsXMatrixService {
     if (!project) throw new NotFoundException('Project not found');
 
     const includeCompleted = dto?.includeCompleted ?? true;
-    const maxTacticalItems = Math.max(
-      20,
-      Math.min(160, Number(dto?.maxTacticalItems || 80)),
-    );
+    const maxTacticalItems = Math.max(20, Math.min(160, Number(dto?.maxTacticalItems || 80)));
     const wbsLevels = new Set(
-      (dto?.wbsLevels || [1, 2]).filter(
-        (level) => Number.isFinite(level) && level >= 1,
-      ),
+      (dto?.wbsLevels || [1, 2]).filter((level) => Number.isFinite(level) && level >= 1),
     );
 
     const taskQuery: Record<string, any> = { project: projectId };
     if (!includeCompleted) taskQuery.isConcluded = { $ne: true };
     if (dto?.taskIds?.length) {
       taskQuery._id = {
-        $in: dto.taskIds
-          .filter((id) => Types.ObjectId.isValid(id))
-          .map((id) => new Types.ObjectId(id)),
+        $in: dto.taskIds.filter((id) => Types.ObjectId.isValid(id)).map((id) => new Types.ObjectId(id)),
       };
     }
 
@@ -224,9 +197,7 @@ export class ProjectsXMatrixService {
       ...this.splitGoalText(project.smartObjective?.relevant),
       ...this.splitGoalText(project.smartObjective?.summary),
     ].filter(Boolean);
-    const strategyGoalsRaw = strategyFromDto.length
-      ? strategyFromDto
-      : strategyFallback;
+    const strategyGoalsRaw = strategyFromDto.length ? strategyFromDto : strategyFallback;
 
     const annualFromDto = (dto?.annualGoals || [])
       .map((item) => String(item || '').trim())
@@ -237,12 +208,9 @@ export class ProjectsXMatrixService {
       ...this.splitGoalText(project.smartObjective?.specific),
       ...this.splitGoalText(project.smartObjective?.measurable),
     ].filter(Boolean);
-    const annualGoalsRaw = annualFromDto.length
-      ? annualFromDto
-      : annualFallback;
+    const annualGoalsRaw = annualFromDto.length ? annualFromDto : annualFallback;
 
-    const dedupe = (items: string[]) =>
-      Array.from(new Set(items.map((v) => v.trim()).filter(Boolean)));
+    const dedupe = (items: string[]) => Array.from(new Set(items.map((v) => v.trim()).filter(Boolean)));
     const strategyGoals = dedupe(strategyGoalsRaw).map((label, index) => ({
       id: `S${index + 1}`,
       label,
@@ -252,14 +220,9 @@ export class ProjectsXMatrixService {
     const annualSeed = annualGoalsRaw.length
       ? annualGoalsRaw
       : waves.map((wave) => {
-          const start = wave.startDate
-            ? new Date(wave.startDate).toISOString().slice(0, 10)
-            : null;
-          const end = wave.endDate
-            ? new Date(wave.endDate).toISOString().slice(0, 10)
-            : null;
-          const range =
-            start && end ? `${start}..${end}` : 'periodo indefinido';
+          const start = wave.startDate ? new Date(wave.startDate).toISOString().slice(0, 10) : null;
+          const end = wave.endDate ? new Date(wave.endDate).toISOString().slice(0, 10) : null;
+          const range = start && end ? `${start}..${end}` : 'periodo indefinido';
           return `Meta de execucao da Onda ${wave.waveNumber} (${range})`;
         });
 
@@ -291,13 +254,9 @@ export class ProjectsXMatrixService {
     const tacticalById = new Map<string, TacticalAgg>();
     for (const task of tasks as any[]) {
       const taskId = String(task?._id || '').trim();
-      const pathLabel = this.inferInitiativeFromWbsPath(
-        task?.wbsPath,
-        wbsLevels,
-      );
+      const pathLabel = this.inferInitiativeFromWbsPath(task?.wbsPath, wbsLevels);
       const parentNodeId = String(task?.parentWbsNodeId || '').trim();
-      const fallbackLabel =
-        String(task?.title || task?.name || '').trim() || 'Iniciativa sem nome';
+      const fallbackLabel = String(task?.title || task?.name || '').trim() || 'Iniciativa sem nome';
       const initiativeLabel = pathLabel || fallbackLabel;
       const initiativeId = parentNodeId || initiativeLabel.toLowerCase();
 
@@ -323,9 +282,7 @@ export class ProjectsXMatrixService {
     }
 
     const tacticalItems = Array.from(tacticalById.values())
-      .sort(
-        (a, b) => b.taskCount - a.taskCount || a.label.localeCompare(b.label),
-      )
+      .sort((a, b) => b.taskCount - a.taskCount || a.label.localeCompare(b.label))
       .slice(0, maxTacticalItems)
       .map((item, index) => {
         const wavesText = Array.from(item.waveNumbers.values())
@@ -346,11 +303,7 @@ export class ProjectsXMatrixService {
       const mergedDescriptions = item.descriptions.slice(0, 4).join(' | ');
       tacticalContextById.set(
         item.id,
-        [
-          item.label,
-          mergedDescriptions,
-          wavesText ? `Ondas ${wavesText}` : 'Sem onda definida',
-        ]
+        [item.label, mergedDescriptions, wavesText ? `Ondas ${wavesText}` : 'Sem onda definida']
           .filter(Boolean)
           .join(' | '),
       );
@@ -371,8 +324,7 @@ export class ProjectsXMatrixService {
 
     const annualToTactical = annualGoals.flatMap((annual) => {
       return tacticalItems.map((tactical) => {
-        const tacticalContext =
-          tacticalContextById.get(tactical.id) || tactical.label;
+        const tacticalContext = tacticalContextById.get(tactical.id) || tactical.label;
         const scored = this.scoreStrength(annual.label, tacticalContext);
         return {
           fromId: annual.id,
@@ -387,29 +339,20 @@ export class ProjectsXMatrixService {
     const warnings: string[] = [];
     if (strategyGoals.length === 0)
       warnings.push('Nao foi possivel identificar objetivos estrategicos.');
-    if (annualGoals.length === 0)
-      warnings.push('Nao foi possivel identificar metas anuais.');
+    if (annualGoals.length === 0) warnings.push('Nao foi possivel identificar metas anuais.');
     if (tacticalItems.length === 0)
-      warnings.push(
-        'Projeto sem iniciativas taticas suficientes (WBS nivel 1/2).',
-      );
+      warnings.push('Projeto sem iniciativas taticas suficientes (WBS nivel 1/2).');
     if (tacticalById.size > tacticalItems.length) {
       warnings.push(
         `Eixo tatico truncado para ${tacticalItems.length} iniciativas para manter legibilidade.`,
       );
     }
     if (waves.length === 0)
-      warnings.push(
-        'Nenhuma onda encontrada. Defina ondas para aplicar zoom tatico mensal/trimestral.',
-      );
+      warnings.push('Nenhuma onda encontrada. Defina ondas para aplicar zoom tatico mensal/trimestral.');
 
     const projectStart = project.startDate ? new Date(project.startDate) : null;
     const projectEnd = project.deadline ? new Date(project.deadline) : null;
-    if (
-      projectStart &&
-      projectEnd &&
-      projectEnd.getTime() > projectStart.getTime()
-    ) {
+    if (projectStart && projectEnd && projectEnd.getTime() > projectStart.getTime()) {
       const durationDays = Math.ceil(
         (projectEnd.getTime() - projectStart.getTime()) / (1000 * 60 * 60 * 24),
       );
@@ -425,14 +368,10 @@ export class ProjectsXMatrixService {
     let activeTacticalIds = new Set(tacticalItems.map((item) => item.id));
 
     const usefulAnnualIdsFromNorth = new Set(
-      strategyToAnnual
-        .filter((cell) => cell.strength !== 'none')
-        .map((cell) => cell.toId),
+      strategyToAnnual.filter((cell) => cell.strength !== 'none').map((cell) => cell.toId),
     );
     const usefulAnnualIdsFromTactical = new Set(
-      annualToTactical
-        .filter((cell) => cell.strength !== 'none')
-        .map((cell) => cell.fromId),
+      annualToTactical.filter((cell) => cell.strength !== 'none').map((cell) => cell.fromId),
     );
 
     const usefulAnnualIds =
@@ -447,18 +386,12 @@ export class ProjectsXMatrixService {
       activeAnnualIds = usefulAnnualIds;
       activeStrategyIds = new Set(
         strategyToAnnual
-          .filter(
-            (cell) =>
-              cell.strength !== 'none' && activeAnnualIds.has(cell.toId),
-          )
+          .filter((cell) => cell.strength !== 'none' && activeAnnualIds.has(cell.toId))
           .map((cell) => cell.fromId),
       );
       activeTacticalIds = new Set(
         annualToTactical
-          .filter(
-            (cell) =>
-              cell.strength !== 'none' && activeAnnualIds.has(cell.fromId),
-          )
+          .filter((cell) => cell.strength !== 'none' && activeAnnualIds.has(cell.fromId))
           .map((cell) => cell.toId),
       );
 
@@ -468,23 +401,15 @@ export class ProjectsXMatrixService {
         activeTacticalIds = new Set(tacticalItems.map((item) => item.id));
     }
 
-    const filteredStrategyGoals = strategyGoals.filter((item) =>
-      activeStrategyIds.has(item.id),
-    );
-    const filteredAnnualGoals = annualGoals.filter((item) =>
-      activeAnnualIds.has(item.id),
-    );
-    const filteredTacticalItems = tacticalItems.filter((item) =>
-      activeTacticalIds.has(item.id),
-    );
+    const filteredStrategyGoals = strategyGoals.filter((item) => activeStrategyIds.has(item.id));
+    const filteredAnnualGoals = annualGoals.filter((item) => activeAnnualIds.has(item.id));
+    const filteredTacticalItems = tacticalItems.filter((item) => activeTacticalIds.has(item.id));
 
     const filteredStrategyToAnnual = strategyToAnnual.filter(
-      (cell) =>
-        activeStrategyIds.has(cell.fromId) && activeAnnualIds.has(cell.toId),
+      (cell) => activeStrategyIds.has(cell.fromId) && activeAnnualIds.has(cell.toId),
     );
     const filteredAnnualToTactical = annualToTactical.filter(
-      (cell) =>
-        activeAnnualIds.has(cell.fromId) && activeTacticalIds.has(cell.toId),
+      (cell) => activeAnnualIds.has(cell.fromId) && activeTacticalIds.has(cell.toId),
     );
 
     if (filteredAnnualGoals.length < annualGoals.length) {
@@ -563,9 +488,7 @@ export class ProjectsXMatrixService {
         )
         .exec();
 
-      await this.projectModel
-        .updateOne({ _id: projectId }, { $unset: { xMatrixSnapshot: '' } })
-        .exec();
+      await this.projectModel.updateOne({ _id: projectId }, { $unset: { xMatrixSnapshot: '' } }).exec();
 
       return legacySnapshot as XMatrixResponseDto;
     }

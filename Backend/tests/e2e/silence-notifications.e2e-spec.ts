@@ -27,18 +27,13 @@ describe('Settings E2E Tests (e2e)', () => {
     it('should return default settings for new user', async () => {
       const userId = 'new-user-' + Date.now();
 
-      const response = await request(app.getHttpServer())
-        .get(`/settings/${userId}`)
-        .expect(200);
+      const response = await request(app.getHttpServer()).get(`/settings/${userId}`).expect(200);
 
       expect(response.body).toHaveProperty('userId', userId);
       expect(response.body).toHaveProperty('silenceNotifications', false);
       expect(response.body).toHaveProperty('darkMode', false);
       expect(response.body).toHaveProperty('soundEnabled', true);
-      expect(response.body).toHaveProperty(
-        'notificationTimeBeforeDueMinutes',
-        10,
-      );
+      expect(response.body).toHaveProperty('notificationTimeBeforeDueMinutes', 10);
     });
 
     it('should return existing settings for known user', async () => {
@@ -51,9 +46,7 @@ describe('Settings E2E Tests (e2e)', () => {
         .expect(200);
 
       // Retrieve settings
-      const response = await request(app.getHttpServer())
-        .get(`/settings/${userId}`)
-        .expect(200);
+      const response = await request(app.getHttpServer()).get(`/settings/${userId}`).expect(200);
 
       expect(response.body.silenceNotifications).toBe(true);
       expect(response.body.darkMode).toBe(true);
@@ -190,17 +183,13 @@ describe('Settings E2E Tests (e2e)', () => {
         .expect(200);
 
       // Retrieve and verify
-      const response1 = await request(app.getHttpServer())
-        .get(`/settings/${userId}`)
-        .expect(200);
+      const response1 = await request(app.getHttpServer()).get(`/settings/${userId}`).expect(200);
 
       expect(response1.body.silenceNotifications).toBe(true);
       expect(response1.body.darkMode).toBe(true);
 
       // Retrieve again to verify persistence
-      const response2 = await request(app.getHttpServer())
-        .get(`/settings/${userId}`)
-        .expect(200);
+      const response2 = await request(app.getHttpServer()).get(`/settings/${userId}`).expect(200);
 
       expect(response2.body.silenceNotifications).toBe(true);
       expect(response2.body.darkMode).toBe(true);
@@ -222,13 +211,9 @@ describe('Settings E2E Tests (e2e)', () => {
         .expect(200);
 
       // Verify isolation
-      const response1 = await request(app.getHttpServer())
-        .get(`/settings/${userId1}`)
-        .expect(200);
+      const response1 = await request(app.getHttpServer()).get(`/settings/${userId1}`).expect(200);
 
-      const response2 = await request(app.getHttpServer())
-        .get(`/settings/${userId2}`)
-        .expect(200);
+      const response2 = await request(app.getHttpServer()).get(`/settings/${userId2}`).expect(200);
 
       expect(response1.body.silenceNotifications).toBe(true);
       expect(response1.body.darkMode).toBe(false);

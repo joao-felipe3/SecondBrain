@@ -3,11 +3,7 @@ import { createHash } from 'crypto';
 import { z } from 'zod';
 import { GeminiService } from '../../../ai/gemini.service';
 import { WBSNodeDto } from '../../dto/wbs.dto';
-import {
-  CacheService,
-  PromptBuilderService,
-  ThemeExtractionService,
-} from './index';
+import { CacheService, PromptBuilderService, ThemeExtractionService } from './index';
 import { extractJsonArray, extractJsonObject } from '../utils/json-parser.util';
 import {
   normalizeTitle,
@@ -61,10 +57,7 @@ export class DraftGenerationService {
         .array(z.preprocess((v) => String(v ?? '').trim(), z.string().min(1)))
         .min(2)
         .max(8),
-      definitionOfDone: z.preprocess(
-        (v) => String(v ?? '').trim(),
-        z.string().min(1),
-      ),
+      definitionOfDone: z.preprocess((v) => String(v ?? '').trim(), z.string().min(1)),
       pomodorosPlanned: z.preprocess(
         (v) => (v === undefined || v === null || v === '' ? v : Number(v)),
         z.number().int().min(1).max(6),
@@ -120,9 +113,7 @@ export class DraftGenerationService {
     })
     .passthrough();
 
-  private readonly draftOutlinesSchema = z
-    .array(this.draftOutlineSchema)
-    .min(1);
+  private readonly draftOutlinesSchema = z.array(this.draftOutlineSchema).min(1);
 
   private readonly draftDetailsSchema = z
     .object({
@@ -130,10 +121,7 @@ export class DraftGenerationService {
         .array(z.preprocess((v) => String(v ?? '').trim(), z.string().min(1)))
         .min(2)
         .max(8),
-      definitionOfDone: z.preprocess(
-        (v) => String(v ?? '').trim(),
-        z.string().min(1),
-      ),
+      definitionOfDone: z.preprocess((v) => String(v ?? '').trim(), z.string().min(1)),
       description: z
         .preprocess(
           (v) => (v === undefined || v === null ? undefined : String(v)),
@@ -327,16 +315,13 @@ export class DraftGenerationService {
     milestones?: Array<{ name?: string; goal?: string; atMinutes?: number }>;
     constraints?: any;
   }> {
-    const resolvedModelOverride =
-      params.modelOverride || this.getWbsGenerationModelOverride();
+    const resolvedModelOverride = params.modelOverride || this.getWbsGenerationModelOverride();
     const projectId = this.getProjectId(params.project);
 
     const planFingerprint = {
       v: 1,
       kind: 'plan',
-      nodeId: (params.node as any)?._id
-        ? String((params.node as any)._id)
-        : undefined,
+      nodeId: (params.node as any)?._id ? String((params.node as any)._id) : undefined,
       nodeName: params.node?.name,
       nodeDesc: params.node?.description,
       currentPath: params.currentPath,
@@ -374,10 +359,7 @@ export class DraftGenerationService {
       themeHints: themeHints.themes,
     });
 
-    const attempt = async (opts: {
-      maxOutputTokens: number;
-      temperature: number;
-    }) => {
+    const attempt = async (opts: { maxOutputTokens: number; temperature: number }) => {
       const response = await this.geminiService.generateContent(prompt, {
         model: resolvedModelOverride,
         responseMimeType: 'application/json',
@@ -446,15 +428,12 @@ export class DraftGenerationService {
     }>
   > {
     const projectId = this.getProjectId(params.project);
-    const resolvedModelOverride =
-      modelOverride || this.getWbsGenerationModelOverride();
+    const resolvedModelOverride = modelOverride || this.getWbsGenerationModelOverride();
     if (projectId) {
       const fingerprint = {
         v: 1,
         kind: 'drafts',
-        nodeId: (params.node as any)?._id
-          ? String((params.node as any)._id)
-          : undefined,
+        nodeId: (params.node as any)?._id ? String((params.node as any)._id) : undefined,
         nodeName: params.node?.name,
         nodeDesc: params.node?.description,
         currentPath: params.currentPath,
@@ -471,11 +450,7 @@ export class DraftGenerationService {
         fingerprint,
       });
       const cached = await this.cacheService.get<any[]>(cacheKey);
-      if (
-        cached &&
-        Array.isArray(cached) &&
-        cached.length >= chunkMinutes.length
-      ) {
+      if (cached && Array.isArray(cached) && cached.length >= chunkMinutes.length) {
         if (this.isCacheDebugEnabled()) {
           console.log('[draft-generation][cache] hit', {
             prefix: 'drafts',
@@ -490,24 +465,15 @@ export class DraftGenerationService {
 
     const maxPerCall = this.getNumericEnv('WBS_MAX_PER_CALL', 24);
     const baseMaxTokens = this.getNumericEnv('WBS_MAX_OUTPUT_TOKENS', 2200);
-    const retryMaxTokens = this.getNumericEnv(
-      'WBS_MAX_OUTPUT_TOKENS_RETRY',
-      3500,
-    );
+    const retryMaxTokens = this.getNumericEnv('WBS_MAX_OUTPUT_TOKENS_RETRY', 3500);
     // resolvedModelOverride defined above (used for cache key too)
 
     const avoidTaskTitles: string[] = [];
 
     const twoPassEnabled = this.isTwoPassEnabled();
     const detailsConcurrency = this.getNumericEnv('WBS_DETAILS_CONCURRENCY', 6);
-    const detailsMaxTokens = this.getNumericEnv(
-      'WBS_DETAILS_MAX_OUTPUT_TOKENS',
-      900,
-    );
-    const detailsRetryMaxTokens = this.getNumericEnv(
-      'WBS_DETAILS_MAX_OUTPUT_TOKENS_RETRY',
-      1400,
-    );
+    const detailsMaxTokens = this.getNumericEnv('WBS_DETAILS_MAX_OUTPUT_TOKENS', 900);
+    const detailsRetryMaxTokens = this.getNumericEnv('WBS_DETAILS_MAX_OUTPUT_TOKENS_RETRY', 1400);
     const modeLabel = twoPassEnabled ? 'two-pass' : 'single-pass';
     const overallStart = Date.now();
     this.logWithTimestamp(
@@ -526,14 +492,10 @@ export class DraftGenerationService {
       );
     };
 
-    const generateDraftsForSlice = async (
-      sliceMinutes: number[],
-    ): Promise<any[]> => {
+    const generateDraftsForSlice = async (sliceMinutes: number[]): Promise<any[]> => {
       const sliceMode = twoPassEnabled ? 'two-pass' : 'single-pass';
       const sliceStart = Date.now();
-      this.logWithTimestamp(
-        `slice(${sliceMinutes.length}) start [${sliceMode}]`,
-      );
+      this.logWithTimestamp(`slice(${sliceMinutes.length}) start [${sliceMode}]`);
       try {
         if (!twoPassEnabled) {
           const prompt = this.promptBuilder.buildMicroTasksPrompt({
@@ -542,10 +504,7 @@ export class DraftGenerationService {
             avoidTaskTitles,
           });
 
-          const attempt = async (opts: {
-            maxOutputTokens: number;
-            temperature: number;
-          }) => {
+          const attempt = async (opts: { maxOutputTokens: number; temperature: number }) => {
             const response = await this.geminiService.generateContent(prompt, {
               model: resolvedModelOverride,
               responseMimeType: 'application/json',
@@ -555,9 +514,7 @@ export class DraftGenerationService {
             const drafts = extractJsonArray<any>(response);
             const validated = this.validateDrafts(drafts);
             if (validated.length !== sliceMinutes.length) {
-              throw new Error(
-                `IA retornou ${validated.length} itens; esperado ${sliceMinutes.length}`,
-              );
+              throw new Error(`IA retornou ${validated.length} itens; esperado ${sliceMinutes.length}`);
             }
             return validated;
           };
@@ -570,12 +527,8 @@ export class DraftGenerationService {
           } catch (err: any) {
             if (sliceMinutes.length > 1 && isJsonishError(err)) {
               const mid = Math.ceil(sliceMinutes.length / 2);
-              const left = await generateDraftsForSlice(
-                sliceMinutes.slice(0, mid),
-              );
-              const right = await generateDraftsForSlice(
-                sliceMinutes.slice(mid),
-              );
+              const left = await generateDraftsForSlice(sliceMinutes.slice(0, mid));
+              const right = await generateDraftsForSlice(sliceMinutes.slice(mid));
               return [...left, ...right];
             }
 
@@ -595,25 +548,17 @@ export class DraftGenerationService {
           avoidTaskTitles,
         });
 
-        const attemptOutline = async (opts: {
-          maxOutputTokens: number;
-          temperature: number;
-        }) => {
-          const response = await this.geminiService.generateContent(
-            outlinePrompt,
-            {
-              model: resolvedModelOverride,
-              responseMimeType: 'application/json',
-              maxOutputTokens: opts.maxOutputTokens,
-              temperature: opts.temperature,
-            },
-          );
+        const attemptOutline = async (opts: { maxOutputTokens: number; temperature: number }) => {
+          const response = await this.geminiService.generateContent(outlinePrompt, {
+            model: resolvedModelOverride,
+            responseMimeType: 'application/json',
+            maxOutputTokens: opts.maxOutputTokens,
+            temperature: opts.temperature,
+          });
           const outlines = extractJsonArray<any>(response);
           const validated = this.validateDraftOutlines(outlines);
           if (validated.length !== sliceMinutes.length) {
-            throw new Error(
-              `IA retornou ${validated.length} outlines; esperado ${sliceMinutes.length}`,
-            );
+            throw new Error(`IA retornou ${validated.length} outlines; esperado ${sliceMinutes.length}`);
           }
           return validated;
         };
@@ -627,9 +572,7 @@ export class DraftGenerationService {
         } catch (err: any) {
           if (sliceMinutes.length > 1 && isJsonishError(err)) {
             const mid = Math.ceil(sliceMinutes.length / 2);
-            const left = await generateDraftsForSlice(
-              sliceMinutes.slice(0, mid),
-            );
+            const left = await generateDraftsForSlice(sliceMinutes.slice(0, mid));
             const right = await generateDraftsForSlice(sliceMinutes.slice(mid));
             return [...left, ...right];
           }
@@ -643,23 +586,13 @@ export class DraftGenerationService {
           }
         }
 
-        const detailsModelOverride = this.getDetailsModelOverride(
-          resolvedModelOverride,
-        );
-        const detailsBatchSize = this.getNumericEnv(
-          'WBS_DETAILS_BATCH_SIZE',
-          1,
-        );
+        const detailsModelOverride = this.getDetailsModelOverride(resolvedModelOverride);
+        const detailsBatchSize = this.getNumericEnv('WBS_DETAILS_BATCH_SIZE', 1);
         const detailsBatchConcurrency =
           detailsBatchSize > 1
             ? this.getNumericEnv(
                 'WBS_DETAILS_BATCH_CONCURRENCY',
-                Math.max(
-                  1,
-                  Math.floor(
-                    detailsConcurrency / Math.max(1, detailsBatchSize),
-                  ),
-                ),
+                Math.max(1, Math.floor(detailsConcurrency / Math.max(1, detailsBatchSize))),
               )
             : detailsConcurrency;
         const detailsBatchMaxTokens = this.getNumericEnv(
@@ -689,33 +622,24 @@ export class DraftGenerationService {
           }>
         > => {
           if (batchOutlines.length !== batchMinutes.length) {
-            throw new Error(
-              'Details batch inválido: tamanho de batchMinutes não confere',
-            );
+            throw new Error('Details batch inválido: tamanho de batchMinutes não confere');
           }
 
           // When batchSize is 1, keep the old per-item prompt to minimize behavior changes.
           if (batchOutlines.length === 1) {
-            const detailsPrompt =
-              this.promptBuilder.buildMicroTaskDetailsPrompt({
-                ...params,
-                targetMinutes: batchMinutes[0],
-                outline: batchOutlines[0],
-              });
+            const detailsPrompt = this.promptBuilder.buildMicroTaskDetailsPrompt({
+              ...params,
+              targetMinutes: batchMinutes[0],
+              outline: batchOutlines[0],
+            });
 
-            const attemptDetails = async (opts: {
-              maxOutputTokens: number;
-              temperature: number;
-            }) => {
-              const response = await this.geminiService.generateContent(
-                detailsPrompt,
-                {
-                  model: detailsModelOverride,
-                  responseMimeType: 'application/json',
-                  maxOutputTokens: opts.maxOutputTokens,
-                  temperature: opts.temperature,
-                },
-              );
+            const attemptDetails = async (opts: { maxOutputTokens: number; temperature: number }) => {
+              const response = await this.geminiService.generateContent(detailsPrompt, {
+                model: detailsModelOverride,
+                responseMimeType: 'application/json',
+                maxOutputTokens: opts.maxOutputTokens,
+                temperature: opts.temperature,
+              });
               const details = extractJsonObject<any>(response);
               return [this.validateDraftDetails(details)];
             };
@@ -742,42 +666,31 @@ export class DraftGenerationService {
             }
           }
 
-          const batchPrompt =
-            this.promptBuilder.buildMicroTaskDetailsBatchPrompt({
-              ...params,
-              items: batchOutlines.map((outline, i) => ({
-                outline,
-                targetMinutes: batchMinutes[i],
-              })),
-            });
+          const batchPrompt = this.promptBuilder.buildMicroTaskDetailsBatchPrompt({
+            ...params,
+            items: batchOutlines.map((outline, i) => ({
+              outline,
+              targetMinutes: batchMinutes[i],
+            })),
+          });
 
-          const attemptBatch = async (opts: {
-            maxOutputTokens: number;
-            temperature: number;
-          }) => {
-            const response = await this.geminiService.generateContent(
-              batchPrompt,
-              {
-                model: detailsModelOverride,
-                responseMimeType: 'application/json',
-                maxOutputTokens: opts.maxOutputTokens,
-                temperature: opts.temperature,
-              },
-            );
+          const attemptBatch = async (opts: { maxOutputTokens: number; temperature: number }) => {
+            const response = await this.geminiService.generateContent(batchPrompt, {
+              model: detailsModelOverride,
+              responseMimeType: 'application/json',
+              maxOutputTokens: opts.maxOutputTokens,
+              temperature: opts.temperature,
+            });
             const detailsList = extractJsonArray<any>(response);
             if (!Array.isArray(detailsList)) {
-              throw new Error(
-                'Details batch inválido: não retornou array JSON',
-              );
+              throw new Error('Details batch inválido: não retornou array JSON');
             }
             if (detailsList.length < batchOutlines.length) {
               throw new Error(
                 `IA retornou ${detailsList.length} details; esperado ${batchOutlines.length}`,
               );
             }
-            return detailsList
-              .slice(0, batchOutlines.length)
-              .map((d) => this.validateDraftDetails(d));
+            return detailsList.slice(0, batchOutlines.length).map((d) => this.validateDraftDetails(d));
           };
 
           try {
@@ -816,10 +729,7 @@ export class DraftGenerationService {
             outlines,
             detailsConcurrency,
             async (outline, index) => {
-              const details = await generateDetailsForBatch(
-                [outline],
-                [sliceMinutes[index]],
-              );
+              const details = await generateDetailsForBatch([outline], [sliceMinutes[index]]);
               return { ...outline, ...details[0] };
             },
           );
@@ -841,10 +751,7 @@ export class DraftGenerationService {
             batches,
             detailsBatchConcurrency,
             async (b) => {
-              const detailsList = await generateDetailsForBatch(
-                b.outlines,
-                b.minutes,
-              );
+              const detailsList = await generateDetailsForBatch(b.outlines, b.minutes);
               return { start: b.start, detailsList };
             },
           );
@@ -861,9 +768,7 @@ export class DraftGenerationService {
         return this.validateDrafts(enriched);
       } finally {
         const elapsed = Date.now() - sliceStart;
-        this.logWithTimestamp(
-          `slice(${sliceMinutes.length}) end [${sliceMode}] ${elapsed}ms`,
-        );
+        this.logWithTimestamp(`slice(${sliceMinutes.length}) end [${sliceMode}] ${elapsed}ms`);
       }
     };
 
@@ -890,26 +795,16 @@ export class DraftGenerationService {
       `generateMicroTasksDraftsForLeaf end mode=${modeLabel} slices=${slices.length} total=${overallElapsed}ms`,
     );
     const normalized = allDrafts.map((d, idx) => ({
-      name: String(
-        d.name || `Micro-tarefa (${idx + 1}/${chunkMinutes.length})`,
-      ).trim(),
+      name: String(d.name || `Micro-tarefa (${idx + 1}/${chunkMinutes.length})`).trim(),
       description: String(d?.description || '').trim() || undefined,
       checklist: Array.isArray(d?.checklist)
-        ? (d.checklist as any[])
-            .map((s) => String(s || '').trim())
-            .filter(Boolean)
+        ? (d.checklist as any[]).map((s) => String(s || '').trim()).filter(Boolean)
         : [],
       definitionOfDone: String(d?.definitionOfDone || '').trim(),
-      pomodorosPlanned: Math.max(
-        1,
-        Math.min(6, Number(d?.pomodorosPlanned) || 1),
-      ),
+      pomodorosPlanned: Math.max(1, Math.min(6, Number(d?.pomodorosPlanned) || 1)),
       priority: Math.max(
         1,
-        Math.min(
-          4,
-          Number(d?.priority) || Math.max(1, Math.min(4, 5 - params.level)),
-        ),
+        Math.min(4, Number(d?.priority) || Math.max(1, Math.min(4, 5 - params.level))),
       ),
       difficult: Math.max(1, Math.min(4, Number(d?.difficult) || 2)),
       microTaskType: normalizeMicroTaskType(d?.microTaskType),
@@ -923,9 +818,7 @@ export class DraftGenerationService {
       const fingerprint = {
         v: 1,
         kind: 'drafts',
-        nodeId: (params.node as any)?._id
-          ? String((params.node as any)._id)
-          : undefined,
+        nodeId: (params.node as any)?._id ? String((params.node as any)._id) : undefined,
         nodeName: params.node?.name,
         nodeDesc: params.node?.description,
         currentPath: params.currentPath,
@@ -981,15 +874,12 @@ export class DraftGenerationService {
     }>
   > {
     const projectId = this.getProjectId(params.project);
-    const resolvedModelOverride =
-      params.modelOverride || this.getWbsGenerationModelOverride();
+    const resolvedModelOverride = params.modelOverride || this.getWbsGenerationModelOverride();
     if (projectId) {
       const fingerprint = {
         v: 2,
         kind: 'drafts_with_plan',
-        nodeId: (params.node as any)?._id
-          ? String((params.node as any)._id)
-          : undefined,
+        nodeId: (params.node as any)?._id ? String((params.node as any)._id) : undefined,
         nodeName: params.node?.name,
         nodeDesc: params.node?.description,
         currentPath: params.currentPath,
@@ -1007,11 +897,7 @@ export class DraftGenerationService {
         fingerprint,
       });
       const cached = await this.cacheService.get<any[]>(cacheKey);
-      if (
-        cached &&
-        Array.isArray(cached) &&
-        cached.length >= chunkMinutes.length
-      ) {
+      if (cached && Array.isArray(cached) && cached.length >= chunkMinutes.length) {
         if (this.isCacheDebugEnabled()) {
           console.log('[draft-generation][cache] hit', {
             prefix: 'drafts_with_plan',
@@ -1044,14 +930,8 @@ export class DraftGenerationService {
 
     const twoPassEnabled = this.isTwoPassEnabled();
     const detailsConcurrency = this.getNumericEnv('WBS_DETAILS_CONCURRENCY', 6);
-    const detailsMaxTokens = this.getNumericEnv(
-      'WBS_DETAILS_MAX_OUTPUT_TOKENS',
-      900,
-    );
-    const detailsRetryMaxTokens = this.getNumericEnv(
-      'WBS_DETAILS_MAX_OUTPUT_TOKENS_RETRY',
-      1400,
-    );
+    const detailsMaxTokens = this.getNumericEnv('WBS_DETAILS_MAX_OUTPUT_TOKENS', 900);
+    const detailsRetryMaxTokens = this.getNumericEnv('WBS_DETAILS_MAX_OUTPUT_TOKENS_RETRY', 1400);
 
     const isJsonishError = (err: any) => {
       const msg = String(err?.message || err || '').toLowerCase();
@@ -1066,36 +946,24 @@ export class DraftGenerationService {
       );
     };
 
-    const generateOutlinesForSlice = async (
-      sliceMinutes: number[],
-      depth = 0,
-    ): Promise<any[]> => {
-      const outlinePrompt =
-        this.promptBuilder.buildMicroTasksOutlineWithPlanPrompt({
-          ...params,
-          chunkMinutes: sliceMinutes,
-          avoidTaskTitles,
-        });
+    const generateOutlinesForSlice = async (sliceMinutes: number[], depth = 0): Promise<any[]> => {
+      const outlinePrompt = this.promptBuilder.buildMicroTasksOutlineWithPlanPrompt({
+        ...params,
+        chunkMinutes: sliceMinutes,
+        avoidTaskTitles,
+      });
 
-      const attemptOutline = async (opts: {
-        maxOutputTokens: number;
-        temperature: number;
-      }) => {
-        const response = await this.geminiService.generateContent(
-          outlinePrompt,
-          {
-            model: resolvedModelOverride,
-            responseMimeType: 'application/json',
-            maxOutputTokens: opts.maxOutputTokens,
-            temperature: opts.temperature,
-          },
-        );
+      const attemptOutline = async (opts: { maxOutputTokens: number; temperature: number }) => {
+        const response = await this.geminiService.generateContent(outlinePrompt, {
+          model: resolvedModelOverride,
+          responseMimeType: 'application/json',
+          maxOutputTokens: opts.maxOutputTokens,
+          temperature: opts.temperature,
+        });
         const outlines = extractJsonArray<any>(response);
         const validated = this.validateDraftOutlines(outlines);
         if (validated.length < sliceMinutes.length) {
-          throw new Error(
-            `IA retornou ${validated.length} outlines; esperado ${sliceMinutes.length}`,
-          );
+          throw new Error(`IA retornou ${validated.length} outlines; esperado ${sliceMinutes.length}`);
         }
         return validated;
       };
@@ -1110,14 +978,8 @@ export class DraftGenerationService {
 
         if (sliceMinutes.length > 1 && depth < 4) {
           const mid = Math.ceil(sliceMinutes.length / 2);
-          const left = await generateOutlinesForSlice(
-            sliceMinutes.slice(0, mid),
-            depth + 1,
-          );
-          const right = await generateOutlinesForSlice(
-            sliceMinutes.slice(mid),
-            depth + 1,
-          );
+          const left = await generateOutlinesForSlice(sliceMinutes.slice(0, mid), depth + 1);
+          const right = await generateOutlinesForSlice(sliceMinutes.slice(mid), depth + 1);
           return [...left, ...right];
         }
 
@@ -1128,22 +990,14 @@ export class DraftGenerationService {
       }
     };
 
-    const generateDraftsFromOutlines = async (
-      outlines: any[],
-      sliceMinutes: number[],
-    ) => {
-      const detailsModelOverride = this.getDetailsModelOverride(
-        resolvedModelOverride,
-      );
+    const generateDraftsFromOutlines = async (outlines: any[], sliceMinutes: number[]) => {
+      const detailsModelOverride = this.getDetailsModelOverride(resolvedModelOverride);
       const detailsBatchSize = this.getNumericEnv('WBS_DETAILS_BATCH_SIZE', 1);
       const detailsBatchConcurrency =
         detailsBatchSize > 1
           ? this.getNumericEnv(
               'WBS_DETAILS_BATCH_CONCURRENCY',
-              Math.max(
-                1,
-                Math.floor(detailsConcurrency / Math.max(1, detailsBatchSize)),
-              ),
+              Math.max(1, Math.floor(detailsConcurrency / Math.max(1, detailsBatchSize))),
             )
           : detailsConcurrency;
       const detailsBatchMaxTokens = this.getNumericEnv(
@@ -1173,9 +1027,7 @@ export class DraftGenerationService {
         }>
       > => {
         if (batchOutlines.length !== batchMinutes.length) {
-          throw new Error(
-            'Details batch inválido: tamanho de batchMinutes não confere',
-          );
+          throw new Error('Details batch inválido: tamanho de batchMinutes não confere');
         }
 
         if (batchOutlines.length === 1) {
@@ -1186,19 +1038,13 @@ export class DraftGenerationService {
             plan: params.plan,
           });
 
-          const attemptDetails = async (opts: {
-            maxOutputTokens: number;
-            temperature: number;
-          }) => {
-            const response = await this.geminiService.generateContent(
-              detailsPrompt,
-              {
-                model: detailsModelOverride,
-                responseMimeType: 'application/json',
-                maxOutputTokens: opts.maxOutputTokens,
-                temperature: opts.temperature,
-              },
-            );
+          const attemptDetails = async (opts: { maxOutputTokens: number; temperature: number }) => {
+            const response = await this.geminiService.generateContent(detailsPrompt, {
+              model: detailsModelOverride,
+              responseMimeType: 'application/json',
+              maxOutputTokens: opts.maxOutputTokens,
+              temperature: opts.temperature,
+            });
             const details = extractJsonObject<any>(response);
             return [this.validateDraftDetails(details)];
           };
@@ -1225,30 +1071,22 @@ export class DraftGenerationService {
           }
         }
 
-        const batchPrompt = this.promptBuilder.buildMicroTaskDetailsBatchPrompt(
-          {
-            ...params,
-            items: batchOutlines.map((outline, i) => ({
-              outline,
-              targetMinutes: batchMinutes[i],
-            })),
-            plan: params.plan,
-          },
-        );
+        const batchPrompt = this.promptBuilder.buildMicroTaskDetailsBatchPrompt({
+          ...params,
+          items: batchOutlines.map((outline, i) => ({
+            outline,
+            targetMinutes: batchMinutes[i],
+          })),
+          plan: params.plan,
+        });
 
-        const attemptBatch = async (opts: {
-          maxOutputTokens: number;
-          temperature: number;
-        }) => {
-          const response = await this.geminiService.generateContent(
-            batchPrompt,
-            {
-              model: detailsModelOverride,
-              responseMimeType: 'application/json',
-              maxOutputTokens: opts.maxOutputTokens,
-              temperature: opts.temperature,
-            },
-          );
+        const attemptBatch = async (opts: { maxOutputTokens: number; temperature: number }) => {
+          const response = await this.geminiService.generateContent(batchPrompt, {
+            model: detailsModelOverride,
+            responseMimeType: 'application/json',
+            maxOutputTokens: opts.maxOutputTokens,
+            temperature: opts.temperature,
+          });
           const detailsList = extractJsonArray<any>(response);
           if (!Array.isArray(detailsList)) {
             throw new Error('Details batch inválido: não retornou array JSON');
@@ -1258,9 +1096,7 @@ export class DraftGenerationService {
               `IA retornou ${detailsList.length} details; esperado ${batchOutlines.length}`,
             );
           }
-          return detailsList
-            .slice(0, batchOutlines.length)
-            .map((d) => this.validateDraftDetails(d));
+          return detailsList.slice(0, batchOutlines.length).map((d) => this.validateDraftDetails(d));
         };
 
         try {
@@ -1299,10 +1135,7 @@ export class DraftGenerationService {
           outlines,
           detailsConcurrency,
           async (outline, index) => {
-            const details = await generateDetailsForBatch(
-              [outline],
-              [sliceMinutes[index]],
-            );
+            const details = await generateDetailsForBatch([outline], [sliceMinutes[index]]);
             return { ...outline, ...details[0] };
           },
         );
@@ -1324,10 +1157,7 @@ export class DraftGenerationService {
           batches,
           detailsBatchConcurrency,
           async (b) => {
-            const detailsList = await generateDetailsForBatch(
-              b.outlines,
-              b.minutes,
-            );
+            const detailsList = await generateDetailsForBatch(b.outlines, b.minutes);
             return { start: b.start, detailsList };
           },
         );
@@ -1344,17 +1174,10 @@ export class DraftGenerationService {
       return this.validateDrafts(enriched);
     };
 
-    const generateDraftsForSlice = async (
-      sliceMinutes: number[],
-      depth = 0,
-    ): Promise<any[]> => {
-      const sliceMode = twoPassEnabled
-        ? 'two-pass-with-plan'
-        : 'single-pass-with-plan';
+    const generateDraftsForSlice = async (sliceMinutes: number[], depth = 0): Promise<any[]> => {
+      const sliceMode = twoPassEnabled ? 'two-pass-with-plan' : 'single-pass-with-plan';
       const sliceStart = Date.now();
-      this.logWithTimestamp(
-        `WithPlan slice(${sliceMinutes.length}) start [${sliceMode}]`,
-      );
+      this.logWithTimestamp(`WithPlan slice(${sliceMinutes.length}) start [${sliceMode}]`);
       try {
         if (!twoPassEnabled) {
           const prompt = this.promptBuilder.buildMicroTasksGeneratorPrompt({
@@ -1363,10 +1186,7 @@ export class DraftGenerationService {
             avoidTaskTitles,
           });
 
-          const attempt = async (opts: {
-            maxOutputTokens: number;
-            temperature: number;
-          }) => {
+          const attempt = async (opts: { maxOutputTokens: number; temperature: number }) => {
             const response = await this.geminiService.generateContent(prompt, {
               model: resolvedModelOverride,
               responseMimeType: 'application/json',
@@ -1383,17 +1203,12 @@ export class DraftGenerationService {
                   console.warn(
                     `[draft-generation] Partial: ${validated.length}/${sliceMinutes.length} items (${pct.toFixed(0)}%). Completing tail...`,
                   );
-                  const tail = await generateDraftsForSlice(
-                    remaining,
-                    depth + 1,
-                  );
+                  const tail = await generateDraftsForSlice(remaining, depth + 1);
                   return [...validated, ...tail];
                 }
                 return validated;
               }
-              throw new Error(
-                `IA retornou ${validated.length} itens; esperado ${sliceMinutes.length}`,
-              );
+              throw new Error(`IA retornou ${validated.length} itens; esperado ${sliceMinutes.length}`);
             }
             return validated;
           };
@@ -1408,14 +1223,8 @@ export class DraftGenerationService {
 
             if (sliceMinutes.length > 1 && depth < 4) {
               const mid = Math.ceil(sliceMinutes.length / 2);
-              const left = await generateDraftsForSlice(
-                sliceMinutes.slice(0, mid),
-                depth + 1,
-              );
-              const right = await generateDraftsForSlice(
-                sliceMinutes.slice(mid),
-                depth + 1,
-              );
+              const left = await generateDraftsForSlice(sliceMinutes.slice(0, mid), depth + 1);
+              const right = await generateDraftsForSlice(sliceMinutes.slice(mid), depth + 1);
               return [...left, ...right];
             }
 
@@ -1426,32 +1235,23 @@ export class DraftGenerationService {
           }
         }
 
-        const outlinePrompt =
-          this.promptBuilder.buildMicroTasksOutlineWithPlanPrompt({
-            ...params,
-            chunkMinutes: sliceMinutes,
-            avoidTaskTitles,
-          });
+        const outlinePrompt = this.promptBuilder.buildMicroTasksOutlineWithPlanPrompt({
+          ...params,
+          chunkMinutes: sliceMinutes,
+          avoidTaskTitles,
+        });
 
-        const attemptOutline = async (opts: {
-          maxOutputTokens: number;
-          temperature: number;
-        }) => {
-          const response = await this.geminiService.generateContent(
-            outlinePrompt,
-            {
-              model: resolvedModelOverride,
-              responseMimeType: 'application/json',
-              maxOutputTokens: opts.maxOutputTokens,
-              temperature: opts.temperature,
-            },
-          );
+        const attemptOutline = async (opts: { maxOutputTokens: number; temperature: number }) => {
+          const response = await this.geminiService.generateContent(outlinePrompt, {
+            model: resolvedModelOverride,
+            responseMimeType: 'application/json',
+            maxOutputTokens: opts.maxOutputTokens,
+            temperature: opts.temperature,
+          });
           const outlines = extractJsonArray<any>(response);
           const validated = this.validateDraftOutlines(outlines);
           if (validated.length < sliceMinutes.length) {
-            throw new Error(
-              `IA retornou ${validated.length} outlines; esperado ${sliceMinutes.length}`,
-            );
+            throw new Error(`IA retornou ${validated.length} outlines; esperado ${sliceMinutes.length}`);
           }
           return validated;
         };
@@ -1467,14 +1267,8 @@ export class DraftGenerationService {
 
           if (sliceMinutes.length > 1 && depth < 4) {
             const mid = Math.ceil(sliceMinutes.length / 2);
-            const left = await generateDraftsForSlice(
-              sliceMinutes.slice(0, mid),
-              depth + 1,
-            );
-            const right = await generateDraftsForSlice(
-              sliceMinutes.slice(mid),
-              depth + 1,
-            );
+            const left = await generateDraftsForSlice(sliceMinutes.slice(0, mid), depth + 1);
+            const right = await generateDraftsForSlice(sliceMinutes.slice(mid), depth + 1);
             return [...left, ...right];
           }
 
@@ -1484,23 +1278,13 @@ export class DraftGenerationService {
           });
         }
 
-        const detailsModelOverride = this.getDetailsModelOverride(
-          resolvedModelOverride,
-        );
-        const detailsBatchSize = this.getNumericEnv(
-          'WBS_DETAILS_BATCH_SIZE',
-          1,
-        );
+        const detailsModelOverride = this.getDetailsModelOverride(resolvedModelOverride);
+        const detailsBatchSize = this.getNumericEnv('WBS_DETAILS_BATCH_SIZE', 1);
         const detailsBatchConcurrency =
           detailsBatchSize > 1
             ? this.getNumericEnv(
                 'WBS_DETAILS_BATCH_CONCURRENCY',
-                Math.max(
-                  1,
-                  Math.floor(
-                    detailsConcurrency / Math.max(1, detailsBatchSize),
-                  ),
-                ),
+                Math.max(1, Math.floor(detailsConcurrency / Math.max(1, detailsBatchSize))),
               )
             : detailsConcurrency;
         const detailsBatchMaxTokens = this.getNumericEnv(
@@ -1530,33 +1314,24 @@ export class DraftGenerationService {
           }>
         > => {
           if (batchOutlines.length !== batchMinutes.length) {
-            throw new Error(
-              'Details batch inválido: tamanho de batchMinutes não confere',
-            );
+            throw new Error('Details batch inválido: tamanho de batchMinutes não confere');
           }
 
           if (batchOutlines.length === 1) {
-            const detailsPrompt =
-              this.promptBuilder.buildMicroTaskDetailsPrompt({
-                ...params,
-                targetMinutes: batchMinutes[0],
-                outline: batchOutlines[0],
-                plan: params.plan,
-              });
+            const detailsPrompt = this.promptBuilder.buildMicroTaskDetailsPrompt({
+              ...params,
+              targetMinutes: batchMinutes[0],
+              outline: batchOutlines[0],
+              plan: params.plan,
+            });
 
-            const attemptDetails = async (opts: {
-              maxOutputTokens: number;
-              temperature: number;
-            }) => {
-              const response = await this.geminiService.generateContent(
-                detailsPrompt,
-                {
-                  model: detailsModelOverride,
-                  responseMimeType: 'application/json',
-                  maxOutputTokens: opts.maxOutputTokens,
-                  temperature: opts.temperature,
-                },
-              );
+            const attemptDetails = async (opts: { maxOutputTokens: number; temperature: number }) => {
+              const response = await this.geminiService.generateContent(detailsPrompt, {
+                model: detailsModelOverride,
+                responseMimeType: 'application/json',
+                maxOutputTokens: opts.maxOutputTokens,
+                temperature: opts.temperature,
+              });
               const details = extractJsonObject<any>(response);
               return [this.validateDraftDetails(details)];
             };
@@ -1583,43 +1358,32 @@ export class DraftGenerationService {
             }
           }
 
-          const batchPrompt =
-            this.promptBuilder.buildMicroTaskDetailsBatchPrompt({
-              ...params,
-              items: batchOutlines.map((outline, i) => ({
-                outline,
-                targetMinutes: batchMinutes[i],
-              })),
-              plan: params.plan,
-            });
+          const batchPrompt = this.promptBuilder.buildMicroTaskDetailsBatchPrompt({
+            ...params,
+            items: batchOutlines.map((outline, i) => ({
+              outline,
+              targetMinutes: batchMinutes[i],
+            })),
+            plan: params.plan,
+          });
 
-          const attemptBatch = async (opts: {
-            maxOutputTokens: number;
-            temperature: number;
-          }) => {
-            const response = await this.geminiService.generateContent(
-              batchPrompt,
-              {
-                model: detailsModelOverride,
-                responseMimeType: 'application/json',
-                maxOutputTokens: opts.maxOutputTokens,
-                temperature: opts.temperature,
-              },
-            );
+          const attemptBatch = async (opts: { maxOutputTokens: number; temperature: number }) => {
+            const response = await this.geminiService.generateContent(batchPrompt, {
+              model: detailsModelOverride,
+              responseMimeType: 'application/json',
+              maxOutputTokens: opts.maxOutputTokens,
+              temperature: opts.temperature,
+            });
             const detailsList = extractJsonArray<any>(response);
             if (!Array.isArray(detailsList)) {
-              throw new Error(
-                'Details batch inválido: não retornou array JSON',
-              );
+              throw new Error('Details batch inválido: não retornou array JSON');
             }
             if (detailsList.length < batchOutlines.length) {
               throw new Error(
                 `IA retornou ${detailsList.length} details; esperado ${batchOutlines.length}`,
               );
             }
-            return detailsList
-              .slice(0, batchOutlines.length)
-              .map((d) => this.validateDraftDetails(d));
+            return detailsList.slice(0, batchOutlines.length).map((d) => this.validateDraftDetails(d));
           };
 
           try {
@@ -1658,10 +1422,7 @@ export class DraftGenerationService {
             outlines,
             detailsConcurrency,
             async (outline, index) => {
-              const details = await generateDetailsForBatch(
-                [outline],
-                [sliceMinutes[index]],
-              );
+              const details = await generateDetailsForBatch([outline], [sliceMinutes[index]]);
               return { ...outline, ...details[0] };
             },
           );
@@ -1683,10 +1444,7 @@ export class DraftGenerationService {
             batches,
             detailsBatchConcurrency,
             async (b) => {
-              const detailsList = await generateDetailsForBatch(
-                b.outlines,
-                b.minutes,
-              );
+              const detailsList = await generateDetailsForBatch(b.outlines, b.minutes);
               return { start: b.start, detailsList };
             },
           );
@@ -1703,9 +1461,7 @@ export class DraftGenerationService {
         return this.validateDrafts(enriched);
       } finally {
         const elapsed = Date.now() - sliceStart;
-        this.logWithTimestamp(
-          `WithPlan slice(${sliceMinutes.length}) end [${sliceMode}] ${elapsed}ms`,
-        );
+        this.logWithTimestamp(`WithPlan slice(${sliceMinutes.length}) end [${sliceMode}] ${elapsed}ms`);
       }
     };
 
@@ -1726,14 +1482,9 @@ export class DraftGenerationService {
         }
       }
     } else {
-      const detailsSliceConcurrency = this.getNumericEnv(
-        'WBS_DETAILS_SLICE_CONCURRENCY',
-        2,
-      );
+      const detailsSliceConcurrency = this.getNumericEnv('WBS_DETAILS_SLICE_CONCURRENCY', 2);
       const running = new Set<Promise<any[]>>();
-      const slicePromises: Array<Promise<any[]> | undefined> = new Array(
-        slices.length,
-      );
+      const slicePromises: Array<Promise<any[]> | undefined> = new Array(slices.length);
 
       const schedule = (fn: () => Promise<any[]>) =>
         (async () => {
@@ -1757,9 +1508,7 @@ export class DraftGenerationService {
         const sliceMinutes = slices[sliceIdx];
         const sliceMode = 'two-pass-with-plan';
         const sliceStart = Date.now();
-        this.logWithTimestamp(
-          `WithPlan slice(${sliceMinutes.length}) start [${sliceMode}]`,
-        );
+        this.logWithTimestamp(`WithPlan slice(${sliceMinutes.length}) start [${sliceMode}]`);
 
         const outlines = await generateOutlinesForSlice(sliceMinutes);
 
@@ -1770,10 +1519,7 @@ export class DraftGenerationService {
         }
 
         slicePromises[sliceIdx] = schedule(async () => {
-          const drafts = await generateDraftsFromOutlines(
-            outlines,
-            sliceMinutes,
-          );
+          const drafts = await generateDraftsFromOutlines(outlines, sliceMinutes);
           return drafts;
         }).finally(() => {
           const elapsed = Date.now() - sliceStart;
@@ -1783,35 +1529,23 @@ export class DraftGenerationService {
         });
       }
 
-      const orderedResults = await Promise.all(
-        slicePromises.map((p) => p ?? Promise.resolve([])),
-      );
+      const orderedResults = await Promise.all(slicePromises.map((p) => p ?? Promise.resolve([])));
       for (const sliceDrafts of orderedResults) {
         allDrafts.push(...sliceDrafts);
       }
     }
 
     const normalized = allDrafts.map((d, idx) => ({
-      name: String(
-        d.name || `Micro-tarefa (${idx + 1}/${chunkMinutes.length})`,
-      ).trim(),
+      name: String(d.name || `Micro-tarefa (${idx + 1}/${chunkMinutes.length})`).trim(),
       description: String(d?.description || '').trim() || undefined,
       checklist: Array.isArray(d?.checklist)
-        ? (d.checklist as any[])
-            .map((s) => String(s || '').trim())
-            .filter(Boolean)
+        ? (d.checklist as any[]).map((s) => String(s || '').trim()).filter(Boolean)
         : [],
       definitionOfDone: String(d?.definitionOfDone || '').trim(),
-      pomodorosPlanned: Math.max(
-        1,
-        Math.min(6, Number(d?.pomodorosPlanned) || 1),
-      ),
+      pomodorosPlanned: Math.max(1, Math.min(6, Number(d?.pomodorosPlanned) || 1)),
       priority: Math.max(
         1,
-        Math.min(
-          4,
-          Number(d?.priority) || Math.max(1, Math.min(4, 5 - params.level)),
-        ),
+        Math.min(4, Number(d?.priority) || Math.max(1, Math.min(4, 5 - params.level))),
       ),
       difficult: Math.max(1, Math.min(4, Number(d?.difficult) || 2)),
       microTaskType: normalizeMicroTaskType(d?.microTaskType),
@@ -1825,9 +1559,7 @@ export class DraftGenerationService {
       const fingerprint = {
         v: 2,
         kind: 'drafts_with_plan',
-        nodeId: (params.node as any)?._id
-          ? String((params.node as any)._id)
-          : undefined,
+        nodeId: (params.node as any)?._id ? String((params.node as any)._id) : undefined,
         nodeName: params.node?.name,
         nodeDesc: params.node?.description,
         currentPath: params.currentPath,

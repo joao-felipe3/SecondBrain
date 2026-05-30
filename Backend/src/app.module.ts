@@ -25,21 +25,11 @@ import * as Joi from 'joi';
         serverSelectionTimeoutMS: Number(
           configService.get('MONGODB_SERVER_SELECTION_TIMEOUT_MS') || 8000,
         ),
-        connectTimeoutMS: Number(
-          configService.get('MONGODB_CONNECT_TIMEOUT_MS') || 10000,
-        ),
-        socketTimeoutMS: Number(
-          configService.get('MONGODB_SOCKET_TIMEOUT_MS') || 120000,
-        ),
-        maxIdleTimeMS: Number(
-          configService.get('MONGODB_MAX_IDLE_TIME_MS') || 60000,
-        ),
-        waitQueueTimeoutMS: Number(
-          configService.get('MONGODB_WAIT_QUEUE_TIMEOUT_MS') || 20000,
-        ),
-        heartbeatFrequencyMS: Number(
-          configService.get('MONGODB_HEARTBEAT_FREQUENCY_MS') || 5000,
-        ),
+        connectTimeoutMS: Number(configService.get('MONGODB_CONNECT_TIMEOUT_MS') || 10000),
+        socketTimeoutMS: Number(configService.get('MONGODB_SOCKET_TIMEOUT_MS') || 120000),
+        maxIdleTimeMS: Number(configService.get('MONGODB_MAX_IDLE_TIME_MS') || 60000),
+        waitQueueTimeoutMS: Number(configService.get('MONGODB_WAIT_QUEUE_TIMEOUT_MS') || 20000),
+        heartbeatFrequencyMS: Number(configService.get('MONGODB_HEARTBEAT_FREQUENCY_MS') || 5000),
         retryWrites: true,
         w: 'majority',
         family: 4, // Force IPv4

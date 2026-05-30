@@ -2,10 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { MongoClient, ObjectId as NativeObjectId } from 'mongodb';
-import {
-  ProjectWave,
-  ProjectWaveDocument,
-} from '../schemas/project-wave.schema';
+import { ProjectWave, ProjectWaveDocument } from '../schemas/project-wave.schema';
 import { TaskDocument } from '../../tasks/schemas/task.schema';
 import { ProjectsService } from '../projects.service';
 import { WBSService } from '../wbs/wbs.service';
@@ -72,10 +69,7 @@ export class RollingWaveService {
     private readonly projectsService: ProjectsService,
     private readonly wbsService: WBSService,
   ) {
-    const apiKey =
-      process.env.GEMINI_API_KEY ||
-      process.env.GOOGLE_GENERATIVE_AI_API_KEY ||
-      '';
+    const apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_GENERATIVE_AI_API_KEY || '';
     this.genAI = new GoogleGenerativeAI(apiKey);
   }
 
@@ -95,16 +89,10 @@ export class RollingWaveService {
   }
 
   private estimateTaskHours(task: any): number {
-    if (
-      typeof task?.pertExpectedMinutes === 'number' &&
-      task.pertExpectedMinutes > 0
-    ) {
+    if (typeof task?.pertExpectedMinutes === 'number' && task.pertExpectedMinutes > 0) {
       return task.pertExpectedMinutes / 60;
     }
-    if (
-      typeof task?.pomodorosPlanned === 'number' &&
-      task.pomodorosPlanned > 0
-    ) {
+    if (typeof task?.pomodorosPlanned === 'number' && task.pomodorosPlanned > 0) {
       return task.pomodorosPlanned * 0.5;
     }
     return 1;
@@ -130,11 +118,9 @@ export class RollingWaveService {
 
   private buildTaskScheduleMetrics(task: any, deadline: Date) {
     const expectedMinutes =
-      typeof task?.pertExpectedMinutes === 'number' &&
-      task.pertExpectedMinutes > 0
+      typeof task?.pertExpectedMinutes === 'number' && task.pertExpectedMinutes > 0
         ? task.pertExpectedMinutes
-        : typeof task?.pomodorosPlanned === 'number' &&
-            task.pomodorosPlanned > 0
+        : typeof task?.pomodorosPlanned === 'number' && task.pomodorosPlanned > 0
           ? task.pomodorosPlanned * 25
           : undefined;
 
@@ -146,37 +132,26 @@ export class RollingWaveService {
       typeof task?.pomodorosPlanned === 'number' && task.pomodorosPlanned > 0
         ? task.pomodorosPlanned
         : Math.max(1, Math.round(expectedMinutes / 25));
-    const pomodorosDid =
-      typeof task?.pomodorosDid === 'number' ? task.pomodorosDid : 0;
-    const progress = Math.max(
-      0,
-      Math.min(1, pomodorosPlanned ? pomodorosDid / pomodorosPlanned : 0),
-    );
+    const pomodorosDid = typeof task?.pomodorosDid === 'number' ? task.pomodorosDid : 0;
+    const progress = Math.max(0, Math.min(1, pomodorosPlanned ? pomodorosDid / pomodorosPlanned : 0));
 
     const createdAt = task?.createdAt ? new Date(task.createdAt) : new Date();
     const totalDurationMs = deadline.getTime() - createdAt.getTime();
     const elapsedRatio =
       totalDurationMs <= 0
         ? 1
-        : Math.max(
-            0,
-            Math.min(1, (Date.now() - createdAt.getTime()) / totalDurationMs),
-          );
+        : Math.max(0, Math.min(1, (Date.now() - createdAt.getTime()) / totalDurationMs));
 
     const plannedValue = expectedMinutes * elapsedRatio;
     const earnedValue = expectedMinutes * progress;
-    const spi =
-      plannedValue > 0 ? earnedValue / plannedValue : progress > 0 ? 1 : 0;
+    const spi = plannedValue > 0 ? earnedValue / plannedValue : progress > 0 ? 1 : 0;
 
     return {
       evmProgress: Number(progress.toFixed(2)),
       evmPlannedValueMinutes: Math.round(plannedValue),
       evmEarnedValueMinutes: Math.round(earnedValue),
       evmSchedulePerformanceIndex: Number(spi.toFixed(2)),
-      evmAlert:
-        spi > 0 && spi < 0.9
-          ? 'SPI abaixo de 0.9 (risco de atraso)'
-          : undefined,
+      evmAlert: spi > 0 && spi < 0.9 ? 'SPI abaixo de 0.9 (risco de atraso)' : undefined,
     };
   }
 
@@ -186,17 +161,11 @@ export class RollingWaveService {
     startTime: number,
     totalRangeMs: number,
   ): string {
-    const parentWbsNodeId = task?.parentWbsNodeId
-      ? String(task.parentWbsNodeId)
-      : '';
+    const parentWbsNodeId = task?.parentWbsNodeId ? String(task.parentWbsNodeId) : '';
     if (parentWbsNodeId && wbsById.has(parentWbsNodeId)) {
       const visited = new Set<string>();
       let cursor = wbsById.get(parentWbsNodeId);
-      while (
-        cursor?.parentId &&
-        wbsById.has(cursor.parentId) &&
-        !visited.has(cursor.parentId)
-      ) {
+      while (cursor?.parentId && wbsById.has(cursor.parentId) && !visited.has(cursor.parentId)) {
         visited.add(cursor.parentId);
         cursor = wbsById.get(cursor.parentId);
       }
@@ -217,10 +186,7 @@ export class RollingWaveService {
     return 'goal:Execução Geral';
   }
 
-  private buildBalancedWaveDurations(
-    totalDurationDays: number,
-    waveCount: number,
-  ): number[] {
+  private buildBalancedWaveDurations(totalDurationDays: number, waveCount: number): number[] {
     const safeWaveCount = Math.max(1, waveCount);
     const safeTotalDurationDays = Math.max(safeWaveCount, totalDurationDays);
     const baseDuration = Math.floor(safeTotalDurationDays / safeWaveCount);
@@ -237,34 +203,22 @@ export class RollingWaveService {
     expectedWaveCount: number,
     totalDurationDays: number,
   ): AIPlan {
-    const durations = this.buildBalancedWaveDurations(
-      totalDurationDays,
-      expectedWaveCount,
-    );
+    const durations = this.buildBalancedWaveDurations(totalDurationDays, expectedWaveCount);
     const existingWaves = Array.isArray(aiPlan.waves) ? aiPlan.waves : [];
 
-    const normalizedWaves: AIPlanWave[] = Array.from(
-      { length: expectedWaveCount },
-      (_, index) => {
-        const existingWave = existingWaves[index];
+    const normalizedWaves: AIPlanWave[] = Array.from({ length: expectedWaveCount }, (_, index) => {
+      const existingWave = existingWaves[index];
 
-        return {
-          waveNumber: index + 1,
-          name: existingWave?.name?.trim() || `Wave ${index + 1}`,
-          description:
-            existingWave?.description?.trim() ||
-            `Execução balanceada da Wave ${index + 1}.`,
-          durationDays: durations[index],
-          focus:
-            existingWave?.focus?.trim() ||
-            `Entrega incremental da Wave ${index + 1}`,
-          wbsAllocation: existingWave?.wbsAllocation || {},
-          taskIds: Array.isArray(existingWave?.taskIds)
-            ? [...existingWave.taskIds]
-            : [],
-        };
-      },
-    );
+      return {
+        waveNumber: index + 1,
+        name: existingWave?.name?.trim() || `Wave ${index + 1}`,
+        description: existingWave?.description?.trim() || `Execução balanceada da Wave ${index + 1}.`,
+        durationDays: durations[index],
+        focus: existingWave?.focus?.trim() || `Entrega incremental da Wave ${index + 1}`,
+        wbsAllocation: existingWave?.wbsAllocation || {},
+        taskIds: Array.isArray(existingWave?.taskIds) ? [...existingWave.taskIds] : [],
+      };
+    });
 
     return {
       ...aiPlan,
@@ -277,11 +231,7 @@ export class RollingWaveService {
     donorIndex: number,
     recipientIndex: number,
   ): string | undefined {
-    if (
-      donorIndex < 0 ||
-      donorIndex >= waves.length ||
-      donorIndex === recipientIndex
-    ) {
+    if (donorIndex < 0 || donorIndex >= waves.length || donorIndex === recipientIndex) {
       return undefined;
     }
 
@@ -312,10 +262,7 @@ export class RollingWaveService {
       }
 
       const distance = Math.abs(index - recipientIndex);
-      if (
-        distance < bestDistance ||
-        (distance === bestDistance && surplus > bestSurplus)
-      ) {
+      if (distance < bestDistance || (distance === bestDistance && surplus > bestSurplus)) {
         bestIndex = index;
         bestDistance = distance;
         bestSurplus = surplus;
@@ -335,19 +282,13 @@ export class RollingWaveService {
     let lowestCount = Number.POSITIVE_INFINITY;
 
     for (let index = 0; index < waves.length; index++) {
-      if (
-        index === donorIndex ||
-        waves[index].taskIds.length >= maxTasksPerWave
-      ) {
+      if (index === donorIndex || waves[index].taskIds.length >= maxTasksPerWave) {
         continue;
       }
 
       const distance = Math.abs(index - donorIndex);
       const currentCount = waves[index].taskIds.length;
-      if (
-        currentCount < lowestCount ||
-        (currentCount === lowestCount && distance < bestDistance)
-      ) {
+      if (currentCount < lowestCount || (currentCount === lowestCount && distance < bestDistance)) {
         bestIndex = index;
         bestDistance = distance;
         lowestCount = currentCount;
@@ -365,11 +306,7 @@ export class RollingWaveService {
     minTasksPerWave: number,
     maxTasksPerWave: number,
   ): AIPlan {
-    const normalizedPlan = this.normalizeWavePlanShape(
-      aiPlan,
-      expectedWaveCount,
-      totalDurationDays,
-    );
+    const normalizedPlan = this.normalizeWavePlanShape(aiPlan, expectedWaveCount, totalDurationDays);
     const validTaskIdSet = new Set(allTaskIds);
     const seenTaskIds = new Set<string>();
 
@@ -397,8 +334,7 @@ export class RollingWaveService {
       let targetIndex = 0;
       for (let index = 1; index < normalizedPlan.waves.length; index++) {
         if (
-          normalizedPlan.waves[index].taskIds.length <
-          normalizedPlan.waves[targetIndex].taskIds.length
+          normalizedPlan.waves[index].taskIds.length < normalizedPlan.waves[targetIndex].taskIds.length
         ) {
           targetIndex = index;
         }
@@ -417,30 +353,16 @@ export class RollingWaveService {
       .map((item) => item.index);
 
     for (const recipientIndex of recipientIndices) {
-      while (
-        normalizedPlan.waves[recipientIndex].taskIds.length < minTasksPerWave
-      ) {
-        let donorIndex = this.findBestDonorIndex(
-          normalizedPlan.waves,
-          recipientIndex,
-          maxTasksPerWave,
-        );
+      while (normalizedPlan.waves[recipientIndex].taskIds.length < minTasksPerWave) {
+        let donorIndex = this.findBestDonorIndex(normalizedPlan.waves, recipientIndex, maxTasksPerWave);
         if (donorIndex < 0) {
-          donorIndex = this.findBestDonorIndex(
-            normalizedPlan.waves,
-            recipientIndex,
-            minTasksPerWave,
-          );
+          donorIndex = this.findBestDonorIndex(normalizedPlan.waves, recipientIndex, minTasksPerWave);
         }
         if (donorIndex < 0) {
           break;
         }
 
-        const taskId = this.takeTaskForTransfer(
-          normalizedPlan.waves,
-          donorIndex,
-          recipientIndex,
-        );
+        const taskId = this.takeTaskForTransfer(normalizedPlan.waves, donorIndex, recipientIndex);
         if (!taskId) {
           break;
         }
@@ -449,14 +371,8 @@ export class RollingWaveService {
       }
     }
 
-    for (
-      let donorIndex = 0;
-      donorIndex < normalizedPlan.waves.length;
-      donorIndex++
-    ) {
-      while (
-        normalizedPlan.waves[donorIndex].taskIds.length > maxTasksPerWave
-      ) {
+    for (let donorIndex = 0; donorIndex < normalizedPlan.waves.length; donorIndex++) {
+      while (normalizedPlan.waves[donorIndex].taskIds.length > maxTasksPerWave) {
         const recipientIndex = this.findBestRecipientIndex(
           normalizedPlan.waves,
           donorIndex,
@@ -466,11 +382,7 @@ export class RollingWaveService {
           break;
         }
 
-        const taskId = this.takeTaskForTransfer(
-          normalizedPlan.waves,
-          donorIndex,
-          recipientIndex,
-        );
+        const taskId = this.takeTaskForTransfer(normalizedPlan.waves, donorIndex, recipientIndex);
         if (!taskId) {
           break;
         }
@@ -496,16 +408,9 @@ export class RollingWaveService {
 
       const today = new Date();
       const deadline = new Date(project.deadline);
-      const availableDays = Math.ceil(
-        (deadline.getTime() - today.getTime()) / (24 * 60 * 60 * 1000),
-      );
-      const totalTaskHours = tasks.reduce(
-        (sum, t) => sum + this.estimateTaskHours(t),
-        0,
-      );
-      const minimumDaysRequired = Math.ceil(
-        totalTaskHours / dailyCapacityHours,
-      );
+      const availableDays = Math.ceil((deadline.getTime() - today.getTime()) / (24 * 60 * 60 * 1000));
+      const totalTaskHours = tasks.reduce((sum, t) => sum + this.estimateTaskHours(t), 0);
+      const minimumDaysRequired = Math.ceil(totalTaskHours / dailyCapacityHours);
 
       const prompt = `Você é especialista em Rolling Waves. Determine número ideal de ondas.
 
@@ -520,23 +425,18 @@ RETORNE APENAS JSON (SEM MARKDOWN, STRINGS EM UMA LINHA):
 
       const result = await this.generateContentWithRetry(model, prompt);
       if (!result) {
-        this.logger.warn(
-          `[GENAI] planWaveStructure: Falha ao obter resposta do modelo após retries`,
-        );
+        this.logger.warn(`[GENAI] planWaveStructure: Falha ao obter resposta do modelo após retries`);
         return null;
       }
       const responseText = result.response.text();
 
       // Validar e extrair JSON
-      const parsed = this.extractAndValidateJSON<AIWaveStructure>(
-        responseText,
-        [
-          'recommendedWaveCount',
-          'totalDurationDays',
-          'description',
-          'reasoning',
-        ],
-      );
+      const parsed = this.extractAndValidateJSON<AIWaveStructure>(responseText, [
+        'recommendedWaveCount',
+        'totalDurationDays',
+        'description',
+        'reasoning',
+      ]);
 
       if (!parsed) {
         this.logger.warn(
@@ -562,9 +462,7 @@ RETORNE APENAS JSON (SEM MARKDOWN, STRINGS EM UMA LINHA):
       );
       return parsed;
     } catch (error) {
-      this.logger.warn(
-        `Erro ao chamar Gemini para estrutura: ${error.message}`,
-      );
+      this.logger.warn(`Erro ao chamar Gemini para estrutura: ${error.message}`);
       return null;
     }
   }
@@ -620,16 +518,13 @@ RETORNE APENAS JSON (SEM MARKDOWN, STRINGS EM UMA LINHA):
       result = result.replace(/,\s*]/g, ']');
 
       // Caso 3: Escapar aspas duplas não escapadas dentro de strings
-      result = result.replace(
-        /"([^"]*?)(['"])([^"]*?)"/g,
-        (match, prefix, quote, suffix) => {
-          if (quote === "'") {
-            // Apóstrofo dentro de string - É seguro deixar
-            return match;
-          }
+      result = result.replace(/"([^"]*?)(['"])([^"]*?)"/g, (match, prefix, quote, suffix) => {
+        if (quote === "'") {
+          // Apóstrofo dentro de string - É seguro deixar
           return match;
-        },
-      );
+        }
+        return match;
+      });
 
       return result;
     } catch (e) {
@@ -682,18 +577,14 @@ RETORNE APENAS JSON (SEM MARKDOWN, STRINGS EM UMA LINHA):
       // Validar campos obrigatórios
       for (const field of requiredFields) {
         if (!(field in parsedAny)) {
-          this.logger.warn(
-            `[JSON_MISSING_FIELD] Campo obrigatório ausente: ${field}`,
-          );
+          this.logger.warn(`[JSON_MISSING_FIELD] Campo obrigatório ausente: ${field}`);
           return null;
         }
       }
 
       return parsedAny as T;
     } catch (e) {
-      this.logger.warn(
-        `[JSON_PARSE_ERROR] ${e.message}\nResponse: ${responseText.substring(0, 400)}`,
-      );
+      this.logger.warn(`[JSON_PARSE_ERROR] ${e.message}\nResponse: ${responseText.substring(0, 400)}`);
       return null;
     }
   }
@@ -736,9 +627,7 @@ RETORNE APENAS JSON (SEM MARKDOWN, STRINGS EM UMA LINHA):
   ): Promise<T | null> {
     const uri = process.env.MONGODB_URI;
     if (!uri) {
-      this.logger.warn(
-        `[MONGO_FRESH] MONGODB_URI ausente para ${operationName}`,
-      );
+      this.logger.warn(`[MONGO_FRESH] MONGODB_URI ausente para ${operationName}`);
       return null;
     }
 
@@ -748,15 +637,9 @@ RETORNE APENAS JSON (SEM MARKDOWN, STRINGS EM UMA LINHA):
         client = new MongoClient(uri, {
           maxPoolSize: 2,
           minPoolSize: 0,
-          serverSelectionTimeoutMS: Number(
-            process.env.MONGODB_SERVER_SELECTION_TIMEOUT_MS || 8000,
-          ),
-          connectTimeoutMS: Number(
-            process.env.MONGODB_CONNECT_TIMEOUT_MS || 10000,
-          ),
-          socketTimeoutMS: Number(
-            process.env.MONGODB_SOCKET_TIMEOUT_MS || 120000,
-          ),
+          serverSelectionTimeoutMS: Number(process.env.MONGODB_SERVER_SELECTION_TIMEOUT_MS || 8000),
+          connectTimeoutMS: Number(process.env.MONGODB_CONNECT_TIMEOUT_MS || 10000),
+          socketTimeoutMS: Number(process.env.MONGODB_SOCKET_TIMEOUT_MS || 120000),
           retryWrites: true,
           family: 4,
         });
@@ -808,9 +691,7 @@ RETORNE APENAS JSON (SEM MARKDOWN, STRINGS EM UMA LINHA):
   ): Promise<boolean> {
     const projectObjectId = new NativeObjectId(projectId);
     const safeDescription =
-      typeof wave.description === 'string'
-        ? wave.description.slice(0, 1000)
-        : undefined;
+      typeof wave.description === 'string' ? wave.description.slice(0, 1000) : undefined;
 
     const metadataResult = await this.executeWithFreshMongoClient(
       (collection) =>
@@ -875,8 +756,7 @@ RETORNE APENAS JSON (SEM MARKDOWN, STRINGS EM UMA LINHA):
     dailyCapacityHours: number,
   ): Promise<AIPlan | null> {
     try {
-      const modelName =
-        process.env.GEMINI_STRONG_MODEL || 'gemini-2.5-flash-lite';
+      const modelName = process.env.GEMINI_STRONG_MODEL || 'gemini-2.5-flash-lite';
       const model = this.genAI.getGenerativeModel({ model: modelName });
 
       const today = new Date();
@@ -884,10 +764,7 @@ RETORNE APENAS JSON (SEM MARKDOWN, STRINGS EM UMA LINHA):
       const totalAvailableDays = Math.ceil(
         (deadline.getTime() - today.getTime()) / (24 * 60 * 60 * 1000),
       );
-      const waveDurations = this.buildBalancedWaveDurations(
-        totalAvailableDays,
-        waveCount,
-      );
+      const waveDurations = this.buildBalancedWaveDurations(totalAvailableDays, waveCount);
 
       // Calcular distribuição equilibrada de tasks
       const totalTasks = tasks.length;
@@ -983,17 +860,12 @@ REQUISITOS CRÍTICOS:
 
       const result = await this.generateContentWithRetry(model, prompt);
       if (!result) {
-        this.logger.warn(
-          `[GENAI] planWaveGrouping: Falha ao obter resposta do modelo após retries`,
-        );
+        this.logger.warn(`[GENAI] planWaveGrouping: Falha ao obter resposta do modelo após retries`);
         return null;
       }
       const responseText = result.response.text();
 
-      const parsed = this.extractAndValidateJSON<AIPlan>(responseText, [
-        'waves',
-        'rationale',
-      ]);
+      const parsed = this.extractAndValidateJSON<AIPlan>(responseText, ['waves', 'rationale']);
 
       if (!parsed || !parsed.waves || parsed.waves.length === 0) {
         this.logger.warn(
@@ -1008,11 +880,7 @@ REQUISITOS CRÍTICOS:
         );
       }
 
-      const normalizedPlan = this.normalizeWavePlanShape(
-        parsed,
-        waveCount,
-        totalAvailableDays,
-      );
+      const normalizedPlan = this.normalizeWavePlanShape(parsed, waveCount, totalAvailableDays);
       const taskCursorByWbs = new Map<string, number>();
       const allTaskIds = tasks.map((t) => String(t._id || t.id));
 
@@ -1028,10 +896,7 @@ REQUISITOS CRÍTICOS:
           const safeQuantityNeeded = Math.max(0, Number(quantityNeeded) || 0);
 
           // Consumir tarefas sem reaproveitar o mesmo começo do pacote em múltiplas ondas.
-          const selectedTasks = tasksInWbs.slice(
-            startIndex,
-            startIndex + safeQuantityNeeded,
-          );
+          const selectedTasks = tasksInWbs.slice(startIndex, startIndex + safeQuantityNeeded);
 
           for (const task of selectedTasks) {
             taskIds.push(String(task._id || task.id));
@@ -1064,19 +929,13 @@ REQUISITOS CRÍTICOS:
 
       // VALIDAR DISTRIBUIÇÃO
       const taskCountByWave = normalizedPlan.waves.map((w) => w.taskIds.length);
-      const allocatedUniqueTaskIds = new Set(
-        normalizedPlan.waves.flatMap((w) => w.taskIds),
-      );
+      const allocatedUniqueTaskIds = new Set(normalizedPlan.waves.flatMap((w) => w.taskIds));
       const missingTaskCount = allTaskIds.length - allocatedUniqueTaskIds.size;
       const unbalancedWaves = taskCountByWave.filter(
         (cnt) => cnt < minTasksPerWave || cnt > maxTasksPerWave,
       );
 
-      if (
-        parsed.waves.length !== waveCount ||
-        missingTaskCount > 0 ||
-        unbalancedWaves.length > 0
-      ) {
+      if (parsed.waves.length !== waveCount || missingTaskCount > 0 || unbalancedWaves.length > 0) {
         this.logger.warn(
           `[DISTRIBUTION] Plano inválido para persistência direta: mismatchOndas=${parsed.waves.length !== waveCount}, missingTasks=${missingTaskCount}, ondasForaDoRange=${unbalancedWaves.length}. Rebalanceando...`,
         );
@@ -1092,9 +951,7 @@ REQUISITOS CRÍTICOS:
 
       return normalizedPlan;
     } catch (error) {
-      this.logger.warn(
-        `Erro ao chamar Gemini para agrupamento WBS: ${error.message}`,
-      );
+      this.logger.warn(`Erro ao chamar Gemini para agrupamento WBS: ${error.message}`);
       return null;
     }
   }
@@ -1110,15 +967,9 @@ REQUISITOS CRÍTICOS:
     expectedWaveCount: number,
     totalDurationDays: number,
   ): AIPlan {
-    this.logger.debug(
-      `[REBALANCE] Iniciando rebalanceamento de distribuição...`,
-    );
+    this.logger.debug(`[REBALANCE] Iniciando rebalanceamento de distribuição...`);
 
-    const normalizedPlan = this.normalizeWavePlanShape(
-      aiPlan,
-      expectedWaveCount,
-      totalDurationDays,
-    );
+    const normalizedPlan = this.normalizeWavePlanShape(aiPlan, expectedWaveCount, totalDurationDays);
 
     // Coletar todas as tarefas alocadas do plano
     const allocatedTasks = new Set<string>();
@@ -1134,9 +985,7 @@ REQUISITOS CRÍTICOS:
     }
 
     // Encontrar tarefas não alocadas
-    const unallocatedTasks = allTaskIds.filter(
-      (tid) => !allocatedTasks.has(tid),
-    );
+    const unallocatedTasks = allTaskIds.filter((tid) => !allocatedTasks.has(tid));
     this.logger.debug(
       `[REBALANCE] Tarefas alocadas: ${allocatedTasks.size}, não alocadas: ${unallocatedTasks.length}, duplicadas ignoradas: ${duplicateTaskCount}`,
     );
@@ -1158,9 +1007,7 @@ REQUISITOS CRÍTICOS:
     const finalCounts = redistributedPlan.waves.map((w) => w.taskIds.length);
     this.logger.debug(`[REBALANCE] Distribuição final:`);
     for (const wave of redistributedPlan.waves) {
-      this.logger.debug(
-        `  Wave ${wave.waveNumber}: ${wave.taskIds.length} tasks`,
-      );
+      this.logger.debug(`  Wave ${wave.waveNumber}: ${wave.taskIds.length} tasks`);
     }
 
     const finalOutOfRangeCount = finalCounts.filter(
@@ -1227,12 +1074,9 @@ REQUISITOS CRÍTICOS:
       }
 
       // Redistribuir tarefas reais equilibradamente
-      const targetPerWave = Math.ceil(
-        allTaskIds.length / validPlan.waves.length,
-      );
+      const targetPerWave = Math.ceil(allTaskIds.length / validPlan.waves.length);
       for (let i = 0; i < allTaskIds.length; i++) {
-        const waveIndex =
-          Math.floor(i / targetPerWave) % validPlan.waves.length;
+        const waveIndex = Math.floor(i / targetPerWave) % validPlan.waves.length;
         validPlan.waves[waveIndex].taskIds.push(allTaskIds[i]);
       }
 
@@ -1242,9 +1086,7 @@ REQUISITOS CRÍTICOS:
     }
 
     // DEBUG: Log do plano após rebalance
-    this.logger.debug(
-      `[DEBUG] Plano após rebalance (${validPlan.waves.length} ondas):`,
-    );
+    this.logger.debug(`[DEBUG] Plano após rebalance (${validPlan.waves.length} ondas):`);
     for (const wave of validPlan.waves) {
       this.logger.debug(
         `  Wave ${wave.waveNumber}: ${wave.taskIds.length} taskIds = [${wave.taskIds.slice(0, 3).join(', ')}${wave.taskIds.length > 3 ? '...' : ''}]`,
@@ -1268,9 +1110,7 @@ REQUISITOS CRÍTICOS:
     let currentWaveStart = today;
 
     for (const aiWave of validPlan.waves) {
-      const waveEnd = new Date(
-        currentWaveStart.getTime() + aiWave.durationDays * dayMs,
-      );
+      const waveEnd = new Date(currentWaveStart.getTime() + aiWave.durationDays * dayMs);
 
       const validTaskIds: Types.ObjectId[] = [];
       let notFoundCount = 0;
@@ -1281,9 +1121,7 @@ REQUISITOS CRÍTICOS:
           try {
             validTaskIds.push(new Types.ObjectId(taskId));
           } catch (e) {
-            this.logger.warn(
-              `[WARN] ID inválido (ObjectId parse failed): ${taskId}`,
-            );
+            this.logger.warn(`[WARN] ID inválido (ObjectId parse failed): ${taskId}`);
             notFoundCount++;
           }
         } else {
@@ -1342,11 +1180,7 @@ REQUISITOS CRÍTICOS:
       );
 
       for (const wave of preparedWaves) {
-        const persisted = await this.persistWaveIncrementalChunked(
-          projectId,
-          wave,
-          25,
-        );
+        const persisted = await this.persistWaveIncrementalChunked(projectId, wave, 25);
         if (!persisted) {
           this.logger.error(
             `Falha ao persistir Wave ${wave.waveNumber} no fallback incremental em chunks.`,
@@ -1371,11 +1205,7 @@ REQUISITOS CRÍTICOS:
     }
 
     const wavesResult = await this.executeWithFreshMongoClient(
-      (collection) =>
-        collection
-          .find({ projectId: projectObjectId })
-          .sort({ waveNumber: 1 })
-          .toArray(),
+      (collection) => collection.find({ projectId: projectObjectId }).sort({ waveNumber: 1 }).toArray(),
       `fetch saved waves for project ${projectId}`,
       5,
     );
@@ -1402,17 +1232,13 @@ REQUISITOS CRÍTICOS:
    * Rebalancear ondas vazias se necessário
    */
   private rebalanceEmptyWaves(aiPlan: AIPlan, allTaskIds: string[]): AIPlan {
-    const emptyWaveCount = aiPlan.waves.filter(
-      (w) => w.taskIds.length === 0,
-    ).length;
+    const emptyWaveCount = aiPlan.waves.filter((w) => w.taskIds.length === 0).length;
 
     if (emptyWaveCount === 0) {
       return aiPlan;
     }
 
-    this.logger.warn(
-      `Detectadas ${emptyWaveCount} ondas vazias — rebalanceando...`,
-    );
+    this.logger.warn(`Detectadas ${emptyWaveCount} ondas vazias — rebalanceando...`);
 
     const allocatedTaskIds = new Set<string>();
     for (const wave of aiPlan.waves) {
@@ -1421,16 +1247,11 @@ REQUISITOS CRÍTICOS:
       }
     }
 
-    const unallocatedTasks = allTaskIds.filter(
-      (tid) => !allocatedTaskIds.has(tid),
-    );
+    const unallocatedTasks = allTaskIds.filter((tid) => !allocatedTaskIds.has(tid));
 
     if (unallocatedTasks.length === 0) {
       const allTasks = aiPlan.waves.flatMap((w) => w.taskIds);
-      const tasksPerWave = Math.max(
-        1,
-        Math.ceil(allTasks.length / aiPlan.waves.length),
-      );
+      const tasksPerWave = Math.max(1, Math.ceil(allTasks.length / aiPlan.waves.length));
 
       const rebalanced = aiPlan.waves.map((wave, idx) => ({
         ...wave,
@@ -1451,11 +1272,7 @@ REQUISITOS CRÍTICOS:
     }
 
     while (taskIdx < unallocatedTasks.length) {
-      for (
-        let i = 0;
-        i < aiPlan.waves.length && taskIdx < unallocatedTasks.length;
-        i++
-      ) {
+      for (let i = 0; i < aiPlan.waves.length && taskIdx < unallocatedTasks.length; i++) {
         aiPlan.waves[i].taskIds.push(unallocatedTasks[taskIdx]);
         taskIdx++;
       }
@@ -1484,24 +1301,13 @@ REQUISITOS CRÍTICOS:
     const plannedTotalMs = deadline.getTime() - today.getTime();
     const plannedDurationDays = Math.max(1, Math.ceil(plannedTotalMs / dayMs));
 
-    const totalTaskHours = tasks.reduce(
-      (sum, task) => sum + this.estimateTaskHours(task),
-      0,
-    );
-    const requiredDaysByCapacity = Math.max(
-      1,
-      Math.ceil(totalTaskHours / dailyCapacityHours),
-    );
+    const totalTaskHours = tasks.reduce((sum, task) => sum + this.estimateTaskHours(task), 0);
+    const requiredDaysByCapacity = Math.max(1, Math.ceil(totalTaskHours / dailyCapacityHours));
 
-    const effectiveDurationDays = Math.max(
-      plannedDurationDays,
-      requiredDaysByCapacity,
-    );
+    const effectiveDurationDays = Math.max(plannedDurationDays, requiredDaysByCapacity);
 
     if (effectiveDurationDays > plannedDurationDays) {
-      const adjustedDeadline = new Date(
-        today.getTime() + effectiveDurationDays * dayMs,
-      );
+      const adjustedDeadline = new Date(today.getTime() + effectiveDurationDays * dayMs);
       await this.projectsService.update(projectId, {
         deadline: adjustedDeadline,
       } as any);
@@ -1511,10 +1317,7 @@ REQUISITOS CRÍTICOS:
     }
 
     const waveLengthMs = safeWaveLengthDays * dayMs;
-    const waveCount = Math.max(
-      1,
-      Math.ceil(effectiveDurationDays / safeWaveLengthDays),
-    );
+    const waveCount = Math.max(1, Math.ceil(effectiveDurationDays / safeWaveLengthDays));
 
     await this.waveModel.deleteMany({
       projectId: new Types.ObjectId(projectId),
@@ -1531,27 +1334,16 @@ REQUISITOS CRÍTICOS:
     const normalizedTasks: WaveTask[] = tasks.map((task: any) => {
       const id = String(task._id || task.id);
       const hours = this.estimateTaskHours(task);
-      const deadlineTime = task?.deadline
-        ? new Date(task.deadline).getTime()
-        : null;
-      const groupKey = this.resolveGroupKey(
-        task,
-        wbsById,
-        today.getTime(),
-        timelineRangeMs,
-      );
+      const deadlineTime = task?.deadline ? new Date(task.deadline).getTime() : null;
+      const groupKey = this.resolveGroupKey(task, wbsById, today.getTime(), timelineRangeMs);
       return { id, hours, deadlineTime, groupKey };
     });
 
     const waveCapacityHours = safeWaveLengthDays * dailyCapacityHours;
 
-    const clamp = (value: number, min: number, max: number) =>
-      Math.min(max, Math.max(min, value));
+    const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
 
-    const findWaveIndexWithCapacity = (
-      preferredIndex: number,
-      taskHours: number,
-    ): number => {
+    const findWaveIndexWithCapacity = (preferredIndex: number, taskHours: number): number => {
       for (let idx = preferredIndex; idx >= 0; idx--) {
         if (waveUsedHours[idx] + taskHours <= waveCapacityHours) return idx;
       }
@@ -1579,9 +1371,7 @@ REQUISITOS CRÍTICOS:
 
     for (const task of tasksWithDeadline) {
       const desiredIndex = clamp(
-        Math.floor(
-          ((task.deadlineTime as number) - today.getTime()) / waveLengthMs,
-        ),
+        Math.floor(((task.deadlineTime as number) - today.getTime()) / waveLengthMs),
         0,
         waveCount - 1,
       );
@@ -1633,9 +1423,7 @@ REQUISITOS CRÍTICOS:
       waves.push(wave);
     }
 
-    this.logger.debug(
-      `Criadas ${waveCount} ondas (determinísticas) para ${projectId}`,
-    );
+    this.logger.debug(`Criadas ${waveCount} ondas (determinísticas) para ${projectId}`);
 
     return waves;
   }
@@ -1648,30 +1436,18 @@ REQUISITOS CRÍTICOS:
     project: any,
     waveLengthDays: number = 28,
   ): Promise<ProjectWave[]> {
-    const dailyCapacityHours = Number(
-      process.env.ROLLING_WAVE_DAILY_CAPACITY_HOURS || 6,
-    );
+    const dailyCapacityHours = Number(process.env.ROLLING_WAVE_DAILY_CAPACITY_HOURS || 6);
 
-    this.logger.debug(
-      `Planejando ondas inteligentes (2-step IA) para projeto ${projectId}`,
-    );
+    this.logger.debug(`Planejando ondas inteligentes (2-step IA) para projeto ${projectId}`);
 
-    const tasks = (await this.projectsService.getTasksForProject(
-      projectId,
-    )) as any[];
+    const tasks = (await this.projectsService.getTasksForProject(projectId)) as any[];
     const wbsTree = await this.wbsService.getWBS(projectId);
 
     // Passo 1: Determinar estrutura de ondas
-    const waveStructure = await this.planWaveStructure(
-      project,
-      tasks,
-      dailyCapacityHours,
-    );
+    const waveStructure = await this.planWaveStructure(project, tasks, dailyCapacityHours);
 
     if (!waveStructure) {
-      this.logger.warn(
-        `Fallback para modo determinístico (sem IA) para ${projectId}`,
-      );
+      this.logger.warn(`Fallback para modo determinístico (sem IA) para ${projectId}`);
       return this.createWavesDeterministic(
         projectId,
         project,
@@ -1736,40 +1512,24 @@ REQUISITOS CRÍTICOS:
       );
     }
 
-    return this.waveModel
-      .findByIdAndUpdate(waveId, { status }, { new: true })
-      .exec();
+    return this.waveModel.findByIdAndUpdate(waveId, { status }, { new: true }).exec();
   }
 
   /**
    * Adicionar tarefa a uma onda
    */
-  async addTaskToWave(
-    waveId: string,
-    taskId: string,
-  ): Promise<ProjectWave | null> {
+  async addTaskToWave(waveId: string, taskId: string): Promise<ProjectWave | null> {
     return this.waveModel
-      .findByIdAndUpdate(
-        waveId,
-        { $addToSet: { taskIds: new Types.ObjectId(taskId) } },
-        { new: true },
-      )
+      .findByIdAndUpdate(waveId, { $addToSet: { taskIds: new Types.ObjectId(taskId) } }, { new: true })
       .exec();
   }
 
   /**
    * Remover tarefa de uma onda
    */
-  async removeTaskFromWave(
-    waveId: string,
-    taskId: string,
-  ): Promise<ProjectWave | null> {
+  async removeTaskFromWave(waveId: string, taskId: string): Promise<ProjectWave | null> {
     return this.waveModel
-      .findByIdAndUpdate(
-        waveId,
-        { $pull: { taskIds: new Types.ObjectId(taskId) } },
-        { new: true },
-      )
+      .findByIdAndUpdate(waveId, { $pull: { taskIds: new Types.ObjectId(taskId) } }, { new: true })
       .exec();
   }
 
@@ -1810,9 +1570,7 @@ REQUISITOS CRÍTICOS:
     return null;
   }
 
-  async replanTaskDeadlines(
-    projectId: string,
-  ): Promise<ReplanTaskDeadlinesResult> {
+  async replanTaskDeadlines(projectId: string): Promise<ReplanTaskDeadlinesResult> {
     const waves = (await this.getWavesByProject(projectId)).sort(
       (left, right) => left.waveNumber - right.waveNumber,
     );
@@ -1851,9 +1609,7 @@ REQUISITOS CRÍTICOS:
       };
     }
 
-    const projectQuery = Types.ObjectId.isValid(projectId)
-      ? new Types.ObjectId(projectId)
-      : projectId;
+    const projectQuery = Types.ObjectId.isValid(projectId) ? new Types.ObjectId(projectId) : projectId;
     const tasks = await this.taskModel
       .find({
         project: projectQuery,
@@ -1862,19 +1618,11 @@ REQUISITOS CRÍTICOS:
       .lean()
       .exec();
 
-    const taskById = new Map(
-      tasks.map((task: any) => [String(task._id), task]),
-    );
+    const taskById = new Map(tasks.map((task: any) => [String(task._id), task]));
     const activeWaveIndex = waves.findIndex((wave) => wave.status === 'active');
-    const firstPlannedWaveIndex = waves.findIndex(
-      (wave) => wave.status === 'planned',
-    );
+    const firstPlannedWaveIndex = waves.findIndex((wave) => wave.status === 'planned');
     const anchorWaveIndex =
-      activeWaveIndex >= 0
-        ? activeWaveIndex
-        : firstPlannedWaveIndex >= 0
-          ? firstPlannedWaveIndex
-          : 0;
+      activeWaveIndex >= 0 ? activeWaveIndex : firstPlannedWaveIndex >= 0 ? firstPlannedWaveIndex : 0;
     const dayMs = 24 * 60 * 60 * 1000;
 
     let cursor = this.startOfDay(new Date());
@@ -1889,9 +1637,7 @@ REQUISITOS CRÍTICOS:
         .map((taskId) => taskById.get(String(taskId)))
         .filter(Boolean);
 
-      const skippedConcludedTasks = waveTasks.filter((task) =>
-        Boolean(task?.isConcluded),
-      ).length;
+      const skippedConcludedTasks = waveTasks.filter((task) => Boolean(task?.isConcluded)).length;
       skippedConcludedCount += skippedConcludedTasks;
 
       const pendingTasks = waveTasks
@@ -1913,12 +1659,8 @@ REQUISITOS CRÍTICOS:
             return rightHours - leftHours;
           }
 
-          const leftCreatedAt = left?.createdAt
-            ? new Date(left.createdAt).getTime()
-            : 0;
-          const rightCreatedAt = right?.createdAt
-            ? new Date(right.createdAt).getTime()
-            : 0;
+          const leftCreatedAt = left?.createdAt ? new Date(left.createdAt).getTime() : 0;
+          const rightCreatedAt = right?.createdAt ? new Date(right.createdAt).getTime() : 0;
           return leftCreatedAt - rightCreatedAt;
         });
 
@@ -1937,35 +1679,23 @@ REQUISITOS CRÍTICOS:
       const originalEnd = this.endOfDay(new Date(wave.endDate));
       const originalDurationDays = Math.max(
         1,
-        Math.ceil(
-          (this.startOfDay(originalEnd).getTime() - originalStart.getTime()) /
-            dayMs,
-        ) + 1,
+        Math.ceil((this.startOfDay(originalEnd).getTime() - originalStart.getTime()) / dayMs) + 1,
       );
 
       const effectiveStart =
         index <= anchorWaveIndex
           ? this.startOfDay(cursor)
-          : this.startOfDay(
-              new Date(Math.max(cursor.getTime(), originalStart.getTime())),
-            );
+          : this.startOfDay(new Date(Math.max(cursor.getTime(), originalStart.getTime())));
 
       const effectiveEnd =
         originalEnd.getTime() >= effectiveStart.getTime()
           ? originalEnd
-          : this.endOfDay(
-              this.addDays(
-                effectiveStart,
-                Math.max(0, originalDurationDays - 1),
-              ),
-            );
+          : this.endOfDay(this.addDays(effectiveStart, Math.max(0, originalDurationDays - 1)));
 
       const availableDays = Math.max(
         1,
         Math.ceil(
-          (this.startOfDay(effectiveEnd).getTime() -
-            this.startOfDay(effectiveStart).getTime()) /
-            dayMs,
+          (this.startOfDay(effectiveEnd).getTime() - this.startOfDay(effectiveStart).getTime()) / dayMs,
         ) + 1,
       );
       const totalHours = pendingTasks.reduce(
@@ -1981,17 +1711,10 @@ REQUISITOS CRÍTICOS:
 
         const dayOffset = Math.min(
           availableDays - 1,
-          Math.max(
-            0,
-            Math.ceil((cumulativeHours / totalHours) * availableDays) - 1,
-          ),
+          Math.max(0, Math.ceil((cumulativeHours / totalHours) * availableDays) - 1),
         );
-        const nextDeadline = this.endOfDay(
-          this.addDays(effectiveStart, dayOffset),
-        );
-        const currentDeadlineTime = task?.deadline
-          ? new Date(task.deadline).getTime()
-          : null;
+        const nextDeadline = this.endOfDay(this.addDays(effectiveStart, dayOffset));
+        const currentDeadlineTime = task?.deadline ? new Date(task.deadline).getTime() : null;
 
         if (currentDeadlineTime === nextDeadline.getTime()) {
           continue;

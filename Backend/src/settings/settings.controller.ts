@@ -26,9 +26,7 @@ export class SettingsController {
 
   @Post(':userId/toggle-silence-notifications')
   @ApiOperation({ summary: 'Toggle silence notifications' })
-  async toggleSilenceNotifications(
-    @Param('userId') userId: string,
-  ): Promise<Settings> {
+  async toggleSilenceNotifications(@Param('userId') userId: string): Promise<Settings> {
     return this.settingsService.toggleSilenceNotifications(userId);
   }
 }

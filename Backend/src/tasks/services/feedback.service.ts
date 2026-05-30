@@ -1,8 +1,4 @@
-import {
-  Injectable,
-  BadRequestException,
-  NotFoundException,
-} from '@nestjs/common';
+import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { GeminiService } from '../../ai/gemini.service';
@@ -30,9 +26,7 @@ export class FeedbackService {
     } catch {
       try {
         // remove trailing commas
-        const safer = cleaned
-          .replace(/,\s*([}\]])/g, '$1')
-          .replace(/[\x00-\x1F\x7F]/g, ' ');
+        const safer = cleaned.replace(/,\s*([}\]])/g, '$1').replace(/[\x00-\x1F\x7F]/g, ' ');
         return JSON.parse(safer);
       } catch {
         return null;
@@ -66,9 +60,7 @@ export class FeedbackService {
     const percent =
       checklistSummary.length > 0
         ? Math.round(
-            (checklistSummary.filter((c) => c.completed).length /
-              checklistSummary.length) *
-              100,
+            (checklistSummary.filter((c) => c.completed).length / checklistSummary.length) * 100,
           )
         : 100;
 
@@ -91,9 +83,7 @@ export class FeedbackService {
 
     try {
       const raw = await this.geminiService.generateContent(prompt, {
-        responseMimeType: this.geminiService.supportsJsonMode()
-          ? 'application/json'
-          : undefined,
+        responseMimeType: this.geminiService.supportsJsonMode() ? 'application/json' : undefined,
         temperature: 0.3,
         maxOutputTokens: 400,
       });
@@ -103,34 +93,22 @@ export class FeedbackService {
       const celebration = String(
         parsed?.celebration ?? parsed?.praise ?? parsed?.recognition ?? '',
       ).trim();
-      const validation = String(
-        parsed?.validation ?? parsed?.learning ?? '',
-      ).trim();
-      const question = String(
-        parsed?.question ?? parsed?.inquiry ?? parsed?.nextStep ?? '',
-      ).trim();
-      const suggestion = String(
-        parsed?.suggestion ?? parsed?.suggest ?? parsed?.nextStep ?? '',
-      ).trim();
+      const validation = String(parsed?.validation ?? parsed?.learning ?? '').trim();
+      const question = String(parsed?.question ?? parsed?.inquiry ?? parsed?.nextStep ?? '').trim();
+      const suggestion = String(parsed?.suggestion ?? parsed?.suggest ?? parsed?.nextStep ?? '').trim();
 
       const feedbackObj = {
-        celebration:
-          celebration || `Parabéns por concluir "${String(task.name || '')}".`,
+        celebration: celebration || `Parabéns por concluir "${String(task.name || '')}".`,
         validation: validation || `Checklist: ${percent}% completo.`,
-        question:
-          question ||
-          'Houve algum impedimento durante a execução? (resuma em 1 frase)',
+        question: question || 'Houve algum impedimento durante a execução? (resuma em 1 frase)',
         suggestion:
-          suggestion ||
-          'Sugestão: revisar os pontos não concluídos e planejar próximo passo (PDCA).',
+          suggestion || 'Sugestão: revisar os pontos não concluídos e planejar próximo passo (PDCA).',
       };
 
       // Persist raw JSON string for audit
       await this.feedbackModel.create({
         task: new Types.ObjectId(String(task._id)),
-        project: task.project
-          ? new Types.ObjectId(String(task.project))
-          : undefined,
+        project: task.project ? new Types.ObjectId(String(task.project)) : undefined,
         modelName: this.geminiService.getModelName(),
         promptVersion: 'catchball-v1',
         inputSnapshot: {
@@ -147,9 +125,7 @@ export class FeedbackService {
       try {
         await this.feedbackModel.create({
           task: new Types.ObjectId(String(task._id)),
-          project: task.project
-            ? new Types.ObjectId(String(task.project))
-            : undefined,
+          project: task.project ? new Types.ObjectId(String(task.project)) : undefined,
           modelName: this.geminiService.getModelName(),
           promptVersion: 'catchball-v1',
           inputSnapshot: {
@@ -176,9 +152,7 @@ export class FeedbackService {
     const prompt = [
       'Baseado no feedback abaixo, gere 3 próximos passos acionáveis e curtos (título + descrição).',
       `Tarefa: ${String(task.name || '')}`,
-      feedback
-        ? `Feedback: ${typeof feedback === 'string' ? feedback : JSON.stringify(feedback)}`
-        : '',
+      feedback ? `Feedback: ${typeof feedback === 'string' ? feedback : JSON.stringify(feedback)}` : '',
       '',
       'Retorne APENAS um array JSON de objetos com chaves: title (string), description (string).',
       'Exemplo: [{"title":"Revisar checklist","description":"Corrigir item X e atualizar definição de pronto"}]',
@@ -188,9 +162,7 @@ export class FeedbackService {
 
     try {
       const raw = await this.geminiService.generateContent(prompt, {
-        responseMimeType: this.geminiService.supportsJsonMode()
-          ? 'application/json'
-          : undefined,
+        responseMimeType: this.geminiService.supportsJsonMode() ? 'application/json' : undefined,
         temperature: 0.4,
         maxOutputTokens: 600,
       });
@@ -207,8 +179,7 @@ export class FeedbackService {
       const fallback = [] as Array<{ title: string; description: string }>;
       fallback.push({
         title: 'Revisar checklist',
-        description:
-          'Verificar itens não concluídos e atualizar definição de pronto.',
+        description: 'Verificar itens não concluídos e atualizar definição de pronto.',
       });
       fallback.push({
         title: 'Planejar próximo passo',
@@ -219,8 +190,7 @@ export class FeedbackService {
       return [
         {
           title: 'Revisar checklist',
-          description:
-            'Verificar itens não concluídos e atualizar definição de pronto.',
+          description: 'Verificar itens não concluídos e atualizar definição de pronto.',
         },
       ];
     }
@@ -237,9 +207,7 @@ export class FeedbackService {
     }
 
     if (!task.isConcluded) {
-      throw new BadRequestException(
-        'Task deve estar concluída para gerar feedback',
-      );
+      throw new BadRequestException('Task deve estar concluída para gerar feedback');
     }
 
     const inputSnapshot = {
@@ -299,9 +267,7 @@ export class FeedbackService {
     }
   }
 
-  async getCompletionFeedback(
-    id: string,
-  ): Promise<{ feedback: string; createdAt: Date } | null> {
+  async getCompletionFeedback(id: string): Promise<{ feedback: string; createdAt: Date } | null> {
     if (!id || !Types.ObjectId.isValid(id)) {
       throw new BadRequestException(`ID inválido: ${id}`);
     }

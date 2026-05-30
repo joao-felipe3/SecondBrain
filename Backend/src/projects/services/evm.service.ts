@@ -1,14 +1,8 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
-import {
-  ProjectProgress,
-  ProjectProgressDocument,
-} from '../schemas/project-progress.schema';
-import {
-  ProjectWave,
-  ProjectWaveDocument,
-} from '../schemas/project-wave.schema';
+import { ProjectProgress, ProjectProgressDocument } from '../schemas/project-progress.schema';
+import { ProjectWave, ProjectWaveDocument } from '../schemas/project-wave.schema';
 import { ProjectDocument } from '../schemas/project.schema';
 import type {
   EVMCurve,
@@ -54,9 +48,7 @@ export class EVMService {
     }
   }
 
-  async getDashboardPreferences(
-    projectId: string,
-  ): Promise<EVMDashboardPreferences> {
+  async getDashboardPreferences(projectId: string): Promise<EVMDashboardPreferences> {
     this.assertValidObjectId(projectId, 'projectId');
 
     const project = await this.projectModel
@@ -65,9 +57,7 @@ export class EVMService {
       .lean()
       .exec();
 
-    return this.normalizeDashboardPreferences(
-      (project as any)?.dashboardMetricPreferences,
-    );
+    return this.normalizeDashboardPreferences((project as any)?.dashboardMetricPreferences);
   }
 
   async saveDashboardPreferences(
@@ -88,11 +78,7 @@ export class EVMService {
     };
 
     await this.projectModel
-      .findByIdAndUpdate(
-        projectId,
-        { $set: { dashboardMetricPreferences: merged } },
-        { new: true },
-      )
+      .findByIdAndUpdate(projectId, { $set: { dashboardMetricPreferences: merged } }, { new: true })
       .exec();
 
     return merged;
@@ -119,9 +105,7 @@ export class EVMService {
       completedHours,
       plannedValue,
       source: metadata?.source || 'manual',
-      taskId: metadata?.taskId
-        ? new Types.ObjectId(metadata.taskId)
-        : undefined,
+      taskId: metadata?.taskId ? new Types.ObjectId(metadata.taskId) : undefined,
     });
   }
 
@@ -134,10 +118,7 @@ export class EVMService {
       .exec();
   }
 
-  async deleteProgressEntry(
-    projectId: string,
-    entryId: string,
-  ): Promise<boolean> {
+  async deleteProgressEntry(projectId: string, entryId: string): Promise<boolean> {
     this.assertValidObjectId(projectId, 'projectId');
     this.assertValidObjectId(entryId, 'entryId');
 
@@ -169,12 +150,8 @@ export class EVMService {
       this.getActiveWaveContext(projectId),
     ]);
 
-    const completionRate =
-      metrics.bac > 0 ? Math.max(0, Math.min(1, metrics.ev / metrics.bac)) : 0;
-    const remainingHours = Math.max(
-      0,
-      metrics.plannedHours - metrics.completedHours,
-    );
+    const completionRate = metrics.bac > 0 ? Math.max(0, Math.min(1, metrics.ev / metrics.bac)) : 0;
+    const remainingHours = Math.max(0, metrics.plannedHours - metrics.completedHours);
     const variance = metrics.ev - metrics.pv;
 
     const scopedEntries = this.scopeEntriesByWindow(
@@ -223,10 +200,7 @@ export class EVMService {
       return { plannedValue: [], actualValue: [], dates: [] };
     }
 
-    const totalPV = scopedEntries.reduce(
-      (sum, entry) => sum + (entry.plannedValue || 0),
-      0,
-    );
+    const totalPV = scopedEntries.reduce((sum, entry) => sum + (entry.plannedValue || 0), 0);
     const plannedHours = Math.max(1, activeWaveContext.plannedHours);
     const bac = Math.max(1, totalPV, plannedHours);
 
@@ -238,10 +212,7 @@ export class EVMService {
     for (const entry of scopedEntries) {
       cumulativeHours += entry.completedHours || 0;
 
-      const progressRatio = Math.max(
-        0,
-        Math.min(1, cumulativeHours / plannedHours),
-      );
+      const progressRatio = Math.max(0, Math.min(1, cumulativeHours / plannedHours));
       const cumulativeEV = bac * progressRatio;
       const scheduleRatio = this.getScheduleRatioByDates(
         activeWaveContext.startDate,
@@ -270,30 +241,19 @@ export class EVMService {
   async getEVMSummary(projectId: string): Promise<EVMSummary> {
     this.assertValidObjectId(projectId, 'projectId');
 
-    const [
-      spi,
-      forecast,
-      curve,
-      entries,
-      coreMetrics,
-      dashboardPreferences,
-      milestoneProgress,
-    ] = await Promise.all([
-      this.calculateSPI(projectId),
-      this.forecastCompletion(projectId),
-      this.getEVMCurve(projectId),
-      this.getProgressEntries(projectId),
-      this.getCoreMetrics(projectId),
-      this.getDashboardPreferences(projectId),
-      this.getMilestoneProgress(projectId),
-    ]);
+    const [spi, forecast, curve, entries, coreMetrics, dashboardPreferences, milestoneProgress] =
+      await Promise.all([
+        this.calculateSPI(projectId),
+        this.forecastCompletion(projectId),
+        this.getEVMCurve(projectId),
+        this.getProgressEntries(projectId),
+        this.getCoreMetrics(projectId),
+        this.getDashboardPreferences(projectId),
+        this.getMilestoneProgress(projectId),
+      ]);
 
     const completedHours = coreMetrics.completedHours;
-    const personalMetrics = this.buildPersonalMetrics(
-      entries,
-      spi,
-      coreMetrics,
-    );
+    const personalMetrics = this.buildPersonalMetrics(entries, spi, coreMetrics);
     const metricRelevance = this.resolveMetricRelevance({
       entriesCount: entries.length,
       spi,
@@ -394,15 +354,10 @@ export class EVMService {
     };
 
     const spiDelay = input.spi < 1;
-    const needsScheduleAttention =
-      spiDelay || input.personalMetrics.planAdherence < 95;
+    const needsScheduleAttention = spiDelay || input.personalMetrics.planAdherence < 95;
 
     return {
-      spi: fromManual(
-        'spi',
-        true,
-        'SPI e a metrica principal de ritmo da entrega.',
-      ),
+      spi: fromManual('spi', true, 'SPI e a metrica principal de ritmo da entrega.'),
       plannedVsEarned: fromManual(
         'plannedVsEarned',
         input.entriesCount > 0 && needsScheduleAttention,
@@ -474,24 +429,12 @@ export class EVMService {
       activeWaveContext.endDate,
     );
 
-    const pv = scopedEntries.reduce(
-      (sum, entry) => sum + (entry.plannedValue || 0),
-      0,
-    );
-    const completedHours = scopedEntries.reduce(
-      (sum, entry) => sum + (entry.completedHours || 0),
-      0,
-    );
+    const pv = scopedEntries.reduce((sum, entry) => sum + (entry.plannedValue || 0), 0);
+    const completedHours = scopedEntries.reduce((sum, entry) => sum + (entry.completedHours || 0), 0);
 
-    const plannedHours = Math.max(
-      1,
-      this.toFiniteNumber(activeWaveContext.plannedHours, 1),
-    );
+    const plannedHours = Math.max(1, this.toFiniteNumber(activeWaveContext.plannedHours, 1));
     const bac = Math.max(1, pv, plannedHours);
-    const progressRatio = Math.max(
-      0,
-      Math.min(1, completedHours / plannedHours),
-    );
+    const progressRatio = Math.max(0, Math.min(1, completedHours / plannedHours));
     const scheduleRatio = this.getScheduleRatioByDates(
       activeWaveContext.startDate,
       activeWaveContext.endDate,
@@ -515,11 +458,8 @@ export class EVMService {
     scopeStartDate: Date | null,
     scopeEndDate: Date | null,
   ): string | null {
-    const baselineStart =
-      scopeStartDate ||
-      (project?.startDate ? new Date(project.startDate) : null);
-    const baselineEnd =
-      scopeEndDate || (project?.deadline ? new Date(project.deadline) : null);
+    const baselineStart = scopeStartDate || (project?.startDate ? new Date(project.startDate) : null);
+    const baselineEnd = scopeEndDate || (project?.deadline ? new Date(project.deadline) : null);
     if (!baselineStart) return null;
 
     const startDate = new Date(baselineStart);
@@ -537,10 +477,7 @@ export class EVMService {
       return baselineEnd ? new Date(baselineEnd).toISOString() : null;
     }
 
-    const remainingHours = Math.max(
-      0,
-      metrics.plannedHours - metrics.completedHours,
-    );
+    const remainingHours = Math.max(0, metrics.plannedHours - metrics.completedHours);
     const remainingDays = remainingHours / hoursPerDay;
 
     const estimateDate = new Date(now);
@@ -561,18 +498,13 @@ export class EVMService {
   ): EVMPersonalMetrics {
     const consistencyScore = this.calculateConsistencyScore(entries);
     const planAdherence =
-      coreMetrics.pv > 0
-        ? this.toBoundedScore((coreMetrics.ev / coreMetrics.pv) * 100)
-        : 100;
+      coreMetrics.pv > 0 ? this.toBoundedScore((coreMetrics.ev / coreMetrics.pv) * 100) : 100;
     const effortBalanceScore = this.calculateEffortBalanceScore(coreMetrics);
 
     const completionTrend = this.calculateCompletionTrend(entries);
     const completionRatio = Math.max(
       0,
-      Math.min(
-        1,
-        coreMetrics.completedHours / Math.max(1, coreMetrics.plannedHours),
-      ),
+      Math.min(1, coreMetrics.completedHours / Math.max(1, coreMetrics.plannedHours)),
     );
 
     const perceivedValueScore = this.toBoundedScore(
@@ -604,10 +536,7 @@ export class EVMService {
     completedHours: number;
     plannedHours: number;
   }): number {
-    const planned = Math.max(
-      1,
-      this.toFiniteNumber(coreMetrics.plannedHours, 1),
-    );
+    const planned = Math.max(1, this.toFiniteNumber(coreMetrics.plannedHours, 1));
     const completed = this.toFiniteNumber(coreMetrics.completedHours, 0);
     const delta = Math.abs(completed - planned);
     const ratio = delta / planned;
@@ -630,13 +559,11 @@ export class EVMService {
     const weeklyHours = Array.from(weeklyMap.values());
     if (weeklyHours.length <= 1) return 100;
 
-    const avg =
-      weeklyHours.reduce((sum, value) => sum + value, 0) / weeklyHours.length;
+    const avg = weeklyHours.reduce((sum, value) => sum + value, 0) / weeklyHours.length;
     if (avg <= 0) return 0;
 
     const variance =
-      weeklyHours.reduce((sum, value) => sum + (value - avg) ** 2, 0) /
-      weeklyHours.length;
+      weeklyHours.reduce((sum, value) => sum + (value - avg) ** 2, 0) / weeklyHours.length;
     const stdDev = Math.sqrt(variance);
     const coefficient = stdDev / avg;
 
@@ -648,9 +575,7 @@ export class EVMService {
   ): 'acelerando' | 'estavel' | 'desacelerando' | 'insuficiente' {
     if (entries.length < 4) return 'insuficiente';
 
-    const sorted = [...entries].sort(
-      (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
-    );
+    const sorted = [...entries].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
     const splitIndex = Math.floor(sorted.length / 2);
 
     const firstHalf = sorted.slice(0, splitIndex);
@@ -677,11 +602,7 @@ export class EVMService {
     consistencyScore: number;
     effortBalanceScore: number;
     planAdherence: number;
-    completionTrend:
-      | 'acelerando'
-      | 'estavel'
-      | 'desacelerando'
-      | 'insuficiente';
+    completionTrend: 'acelerando' | 'estavel' | 'desacelerando' | 'insuficiente';
   }): string {
     if (input.effortBalanceScore < 55) {
       return 'Seu esforco real esta desequilibrado com o plano. Reestime carga da semana antes de adicionar novas tarefas.';
@@ -707,15 +628,11 @@ export class EVMService {
   }
 
   private toWeekKey(date: Date): string {
-    const target = new Date(
-      Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()),
-    );
+    const target = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
     const dayNum = target.getUTCDay() || 7;
     target.setUTCDate(target.getUTCDate() + 4 - dayNum);
     const yearStart = new Date(Date.UTC(target.getUTCFullYear(), 0, 1));
-    const weekNo = Math.ceil(
-      ((target.getTime() - yearStart.getTime()) / 86400000 + 1) / 7,
-    );
+    const weekNo = Math.ceil(((target.getTime() - yearStart.getTime()) / 86400000 + 1) / 7);
     return `${target.getUTCFullYear()}-W${String(weekNo).padStart(2, '0')}`;
   }
 
@@ -733,11 +650,7 @@ export class EVMService {
 
     const start = new Date(startDate);
     const end = new Date(endDate);
-    if (
-      Number.isNaN(start.getTime()) ||
-      Number.isNaN(end.getTime()) ||
-      end <= start
-    ) {
+    if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime()) || end <= start) {
       return null;
     }
 
@@ -783,17 +696,13 @@ export class EVMService {
       };
     }
 
-    const completedMilestones = waves.filter(
-      (wave) => wave.status === 'completed',
-    ).length;
+    const completedMilestones = waves.filter((wave) => wave.status === 'completed').length;
     const activeWave = waves.find((wave) => wave.status === 'active') || null;
 
     return {
       totalMilestones: waves.length,
       completedMilestones,
-      completionRate: this.toBoundedScore(
-        (completedMilestones / waves.length) * 100,
-      ),
+      completionRate: this.toBoundedScore((completedMilestones / waves.length) * 100),
       activeMilestoneLabel: activeWave ? `Onda ${activeWave.waveNumber}` : null,
     };
   }
@@ -811,10 +720,7 @@ export class EVMService {
         .exec(),
     ]);
 
-    const fallbackPlannedHours = Math.max(
-      1,
-      this.toFiniteNumber(project?.plannedHours, 1),
-    );
+    const fallbackPlannedHours = Math.max(1, this.toFiniteNumber(project?.plannedHours, 1));
     if (waves.length === 0) {
       return {
         startDate: project?.startDate ? new Date(project.startDate) : null,
@@ -833,18 +739,13 @@ export class EVMService {
     }
 
     const totalWaveDurationMs = waves.reduce((sum, wave) => {
-      const duration =
-        new Date(wave.endDate).getTime() - new Date(wave.startDate).getTime();
+      const duration = new Date(wave.endDate).getTime() - new Date(wave.startDate).getTime();
       return sum + Math.max(0, this.toFiniteNumber(duration, 0));
     }, 0);
 
     const activeDurationRaw =
-      new Date(activeWave.endDate).getTime() -
-      new Date(activeWave.startDate).getTime();
-    const activeWaveDurationMs = Math.max(
-      0,
-      this.toFiniteNumber(activeDurationRaw, 0),
-    );
+      new Date(activeWave.endDate).getTime() - new Date(activeWave.startDate).getTime();
+    const activeWaveDurationMs = Math.max(0, this.toFiniteNumber(activeDurationRaw, 0));
 
     const plannedHours =
       totalWaveDurationMs > 0

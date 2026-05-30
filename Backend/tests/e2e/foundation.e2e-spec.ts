@@ -73,10 +73,7 @@ describe('Sprint 1: Foundation Backend + Schema (E2E)', () => {
         pertPessimisticMinutes: 120,
       };
 
-      const response = await request(app.getHttpServer())
-        .post('/tasks/micro')
-        .send(payload)
-        .expect(201);
+      const response = await request(app.getHttpServer()).post('/tasks/micro').send(payload).expect(201);
 
       // Validate basic structure
       expect(response.body).toBeDefined();
@@ -128,10 +125,7 @@ describe('Sprint 1: Foundation Backend + Schema (E2E)', () => {
         pertPessimisticMinutes: 120,
       };
 
-      const response = await request(app.getHttpServer())
-        .post('/tasks/micro')
-        .send(payload)
-        .expect(400);
+      const response = await request(app.getHttpServer()).post('/tasks/micro').send(payload).expect(400);
 
       expect(response.body.message).toContain('PERT inválido');
       expect(response.body.message).toContain('optimistic');
@@ -149,10 +143,7 @@ describe('Sprint 1: Foundation Backend + Schema (E2E)', () => {
         pertPessimisticMinutes: 20,
       };
 
-      const response = await request(app.getHttpServer())
-        .post('/tasks/micro')
-        .send(payload)
-        .expect(400);
+      const response = await request(app.getHttpServer()).post('/tasks/micro').send(payload).expect(400);
 
       expect(response.body.message).toContain('PERT inválido');
     });
@@ -169,10 +160,7 @@ describe('Sprint 1: Foundation Backend + Schema (E2E)', () => {
         pertPessimisticMinutes: 20,
       };
 
-      const response = await request(app.getHttpServer())
-        .post('/tasks/micro')
-        .send(payload)
-        .expect(400);
+      const response = await request(app.getHttpServer()).post('/tasks/micro').send(payload).expect(400);
 
       expect(response.body.message).toContain('PERT');
     });
@@ -189,10 +177,7 @@ describe('Sprint 1: Foundation Backend + Schema (E2E)', () => {
         // pessimistic missing
       };
 
-      const response = await request(app.getHttpServer())
-        .post('/tasks/micro')
-        .send(payload)
-        .expect(400);
+      const response = await request(app.getHttpServer()).post('/tasks/micro').send(payload).expect(400);
 
       expect(response.body.message).toContain('PERT');
     });
@@ -221,9 +206,7 @@ describe('Sprint 1: Foundation Backend + Schema (E2E)', () => {
       const originalChecklist = createResponse.body.checklist;
 
       // Retrieve task
-      const getResponse = await request(app.getHttpServer())
-        .get(`/tasks/micro/${taskId}`)
-        .expect(200);
+      const getResponse = await request(app.getHttpServer()).get(`/tasks/micro/${taskId}`).expect(200);
 
       // Verify checklist persisted
       expect(getResponse.body.checklist).toBeDefined();
@@ -274,9 +257,7 @@ describe('Sprint 1: Foundation Backend + Schema (E2E)', () => {
       expect(updateResponse.body.checklist[0].completed).toBe(true);
 
       // Verify persistence: retrieve again
-      const getResponse = await request(app.getHttpServer())
-        .get(`/tasks/micro/${taskId}`)
-        .expect(200);
+      const getResponse = await request(app.getHttpServer()).get(`/tasks/micro/${taskId}`).expect(200);
 
       expect(getResponse.body.checklist[0].completed).toBe(true);
       expect(getResponse.body.checklist[1].completed).toBe(false);
@@ -345,9 +326,7 @@ describe('Sprint 1: Foundation Backend + Schema (E2E)', () => {
     });
 
     it('should retrieve all 100 bulk-inserted tasks', async () => {
-      const response = await request(app.getHttpServer())
-        .get(`/tasks`)
-        .expect(200);
+      const response = await request(app.getHttpServer()).get(`/tasks`).expect(200);
 
       expect(response.body).toBeDefined();
       expect(Array.isArray(response.body)).toBe(true);
@@ -355,9 +334,7 @@ describe('Sprint 1: Foundation Backend + Schema (E2E)', () => {
     });
 
     it('should filter 100 tasks by project', async () => {
-      const response = await request(app.getHttpServer())
-        .get(`/tasks?project=${projectId}`)
-        .expect(200);
+      const response = await request(app.getHttpServer()).get(`/tasks?project=${projectId}`).expect(200);
 
       expect(response.body).toBeDefined();
       expect(Array.isArray(response.body)).toBe(true);
@@ -370,9 +347,7 @@ describe('Sprint 1: Foundation Backend + Schema (E2E)', () => {
     });
 
     it('should count different micro-task types in bulk insert', async () => {
-      const response = await request(app.getHttpServer())
-        .get(`/tasks?project=${projectId}`)
-        .expect(200);
+      const response = await request(app.getHttpServer()).get(`/tasks?project=${projectId}`).expect(200);
 
       const tasks = response.body;
       const typeCounts = {
@@ -446,10 +421,7 @@ describe('Sprint 1: Foundation Backend + Schema (E2E)', () => {
         pertPessimisticMinutes: 3,
       };
 
-      const response = await request(app.getHttpServer())
-        .post('/tasks/micro')
-        .send(payload)
-        .expect(201);
+      const response = await request(app.getHttpServer()).post('/tasks/micro').send(payload).expect(201);
 
       expect(response.body.pertExpectedMinutes).toBeDefined();
       expect(response.body.pertExpectedMinutes).toBeGreaterThan(0);
@@ -467,10 +439,7 @@ describe('Sprint 1: Foundation Backend + Schema (E2E)', () => {
         pertPessimisticMinutes: 2400,
       };
 
-      const response = await request(app.getHttpServer())
-        .post('/tasks/micro')
-        .send(payload)
-        .expect(201);
+      const response = await request(app.getHttpServer()).post('/tasks/micro').send(payload).expect(201);
 
       expect(response.body.pertExpectedMinutes).toBeDefined();
       expect(response.body.pertExpectedMinutes).toBeGreaterThan(600);
@@ -489,10 +458,7 @@ describe('Sprint 1: Foundation Backend + Schema (E2E)', () => {
         // deadline omitted
       };
 
-      const response = await request(app.getHttpServer())
-        .post('/tasks/micro')
-        .send(payload)
-        .expect(201);
+      const response = await request(app.getHttpServer()).post('/tasks/micro').send(payload).expect(201);
 
       expect(response.body._id).toBeDefined();
       // deadline may be null or auto-calculated

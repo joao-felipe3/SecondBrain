@@ -158,22 +158,15 @@ Retorne APENAS um array JSON com os sub-pacotes sugeridos:
     pomodorosGenerated: number;
   }> {
     // Use orchestrator to convert WBS node to tasks
-    const result = await this.orchestrator.convertWbsToTasks(
-      leafNode,
-      project,
-      nodePath,
-      {
-        strategy: 'two-phase', // Orchestrator will fallback to legacy if needed
-        modelOverride: preferences?.modelOverride,
-        logVerbose: true, // Enable verbose logging for interactive mode
-        throwOnError: false, // Don't throw, return error in result
-      },
-    );
+    const result = await this.orchestrator.convertWbsToTasks(leafNode, project, nodePath, {
+      strategy: 'two-phase', // Orchestrator will fallback to legacy if needed
+      modelOverride: preferences?.modelOverride,
+      logVerbose: true, // Enable verbose logging for interactive mode
+      throwOnError: false, // Don't throw, return error in result
+    });
 
     if (!result.success && result.error) {
-      console.error(
-        `Erro na conversão: ${result.error.stage} - ${result.error.message}`,
-      );
+      console.error(`Erro na conversão: ${result.error.stage} - ${result.error.message}`);
       if (result.error.originalError) {
         throw result.error.originalError;
       }
@@ -230,10 +223,7 @@ Retorne APENAS um array JSON com os sub-pacotes sugeridos:
     };
   }
 
-  async saveWBS(
-    projectId: string,
-    nodes: WBSNodeDto[],
-  ): Promise<WBSNodeDocument[]> {
+  async saveWBS(projectId: string, nodes: WBSNodeDto[]): Promise<WBSNodeDocument[]> {
     return this.persistence.save(projectId, nodes);
   }
 

@@ -1,17 +1,10 @@
-import {
-  BadRequestException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { TaskDocument } from '../../schemas/task.schema';
 import { PertService } from '../pert.service';
 import { TasksMetricsService } from './metrics.service';
-import {
-  PertEstimateDto,
-  PertEstimateResponseDto,
-} from '../../dto/pert-estimate.dto';
+import { PertEstimateDto, PertEstimateResponseDto } from '../../dto/pert-estimate.dto';
 import { UpdatePertDto } from '../../dto/suggest-pert.dto';
 
 @Injectable()
@@ -22,10 +15,7 @@ export class TasksPertService {
     private readonly metricsService: TasksMetricsService,
   ) {}
 
-  async updatePert(
-    taskId: string,
-    updatePertDto: UpdatePertDto,
-  ): Promise<TaskDocument> {
+  async updatePert(taskId: string, updatePertDto: UpdatePertDto): Promise<TaskDocument> {
     if (!taskId || !Types.ObjectId.isValid(taskId)) {
       throw new BadRequestException(`ID inválido: ${taskId}`);
     }
@@ -47,9 +37,7 @@ export class TasksPertService {
       throw new BadRequestException('Valores PERT devem ser maiores que zero');
     }
     if (!(optimistic <= mostLikely && mostLikely <= pessimistic)) {
-      throw new BadRequestException(
-        'Ordem inválida: Otimista ≤ Provável ≤ Pessimista',
-      );
+      throw new BadRequestException('Ordem inválida: Otimista ≤ Provável ≤ Pessimista');
     }
 
     const pertMetrics = this.pertService.calculatePertMetrics({
@@ -64,10 +52,7 @@ export class TasksPertService {
     }
 
     const createdAt = task.createdAt || new Date();
-    const deadline = this.metricsService.calculateDeadline(
-      createdAt,
-      pertMetrics.expectedTime,
-    );
+    const deadline = this.metricsService.calculateDeadline(createdAt, pertMetrics.expectedTime);
 
     const updatedTask = await this.taskModel
       .findByIdAndUpdate(

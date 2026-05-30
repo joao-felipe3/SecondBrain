@@ -6,9 +6,7 @@ import { UpdateSettingsDto } from './dto/update-settings.dto';
 
 @Injectable()
 export class SettingsService {
-  constructor(
-    @InjectModel(Settings.name) private settingsModel: Model<Settings>,
-  ) {}
+  constructor(@InjectModel(Settings.name) private settingsModel: Model<Settings>) {}
 
   async getSettings(userId: string): Promise<Settings> {
     let settings = await this.settingsModel.findOne({ userId });
@@ -24,15 +22,11 @@ export class SettingsService {
     return settings;
   }
 
-  async updateSettings(
-    userId: string,
-    updateDto: UpdateSettingsDto,
-  ): Promise<Settings> {
-    const settings = await this.settingsModel.findOneAndUpdate(
-      { userId },
-      updateDto,
-      { new: true, upsert: true },
-    );
+  async updateSettings(userId: string, updateDto: UpdateSettingsDto): Promise<Settings> {
+    const settings = await this.settingsModel.findOneAndUpdate({ userId }, updateDto, {
+      new: true,
+      upsert: true,
+    });
     return settings;
   }
 

@@ -1,12 +1,6 @@
 import { InjectModel } from '@nestjs/mongoose';
 import { TaskDocument } from '../tasks/schemas/task.schema';
-import {
-  Injectable,
-  NotFoundException,
-  BadRequestException,
-  Inject,
-  forwardRef,
-} from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException, Inject, forwardRef } from '@nestjs/common';
 import { Model, Types } from 'mongoose';
 import { CreateProjectDto } from './dto/create-project.dto';
 import { UpdateProjectDto } from './dto/update-project.dto';
@@ -14,10 +8,7 @@ import { ProjectDocument } from './schemas/project.schema';
 import { CPMService, type TaskNode } from '../tasks/services/cpm.service';
 import type { GanttDataResponse } from './dto/gantt.dto';
 import type { PertDiagramDataResponse } from './dto/pert-diagram.dto';
-import {
-  ProjectWave,
-  type ProjectWaveDocument,
-} from './schemas/project-wave.schema';
+import { ProjectWave, type ProjectWaveDocument } from './schemas/project-wave.schema';
 import type { CreateXMatrixDto, XMatrixResponseDto } from './dto/x-matrix.dto';
 import { ProjectsXMatrixService } from './services/projects-x-matrix.service';
 
@@ -34,10 +25,7 @@ export class ProjectsService {
     private readonly xMatrixService: ProjectsXMatrixService,
   ) {}
 
-  async createXMatrix(
-    projectId: string,
-    dto: CreateXMatrixDto,
-  ): Promise<XMatrixResponseDto> {
+  async createXMatrix(projectId: string, dto: CreateXMatrixDto): Promise<XMatrixResponseDto> {
     return this.xMatrixService.createXMatrix(projectId, dto);
   }
 
@@ -77,16 +65,10 @@ export class ProjectsService {
     ]);
 
     const toMinutes = (task: any): number => {
-      if (
-        typeof task?.pertExpectedMinutes === 'number' &&
-        task.pertExpectedMinutes > 0
-      ) {
+      if (typeof task?.pertExpectedMinutes === 'number' && task.pertExpectedMinutes > 0) {
         return task.pertExpectedMinutes;
       }
-      if (
-        typeof task?.pomodorosPlanned === 'number' &&
-        task.pomodorosPlanned > 0
-      ) {
+      if (typeof task?.pomodorosPlanned === 'number' && task.pomodorosPlanned > 0) {
         return task.pomodorosPlanned * 25;
       }
       return 60;
@@ -98,9 +80,7 @@ export class ProjectsService {
       duration: toMinutes(task),
       dependencies: [],
       dependencyEdges: [],
-      parentWbsNodeId: task?.parentWbsNodeId
-        ? String(task.parentWbsNodeId)
-        : undefined,
+      parentWbsNodeId: task?.parentWbsNodeId ? String(task.parentWbsNodeId) : undefined,
       wbsPath: task?.wbsPath ? String(task.wbsPath) : undefined,
     }));
 
@@ -116,9 +96,7 @@ export class ProjectsService {
         node.dependencies.push(dependsOnTaskId);
         node.dependencyEdges?.push({
           predecessorId: dependsOnTaskId,
-          relationship: this.cpmService.normalizeRelationship(
-            dep?.relationship,
-          ),
+          relationship: this.cpmService.normalizeRelationship(dep?.relationship),
         });
       }
     }
@@ -143,8 +121,7 @@ export class ProjectsService {
       metricsById.set(metric.id, metric);
     }
 
-    const round2 = (value: number) =>
-      Number((Number.isFinite(value) ? value : 0).toFixed(2));
+    const round2 = (value: number) => Number((Number.isFinite(value) ? value : 0).toFixed(2));
     const addHours = (base: Date, hours: number) => {
       const date = new Date(base);
       date.setTime(date.getTime() + Math.max(0, hours) * 60 * 60 * 1000);
@@ -159,13 +136,10 @@ export class ProjectsService {
       const waveEnd = wave?.endDate ? new Date(wave.endDate) : null;
 
       const taskDeadline = task?.deadline ? new Date(task.deadline) : null;
-      const projectDeadline = project.deadline
-        ? new Date(project.deadline)
-        : null;
+      const projectDeadline = project.deadline ? new Date(project.deadline) : null;
       const durationMs = Math.max(1, durationHours) * 60 * 60 * 1000;
 
-      let effectiveEnd =
-        taskDeadline || waveEnd || projectDeadline || new Date();
+      let effectiveEnd = taskDeadline || waveEnd || projectDeadline || new Date();
       if (waveEnd && effectiveEnd.getTime() > waveEnd.getTime()) {
         effectiveEnd = new Date(waveEnd);
       }
@@ -205,10 +179,7 @@ export class ProjectsService {
         const earlyFinish = round2(metric?.earlyFinish ?? durationHours);
         const lateStart = round2(metric?.lateStart ?? earlyStart);
         const lateFinish = round2(metric?.lateFinish ?? earlyFinish);
-        const progress = Math.max(
-          0,
-          Math.min(100, Number(task?.evmProgress || 0) * 100),
-        );
+        const progress = Math.max(0, Math.min(100, Number(task?.evmProgress || 0) * 100));
         const timelineWindow = resolveWindowByDeadline(task, durationHours);
 
         return {
@@ -226,9 +197,7 @@ export class ProjectsService {
           progress: round2(progress),
           isConcluded: Boolean(task?.isConcluded),
           priority: Number(task?.priority || 0),
-          parentWbsNodeId: task?.parentWbsNodeId
-            ? String(task.parentWbsNodeId)
-            : undefined,
+          parentWbsNodeId: task?.parentWbsNodeId ? String(task.parentWbsNodeId) : undefined,
           wbsPath: task?.wbsPath ? String(task.wbsPath) : undefined,
         };
       })
@@ -256,9 +225,7 @@ export class ProjectsService {
       projectId,
       projectName: String(project.name || 'Projeto'),
       projectStartDate: fallbackProjectStart.toISOString(),
-      projectDeadline: project.deadline
-        ? new Date(project.deadline).toISOString()
-        : null,
+      projectDeadline: project.deadline ? new Date(project.deadline).toISOString() : null,
       projectDurationHours: round2(analysis.projectDuration),
       tasks: taskItems,
       dependencies: dependencyItems,
@@ -297,21 +264,14 @@ export class ProjectsService {
     ]);
 
     const toMinutes = (task: any): number => {
-      if (
-        typeof task?.pertExpectedMinutes === 'number' &&
-        task.pertExpectedMinutes > 0
-      )
+      if (typeof task?.pertExpectedMinutes === 'number' && task.pertExpectedMinutes > 0)
         return task.pertExpectedMinutes;
-      if (
-        typeof task?.pomodorosPlanned === 'number' &&
-        task.pomodorosPlanned > 0
-      )
+      if (typeof task?.pomodorosPlanned === 'number' && task.pomodorosPlanned > 0)
         return task.pomodorosPlanned * 25;
       return 60;
     };
 
-    const round2 = (value: number) =>
-      Number((Number.isFinite(value) ? value : 0).toFixed(2));
+    const round2 = (value: number) => Number((Number.isFinite(value) ? value : 0).toFixed(2));
 
     const taskNodes: TaskNode[] = tasks.map((task: any) => ({
       id: task?._id?.toString?.() || String(task?.id || ''),
@@ -319,9 +279,7 @@ export class ProjectsService {
       duration: toMinutes(task),
       dependencies: [],
       dependencyEdges: [],
-      parentWbsNodeId: task?.parentWbsNodeId
-        ? String(task.parentWbsNodeId)
-        : undefined,
+      parentWbsNodeId: task?.parentWbsNodeId ? String(task.parentWbsNodeId) : undefined,
       wbsPath: task?.wbsPath ? String(task.wbsPath) : undefined,
     }));
 
@@ -337,17 +295,14 @@ export class ProjectsService {
         node.dependencies.push(dependsOnTaskId);
         node.dependencyEdges?.push({
           predecessorId: dependsOnTaskId,
-          relationship: this.cpmService.normalizeRelationship(
-            dep?.relationship,
-          ),
+          relationship: this.cpmService.normalizeRelationship(dep?.relationship),
         });
       }
     }
 
     const analysis = this.cpmService.calculateCriticalPath(taskNodes);
     const metricsById = new Map<string, TaskNode>();
-    for (const metric of analysis.tasksByImpact)
-      metricsById.set(metric.id, metric);
+    for (const metric of analysis.tasksByImpact) metricsById.set(metric.id, metric);
 
     const predecessorCount = new Map<string, number>();
     const predecessorMap = new Map<string, Set<string>>();
@@ -368,10 +323,7 @@ export class ProjectsService {
     }
 
     const levelMemo = new Map<string, number>();
-    const computeLevel = (
-      taskId: string,
-      stack = new Set<string>(),
-    ): number => {
+    const computeLevel = (taskId: string, stack = new Set<string>()): number => {
       if (levelMemo.has(taskId)) return levelMemo.get(taskId)!;
       if (stack.has(taskId)) return 0;
       stack.add(taskId);
@@ -382,8 +334,7 @@ export class ProjectsService {
         return 0;
       }
 
-      const level =
-        1 + Math.max(...predecessors.map((id) => computeLevel(id, stack)));
+      const level = 1 + Math.max(...predecessors.map((id) => computeLevel(id, stack)));
       levelMemo.set(taskId, level);
       stack.delete(taskId);
       return level;
@@ -399,10 +350,7 @@ export class ProjectsService {
       const lateStart = round2(metric?.lateStart ?? earlyStart);
       const lateFinish = round2(metric?.lateFinish ?? earlyFinish);
       const slack = round2(metric?.slack ?? 0);
-      const progress = Math.max(
-        0,
-        Math.min(100, Number(task?.evmProgress || 0) * 100),
-      );
+      const progress = Math.max(0, Math.min(100, Number(task?.evmProgress || 0) * 100));
       const level = computeLevel(id);
       return {
         id,
@@ -417,9 +365,7 @@ export class ProjectsService {
         progress: round2(progress),
         isConcluded: Boolean(task?.isConcluded),
         priority: Number(task?.priority || 0),
-        parentWbsNodeId: task?.parentWbsNodeId
-          ? String(task.parentWbsNodeId)
-          : undefined,
+        parentWbsNodeId: task?.parentWbsNodeId ? String(task.parentWbsNodeId) : undefined,
         wbsPath: task?.wbsPath ? String(task.wbsPath) : undefined,
         x: level,
         y: earlyStart,
@@ -430,13 +376,7 @@ export class ProjectsService {
       .map((dep: any) => {
         const source = String(dep?.dependsOnTaskId || '').trim();
         const target = String(dep?.taskId || '').trim();
-        if (
-          !source ||
-          !target ||
-          !nodeById.has(source) ||
-          !nodeById.has(target)
-        )
-          return null;
+        if (!source || !target || !nodeById.has(source) || !nodeById.has(target)) return null;
 
         return {
           id: dep?._id?.toString?.() || `${source}-${target}`,
@@ -467,8 +407,7 @@ export class ProjectsService {
       statistics: {
         totalTasks,
         criticalTasks,
-        criticalPercent:
-          totalTasks > 0 ? round2((criticalTasks / totalTasks) * 100) : 0,
+        criticalPercent: totalTasks > 0 ? round2((criticalTasks / totalTasks) * 100) : 0,
         totalEdges: edges.length,
         maxParallelism: round2(analysis.diagnostics?.impliedParallelism || 0),
       },
@@ -499,41 +438,21 @@ export class ProjectsService {
   }
 
   async findOne(id: string): Promise<ProjectDocument | null> {
-    if (
-      !id ||
-      id === 'null' ||
-      id === 'undefined' ||
-      !Types.ObjectId.isValid(id)
-    ) {
+    if (!id || id === 'null' || id === 'undefined' || !Types.ObjectId.isValid(id)) {
       throw new BadRequestException(`ID inválido: ${id}`);
     }
     return await this.projectModel.findById(id).exec();
   }
 
-  async update(
-    id: string,
-    dto: UpdateProjectDto,
-  ): Promise<ProjectDocument | null> {
-    if (
-      !id ||
-      id === 'null' ||
-      id === 'undefined' ||
-      !Types.ObjectId.isValid(id)
-    ) {
+  async update(id: string, dto: UpdateProjectDto): Promise<ProjectDocument | null> {
+    if (!id || id === 'null' || id === 'undefined' || !Types.ObjectId.isValid(id)) {
       throw new BadRequestException(`ID inválido: ${id}`);
     }
-    return await this.projectModel
-      .findByIdAndUpdate(id, dto, { new: true })
-      .exec();
+    return await this.projectModel.findByIdAndUpdate(id, dto, { new: true }).exec();
   }
 
   async remove(id: string): Promise<boolean> {
-    if (
-      !id ||
-      id === 'null' ||
-      id === 'undefined' ||
-      !Types.ObjectId.isValid(id)
-    ) {
+    if (!id || id === 'null' || id === 'undefined' || !Types.ObjectId.isValid(id)) {
       throw new BadRequestException(`ID inválido: ${id}`);
     }
     const result = await this.projectModel.findByIdAndDelete(id).exec();
@@ -549,12 +468,7 @@ export class ProjectsService {
     id: string,
     deleteTasks: boolean,
   ): Promise<{ deleted: boolean; tasksAffected: number }> {
-    if (
-      !id ||
-      id === 'null' ||
-      id === 'undefined' ||
-      !Types.ObjectId.isValid(id)
-    ) {
+    if (!id || id === 'null' || id === 'undefined' || !Types.ObjectId.isValid(id)) {
       throw new BadRequestException(`ID inválido: ${id}`);
     }
 
@@ -571,9 +485,7 @@ export class ProjectsService {
       await this.taskModel.deleteMany({ project: id }).exec();
     } else {
       // Just unlink tasks from project
-      await this.taskModel
-        .updateMany({ project: id }, { $unset: { project: '' } })
-        .exec();
+      await this.taskModel.updateMany({ project: id }, { $unset: { project: '' } }).exec();
     }
 
     // Delete the project
@@ -581,10 +493,7 @@ export class ProjectsService {
     return { deleted: result !== null, tasksAffected };
   }
 
-  async incrementHoursWorked(
-    id: string,
-    hours: number,
-  ): Promise<ProjectDocument> {
+  async incrementHoursWorked(id: string, hours: number): Promise<ProjectDocument> {
     const project = await this.projectModel.findById(id).exec();
     if (!project) throw new NotFoundException('Project not found');
     project.totalHoursWorked = (project.totalHoursWorked || 0) + hours;
@@ -598,28 +507,17 @@ export class ProjectsService {
 
   async addTaskToProject(projectId: string, taskId: string): Promise<void> {
     await this.projectModel
-      .findByIdAndUpdate(
-        projectId,
-        { $addToSet: { tasks: taskId } },
-        { new: true },
-      )
+      .findByIdAndUpdate(projectId, { $addToSet: { tasks: taskId } }, { new: true })
       .exec();
   }
 
-  async removeTaskFromProject(
-    projectId: string,
-    taskId: string,
-  ): Promise<void> {
+  async removeTaskFromProject(projectId: string, taskId: string): Promise<void> {
     await this.projectModel
       .findByIdAndUpdate(projectId, { $pull: { tasks: taskId } }, { new: true })
       .exec();
   }
 
-  async moveTaskToProject(
-    taskId: string,
-    oldProjectId: string,
-    newProjectId: string,
-  ): Promise<void> {
+  async moveTaskToProject(taskId: string, oldProjectId: string, newProjectId: string): Promise<void> {
     if (oldProjectId) {
       await this.removeTaskFromProject(oldProjectId, taskId);
       await this.recalculateProjectStats(oldProjectId);
@@ -628,9 +526,7 @@ export class ProjectsService {
     await this.recalculateProjectStats(newProjectId);
   }
 
-  async recalculateProjectStats(
-    projectId: string,
-  ): Promise<ProjectDocument | null> {
+  async recalculateProjectStats(projectId: string): Promise<ProjectDocument | null> {
     // Validar ObjectId
     if (
       !projectId ||
@@ -638,9 +534,7 @@ export class ProjectsService {
       projectId === 'undefined' ||
       !Types.ObjectId.isValid(projectId)
     ) {
-      console.warn(
-        `recalculateProjectStats: ID inválido ignorado: ${projectId}`,
-      );
+      console.warn(`recalculateProjectStats: ID inválido ignorado: ${projectId}`);
       return null;
     }
 

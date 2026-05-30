@@ -1,8 +1,4 @@
-import {
-  Injectable,
-  NotFoundException,
-  BadRequestException,
-} from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { CreateTaskDto } from '../../dto/create-task.dto';
@@ -29,19 +25,12 @@ export class TasksWriteService {
     private readonly checklistService: ChecklistService,
   ) {}
 
-  async createMicroTask(
-    createMicroTaskDto: CreateMicroTaskDto,
-  ): Promise<TaskDocument> {
+  async createMicroTask(createMicroTaskDto: CreateMicroTaskDto): Promise<TaskDocument> {
     this.tasksInputService.validatePertInput(createMicroTaskDto);
 
-    const checklistWasProvided = Object.prototype.hasOwnProperty.call(
-      createMicroTaskDto,
-      'checklist',
-    );
+    const checklistWasProvided = Object.prototype.hasOwnProperty.call(createMicroTaskDto, 'checklist');
 
-    const normalizedChecklist = this.tasksInputService.normalizeChecklist(
-      createMicroTaskDto.checklist,
-    );
+    const normalizedChecklist = this.tasksInputService.normalizeChecklist(createMicroTaskDto.checklist);
     const payload: CreateTaskDto = {
       ...createMicroTaskDto,
       checklist: normalizedChecklist as any,
@@ -63,13 +52,12 @@ export class TasksWriteService {
       (!payload.checklist || payload.checklist.length === 0);
 
     if (shouldGenerateChecklist) {
-      const generated =
-        await this.tasksChecklistService.generateChecklistWithHistory(
-          payload.name,
-          payload.description,
-          payload.microTaskType,
-          payload.project,
-        );
+      const generated = await this.tasksChecklistService.generateChecklistWithHistory(
+        payload.name,
+        payload.description,
+        payload.microTaskType,
+        payload.project,
+      );
       payload.checklist = this.tasksInputService.normalizeChecklist(generated);
     }
 
@@ -115,25 +103,18 @@ export class TasksWriteService {
     } catch (err: any) {
       inserted = (err?.insertedDocs as TaskDocument[]) || [];
 
-      const writeErrors = Array.isArray(err?.writeErrors)
-        ? err.writeErrors.length
-        : undefined;
+      const writeErrors = Array.isArray(err?.writeErrors) ? err.writeErrors.length : undefined;
 
-      console.warn(
-        '[TasksWriteService][createMany] insertMany error (partial inserts possible)',
-        {
-          message: err?.message,
-          inserted: inserted.length,
-          writeErrors,
-        },
-      );
+      console.warn('[TasksWriteService][createMany] insertMany error (partial inserts possible)', {
+        message: err?.message,
+        inserted: inserted.length,
+        writeErrors,
+      });
     }
 
     if (shouldRecalculateStats) {
       const uniqueProjectIds = new Set(
-        inserted
-          .map((t: any) => t?.project?.toString?.() ?? t?.project)
-          .filter(Boolean),
+        inserted.map((t: any) => t?.project?.toString?.() ?? t?.project).filter(Boolean),
       );
 
       for (const pid of uniqueProjectIds) {
@@ -152,24 +133,14 @@ export class TasksWriteService {
     const savedTask = await createdTask.save();
 
     if (savedTask.project) {
-      await this.projectsService.recalculateProjectStats(
-        savedTask.project.toString(),
-      );
+      await this.projectsService.recalculateProjectStats(savedTask.project.toString());
     }
 
     return savedTask;
   }
 
-  async update(
-    id: string,
-    updateTaskDto: Partial<CreateTaskDto>,
-  ): Promise<TaskDocument | null> {
-    if (
-      !id ||
-      id === 'null' ||
-      id === 'undefined' ||
-      !/^[a-f\d]{24}$/i.test(id)
-    ) {
+  async update(id: string, updateTaskDto: Partial<CreateTaskDto>): Promise<TaskDocument | null> {
+    if (!id || id === 'null' || id === 'undefined' || !/^[a-f\d]{24}$/i.test(id)) {
       throw new BadRequestException(`ID inválido: ${id}`);
     }
 
@@ -180,9 +151,7 @@ export class TasksWriteService {
 
     this.applyDerivedFields(updateTaskDto);
 
-    const updatedTask = await this.taskModel
-      .findByIdAndUpdate(id, updateTaskDto, { new: true })
-      .exec();
+    const updatedTask = await this.taskModel.findByIdAndUpdate(id, updateTaskDto, { new: true }).exec();
 
     if (updatedTask) {
       const newProjectId = updatedTask.project?.toString();
@@ -199,12 +168,7 @@ export class TasksWriteService {
   }
 
   async remove(id: string): Promise<boolean> {
-    if (
-      !id ||
-      id === 'null' ||
-      id === 'undefined' ||
-      !/^[a-f\d]{24}$/i.test(id)
-    ) {
+    if (!id || id === 'null' || id === 'undefined' || !/^[a-f\d]{24}$/i.test(id)) {
       throw new BadRequestException(`ID inválido: ${id}`);
     }
 

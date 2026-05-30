@@ -1,17 +1,11 @@
-import {
-  Injectable,
-  BadRequestException,
-  NotFoundException,
-} from '@nestjs/common';
+import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { TaskDocument } from '../../schemas/task.schema';
 
 @Injectable()
 export class TasksHierarchyService {
-  constructor(
-    @InjectModel('Task') private readonly taskModel: Model<TaskDocument>,
-  ) {}
+  constructor(@InjectModel('Task') private readonly taskModel: Model<TaskDocument>) {}
 
   async getTaskLineage(
     id: string,
@@ -55,10 +49,7 @@ export class TasksHierarchyService {
     }
 
     // Get direct children
-    const children = await this.taskModel
-      .find({ parentTaskId: id })
-      .select('_id name status')
-      .exec();
+    const children = await this.taskModel.find({ parentTaskId: id }).select('_id name status').exec();
 
     return {
       ancestors,
@@ -135,10 +126,7 @@ export class TasksHierarchyService {
     const rootDescendants = await this.getDescendants(rootId, 5000);
 
     // Inclui o root também na lista para cálculo, caso tenha experience
-    const rootTask = await this.taskModel
-      .findById(rootId)
-      .select('_id experience isConcluded')
-      .exec();
+    const rootTask = await this.taskModel.findById(rootId).select('_id experience isConcluded').exec();
 
     const allNodes = [] as Array<{
       _id: any;
@@ -172,10 +160,7 @@ export class TasksHierarchyService {
       experience: number;
       isConcluded: boolean;
     }>;
-    const taskSel = await this.taskModel
-      .findById(id)
-      .select('_id experience isConcluded')
-      .exec();
+    const taskSel = await this.taskModel.findById(id).select('_id experience isConcluded').exec();
     if (taskSel) {
       subtreeNodes.push({
         _id: taskSel._id,
@@ -196,8 +181,7 @@ export class TasksHierarchyService {
       0,
     );
 
-    const contributionPercent =
-      totalCompletedXP > 0 ? (subtreeCompletedXP / totalCompletedXP) * 100 : 0;
+    const contributionPercent = totalCompletedXP > 0 ? (subtreeCompletedXP / totalCompletedXP) * 100 : 0;
 
     return {
       contributionPercent: Math.round(contributionPercent * 100) / 100,

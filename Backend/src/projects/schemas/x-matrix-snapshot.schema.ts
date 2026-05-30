@@ -12,6 +12,5 @@ export class XMatrixSnapshot {
   data: Record<string, any>;
 }
 
-export const XMatrixSnapshotSchema =
-  SchemaFactory.createForClass(XMatrixSnapshot);
+export const XMatrixSnapshotSchema = SchemaFactory.createForClass(XMatrixSnapshot);
 XMatrixSnapshotSchema.index({ projectId: 1 }, { unique: true });

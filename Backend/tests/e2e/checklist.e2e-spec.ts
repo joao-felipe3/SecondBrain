@@ -81,10 +81,7 @@ describe('Sprint 2: Checklist Validation & Historical Context (E2E)', () => {
         pertPessimisticMinutes: 90,
       };
 
-      const response = await request(app.getHttpServer())
-        .post('/tasks/micro')
-        .send(payload)
-        .expect(201);
+      const response = await request(app.getHttpServer()).post('/tasks/micro').send(payload).expect(201);
 
       expect(response.body).toBeDefined();
       expect(response.body._id).toBeDefined();
@@ -116,10 +113,7 @@ describe('Sprint 2: Checklist Validation & Historical Context (E2E)', () => {
         pertPessimisticMinutes: 15,
       };
 
-      const response = await request(app.getHttpServer())
-        .post('/tasks/micro')
-        .send(payload)
-        .expect(400);
+      const response = await request(app.getHttpServer()).post('/tasks/micro').send(payload).expect(400);
 
       expect(response.body.message).toContain('mínimo 3');
     });
@@ -169,9 +163,7 @@ describe('Sprint 2: Checklist Validation & Historical Context (E2E)', () => {
         throw new Error('taskId not set');
       }
 
-      const response = await request(app.getHttpServer())
-        .get(`/tasks/micro/${taskId}`)
-        .expect(200);
+      const response = await request(app.getHttpServer()).get(`/tasks/micro/${taskId}`).expect(200);
 
       const checklist = response.body.checklist;
       const completed = checklist.filter((item: any) => item.completed).length;
@@ -200,9 +192,7 @@ describe('Sprint 2: Checklist Validation & Historical Context (E2E)', () => {
         .send({ checklist: incompleteChecklist });
 
       // Try to mark as concluded
-      const response = await request(app.getHttpServer())
-        .patch(`/tasks/${taskId}/conclude`)
-        .expect(400);
+      const response = await request(app.getHttpServer()).patch(`/tasks/${taskId}/conclude`).expect(400);
 
       expect(response.body.message).toContain('incompleto');
       expect(response.body.message).toContain('%');
@@ -227,9 +217,7 @@ describe('Sprint 2: Checklist Validation & Historical Context (E2E)', () => {
         .send({ checklist: completeChecklist });
 
       // Mark as concluded should succeed
-      const response = await request(app.getHttpServer())
-        .patch(`/tasks/${taskId}/conclude`)
-        .expect(200);
+      const response = await request(app.getHttpServer()).patch(`/tasks/${taskId}/conclude`).expect(200);
 
       expect(response.body.isConcluded).toBe(true);
     });
@@ -243,10 +231,7 @@ describe('Sprint 2: Checklist Validation & Historical Context (E2E)', () => {
         deadline: new Date(Date.now() + 86400000),
       };
 
-      const createResponse = await request(app.getHttpServer())
-        .post('/tasks')
-        .send(payload)
-        .expect(201);
+      const createResponse = await request(app.getHttpServer()).post('/tasks').send(payload).expect(201);
 
       const regularTaskId = createResponse.body._id;
 
@@ -274,10 +259,7 @@ describe('Sprint 2: Checklist Validation & Historical Context (E2E)', () => {
         ],
       };
 
-      const response = await request(app.getHttpServer())
-        .post('/tasks/micro')
-        .send(payload)
-        .expect(400);
+      const response = await request(app.getHttpServer()).post('/tasks/micro').send(payload).expect(400);
 
       expect(response.body.message).toContain('duplicado');
     });
@@ -296,10 +278,7 @@ describe('Sprint 2: Checklist Validation & Historical Context (E2E)', () => {
         ],
       };
 
-      const response = await request(app.getHttpServer())
-        .post('/tasks/micro')
-        .send(payload)
-        .expect(400);
+      const response = await request(app.getHttpServer()).post('/tasks/micro').send(payload).expect(400);
 
       expect(response.body.message).toContain('vazi');
     });
@@ -347,10 +326,7 @@ describe('Sprint 2: Checklist Validation & Historical Context (E2E)', () => {
         checklist,
       };
 
-      const response = await request(app.getHttpServer())
-        .post('/tasks/micro')
-        .send(payload)
-        .expect(400);
+      const response = await request(app.getHttpServer()).post('/tasks/micro').send(payload).expect(400);
 
       expect(response.body.message).toContain('10');
     });
@@ -373,9 +349,7 @@ describe('Sprint 2: Checklist Validation & Historical Context (E2E)', () => {
           pertPessimisticMinutes: 15,
         };
 
-        const response = await request(app.getHttpServer())
-          .post('/tasks/micro')
-          .send(payload);
+        const response = await request(app.getHttpServer()).post('/tasks/micro').send(payload);
 
         if (response.status === 201) {
           tasks.push(response.body._id);

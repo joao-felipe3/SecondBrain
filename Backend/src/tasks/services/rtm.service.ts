@@ -67,19 +67,12 @@ export class RTMService {
     return 'action';
   }
 
-  private normalizeType(
-    value: unknown,
-    fallbackKind?: JourneyKind,
-  ): RequirementType {
+  private normalizeType(value: unknown, fallbackKind?: JourneyKind): RequirementType {
     const raw = String(value ?? '')
       .trim()
       .toLowerCase();
     if (raw === 'functional') return 'functional';
-    if (
-      raw === 'non_functional' ||
-      raw === 'non-functional' ||
-      raw === 'nonfunctional'
-    ) {
+    if (raw === 'non_functional' || raw === 'non-functional' || raw === 'nonfunctional') {
       return 'non_functional';
     }
     if (raw === 'constraint') return 'constraint';
@@ -206,18 +199,9 @@ Retorne SOMENTE um JSON array:
         .map((item: any, index: number) => {
           const kind = this.normalizeKind(item?.kind);
           const defaultRefPrefix =
-            kind === 'objective'
-              ? 'O'
-              : kind === 'habit'
-                ? 'H'
-                : kind === 'stage'
-                  ? 'E'
-                  : 'A';
-          const ref = String(
-            item?.ref ?? `${defaultRefPrefix}${index + 1}`,
-          ).trim();
-          const parentRef =
-            item?.parentRef == null ? undefined : String(item.parentRef).trim();
+            kind === 'objective' ? 'O' : kind === 'habit' ? 'H' : kind === 'stage' ? 'E' : 'A';
+          const ref = String(item?.ref ?? `${defaultRefPrefix}${index + 1}`).trim();
+          const parentRef = item?.parentRef == null ? undefined : String(item.parentRef).trim();
           const description = String(item?.description ?? '').trim();
 
           return {
@@ -239,9 +223,7 @@ Retorne SOMENTE um JSON array:
         deduped.push(item);
       }
 
-      this.logger.log(
-        `${deduped.length} itens de jornada extraídos com sucesso`,
-      );
+      this.logger.log(`${deduped.length} itens de jornada extraídos com sucesso`);
       return deduped.map((item) => ({
         description: item.description,
         type: item.type || item.kind,
@@ -297,13 +279,8 @@ Retorne SOMENTE um JSON array:
   /**
    * Remove mapeamento de item para tarefa
    */
-  async unmapRequirementFromTask(
-    requirementId: string,
-    taskId: string,
-  ): Promise<Requirement | null> {
-    this.logger.log(
-      `Removendo mapeamento: item ${requirementId} <- tarefa ${taskId}`,
-    );
+  async unmapRequirementFromTask(requirementId: string, taskId: string): Promise<Requirement | null> {
+    this.logger.log(`Removendo mapeamento: item ${requirementId} <- tarefa ${taskId}`);
 
     try {
       const requirement = await this.requirementModel.findByIdAndUpdate(
@@ -366,9 +343,7 @@ Retorne SOMENTE um JSON array:
 
       for (const req of requirements as any[]) {
         const id = String(req._id ?? req.id ?? '');
-        const parentId = req.parentItemId
-          ? String(req.parentItemId)
-          : undefined;
+        const parentId = req.parentItemId ? String(req.parentItemId) : undefined;
         if (!parentId) continue;
         const list = childrenByParent.get(parentId) || [];
         list.push(req);
@@ -381,9 +356,7 @@ Retorne SOMENTE um JSON array:
 
       const hasChildOfKind = (id: string, kind: JourneyKind) => {
         const children = childrenByParent.get(id) || [];
-        return children.some(
-          (child) => this.normalizeKind(child.kind || child.type) === kind,
-        );
+        return children.some((child) => this.normalizeKind(child.kind || child.type) === kind);
       };
 
       for (const req of requirements as any[]) {
@@ -431,9 +404,7 @@ Retorne SOMENTE um JSON array:
       const isValid = unmappedRequirements.length === 0;
 
       if (!isValid) {
-        risks.push(
-          `${unmappedRequirements.length} item(ns) da jornada sem rastreabilidade completa`,
-        );
+        risks.push(`${unmappedRequirements.length} item(ns) da jornada sem rastreabilidade completa`);
       }
 
       return {
@@ -488,9 +459,7 @@ Retorne SOMENTE um JSON array:
 
       const wbsNameMap = new Map<string, string>();
       const tasksData = tasks.map((task) => {
-        const wbsNodeId = task.parentWbsNodeId
-          ? String(task.parentWbsNodeId)
-          : undefined;
+        const wbsNodeId = task.parentWbsNodeId ? String(task.parentWbsNodeId) : undefined;
 
         let wbsNodeName = 'Sem WBS';
         if (wbsNodeId) {
@@ -502,8 +471,7 @@ Retorne SOMENTE um JSON array:
                 .split('>')
                 .map((p: string) => p.trim())
                 .filter(Boolean);
-              wbsNodeName =
-                pathParts[pathParts.length - 1] || wbsNodeId.slice(0, 12);
+              wbsNodeName = pathParts[pathParts.length - 1] || wbsNodeId.slice(0, 12);
             } else {
               wbsNodeName = `WBS: ${wbsNodeId.slice(0, 12)}`;
             }
@@ -555,9 +523,7 @@ Retorne SOMENTE um JSON array:
       parentRef?: string;
     }>,
   ): Promise<RequirementDocument[]> {
-    this.logger.log(
-      `Salvando ${requirementsData.length} itens de jornada para projeto ${projectId}`,
-    );
+    this.logger.log(`Salvando ${requirementsData.length} itens de jornada para projeto ${projectId}`);
 
     try {
       const refToId = new Map<string, string>();
@@ -566,12 +532,8 @@ Retorne SOMENTE um JSON array:
         .map((item, index) => {
           const kind = this.normalizeKind(item.kind || item.type);
           const type = this.normalizeType(item.type, kind);
-          const ref = String(
-            item.ref || `${kind.slice(0, 1).toUpperCase()}${index + 1}`,
-          ).trim();
-          const parentRef = item.parentRef
-            ? String(item.parentRef).trim()
-            : undefined;
+          const ref = String(item.ref || `${kind.slice(0, 1).toUpperCase()}${index + 1}`).trim();
+          const parentRef = item.parentRef ? String(item.parentRef).trim() : undefined;
           const description = String(item.description || '').trim();
           return {
             ref,
@@ -585,9 +547,7 @@ Retorne SOMENTE um JSON array:
         })
         .filter((item) => item.description.length > 0);
 
-      const orderedByLevel = prepared.sort(
-        (a, b) => a.hierarchyLevel - b.hierarchyLevel,
-      );
+      const orderedByLevel = prepared.sort((a, b) => a.hierarchyLevel - b.hierarchyLevel);
       const inserted: RequirementDocument[] = [];
 
       for (const item of orderedByLevel) {
@@ -627,15 +587,12 @@ Retorne SOMENTE um JSON array:
   }
 
   async getRequirements(projectId: string): Promise<RequirementDocument[]> {
-    return this.requirementModel
-      .find({ projectId })
-      .sort({ hierarchyLevel: 1, createdAt: 1, _id: 1 });
+    return this.requirementModel.find({ projectId }).sort({ hierarchyLevel: 1, createdAt: 1, _id: 1 });
   }
 
   async deleteRequirement(requirementId: string): Promise<boolean> {
     try {
-      const result =
-        await this.requirementModel.findByIdAndDelete(requirementId);
+      const result = await this.requirementModel.findByIdAndDelete(requirementId);
       return !!result;
     } catch (error: any) {
       this.logger.error(`Erro ao deletar item de jornada: ${error?.message}`);
@@ -651,9 +608,7 @@ Retorne SOMENTE um JSON array:
       );
       return result.deletedCount || 0;
     } catch (error: any) {
-      this.logger.error(
-        `Erro ao deletar todos os itens de jornada: ${error?.message}`,
-      );
+      this.logger.error(`Erro ao deletar todos os itens de jornada: ${error?.message}`);
       return 0;
     }
   }
@@ -691,9 +646,7 @@ Retorne SOMENTE um JSON array:
             isValid: false,
             coverage: 0,
             unmappedRequirements: [],
-            risks: [
-              'Nenhum item de jornada encontrado. Gere a estrutura primeiro.',
-            ],
+            risks: ['Nenhum item de jornada encontrado. Gere a estrutura primeiro.'],
           },
           message: 'Falha: nenhum item de jornada disponível para mapear.',
         };
@@ -721,9 +674,7 @@ Retorne SOMENTE um JSON array:
         }
       }
 
-      const tasksToMap = tasks.filter(
-        (task) => !alreadyMappedTaskIds.has(String(task._id || task.id)),
-      );
+      const tasksToMap = tasks.filter((task) => !alreadyMappedTaskIds.has(String(task._id || task.id)));
       if (tasksToMap.length === 0) {
         const validation = await this.validateRTM(projectId);
         return {
@@ -747,13 +698,9 @@ Retorne SOMENTE um JSON array:
       for (let batchIdx = 0; batchIdx < batches.length; batchIdx += 1) {
         const batch = batches[batchIdx];
 
-        const tasksDesc = batch
-          .map((t) => `- "${t.title || t.name}" (ID: ${t._id || t.id})`)
-          .join('\n');
+        const tasksDesc = batch.map((t) => `- "${t.title || t.name}" (ID: ${t._id || t.id})`).join('\n');
 
-        const actionsDesc = actionItems
-          .map((a: any) => `[ID: ${a._id}] ${a.description}`)
-          .join('\n');
+        const actionsDesc = actionItems.map((a: any) => `[ID: ${a._id}] ${a.description}`).join('\n');
 
         const prompt = `Você é um analista de rastreabilidade para desenvolvimento pessoal.
 
@@ -790,12 +737,8 @@ Sem markdown.`;
             const taskId = String(mapping?.taskId || '');
             if (!taskId) continue;
 
-            if (
-              String(mapping?.requirementId || '').toUpperCase() === 'ORPHAN'
-            ) {
-              const orphan = batch.find(
-                (t) => String(t._id || t.id) === taskId,
-              );
+            if (String(mapping?.requirementId || '').toUpperCase() === 'ORPHAN') {
+              const orphan = batch.find((t) => String(t._id || t.id) === taskId);
               if (orphan) orphanTasks.push(orphan);
               continue;
             }
@@ -819,11 +762,8 @@ Sem markdown.`;
         const stageItems = allItems.filter(
           (item: any) => this.normalizeKind(item.kind || item.type) === 'stage',
         );
-        const fallbackParent =
-          stageItems.length > 0 ? stageItems[0] : allItems[0];
-        const fallbackParentId = fallbackParent
-          ? String((fallbackParent as any)._id)
-          : undefined;
+        const fallbackParent = stageItems.length > 0 ? stageItems[0] : allItems[0];
+        const fallbackParentId = fallbackParent ? String((fallbackParent as any)._id) : undefined;
 
         const groupSize = Math.max(1, Math.ceil(orphanTasks.length / 3));
         for (let i = 0; i < orphanTasks.length; i += groupSize) {
@@ -840,15 +780,11 @@ Sem markdown.`;
             parentItemId: fallbackParentId,
             source: 'auto_mapped_from_orphan_tasks',
             traceableItems: group.map((task) => String(task._id || task.id)),
-            traceableActionItems: group.map((task) =>
-              String(task._id || task.id),
-            ),
+            traceableActionItems: group.map((task) => String(task._id || task.id)),
             status: 'satisfied',
           });
 
-          mappings[String((newAction as any)._id)] = group.map((task) =>
-            String(task._id || task.id),
-          );
+          mappings[String((newAction as any)._id)] = group.map((task) => String(task._id || task.id));
           createdRequirementsCount += 1;
         }
       }
@@ -869,9 +805,7 @@ Sem markdown.`;
           );
           mappedCount += taskIds.length;
         } catch (updateError: any) {
-          this.logger.warn(
-            `[auto-map] erro ao atualizar item ${itemId}: ${updateError?.message}`,
-          );
+          this.logger.warn(`[auto-map] erro ao atualizar item ${itemId}: ${updateError?.message}`);
         }
       }
 
@@ -889,9 +823,7 @@ Sem markdown.`;
         message: `Auto-vínculo concluído: ${mappedCount} tarefa(s) vinculada(s) + ${createdRequirementsCount} ação(ões) criada(s). Cobertura: ${validation.coverage}%`,
       };
     } catch (error: any) {
-      this.logger.error(
-        `[auto-map] projectId=${projectId} erro: ${error?.message}`,
-      );
+      this.logger.error(`[auto-map] projectId=${projectId} erro: ${error?.message}`);
       return {
         mappedCount: 0,
         createdRequirementsCount: 0,
@@ -917,9 +849,7 @@ Sem markdown.`;
     message: string;
   }> {
     const startedAt = Date.now();
-    this.logger.log(
-      `[gen-tasks] projectId=${projectId} gerando tarefas para ações órfãs`,
-    );
+    this.logger.log(`[gen-tasks] projectId=${projectId} gerando tarefas para ações órfãs`);
 
     try {
       const validation = await this.validateRTM(projectId);
@@ -996,9 +926,7 @@ Sem markdown.`;
               taskIds.push(String((newTask as any)._id));
               createdTasksCount += 1;
             } catch (taskError: any) {
-              this.logger.warn(
-                `[gen-tasks] erro ao criar tarefa: ${taskError?.message}`,
-              );
+              this.logger.warn(`[gen-tasks] erro ao criar tarefa: ${taskError?.message}`);
             }
           }
 
@@ -1034,9 +962,7 @@ Sem markdown.`;
         message: `${createdTasksCount} tarefa(s) gerada(s) para ações órfãs. Cobertura final: ${finalValidation.coverage}%`,
       };
     } catch (error: any) {
-      this.logger.error(
-        `[gen-tasks] projectId=${projectId} erro: ${error?.message}`,
-      );
+      this.logger.error(`[gen-tasks] projectId=${projectId} erro: ${error?.message}`);
       return {
         createdTasksCount: 0,
         coverage: 0,

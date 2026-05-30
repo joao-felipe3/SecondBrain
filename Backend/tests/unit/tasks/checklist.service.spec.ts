@@ -50,11 +50,7 @@ describe('ChecklistService', () => {
     });
 
     it('should reject checklist with duplicate items', () => {
-      const result = service.validateChecklistStructure([
-        'item1',
-        'item2',
-        'ITEM1',
-      ]);
+      const result = service.validateChecklistStructure(['item1', 'item2', 'ITEM1']);
       expect(result.isValid).toBe(false);
       expect(result.reason).toContain('duplicado');
     });
@@ -66,11 +62,7 @@ describe('ChecklistService', () => {
     });
 
     it('should accept valid checklist with strings', () => {
-      const result = service.validateChecklistStructure([
-        'item1',
-        'item2',
-        'item3',
-      ]);
+      const result = service.validateChecklistStructure(['item1', 'item2', 'item3']);
       expect(result.isValid).toBe(true);
       expect(result.reason).toBeUndefined();
     });
@@ -91,11 +83,7 @@ describe('ChecklistService', () => {
     });
 
     it('should accept checklist with 3 items (boundary)', () => {
-      const result = service.validateChecklistStructure([
-        'item1',
-        'item2',
-        'item3',
-      ]);
+      const result = service.validateChecklistStructure(['item1', 'item2', 'item3']);
       expect(result.isValid).toBe(true);
     });
   });
@@ -116,10 +104,7 @@ describe('ChecklistService', () => {
     });
 
     it('should fail for 50% complete checklist', () => {
-      const result = service.validateChecklistCompletion([
-        { completed: true },
-        { completed: false },
-      ]);
+      const result = service.validateChecklistCompletion([{ completed: true }, { completed: false }]);
       expect(result.isValid).toBe(false);
       expect(result.reason).toContain('incompleto');
       expect(result.reason).toContain('50%');
@@ -159,10 +144,7 @@ describe('ChecklistService', () => {
     });
 
     it('should return 50 for half complete checklist', () => {
-      const result = service.calculateCompletionPercentage([
-        { completed: true },
-        { completed: false },
-      ]);
+      const result = service.calculateCompletionPercentage([{ completed: true }, { completed: false }]);
       expect(result).toBe(50);
     });
 
@@ -234,19 +216,13 @@ describe('ChecklistService', () => {
 
   describe('findSimilarTasksInProject', () => {
     it('should return empty array for invalid projectId', async () => {
-      const result = await service.findSimilarTasksInProject(
-        'invalid-id',
-        'habit',
-      );
+      const result = await service.findSimilarTasksInProject('invalid-id', 'habit');
       expect(result).toEqual([]);
     });
 
     it('should return empty array for invalid microTaskType', async () => {
       const projectId = new Types.ObjectId().toString();
-      const result = await service.findSimilarTasksInProject(
-        projectId,
-        'invalid-type',
-      );
+      const result = await service.findSimilarTasksInProject(projectId, 'invalid-type');
       expect(result).toEqual([]);
     });
 
@@ -263,11 +239,7 @@ describe('ChecklistService', () => {
       const mockSelect = jest.fn().mockReturnValue({ limit: mockLimit });
       mockTaskModel.find.mockReturnValue({ select: mockSelect });
 
-      const result = await service.findSimilarTasksInProject(
-        projectId.toString(),
-        'habit',
-        1,
-      );
+      const result = await service.findSimilarTasksInProject(projectId.toString(), 'habit', 1);
 
       expect(mockTaskModel.find).toHaveBeenCalled();
       expect(mockSelect).toHaveBeenCalledWith('name description checklist');
@@ -295,10 +267,7 @@ describe('ChecklistService', () => {
         throw new Error('DB error');
       });
 
-      const result = await service.findSimilarTasksInProject(
-        projectId.toString(),
-        'habit',
-      );
+      const result = await service.findSimilarTasksInProject(projectId.toString(), 'habit');
 
       expect(result).toEqual([]);
     });

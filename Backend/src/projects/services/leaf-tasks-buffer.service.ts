@@ -18,10 +18,7 @@ export class LeafTasksBufferService {
   private ttlMs(): number {
     const raw = String(process.env.WBS_PREFETCH_TTL_SECONDS || '').trim();
     const seconds = raw ? Number(raw) : 15 * 60;
-    return Math.max(
-      10_000,
-      (Number.isFinite(seconds) ? seconds : 15 * 60) * 1000,
-    );
+    return Math.max(10_000, (Number.isFinite(seconds) ? seconds : 15 * 60) * 1000);
   }
 
   private maxPerProject(): number {
@@ -37,9 +34,7 @@ export class LeafTasksBufferService {
   }
 
   private isDebugEnabled(): boolean {
-    const v = String(
-      process.env.WBS_PREFETCH_DEBUG || process.env.WBS_CACHE_DEBUG || '',
-    )
+    const v = String(process.env.WBS_PREFETCH_DEBUG || process.env.WBS_CACHE_DEBUG || '')
       .trim()
       .toLowerCase();
     return v === '1' || v === 'true' || v === 'yes' || v === 'on';

@@ -36,9 +36,7 @@ describe('TasksService', () => {
   };
 
   beforeEach(async () => {
-    const saveMock = jest.fn().mockImplementation(async function saveImpl(
-      this: any,
-    ) {
+    const saveMock = jest.fn().mockImplementation(async function saveImpl(this: any) {
       return {
         ...this,
         _id: new Types.ObjectId(),
@@ -58,43 +56,29 @@ describe('TasksService', () => {
       generateContent: jest.fn(),
       generateChecklistForTask: jest
         .fn()
-        .mockImplementation(async () => [
-          'Preparar contexto',
-          'Executar tarefa',
-          'Validar entrega',
-        ]),
+        .mockImplementation(async () => ['Preparar contexto', 'Executar tarefa', 'Validar entrega']),
       generateChecklistWithHistory: jest
         .fn()
-        .mockImplementation(async () => [
-          'Preparar contexto',
-          'Executar tarefa',
-          'Validar entrega',
-        ]),
+        .mockImplementation(async () => ['Preparar contexto', 'Executar tarefa', 'Validar entrega']),
     };
 
     checklistServiceMock = {
       validateChecklistStructure: (jest.fn() as any).mockReturnValue({
         isValid: true,
       }),
-      findSimilarTasksInProject: (jest.fn() as any).mockResolvedValue(
-        [] as any,
-      ),
+      findSimilarTasksInProject: (jest.fn() as any).mockResolvedValue([] as any),
       enrichHistoryContext: (jest.fn() as any).mockReturnValue(''),
       calculateCompletionPercentage: (jest.fn() as any).mockReturnValue(0),
-      validateChecklistCompletion: (jest.fn() as any).mockImplementation(
-        (items: any[]) => {
-          const normalized = Array.isArray(items) ? items : [];
-          const isValid = normalized.every(
-            (it) => Boolean(it?.completed) === true,
-          );
-          return {
-            isValid,
-            reason: isValid
-              ? undefined
-              : 'Checklist incompleto: complete todos os itens antes de concluir.',
-          };
-        },
-      ),
+      validateChecklistCompletion: (jest.fn() as any).mockImplementation((items: any[]) => {
+        const normalized = Array.isArray(items) ? items : [];
+        const isValid = normalized.every((it) => Boolean(it?.completed) === true);
+        return {
+          isValid,
+          reason: isValid
+            ? undefined
+            : 'Checklist incompleto: complete todos os itens antes de concluir.',
+        };
+      }),
     };
 
     feedbackModelMock = {};
@@ -195,9 +179,7 @@ describe('TasksService', () => {
         ],
       }),
     );
-    expect(projectsServiceMock.recalculateProjectStats).toHaveBeenCalledTimes(
-      1,
-    );
+    expect(projectsServiceMock.recalculateProjectStats).toHaveBeenCalledTimes(1);
   });
 
   it('rejeita checklist vazio quando autoGenerateChecklist está desabilitado', async () => {
@@ -227,12 +209,8 @@ describe('TasksService', () => {
         _id: taskId,
         checklist: [],
       });
-      taskModelMock.findById = jest
-        .fn()
-        .mockReturnValue({ exec: mockTaskFind });
-      const result = await service.validateCompletionRequirements(
-        taskId.toString(),
-      );
+      taskModelMock.findById = jest.fn().mockReturnValue({ exec: mockTaskFind });
+      const result = await service.validateCompletionRequirements(taskId.toString());
 
       expect(result.isValid).toBe(true);
     });
@@ -245,13 +223,9 @@ describe('TasksService', () => {
         recurringRule: { frequency: 'daily', interval: 1 },
         checklist: [],
       });
-      taskModelMock.findById = jest
-        .fn()
-        .mockReturnValue({ exec: mockTaskFind });
+      taskModelMock.findById = jest.fn().mockReturnValue({ exec: mockTaskFind });
 
-      const result = await service.validateCompletionRequirements(
-        taskId.toString(),
-      );
+      const result = await service.validateCompletionRequirements(taskId.toString());
 
       expect(result.isValid).toBe(true);
     });
@@ -262,13 +236,9 @@ describe('TasksService', () => {
         _id: taskId,
         checklist: ['Item 1', 'Item 2', 'Item 3'],
       });
-      taskModelMock.findById = jest
-        .fn()
-        .mockReturnValue({ exec: mockTaskFind });
+      taskModelMock.findById = jest.fn().mockReturnValue({ exec: mockTaskFind });
 
-      const result = await service.validateCompletionRequirements(
-        taskId.toString(),
-      );
+      const result = await service.validateCompletionRequirements(taskId.toString());
       expect(result.isValid).toBe(false);
       expect(result.reason || '').toContain('Checklist incompleto');
     });
@@ -282,15 +252,11 @@ describe('TasksService', () => {
           { item: 'item2', completed: false },
         ],
       });
-      taskModelMock.findById = jest
-        .fn()
-        .mockReturnValue({ exec: mockTaskFind });
+      taskModelMock.findById = jest.fn().mockReturnValue({ exec: mockTaskFind });
 
       // Nota: Isso é um teste simplificado. Para teste completo, seria necessário
       // mockear corretamente o taskModel do service
-      const result = await service.validateCompletionRequirements(
-        taskId.toString(),
-      );
+      const result = await service.validateCompletionRequirements(taskId.toString());
 
       expect(result.isValid).toBe(false);
       expect(result.reason || '').toContain('incompleto');
@@ -329,11 +295,7 @@ describe('TasksService', () => {
 
     it('deve rejeitar item index inválido', async () => {
       await expect(
-        service.updateChecklistItem(
-          new Types.ObjectId().toString(),
-          'invalid',
-          true,
-        ),
+        service.updateChecklistItem(new Types.ObjectId().toString(), 'invalid', true),
       ).rejects.toThrow(BadRequestException);
     });
 
@@ -344,9 +306,7 @@ describe('TasksService', () => {
         checklist: [{ item: 'item1', completed: false }],
       });
 
-      taskModelMock.findById = jest
-        .fn()
-        .mockReturnValue({ exec: mockTaskFind });
+      taskModelMock.findById = jest.fn().mockReturnValue({ exec: mockTaskFind });
 
       // Este teste valida a lógica de validação de bounds
     });

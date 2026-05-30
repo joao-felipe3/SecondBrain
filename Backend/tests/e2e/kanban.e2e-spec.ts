@@ -39,10 +39,7 @@ describe('Sprint 4: Kanban Board E2E Tests', () => {
         project: 'test-project',
       };
 
-      const response = await request(app.getHttpServer())
-        .post('/tasks')
-        .send(createTaskDto)
-        .expect(201);
+      const response = await request(app.getHttpServer()).post('/tasks').send(createTaskDto).expect(201);
 
       expect(response.body.status).toBe('todo');
       expect(response.body.statusUpdatedAt).toBeDefined();
@@ -60,9 +57,7 @@ describe('Sprint 4: Kanban Board E2E Tests', () => {
       expect(moveResponse.body.status).toBe('doing');
 
       // Refresh: fetch task again
-      const refreshResponse = await request(app.getHttpServer())
-        .get(`/tasks/${taskId}`)
-        .expect(200);
+      const refreshResponse = await request(app.getHttpServer()).get(`/tasks/${taskId}`).expect(200);
 
       expect(refreshResponse.body.status).toBe('doing');
       expect(refreshResponse.body.statusUpdatedAt).toBeDefined();
@@ -142,12 +137,8 @@ describe('Sprint 4: Kanban Board E2E Tests', () => {
         .expect(200);
 
       expect(response.body.length).toBe(3);
-      expect(response.body[0].kanbanOrder).toBeLessThan(
-        response.body[1].kanbanOrder,
-      );
-      expect(response.body[1].kanbanOrder).toBeLessThan(
-        response.body[2].kanbanOrder,
-      );
+      expect(response.body[0].kanbanOrder).toBeLessThan(response.body[1].kanbanOrder);
+      expect(response.body[1].kanbanOrder).toBeLessThan(response.body[2].kanbanOrder);
     });
   });
 
@@ -155,9 +146,7 @@ describe('Sprint 4: Kanban Board E2E Tests', () => {
     it('should return task genealogy (ancestors + children)', async () => {
       const taskId = 'test-task-with-lineage';
 
-      const response = await request(app.getHttpServer())
-        .get(`/tasks/${taskId}/lineage`)
-        .expect(200);
+      const response = await request(app.getHttpServer()).get(`/tasks/${taskId}/lineage`).expect(200);
 
       expect(response.body).toHaveProperty('ancestors');
       expect(response.body).toHaveProperty('children');
@@ -170,16 +159,11 @@ describe('Sprint 4: Kanban Board E2E Tests', () => {
       // Assume: Goal > Project > Task > SubTask structure
       const subTaskId = 'test-subtask';
 
-      const response = await request(app.getHttpServer())
-        .get(`/tasks/${subTaskId}/lineage`)
-        .expect(200);
+      const response = await request(app.getHttpServer()).get(`/tasks/${subTaskId}/lineage`).expect(200);
 
       // Should show chain up to root
       expect(response.body.ancestors.length).toBeGreaterThan(0);
-      expect(
-        response.body.ancestors[response.body.ancestors.length - 1]
-          .parentTaskId,
-      ).toBeNull();
+      expect(response.body.ancestors[response.body.ancestors.length - 1].parentTaskId).toBeNull();
     });
   });
 
@@ -260,9 +244,7 @@ describe('Sprint 4: Kanban Board E2E Tests', () => {
 
       const taskId = createRes.body._id;
 
-      await request(app.getHttpServer())
-        .patch(`/tasks/${taskId}/conclude`)
-        .expect(200);
+      await request(app.getHttpServer()).patch(`/tasks/${taskId}/conclude`).expect(200);
 
       const userFeedbackPayload = {
         celebration: 'Entrega concluída com sucesso',
@@ -284,20 +266,14 @@ describe('Sprint 4: Kanban Board E2E Tests', () => {
         .send(userFeedbackPayload)
         .expect(200);
 
-      expect(postResponse.body.feedback).toContain(
-        'Entrega concluída com sucesso',
-      );
+      expect(postResponse.body.feedback).toContain('Entrega concluída com sucesso');
 
       const getResponse = await request(app.getHttpServer())
         .get(`/tasks/${taskId}/completion-feedback`)
         .expect(200);
 
-      expect(getResponse.body.feedback).toContain(
-        'Entrega concluída com sucesso',
-      );
-      expect(getResponse.body.feedback).toContain(
-        'Nenhum impeditivo relevante',
-      );
+      expect(getResponse.body.feedback).toContain('Entrega concluída com sucesso');
+      expect(getResponse.body.feedback).toContain('Nenhum impeditivo relevante');
     });
   });
 
@@ -362,9 +338,7 @@ describe('Sprint 4: Kanban Board E2E Tests', () => {
       expect(doingRes.body.status).toBe('doing');
 
       // 3. Check lineage
-      const lineageRes = await request(app.getHttpServer())
-        .get(`/tasks/${taskId}/lineage`)
-        .expect(200);
+      const lineageRes = await request(app.getHttpServer()).get(`/tasks/${taskId}/lineage`).expect(200);
 
       expect(lineageRes.body).toHaveProperty('ancestors');
       expect(lineageRes.body).toHaveProperty('children');
@@ -391,9 +365,7 @@ describe('Sprint 4: Kanban Board E2E Tests', () => {
       expect(feedbackRes.body).toHaveProperty('feedback');
 
       // 7. Verify refresh maintains state
-      const refreshRes = await request(app.getHttpServer())
-        .get(`/tasks/${taskId}`)
-        .expect(200);
+      const refreshRes = await request(app.getHttpServer()).get(`/tasks/${taskId}`).expect(200);
 
       expect(refreshRes.body.status).toBe('done');
     });

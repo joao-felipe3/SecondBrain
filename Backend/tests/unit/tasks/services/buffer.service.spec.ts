@@ -64,11 +64,7 @@ describe('BufferService', () => {
       mockModel.findOneAndUpdate.mockResolvedValue(mockBuffer);
 
       // Act
-      const result = await service.calculateProjectBuffer(
-        mockProjectId,
-        tasks,
-        criticalPath,
-      );
+      const result = await service.calculateProjectBuffer(mockProjectId, tasks, criticalPath);
 
       // Assert
       expect(result).not.toBeNull();
@@ -90,11 +86,7 @@ describe('BufferService', () => {
       const criticalPath: string[] = [];
 
       // Act
-      const result = await service.calculateProjectBuffer(
-        mockProjectId,
-        tasks,
-        criticalPath,
-      );
+      const result = await service.calculateProjectBuffer(mockProjectId, tasks, criticalPath);
 
       // Assert
       expect(result).not.toBeNull();
@@ -118,11 +110,7 @@ describe('BufferService', () => {
       mockModel.findOneAndUpdate.mockResolvedValue(mockBuffer);
 
       // Act
-      const result = await service.calculateProjectBuffer(
-        mockProjectId,
-        tasks,
-        criticalPath,
-      );
+      const result = await service.calculateProjectBuffer(mockProjectId, tasks, criticalPath);
 
       // Assert
       expect(result).not.toBeNull();
@@ -331,17 +319,11 @@ describe('BufferService', () => {
       mockModel.findOneAndUpdate.mockResolvedValue(mockBuffer);
 
       // Act
-      const result = await service.calculateProjectBuffer(
-        mockProjectId,
-        tasks,
-        criticalPath,
-      );
+      const result = await service.calculateProjectBuffer(mockProjectId, tasks, criticalPath);
 
       // Assert
       expect(result).not.toBeNull();
-      expect(
-        result!.projectBuffer.toString().split('.')[1].length,
-      ).toBeLessThanOrEqual(1);
+      expect(result!.projectBuffer.toString().split('.')[1].length).toBeLessThanOrEqual(1);
     });
 
     it('deve lidar com buffer muito pequeno', async () => {

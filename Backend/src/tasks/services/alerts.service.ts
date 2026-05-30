@@ -67,17 +67,12 @@ export class AlertsService {
     return alerts;
   }
 
-  async markRead(
-    id: string,
-    userId?: string,
-  ): Promise<TaskAlertDocument | null> {
+  async markRead(id: string, userId?: string): Promise<TaskAlertDocument | null> {
     const query: any = { _id: id };
     if (userId) {
       query.userId = userId;
     }
 
-    return this.alertModel
-      .findOneAndUpdate(query, { isRead: true }, { new: true })
-      .exec();
+    return this.alertModel.findOneAndUpdate(query, { isRead: true }, { new: true }).exec();
   }
 }

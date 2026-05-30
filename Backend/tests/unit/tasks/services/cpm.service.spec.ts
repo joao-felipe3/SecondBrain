@@ -1,9 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getModelToken } from '@nestjs/mongoose';
-import {
-  CPMService,
-  TaskNode,
-} from '../../../../src/tasks/services/cpm.service';
+import { CPMService, TaskNode } from '../../../../src/tasks/services/cpm.service';
 import { TaskDependency } from '../../../../src/tasks/schemas/task-dependency.schema';
 import { DependencyType } from '../../../../src/tasks/schemas/task-dependency.schema';
 
@@ -208,9 +205,7 @@ describe('CPMService - Critical Path Method', () => {
 
       // Deve logar warning, não crashar
       const analysis = service.calculateCriticalPath(tasks);
-      expect(
-        analysis.alerts.some((a) => String(a).toLowerCase().includes('ciclo')),
-      ).toBe(true);
+      expect(analysis.alerts.some((a) => String(a).toLowerCase().includes('ciclo'))).toBe(true);
     });
   });
 
@@ -228,9 +223,7 @@ describe('CPMService - Critical Path Method', () => {
           name: 'B',
           duration: 180, // 3h
           dependencies: ['A'],
-          dependencyEdges: [
-            { predecessorId: 'A', relationship: DependencyType.START_TO_START },
-          ],
+          dependencyEdges: [{ predecessorId: 'A', relationship: DependencyType.START_TO_START }],
         },
       ];
 
@@ -313,9 +306,7 @@ describe('CPMService - Critical Path Method', () => {
       expect(Array.isArray(analysis.packageCriticality)).toBe(true);
       expect((analysis.packageCriticality || []).length).toBeGreaterThan(0);
 
-      const buildPackage = (analysis.packageCriticality || []).find(
-        (p) => p.packageId === 'pkg-build',
-      );
+      const buildPackage = (analysis.packageCriticality || []).find((p) => p.packageId === 'pkg-build');
       expect(buildPackage).toBeDefined();
       expect(buildPackage?.taskCount || 0).toBe(2);
       expect(buildPackage?.criticalTaskCount || 0).toBeGreaterThan(0);

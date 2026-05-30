@@ -7,9 +7,7 @@ import { GetHabitsDashboardResponseDto } from '../../dto/habits-dashboard.dto';
 
 @Injectable()
 export class TasksHabitsService {
-  constructor(
-    @InjectModel('Task') private readonly taskModel: Model<TaskDocument>,
-  ) {}
+  constructor(@InjectModel('Task') private readonly taskModel: Model<TaskDocument>) {}
 
   async getStreakData(parentRecurringId: string): Promise<{
     currentStreak: number;
@@ -41,15 +39,11 @@ export class TasksHabitsService {
     const maintained = recurringTasks.filter((task: any) =>
       ['completed', 'skipped'].includes(String(task?.recurringState || '')),
     ).length;
-    const aderencePercent = Math.round(
-      (maintained / recurringTasks.length) * 100,
-    );
+    const aderencePercent = Math.round((maintained / recurringTasks.length) * 100);
 
     let currentStreak = 0;
     for (let i = recurringTasks.length - 1; i >= 0; i--) {
-      const state = String(
-        (recurringTasks[i] as any)?.recurringState || 'pending',
-      );
+      const state = String((recurringTasks[i] as any)?.recurringState || 'pending');
       if (state === 'completed' || state === 'skipped') {
         currentStreak += 1;
       } else {
@@ -81,14 +75,9 @@ export class TasksHabitsService {
     };
   }
 
-  async getHabitsDashboard(
-    filter: GetHabitsDashboardDto = {},
-  ): Promise<GetHabitsDashboardResponseDto> {
+  async getHabitsDashboard(filter: GetHabitsDashboardDto = {}): Promise<GetHabitsDashboardResponseDto> {
     const query: any = {
-      $or: [
-        { microTaskType: 'habit' },
-        { recurringRule: { $exists: true, $ne: null } },
-      ],
+      $or: [{ microTaskType: 'habit' }, { recurringRule: { $exists: true, $ne: null } }],
     };
 
     const projectId = filter.projectId;
@@ -97,10 +86,7 @@ export class TasksHabitsService {
       query.project = new Types.ObjectId(projectId);
     }
 
-    const habits = await this.taskModel
-      .find(query)
-      .sort({ createdAt: -1 })
-      .exec();
+    const habits = await this.taskModel.find(query).sort({ createdAt: -1 }).exec();
     const summaries: GetHabitsDashboardResponseDto['habits'] = [];
 
     const today = new Date();
@@ -115,24 +101,16 @@ export class TasksHabitsService {
         name: String(habit.name || ''),
         status: String(habit.status || 'todo'),
         ...streak,
-        deadline:
-          deadline && !Number.isNaN(deadline.getTime()) ? deadline : null,
+        deadline: deadline && !Number.isNaN(deadline.getTime()) ? deadline : null,
       });
     }
 
-    const activeHabits = summaries.filter(
-      (habit) => habit.status !== 'done',
-    ).length;
+    const activeHabits = summaries.filter((habit) => habit.status !== 'done').length;
     const averageAderencePercent =
       summaries.length > 0
-        ? Math.round(
-            summaries.reduce((sum, habit) => sum + habit.aderencePercent, 0) /
-              summaries.length,
-          )
+        ? Math.round(summaries.reduce((sum, habit) => sum + habit.aderencePercent, 0) / summaries.length)
         : 0;
-    const streaksOver7Days = summaries.filter(
-      (habit) => habit.currentStreak >= 7,
-    ).length;
+    const streaksOver7Days = summaries.filter((habit) => habit.currentStreak >= 7).length;
     const dueTodayHabits = summaries
       .filter((habit) => {
         if (habit.status === 'done' || !habit.deadline) return false;

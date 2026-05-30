@@ -28,8 +28,7 @@ export class ProjectProgress {
   taskId?: Types.ObjectId;
 }
 
-export const ProjectProgressSchema =
-  SchemaFactory.createForClass(ProjectProgress);
+export const ProjectProgressSchema = SchemaFactory.createForClass(ProjectProgress);
 
 ProjectProgressSchema.index({ projectId: 1, date: 1 });
 ProjectProgressSchema.index({ projectId: 1, createdAt: -1 });

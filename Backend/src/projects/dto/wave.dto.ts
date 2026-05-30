@@ -1,11 +1,4 @@
-import {
-  IsString,
-  IsDateString,
-  IsEnum,
-  IsOptional,
-  IsArray,
-  IsNumber,
-} from 'class-validator';
+import { IsString, IsDateString, IsEnum, IsOptional, IsArray, IsNumber } from 'class-validator';
 
 export class CreateWaveDto {
   @IsNumber()

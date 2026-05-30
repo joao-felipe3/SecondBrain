@@ -21,12 +21,9 @@ export class PlanningService {
     const conversationId = this.generateConversationId();
 
     const goalsContext: string[] = [];
-    if (projectData.shortTermGoal)
-      goalsContext.push(`Curto prazo: ${projectData.shortTermGoal}`);
-    if (projectData.midTermGoal)
-      goalsContext.push(`Médio prazo: ${projectData.midTermGoal}`);
-    if (projectData.longTermGoal)
-      goalsContext.push(`Longo prazo: ${projectData.longTermGoal}`);
+    if (projectData.shortTermGoal) goalsContext.push(`Curto prazo: ${projectData.shortTermGoal}`);
+    if (projectData.midTermGoal) goalsContext.push(`Médio prazo: ${projectData.midTermGoal}`);
+    if (projectData.longTermGoal) goalsContext.push(`Longo prazo: ${projectData.longTermGoal}`);
 
     const prompt = `Você é um consultor de gestão de projetos especializado em metodologias PMBOK e PRINCE2.
 
@@ -92,11 +89,7 @@ Retorne APENAS a resposta sugerida, sem explicações adicionais ou formatação
       const response = await this.geminiService.generateContent(prompt);
       // Some models/providers may still wrap the answer in JSON.
       const parsed = this.tryParseJson<{ suggestedAnswer?: string }>(response);
-      if (
-        parsed &&
-        typeof parsed.suggestedAnswer === 'string' &&
-        parsed.suggestedAnswer.trim()
-      ) {
+      if (parsed && typeof parsed.suggestedAnswer === 'string' && parsed.suggestedAnswer.trim()) {
         return parsed.suggestedAnswer.trim();
       }
       return String(response || '').trim();
@@ -106,10 +99,7 @@ Retorne APENAS a resposta sugerida, sem explicações adicionais ou formatação
     }
   }
 
-  async generateSmartObjective(
-    conversationId: string,
-    answers: string[],
-  ): Promise<SmartObjectiveDto> {
+  async generateSmartObjective(conversationId: string, answers: string[]): Promise<SmartObjectiveDto> {
     const history = this.conversationHistory.get(conversationId) || [];
     const projectContext = history[0] || '';
 
@@ -187,9 +177,7 @@ Retorne APENAS um objeto JSON no seguinte formato, sem texto adicional:
 
       // Remove ```json ... ``` ou ``` ... ```
       if (cleanResponse.startsWith('```')) {
-        cleanResponse = cleanResponse
-          .replace(/^```(?:json)?\s*/, '')
-          .replace(/```\s*$/, '');
+        cleanResponse = cleanResponse.replace(/^```(?:json)?\s*/, '').replace(/```\s*$/, '');
       }
 
       // Remove espaços e quebras de linha extras
@@ -223,9 +211,7 @@ Retorne APENAS um objeto JSON no seguinte formato, sem texto adicional:
 
       // Remove ```json ... ``` ou ``` ... ```
       if (cleanResponse.startsWith('```')) {
-        cleanResponse = cleanResponse
-          .replace(/^```(?:json)?\s*/, '')
-          .replace(/```\s*$/, '');
+        cleanResponse = cleanResponse.replace(/^```(?:json)?\s*/, '').replace(/```\s*$/, '');
       }
 
       // Remove espaços e quebras de linha extras
@@ -240,9 +226,7 @@ Retorne APENAS um objeto JSON no seguinte formato, sem texto adicional:
         achievable: smartObj.achievable || '',
         relevant: smartObj.relevant || '',
         temporal: smartObj.temporal || '',
-        ...(Number.isFinite(weeklyHours) && weeklyHours > 0
-          ? { weeklyHours }
-          : {}),
+        ...(Number.isFinite(weeklyHours) && weeklyHours > 0 ? { weeklyHours } : {}),
         summary: smartObj.summary || '',
         risks: Array.isArray(smartObj.risks) ? smartObj.risks : [],
       };

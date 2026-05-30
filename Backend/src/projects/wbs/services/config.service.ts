@@ -24,9 +24,7 @@ export class ConfigService {
   }
 
   getWbsGenerationModelOverride(): string | undefined {
-    return (
-      this.getStringEnv('WBS_GENERATION_MODEL_OVERRIDE', '').trim() || undefined
-    );
+    return this.getStringEnv('WBS_GENERATION_MODEL_OVERRIDE', '').trim() || undefined;
   }
 
   getMaxPerCall(): number {
@@ -109,38 +107,23 @@ export class ConfigService {
   // ============ Debug & Logging Flags ============
 
   isTimingDebugEnabled(): boolean {
-    return (
-      this.getBooleanEnv('WBS_DEBUG_TIMING') ||
-      this.getBooleanEnv('DEBUG_TIMING', false)
-    );
+    return this.getBooleanEnv('WBS_DEBUG_TIMING') || this.getBooleanEnv('DEBUG_TIMING', false);
   }
 
   isCacheDebugEnabled(): boolean {
-    return (
-      this.getBooleanEnv('WBS_DEBUG_CACHE') ||
-      this.getBooleanEnv('DEBUG_CACHE', false)
-    );
+    return this.getBooleanEnv('WBS_DEBUG_CACHE') || this.getBooleanEnv('DEBUG_CACHE', false);
   }
 
   isVerboseTaskLogsEnabled(): boolean {
-    return (
-      this.getBooleanEnv('WBS_VERBOSE_TASK_LOGS') ||
-      this.getBooleanEnv('VERBOSE', false)
-    );
+    return this.getBooleanEnv('WBS_VERBOSE_TASK_LOGS') || this.getBooleanEnv('VERBOSE', false);
   }
 
   isValidationDebugEnabled(): boolean {
-    return (
-      this.getBooleanEnv('WBS_DEBUG_VALIDATION') ||
-      this.getBooleanEnv('DEBUG_VALIDATION', false)
-    );
+    return this.getBooleanEnv('WBS_DEBUG_VALIDATION') || this.getBooleanEnv('DEBUG_VALIDATION', false);
   }
 
   isLlmDebugEnabled(): boolean {
-    return (
-      this.getBooleanEnv('WBS_DEBUG_LLM') ||
-      this.getBooleanEnv('DEBUG_LLM', false)
-    );
+    return this.getBooleanEnv('WBS_DEBUG_LLM') || this.getBooleanEnv('DEBUG_LLM', false);
   }
 
   // ============ Utility Methods ============

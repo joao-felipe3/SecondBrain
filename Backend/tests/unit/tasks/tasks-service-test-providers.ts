@@ -34,10 +34,7 @@ export function createTasksServiceTestProviders(deps: TasksServiceTestDeps) {
     },
     {
       provide: TasksAiSuggestionsService,
-      useValue: new TasksAiSuggestionsService(
-        deps.taskModel,
-        deps.geminiService,
-      ),
+      useValue: new TasksAiSuggestionsService(deps.taskModel, deps.geminiService),
     },
     {
       provide: TasksHabitsService,
@@ -69,11 +66,7 @@ export function createTasksServiceTestProviders(deps: TasksServiceTestDeps) {
     },
     {
       provide: TasksPertService,
-      useValue: new TasksPertService(
-        deps.taskModel,
-        deps.pertService,
-        metricsService,
-      ),
+      useValue: new TasksPertService(deps.taskModel, deps.pertService, metricsService),
     },
     {
       provide: TasksWriteService,

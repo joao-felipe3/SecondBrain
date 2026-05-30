@@ -18,9 +18,7 @@ export class TasksInputService {
       throw new BadRequestException('Valores PERT devem ser maiores que zero.');
     }
     if (!(o < m && m < p)) {
-      throw new BadRequestException(
-        'PERT inválido: use optimistic < mostLikely < pessimistic.',
-      );
+      throw new BadRequestException('PERT inválido: use optimistic < mostLikely < pessimistic.');
     }
   }
 

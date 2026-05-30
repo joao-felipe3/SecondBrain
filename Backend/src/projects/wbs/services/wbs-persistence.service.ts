@@ -14,13 +14,8 @@ export class WbsPersistenceService {
   ) {}
 
   // Save WBS nodes to the database
-  async save(
-    projectId: string,
-    nodes: WBSNodeDto[],
-  ): Promise<WBSNodeDocument[]> {
-    const deleteResult = await this.wbsNodeModel
-      .deleteMany({ projectId })
-      .exec();
+  async save(projectId: string, nodes: WBSNodeDto[]): Promise<WBSNodeDocument[]> {
+    const deleteResult = await this.wbsNodeModel.deleteMany({ projectId }).exec();
     const savedNodes: WBSNodeDocument[] = [];
 
     // Clean _id from all nodes recursively before saving
@@ -29,20 +24,13 @@ export class WbsPersistenceService {
         const { _id, ...cleanNode } = node as any;
         return {
           ...cleanNode,
-          children:
-            node.children && node.children.length > 0
-              ? cleanNodeIds(node.children)
-              : [],
+          children: node.children && node.children.length > 0 ? cleanNodeIds(node.children) : [],
         };
       });
     };
 
     const cleanedNodes = cleanNodeIds(nodes);
-    const saveRecursive = async (
-      nodeList: WBSNodeDto[],
-      parentId: string | null = null,
-      level = 1,
-    ) => {
+    const saveRecursive = async (nodeList: WBSNodeDto[], parentId: string | null = null, level = 1) => {
       for (const node of nodeList) {
         const doc = new this.wbsNodeModel({
           projectId,
@@ -71,10 +59,7 @@ export class WbsPersistenceService {
     try {
       await this.cacheService.clearForProject(projectId);
     } catch (err) {
-      console.warn(
-        '[WbsPersistenceService] erro ao limpar cache de rascunhos',
-        err,
-      );
+      console.warn('[WbsPersistenceService] erro ao limpar cache de rascunhos', err);
     }
     await this.recalculateEstimatedHours(projectId);
 
@@ -83,10 +68,7 @@ export class WbsPersistenceService {
 
   // Get WBS for a project, reconstructed as a tree
   async get(projectId: string): Promise<WBSNodeDto[]> {
-    const allNodes = await this.wbsNodeModel
-      .find({ projectId })
-      .sort({ level: 1, order: 1 })
-      .exec();
+    const allNodes = await this.wbsNodeModel.find({ projectId }).sort({ level: 1, order: 1 }).exec();
 
     if (allNodes.length === 0) return [];
 
@@ -156,22 +138,15 @@ export class WbsPersistenceService {
       if (allNodes.length === 0) return;
 
       // Find all parent nodes
-      const parentIds = new Set(
-        allNodes.map((n) => n.parentId).filter(Boolean),
-      );
+      const parentIds = new Set(allNodes.map((n) => n.parentId).filter(Boolean));
 
       for (const parentId of parentIds) {
         const parent = allNodes.find((n) => String(n._id) === parentId);
         if (!parent) continue;
 
         // Sum all children's estimatedHours
-        const children = allNodes.filter(
-          (n) => String(n.parentId) === parentId,
-        );
-        const totalHours = children.reduce(
-          (sum, child) => sum + (child.estimatedHours || 0),
-          0,
-        );
+        const children = allNodes.filter((n) => String(n.parentId) === parentId);
+        const totalHours = children.reduce((sum, child) => sum + (child.estimatedHours || 0), 0);
 
         // Update parent
         parent.estimatedHours = totalHours;

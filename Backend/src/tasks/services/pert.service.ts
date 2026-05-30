@@ -1,8 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import {
-  PertEstimateDto,
-  PertEstimateResponseDto,
-} from '../dto/pert-estimate.dto';
+import { PertEstimateDto, PertEstimateResponseDto } from '../dto/pert-estimate.dto';
 
 /**
  * Serviço para cálculos de estimativas PERT (Program Evaluation and Review Technique)
@@ -60,9 +57,7 @@ export class PertService {
    */
   calculatePertMetrics(estimate: PertEstimateDto): PertEstimateResponseDto {
     if (!this.validateEstimate(estimate)) {
-      throw new Error(
-        'Estimativas inválidas: deve ser Otimista ≤ Provável ≤ Pessimista',
-      );
+      throw new Error('Estimativas inválidas: deve ser Otimista ≤ Provável ≤ Pessimista');
     }
 
     const expectedTime = this.calculateExpectedTime(estimate);

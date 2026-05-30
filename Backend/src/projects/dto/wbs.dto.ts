@@ -1,12 +1,4 @@
-import {
-  IsString,
-  IsNumber,
-  IsOptional,
-  IsArray,
-  IsEnum,
-  IsBoolean,
-  IsIn,
-} from 'class-validator';
+import { IsString, IsNumber, IsOptional, IsArray, IsEnum, IsBoolean, IsIn } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
@@ -152,8 +144,7 @@ export class ConvertWBSToTasksDto {
   autoAuditThresholdPct?: number;
 
   @ApiPropertyOptional({
-    description:
-      'Conversion preferences for micro-task granularity and workflow mix',
+    description: 'Conversion preferences for micro-task granularity and workflow mix',
     example: {
       targetPomodoros: 2,
       workflowMix: { prepare: 0.2, practice: 0.4, produce: 0.3, test: 0.1 },
@@ -186,8 +177,7 @@ export class GenerateTasksForLeafDto {
   nodePath: string;
 
   @ApiPropertyOptional({
-    description:
-      'Conversion preferences for micro-task granularity and workflow mix',
+    description: 'Conversion preferences for micro-task granularity and workflow mix',
     example: {
       targetPomodoros: 2,
       workflowMix: { prepare: 0.2, practice: 0.4, produce: 0.3, test: 0.1 },

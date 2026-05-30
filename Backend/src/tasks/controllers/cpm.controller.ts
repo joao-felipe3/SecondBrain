@@ -1,19 +1,6 @@
-import {
-  Controller,
-  Post,
-  Get,
-  Delete,
-  Body,
-  Param,
-  Query,
-} from '@nestjs/common';
+import { Controller, Post, Get, Delete, Body, Param, Query } from '@nestjs/common';
 import { Logger } from '@nestjs/common';
-import {
-  ApiTags,
-  ApiOperation,
-  ApiResponse,
-  ApiBearerAuth,
-} from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import {
   CPMService,
   CPMAnalysis,
@@ -22,10 +9,7 @@ import {
 } from '../services/cpm.service';
 import { TasksService } from '../tasks.service';
 import { DependencyInferenceService } from '../services/dependency-inference.service';
-import {
-  BufferService,
-  TaskMetrics as BufferTaskMetrics,
-} from '../services/buffer.service'; // NOVO: Importa BufferService e tipo
+import { BufferService, TaskMetrics as BufferTaskMetrics } from '../services/buffer.service'; // NOVO: Importa BufferService e tipo
 import type { TaskDependency } from '../schemas/task-dependency.schema';
 
 class AddDependencyDto {
@@ -81,28 +65,21 @@ export class CPMController {
     const requestId = `depinf_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 7)}`;
     const strategy = body?.strategy ?? 'ai-per-leaf';
     const apply = Boolean(body?.apply);
-    const maxEdgesPerLeaf = Math.max(
-      5,
-      Math.min(Number(body?.maxEdgesPerLeaf ?? 60), 250),
-    );
+    const maxEdgesPerLeaf = Math.max(5, Math.min(Number(body?.maxEdgesPerLeaf ?? 60), 250));
     const includeInterLeafGates =
       typeof body?.includeInterLeafGates === 'boolean'
         ? body.includeInterLeafGates
         : strategy === 'ai-per-leaf';
 
-    const interLeafStrategy: 'none' | 'heuristic' | 'ai' =
-      !includeInterLeafGates
-        ? 'none'
-        : body?.interLeafStrategy
-          ? body.interLeafStrategy
-          : strategy === 'ai-per-leaf'
-            ? 'ai'
-            : 'none';
+    const interLeafStrategy: 'none' | 'heuristic' | 'ai' = !includeInterLeafGates
+      ? 'none'
+      : body?.interLeafStrategy
+        ? body.interLeafStrategy
+        : strategy === 'ai-per-leaf'
+          ? 'ai'
+          : 'none';
 
-    const maxInterLeafEdges = Math.max(
-      2,
-      Math.min(Number(body?.maxInterLeafEdges ?? 28), 120),
-    );
+    const maxInterLeafEdges = Math.max(2, Math.min(Number(body?.maxInterLeafEdges ?? 28), 120));
 
     const inferConcurrency = Math.max(
       1,
@@ -113,19 +90,13 @@ export class CPMController {
       Math.min(Number(process.env.CPM_DEP_INFER_TIMEOUT_MS ?? 45_000), 180_000),
     );
 
-    const withTimeout = async <T>(
-      promise: Promise<T>,
-      ms: number,
-    ): Promise<T> => {
+    const withTimeout = async <T>(promise: Promise<T>, ms: number): Promise<T> => {
       let timer: NodeJS.Timeout | undefined;
       try {
         return await Promise.race([
           promise,
           new Promise<T>((_, reject) => {
-            timer = setTimeout(
-              () => reject(new Error(`Timeout após ${ms}ms`)),
-              ms,
-            );
+            timer = setTimeout(() => reject(new Error(`Timeout após ${ms}ms`)), ms);
           }),
         ]);
       } finally {
@@ -140,15 +111,13 @@ export class CPMController {
     ) => {
       const results: TOut[] = new Array(items.length);
       let index = 0;
-      const workers = new Array(Math.min(limit, items.length))
-        .fill(0)
-        .map(async () => {
-          while (true) {
-            const i = index++;
-            if (i >= items.length) break;
-            results[i] = await fn(items[i]);
-          }
-        });
+      const workers = new Array(Math.min(limit, items.length)).fill(0).map(async () => {
+        while (true) {
+          const i = index++;
+          if (i >= items.length) break;
+          results[i] = await fn(items[i]);
+        }
+      });
       await Promise.all(workers);
       return results;
     };
@@ -189,9 +158,7 @@ export class CPMController {
           checklist: t?.checklist,
           definitionOfDone: t?.definitionOfDone,
           microTaskType: t?.microTaskType,
-          durationMinutes: Number(
-            t?.pertExpectedMinutes ?? t?.estimatedMinutes ?? 60,
-          ),
+          durationMinutes: Number(t?.pertExpectedMinutes ?? t?.estimatedMinutes ?? 60),
         }));
 
         const leafWbsPath = String(leafTasks?.[0]?.wbsPath ?? '').trim();
@@ -199,13 +166,7 @@ export class CPMController {
         // Gate selection helpers.
         // Goal: pick gates that actually constrain the leaf graph (high outdegree / high indegree),
         // not just "short tasks"; otherwise inter-leaf edges won't propagate.
-        const phaseOrder = [
-          'prepare',
-          'produce',
-          'test',
-          'consolidate',
-          'practice',
-        ];
+        const phaseOrder = ['prepare', 'produce', 'test', 'consolidate', 'practice'];
         const phaseOf = (raw: any) => {
           const s = String(raw ?? '')
             .trim()
@@ -213,15 +174,9 @@ export class CPMController {
           return phaseOrder.includes(s) ? s : 'produce';
         };
 
-        const pickMinDurationInPhase = (
-          phases: string[],
-          fallbackFirst: boolean,
-        ) => {
+        const pickMinDurationInPhase = (phases: string[], fallbackFirst: boolean) => {
           const candidates = inferenceTasks
-            .filter(
-              (it: any) =>
-                it?.id && phases.includes(phaseOf(it?.microTaskType)),
-            )
+            .filter((it: any) => it?.id && phases.includes(phaseOf(it?.microTaskType)))
             .map((it: any) => ({
               id: String(it.id),
               dur: Number(it.durationMinutes ?? 60),
@@ -235,12 +190,8 @@ export class CPMController {
           return String(candidates[0].id);
         };
 
-        const pickGatesFromLeafGraph = (
-          deps: Array<{ taskId: string; dependsOnTaskId: string }>,
-        ) => {
-          const ids = inferenceTasks
-            .map((t: any) => String(t?.id ?? ''))
-            .filter(Boolean);
+        const pickGatesFromLeafGraph = (deps: Array<{ taskId: string; dependsOnTaskId: string }>) => {
+          const ids = inferenceTasks.map((t: any) => String(t?.id ?? '')).filter(Boolean);
           const durById = new Map<string, number>();
           for (const t of inferenceTasks as any[])
             durById.set(String(t.id), Number(t.durationMinutes ?? 60));
@@ -282,10 +233,8 @@ export class CPMController {
             pickMinDurationInPhase(['prepare', 'produce'], true) ||
             String(inferenceTasks?.[0]?.id ?? '');
           const endFallback = () =>
-            pickMinDurationInPhase(
-              ['practice', 'consolidate', 'test'],
-              false,
-            ) || String(inferenceTasks?.[inferenceTasks.length - 1]?.id ?? '');
+            pickMinDurationInPhase(['practice', 'consolidate', 'test'], false) ||
+            String(inferenceTasks?.[inferenceTasks.length - 1]?.id ?? '');
 
           const startGateId = pickMax(outdegree, startFallback);
           let endGateId = pickMax(indegree, endFallback);
@@ -305,9 +254,7 @@ export class CPMController {
         try {
           const depsPromise =
             strategy === 'heuristic-phases'
-              ? Promise.resolve(
-                  this.dependencyInference.inferHeuristicPhases(inferenceTasks),
-                )
+              ? Promise.resolve(this.dependencyInference.inferHeuristicPhases(inferenceTasks))
               : this.dependencyInference.inferWithAi({
                   requestId,
                   leafName: leafId,
@@ -318,9 +265,7 @@ export class CPMController {
 
           const deps = await withTimeout(depsPromise, inferTimeoutMs);
 
-          const gates = pickGatesFromLeafGraph(
-            Array.isArray(deps) ? (deps as any) : [],
-          );
+          const gates = pickGatesFromLeafGraph(Array.isArray(deps) ? (deps as any) : []);
 
           this.logger.log(
             `[auto-infer] requestId=${requestId} leaf=${leafId} tasks=${inferenceTasks.length} deps=${deps.length} durationMs=${
@@ -339,12 +284,8 @@ export class CPMController {
             endGateId: gates.endGateId,
           };
         } catch (err: any) {
-          const msg = String(
-            err?.message || err || 'Falha ao inferir dependências',
-          );
-          this.logger.warn(
-            `[auto-infer] requestId=${requestId} leaf=${leafId} failed: ${msg}`,
-          );
+          const msg = String(err?.message || err || 'Falha ao inferir dependências');
+          this.logger.warn(`[auto-infer] requestId=${requestId} leaf=${leafId} failed: ${msg}`);
           return {
             leafId,
             tasks: inferenceTasks.length,
@@ -357,10 +298,7 @@ export class CPMController {
               pickMinDurationInPhase(['prepare', 'produce'], true) ||
               String(inferenceTasks?.[0]?.id ?? ''),
             endGateId:
-              pickMinDurationInPhase(
-                ['practice', 'consolidate', 'test'],
-                false,
-              ) ||
+              pickMinDurationInPhase(['practice', 'consolidate', 'test'], false) ||
               String(inferenceTasks?.[inferenceTasks.length - 1]?.id ?? ''),
           };
         }
@@ -421,19 +359,14 @@ export class CPMController {
           taskId: from,
           dependsOnTaskId: to,
           relationship: 'FINISH_TO_START',
-          reason:
-            'Heurística: gate entre leafs (ordem WBS) para reduzir paralelismo global',
+          reason: 'Heurística: gate entre leafs (ordem WBS) para reduzir paralelismo global',
           confidence: 0.25,
         });
       }
       return deps;
     };
 
-    if (
-      includeInterLeafGates &&
-      interLeafStrategy !== 'none' &&
-      sortedLeaves.length >= 2
-    ) {
+    if (includeInterLeafGates && interLeafStrategy !== 'none' && sortedLeaves.length >= 2) {
       if (interLeafStrategy === 'ai') {
         try {
           const leavesForAi = (sortedLeaves as any[]).map((l) => ({
@@ -462,9 +395,7 @@ export class CPMController {
           interLeafDeps = (aiDeps || []).map((d: any) => ({
             ...d,
             relationship: d?.relationship || 'FINISH_TO_START',
-            reason:
-              d?.reason ||
-              'IA: dependência entre leafs (gates) para conectar macro-fluxo',
+            reason: d?.reason || 'IA: dependência entre leafs (gates) para conectar macro-fluxo',
             confidence: typeof d?.confidence === 'number' ? d.confidence : 0.35,
           }));
           interLeafMode = 'ai';
@@ -497,9 +428,7 @@ export class CPMController {
       // If IA returned a sparse inter-leaf graph, optionally supplement with a small number
       // of deterministic edges to reduce disconnected "islands". This helps inter-leaf
       // constraints propagate meaningfully without forcing a single fully-serial chain.
-      const supplementEnabledRaw = String(
-        process.env.CPM_INTERLEAF_SUPPLEMENT ?? 'true',
-      )
+      const supplementEnabledRaw = String(process.env.CPM_INTERLEAF_SUPPLEMENT ?? 'true')
         .trim()
         .toLowerCase();
       const supplementEnabled =
@@ -507,24 +436,14 @@ export class CPMController {
         supplementEnabledRaw === 'true' ||
         supplementEnabledRaw === 'yes';
 
-      const targetChainsRaw = Number(
-        process.env.CPM_INTERLEAF_TARGET_CHAINS ?? 3,
-      );
+      const targetChainsRaw = Number(process.env.CPM_INTERLEAF_TARGET_CHAINS ?? 3);
       const targetChains = Math.max(
         1,
-        Math.min(
-          Number.isFinite(targetChainsRaw) ? Math.floor(targetChainsRaw) : 3,
-          6,
-        ),
+        Math.min(Number.isFinite(targetChainsRaw) ? Math.floor(targetChainsRaw) : 3, 6),
       );
 
-      if (
-        interLeafMode === 'ai' &&
-        supplementEnabled &&
-        sortedLeaves.length >= 6
-      ) {
-        const edgeKey = (taskId: string, dependsOnTaskId: string) =>
-          `${taskId}<-${dependsOnTaskId}`;
+      if (interLeafMode === 'ai' && supplementEnabled && sortedLeaves.length >= 6) {
+        const edgeKey = (taskId: string, dependsOnTaskId: string) => `${taskId}<-${dependsOnTaskId}`;
         const existing = new Set<string>();
         for (const d of interLeafDeps as any[]) {
           const taskId = String(d?.taskId ?? '').trim();
@@ -570,8 +489,7 @@ export class CPMController {
 
         // Determine how many edges we'd expect for a lightly-connected multi-chain layout.
         const minDesiredEdges = Math.max(0, sortedLeaves.length - targetChains);
-        const isSparse =
-          interLeafDeps.length < Math.floor(minDesiredEdges * 0.6);
+        const isSparse = interLeafDeps.length < Math.floor(minDesiredEdges * 0.6);
 
         if (isSparse) {
           const leavesByWbs = [...sortedLeaves];
@@ -635,8 +553,7 @@ export class CPMController {
     }
 
     if (includeInterLeafGates && interLeafDeps.length > 0) {
-      const bucket =
-        interLeafMode === 'ai' ? '__inter-leaf-ai__' : '__inter-leaf-gates__';
+      const bucket = interLeafMode === 'ai' ? '__inter-leaf-ai__' : '__inter-leaf-gates__';
       previewByLeaf[bucket] = {
         tasks: sortedLeaves.length,
         dependencies: interLeafDeps,
@@ -664,19 +581,13 @@ export class CPMController {
         .flatMap((r) => (Array.isArray(r.dependencies) ? r.dependencies : []))
         .concat(interLeafDeps as any);
       const taskIds = new Set(
-        (tasks as any[])
-          .map((t: any) => String(t?._id ?? t?.id ?? '').trim())
-          .filter(Boolean),
+        (tasks as any[]).map((t: any) => String(t?._id ?? t?.id ?? '').trim()).filter(Boolean),
       );
       const existingDeps = await this.cpmService.getDependencies(projectId);
 
-      const existingCycle = this.findCycleInDependenciesScoped(
-        existingDeps as any,
-        taskIds,
-      );
+      const existingCycle = this.findCycleInDependenciesScoped(existingDeps as any, taskIds);
 
-      const edgeKey = (taskId: string, dependsOnTaskId: string) =>
-        `${taskId}<-${dependsOnTaskId}`;
+      const edgeKey = (taskId: string, dependsOnTaskId: string) => `${taskId}<-${dependsOnTaskId}`;
       const existingKeys = new Set<string>();
       for (const d of existingDeps as any[]) {
         const taskId = String(d?.taskId ?? '').trim();
@@ -749,10 +660,7 @@ export class CPMController {
         });
       }
 
-      const upserted =
-        accepted.length > 0
-          ? await this.cpmService.upsertDependencies(accepted)
-          : 0;
+      const upserted = accepted.length > 0 ? await this.cpmService.upsertDependencies(accepted) : 0;
 
       applySummary = {
         attempted: allSuggested.length,
@@ -834,11 +742,7 @@ export class CPMController {
       const taskId = String(d?.taskId ?? '').trim();
       const depId = String(d?.dependsOnTaskId ?? '').trim();
       if (!taskId || !depId) continue;
-      if (
-        validTaskIds &&
-        (!validTaskIds.has(taskId) || !validTaskIds.has(depId))
-      )
-        continue;
+      if (validTaskIds && (!validTaskIds.has(taskId) || !validTaskIds.has(depId))) continue;
       nodes.add(taskId);
       nodes.add(depId);
       const list = adj.get(taskId) ?? [];
@@ -930,9 +834,7 @@ export class CPMController {
   async getDependencyCycle(@Param('projectId') projectId: string) {
     const tasks = await this.tasksService.findByProjectId(projectId);
     const validTaskIds = new Set(
-      (tasks as any[])
-        .map((t: any) => String(t?._id ?? t?.id ?? '').trim())
-        .filter(Boolean),
+      (tasks as any[]).map((t: any) => String(t?._id ?? t?.id ?? '').trim()).filter(Boolean),
     );
     const deps = await this.cpmService.getDependencies(projectId);
     const cycle = this.findCycleInDependenciesScoped(deps as any, validTaskIds);
@@ -959,16 +861,11 @@ export class CPMController {
   ) {
     const startedAt = Date.now();
     const mode = body?.mode ?? 'auto-only';
-    const maxRemovals = Math.max(
-      1,
-      Math.min(Number(body?.maxRemovals ?? 25), 200),
-    );
+    const maxRemovals = Math.max(1, Math.min(Number(body?.maxRemovals ?? 25), 200));
 
     const tasks = await this.tasksService.findByProjectId(projectId);
     const validTaskIds = new Set(
-      (tasks as any[])
-        .map((t: any) => String(t?._id ?? t?.id ?? '').trim())
-        .filter(Boolean),
+      (tasks as any[]).map((t: any) => String(t?._id ?? t?.id ?? '').trim()).filter(Boolean),
     );
 
     let deps = await this.cpmService.getDependencies(projectId);
@@ -981,10 +878,7 @@ export class CPMController {
     }> = [];
 
     for (let i = 0; i < maxRemovals; i++) {
-      const cycle = this.findCycleInDependenciesScoped(
-        deps as any,
-        validTaskIds,
-      );
+      const cycle = this.findCycleInDependenciesScoped(deps as any, validTaskIds);
       if (!cycle.hasCycle) {
         const durationMs = Date.now() - startedAt;
         this.logger.log(
@@ -1002,9 +896,7 @@ export class CPMController {
       }
 
       const candidates =
-        mode === 'all'
-          ? cycle.cycleEdges
-          : cycle.cycleEdges.filter((e) => e.isAutoIdentified);
+        mode === 'all' ? cycle.cycleEdges : cycle.cycleEdges.filter((e) => e.isAutoIdentified);
 
       if (!candidates || candidates.length === 0) {
         const durationMs = Date.now() - startedAt;
@@ -1035,10 +927,7 @@ export class CPMController {
         const beforeLen = deps.length;
         deps = deps.filter(
           (d: any) =>
-            !(
-              String(d?.taskId) === edge.taskId &&
-              String(d?.dependsOnTaskId) === edge.dependsOnTaskId
-            ),
+            !(String(d?.taskId) === edge.taskId && String(d?.dependsOnTaskId) === edge.dependsOnTaskId),
         );
         if (deps.length === beforeLen) {
           // nothing removed
@@ -1051,9 +940,7 @@ export class CPMController {
       const deleted = await this.cpmService.removeDependenciesByIds([edge.id]);
       if (deleted > 0) {
         removedEdges.push(edge);
-        deps = deps.filter(
-          (d: any) => String(d?._id ?? d?.id ?? '') !== String(edge.id),
-        );
+        deps = deps.filter((d: any) => String(d?._id ?? d?.id ?? '') !== String(edge.id));
       } else {
         // If delete failed, avoid infinite loop
         break;
@@ -1062,10 +949,7 @@ export class CPMController {
 
     // Max removals reached
     const finalDeps = await this.cpmService.getDependencies(projectId);
-    const finalCycle = this.findCycleInDependenciesScoped(
-      finalDeps as any,
-      validTaskIds,
-    );
+    const finalCycle = this.findCycleInDependenciesScoped(finalDeps as any, validTaskIds);
     const durationMs = Date.now() - startedAt;
     return {
       projectId,
@@ -1098,8 +982,7 @@ export class CPMController {
   })
   @ApiResponse({
     status: 400,
-    description:
-      'Erro de validação (tarefas não encontradas ou ciclo detectado)',
+    description: 'Erro de validação (tarefas não encontradas ou ciclo detectado)',
   })
   @ApiResponse({
     status: 409,
@@ -1198,10 +1081,7 @@ export class CPMController {
             isCritical: false,
           },
         ],
-        alerts: [
-          '⚠️ 50% das tarefas são críticas',
-          '⚠️ Pouca margem de erro no projeto',
-        ],
+        alerts: ['⚠️ 50% das tarefas são críticas', '⚠️ Pouca margem de erro no projeto'],
       },
     },
   })
@@ -1217,18 +1097,11 @@ export class CPMController {
     const taskNodes: TaskNode[] = tasks.map((task) => ({
       id: (task as any)._id?.toString() || task.id,
       name: (task as any).title || (task as any).name || 'Task',
-      duration:
-        (task as any).pertExpectedMinutes ||
-        (task as any).estimatedMinutes ||
-        60, // Fallback se PERT não calculado
+      duration: (task as any).pertExpectedMinutes || (task as any).estimatedMinutes || 60, // Fallback se PERT não calculado
       dependencies: [], // Será preenchido abaixo
       dependencyEdges: [],
-      parentWbsNodeId: (task as any).parentWbsNodeId
-        ? String((task as any).parentWbsNodeId)
-        : undefined,
-      wbsPath: (task as any).wbsPath
-        ? String((task as any).wbsPath)
-        : undefined,
+      parentWbsNodeId: (task as any).parentWbsNodeId ? String((task as any).parentWbsNodeId) : undefined,
+      wbsPath: (task as any).wbsPath ? String((task as any).wbsPath) : undefined,
     }));
 
     // Buscar todas as dependências do projeto
@@ -1247,60 +1120,42 @@ export class CPMController {
         taskNode.dependencies.push(depId);
         taskNode.dependencyEdges?.push({
           predecessorId: depId,
-          relationship: this.cpmService.normalizeRelationship(
-            dep?.relationship,
-          ),
+          relationship: this.cpmService.normalizeRelationship(dep?.relationship),
         });
       }
     }
 
     // Calcular CPM
-    const analysis: CPMAnalysis =
-      this.cpmService.calculateCriticalPath(taskNodes);
+    const analysis: CPMAnalysis = this.cpmService.calculateCriticalPath(taskNodes);
 
     // NOVO: Calcular buffer consolidado também quando CPM é calculado
     try {
       const taskDocs = await this.tasksService.findByProjectId(projectId);
 
-      const taskMetrics: BufferTaskMetrics[] = (taskDocs as any[]).map(
-        (task) => {
-          const id = task._id?.toString() || task.id;
-          const minutes = Number(
-            task.pertExpectedMinutes ?? task.estimatedMinutes ?? 60,
-          );
-          return {
-            taskId: String(id ?? ''),
-            // Keep same units used by CPM (minutes) to avoid unit mismatch with other callers.
-            estimatedHours: Number(minutes ?? 0),
-            variance: Number(task.pertVariance ?? task.variance ?? 0),
-            isCritical: analysis.criticalPath.includes(String(id ?? '')),
-          } as BufferTaskMetrics;
-        },
-      );
+      const taskMetrics: BufferTaskMetrics[] = (taskDocs as any[]).map((task) => {
+        const id = task._id?.toString() || task.id;
+        const minutes = Number(task.pertExpectedMinutes ?? task.estimatedMinutes ?? 60);
+        return {
+          taskId: String(id ?? ''),
+          // Keep same units used by CPM (minutes) to avoid unit mismatch with other callers.
+          estimatedHours: Number(minutes ?? 0),
+          variance: Number(task.pertVariance ?? task.variance ?? 0),
+          isCritical: analysis.criticalPath.includes(String(id ?? '')),
+        } as BufferTaskMetrics;
+      });
 
       // Diagnóstico: contar tarefas com variança > 0
-      const tasksWithVariance = taskMetrics.filter(
-        (t) => (t.variance ?? 0) > 0,
-      ).length;
-      const totalVariance = taskMetrics.reduce(
-        (sum, t) => sum + (t.variance ?? 0),
-        0,
-      );
+      const tasksWithVariance = taskMetrics.filter((t) => (t.variance ?? 0) > 0).length;
+      const totalVariance = taskMetrics.reduce((sum, t) => sum + (t.variance ?? 0), 0);
 
       this.logger.log(
         `[Buffer Calc] ${tasksWithVariance}/${taskMetrics.length} tarefas com variança, variança total: ${totalVariance.toFixed(2)}`,
       );
 
-      await this.bufferService.calculateProjectBuffer(
-        projectId,
-        taskMetrics,
-        analysis.criticalPath,
-      );
+      await this.bufferService.calculateProjectBuffer(projectId, taskMetrics, analysis.criticalPath);
       this.logger.log(`Buffer recalculado para projeto ${projectId}`);
     } catch (error: any) {
-      this.logger.warn(
-        `Erro ao calcular buffer: ${error?.message ?? String(error)}`,
-      );
+      this.logger.warn(`Erro ao calcular buffer: ${error?.message ?? String(error)}`);
       // Não falha o CPM se buffer falhar - apenas log
     }
 
@@ -1357,18 +1212,11 @@ export class CPMController {
     const taskNode: TaskNode = {
       id: (task as any)._id?.toString() || task.id,
       name: (task as any).title || (task as any).name || 'Task',
-      duration:
-        (task as any).pertExpectedMinutes ||
-        (task as any).estimatedMinutes ||
-        60,
+      duration: (task as any).pertExpectedMinutes || (task as any).estimatedMinutes || 60,
       dependencies: [],
       dependencyEdges: [],
-      parentWbsNodeId: (task as any).parentWbsNodeId
-        ? String((task as any).parentWbsNodeId)
-        : undefined,
-      wbsPath: (task as any).wbsPath
-        ? String((task as any).wbsPath)
-        : undefined,
+      parentWbsNodeId: (task as any).parentWbsNodeId ? String((task as any).parentWbsNodeId) : undefined,
+      wbsPath: (task as any).wbsPath ? String((task as any).wbsPath) : undefined,
     };
 
     // Buscar dependências
@@ -1385,13 +1233,10 @@ export class CPMController {
     const allTaskNodes: TaskNode[] = projectTasks.map((t) => ({
       id: (t as any)._id?.toString() || t.id,
       name: (t as any).title || (t as any).name || 'Task',
-      duration:
-        (t as any).pertExpectedMinutes || (t as any).estimatedMinutes || 60,
+      duration: (t as any).pertExpectedMinutes || (t as any).estimatedMinutes || 60,
       dependencies: [],
       dependencyEdges: [],
-      parentWbsNodeId: (t as any).parentWbsNodeId
-        ? String((t as any).parentWbsNodeId)
-        : undefined,
+      parentWbsNodeId: (t as any).parentWbsNodeId ? String((t as any).parentWbsNodeId) : undefined,
       wbsPath: (t as any).wbsPath ? String((t as any).wbsPath) : undefined,
     }));
 
@@ -1406,9 +1251,7 @@ export class CPMController {
         node.dependencies.push(depIdStr);
         node.dependencyEdges?.push({
           predecessorId: depIdStr,
-          relationship: this.cpmService.normalizeRelationship(
-            dep?.relationship,
-          ),
+          relationship: this.cpmService.normalizeRelationship(dep?.relationship),
         });
       }
     }
@@ -1433,8 +1276,7 @@ export class CPMController {
   @Get('projects/:projectId/dependencies')
   @ApiOperation({
     summary: 'Listar todas as dependências do projeto',
-    description:
-      'Retorna uma lista de todas as relações de dependência entre tarefas do projeto.',
+    description: 'Retorna uma lista de todas as relações de dependência entre tarefas do projeto.',
   })
   @ApiResponse({
     status: 200,

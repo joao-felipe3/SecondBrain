@@ -48,9 +48,7 @@ export class DependencyInferenceService {
 
   private isVerbose(): boolean {
     const raw = this.safeEnv('CPM_DEP_INFER_VERBOSE');
-    return (
-      raw === '1' || raw.toLowerCase() === 'true' || raw.toLowerCase() === 'yes'
-    );
+    return raw === '1' || raw.toLowerCase() === 'true' || raw.toLowerCase() === 'yes';
   }
 
   private previewText(input: unknown, maxLen: number): string {
@@ -71,11 +69,7 @@ export class DependencyInferenceService {
   }
 
   private getModelOverride(): string | undefined {
-    return (
-      this.safeEnv('CPM_DEP_INFER_MODEL') ||
-      this.safeEnv('WBS_GEMINI_MODEL') ||
-      undefined
-    );
+    return this.safeEnv('CPM_DEP_INFER_MODEL') || this.safeEnv('WBS_GEMINI_MODEL') || undefined;
   }
 
   private dependencyObjectSchema = z.object({
@@ -96,9 +90,7 @@ export class DependencyInferenceService {
   private schema = z
     .object({
       dependencies: z
-        .array(
-          z.union([this.dependencyObjectSchema, this.dependencyTupleSchema]),
-        )
+        .array(z.union([this.dependencyObjectSchema, this.dependencyTupleSchema]))
         .default([]),
     })
     .passthrough();
@@ -109,9 +101,7 @@ export class DependencyInferenceService {
       if (Array.isArray(item)) {
         const taskId = String(item[0] ?? '').trim();
         const dependsOnTaskId = String(item[1] ?? '').trim();
-        const relationship = item[2]
-          ? String(item[2]).trim()
-          : 'FINISH_TO_START';
+        const relationship = item[2] ? String(item[2]).trim() : 'FINISH_TO_START';
         if (!taskId || !dependsOnTaskId) continue;
         out.push({ taskId, dependsOnTaskId, relationship });
         continue;
@@ -122,14 +112,9 @@ export class DependencyInferenceService {
         out.push({
           taskId: String(anyItem.taskId ?? '').trim(),
           dependsOnTaskId: String(anyItem.dependsOnTaskId ?? '').trim(),
-          relationship: anyItem.relationship
-            ? String(anyItem.relationship).trim()
-            : undefined,
+          relationship: anyItem.relationship ? String(anyItem.relationship).trim() : undefined,
           reason: anyItem.reason ? String(anyItem.reason) : undefined,
-          confidence:
-            typeof anyItem.confidence === 'number'
-              ? anyItem.confidence
-              : undefined,
+          confidence: typeof anyItem.confidence === 'number' ? anyItem.confidence : undefined,
         });
       }
     }
@@ -144,13 +129,7 @@ export class DependencyInferenceService {
     const normalized = (tasks || []).filter((t) => t?.id && t?.name);
     if (normalized.length < 2) return [];
 
-    const phaseOrder = [
-      'prepare',
-      'produce',
-      'test',
-      'consolidate',
-      'practice',
-    ];
+    const phaseOrder = ['prepare', 'produce', 'test', 'consolidate', 'practice'];
     const phaseOf = (t: InferenceTask) => {
       const raw = String(t.microTaskType ?? '')
         .trim()
@@ -227,10 +206,7 @@ export class DependencyInferenceService {
   /**
    * Keep the dependency set acyclic by greedily adding edges only when they don't form a cycle.
    */
-  private keepAcyclic(
-    taskIds: string[],
-    deps: InferredDependency[],
-  ): InferredDependency[] {
+  private keepAcyclic(taskIds: string[], deps: InferredDependency[]): InferredDependency[] {
     const nodes = new Set(taskIds);
     const adj = new Map<string, Set<string>>();
     for (const id of nodes) adj.set(id, new Set());
@@ -281,10 +257,7 @@ export class DependencyInferenceService {
 
     const maxEdges = Math.max(
       0,
-      Math.min(
-        this.getNumericEnv('CPM_DEP_INFER_MAX_EDGES', params.maxEdges ?? 60),
-        250,
-      ),
+      Math.min(this.getNumericEnv('CPM_DEP_INFER_MAX_EDGES', params.maxEdges ?? 60), 250),
     );
     const model = this.getModelOverride();
 
@@ -322,10 +295,7 @@ export class DependencyInferenceService {
       '{ "dependencies": [ ["taskId", "dependsOnTaskId", "FINISH_TO_START"], ["taskId", "dependsOnTaskId"] ] }',
     ].join('\n');
 
-    const maxOutputTokens = this.getNumericEnv(
-      'CPM_DEP_INFER_MAX_TOKENS',
-      2400,
-    );
+    const maxOutputTokens = this.getNumericEnv('CPM_DEP_INFER_MAX_TOKENS', 2400);
 
     if (this.isVerbose()) {
       this.logger.log(
@@ -403,17 +373,9 @@ export class DependencyInferenceService {
       ].join('\n');
 
       try {
-        return await tryOnce(
-          retryPrompt,
-          retryEdges,
-          Math.max(800, Math.floor(maxOutputTokens * 0.8)),
-        );
+        return await tryOnce(retryPrompt, retryEdges, Math.max(800, Math.floor(maxOutputTokens * 0.8)));
       } catch (err2: any) {
-        const msg = String(
-          err2?.message ||
-            err?.message ||
-            'Falha ao inferir dependências com IA',
-        );
+        const msg = String(err2?.message || err?.message || 'Falha ao inferir dependências com IA');
         this.logger.error(
           `[dep-infer] failed after retry requestId=${requestId || '-'} leaf=${this.previewText(params.leafName, 60)} ` +
             `error=${this.previewText(msg, 260)}`,
@@ -435,33 +397,21 @@ export class DependencyInferenceService {
   }): Promise<InferredDependency[]> {
     const requestId = String(params.requestId || '').trim();
     const projectId = String(params.projectId || '').trim();
-    const leaves = (params.leaves || []).filter(
-      (l) => l?.leafId && l?.startGateId && l?.endGateId,
-    );
+    const leaves = (params.leaves || []).filter((l) => l?.leafId && l?.startGateId && l?.endGateId);
     if (leaves.length < 2) return [];
 
     const model = this.getModelOverride();
-    const fallbackMax = Math.max(
-      4,
-      Math.min(40, Math.floor(leaves.length * 1.5)),
-    );
+    const fallbackMax = Math.max(4, Math.min(40, Math.floor(leaves.length * 1.5)));
     const maxEdges = Math.max(
       0,
       Math.min(
-        this.getNumericEnv(
-          'CPM_DEP_INFER_INTERLEAF_MAX_EDGES',
-          params.maxEdges ?? fallbackMax,
-        ),
+        this.getNumericEnv('CPM_DEP_INFER_INTERLEAF_MAX_EDGES', params.maxEdges ?? fallbackMax),
         80,
       ),
     );
 
-    const startGateIds = new Set(
-      leaves.map((l) => String(l.startGateId).trim()).filter(Boolean),
-    );
-    const endGateIds = new Set(
-      leaves.map((l) => String(l.endGateId).trim()).filter(Boolean),
-    );
+    const startGateIds = new Set(leaves.map((l) => String(l.startGateId).trim()).filter(Boolean));
+    const endGateIds = new Set(leaves.map((l) => String(l.endGateId).trim()).filter(Boolean));
     const validIds = new Set<string>([...startGateIds, ...endGateIds]);
     if (validIds.size < 2) return [];
 
@@ -486,10 +436,7 @@ export class DependencyInferenceService {
     }));
 
     const hardMaxEdges = Math.min(maxEdges, Math.max(1, leaves.length + 2));
-    const maxOutputTokens = this.getNumericEnv(
-      'CPM_DEP_INFER_INTERLEAF_MAX_TOKENS',
-      1600,
-    );
+    const maxOutputTokens = this.getNumericEnv('CPM_DEP_INFER_INTERLEAF_MAX_TOKENS', 1600);
 
     const minEdgesHint = leaves.length >= 6 ? 1 : 0;
     const prompt = [
@@ -623,17 +570,9 @@ export class DependencyInferenceService {
       ].join('\n');
 
       try {
-        return await tryOnce(
-          retryPrompt,
-          retryEdges,
-          Math.max(800, Math.floor(maxOutputTokens * 0.85)),
-        );
+        return await tryOnce(retryPrompt, retryEdges, Math.max(800, Math.floor(maxOutputTokens * 0.85)));
       } catch (err2: any) {
-        const msg = String(
-          err2?.message ||
-            err?.message ||
-            'Falha ao inferir dependências entre leafs',
-        );
+        const msg = String(err2?.message || err?.message || 'Falha ao inferir dependências entre leafs');
         this.logger.error(
           `[dep-infer-interleaf] failed after retry requestId=${requestId || '-'} error=${this.previewText(msg, 260)}`,
         );

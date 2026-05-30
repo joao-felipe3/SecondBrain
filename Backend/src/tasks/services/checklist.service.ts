@@ -1,9 +1,4 @@
-import {
-  Injectable,
-  BadRequestException,
-  Inject,
-  forwardRef,
-} from '@nestjs/common';
+import { Injectable, BadRequestException, Inject, forwardRef } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { TaskDocument } from '../schemas/task.schema';
@@ -31,9 +26,7 @@ export interface TaskHistorySummary {
  */
 @Injectable()
 export class ChecklistService {
-  constructor(
-    @InjectModel('Task') private readonly taskModel: Model<TaskDocument>,
-  ) {}
+  constructor(@InjectModel('Task') private readonly taskModel: Model<TaskDocument>) {}
 
   /**
    * Busca tarefas similares completas no projeto.
@@ -53,10 +46,7 @@ export class ChecklistService {
       return [];
     }
 
-    if (
-      !microTaskType ||
-      !['habit', 'complex', 'quick', 'subtask'].includes(microTaskType)
-    ) {
+    if (!microTaskType || !['habit', 'complex', 'quick', 'subtask'].includes(microTaskType)) {
       return [];
     }
 
@@ -105,16 +95,12 @@ export class ChecklistService {
       .filter((t) => t && t.name)
       .map((t) => {
         const items =
-          t.checklist && t.checklist.length > 0
-            ? t.checklist.map((c) => `- ${c.item}`).join('\n')
-            : '';
+          t.checklist && t.checklist.length > 0 ? t.checklist.map((c) => `- ${c.item}`).join('\n') : '';
         return `Tarefa: ${t.name}\nChecklist: ${items || 'N/A'}`;
       })
       .join('\n\n');
 
-    return summaries
-      ? `\n\nTarefas similares concluídas no histórico:\n${summaries}`
-      : '';
+    return summaries ? `\n\nTarefas similares concluídas no histórico:\n${summaries}` : '';
   }
 
   /**
@@ -128,9 +114,7 @@ export class ChecklistService {
    * @param checklist Array de itens
    * @returns ValidationResult com isValid e reason (se inválido)
    */
-  validateChecklistStructure(
-    checklist?: Array<ChecklistItemDto | string>,
-  ): ChecklistValidationResult {
+  validateChecklistStructure(checklist?: Array<ChecklistItemDto | string>): ChecklistValidationResult {
     if (!Array.isArray(checklist) || checklist.length === 0) {
       return {
         isValid: false,
@@ -194,9 +178,7 @@ export class ChecklistService {
    * @param checklist Array de itens do checklist
    * @returns ValidationResult - passa se 100% ou vazio, falha se incompleto
    */
-  validateChecklistCompletion(
-    checklist?: Array<{ completed: boolean }>,
-  ): ChecklistValidationResult {
+  validateChecklistCompletion(checklist?: Array<{ completed: boolean }>): ChecklistValidationResult {
     if (!Array.isArray(checklist) || checklist.length === 0) {
       return { isValid: true }; // Checklist vazio = permite conclusão
     }
@@ -221,9 +203,7 @@ export class ChecklistService {
    * @param checklist Array de itens
    * @returns Percentual (0-100)
    */
-  calculateCompletionPercentage(
-    checklist?: Array<{ completed: boolean }>,
-  ): number {
+  calculateCompletionPercentage(checklist?: Array<{ completed: boolean }>): number {
     if (!Array.isArray(checklist) || checklist.length === 0) {
       return 0;
     }

@@ -1,10 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import {
-  GoogleGenerativeAI,
-  HarmBlockThreshold,
-  HarmCategory,
-} from '@google/generative-ai';
+import { GoogleGenerativeAI, HarmBlockThreshold, HarmCategory } from '@google/generative-ai';
 
 @Injectable()
 export class GeminiService {
@@ -20,10 +16,7 @@ export class GeminiService {
   private embeddingDisabled = false;
   private warnedEmbedding = false;
   private warnedJsonMode = false;
-  private readonly checklistCache = new Map<
-    string,
-    { value: string[]; exp: number }
-  >();
+  private readonly checklistCache = new Map<string, { value: string[]; exp: number }>();
   private checklistRedisClient: any = null;
   private readonly checklistCacheTtlSeconds = 60 * 60;
   private readonly pertCache = new Map<string, { value: any; exp: number }>();
@@ -37,9 +30,7 @@ export class GeminiService {
       process.env.GOOGLE_API_KEY;
 
     if (!apiKey) {
-      throw new Error(
-        'GEMINI_API_KEY or GOOGLE_API_KEY não está definida no .env',
-      );
+      throw new Error('GEMINI_API_KEY or GOOGLE_API_KEY não está definida no .env');
     }
 
     this.genAI = new GoogleGenerativeAI(apiKey);
@@ -62,46 +53,24 @@ export class GeminiService {
       process.env.GEMINI_STRONG_MODEL_MAX_CALLS_PER_DAY;
     const parsedLimit = Number(strongLimitRaw);
     this.strongModelMaxCallsPerDay =
-      Number.isFinite(parsedLimit) && parsedLimit > 0
-        ? Math.floor(parsedLimit)
-        : 3;
+      Number.isFinite(parsedLimit) && parsedLimit > 0 ? Math.floor(parsedLimit) : 3;
 
     const embeddingRaw =
-      this.configService.get<string>('GEMINI_EMBEDDING_MODEL') ??
-      process.env.GEMINI_EMBEDDING_MODEL;
+      this.configService.get<string>('GEMINI_EMBEDDING_MODEL') ?? process.env.GEMINI_EMBEDDING_MODEL;
     const embeddingNormalized = String(embeddingRaw ?? '').trim();
-    const embeddingOffValues = new Set([
-      '0',
-      'false',
-      'off',
-      'none',
-      'disable',
-      'disabled',
-    ]);
-    if (
-      !embeddingNormalized ||
-      embeddingOffValues.has(embeddingNormalized.toLowerCase())
-    ) {
+    const embeddingOffValues = new Set(['0', 'false', 'off', 'none', 'disable', 'disabled']);
+    if (!embeddingNormalized || embeddingOffValues.has(embeddingNormalized.toLowerCase())) {
       this.embeddingModel = undefined;
       this.embeddingDisabled = true;
     } else {
       this.embeddingModel = embeddingNormalized;
     }
 
-    const forceJson =
-      this.configService.get<string>('GEMINI_JSON_MODE') ||
-      process.env.GEMINI_JSON_MODE;
-    if (
-      forceJson !== undefined &&
-      forceJson !== null &&
-      String(forceJson).trim() !== ''
-    ) {
+    const forceJson = this.configService.get<string>('GEMINI_JSON_MODE') || process.env.GEMINI_JSON_MODE;
+    if (forceJson !== undefined && forceJson !== null && String(forceJson).trim() !== '') {
       const normalized = String(forceJson).toLowerCase().trim();
       this.jsonModeForced =
-        normalized === '1' ||
-        normalized === 'true' ||
-        normalized === 'yes' ||
-        normalized === 'on';
+        normalized === '1' || normalized === 'true' || normalized === 'yes' || normalized === 'on';
     } else {
       this.jsonModeForced = null;
     }
@@ -111,8 +80,7 @@ export class GeminiService {
 
   private initializeChecklistRedis(): void {
     try {
-      const redisUrl =
-        this.configService.get<string>('REDIS_URL') || process.env.REDIS_URL;
+      const redisUrl = this.configService.get<string>('REDIS_URL') || process.env.REDIS_URL;
       if (!redisUrl) return;
 
       const IORedis = require('ioredis');
@@ -145,10 +113,7 @@ export class GeminiService {
     }
   }
 
-  private getChecklistCacheKey(
-    taskName: string,
-    microTaskType?: string,
-  ): string {
+  private getChecklistCacheKey(taskName: string, microTaskType?: string): string {
     const type = String(microTaskType || 'generic')
       .trim()
       .toLowerCase();
@@ -288,8 +253,7 @@ export class GeminiService {
       });
 
       const parsed = this.parseChecklistResponse(response);
-      const finalChecklist =
-        parsed.length >= 3 ? parsed : this.getChecklistFallback(microTaskType);
+      const finalChecklist = parsed.length >= 3 ? parsed : this.getChecklistFallback(microTaskType);
       await this.setChecklistCache(key, finalChecklist);
       return finalChecklist;
     } catch {
@@ -306,11 +270,7 @@ export class GeminiService {
     historicalContext?: string,
   ): Promise<string[]> {
     if (!historicalContext || historicalContext.trim() === '') {
-      return this.generateChecklistForTask(
-        taskName,
-        description,
-        microTaskType,
-      );
+      return this.generateChecklistForTask(taskName, description, microTaskType);
     }
 
     const key = this.getChecklistCacheKey(taskName, microTaskType);
@@ -334,8 +294,7 @@ export class GeminiService {
       });
 
       const parsed = this.parseChecklistResponse(response);
-      const finalChecklist =
-        parsed.length >= 3 ? parsed : this.getChecklistFallback(microTaskType);
+      const finalChecklist = parsed.length >= 3 ? parsed : this.getChecklistFallback(microTaskType);
       await this.setChecklistCache(key, finalChecklist);
       return finalChecklist;
     } catch {
@@ -380,12 +339,7 @@ export class GeminiService {
   private async setPertCache(key: string, value: any): Promise<void> {
     try {
       if (this.checklistRedisClient) {
-        await this.checklistRedisClient.set(
-          key,
-          JSON.stringify(value),
-          'EX',
-          this.pertCacheTtlSeconds,
-        );
+        await this.checklistRedisClient.set(key, JSON.stringify(value), 'EX', this.pertCacheTtlSeconds);
         return;
       }
     } catch {
@@ -404,10 +358,7 @@ export class GeminiService {
     pessimistic: number;
   } {
     const type = String(taskType || 'generic').toLowerCase();
-    const fallbacks: Record<
-      string,
-      { optimistic: number; likely: number; pessimistic: number }
-    > = {
+    const fallbacks: Record<string, { optimistic: number; likely: number; pessimistic: number }> = {
       subtask: { optimistic: 5, likely: 15, pessimistic: 30 },
       quick: { optimistic: 5, likely: 10, pessimistic: 20 },
       complex: { optimistic: 30, likely: 60, pessimistic: 120 },
@@ -418,11 +369,7 @@ export class GeminiService {
     return fallbacks[type] || fallbacks.generic;
   }
 
-  private calculatePertMetrics(
-    optimistic: number,
-    likely: number,
-    pessimistic: number,
-  ) {
+  private calculatePertMetrics(optimistic: number, likely: number, pessimistic: number) {
     const expectedTime = (optimistic + 4 * likely + pessimistic) / 6;
     const range = pessimistic - optimistic;
     const variance = Math.pow(range / 6, 2);
@@ -495,15 +442,8 @@ export class GeminiService {
         throw new Error('Valores PERT inválidos');
       }
 
-      const metrics = this.calculatePertMetrics(
-        optimistic,
-        likely,
-        pessimistic,
-      );
-      const recommendation = this.getPertRecommendation(
-        metrics.standardDeviation,
-        metrics.expectedTime,
-      );
+      const metrics = this.calculatePertMetrics(optimistic, likely, pessimistic);
+      const recommendation = this.getPertRecommendation(metrics.standardDeviation, metrics.expectedTime);
       const result = {
         optimistic,
         likely,
@@ -523,10 +463,7 @@ export class GeminiService {
         fallback.likely,
         fallback.pessimistic,
       );
-      const recommendation = this.getPertRecommendation(
-        metrics.standardDeviation,
-        metrics.expectedTime,
-      );
+      const recommendation = this.getPertRecommendation(metrics.standardDeviation, metrics.expectedTime);
       const result = {
         optimistic: fallback.optimistic,
         likely: fallback.likely,
@@ -542,10 +479,7 @@ export class GeminiService {
     }
   }
 
-  private getPertRecommendation(
-    standardDeviation: number,
-    expectedTime: number,
-  ): string {
+  private getPertRecommendation(standardDeviation: number, expectedTime: number): string {
     const coefficientOfVariation = standardDeviation / expectedTime;
 
     if (coefficientOfVariation > 0.5) {
@@ -619,10 +553,7 @@ export class GeminiService {
       .startsWith('gemini-');
   }
 
-  private shouldUseJsonMode(
-    requested: string | undefined,
-    modelName: string,
-  ): string | undefined {
+  private shouldUseJsonMode(requested: string | undefined, modelName: string): string | undefined {
     if (!requested) return undefined;
     if (this.supportsJsonModeForModel(modelName)) return requested;
     if (!this.warnedJsonMode) {
@@ -662,10 +593,7 @@ export class GeminiService {
     });
   }
 
-  async generateCompletionFeedback(
-    taskName: string,
-    taskDescription?: string,
-  ): Promise<string> {
+  async generateCompletionFeedback(taskName: string, taskDescription?: string): Promise<string> {
     const normalize = (value: unknown): string =>
       String(value ?? '')
         .replace(/\s+/g, ' ')
@@ -738,10 +666,7 @@ export class GeminiService {
     } catch (error: any) {
       const status = error?.status || error?.code;
       const message = String(error?.message || error || '');
-      if (
-        status === 404 ||
-        /not found|is not supported for embedContent/i.test(message)
-      ) {
+      if (status === 404 || /not found|is not supported for embedContent/i.test(message)) {
         this.embeddingDisabled = true;
         if (!this.warnedEmbedding) {
           this.warnedEmbedding = true;
@@ -752,10 +677,7 @@ export class GeminiService {
         return [];
       }
 
-      console.warn(
-        'Erro ao gerar embedding com Gemini:',
-        error?.message || error,
-      );
+      console.warn('Erro ao gerar embedding com Gemini:', error?.message || error);
       return [];
     }
   }
@@ -817,10 +739,7 @@ export class GeminiService {
       topK: options?.topK ?? 1,
       topP: options?.topP ?? 1,
       maxOutputTokens: options?.maxOutputTokens ?? 4096,
-      responseMimeType: this.shouldUseJsonMode(
-        options?.responseMimeType,
-        modelName,
-      ),
+      responseMimeType: this.shouldUseJsonMode(options?.responseMimeType, modelName),
     });
 
     const safetySettings: {
@@ -854,9 +773,7 @@ export class GeminiService {
     const isTransientOverload = (status: any, message: string) => {
       const numericStatus = Number(status);
       if ([429, 500, 502, 503, 504].includes(numericStatus)) return true;
-      return /overloaded|service unavailable|temporarily unavailable|try again later/i.test(
-        message,
-      );
+      return /overloaded|service unavailable|temporarily unavailable|try again later/i.test(message);
     };
 
     while (attempt <= maxRetries) {
@@ -895,18 +812,14 @@ export class GeminiService {
         }
 
         if (status === 429 && attempt < maxRetries) {
-          const delay =
-            Math.min(1000 * Math.pow(2, attempt), 10000) +
-            Math.floor(Math.random() * 300);
+          const delay = Math.min(1000 * Math.pow(2, attempt), 10000) + Math.floor(Math.random() * 300);
           await new Promise((resolve) => setTimeout(resolve, delay));
           attempt++;
           continue;
         }
 
         if (isTransientOverload(status, message) && attempt < maxRetries) {
-          const delay =
-            Math.min(800 * Math.pow(2, attempt), 8000) +
-            Math.floor(Math.random() * 300);
+          const delay = Math.min(800 * Math.pow(2, attempt), 8000) + Math.floor(Math.random() * 300);
           await new Promise((resolve) => setTimeout(resolve, delay));
           attempt++;
           continue;

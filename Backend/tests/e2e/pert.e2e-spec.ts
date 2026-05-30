@@ -47,12 +47,8 @@ describe('Sprint 3: PERT Suggestions and Estimation (e2e)', () => {
       expect(response.body).toHaveProperty('fromLLM');
 
       // Validate constraint: O <= M <= P
-      expect(response.body.optimistic).toBeLessThanOrEqual(
-        response.body.likely,
-      );
-      expect(response.body.likely).toBeLessThanOrEqual(
-        response.body.pessimistic,
-      );
+      expect(response.body.optimistic).toBeLessThanOrEqual(response.body.likely);
+      expect(response.body.likely).toBeLessThanOrEqual(response.body.pessimistic);
 
       // Validate calculated values
       expect(response.body.expectedTime).toBeGreaterThan(0);
@@ -69,12 +65,8 @@ describe('Sprint 3: PERT Suggestions and Estimation (e2e)', () => {
         .expect(200);
 
       expect(response.body.optimistic).toBeGreaterThan(0);
-      expect(response.body.optimistic).toBeLessThanOrEqual(
-        response.body.likely,
-      );
-      expect(response.body.likely).toBeLessThanOrEqual(
-        response.body.pessimistic,
-      );
+      expect(response.body.optimistic).toBeLessThanOrEqual(response.body.likely);
+      expect(response.body.likely).toBeLessThanOrEqual(response.body.pessimistic);
     });
 
     it('should return fallback values for unsupported task type', async () => {
@@ -212,8 +204,7 @@ describe('Sprint 3: PERT Suggestions and Estimation (e2e)', () => {
       // TE = (60 + 480 + 240) / 6 = 130 minutes = ~2.17 hours
       // With 10% margin: ~2.4 hours = ~144 minutes
       // Rounded to next hour: 3 hours
-      const diffMinutes =
-        (deadline.getTime() - beforeUpdate.getTime()) / (1000 * 60);
+      const diffMinutes = (deadline.getTime() - beforeUpdate.getTime()) / (1000 * 60);
       expect(diffMinutes).toBeGreaterThanOrEqual(150); // At least 2.5 hours
       expect(diffMinutes).toBeLessThan(300); // Less than 5 hours
     });
@@ -333,10 +324,7 @@ describe('Sprint 3: PERT Suggestions and Estimation (e2e)', () => {
           })
           .expect(200);
 
-        expect(patchResponse.body.pertExpectedMinutes).toBeCloseTo(
-          testCase.expectedTE,
-          1,
-        );
+        expect(patchResponse.body.pertExpectedMinutes).toBeCloseTo(testCase.expectedTE, 1);
       }
     });
 
@@ -360,14 +348,11 @@ describe('Sprint 3: PERT Suggestions and Estimation (e2e)', () => {
 
       // Note: Current implementation doesn't expose pertVariance/pertStdDev in response
       // But we can verify by calling the calculation directly via service
-      const result = await tasksService.updatePert(
-        (created as any)._id.toString(),
-        {
-          pertOptimisticMinutes: 10,
-          pertMostLikelyMinutes: 20,
-          pertPessimisticMinutes: 50,
-        },
-      );
+      const result = await tasksService.updatePert((created as any)._id.toString(), {
+        pertOptimisticMinutes: 10,
+        pertMostLikelyMinutes: 20,
+        pertPessimisticMinutes: 50,
+      });
 
       const expectedSigma = (50 - 10) / 6;
       expect(result.pertVariance).toBeCloseTo(expectedSigma * expectedSigma, 1);

@@ -101,9 +101,7 @@ describe('EVMService', () => {
     expect(summary.personalMetrics).toBeDefined();
     expect(summary.personalMetrics.consistencyScore).toBeGreaterThanOrEqual(0);
     expect(summary.personalMetrics.planAdherence).toBeGreaterThanOrEqual(0);
-    expect(summary.personalMetrics.perceivedValueScore).toBeGreaterThanOrEqual(
-      0,
-    );
+    expect(summary.personalMetrics.perceivedValueScore).toBeGreaterThanOrEqual(0);
     expect(summary.personalMetrics.completionTrend).toMatch(
       /acelerando|estavel|desacelerando|insuficiente/,
     );

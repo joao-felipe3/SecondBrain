@@ -15,11 +15,7 @@ import { RollingWaveService } from '../services/rolling-wave.service';
 import { RiskService } from '../services/risk.service';
 import { EVMService } from '../services/evm.service';
 import { TasksService } from '../../tasks/tasks.service';
-import {
-  CPMService,
-  TaskNode,
-  TaskDependencyEdge,
-} from '../../tasks/services/cpm.service';
+import { CPMService, TaskNode, TaskDependencyEdge } from '../../tasks/services/cpm.service';
 import { CreateWaveDto, UpdateWaveDto } from '../dto/wave.dto';
 import { CreateRiskDto, UpdateRiskDto, AssessRisksDto } from '../dto/risk.dto';
 import { RecordProjectProgressDto } from '../dto/evm.dto';
@@ -50,8 +46,7 @@ export class WaveAndRiskController {
   ): TaskNode {
     const taskId = String(task?._id ?? task?.id);
     const pertMinutes = Number(task?.pertExpectedMinutes || 0);
-    const pomodoroMinutes =
-      Math.max(1, Number(task?.pomodorosPlanned || 0)) * 25;
+    const pomodoroMinutes = Math.max(1, Number(task?.pomodorosPlanned || 0)) * 25;
     const duration = pertMinutes > 0 ? pertMinutes : pomodoroMinutes;
 
     return {
@@ -60,9 +55,7 @@ export class WaveAndRiskController {
       duration,
       dependencies: dependencyMap.get(taskId) || [],
       dependencyEdges: dependencyEdgeMap.get(taskId) || [],
-      parentWbsNodeId: task?.parentWbsNodeId
-        ? String(task.parentWbsNodeId)
-        : undefined,
+      parentWbsNodeId: task?.parentWbsNodeId ? String(task.parentWbsNodeId) : undefined,
       wbsPath: task?.wbsPath ? String(task.wbsPath) : undefined,
     };
   }
@@ -84,9 +77,7 @@ export class WaveAndRiskController {
     taskId?: string;
     cta: string;
   } {
-    const prioritizedRisk = params.interventions.find(
-      (item) => item.recommendedAction !== 'monitorar',
-    );
+    const prioritizedRisk = params.interventions.find((item) => item.recommendedAction !== 'monitorar');
     if (prioritizedRisk && prioritizedRisk.confidence >= 0.8) {
       return {
         type: 'risco',
@@ -99,13 +90,11 @@ export class WaveAndRiskController {
 
     const firstCriticalTaskId = params.cpmAnalysis.criticalPath?.[0];
     if (firstCriticalTaskId) {
-      const taskName =
-        params.taskNameById.get(firstCriticalTaskId) || 'Tarefa critica';
+      const taskName = params.taskNameById.get(firstCriticalTaskId) || 'Tarefa critica';
       return {
         type: 'caminho-critico',
         title: `Executar tarefa critica: ${taskName}`,
-        rationale:
-          'A tarefa esta no caminho critico e reduz risco de atraso em cadeia.',
+        rationale: 'A tarefa esta no caminho critico e reduz risco de atraso em cadeia.',
         confidence: 0.78,
         taskId: firstCriticalTaskId,
         cta: 'Abrir tarefa critica',
@@ -127,9 +116,7 @@ export class WaveAndRiskController {
   // ============================================
 
   @Get('waves')
-  async getWaves(
-    @Param('projectId') projectId: string,
-  ): Promise<ProjectWave[]> {
+  async getWaves(@Param('projectId') projectId: string): Promise<ProjectWave[]> {
     try {
       return await this.waveService.getWavesByProject(projectId);
     } catch (error) {
@@ -146,20 +133,12 @@ export class WaveAndRiskController {
     @Body() body: { totalDurationDays?: number; waveLengthDays?: number } = {},
   ): Promise<ProjectWave[]> {
     try {
-      console.log(
-        `[WaveAndRiskController.generateWaves] projectId: ${projectId}, body:`,
-        body,
-      );
+      console.log(`[WaveAndRiskController.generateWaves] projectId: ${projectId}, body:`, body);
 
       // Buscar projeto para obter deadline e smartObjective
-      const project = await this.projectModel
-        .findById(projectId)
-        .populate('tasks');
+      const project = await this.projectModel.findById(projectId).populate('tasks');
       if (!project) {
-        throw new HttpException(
-          'Projeto nÃ£o encontrado',
-          HttpStatus.NOT_FOUND,
-        );
+        throw new HttpException('Projeto nÃ£o encontrado', HttpStatus.NOT_FOUND);
       }
 
       console.log(
@@ -172,18 +151,12 @@ export class WaveAndRiskController {
         body?.waveLengthDays || 28,
       );
 
-      console.log(
-        `[WaveAndRiskController.generateWaves] Waves created successfully`,
-      );
+      console.log(`[WaveAndRiskController.generateWaves] Waves created successfully`);
       return result;
     } catch (error) {
       console.error('[WaveAndRiskController.generateWaves] Exception:', error);
-      const errorMessage =
-        error instanceof Error ? error.message : String(error);
-      throw new HttpException(
-        `Erro ao gerar ondas: ${errorMessage}`,
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      throw new HttpException(`Erro ao gerar ondas: ${errorMessage}`, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
@@ -268,24 +241,14 @@ export class WaveAndRiskController {
     @Body() body: { projectDescription?: string },
   ): Promise<Risk[]> {
     try {
-      console.log(
-        `[WaveAndRiskController.assessRisks] projectId: ${projectId}, body:`,
-        body,
-      );
-      const projectDescription =
-        body.projectDescription || 'Projeto sem descriÃ§Ã£o';
-      const result = await this.riskService.assessRisks(
-        projectId,
-        projectDescription,
-      );
-      console.log(
-        `[WaveAndRiskController.assessRisks] Success, returned ${result.length} risks`,
-      );
+      console.log(`[WaveAndRiskController.assessRisks] projectId: ${projectId}, body:`, body);
+      const projectDescription = body.projectDescription || 'Projeto sem descriÃ§Ã£o';
+      const result = await this.riskService.assessRisks(projectId, projectDescription);
+      console.log(`[WaveAndRiskController.assessRisks] Success, returned ${result.length} risks`);
       return result;
     } catch (error) {
       console.error('[WaveAndRiskController.assessRisks] Exception:', error);
-      const errorMessage =
-        error instanceof Error ? error.message : String(error);
+      const errorMessage = error instanceof Error ? error.message : String(error);
       throw new HttpException(
         `Erro ao avaliar riscos: ${errorMessage}`,
         HttpStatus.INTERNAL_SERVER_ERROR,
@@ -398,10 +361,7 @@ export class WaveAndRiskController {
   // ============================================
 
   @Post('evm/progress')
-  async recordProgress(
-    @Param('projectId') projectId: string,
-    @Body() body: RecordProjectProgressDto,
-  ) {
+  async recordProgress(@Param('projectId') projectId: string, @Body() body: RecordProjectProgressDto) {
     try {
       return await this.evmService.recordProgress(
         projectId,
@@ -430,15 +390,9 @@ export class WaveAndRiskController {
   }
 
   @Delete('evm/progress/:entryId')
-  async deleteProgressEntry(
-    @Param('projectId') projectId: string,
-    @Param('entryId') entryId: string,
-  ) {
+  async deleteProgressEntry(@Param('projectId') projectId: string, @Param('entryId') entryId: string) {
     try {
-      const deleted = await this.evmService.deleteProgressEntry(
-        projectId,
-        entryId,
-      );
+      const deleted = await this.evmService.deleteProgressEntry(projectId, entryId);
       return { deleted };
     } catch (error) {
       throw new HttpException(
@@ -552,13 +506,12 @@ export class WaveAndRiskController {
   @Get('next-best-action')
   async getNextBestAction(@Param('projectId') projectId: string) {
     try {
-      const [riskInterventions, personalEvm, tasks, dependencies] =
-        await Promise.all([
-          this.riskService.getRiskInterventions(projectId),
-          this.evmService.getPersonalSummary(projectId),
-          this.tasksService.findByProjectId(projectId),
-          this.cpmService.getDependencies(projectId),
-        ]);
+      const [riskInterventions, personalEvm, tasks, dependencies] = await Promise.all([
+        this.riskService.getRiskInterventions(projectId),
+        this.evmService.getPersonalSummary(projectId),
+        this.tasksService.findByProjectId(projectId),
+        this.cpmService.getDependencies(projectId),
+      ]);
 
       const dependencyMap = new Map<string, string[]>();
       const dependencyEdgeMap = new Map<string, TaskDependencyEdge[]>();
@@ -572,25 +525,18 @@ export class WaveAndRiskController {
         const existingEdges = dependencyEdgeMap.get(taskId) || [];
         existingEdges.push({
           predecessorId: dependsOnTaskId,
-          relationship: this.cpmService.normalizeRelationship(
-            dep?.relationship,
-          ),
+          relationship: this.cpmService.normalizeRelationship(dep?.relationship),
         });
         dependencyEdgeMap.set(taskId, existingEdges);
       }
 
       const taskNodes: TaskNode[] = (tasks as any[])
         .filter((task) => !task?.isConcluded)
-        .map((task) =>
-          this.mapTaskToNode(task, dependencyMap, dependencyEdgeMap),
-        );
+        .map((task) => this.mapTaskToNode(task, dependencyMap, dependencyEdgeMap));
 
       const cpmAnalysis = this.cpmService.calculateCriticalPath(taskNodes);
       const taskNameById = new Map<string, string>(
-        (tasks as any[]).map((task) => [
-          String(task?._id),
-          String(task?.name || 'Task'),
-        ]),
+        (tasks as any[]).map((task) => [String(task?._id), String(task?.name || 'Task')]),
       );
 
       const action = this.selectNextAction({

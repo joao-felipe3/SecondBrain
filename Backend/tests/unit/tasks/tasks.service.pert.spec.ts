@@ -88,11 +88,7 @@ describe('TasksService - PERT Methods (Unit Tests)', () => {
 
   describe('suggestPertEstimates', () => {
     it('should delegate to GeminiService and return suggestions', async () => {
-      const result = await service.suggestPertEstimates(
-        'complex',
-        'Implement OAuth 2.0',
-        'Auth Module',
-      );
+      const result = await service.suggestPertEstimates('complex', 'Implement OAuth 2.0', 'Auth Module');
 
       expect(result).toHaveProperty('optimistic');
       expect(result).toHaveProperty('likely');
@@ -108,11 +104,7 @@ describe('TasksService - PERT Methods (Unit Tests)', () => {
       const result = await service.suggestPertEstimates('quick', 'Fix typo');
 
       expect(result.optimistic).toBeDefined();
-      expect(geminiService.suggestPertEstimates).toHaveBeenCalledWith(
-        'quick',
-        'Fix typo',
-        undefined,
-      );
+      expect(geminiService.suggestPertEstimates).toHaveBeenCalledWith('quick', 'Fix typo', undefined);
     });
   });
 
@@ -160,9 +152,7 @@ describe('TasksService - PERT Methods (Unit Tests)', () => {
       const result = await service.updatePert(validTaskId, validUpdateDto);
 
       expect(result.deadline).toBeDefined();
-      expect(result.deadline.getTime()).toBeGreaterThan(
-        mockTask.createdAt.getTime(),
-      );
+      expect(result.deadline.getTime()).toBeGreaterThan(mockTask.createdAt.getTime());
     });
 
     it('should reject if O > M', async () => {
@@ -172,9 +162,7 @@ describe('TasksService - PERT Methods (Unit Tests)', () => {
         pertPessimisticMinutes: 240,
       };
 
-      await expect(service.updatePert(validTaskId, invalidDto)).rejects.toThrow(
-        BadRequestException,
-      );
+      await expect(service.updatePert(validTaskId, invalidDto)).rejects.toThrow(BadRequestException);
     });
 
     it('should reject if M > P', async () => {
@@ -184,9 +172,7 @@ describe('TasksService - PERT Methods (Unit Tests)', () => {
         pertPessimisticMinutes: 60,
       };
 
-      await expect(service.updatePert(validTaskId, invalidDto)).rejects.toThrow(
-        BadRequestException,
-      );
+      await expect(service.updatePert(validTaskId, invalidDto)).rejects.toThrow(BadRequestException);
     });
 
     it('should reject if any value is <= 0', async () => {
@@ -196,9 +182,7 @@ describe('TasksService - PERT Methods (Unit Tests)', () => {
         pertPessimisticMinutes: 50,
       };
 
-      await expect(service.updatePert(validTaskId, invalidDto)).rejects.toThrow(
-        BadRequestException,
-      );
+      await expect(service.updatePert(validTaskId, invalidDto)).rejects.toThrow(BadRequestException);
     });
 
     it('should reject if any value is not a number', async () => {
@@ -208,9 +192,7 @@ describe('TasksService - PERT Methods (Unit Tests)', () => {
         pertPessimisticMinutes: 120,
       };
 
-      await expect(service.updatePert(validTaskId, invalidDto)).rejects.toThrow(
-        BadRequestException,
-      );
+      await expect(service.updatePert(validTaskId, invalidDto)).rejects.toThrow(BadRequestException);
     });
 
     it('should reject if task ID is invalid', async () => {
@@ -220,9 +202,7 @@ describe('TasksService - PERT Methods (Unit Tests)', () => {
         pertPessimisticMinutes: 50,
       };
 
-      await expect(
-        service.updatePert('invalid_id', invalidDto),
-      ).rejects.toThrow(BadRequestException);
+      await expect(service.updatePert('invalid_id', invalidDto)).rejects.toThrow(BadRequestException);
     });
 
     it('should throw NotFoundException if task not found', async () => {
@@ -230,9 +210,7 @@ describe('TasksService - PERT Methods (Unit Tests)', () => {
         exec: jest.fn().mockResolvedValue(null),
       });
 
-      await expect(
-        service.updatePert(validTaskId, validUpdateDto),
-      ).rejects.toThrow(NotFoundException);
+      await expect(service.updatePert(validTaskId, validUpdateDto)).rejects.toThrow(NotFoundException);
     });
 
     it('should handle edge case: O = M = P (zero variance)', async () => {
@@ -305,14 +283,10 @@ describe('TasksService - PERT Methods (Unit Tests)', () => {
 
       // deadline = createdAt + ceil((TE * 1.1) / 60) hours
       const hoursNeeded = Math.ceil((expectedTimeMinutes * 1.1) / 60);
-      const expectedDeadline = new Date(
-        createdAt.getTime() + hoursNeeded * 60 * 60 * 1000,
-      );
+      const expectedDeadline = new Date(createdAt.getTime() + hoursNeeded * 60 * 60 * 1000);
 
       expect(expectedDeadline.getTime()).toBeGreaterThan(createdAt.getTime());
-      expect(expectedDeadline.getTime()).toBeLessThan(
-        createdAt.getTime() + 3 * 60 * 60 * 1000,
-      );
+      expect(expectedDeadline.getTime()).toBeLessThan(createdAt.getTime() + 3 * 60 * 60 * 1000);
     });
   });
 });

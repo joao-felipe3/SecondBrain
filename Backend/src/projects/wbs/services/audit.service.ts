@@ -49,12 +49,8 @@ export class AuditService {
     suggestedEstimatedHours?: number;
   }> {
     const discrepancyMetrics = this.computeDiscrepancyMetrics(dto);
-    const duplicateMetrics = this.computeDuplicateMetrics(
-      Array.isArray(dto?.tasks) ? dto.tasks : [],
-    );
-    const tasksPreview = this.formatTasksPreview(
-      Array.isArray(dto?.tasks) ? dto.tasks : [],
-    );
+    const duplicateMetrics = this.computeDuplicateMetrics(Array.isArray(dto?.tasks) ? dto.tasks : []);
+    const tasksPreview = this.formatTasksPreview(Array.isArray(dto?.tasks) ? dto.tasks : []);
 
     const prompt = this.buildAuditPrompt(
       project,
@@ -99,10 +95,7 @@ export class AuditService {
   } {
     const budgetHours = Number(dto?.leafNode?.estimatedHours || 0);
     const generatedHours = Number(dto?.generatedHours || 0);
-    const diffPct =
-      budgetHours > 0
-        ? ((generatedHours - budgetHours) / budgetHours) * 100
-        : 0;
+    const diffPct = budgetHours > 0 ? ((generatedHours - budgetHours) / budgetHours) * 100 : 0;
 
     return { budgetHours, generatedHours, diffPct };
   }
@@ -125,8 +118,7 @@ export class AuditService {
       (sum, count) => sum + Math.max(0, count - 1),
       0,
     );
-    const duplicateRatio =
-      taskList.length > 0 ? duplicatesRemovedIfDedupe / taskList.length : 0;
+    const duplicateRatio = taskList.length > 0 ? duplicatesRemovedIfDedupe / taskList.length : 0;
 
     const topDuplicateKeys = Array.from(keyCounts.entries())
       .filter(([, count]) => count >= 2)
@@ -151,9 +143,7 @@ export class AuditService {
     const raw = String(name || '')
       .trim()
       .toLowerCase();
-    const withoutCounters = raw
-      .replace(/\(\s*\d+\s*\/\s*\d+\s*\)\s*$/g, '')
-      .trim();
+    const withoutCounters = raw.replace(/\(\s*\d+\s*\/\s*\d+\s*\)\s*$/g, '').trim();
     const normalized = withoutCounters
       .normalize('NFD')
       .replace(/[\u0300-\u036f]/g, '')
@@ -166,10 +156,7 @@ export class AuditService {
   private async callGeminiWithRetry(prompt: string): Promise<string> {
     const modelOverride = this.getModelOverride();
 
-    const attemptCall = async (
-      maxOutputTokens: number,
-      temperature: number,
-    ): Promise<string> => {
+    const attemptCall = async (maxOutputTokens: number, temperature: number): Promise<string> => {
       return this.geminiService.generateContent(prompt, {
         model: modelOverride,
         responseMimeType: 'application/json',
@@ -205,14 +192,10 @@ export class AuditService {
     const suggestedAction: 'rebaseline' | 'simplify' =
       suggestedActionRaw === 'simplify' ? 'simplify' : 'rebaseline';
 
-    const rationale =
-      String(parsed?.rationale || '').trim() || 'Sem justificativa.';
+    const rationale = String(parsed?.rationale || '').trim() || 'Sem justificativa.';
 
     let suggestedEstimatedHours: number | undefined;
-    if (
-      parsed?.suggestedEstimatedHours !== undefined &&
-      parsed?.suggestedEstimatedHours !== null
-    ) {
+    if (parsed?.suggestedEstimatedHours !== undefined && parsed?.suggestedEstimatedHours !== null) {
       const hours = this.parseHoursValue(parsed.suggestedEstimatedHours);
       if (hours !== undefined) {
         suggestedEstimatedHours = Math.round(hours * 2) / 2;
@@ -348,8 +331,7 @@ export class AuditService {
     const strongRedundancy = duplicateRatio >= 0.5 || dupScore >= 0.55;
     const moderateRedundancy = duplicateRatio >= 0.4 || dupScore >= 0.4;
     // Keep "low redundancy" strict (aligns with prompt): below ~25% duplication signals.
-    const lowRedundancy =
-      duplicateRatio < 0.25 && dupScore < 0.25 && similarScore < 0.35;
+    const lowRedundancy = duplicateRatio < 0.25 && dupScore < 0.25 && similarScore < 0.35;
     const highVariety =
       themesCount >= Math.min(6, Math.ceil(Math.max(1, taskLength) / 6)) ||
       verbVariety >= 0.45 ||
@@ -363,12 +345,7 @@ export class AuditService {
       finalSuggestedAction = 'simplify';
     } else if (finalDiagnosis === 'mixed' && strongRedundancy) {
       finalSuggestedAction = 'simplify';
-    } else if (
-      finalDiagnosis === 'gold_plating' &&
-      lowRedundancy &&
-      highVariety &&
-      diffPct <= 90
-    ) {
+    } else if (finalDiagnosis === 'gold_plating' && lowRedundancy && highVariety && diffPct <= 90) {
       finalDiagnosis = 'underestimated';
       finalSuggestedAction = 'rebaseline';
     }

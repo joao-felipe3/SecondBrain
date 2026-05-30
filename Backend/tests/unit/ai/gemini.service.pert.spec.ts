@@ -14,8 +14,7 @@ describe('GeminiService - PERT Estimation (Unit Tests)', () => {
           provide: ConfigService,
           useValue: {
             get: jest.fn((key: string) => {
-              if (key === 'GEMINI_API_KEY')
-                return process.env.GEMINI_API_KEY || 'test-key';
+              if (key === 'GEMINI_API_KEY') return process.env.GEMINI_API_KEY || 'test-key';
               if (key === 'REDIS_ENABLED') return false; // Use in-memory for tests
               return undefined;
             }),
@@ -54,32 +53,22 @@ describe('GeminiService - PERT Estimation (Unit Tests)', () => {
     });
 
     it('should enforce O <= M <= P constraint', async () => {
-      const result = await service.suggestPertEstimates(
-        'quick',
-        'Fix minor bug',
-      );
+      const result = await service.suggestPertEstimates('quick', 'Fix minor bug');
 
       expect(result.optimistic).toBeLessThanOrEqual(result.likely);
       expect(result.likely).toBeLessThanOrEqual(result.pessimistic);
     });
 
     it('should calculate expectedTime using PERT formula', async () => {
-      const result = await service.suggestPertEstimates(
-        'complex',
-        'Build REST API',
-      );
+      const result = await service.suggestPertEstimates('complex', 'Build REST API');
 
       // TE = (O + 4*M + P) / 6
-      const expectedTE =
-        (result.optimistic + 4 * result.likely + result.pessimistic) / 6;
+      const expectedTE = (result.optimistic + 4 * result.likely + result.pessimistic) / 6;
       expect(result.expectedTime).toBeCloseTo(expectedTE, 1);
     });
 
     it('should calculate standardDeviation correctly', async () => {
-      const result = await service.suggestPertEstimates(
-        'subtask',
-        'Add comments to function',
-      );
+      const result = await service.suggestPertEstimates('subtask', 'Add comments to function');
 
       // σ = (P - O) / 6
       const expectedSigma = (result.pessimistic - result.optimistic) / 6;
@@ -87,10 +76,7 @@ describe('GeminiService - PERT Estimation (Unit Tests)', () => {
     });
 
     it('should return recommendations based on coefficient of variation', async () => {
-      const result = await service.suggestPertEstimates(
-        'quick',
-        'Simple task with low uncertainty',
-      );
+      const result = await service.suggestPertEstimates('quick', 'Simple task with low uncertainty');
 
       const cv = result.standardDeviation / result.expectedTime;
 
@@ -145,15 +131,10 @@ describe('GeminiService - PERT Estimation (Unit Tests)', () => {
         'Migrate database to new schema',
       );
 
-      const quickResult = await service.suggestPertEstimates(
-        'quick',
-        'Fix typo in README',
-      );
+      const quickResult = await service.suggestPertEstimates('quick', 'Fix typo in README');
 
       // Complex tasks should generally take longer than quick tasks
-      expect(complexResult.expectedTime).toBeGreaterThan(
-        quickResult.expectedTime,
-      );
+      expect(complexResult.expectedTime).toBeGreaterThan(quickResult.expectedTime);
     });
 
     it('should handle different task types correctly', async () => {
@@ -161,10 +142,7 @@ describe('GeminiService - PERT Estimation (Unit Tests)', () => {
       const results: any[] = [];
 
       for (const taskType of taskTypes) {
-        const result = await service.suggestPertEstimates(
-          taskType,
-          'Sample task',
-        );
+        const result = await service.suggestPertEstimates(taskType, 'Sample task');
         results.push(result);
         expect(result.optimistic).toBeGreaterThan(0);
       }
@@ -172,18 +150,13 @@ describe('GeminiService - PERT Estimation (Unit Tests)', () => {
       // Complex should generally be largest
       const complexResult = results[taskTypes.indexOf('complex')];
       const quickResult = results[taskTypes.indexOf('quick')];
-      expect(complexResult.expectedTime).toBeGreaterThanOrEqual(
-        quickResult.expectedTime,
-      );
+      expect(complexResult.expectedTime).toBeGreaterThanOrEqual(quickResult.expectedTime);
     });
 
     it('should handle long descriptions gracefully', async () => {
       const longDescription = 'A'.repeat(500) + ' very long task description';
 
-      const result = await service.suggestPertEstimates(
-        'complex',
-        longDescription,
-      );
+      const result = await service.suggestPertEstimates('complex', longDescription);
 
       expect(result.optimistic).toBeGreaterThan(0);
       expect(result.optimistic).toBeLessThanOrEqual(result.likely);
@@ -302,10 +275,7 @@ describe('GeminiService - PERT Estimation (Unit Tests)', () => {
         description: 'Test cache',
       };
 
-      const cacheKey = service['getPertCacheKey'](
-        input.taskType,
-        input.description,
-      );
+      const cacheKey = service['getPertCacheKey'](input.taskType, input.description);
 
       // Initially no cache
       let cached = await service['getPertCache'](cacheKey);

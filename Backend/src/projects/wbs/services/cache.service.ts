@@ -122,12 +122,7 @@ export class CacheService {
   async set(key: string, value: any): Promise<void> {
     try {
       if (this.redisClient) {
-        await this.redisClient.set(
-          key,
-          JSON.stringify(value),
-          'EX',
-          this.cacheTTLSeconds,
-        );
+        await this.redisClient.set(key, JSON.stringify(value), 'EX', this.cacheTTLSeconds);
         this.logCache('set', key, {
           ttlSeconds: this.cacheTTLSeconds,
           items: value?.length || 0,
@@ -161,13 +156,7 @@ export class CacheService {
 
         do {
           // scan for prefix1
-          const [next, keys] = await this.redisClient.scan(
-            cursor,
-            'MATCH',
-            `${prefix1}*`,
-            'COUNT',
-            100,
-          );
+          const [next, keys] = await this.redisClient.scan(cursor, 'MATCH', `${prefix1}*`, 'COUNT', 100);
           cursor = next;
           if (keys && keys.length) {
             await Promise.all(keys.map((k: string) => this.redisClient.del(k)));
@@ -177,13 +166,7 @@ export class CacheService {
 
         cursor = '0';
         do {
-          const [next, keys] = await this.redisClient.scan(
-            cursor,
-            'MATCH',
-            `${prefix2}*`,
-            'COUNT',
-            100,
-          );
+          const [next, keys] = await this.redisClient.scan(cursor, 'MATCH', `${prefix2}*`, 'COUNT', 100);
           cursor = next;
           if (keys && keys.length) {
             await Promise.all(keys.map((k: string) => this.redisClient.del(k)));

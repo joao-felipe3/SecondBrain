@@ -1,8 +1,4 @@
-import {
-  Injectable,
-  BadRequestException,
-  NotFoundException,
-} from '@nestjs/common';
+import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { TaskDocument } from '../../schemas/task.schema';
@@ -19,19 +15,14 @@ export class TasksChecklistService {
     private readonly geminiService: GeminiService,
   ) {}
 
-  async updateMicroTaskChecklist(
-    id: string,
-    checklist: Array<string | any>,
-  ): Promise<any> {
+  async updateMicroTaskChecklist(id: string, checklist: Array<string | any>): Promise<any> {
     if (!id || !Types.ObjectId.isValid(id)) {
       throw new BadRequestException(`ID inválido: ${id}`);
     }
 
     const normalizedChecklist = this.inputService.normalizeChecklist(checklist);
     if (!normalizedChecklist || normalizedChecklist.length === 0) {
-      throw new BadRequestException(
-        'Checklist inválido: informe pelo menos um item.',
-      );
+      throw new BadRequestException('Checklist inválido: informe pelo menos um item.');
     }
 
     const updatedTask = await this.taskModel
@@ -45,11 +36,7 @@ export class TasksChecklistService {
     return updatedTask;
   }
 
-  async updateChecklistItem(
-    taskId: string,
-    itemIndex: string,
-    completed: boolean,
-  ): Promise<any> {
+  async updateChecklistItem(taskId: string, itemIndex: string, completed: boolean): Promise<any> {
     if (!taskId || !Types.ObjectId.isValid(taskId)) {
       throw new BadRequestException(`ID inválido: ${taskId}`);
     }
@@ -76,20 +63,15 @@ export class TasksChecklistService {
 
     const checklistItem = task.checklist[index];
     if (typeof checklistItem === 'string') {
-      throw new BadRequestException(
-        `Item ${index} é uma string, não objeto com completed`,
-      );
+      throw new BadRequestException(`Item ${index} é uma string, não objeto com completed`);
     }
 
     (checklistItem as any).completed = Boolean(completed);
 
-    const checklistItems = task.checklist.filter(
-      (item) => typeof item !== 'string',
+    const checklistItems = task.checklist.filter((item) => typeof item !== 'string');
+    const completionPercentage = this.checklistService.calculateCompletionPercentage(
+      checklistItems as any,
     );
-    const completionPercentage =
-      this.checklistService.calculateCompletionPercentage(
-        checklistItems as any,
-      );
 
     const updatedTask = await task.save();
 
@@ -99,9 +81,7 @@ export class TasksChecklistService {
     } as any;
   }
 
-  async validateCompletionRequirements(
-    taskId: string,
-  ): Promise<{ isValid: boolean; reason?: string }> {
+  async validateCompletionRequirements(taskId: string): Promise<{ isValid: boolean; reason?: string }> {
     if (!taskId || !Types.ObjectId.isValid(taskId)) {
       return {
         isValid: false,
@@ -123,19 +103,14 @@ export class TasksChecklistService {
 
     const checklistItems = task.checklist.map((entry: any) => {
       if (typeof entry === 'string') return { completed: false };
-      if (entry && typeof entry === 'object')
-        return { completed: Boolean(entry.completed) };
+      if (entry && typeof entry === 'object') return { completed: Boolean(entry.completed) };
       return { completed: false };
     });
 
-    return this.checklistService.validateChecklistCompletion(
-      checklistItems as any,
-    );
+    return this.checklistService.validateChecklistCompletion(checklistItems as any);
   }
 
-  async getValidationErrors(
-    taskId: string,
-  ): Promise<{ valid: boolean; errors: string[] }> {
+  async getValidationErrors(taskId: string): Promise<{ valid: boolean; errors: string[] }> {
     if (!taskId || !Types.ObjectId.isValid(taskId)) {
       return { valid: false, errors: [`Invalid id: ${taskId}`] };
     }
@@ -147,35 +122,22 @@ export class TasksChecklistService {
 
     const errors: string[] = [];
     const isHabit =
-      task.microTaskType === 'habit' ||
-      Boolean(task.parentRecurringId) ||
-      Boolean(task.recurringRule);
+      task.microTaskType === 'habit' || Boolean(task.parentRecurringId) || Boolean(task.recurringRule);
 
-    if (
-      !isHabit &&
-      Array.isArray(task.checklist) &&
-      task.checklist.length > 0
-    ) {
+    if (!isHabit && Array.isArray(task.checklist) && task.checklist.length > 0) {
       const checklistItems = task.checklist.map((entry: any) => {
         if (typeof entry === 'string') return { completed: false };
-        if (entry && typeof entry === 'object')
-          return { completed: Boolean(entry.completed) };
+        if (entry && typeof entry === 'object') return { completed: Boolean(entry.completed) };
         return { completed: false };
       });
 
-      const checklistResult = this.checklistService.validateChecklistCompletion(
-        checklistItems as any,
-      );
+      const checklistResult = this.checklistService.validateChecklistCompletion(checklistItems as any);
       if (!checklistResult.isValid) {
         errors.push(checklistResult.reason || 'Checklist incomplete');
       }
     }
 
-    if (
-      !isHabit &&
-      task.microTaskType &&
-      !Number.isFinite(task.pertExpectedMinutes || 0)
-    ) {
+    if (!isHabit && task.microTaskType && !Number.isFinite(task.pertExpectedMinutes || 0)) {
       errors.push('PERT estimate missing');
     }
 
@@ -187,11 +149,7 @@ export class TasksChecklistService {
     description?: string,
     microTaskType?: string,
   ): Promise<string[]> {
-    return this.geminiService.generateChecklistForTask(
-      taskName,
-      description,
-      microTaskType,
-    );
+    return this.geminiService.generateChecklistForTask(taskName, description, microTaskType);
   }
 
   async generateChecklistWithHistory(
@@ -202,23 +160,19 @@ export class TasksChecklistService {
   ): Promise<string[]> {
     let historicalContext = '';
     if (projectId && typeof projectId === 'string') {
-      const similarTasks =
-        await this.checklistService.findSimilarTasksInProject(
-          projectId,
-          microTaskType,
-          3,
-        );
-      historicalContext =
-        this.checklistService.enrichHistoryContext(similarTasks);
+      const similarTasks = await this.checklistService.findSimilarTasksInProject(
+        projectId,
+        microTaskType,
+        3,
+      );
+      historicalContext = this.checklistService.enrichHistoryContext(similarTasks);
     } else if (projectId && typeof projectId === 'object' && projectId._id) {
-      const similarTasks =
-        await this.checklistService.findSimilarTasksInProject(
-          projectId._id.toString(),
-          microTaskType,
-          3,
-        );
-      historicalContext =
-        this.checklistService.enrichHistoryContext(similarTasks);
+      const similarTasks = await this.checklistService.findSimilarTasksInProject(
+        projectId._id.toString(),
+        microTaskType,
+        3,
+      );
+      historicalContext = this.checklistService.enrichHistoryContext(similarTasks);
     }
 
     if (historicalContext) {
@@ -230,10 +184,6 @@ export class TasksChecklistService {
       );
     }
 
-    return this.geminiService.generateChecklistForTask(
-      taskName,
-      description,
-      microTaskType,
-    );
+    return this.geminiService.generateChecklistForTask(taskName, description, microTaskType);
   }
 }

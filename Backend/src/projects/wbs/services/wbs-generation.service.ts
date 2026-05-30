@@ -27,8 +27,7 @@ export class WbsGenerationService {
     summary?: string;
   }): Promise<WBSNodeDto[]> {
     const hasBudgetContext =
-      Number.isFinite(Number(smartObjective.budgetHours)) &&
-      Number(smartObjective.budgetHours) > 0;
+      Number.isFinite(Number(smartObjective.budgetHours)) && Number(smartObjective.budgetHours) > 0;
     const weeklyHours = Number(smartObjective.weeklyHours);
     const weeksAvailable = Number(smartObjective.weeksAvailable);
 

@@ -158,9 +158,9 @@ describe('TasksService - Sprint 4: Kanban + Rastreabilidade', () => {
         exec: jest.fn().mockResolvedValue(concludedTask),
       });
 
-      await expect(
-        service.moveTaskStatus(taskId, { status: 'todo' }),
-      ).rejects.toThrow(BadRequestException);
+      await expect(service.moveTaskStatus(taskId, { status: 'todo' })).rejects.toThrow(
+        BadRequestException,
+      );
     });
 
     it('should throw error if task does not exist', async () => {
@@ -172,9 +172,7 @@ describe('TasksService - Sprint 4: Kanban + Rastreabilidade', () => {
       taskModel.findById.mockReturnValue({
         exec: jest.fn().mockResolvedValue(null),
       });
-      await expect(
-        service.moveTaskStatus(invalidId, { status: 'doing' }),
-      ).rejects.toThrow();
+      await expect(service.moveTaskStatus(invalidId, { status: 'doing' })).rejects.toThrow();
     });
 
     it('should set kanbanOrder to append position in destination column', async () => {
@@ -217,9 +215,7 @@ describe('TasksService - Sprint 4: Kanban + Rastreabilidade', () => {
       ];
 
       taskModel.findById.mockImplementation((id: string) => ({
-        exec: jest
-          .fn()
-          .mockResolvedValue(id === taskId ? taskWithParent : parentTask),
+        exec: jest.fn().mockResolvedValue(id === taskId ? taskWithParent : parentTask),
       }));
       taskModel.find = jest.fn().mockReturnValue({
         select: jest.fn().mockReturnValue({
@@ -239,9 +235,7 @@ describe('TasksService - Sprint 4: Kanban + Rastreabilidade', () => {
       const parentId = new Types.ObjectId().toString();
       const taskWithParent = { ...mockTaskDocument, parentTaskId: parentId };
       taskModel.findById.mockImplementation((id: string) => ({
-        exec: jest
-          .fn()
-          .mockResolvedValue(id === taskId ? taskWithParent : null),
+        exec: jest.fn().mockResolvedValue(id === taskId ? taskWithParent : null),
       }));
       taskModel.find = jest.fn().mockReturnValue({
         select: jest.fn().mockReturnValue({
@@ -295,9 +289,7 @@ describe('TasksService - Sprint 4: Kanban + Rastreabilidade', () => {
         exec: jest.fn().mockResolvedValue(null),
       });
 
-      await expect(
-        service.generateCompletionFeedback(missingId),
-      ).rejects.toThrow();
+      await expect(service.generateCompletionFeedback(missingId)).rejects.toThrow();
     });
 
     it('should persist feedback snapshot with task data when payload is provided', async () => {
@@ -393,9 +385,7 @@ describe('TasksService - Sprint 4: Kanban + Rastreabilidade', () => {
       });
 
       // This should throw when attempting to move to 'done'
-      await expect(
-        service.moveTaskStatus(taskId, { status: 'done' }),
-      ).rejects.toThrow();
+      await expect(service.moveTaskStatus(taskId, { status: 'done' })).rejects.toThrow();
     });
 
     it('should allow moving to done if checklist complete', async () => {
@@ -464,12 +454,8 @@ describe('TasksService - Sprint 4: Kanban + Rastreabilidade', () => {
       });
 
       // Simulate rapid moves
-      await expect(
-        service.moveTaskStatus(taskId, { status: 'doing' }),
-      ).resolves.toBeDefined();
-      await expect(
-        service.moveTaskStatus(taskId, { status: 'review' }),
-      ).resolves.toBeDefined();
+      await expect(service.moveTaskStatus(taskId, { status: 'doing' })).resolves.toBeDefined();
+      await expect(service.moveTaskStatus(taskId, { status: 'review' })).resolves.toBeDefined();
 
       expect(taskModel.findById).toHaveBeenCalledTimes(2);
     });

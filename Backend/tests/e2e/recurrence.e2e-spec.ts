@@ -130,10 +130,7 @@ describe('Sprint 5: Recurrence E2E', () => {
 
     it('should skip to Wednesday after Monday', async () => {
       // Mark Monday as done
-      await request(app.getHttpServer())
-        .patch(`/tasks/${monday}`)
-        .send({ status: 'done' })
-        .expect(200);
+      await request(app.getHttpServer()).patch(`/tasks/${monday}`).send({ status: 'done' }).expect(200);
 
       // Generate next
       const res = await request(app.getHttpServer())
@@ -196,13 +193,9 @@ describe('Sprint 5: Recurrence E2E', () => {
       }
 
       // Verify streak is 3
-      const dashRes = await request(app.getHttpServer())
-        .get(`/tasks/habits-dashboard`)
-        .expect(200);
+      const dashRes = await request(app.getHttpServer()).get(`/tasks/habits-dashboard`).expect(200);
 
-      const habit = dashRes.body.habits.find(
-        (h: any) => h.parentRecurringId === streamTaskId,
-      );
+      const habit = dashRes.body.habits.find((h: any) => h.parentRecurringId === streamTaskId);
       expect(habit).toBeDefined();
       expect(habit.currentStreak).toBe(3);
     });
@@ -216,9 +209,7 @@ describe('Sprint 5: Recurrence E2E', () => {
       const occId = genRes.body._id;
 
       // Skip it
-      const skipRes = await request(app.getHttpServer())
-        .post(`/tasks/${occId}/skip`)
-        .expect(200);
+      const skipRes = await request(app.getHttpServer()).post(`/tasks/${occId}/skip`).expect(200);
 
       expect(skipRes.body.status).toBe('skipped');
     });
@@ -232,19 +223,12 @@ describe('Sprint 5: Recurrence E2E', () => {
       const occId = genRes.body._id;
 
       // Complete it
-      await request(app.getHttpServer())
-        .patch(`/tasks/${occId}`)
-        .send({ status: 'done' })
-        .expect(200);
+      await request(app.getHttpServer()).patch(`/tasks/${occId}`).send({ status: 'done' }).expect(200);
 
       // Check streak is maintained
-      const dashRes = await request(app.getHttpServer())
-        .get(`/tasks/habits-dashboard`)
-        .expect(200);
+      const dashRes = await request(app.getHttpServer()).get(`/tasks/habits-dashboard`).expect(200);
 
-      const habit = dashRes.body.habits.find(
-        (h: any) => h.parentRecurringId === streamTaskId,
-      );
+      const habit = dashRes.body.habits.find((h: any) => h.parentRecurringId === streamTaskId);
       expect(habit).toBeDefined();
       // Should still have streak since skip doesn't break it
       expect(habit.currentStreak).toBeGreaterThan(0);

@@ -16,10 +16,7 @@ export class PromptBuilderService {
     avoidTaskTitles?: string[];
   }): string {
     const today = new Date().toISOString().split('T')[0];
-    const projectSummary =
-      params.project?.smartObjective?.summary ||
-      params.project?.description ||
-      '';
+    const projectSummary = params.project?.smartObjective?.summary || params.project?.description || '';
 
     // Short payload, preserves order.
     const minutesList = JSON.stringify(params.chunkMinutes);
@@ -88,23 +85,15 @@ Use hoje como ${today}.`;
     };
   }): string {
     const today = new Date().toISOString().split('T')[0];
-    const projectSummary =
-      params.project?.smartObjective?.summary ||
-      params.project?.description ||
-      '';
+    const projectSummary = params.project?.smartObjective?.summary || params.project?.description || '';
 
-    const workflow = normalizeWorkflowTypes(
-      params.plan.workflow || [],
-      params.chunkMinutes.length,
-    );
+    const workflow = normalizeWorkflowTypes(params.plan.workflow || [], params.chunkMinutes.length);
     const minutesList = params.chunkMinutes
       .map((m, i) => `${i + 1}: ${m}min (tipo: ${workflow[i] || 'practice'})`)
       .join(', ');
 
     const themes = (params.plan.themes || [])
-      .map(
-        (t, i) => `${i + 1}. ${t.name}${t.criteria ? ` — ${t.criteria}` : ''}`,
-      )
+      .map((t, i) => `${i + 1}. ${t.name}${t.criteria ? ` — ${t.criteria}` : ''}`)
       .join('\n');
 
     const avoidTitles = (params.avoidTaskTitles || [])
@@ -183,14 +172,9 @@ Use hoje como ${today}.`;
     };
   }): string {
     const today = new Date().toISOString().split('T')[0];
-    const projectSummary =
-      params.project?.smartObjective?.summary ||
-      params.project?.description ||
-      '';
+    const projectSummary = params.project?.smartObjective?.summary || params.project?.description || '';
     const themes = (params.plan?.themes || [])
-      .map(
-        (t, i) => `${i + 1}. ${t.name}${t.criteria ? ` — ${t.criteria}` : ''}`,
-      )
+      .map((t, i) => `${i + 1}. ${t.name}${t.criteria ? ` — ${t.criteria}` : ''}`)
       .join('\n');
 
     return `Você é um especialista em micro-tarefas de execução. Você já recebeu o TÍTULO e metadados; agora gere apenas os detalhes.
@@ -249,14 +233,9 @@ Use hoje como ${today}.`;
     };
   }): string {
     const today = new Date().toISOString().split('T')[0];
-    const projectSummary =
-      params.project?.smartObjective?.summary ||
-      params.project?.description ||
-      '';
+    const projectSummary = params.project?.smartObjective?.summary || params.project?.description || '';
     const themes = (params.plan?.themes || [])
-      .map(
-        (t, i) => `${i + 1}. ${t.name}${t.criteria ? ` — ${t.criteria}` : ''}`,
-      )
+      .map((t, i) => `${i + 1}. ${t.name}${t.criteria ? ` — ${t.criteria}` : ''}`)
       .join('\n');
 
     const tasksBlock = params.items
@@ -314,10 +293,7 @@ Use hoje como ${today}.`;
     avoidTaskTitles?: string[];
   }): string {
     const today = new Date().toISOString().split('T')[0];
-    const projectSummary =
-      params.project?.smartObjective?.summary ||
-      params.project?.description ||
-      '';
+    const projectSummary = params.project?.smartObjective?.summary || params.project?.description || '';
 
     const compact = ['1', 'true', 'yes', 'on'].includes(
       String(process.env.WBS_COMPACT_OUTPUT || '')
@@ -407,16 +383,9 @@ Use hoje como ${today}.`;
     themeHints?: string[];
     workflowMix?: Record<string, number>;
   }): string {
-    const projectSummary =
-      params.project?.smartObjective?.summary ||
-      params.project?.description ||
-      '';
-    const minutesList = params.chunkMinutes
-      .map((m, i) => `${i + 1}: ${m}min`)
-      .join(', ');
-    const themeHintsText = params.themeHints?.length
-      ? params.themeHints.join(', ')
-      : 'Sem sugestões';
+    const projectSummary = params.project?.smartObjective?.summary || params.project?.description || '';
+    const minutesList = params.chunkMinutes.map((m, i) => `${i + 1}: ${m}min`).join(', ');
+    const themeHintsText = params.themeHints?.length ? params.themeHints.join(', ') : 'Sem sugestões';
 
     const mixHint = params.workflowMix
       ? `
@@ -475,10 +444,7 @@ FORMATO DE RESPOSTA OBRIGATÓRIO (JSON válido, sem markdown):
     };
   }): string {
     const today = new Date().toISOString().split('T')[0];
-    const projectSummary =
-      params.project?.smartObjective?.summary ||
-      params.project?.description ||
-      '';
+    const projectSummary = params.project?.smartObjective?.summary || params.project?.description || '';
 
     const compact = ['1', 'true', 'yes', 'on'].includes(
       String(process.env.WBS_COMPACT_OUTPUT || '')
@@ -486,25 +452,17 @@ FORMATO DE RESPOSTA OBRIGATÓRIO (JSON válido, sem markdown):
         .toLowerCase(),
     );
 
-    const workflow = normalizeWorkflowTypes(
-      params.plan.workflow || [],
-      params.chunkMinutes.length,
-    );
+    const workflow = normalizeWorkflowTypes(params.plan.workflow || [], params.chunkMinutes.length);
     const minutesList = params.chunkMinutes
       .map((m, i) => `${i + 1}: ${m}min (tipo: ${workflow[i] || 'practice'})`)
       .join(', ');
 
     const themes = (params.plan.themes || [])
-      .map(
-        (t, i) => `${i + 1}. ${t.name}${t.criteria ? ` — ${t.criteria}` : ''}`,
-      )
+      .map((t, i) => `${i + 1}. ${t.name}${t.criteria ? ` — ${t.criteria}` : ''}`)
       .join('\n');
 
     const milestones = (params.plan.milestones || [])
-      .map(
-        (m, i) =>
-          `${i + 1}. ${m?.name || 'Milestone'} (${m?.atMinutes || '?'}min): ${m?.goal || ''}`,
-      )
+      .map((m, i) => `${i + 1}. ${m?.name || 'Milestone'} (${m?.atMinutes || '?'}min): ${m?.goal || ''}`)
       .join('\n');
 
     const verbLibrary = `
