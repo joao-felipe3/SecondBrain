@@ -3,18 +3,31 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { TaskDocument } from '../../schemas/task.schema';
 
+export interface TaskLineageNode {
+  _id: string | Types.ObjectId;
+  name: string;
+  status: string;
+}
+
+export interface TaskLineageResult {
+  ancestors: TaskLineageNode[];
+  children: TaskLineageNode[];
+  warnings: string[];
+}
+
+export interface TaskDescendantNode {
+  _id: string | Types.ObjectId;
+  name: string;
+  status: string;
+  experience: number;
+  isConcluded: boolean;
+}
+
 @Injectable()
 export class TasksHierarchyService {
   constructor(@InjectModel('Task') private readonly taskModel: Model<TaskDocument>) {}
 
-  async getTaskLineage(
-    id: string,
-    maxDepth: number = 50,
-  ): Promise<{
-    ancestors: any[];
-    children: any[];
-    warnings: string[];
-  }> {
+  async getTaskLineage(id: string, maxDepth: number = 50): Promise<TaskLineageResult> {
     if (!id || !Types.ObjectId.isValid(id)) {
       throw new BadRequestException(`ID inválido: ${id}`);
     }
@@ -25,7 +38,7 @@ export class TasksHierarchyService {
     }
 
     const warnings: string[] = [];
-    const ancestors: any[] = [];
+    const ancestors: TaskLineageNode[] = [];
     let current = task;
     let depth = 0;
 
@@ -62,7 +75,7 @@ export class TasksHierarchyService {
     };
   }
 
-  async getDescendants(id: string, maxDepth: number = 1000): Promise<any[]> {
+  async getDescendants(id: string, maxDepth: number = 1000): Promise<TaskDescendantNode[]> {
     if (!id || !Types.ObjectId.isValid(id)) {
       throw new BadRequestException(`ID inválido: ${id}`);
     }
@@ -72,7 +85,7 @@ export class TasksHierarchyService {
       throw new NotFoundException(`Task with id ${id} not found`);
     }
 
-    const descendants: any[] = [];
+    const descendants: TaskDescendantNode[] = [];
     const stack: Array<{ id: string; depth: number }> = [{ id, depth: 0 }];
 
     while (stack.length > 0) {

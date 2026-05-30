@@ -4,6 +4,8 @@ import { TasksService } from '../../../src/tasks/tasks.service';
 import { GeminiService } from '../../../src/ai/gemini.service';
 import { ChecklistService } from '../../../src/tasks/services/checklist.service';
 import { PertService } from '../../../src/tasks/services/pert.service';
+import { TasksMetricsService } from '../../../src/tasks/services/tasks/metrics.service';
+import { TasksPertService } from '../../../src/tasks/services/tasks/tasks-pert.service';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { Types } from 'mongoose';
 
@@ -11,6 +13,7 @@ describe('TasksService - PERT Methods (Unit Tests)', () => {
   let service: TasksService;
   let geminiService: GeminiService;
   let mockTaskModel: any;
+  let tasksMetricsService: TasksMetricsService;
 
   const validTaskId = new Types.ObjectId().toString();
 
@@ -38,6 +41,8 @@ describe('TasksService - PERT Methods (Unit Tests)', () => {
         }),
       }),
     };
+
+    tasksMetricsService = new TasksMetricsService();
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -74,6 +79,20 @@ describe('TasksService - PERT Methods (Unit Tests)', () => {
         {
           provide: PertService,
           useValue: {},
+        },
+        {
+          provide: TasksMetricsService,
+          useValue: tasksMetricsService,
+        },
+        {
+          provide: TasksPertService,
+          useValue: new TasksPertService(
+            mockTaskModel,
+            {
+              calculatePertMetrics: jest.fn().mockReturnValue({ expectedTime: 62.5, variance: 225 }),
+            } as any,
+            tasksMetricsService,
+          ),
         },
       ],
     })

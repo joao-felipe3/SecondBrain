@@ -105,7 +105,7 @@ import { AlertsController } from './controllers/alerts.controller';
     AlertsService,
     DeviationDetectionService,
     TasksRecurringService,
-  ], // Sprint 2: Adiciona ChecklistService
+  ],
   exports: [
     TasksService,
     GeminiService,
@@ -128,6 +128,6 @@ import { AlertsController } from './controllers/alerts.controller';
     AlertsService,
     DeviationDetectionService,
     TasksRecurringService,
-  ], // Sprint 2: Adiciona ChecklistService aos exports
+  ],
 })
 export class TasksModule {}

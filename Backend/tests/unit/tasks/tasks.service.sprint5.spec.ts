@@ -11,6 +11,7 @@ import { FeedbackService } from '../../../src/tasks/services/feedback.service';
 import { AlertsService } from '../../../src/tasks/services/alerts.service';
 import { DeviationDetectionService } from '../../../src/tasks/services/deviation-detection.service';
 import { TasksRecurringService } from '../../../src/tasks/services/tasks/recurring.service';
+import { TasksCompletionService } from '../../../src/tasks/services/tasks/completion.service';
 import { TasksWriteService } from '../../../src/tasks/services/tasks/write.service';
 import { TasksHabitsService } from '../../../src/tasks/services/tasks/habits.service';
 import { createTasksServiceTestProviders } from './tasks-service-test-providers';
@@ -18,6 +19,7 @@ import { createTasksServiceTestProviders } from './tasks-service-test-providers'
 describe('TasksService - Sprint 5: Recorrência', () => {
   let service: TasksService;
   let recurringService: TasksRecurringService;
+  let completionService: TasksCompletionService;
   let taskModel: any;
   let tasksWriteServiceMock: any;
   let tasksHabitsServiceMock: any;
@@ -34,6 +36,11 @@ describe('TasksService - Sprint 5: Recorrência', () => {
 
     tasksWriteServiceMock = {
       createMany: jest.fn(),
+      createMicroTask: jest.fn().mockImplementation(async (dto: any) => ({
+        ...dto,
+        _id: new Types.ObjectId(),
+        save: jest.fn(),
+      })),
       createTaskCore: jest.fn().mockImplementation(async (dto: any) => ({
         ...dto,
         _id: new Types.ObjectId(),
@@ -45,8 +52,8 @@ describe('TasksService - Sprint 5: Recorrência', () => {
 
     tasksHabitsServiceMock = {
       getStreakData: jest.fn().mockResolvedValue({
-        currentStreak: 1,
-        longestStreak: 1,
+        currentStreak: 3,
+        longestStreak: 3,
         aderencePercent: 100,
         lastCompletedDate: new Date('2026-04-20T10:00:00.000Z'),
       }),
@@ -148,7 +155,16 @@ describe('TasksService - Sprint 5: Recorrência', () => {
 
     service = module.get<TasksService>(TasksService);
     recurringService = module.get<TasksRecurringService>(TasksRecurringService);
+    completionService = module.get<TasksCompletionService>(TasksCompletionService);
     Object.defineProperty(service, 'tasksWriteService', {
+      value: tasksWriteServiceMock,
+      configurable: true,
+    });
+    Object.defineProperty(recurringService, 'tasksWriteService', {
+      value: tasksWriteServiceMock,
+      configurable: true,
+    });
+    Object.defineProperty(completionService, 'tasksWriteService', {
       value: tasksWriteServiceMock,
       configurable: true,
     });
@@ -168,8 +184,9 @@ describe('TasksService - Sprint 5: Recorrência', () => {
       parentRecurringId: template._id,
     };
 
-    jest.spyOn(service, 'createRecurringTemplate').mockResolvedValue(template as any);
+    jest.spyOn(recurringService, 'createRecurringTemplate').mockResolvedValue(template as any);
     jest.spyOn(recurringService, 'buildOccurrencePayload').mockReturnValue(occurrence as any);
+    tasksWriteServiceMock.createTaskCore.mockResolvedValue(occurrence as any);
 
     const result = await service.createRecurringMicroTask({
       name: 'Daily habit',
@@ -186,7 +203,7 @@ describe('TasksService - Sprint 5: Recorrência', () => {
     } as any);
 
     expect(result).toBe(occurrence);
-    expect(service.createRecurringTemplate).toHaveBeenCalledTimes(1);
+    expect(recurringService.createRecurringTemplate).toHaveBeenCalledTimes(1);
     expect(recurringService.buildOccurrencePayload).toHaveBeenCalledTimes(1);
   });
 
@@ -205,18 +222,18 @@ describe('TasksService - Sprint 5: Recorrência', () => {
       status: 'done',
     };
 
-    (service.findOne as any) = jest.fn().mockResolvedValue(currentTask);
+    taskModel.findById.mockReturnValue({
+      exec: jest.fn().mockResolvedValue(currentTask),
+    });
     taskModel.findByIdAndUpdate.mockReturnValue({
       exec: jest.fn().mockResolvedValue(updatedTask),
     });
-    jest
-      .spyOn(service, 'generateNextOccurrence')
-      .mockResolvedValue({ _id: new Types.ObjectId() } as any);
+    tasksWriteServiceMock.createTaskCore.mockResolvedValue({ _id: new Types.ObjectId() } as any);
 
     const result = await service.handleTaskSkipped(taskId);
 
     expect(result.recurringState).toBe('skipped');
-    expect(service.generateNextOccurrence).toHaveBeenCalled();
+    expect(tasksWriteServiceMock.createTaskCore).toHaveBeenCalled();
   });
 
   it('getStreakData should aggregate completed/skipped occurrences', async () => {

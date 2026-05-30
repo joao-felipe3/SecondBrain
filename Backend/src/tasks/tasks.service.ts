@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException, Inject, forwardRef, BadRequestException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model, Types } from 'mongoose';
+import { FilterQuery, Model, Types } from 'mongoose';
 
 // DTOs
 import { CreateTaskDto, ChecklistItemDto, RecurringRuleDto } from './dto/create-task.dto';
@@ -20,18 +20,20 @@ import { UpdatePertDto } from './dto/suggest-pert.dto';
 
 // Schema
 import { TaskDocument } from './schemas/task.schema';
+import { TaskAlertDocument } from './schemas/task-alert.schema';
 
 // Services
 import { ProjectsService } from '../projects/projects.service';
 import { GeminiService } from '../ai/gemini.service';
-import { FeedbackService } from './services/feedback.service';
-import { EVMService } from '../projects/services/evm.service';
+import { CompletionFeedbackPayload, FeedbackService } from './services/feedback.service';
 import { TasksRecurringService } from './services/tasks/recurring.service';
 import { TasksAiSuggestionsService } from './services/tasks/ai-suggestions.service';
 import { TasksHabitsService } from './services/tasks/habits.service';
 import { TasksHierarchyService } from './services/tasks/hierarchy.service';
 import { TasksChecklistService } from './services/tasks/checklist.service';
+import { ChecklistHistoryProjectRef } from './services/tasks/checklist.service';
 import { TasksCompletionService } from './services/tasks/completion.service';
+import { TaskDescendantNode, TaskLineageResult } from './services/tasks/hierarchy.service';
 import { TasksPertService } from './services/tasks/tasks-pert.service';
 import { TasksWriteService } from './services/tasks/write.service';
 
@@ -41,7 +43,7 @@ export class TasksService {
     @InjectModel('Task') private readonly taskModel: Model<TaskDocument>,
     @Inject(forwardRef(() => ProjectsService))
     private readonly projectsService: ProjectsService,
-    @Inject(forwardRef(() => EVMService))
+    @Inject(forwardRef(() => GeminiService))
     private readonly geminiService: GeminiService,
     private readonly feedbackService: FeedbackService,
     private readonly tasksPertService: TasksPertService,
@@ -82,50 +84,11 @@ export class TasksService {
   }
 
   async createRecurringTemplate(createMicroTaskDto: CreateMicroTaskDto): Promise<TaskDocument> {
-    const recurringRule = this.tasksRecurringService.normalizeRecurringRule(
-      createMicroTaskDto.recurringRule,
-    );
-    const template = await this.createMicroTask({
-      ...createMicroTaskDto,
-      recurringRule,
-      isRecurringInstance: false,
-      recurringState: 'pending',
-    } as any);
-
-    return template;
+    return this.tasksRecurringService.createRecurringTemplate(createMicroTaskDto);
   }
 
   async createRecurringMicroTask(createMicroTaskDto: CreateMicroTaskDto): Promise<TaskDocument> {
-    const template = await this.createRecurringTemplate({
-      ...createMicroTaskDto,
-      isRecurringInstance: false,
-      recurringState: 'pending',
-    } as any);
-
-    // IMPORTANT: First occurrence should be on the start date (deadline provided / today),
-    // not on the *next* interval date. Otherwise the UI shows two papers (template=day0 + occurrence=day1).
-    const recurringRule = template.recurringRule
-      ? this.tasksRecurringService.normalizeRecurringRule(template.recurringRule as any)
-      : undefined;
-    if (!recurringRule) {
-      return template;
-    }
-
-    const referenceStart = new Date(
-      (createMicroTaskDto as any)?.deadline || template.deadline || template.createdAt || new Date(),
-    );
-    const firstDeadline = this.tasksRecurringService.calculateFirstRecurringDate(
-      referenceStart,
-      recurringRule,
-    );
-    if (!firstDeadline) {
-      return template;
-    }
-
-    const firstOccurrence = await this.createTaskCore(
-      this.tasksRecurringService.buildOccurrencePayload(template, firstDeadline) as any,
-    );
-    return firstOccurrence || template;
+    return this.tasksRecurringService.createRecurringMicroTask(createMicroTaskDto);
   }
 
   private async createTaskCore(createTaskDto: CreateTaskDto): Promise<TaskDocument> {
@@ -142,86 +105,7 @@ export class TasksService {
   }
 
   async moveTaskStatus(id: string, move: MoveTaskStatusDto): Promise<TaskDocument> {
-    if (!id || !Types.ObjectId.isValid(id)) {
-      throw new BadRequestException(`ID inválido: ${id}`);
-    }
-
-    const task = await this.taskModel.findById(id).exec();
-    if (!task) {
-      throw new NotFoundException(`Task with id ${id} not found`);
-    }
-
-    const toStatus = move.status;
-
-    // Rule: if task is concluded, it must stay in 'done' status
-    if (task.isConcluded && toStatus !== 'done') {
-      throw new BadRequestException('Tarefa concluída não pode ser movida para fora de "done"');
-    }
-
-    // If moving to 'done', use the conclude endpoint (with checklist validation)
-    if (toStatus === 'done') {
-      return this.markAsConcluded(id);
-    }
-
-    // Compute target kanbanOrder
-    const projectId = task.project?.toString();
-
-    let targetOrder: number | undefined = undefined;
-    if (typeof move.toOrder === 'number' && Number.isFinite(move.toOrder)) {
-      targetOrder = move.toOrder;
-    }
-
-    // If toIndex provided, compute order between neighbors
-    if (targetOrder === undefined && typeof move.toIndex === 'number' && projectId) {
-      const destinationTasks = await this.taskModel
-        .find({ project: projectId, status: toStatus })
-        .sort({ kanbanOrder: 1 })
-        .select('kanbanOrder')
-        .exec();
-
-      const idx = Math.max(0, Math.floor(move.toIndex));
-      const len = destinationTasks.length;
-
-      if (len === 0) {
-        targetOrder = 1;
-      } else if (idx <= 0) {
-        targetOrder = (destinationTasks[0].kanbanOrder || 0) - 1;
-      } else if (idx >= len) {
-        targetOrder = (destinationTasks[len - 1].kanbanOrder || 0) + 1;
-      } else {
-        const prev = destinationTasks[idx - 1].kanbanOrder || 0;
-        const next = destinationTasks[idx].kanbanOrder || prev + 2;
-        targetOrder = (prev + next) / 2;
-      }
-    }
-
-    // Fallback: append to end of column
-    if (targetOrder === undefined) {
-      const maxOrder = await this.taskModel
-        .findOne({ project: projectId, status: toStatus })
-        .sort({ kanbanOrder: -1 })
-        .select('kanbanOrder')
-        .exec();
-      targetOrder = (maxOrder?.kanbanOrder || 0) + 1;
-    }
-
-    const updatedTask = await this.taskModel
-      .findByIdAndUpdate(
-        id,
-        {
-          status: toStatus,
-          statusUpdatedAt: new Date(),
-          kanbanOrder: targetOrder,
-        },
-        { new: true },
-      )
-      .exec();
-
-    if (!updatedTask) {
-      throw new NotFoundException(`Task with id ${id} not found`);
-    }
-
-    return updatedTask;
+    return this.tasksWriteService.moveTaskStatus(id, move);
   }
 
   // ------------------------------ Checklist / Validation ------------------------------
@@ -237,7 +121,7 @@ export class TasksService {
     taskName: string,
     description?: string,
     microTaskType?: string,
-    projectId?: any,
+    projectId?: ChecklistHistoryProjectRef,
   ): Promise<string[]> {
     return this.tasksChecklistService.generateChecklistWithHistory(
       taskName,
@@ -272,9 +156,9 @@ export class TasksService {
 
   // ------------------------------ Completion / Feedback ------------------------------
   async markAsConcluded(id: string): Promise<TaskDocument> {
-    const result = await this.tasksCompletionService.markAsConcluded(id);
+    const result: TaskDocument = await this.tasksCompletionService.markAsConcluded(id);
 
-    // keep backward-compatible behavior: if recurringRule exists, generate next occurrence
+    // if recurringRule exists, generate next occurrence
     if (result?.recurringRule) {
       await this.handleTaskCompletion(id);
     }
@@ -287,150 +171,42 @@ export class TasksService {
   }
 
   async handleTaskCompletion(taskId: string): Promise<TaskDocument | null> {
-    const task = await this.findOne(taskId);
-    if (!task) {
-      return null;
-    }
-
-    if (task.recurringRule) {
-      await this.taskModel
-        .findByIdAndUpdate(taskId, { recurringState: 'completed' }, { new: true })
-        .exec();
-      await this.generateNextOccurrence(task);
-    }
-
+    const task: TaskDocument | null = await this.tasksCompletionService.handleTaskCompletion(taskId);
     return task;
   }
 
   async handleTaskSkipped(taskId: string): Promise<TaskDocument> {
-    const task = await this.findOne(taskId);
-    if (!task) {
-      throw new NotFoundException(`Task with id ${taskId} not found`);
-    }
-
-    const updatedTask = await this.taskModel
-      .findByIdAndUpdate(
-        taskId,
-        {
-          recurringState: 'skipped',
-          isConcluded: true,
-          status: 'done',
-          statusUpdatedAt: new Date(),
-        },
-        { new: true },
-      )
-      .exec();
-
-    if (!updatedTask) {
-      throw new NotFoundException(`Task with id ${taskId} not found`);
-    }
-
-    if (updatedTask.recurringRule) {
-      await this.generateNextOccurrence(updatedTask);
-    }
-
-    return updatedTask;
+    const task: TaskDocument = await this.tasksCompletionService.handleTaskSkipped(taskId);
+    return task;
   }
 
   async handleTaskDeferred(taskId: string, newDeadline: Date): Promise<TaskDocument> {
-    if (!taskId || !Types.ObjectId.isValid(taskId)) {
-      throw new BadRequestException(`ID inválido: ${taskId}`);
-    }
-
-    const parsedDeadline = new Date(newDeadline);
-    if (Number.isNaN(parsedDeadline.getTime())) {
-      throw new BadRequestException('newDeadline inválido');
-    }
-
-    const task = await this.taskModel.findById(taskId).exec();
-    if (!task) {
-      throw new NotFoundException(`Task with id ${taskId} not found`);
-    }
-
-    const updatedTask = await this.taskModel
-      .findByIdAndUpdate(
-        taskId,
-        {
-          deadline: parsedDeadline,
-          statusUpdatedAt: new Date(),
-        },
-        { new: true },
-      )
-      .exec();
-
-    if (!updatedTask) {
-      throw new NotFoundException(`Task with id ${taskId} not found`);
-    }
-
-    return updatedTask;
+    const task: TaskDocument = await this.tasksCompletionService.handleTaskDeferred(taskId, newDeadline);
+    return task;
   }
 
-  async checkDeviationAndCreateAlert(taskId: string): Promise<{ alertCreated: boolean; alert?: any }> {
+  async checkDeviationAndCreateAlert(taskId: string): Promise<{
+    alertCreated: boolean;
+    alert?: TaskAlertDocument;
+  }> {
     return this.tasksCompletionService.createDeviationAlertForTask(taskId);
   }
 
-  /**
-   * Generate completion feedback via LLM and persist
-   */
-  async generateCompletionFeedback(id: string, payload?: any): Promise<string> {
+  async generateCompletionFeedback(id: string, payload?: CompletionFeedbackPayload): Promise<string> {
     return this.feedbackService.generateCompletionFeedback(id, payload);
   }
 
-  /**
-   * Retrieve latest completion feedback for task
-   */
   async getCompletionFeedback(id: string): Promise<{ feedback: string; createdAt: Date } | null> {
     return this.feedbackService.getCompletionFeedback(id);
   }
 
   // ------------------------------ Recurring / Habits ------------------------------
   async updateRecurringRule(id: string, recurringRule: RecurringRuleDto): Promise<TaskDocument> {
-    if (!id || !Types.ObjectId.isValid(id)) {
-      throw new BadRequestException(`ID inválido: ${id}`);
-    }
-    if (!recurringRule?.frequency || !recurringRule?.interval) {
-      throw new BadRequestException('recurringRule inválida: frequency e interval são obrigatórios.');
-    }
-
-    const updatedTask = await this.taskModel
-      .findByIdAndUpdate(
-        id,
-        {
-          recurringRule: this.tasksRecurringService.normalizeRecurringRule(recurringRule),
-        },
-        { new: true },
-      )
-      .exec();
-    if (!updatedTask) {
-      throw new NotFoundException(`Task with id ${id} not found`);
-    }
-    return updatedTask;
+    return this.tasksRecurringService.updateRecurringRule(id, recurringRule);
   }
 
   async generateNextOccurrence(taskOrId: string | TaskDocument): Promise<TaskDocument | null> {
-    const task = typeof taskOrId === 'string' ? await this.findOne(taskOrId) : taskOrId;
-    if (!task) {
-      throw new NotFoundException('Task not found');
-    }
-
-    const recurringRule = task.recurringRule
-      ? this.tasksRecurringService.normalizeRecurringRule(task.recurringRule)
-      : undefined;
-    if (!recurringRule) {
-      return null;
-    }
-
-    const nextDeadline = this.tasksRecurringService.calculateNextRecurringDate(
-      task.deadline || task.createdAt || new Date(),
-      recurringRule,
-    );
-    if (!nextDeadline) {
-      return null;
-    }
-
-    return this.createTaskCore(
-      this.tasksRecurringService.buildOccurrencePayload(task, nextDeadline) as any,
-    );
+    return this.tasksRecurringService.generateNextOccurrence(taskOrId);
   }
 
   async findRecurringSeries(parentRecurringId: string): Promise<TaskDocument[]> {
@@ -454,14 +230,14 @@ export class TasksService {
     return this.tasksHabitsService.getHabitsDashboard(query);
   }
 
-  // ---------- AI / PERT ----------
+  // ------------------------------ AI / PERT ------------------------------
   async generateAiSuggestionsWithProgress(
     dto: GenerateAiSuggestionsDto,
     onProgress: (progress: AiSuggestionsProgressDto) => void,
     onComplete: (result: AiSuggestionsResponseDto) => void,
     onError: (error: Error) => void,
   ): Promise<void> {
-    return this.tasksAiSuggestionsService.generateAiSuggestionsWithProgress(
+    await this.tasksAiSuggestionsService.generateAiSuggestionsWithProgress(
       dto,
       onProgress,
       onComplete,
@@ -470,15 +246,22 @@ export class TasksService {
   }
 
   async generateAiSuggestions(dto: GenerateAiSuggestionsDto): Promise<AiSuggestionsResponseDto> {
-    return this.tasksAiSuggestionsService.generateAiSuggestions(dto);
+    const suggestions: AiSuggestionsResponseDto =
+      await this.tasksAiSuggestionsService.generateAiSuggestions(dto);
+    return suggestions;
   }
 
   async suggestPertEstimates(
     taskType: string,
     description: string,
     projectContext?: string,
-  ): Promise<any> {
-    return this.geminiService.suggestPertEstimates(taskType, description, projectContext);
+  ): Promise<Awaited<ReturnType<GeminiService['suggestPertEstimates']>>> {
+    const estimates = await this.geminiService.suggestPertEstimates(
+      taskType,
+      description,
+      projectContext,
+    );
+    return estimates;
   }
 
   async updatePert(taskId: string, updatePertDto: UpdatePertDto): Promise<TaskDocument> {
@@ -502,19 +285,17 @@ export class TasksService {
       throw new BadRequestException(`Project ID inválido: ${projectId}`);
     }
 
-    const query: any = {};
+    const query: FilterQuery<TaskDocument> & { parentWbsNodeId?: string } = {};
     if (Types.ObjectId.isValid(projectId)) {
       query.project = new Types.ObjectId(projectId);
-    } else {
-      // Fallback (should be rare): allow querying by raw value
-      query.project = projectId;
     }
 
     const taskIds = Array.isArray(opts?.taskIds) ? opts.taskIds : [];
     if (taskIds.length > 0) {
       const validIds = taskIds.filter((id) => Types.ObjectId.isValid(id));
       if (validIds.length > 0) {
-        query._id = { $in: validIds.map((id) => new Types.ObjectId(id)) };
+        const validObjectIds = validIds.map((id) => new Types.ObjectId(id));
+        query._id = { $in: validObjectIds } as FilterQuery<TaskDocument>['_id'];
       }
     }
 
@@ -541,18 +322,11 @@ export class TasksService {
   }
 
   // ------------------------------ Hierarchy / Value ------------------------------
-  async getTaskLineage(
-    id: string,
-    maxDepth: number = 50,
-  ): Promise<{
-    ancestors: any[];
-    children: any[];
-    warnings: string[];
-  }> {
+  async getTaskLineage(id: string, maxDepth: number = 50): Promise<TaskLineageResult> {
     return this.tasksHierarchyService.getTaskLineage(id, maxDepth);
   }
 
-  async getDescendants(id: string, maxDepth: number = 1000): Promise<any[]> {
+  async getDescendants(id: string, maxDepth: number = 1000): Promise<TaskDescendantNode[]> {
     return this.tasksHierarchyService.getDescendants(id, maxDepth);
   }
 
@@ -560,7 +334,7 @@ export class TasksService {
     contributionPercent: number;
     subtreeCompletedXP: number;
     totalCompletedXP: number;
-    breakdown: Array<{ _id: any; experience: number; isConcluded: boolean }>;
+    breakdown: Array<{ _id: Types.ObjectId | string; experience: number; isConcluded: boolean }>;
   }> {
     return this.tasksHierarchyService.calculateValueContribution(id);
   }

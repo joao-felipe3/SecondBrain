@@ -6,6 +6,13 @@ import { ChecklistService } from '../checklist.service';
 import { TasksInputService } from './input.service';
 import { GeminiService } from '../../../ai/gemini.service';
 
+export type ChecklistHistoryProjectRef =
+  | string
+  | Types.ObjectId
+  | {
+      _id: string | Types.ObjectId;
+    };
+
 @Injectable()
 export class TasksChecklistService {
   constructor(
@@ -156,7 +163,7 @@ export class TasksChecklistService {
     taskName: string,
     description?: string,
     microTaskType?: string,
-    projectId?: any,
+    projectId?: ChecklistHistoryProjectRef,
   ): Promise<string[]> {
     let historicalContext = '';
     if (projectId && typeof projectId === 'string') {
@@ -166,7 +173,7 @@ export class TasksChecklistService {
         3,
       );
       historicalContext = this.checklistService.enrichHistoryContext(similarTasks);
-    } else if (projectId && typeof projectId === 'object' && projectId._id) {
+    } else if (projectId && typeof projectId === 'object' && '_id' in projectId && projectId._id) {
       const similarTasks = await this.checklistService.findSimilarTasksInProject(
         projectId._id.toString(),
         microTaskType,

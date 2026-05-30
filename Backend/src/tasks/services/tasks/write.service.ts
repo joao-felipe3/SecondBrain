@@ -8,9 +8,11 @@ import { ProjectDocument } from '../../../projects/schemas/project.schema';
 import { ProjectsService } from '../../../projects/projects.service';
 import { TasksMetricsService } from './metrics.service';
 import { CreateManyTasksOptionsDto } from '../../dto/create-many-tasks-options.dto';
+import { MoveTaskStatusDto } from '../../dto/move-task-status.dto';
 import { TasksInputService } from './input.service';
 import { TasksChecklistService } from './checklist.service';
 import { ChecklistService } from '../checklist.service';
+import { TasksCompletionService } from './completion.service';
 
 @Injectable()
 export class TasksWriteService {
@@ -23,7 +25,57 @@ export class TasksWriteService {
     private readonly tasksInputService: TasksInputService,
     private readonly tasksChecklistService: TasksChecklistService,
     private readonly checklistService: ChecklistService,
+    private readonly tasksCompletionService: TasksCompletionService,
   ) {}
+
+  async createMany(
+    createTaskDtos: CreateTaskDto[],
+    options?: CreateManyTasksOptionsDto,
+  ): Promise<TaskDocument[]> {
+    const tasks = Array.isArray(createTaskDtos) ? createTaskDtos : [];
+    if (tasks.length === 0) return [];
+
+    const resolveProject = Boolean(options?.resolveProject);
+    const shouldRecalculateStats = Boolean(options?.recalculateProjectStats);
+    const ordered = Boolean(options?.ordered);
+
+    if (resolveProject) {
+      for (const task of tasks) {
+        await this.resolveProject(task);
+      }
+    }
+
+    for (const task of tasks) {
+      this.applyDerivedFields(task);
+    }
+
+    let inserted: TaskDocument[] = [];
+    try {
+      inserted = await this.taskModel.insertMany(tasks, { ordered });
+    } catch (err: any) {
+      inserted = (err?.insertedDocs as TaskDocument[]) || [];
+
+      const writeErrors = Array.isArray(err?.writeErrors) ? err.writeErrors.length : undefined;
+
+      console.warn('[TasksWriteService][createMany] insertMany error (partial inserts possible)', {
+        message: err?.message,
+        inserted: inserted.length,
+        writeErrors,
+      });
+    }
+
+    if (shouldRecalculateStats) {
+      const uniqueProjectIds = new Set(
+        inserted.map((t: any) => t?.project?.toString?.() ?? t?.project).filter(Boolean),
+      );
+
+      for (const pid of uniqueProjectIds) {
+        await this.projectsService.recalculateProjectStats(String(pid));
+      }
+    }
+
+    return inserted;
+  }
 
   async createMicroTask(createMicroTaskDto: CreateMicroTaskDto): Promise<TaskDocument> {
     this.tasksInputService.validatePertInput(createMicroTaskDto);
@@ -74,55 +126,6 @@ export class TasksWriteService {
     }
 
     return this.createTaskCore(payload);
-  }
-
-  async createMany(
-    createTaskDtos: CreateTaskDto[],
-    options?: CreateManyTasksOptionsDto,
-  ): Promise<TaskDocument[]> {
-    const dtos = Array.isArray(createTaskDtos) ? createTaskDtos : [];
-    if (dtos.length === 0) return [];
-
-    const resolveProject = Boolean(options?.resolveProject);
-    const shouldRecalculateStats = Boolean(options?.recalculateProjectStats);
-    const ordered = Boolean(options?.ordered);
-
-    if (resolveProject) {
-      for (const dto of dtos) {
-        await this.resolveProject(dto);
-      }
-    }
-
-    for (const dto of dtos) {
-      this.applyDerivedFields(dto);
-    }
-
-    let inserted: TaskDocument[] = [];
-    try {
-      inserted = await this.taskModel.insertMany(dtos, { ordered });
-    } catch (err: any) {
-      inserted = (err?.insertedDocs as TaskDocument[]) || [];
-
-      const writeErrors = Array.isArray(err?.writeErrors) ? err.writeErrors.length : undefined;
-
-      console.warn('[TasksWriteService][createMany] insertMany error (partial inserts possible)', {
-        message: err?.message,
-        inserted: inserted.length,
-        writeErrors,
-      });
-    }
-
-    if (shouldRecalculateStats) {
-      const uniqueProjectIds = new Set(
-        inserted.map((t: any) => t?.project?.toString?.() ?? t?.project).filter(Boolean),
-      );
-
-      for (const pid of uniqueProjectIds) {
-        await this.projectsService.recalculateProjectStats(String(pid));
-      }
-    }
-
-    return inserted;
   }
 
   async createTaskCore(createTaskDto: CreateTaskDto): Promise<TaskDocument> {
@@ -185,6 +188,89 @@ export class TasksWriteService {
     }
 
     return result !== null;
+  }
+
+  async moveTaskStatus(id: string, move: MoveTaskStatusDto): Promise<TaskDocument> {
+    if (!id || !/^[a-f\d]{24}$/i.test(id)) {
+      throw new BadRequestException(`ID inválido: ${id}`);
+    }
+
+    const task = await this.taskModel.findById(id).exec();
+    if (!task) {
+      throw new NotFoundException(`Task with id ${id} not found`);
+    }
+
+    const toStatus = move.status;
+
+    // Rule: if task is concluded, it must stay in 'done' status
+    if (task.isConcluded && toStatus !== 'done') {
+      throw new BadRequestException('Tarefa concluída não pode ser movida para fora de "done"');
+    }
+
+    // If moving to 'done', use the conclude endpoint (with checklist validation)
+    if (toStatus === 'done') {
+      return this.tasksCompletionService.markAsConcluded(id);
+    }
+
+    // Compute target kanbanOrder
+    const projectId = task.project?.toString();
+
+    let targetOrder: number | undefined = undefined;
+    if (typeof move.toOrder === 'number' && Number.isFinite(move.toOrder)) {
+      targetOrder = move.toOrder;
+    }
+
+    // If toIndex provided, compute order between neighbors
+    if (targetOrder === undefined && typeof move.toIndex === 'number' && projectId) {
+      const destinationTasks = await this.taskModel
+        .find({ project: projectId, status: toStatus })
+        .sort({ kanbanOrder: 1 })
+        .select('kanbanOrder')
+        .exec();
+
+      const idx = Math.max(0, Math.floor(move.toIndex));
+      const len = destinationTasks.length;
+
+      if (len === 0) {
+        targetOrder = 1;
+      } else if (idx <= 0) {
+        targetOrder = (destinationTasks[0].kanbanOrder || 0) - 1;
+      } else if (idx >= len) {
+        targetOrder = (destinationTasks[len - 1].kanbanOrder || 0) + 1;
+      } else {
+        const prev = destinationTasks[idx - 1].kanbanOrder || 0;
+        const next = destinationTasks[idx].kanbanOrder || prev + 2;
+        targetOrder = (prev + next) / 2;
+      }
+    }
+
+    // Fallback: append to end of column
+    if (targetOrder === undefined) {
+      const maxOrder = await this.taskModel
+        .findOne({ project: projectId, status: toStatus })
+        .sort({ kanbanOrder: -1 })
+        .select('kanbanOrder')
+        .exec();
+      targetOrder = (maxOrder?.kanbanOrder || 0) + 1;
+    }
+
+    const updatedTask = await this.taskModel
+      .findByIdAndUpdate(
+        id,
+        {
+          status: toStatus,
+          statusUpdatedAt: new Date(),
+          kanbanOrder: targetOrder,
+        },
+        { new: true },
+      )
+      .exec();
+
+    if (!updatedTask) {
+      throw new NotFoundException(`Task with id ${id} not found`);
+    }
+
+    return updatedTask;
   }
 
   private async resolveProject(createTaskDto: CreateTaskDto): Promise<void> {

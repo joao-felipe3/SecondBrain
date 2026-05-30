@@ -1,9 +1,18 @@
-import { BadRequestException, Injectable, Inject, Optional, forwardRef } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  Inject,
+  Optional,
+  forwardRef,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { RecurringExceptionDto, RecurringRuleDto, CreateTaskDto } from '../../dto/create-task.dto';
+import { CreateMicroTaskDto } from '../../dto/create-micro-task.dto';
 import { ProjectsService } from '../../../projects/projects.service';
 import { TaskDocument } from '../../schemas/task.schema';
+import { TasksWriteService } from './write.service';
 
 @Injectable()
 export class TasksRecurringService {
@@ -12,6 +21,7 @@ export class TasksRecurringService {
     @Inject(forwardRef(() => ProjectsService))
     @Optional()
     private readonly projectsService?: ProjectsService,
+    private readonly tasksWriteService?: TasksWriteService,
   ) {}
 
   normalizeRecurringRule(
@@ -283,6 +293,54 @@ export class TasksRecurringService {
     return { deletedCount };
   }
 
+  async createRecurringTemplate(createMicroTaskDto: CreateMicroTaskDto): Promise<TaskDocument> {
+    const recurringRule = this.normalizeRecurringRule(createMicroTaskDto.recurringRule);
+    if (!this.tasksWriteService) {
+      throw new BadRequestException('TasksRecurringService não está inicializado com tasksWriteService');
+    }
+
+    return this.tasksWriteService.createMicroTask({
+      ...createMicroTaskDto,
+      recurringRule,
+      isRecurringInstance: false,
+      recurringState: 'pending',
+    } as any);
+  }
+
+  async createRecurringMicroTask(createMicroTaskDto: CreateMicroTaskDto): Promise<TaskDocument> {
+    const template = await this.createRecurringTemplate({
+      ...createMicroTaskDto,
+      isRecurringInstance: false,
+      recurringState: 'pending',
+    } as any);
+
+    // IMPORTANT: First occurrence should be on the start date (deadline provided / today),
+    // not on the *next* interval date. Otherwise the UI shows two papers (template=day0 + occurrence=day1).
+    const recurringRule = template.recurringRule
+      ? this.normalizeRecurringRule(template.recurringRule as any)
+      : undefined;
+    if (!recurringRule) {
+      return template;
+    }
+
+    const referenceStart = new Date(
+      (createMicroTaskDto as any)?.deadline || template.deadline || template.createdAt || new Date(),
+    );
+    const firstDeadline = this.calculateFirstRecurringDate(referenceStart, recurringRule);
+    if (!firstDeadline) {
+      return template;
+    }
+
+    if (!this.tasksWriteService) {
+      throw new BadRequestException('TasksRecurringService não está inicializado com tasksWriteService');
+    }
+
+    const firstOccurrence = await this.tasksWriteService.createTaskCore(
+      this.buildOccurrencePayload(template, firstDeadline) as any,
+    );
+    return firstOccurrence || template;
+  }
+
   buildOccurrencePayload(task: TaskDocument, nextDeadline: Date): CreateTaskDto {
     const recurringRule = this.normalizeRecurringRule(task.recurringRule as any);
     const normalizedChecklist = Array.isArray(task.checklist)
@@ -352,5 +410,58 @@ export class TasksRecurringService {
     } as CreateTaskDto;
 
     return payload;
+  }
+
+  async updateRecurringRule(id: string, recurringRule: RecurringRuleDto): Promise<TaskDocument> {
+    if (!id || !Types.ObjectId.isValid(id)) {
+      throw new BadRequestException(`ID inválido: ${id}`);
+    }
+
+    const normalized = this.normalizeRecurringRule(recurringRule);
+
+    if (!this.taskModel) {
+      throw new BadRequestException('TasksRecurringService não está inicializado com taskModel');
+    }
+
+    const updatedTask = await this.taskModel
+      .findByIdAndUpdate(id, { recurringRule: normalized }, { new: true })
+      .exec();
+
+    if (!updatedTask) {
+      throw new NotFoundException(`Task with id ${id} not found`);
+    }
+
+    return updatedTask;
+  }
+
+  async generateNextOccurrence(taskOrId: string | TaskDocument): Promise<TaskDocument | null> {
+    const task: TaskDocument | null =
+      typeof taskOrId === 'string'
+        ? await (this.taskModel ? this.taskModel.findById(taskOrId).exec() : null)
+        : taskOrId;
+    if (!task) {
+      throw new NotFoundException('Task not found');
+    }
+
+    const recurringRule = task.recurringRule
+      ? this.normalizeRecurringRule(task.recurringRule as any)
+      : undefined;
+    if (!recurringRule) {
+      return null;
+    }
+
+    const nextDeadline = this.calculateNextRecurringDate(
+      task.deadline || task.createdAt || new Date(),
+      recurringRule,
+    );
+    if (!nextDeadline) {
+      return null;
+    }
+
+    if (!this.tasksWriteService) {
+      throw new BadRequestException('TasksRecurringService não está inicializado com tasksWriteService');
+    }
+
+    return this.tasksWriteService.createTaskCore(this.buildOccurrencePayload(task, nextDeadline) as any);
   }
 }

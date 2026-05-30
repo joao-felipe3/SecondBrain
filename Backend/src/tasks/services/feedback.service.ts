@@ -4,6 +4,15 @@ import { Model, Types } from 'mongoose';
 import { GeminiService } from '../../ai/gemini.service';
 import { TaskDocument } from '../schemas/task.schema';
 
+export interface CompletionFeedbackPayload {
+  celebration?: string;
+  validation?: string;
+  question?: string;
+  impediments?: string[];
+  selectedSteps?: string[];
+  action?: string;
+}
+
 @Injectable()
 export class FeedbackService {
   constructor(
@@ -196,7 +205,7 @@ export class FeedbackService {
     }
   }
 
-  async generateCompletionFeedback(id: string, payload?: any): Promise<string> {
+  async generateCompletionFeedback(id: string, payload?: CompletionFeedbackPayload): Promise<string> {
     if (!id || !Types.ObjectId.isValid(id)) {
       throw new BadRequestException(`ID inválido: ${id}`);
     }

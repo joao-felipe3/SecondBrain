@@ -45,13 +45,10 @@ describe('TasksService - Sprint 4: Kanban + Rastreabilidade', () => {
 
   beforeEach(async () => {
     geminiService = {
+      generateContent: jest.fn(),
+      supportsJsonMode: jest.fn().mockReturnValue(true),
       generateCompletionFeedback: jest.fn(),
       getModelName: jest.fn().mockReturnValue('test-model'),
-    };
-
-    feedbackService = {
-      generateCompletionFeedback: jest.fn(),
-      getCompletionFeedback: jest.fn(),
     };
 
     checklistService = {
@@ -73,6 +70,8 @@ describe('TasksService - Sprint 4: Kanban + Rastreabilidade', () => {
       findOne: jest.fn(),
       create: jest.fn(),
     };
+
+    feedbackService = new FeedbackService(geminiService, taskModel, feedbackModel);
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -118,10 +117,6 @@ describe('TasksService - Sprint 4: Kanban + Rastreabilidade', () => {
     }).compile();
 
     service = module.get<TasksService>(TasksService);
-    Object.defineProperty(service, 'feedbackService', {
-      value: feedbackService,
-      configurable: true,
-    });
   });
 
   describe('moveTaskStatus', () => {
@@ -273,9 +268,9 @@ describe('TasksService - Sprint 4: Kanban + Rastreabilidade', () => {
       taskModel.findById.mockReturnValue({
         exec: jest.fn().mockResolvedValue(concludedTask),
       });
-      feedbackService.generateCompletionFeedback.mockResolvedValue(
-        'Bom trabalho\nAprendeu algo\nProximo passo',
-      );
+      jest
+        .spyOn(feedbackService, 'generateCompletionFeedback')
+        .mockResolvedValue('Bom trabalho\nAprendeu algo\nProximo passo');
 
       const feedback = await service.generateCompletionFeedback(taskId);
 

@@ -24,13 +24,16 @@ type TasksServiceTestDeps = {
 export function createTasksServiceTestProviders(deps: TasksServiceTestDeps) {
   const inputService = new TasksInputService();
   const metricsService = new TasksMetricsService();
+  const recurringService = new TasksRecurringService(deps.taskModel, deps.projectsService);
+  let completionService!: TasksCompletionService;
+  let writeService!: TasksWriteService;
 
   return [
     { provide: TasksInputService, useValue: inputService },
     { provide: TasksMetricsService, useValue: metricsService },
     {
       provide: TasksRecurringService,
-      useValue: new TasksRecurringService(deps.taskModel, deps.projectsService),
+      useValue: recurringService,
     },
     {
       provide: TasksAiSuggestionsService,
@@ -55,14 +58,20 @@ export function createTasksServiceTestProviders(deps: TasksServiceTestDeps) {
     },
     {
       provide: TasksCompletionService,
-      useValue: new TasksCompletionService(
-        deps.taskModel,
-        deps.projectsService,
-        deps.evmService,
-        metricsService,
-        deps.deviationDetectionService,
-        deps.alertsService,
-      ),
+      useFactory: () => {
+        completionService = new TasksCompletionService(
+          deps.taskModel,
+          deps.projectsService,
+          deps.evmService,
+          metricsService,
+          deps.deviationDetectionService,
+          deps.alertsService,
+          recurringService,
+          writeService,
+        );
+
+        return completionService;
+      },
     },
     {
       provide: TasksPertService,
@@ -70,20 +79,28 @@ export function createTasksServiceTestProviders(deps: TasksServiceTestDeps) {
     },
     {
       provide: TasksWriteService,
-      useValue: new TasksWriteService(
-        deps.taskModel,
-        deps.projectModel,
-        deps.projectsService,
-        metricsService,
-        inputService,
-        new TasksChecklistService(
+      useFactory: () => {
+        writeService = new TasksWriteService(
           deps.taskModel,
-          deps.checklistService,
+          deps.projectModel,
+          deps.projectsService,
+          metricsService,
           inputService,
-          deps.geminiService,
-        ),
-        deps.checklistService,
-      ),
+          new TasksChecklistService(
+            deps.taskModel,
+            deps.checklistService,
+            inputService,
+            deps.geminiService,
+          ),
+          deps.checklistService,
+          completionService,
+        );
+
+        (recurringService as any).tasksWriteService = writeService;
+        (completionService as any).tasksWriteService = writeService;
+
+        return writeService;
+      },
     },
   ];
 }
