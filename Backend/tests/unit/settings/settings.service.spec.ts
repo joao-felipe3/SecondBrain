@@ -87,7 +87,7 @@ describe('SettingsService', () => {
       expect(mockModel.findOneAndUpdate).toHaveBeenCalledWith(
         { userId },
         updateDto,
-        { new: true, upsert: true }
+        { new: true, upsert: true },
       );
     });
 

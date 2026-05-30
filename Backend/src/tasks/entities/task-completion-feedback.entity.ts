@@ -1,11 +1,11 @@
 export class TaskCompletionFeedback {
-  id!: String;
-  task!: String;
-  project?: String;
-  modelName?: String;
-  promptVersion?: String;
+  id!: string;
+  task!: string;
+  project?: string;
+  modelName?: string;
+  promptVersion?: string;
   inputSnapshot?: any;
-  feedback?: String;
-  error?: String;
+  feedback?: string;
+  error?: string;
   createdAt?: Date;
 }

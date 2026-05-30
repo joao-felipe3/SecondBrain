@@ -3,8 +3,15 @@ import { GeminiService } from '../../../ai/gemini.service';
 import { WBSNodeDto } from '../../dto/wbs.dto';
 import { MonotonyDetectionService } from './monotony-detection.service';
 import { extractJsonArray } from '../utils/json-parser.util';
-import { normalizeTitle, templateTitle, extractVerb } from '../utils/normalizers.util';
-import { MAX_MONOTONY_FIX_ROUNDS, MONOTONY_FIX_BATCH_SIZE } from '../constants/wbs.constants';
+import {
+  normalizeTitle,
+  templateTitle,
+  extractVerb,
+} from '../utils/normalizers.util';
+import {
+  MAX_MONOTONY_FIX_ROUNDS,
+  MONOTONY_FIX_BATCH_SIZE,
+} from '../constants/wbs.constants';
 
 export interface MicroTaskDraft {
   name: string;
@@ -39,7 +46,11 @@ export class MonotonyFixService {
     let t = String(name || '').trim();
     if (!t) return '';
     t = t.replace(/\b\d+\s*\/\s*\d+\b/g, '').trim();
-    t = t.replace(/\s*-\s*$/g, '').replace(/\s*—\s*$/g, '').replace(/\s{2,}/g, ' ').trim();
+    t = t
+      .replace(/\s*-\s*$/g, '')
+      .replace(/\s*—\s*$/g, '')
+      .replace(/\s{2,}/g, ' ')
+      .trim();
     return t;
   }
 
@@ -76,18 +87,24 @@ export class MonotonyFixService {
     }));
     let aiCallsUsed = 0;
 
-    const forcedIndices = Array.from(new Set((params.forceIndices || []).filter((n) => Number.isInteger(n)))).sort(
-      (a, b) => a - b,
-    );
+    const forcedIndices = Array.from(
+      new Set((params.forceIndices || []).filter((n) => Number.isInteger(n))),
+    ).sort((a, b) => a - b);
 
     for (let round = 0; round < MAX_MONOTONY_FIX_ROUNDS; round++) {
       const issues = this.monotonyDetection.detectMonotonyIssues(drafts);
-      const mergedBad = Array.from(new Set([...(issues.badIndices || []), ...forcedIndices])).sort((a, b) => a - b);
+      const mergedBad = Array.from(
+        new Set([...(issues.badIndices || []), ...forcedIndices]),
+      ).sort((a, b) => a - b);
       if (!mergedBad.length) break;
       if (aiCallsUsed >= params.maxCalls) break;
 
       // Regenerate in small batches to reduce truncation.
-      for (let start = 0; start < mergedBad.length && aiCallsUsed < params.maxCalls; start += MONOTONY_FIX_BATCH_SIZE) {
+      for (
+        let start = 0;
+        start < mergedBad.length && aiCallsUsed < params.maxCalls;
+        start += MONOTONY_FIX_BATCH_SIZE
+      ) {
         const indices = mergedBad.slice(start, start + MONOTONY_FIX_BATCH_SIZE);
         const prompt = this.buildFixMonotonyPrompt({
           project: params.project,
@@ -99,7 +116,10 @@ export class MonotonyFixService {
           round,
         });
 
-        const attempt = async (opts: { maxOutputTokens: number; temperature: number }) => {
+        const attempt = async (opts: {
+          maxOutputTokens: number;
+          temperature: number;
+        }) => {
           const response = await this.geminiService.generateContent(prompt, {
             responseMimeType: 'application/json',
             maxOutputTokens: opts.maxOutputTokens,
@@ -108,7 +128,9 @@ export class MonotonyFixService {
           });
           const parsed = extractJsonArray<any>(response);
           if (!Array.isArray(parsed) || parsed.length !== indices.length) {
-            throw new Error(`IA retornou ${Array.isArray(parsed) ? parsed.length : 0} itens; esperado ${indices.length}`);
+            throw new Error(
+              `IA retornou ${Array.isArray(parsed) ? parsed.length : 0} itens; esperado ${indices.length}`,
+            );
           }
           return parsed;
         };
@@ -128,7 +150,9 @@ export class MonotonyFixService {
         const byIndex = new Map<number, any>();
 
         // Prefer explicit chunkIndex mapping; fallback to positional mapping if missing.
-        const allHaveIndex = items.every((it) => Number.isInteger(Number(it?.chunkIndex)));
+        const allHaveIndex = items.every((it) =>
+          Number.isInteger(Number(it?.chunkIndex)),
+        );
         if (allHaveIndex) {
           items.forEach((it) => {
             const idx = Number(it.chunkIndex);
@@ -147,17 +171,28 @@ export class MonotonyFixService {
           if (!it) continue;
 
           const targetMinutes = params.chunkMinutes[idx];
-          const fallbackPomodoros = Math.max(1, Math.min(6, Math.ceil(targetMinutes / 25)));
+          const fallbackPomodoros = Math.max(
+            1,
+            Math.min(6, Math.ceil(targetMinutes / 25)),
+          );
           const nextName = this.sanitizeTitle(String(it?.name || '').trim());
           const nextDesc = String(it?.description || '').trim();
-          const nextDefinitionOfDone = String(it?.definitionOfDone || '').trim();
+          const nextDefinitionOfDone = String(
+            it?.definitionOfDone || '',
+          ).trim();
           const nextChecklist = Array.isArray(it?.checklist)
             ? (it.checklist as any[])
                 .map((s) => String(s || '').trim())
                 .filter(Boolean)
             : undefined;
 
-          if (!nextName || !nextDefinitionOfDone || !nextChecklist || nextChecklist.length < 2) continue;
+          if (
+            !nextName ||
+            !nextDefinitionOfDone ||
+            !nextChecklist ||
+            nextChecklist.length < 2
+          )
+            continue;
 
           drafts[idx] = {
             ...current,
@@ -165,9 +200,28 @@ export class MonotonyFixService {
             description: nextDesc || current.description,
             definitionOfDone: nextDefinitionOfDone,
             checklist: nextChecklist,
-            pomodorosPlanned: Math.max(1, Math.min(6, Number(it?.pomodorosPlanned) || current.pomodorosPlanned || fallbackPomodoros)),
-            priority: Math.max(1, Math.min(4, Number(it?.priority) || current.priority || Math.max(1, Math.min(4, 5 - params.level)))),
-            difficult: Math.max(1, Math.min(4, Number(it?.difficult) || current.difficult || 2)),
+            pomodorosPlanned: Math.max(
+              1,
+              Math.min(
+                6,
+                Number(it?.pomodorosPlanned) ||
+                  current.pomodorosPlanned ||
+                  fallbackPomodoros,
+              ),
+            ),
+            priority: Math.max(
+              1,
+              Math.min(
+                4,
+                Number(it?.priority) ||
+                  current.priority ||
+                  Math.max(1, Math.min(4, 5 - params.level)),
+              ),
+            ),
+            difficult: Math.max(
+              1,
+              Math.min(4, Number(it?.difficult) || current.difficult || 2),
+            ),
           };
         }
 
@@ -197,7 +251,10 @@ export class MonotonyFixService {
     round: number;
   }): string {
     const today = new Date().toISOString().split('T')[0];
-    const projectSummary = params.project?.smartObjective?.summary || params.project?.description || '';
+    const projectSummary =
+      params.project?.smartObjective?.summary ||
+      params.project?.description ||
+      '';
 
     const indicesText = params.indices.map((i) => i).join(', ');
 

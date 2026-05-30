@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { normalizeTitle, templateTitle } from '../utils/normalizers.util';
 
-
 @Injectable()
 export class MonotonyDetectionService {
   /**

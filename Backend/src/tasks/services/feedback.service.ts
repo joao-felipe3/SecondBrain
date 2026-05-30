@@ -1,4 +1,8 @@
-import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  BadRequestException,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { GeminiService } from '../../ai/gemini.service';
@@ -9,7 +13,8 @@ export class FeedbackService {
   constructor(
     private readonly geminiService: GeminiService,
     @InjectModel('Task') private readonly taskModel: Model<TaskDocument>,
-    @InjectModel('TaskCompletionFeedback') private readonly feedbackModel: Model<any>,
+    @InjectModel('TaskCompletionFeedback')
+    private readonly feedbackModel: Model<any>,
   ) {}
 
   private safeParseJson(raw: string): any {
@@ -25,7 +30,9 @@ export class FeedbackService {
     } catch {
       try {
         // remove trailing commas
-        const safer = cleaned.replace(/,\s*([}\]])/g, '$1').replace(/[\x00-\x1F\x7F]/g, ' ');
+        const safer = cleaned
+          .replace(/,\s*([}\]])/g, '$1')
+          .replace(/[\x00-\x1F\x7F]/g, ' ');
         return JSON.parse(safer);
       } catch {
         return null;
@@ -41,17 +48,29 @@ export class FeedbackService {
     task: any,
     checklist?: any[],
     timeSpentMinutes?: number,
-  ): Promise<{ celebration: string; validation: string; question: string; suggestion: string }>
-  {
+  ): Promise<{
+    celebration: string;
+    validation: string;
+    question: string;
+    suggestion: string;
+  }> {
     if (!task || !task._id) throw new BadRequestException('Task inválida');
 
     const checklistSummary = Array.isArray(checklist)
-      ? checklist.map((it) => ({ item: typeof it === 'string' ? it : it.item, completed: !!(it as any).completed }))
+      ? checklist.map((it) => ({
+          item: typeof it === 'string' ? it : it.item,
+          completed: !!it.completed,
+        }))
       : [];
 
-    const percent = checklistSummary.length > 0
-      ? Math.round((checklistSummary.filter((c) => c.completed).length / checklistSummary.length) * 100)
-      : 100;
+    const percent =
+      checklistSummary.length > 0
+        ? Math.round(
+            (checklistSummary.filter((c) => c.completed).length /
+              checklistSummary.length) *
+              100,
+          )
+        : 100;
 
     const prompt = [
       'Você é um receptor de bola (catchball) que fornece feedback curto e acionável quando uma tarefa é concluída.',
@@ -66,36 +85,59 @@ export class FeedbackService {
       '- question: uma pergunta aberta sobre impedimentos ou riscos (1 frase)',
       '- suggestion: uma sugestão PDCA/next step (1 frase)',
       'Responda APENAS com o JSON, sem texto adicional, sem markdown.',
-    ].filter(Boolean).join('\n');
+    ]
+      .filter(Boolean)
+      .join('\n');
 
     try {
       const raw = await this.geminiService.generateContent(prompt, {
-        responseMimeType: this.geminiService.supportsJsonMode() ? 'application/json' : undefined,
+        responseMimeType: this.geminiService.supportsJsonMode()
+          ? 'application/json'
+          : undefined,
         temperature: 0.3,
         maxOutputTokens: 400,
       });
 
       const parsed = this.safeParseJson(raw) || {};
 
-      const celebration = String(parsed?.celebration ?? parsed?.praise ?? parsed?.recognition ?? '').trim();
-      const validation = String(parsed?.validation ?? parsed?.learning ?? '').trim();
-      const question = String(parsed?.question ?? parsed?.inquiry ?? parsed?.nextStep ?? '').trim();
-      const suggestion = String(parsed?.suggestion ?? parsed?.suggest ?? parsed?.nextStep ?? '').trim();
+      const celebration = String(
+        parsed?.celebration ?? parsed?.praise ?? parsed?.recognition ?? '',
+      ).trim();
+      const validation = String(
+        parsed?.validation ?? parsed?.learning ?? '',
+      ).trim();
+      const question = String(
+        parsed?.question ?? parsed?.inquiry ?? parsed?.nextStep ?? '',
+      ).trim();
+      const suggestion = String(
+        parsed?.suggestion ?? parsed?.suggest ?? parsed?.nextStep ?? '',
+      ).trim();
 
       const feedbackObj = {
-        celebration: celebration || `Parabéns por concluir "${String(task.name || '')}".`,
+        celebration:
+          celebration || `Parabéns por concluir "${String(task.name || '')}".`,
         validation: validation || `Checklist: ${percent}% completo.`,
-        question: question || 'Houve algum impedimento durante a execução? (resuma em 1 frase)',
-        suggestion: suggestion || 'Sugestão: revisar os pontos não concluídos e planejar próximo passo (PDCA).',
+        question:
+          question ||
+          'Houve algum impedimento durante a execução? (resuma em 1 frase)',
+        suggestion:
+          suggestion ||
+          'Sugestão: revisar os pontos não concluídos e planejar próximo passo (PDCA).',
       };
 
       // Persist raw JSON string for audit
       await this.feedbackModel.create({
         task: new Types.ObjectId(String(task._id)),
-        project: task.project ? new Types.ObjectId(String(task.project)) : undefined,
+        project: task.project
+          ? new Types.ObjectId(String(task.project))
+          : undefined,
         modelName: this.geminiService.getModelName(),
         promptVersion: 'catchball-v1',
-        inputSnapshot: { name: task.name, checklist: checklistSummary, timeSpentMinutes },
+        inputSnapshot: {
+          name: task.name,
+          checklist: checklistSummary,
+          timeSpentMinutes,
+        },
         feedback: JSON.stringify(feedbackObj),
       });
 
@@ -105,10 +147,16 @@ export class FeedbackService {
       try {
         await this.feedbackModel.create({
           task: new Types.ObjectId(String(task._id)),
-          project: task.project ? new Types.ObjectId(String(task.project)) : undefined,
+          project: task.project
+            ? new Types.ObjectId(String(task.project))
+            : undefined,
           modelName: this.geminiService.getModelName(),
           promptVersion: 'catchball-v1',
-          inputSnapshot: { name: task.name, checklist: checklistSummary, timeSpentMinutes },
+          inputSnapshot: {
+            name: task.name,
+            checklist: checklistSummary,
+            timeSpentMinutes,
+          },
           error: String(err?.message ?? err),
         });
       } catch {}
@@ -119,21 +167,30 @@ export class FeedbackService {
   /**
    * Sugere próximos passos acionáveis com base no feedback existente.
    */
-  async suggestNextSteps(task: any, feedback: any): Promise<Array<{ title: string; description: string }>> {
+  async suggestNextSteps(
+    task: any,
+    feedback: any,
+  ): Promise<Array<{ title: string; description: string }>> {
     if (!task || !task._id) throw new BadRequestException('Task inválida');
 
     const prompt = [
       'Baseado no feedback abaixo, gere 3 próximos passos acionáveis e curtos (título + descrição).',
       `Tarefa: ${String(task.name || '')}`,
-      feedback ? `Feedback: ${typeof feedback === 'string' ? feedback : JSON.stringify(feedback)}` : '',
+      feedback
+        ? `Feedback: ${typeof feedback === 'string' ? feedback : JSON.stringify(feedback)}`
+        : '',
       '',
       'Retorne APENAS um array JSON de objetos com chaves: title (string), description (string).',
       'Exemplo: [{"title":"Revisar checklist","description":"Corrigir item X e atualizar definição de pronto"}]',
-    ].filter(Boolean).join('\n');
+    ]
+      .filter(Boolean)
+      .join('\n');
 
     try {
       const raw = await this.geminiService.generateContent(prompt, {
-        responseMimeType: this.geminiService.supportsJsonMode() ? 'application/json' : undefined,
+        responseMimeType: this.geminiService.supportsJsonMode()
+          ? 'application/json'
+          : undefined,
         temperature: 0.4,
         maxOutputTokens: 600,
       });
@@ -148,12 +205,23 @@ export class FeedbackService {
 
       // Fallback: simple mapping
       const fallback = [] as Array<{ title: string; description: string }>;
-      fallback.push({ title: 'Revisar checklist', description: 'Verificar itens não concluídos e atualizar definição de pronto.' });
-      fallback.push({ title: 'Planejar próximo passo', description: 'Criar uma micro-tarefa com o próximo passo sugerido.' });
+      fallback.push({
+        title: 'Revisar checklist',
+        description:
+          'Verificar itens não concluídos e atualizar definição de pronto.',
+      });
+      fallback.push({
+        title: 'Planejar próximo passo',
+        description: 'Criar uma micro-tarefa com o próximo passo sugerido.',
+      });
       return fallback;
     } catch (err) {
       return [
-        { title: 'Revisar checklist', description: 'Verificar itens não concluídos e atualizar definição de pronto.' },
+        {
+          title: 'Revisar checklist',
+          description:
+            'Verificar itens não concluídos e atualizar definição de pronto.',
+        },
       ];
     }
   }
@@ -169,7 +237,9 @@ export class FeedbackService {
     }
 
     if (!task.isConcluded) {
-      throw new BadRequestException('Task deve estar concluída para gerar feedback');
+      throw new BadRequestException(
+        'Task deve estar concluída para gerar feedback',
+      );
     }
 
     const inputSnapshot = {
@@ -182,14 +252,14 @@ export class FeedbackService {
     };
 
     const isUserFeedbackPayload =
-      payload && typeof payload === 'object' && (
-        'celebration' in payload ||
+      payload &&
+      typeof payload === 'object' &&
+      ('celebration' in payload ||
         'validation' in payload ||
         'question' in payload ||
         'impediments' in payload ||
         'selectedSteps' in payload ||
-        'action' in payload
-      );
+        'action' in payload);
 
     if (isUserFeedbackPayload) {
       const feedbackText = JSON.stringify(payload);
@@ -229,7 +299,9 @@ export class FeedbackService {
     }
   }
 
-  async getCompletionFeedback(id: string): Promise<{ feedback: string; createdAt: Date } | null> {
+  async getCompletionFeedback(
+    id: string,
+  ): Promise<{ feedback: string; createdAt: Date } | null> {
     if (!id || !Types.ObjectId.isValid(id)) {
       throw new BadRequestException(`ID inválido: ${id}`);
     }

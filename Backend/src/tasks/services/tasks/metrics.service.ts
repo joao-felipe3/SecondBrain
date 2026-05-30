@@ -17,7 +17,9 @@ export class TasksMetricsService {
       dto.pertMostLikelyMinutes ??
       (dto.pomodorosPlanned ? dto.pomodorosPlanned * 25 : undefined) ??
       fallbackTask?.pertMostLikelyMinutes ??
-      (fallbackTask?.pomodorosPlanned ? fallbackTask.pomodorosPlanned * 25 : undefined);
+      (fallbackTask?.pomodorosPlanned
+        ? fallbackTask.pomodorosPlanned * 25
+        : undefined);
 
     if (!hasAnyPert && baseMinutes === undefined) return;
 
@@ -27,11 +29,13 @@ export class TasksMetricsService {
     );
     const mostLikely = Math.max(
       optimistic,
-      Math.round(dto.pertMostLikelyMinutes ?? (baseMinutes ?? optimistic)),
+      Math.round(dto.pertMostLikelyMinutes ?? baseMinutes ?? optimistic),
     );
     const pessimistic = Math.max(
       mostLikely,
-      Math.round(dto.pertPessimisticMinutes ?? (baseMinutes ?? mostLikely) * 1.5),
+      Math.round(
+        dto.pertPessimisticMinutes ?? (baseMinutes ?? mostLikely) * 1.5,
+      ),
     );
     const expected = (optimistic + 4 * mostLikely + pessimistic) / 6;
     const variance = Math.pow((pessimistic - optimistic) / 6, 2);
@@ -47,16 +51,17 @@ export class TasksMetricsService {
     dto: Partial<CreateTaskDto>,
     fallbackTask?: TaskDocument | null,
   ) {
-    const requirementIds = dto.requirementIds ?? fallbackTask?.requirementIds ?? [];
+    const requirementIds =
+      dto.requirementIds ?? fallbackTask?.requirementIds ?? [];
     const journeyItemIds =
       dto.journeyItemIds ??
       ((fallbackTask as any)?.journeyItemIds as string[] | undefined) ??
       [];
     const hasWbsLink = Boolean(
       dto.parentWbsNodeId ||
-      fallbackTask?.parentWbsNodeId ||
-      dto.wbsPath ||
-      fallbackTask?.wbsPath,
+        fallbackTask?.parentWbsNodeId ||
+        dto.wbsPath ||
+        fallbackTask?.wbsPath,
     );
 
     if (requirementIds.length > 0 || journeyItemIds.length > 0 || hasWbsLink) {
@@ -66,7 +71,8 @@ export class TasksMetricsService {
     }
 
     dto.rtmRisk = true;
-    dto.rtmRiskReason = 'Ação sem vínculo com item da jornada pessoal (objetivo/hábito/etapa/ação) ou WBS.';
+    dto.rtmRiskReason =
+      'Ação sem vínculo com item da jornada pessoal (objetivo/hábito/etapa/ação) ou WBS.';
   }
 
   applyEvmMetrics(
@@ -77,7 +83,9 @@ export class TasksMetricsService {
       dto.pertExpectedMinutes ??
       fallbackTask?.pertExpectedMinutes ??
       (dto.pomodorosPlanned ? dto.pomodorosPlanned * 25 : undefined) ??
-      (fallbackTask?.pomodorosPlanned ? fallbackTask.pomodorosPlanned * 25 : undefined);
+      (fallbackTask?.pomodorosPlanned
+        ? fallbackTask.pomodorosPlanned * 25
+        : undefined);
 
     if (!expectedMinutes) return;
 
@@ -103,19 +111,24 @@ export class TasksMetricsService {
       ? (() => {
           const total = deadline.getTime() - createdAt.getTime();
           if (total <= 0) return 1;
-          return Math.max(0, Math.min(1, (Date.now() - createdAt.getTime()) / total));
+          return Math.max(
+            0,
+            Math.min(1, (Date.now() - createdAt.getTime()) / total),
+          );
         })()
       : 0;
 
     const plannedValue = expectedMinutes * elapsedRatio;
     const earnedValue = expectedMinutes * progress;
-    const spi = plannedValue > 0 ? earnedValue / plannedValue : progress > 0 ? 1 : 0;
+    const spi =
+      plannedValue > 0 ? earnedValue / plannedValue : progress > 0 ? 1 : 0;
 
     dto.evmProgress = Number(progress.toFixed(2));
     dto.evmPlannedValueMinutes = Math.round(plannedValue);
     dto.evmEarnedValueMinutes = Math.round(earnedValue);
     dto.evmSchedulePerformanceIndex = Number(spi.toFixed(2));
-    dto.evmAlert = spi > 0 && spi < 0.9 ? 'SPI abaixo de 0.9 (risco de atraso)' : undefined;
+    dto.evmAlert =
+      spi > 0 && spi < 0.9 ? 'SPI abaixo de 0.9 (risco de atraso)' : undefined;
   }
 
   calculateDeadline(createdAt: Date, expectedTimeMinutes: number): Date {

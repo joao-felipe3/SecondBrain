@@ -1,13 +1,13 @@
 export class MicroTaskMilestone {
-  id: String;
-  name: String;
-  objective?: String;
-  project?: String;
-  parentWbsNodeId?: String;
-  wbsPath?: String;
-  generationBatchId?: String;
+  id: string;
+  name: string;
+  objective?: string;
+  project?: string;
+  parentWbsNodeId?: string;
+  wbsPath?: string;
+  generationBatchId?: string;
   targetEffortMinutes?: number;
   order?: number;
-  themeTag?: String;
+  themeTag?: string;
   createdAt?: Date;
 }

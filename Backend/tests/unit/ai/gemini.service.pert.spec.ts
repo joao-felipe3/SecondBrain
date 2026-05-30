@@ -14,7 +14,8 @@ describe('GeminiService - PERT Estimation (Unit Tests)', () => {
           provide: ConfigService,
           useValue: {
             get: jest.fn((key: string) => {
-              if (key === 'GEMINI_API_KEY') return process.env.GEMINI_API_KEY || 'test-key';
+              if (key === 'GEMINI_API_KEY')
+                return process.env.GEMINI_API_KEY || 'test-key';
               if (key === 'REDIS_ENABLED') return false; // Use in-memory for tests
               return undefined;
             }),
@@ -69,7 +70,8 @@ describe('GeminiService - PERT Estimation (Unit Tests)', () => {
       );
 
       // TE = (O + 4*M + P) / 6
-      const expectedTE = (result.optimistic + 4 * result.likely + result.pessimistic) / 6;
+      const expectedTE =
+        (result.optimistic + 4 * result.likely + result.pessimistic) / 6;
       expect(result.expectedTime).toBeCloseTo(expectedTE, 1);
     });
 
@@ -91,7 +93,7 @@ describe('GeminiService - PERT Estimation (Unit Tests)', () => {
       );
 
       const cv = result.standardDeviation / result.expectedTime;
-      
+
       if (cv > 0.5) {
         expect(result.recommendation).toContain('⚠️');
       } else if (cv > 0.3) {
@@ -103,10 +105,7 @@ describe('GeminiService - PERT Estimation (Unit Tests)', () => {
 
     it('should return fallback values when LLM is unavailable', async () => {
       // Force fallback by using invalid API key or mocking LLM failure
-      const result = await service.suggestPertEstimates(
-        'subtask',
-        'Any task',
-      );
+      const result = await service.suggestPertEstimates('subtask', 'Any task');
 
       // Should still have valid values
       expect(result.optimistic).toBeGreaterThan(0);
@@ -152,7 +151,9 @@ describe('GeminiService - PERT Estimation (Unit Tests)', () => {
       );
 
       // Complex tasks should generally take longer than quick tasks
-      expect(complexResult.expectedTime).toBeGreaterThan(quickResult.expectedTime);
+      expect(complexResult.expectedTime).toBeGreaterThan(
+        quickResult.expectedTime,
+      );
     });
 
     it('should handle different task types correctly', async () => {
@@ -171,7 +172,9 @@ describe('GeminiService - PERT Estimation (Unit Tests)', () => {
       // Complex should generally be largest
       const complexResult = results[taskTypes.indexOf('complex')];
       const quickResult = results[taskTypes.indexOf('quick')];
-      expect(complexResult.expectedTime).toBeGreaterThanOrEqual(quickResult.expectedTime);
+      expect(complexResult.expectedTime).toBeGreaterThanOrEqual(
+        quickResult.expectedTime,
+      );
     });
 
     it('should handle long descriptions gracefully', async () => {
@@ -188,10 +191,7 @@ describe('GeminiService - PERT Estimation (Unit Tests)', () => {
     });
 
     it('should include fromLLM flag indicating source', async () => {
-      const result = await service.suggestPertEstimates(
-        'quick',
-        'Test task',
-      );
+      const result = await service.suggestPertEstimates('quick', 'Test task');
 
       expect(typeof result.fromLLM).toBe('boolean');
       // In test environment, likely to be fallback (false) unless LLM is mocked
@@ -302,8 +302,11 @@ describe('GeminiService - PERT Estimation (Unit Tests)', () => {
         description: 'Test cache',
       };
 
-      const cacheKey = service['getPertCacheKey'](input.taskType, input.description);
-      
+      const cacheKey = service['getPertCacheKey'](
+        input.taskType,
+        input.description,
+      );
+
       // Initially no cache
       let cached = await service['getPertCache'](cacheKey);
       expect(cached).toBeNull();
@@ -330,9 +333,9 @@ describe('GeminiService - PERT Estimation (Unit Tests)', () => {
       const testValue = { test: 'data' };
 
       service['setPertCache'](cacheKey, testValue);
-      
+
       // Immediately should be in cache
-      let cached = service['getPertCache'](cacheKey);
+      const cached = service['getPertCache'](cacheKey);
       expect(cached).toBeDefined();
 
       // Note: TTL is 24h, so we can't actually test expiration in unit tests

@@ -36,7 +36,10 @@ export function templateTitle(title?: string): string {
     .toLowerCase()
     .replace(/[0-9]+/g, '')
     .replace(/\(.*?\)/g, '')
-    .replace(/\b(parte|modulo|módulo|tarefa|micro[-\s]?tarefa|dia|semana)\b/gi, '')
+    .replace(
+      /\b(parte|modulo|módulo|tarefa|micro[-\s]?tarefa|dia|semana)\b/gi,
+      '',
+    )
     .replace(/[^a-z\u00c0-\u017f\s]/gi, ' ')
     .replace(/\s+/g, ' ')
     .trim();
@@ -56,8 +59,20 @@ export function extractVerb(title?: string): string {
  * Normalize micro-task type to valid enum value
  */
 export function normalizeMicroTaskType(value?: string): string {
-  const v = String(value || '').toLowerCase().trim();
-  if (['prepare', 'practice', 'produce', 'review', 'test', 'consolidate'].includes(v)) return v;
+  const v = String(value || '')
+    .toLowerCase()
+    .trim();
+  if (
+    [
+      'prepare',
+      'practice',
+      'produce',
+      'review',
+      'test',
+      'consolidate',
+    ].includes(v)
+  )
+    return v;
   return 'practice';
 }
 
@@ -65,7 +80,9 @@ export function normalizeMicroTaskType(value?: string): string {
  * Normalize cognitive mode to valid enum value (low/medium/high)
  */
 export function normalizeCognitiveMode(value?: string): string {
-  const v = String(value || '').toLowerCase().trim();
+  const v = String(value || '')
+    .toLowerCase()
+    .trim();
   if (['low', 'medium', 'high'].includes(v)) return v;
   return 'medium';
 }
@@ -127,9 +144,13 @@ export function mapCognitiveModeToContextTag(mode?: string): string {
 /**
  * Normalize workflow types into an array matching the total count
  */
-export function normalizeWorkflowTypes(types: string[], total: number): string[] {
+export function normalizeWorkflowTypes(
+  types: string[],
+  total: number,
+): string[] {
   if (!types || !types.length) return Array(total).fill('practice');
-  if (types.length === total) return types.map((t) => normalizeMicroTaskType(t));
+  if (types.length === total)
+    return types.map((t) => normalizeMicroTaskType(t));
 
   // Distribute types evenly across total
   const normalized = types.map((t) => normalizeMicroTaskType(t));

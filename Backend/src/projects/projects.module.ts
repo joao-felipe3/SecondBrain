@@ -14,14 +14,19 @@ import { ProjectWaveSchema } from './schemas/project-wave.schema';
 import { ProjectWave } from './schemas/project-wave.schema';
 import { RiskSchema } from './schemas/risk.schema';
 import { Risk } from './schemas/risk.schema';
-import { ProjectProgress, ProjectProgressSchema } from './schemas/project-progress.schema';
+import {
+  ProjectProgress,
+  ProjectProgressSchema,
+} from './schemas/project-progress.schema';
 import { RollingWaveService } from './services/rolling-wave.service';
 import { RiskService } from './services/risk.service';
 import { EVMService } from './services/evm.service';
 import { WaveAndRiskController } from './controllers/wave-and-risk.controller';
-import { XMatrixSnapshot, XMatrixSnapshotSchema } from './schemas/x-matrix-snapshot.schema';
+import {
+  XMatrixSnapshot,
+  XMatrixSnapshotSchema,
+} from './schemas/x-matrix-snapshot.schema';
 import { ProjectsXMatrixService } from './services/projects-x-matrix.service';
-
 
 @Module({
   imports: [
@@ -38,7 +43,14 @@ import { ProjectsXMatrixService } from './services/projects-x-matrix.service';
     WBSModule,
   ],
   controllers: [ProjectsController, WaveAndRiskController],
-  providers: [ProjectsService, ProjectsXMatrixService, LeafTasksBufferService, RollingWaveService, RiskService, EVMService],
-  exports: [ProjectsService, RollingWaveService, RiskService, EVMService]
+  providers: [
+    ProjectsService,
+    ProjectsXMatrixService,
+    LeafTasksBufferService,
+    RollingWaveService,
+    RiskService,
+    EVMService,
+  ],
+  exports: [ProjectsService, RollingWaveService, RiskService, EVMService],
 })
 export class ProjectsModule {}

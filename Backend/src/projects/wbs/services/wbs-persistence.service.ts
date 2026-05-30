@@ -5,7 +5,6 @@ import { WBSNodeDocument } from '../../schemas/wbs-node.schema';
 import { WBSNodeDto } from '../../dto/wbs.dto';
 import { CacheService } from './cache.service';
 
-
 @Injectable()
 export class WbsPersistenceService {
   constructor(
@@ -15,19 +14,25 @@ export class WbsPersistenceService {
   ) {}
 
   // Save WBS nodes to the database
-  async save(projectId: string, nodes: WBSNodeDto[]): Promise<WBSNodeDocument[]> {
-    const deleteResult = await this.wbsNodeModel.deleteMany({ projectId }).exec();
+  async save(
+    projectId: string,
+    nodes: WBSNodeDto[],
+  ): Promise<WBSNodeDocument[]> {
+    const deleteResult = await this.wbsNodeModel
+      .deleteMany({ projectId })
+      .exec();
     const savedNodes: WBSNodeDocument[] = [];
 
     // Clean _id from all nodes recursively before saving
     const cleanNodeIds = (nodeList: WBSNodeDto[]): WBSNodeDto[] => {
-      return nodeList.map(node => {
+      return nodeList.map((node) => {
         const { _id, ...cleanNode } = node as any;
         return {
           ...cleanNode,
-          children: node.children && node.children.length > 0 
-            ? cleanNodeIds(node.children)
-            : []
+          children:
+            node.children && node.children.length > 0
+              ? cleanNodeIds(node.children)
+              : [],
         };
       });
     };
@@ -66,7 +71,10 @@ export class WbsPersistenceService {
     try {
       await this.cacheService.clearForProject(projectId);
     } catch (err) {
-      console.warn('[WbsPersistenceService] erro ao limpar cache de rascunhos', err);
+      console.warn(
+        '[WbsPersistenceService] erro ao limpar cache de rascunhos',
+        err,
+      );
     }
     await this.recalculateEstimatedHours(projectId);
 
@@ -108,20 +116,23 @@ export class WbsPersistenceService {
         if (parent) {
           parent.children!.push(node);
         } else {
-          console.warn(`Nó órfão encontrado: "${node.name}" (level ${node.level}) - parentId não existe: ${node.parentId}`);
+          console.warn(
+            `Nó órfão encontrado: "${node.name}" (level ${node.level}) - parentId não existe: ${node.parentId}`,
+          );
         }
       } else {
         if (node.level === 1) {
           roots.push(node);
         } else {
-          console.warn(`Nó inválido: "${node.name}" (level ${node.level}) sem parentId - deveria ser level 1`);
+          console.warn(
+            `Nó inválido: "${node.name}" (level ${node.level}) sem parentId - deveria ser level 1`,
+          );
         }
       }
     }
 
     return roots;
   }
-
 
   calculateTotalHours(nodes: WBSNodeDto[]): number {
     let total = 0;
@@ -139,28 +150,33 @@ export class WbsPersistenceService {
     return total;
   }
 
-
   private async recalculateEstimatedHours(projectId: string): Promise<void> {
     try {
       const allNodes = await this.wbsNodeModel.find({ projectId }).exec();
       if (allNodes.length === 0) return;
 
       // Find all parent nodes
-      const parentIds = new Set(allNodes.map(n => n.parentId).filter(Boolean));
+      const parentIds = new Set(
+        allNodes.map((n) => n.parentId).filter(Boolean),
+      );
 
       for (const parentId of parentIds) {
-        const parent = allNodes.find(n => String(n._id) === parentId);
+        const parent = allNodes.find((n) => String(n._id) === parentId);
         if (!parent) continue;
 
         // Sum all children's estimatedHours
-        const children = allNodes.filter(n => String(n.parentId) === parentId);
-        const totalHours = children.reduce((sum, child) => sum + (child.estimatedHours || 0), 0);
+        const children = allNodes.filter(
+          (n) => String(n.parentId) === parentId,
+        );
+        const totalHours = children.reduce(
+          (sum, child) => sum + (child.estimatedHours || 0),
+          0,
+        );
 
         // Update parent
         parent.estimatedHours = totalHours;
         await parent.save();
       }
-
     } catch (error) {
       console.error('Erro ao recalcular estimatedHours:', error);
     }

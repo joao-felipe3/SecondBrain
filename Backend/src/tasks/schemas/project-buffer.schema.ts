@@ -36,8 +36,7 @@ export class ProjectBuffer {
   updatedAt?: Date;
 }
 
-export const ProjectBufferSchema =
-  SchemaFactory.createForClass(ProjectBuffer);
+export const ProjectBufferSchema = SchemaFactory.createForClass(ProjectBuffer);
 
 // Índices de performance
 ProjectBufferSchema.index({ projectId: 1 });

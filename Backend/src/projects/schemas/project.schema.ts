@@ -66,19 +66,21 @@ export const ProjectSchema = new Schema<ProjectDocument>({
       temporal: { type: String },
       weeklyHours: { type: Number },
       summary: { type: String },
-      risks: [{ type: String }]
+      risks: [{ type: String }],
     },
-    required: false
+    required: false,
   },
   status: { type: String, required: true },
   progressPercentage: { type: Number, required: true, default: 0 },
   experience: { type: Number, required: true },
   reward: { type: Number, required: true },
   tasks: [{ type: Schema.Types.ObjectId, ref: 'Task' }],
-  backlogIdeas: [{
-    text: { type: String, required: true },
-    createdAt: { type: Date, required: true, default: Date.now }
-  }],
+  backlogIdeas: [
+    {
+      text: { type: String, required: true },
+      createdAt: { type: Date, required: true, default: Date.now },
+    },
+  ],
   dashboardMetricPreferences: {
     type: {
       mode: { type: String, enum: ['auto', 'manual'], default: 'auto' },

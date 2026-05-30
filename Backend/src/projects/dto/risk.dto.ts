@@ -1,76 +1,71 @@
-import {
-  IsString,
-  IsNumber,
-  IsEnum,
-  IsOptional,
-} from 'class-validator'
+import { IsString, IsNumber, IsEnum, IsOptional } from 'class-validator';
 
 export class CreateRiskDto {
   @IsString()
-  description: string
+  description: string;
 
   @IsNumber()
-  probability: number // 0-100 (%)
+  probability: number; // 0-100 (%)
 
   @IsNumber()
-  impact: number // 1-5
+  impact: number; // 1-5
 
   @IsEnum(['baixa', 'média', 'alta'])
   @IsOptional()
-  severity?: 'baixa' | 'média' | 'alta'
+  severity?: 'baixa' | 'média' | 'alta';
 
   @IsString()
   @IsOptional()
-  mitigationPlan?: string
+  mitigationPlan?: string;
 
   @IsEnum(['identificado', 'mitigando', 'resolvido', 'aceito'])
   @IsOptional()
-  status?: 'identificado' | 'mitigando' | 'resolvido' | 'aceito'
+  status?: 'identificado' | 'mitigando' | 'resolvido' | 'aceito';
 
   @IsString()
   @IsOptional()
-  owner?: string
+  owner?: string;
 
   @IsString()
   @IsOptional()
-  targetResolutionDate?: string
+  targetResolutionDate?: string;
 }
 
 export class UpdateRiskDto {
   @IsString()
   @IsOptional()
-  description?: string
+  description?: string;
 
   @IsNumber()
   @IsOptional()
-  probability?: number
+  probability?: number;
 
   @IsNumber()
   @IsOptional()
-  impact?: number
+  impact?: number;
 
   @IsEnum(['baixa', 'média', 'alta'])
   @IsOptional()
-  severity?: 'baixa' | 'média' | 'alta'
+  severity?: 'baixa' | 'média' | 'alta';
 
   @IsString()
   @IsOptional()
-  mitigationPlan?: string
+  mitigationPlan?: string;
 
   @IsEnum(['identificado', 'mitigando', 'resolvido', 'aceito'])
   @IsOptional()
-  status?: 'identificado' | 'mitigando' | 'resolvido' | 'aceito'
+  status?: 'identificado' | 'mitigando' | 'resolvido' | 'aceito';
 
   @IsString()
   @IsOptional()
-  owner?: string
+  owner?: string;
 
   @IsString()
   @IsOptional()
-  targetResolutionDate?: string
+  targetResolutionDate?: string;
 }
 
 export class AssessRisksDto {
   @IsString()
-  projectDescription: string
+  projectDescription: string;
 }

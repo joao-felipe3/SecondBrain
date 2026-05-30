@@ -1,12 +1,12 @@
 export class SmartObjectiveDto {
-  specific: string;      
-  measurable: string;    
-  achievable: string;    
-  relevant: string;      
-  temporal: string;      
+  specific: string;
+  measurable: string;
+  achievable: string;
+  relevant: string;
+  temporal: string;
   weeklyHours?: number;
-  summary: string;       
-  risks: string[];       
+  summary: string;
+  risks: string[];
 }
 
 export class CatchballRequestDto {

@@ -1,4 +1,9 @@
-import { Injectable, BadRequestException, Inject, forwardRef } from '@nestjs/common';
+import {
+  Injectable,
+  BadRequestException,
+  Inject,
+  forwardRef,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { TaskDocument } from '../schemas/task.schema';
@@ -48,7 +53,10 @@ export class ChecklistService {
       return [];
     }
 
-    if (!microTaskType || !['habit', 'complex', 'quick', 'subtask'].includes(microTaskType)) {
+    if (
+      !microTaskType ||
+      !['habit', 'complex', 'quick', 'subtask'].includes(microTaskType)
+    ) {
       return [];
     }
 
@@ -96,9 +104,10 @@ export class ChecklistService {
     const summaries = tasks
       .filter((t) => t && t.name)
       .map((t) => {
-        const items = t.checklist && t.checklist.length > 0
-          ? t.checklist.map((c) => `- ${c.item}`).join('\n')
-          : '';
+        const items =
+          t.checklist && t.checklist.length > 0
+            ? t.checklist.map((c) => `- ${c.item}`).join('\n')
+            : '';
         return `Tarefa: ${t.name}\nChecklist: ${items || 'N/A'}`;
       })
       .join('\n\n');
@@ -212,7 +221,9 @@ export class ChecklistService {
    * @param checklist Array de itens
    * @returns Percentual (0-100)
    */
-  calculateCompletionPercentage(checklist?: Array<{ completed: boolean }>): number {
+  calculateCompletionPercentage(
+    checklist?: Array<{ completed: boolean }>,
+  ): number {
     if (!Array.isArray(checklist) || checklist.length === 0) {
       return 0;
     }

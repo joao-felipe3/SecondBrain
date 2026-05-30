@@ -1,30 +1,35 @@
-import { SchemaFactory, Prop, Schema } from '@nestjs/mongoose'
-import { Document, Types } from 'mongoose'
+import { SchemaFactory, Prop, Schema } from '@nestjs/mongoose';
+import { Document, Types } from 'mongoose';
 
-export type ProjectProgressDocument = ProjectProgress & Document
+export type ProjectProgressDocument = ProjectProgress & Document;
 
 @Schema({ timestamps: true })
 export class ProjectProgress {
   @Prop({ required: true, type: Types.ObjectId, ref: 'Project' })
-  projectId: Types.ObjectId
+  projectId: Types.ObjectId;
 
   @Prop({ required: true, type: Date })
-  date: Date
+  date: Date;
 
   @Prop({ required: true, min: 0 })
-  completedHours: number
+  completedHours: number;
 
   @Prop({ required: true, min: 0 })
-  plannedValue: number
+  plannedValue: number;
 
-  @Prop({ required: false, enum: ['manual', 'pomodoro', 'completion'], default: 'manual' })
-  source?: 'manual' | 'pomodoro' | 'completion'
+  @Prop({
+    required: false,
+    enum: ['manual', 'pomodoro', 'completion'],
+    default: 'manual',
+  })
+  source?: 'manual' | 'pomodoro' | 'completion';
 
   @Prop({ required: false, type: Types.ObjectId, ref: 'Task' })
-  taskId?: Types.ObjectId
+  taskId?: Types.ObjectId;
 }
 
-export const ProjectProgressSchema = SchemaFactory.createForClass(ProjectProgress)
+export const ProjectProgressSchema =
+  SchemaFactory.createForClass(ProjectProgress);
 
-ProjectProgressSchema.index({ projectId: 1, date: 1 })
-ProjectProgressSchema.index({ projectId: 1, createdAt: -1 })
+ProjectProgressSchema.index({ projectId: 1, date: 1 });
+ProjectProgressSchema.index({ projectId: 1, createdAt: -1 });

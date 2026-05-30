@@ -18,7 +18,10 @@ export class LeafTasksBufferService {
   private ttlMs(): number {
     const raw = String(process.env.WBS_PREFETCH_TTL_SECONDS || '').trim();
     const seconds = raw ? Number(raw) : 15 * 60;
-    return Math.max(10_000, (Number.isFinite(seconds) ? seconds : 15 * 60) * 1000);
+    return Math.max(
+      10_000,
+      (Number.isFinite(seconds) ? seconds : 15 * 60) * 1000,
+    );
   }
 
   private maxPerProject(): number {
@@ -34,13 +37,17 @@ export class LeafTasksBufferService {
   }
 
   private isDebugEnabled(): boolean {
-    const v = String(process.env.WBS_PREFETCH_DEBUG || process.env.WBS_CACHE_DEBUG || '').trim().toLowerCase();
+    const v = String(
+      process.env.WBS_PREFETCH_DEBUG || process.env.WBS_CACHE_DEBUG || '',
+    )
+      .trim()
+      .toLowerCase();
     return v === '1' || v === 'true' || v === 'yes' || v === 'on';
   }
 
   private log(message: string, extra?: any) {
     if (!this.isDebugEnabled()) return;
-    // eslint-disable-next-line no-console
+
     console.log(`[LeafBuffer] ${message}`, extra || '');
   }
 
@@ -116,13 +123,19 @@ export class LeafTasksBufferService {
     const entry = this.entries.get(key);
     if (entry) {
       this.entries.delete(key);
-      this.log('consume:hit', { keyPrefix: key.split(':').slice(0, 2).join(':'), remaining: this.entries.size });
+      this.log('consume:hit', {
+        keyPrefix: key.split(':').slice(0, 2).join(':'),
+        remaining: this.entries.size,
+      });
       return entry.value as T;
     }
 
     const inflight = this.inFlight.get(key);
     if (inflight) {
-      this.log('consume:wait', { keyPrefix: key.split(':').slice(0, 2).join(':'), inFlight: true });
+      this.log('consume:wait', {
+        keyPrefix: key.split(':').slice(0, 2).join(':'),
+        inFlight: true,
+      });
       try {
         await inflight;
       } catch {
@@ -136,7 +149,10 @@ export class LeafTasksBufferService {
       }
     }
 
-    this.log('consume:miss', { keyPrefix: key.split(':').slice(0, 2).join(':'), inFlight: false });
+    this.log('consume:miss', {
+      keyPrefix: key.split(':').slice(0, 2).join(':'),
+      inFlight: false,
+    });
     return null;
   }
 
@@ -151,7 +167,10 @@ export class LeafTasksBufferService {
     const startedAt = Date.now();
     const p = this.enqueue(async () => {
       try {
-        this.log('prefetch:start', { keyPrefix: key.split(':').slice(0, 2).join(':'), projectId });
+        this.log('prefetch:start', {
+          keyPrefix: key.split(':').slice(0, 2).join(':'),
+          projectId,
+        });
         const value = await producer();
         this.entries.set(key, {
           value,
@@ -160,9 +179,15 @@ export class LeafTasksBufferService {
           createdAt: Date.now(),
         });
         this.evictIfNeeded(projectId);
-        this.log('prefetch:done', { keyPrefix: key.split(':').slice(0, 2).join(':'), ms: Date.now() - startedAt });
+        this.log('prefetch:done', {
+          keyPrefix: key.split(':').slice(0, 2).join(':'),
+          ms: Date.now() - startedAt,
+        });
       } catch (err: any) {
-        this.log('prefetch:error', { keyPrefix: key.split(':').slice(0, 2).join(':'), message: err?.message || String(err) });
+        this.log('prefetch:error', {
+          keyPrefix: key.split(':').slice(0, 2).join(':'),
+          message: err?.message || String(err),
+        });
       }
     }).finally(() => {
       this.inFlight.delete(key);

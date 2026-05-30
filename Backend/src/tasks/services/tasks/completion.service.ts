@@ -1,4 +1,8 @@
-import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  BadRequestException,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { TaskDocument } from '../../schemas/task.schema';
@@ -20,7 +24,12 @@ export class TasksCompletionService {
   ) {}
 
   async markAsConcluded(id: string): Promise<TaskDocument> {
-    if (!id || id === 'null' || id === 'undefined' || !Types.ObjectId.isValid(id)) {
+    if (
+      !id ||
+      id === 'null' ||
+      id === 'undefined' ||
+      !Types.ObjectId.isValid(id)
+    ) {
       throw new BadRequestException(`ID inválido: ${id}`);
     }
 
@@ -33,7 +42,10 @@ export class TasksCompletionService {
       return task;
     }
 
-    const isHabit = task.microTaskType === 'habit' || Boolean(task.parentRecurringId) || Boolean(task.recurringRule);
+    const isHabit =
+      task.microTaskType === 'habit' ||
+      Boolean(task.parentRecurringId) ||
+      Boolean(task.recurringRule);
 
     if (!isHabit) {
       // Validation is delegated to caller (TasksService) which may call checklist validators
@@ -41,7 +53,10 @@ export class TasksCompletionService {
 
     const currentPomodorosDid = Math.max(0, task.pomodorosDid || 0);
     const plannedPomodoros = Math.max(0, task.pomodorosPlanned || 0);
-    const remainingPomodoros = Math.max(0, plannedPomodoros - currentPomodorosDid);
+    const remainingPomodoros = Math.max(
+      0,
+      plannedPomodoros - currentPomodorosDid,
+    );
     const remainingHours = remainingPomodoros * 0.5;
 
     task.isConcluded = true;
@@ -76,7 +91,12 @@ export class TasksCompletionService {
   }
 
   async incrementPomodorosDid(id: string): Promise<TaskDocument> {
-    if (!id || id === 'null' || id === 'undefined' || !Types.ObjectId.isValid(id)) {
+    if (
+      !id ||
+      id === 'null' ||
+      id === 'undefined' ||
+      !Types.ObjectId.isValid(id)
+    ) {
       throw new BadRequestException(`ID inválido: ${id}`);
     }
 
@@ -119,18 +139,21 @@ export class TasksCompletionService {
         { source, taskId },
       );
     } catch (error: any) {
-      // eslint-disable-next-line no-console
-      console.warn('[TasksCompletionService] Falha ao registrar progresso EVM automatico', {
-        projectId,
-        taskId,
-        source,
-        message: error?.message,
-      });
+      console.warn(
+        '[TasksCompletionService] Falha ao registrar progresso EVM automatico',
+        {
+          projectId,
+          taskId,
+          source,
+          message: error?.message,
+        },
+      );
     }
   }
 
   private async checkDeviationAndCreateAlert(taskId: string): Promise<void> {
-    const deviation = await this.deviationDetectionService.generateDeviationAlert(taskId);
+    const deviation =
+      await this.deviationDetectionService.generateDeviationAlert(taskId);
     if (!deviation) return;
 
     const task = await this.taskModel.findById(taskId).exec();
@@ -148,8 +171,11 @@ export class TasksCompletionService {
   /**
    * Public wrapper to generate deviation alert and return created alert info.
    */
-  async createDeviationAlertForTask(taskId: string): Promise<{ alertCreated: boolean; alert?: any }> {
-    const deviation = await this.deviationDetectionService.generateDeviationAlert(taskId);
+  async createDeviationAlertForTask(
+    taskId: string,
+  ): Promise<{ alertCreated: boolean; alert?: any }> {
+    const deviation =
+      await this.deviationDetectionService.generateDeviationAlert(taskId);
     if (!deviation) {
       return { alertCreated: false };
     }

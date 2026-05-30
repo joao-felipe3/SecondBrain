@@ -26,7 +26,11 @@ export class Requirement {
   type: RequirementType;
 
   // Modelo pessoal: objetivo -> hábito -> etapa -> ação
-  @Prop({ type: String, enum: ['objective', 'habit', 'stage', 'action'], default: 'action' })
+  @Prop({
+    type: String,
+    enum: ['objective', 'habit', 'stage', 'action'],
+    default: 'action',
+  })
   kind: JourneyKind;
 
   @Prop({ type: MongoSchema.Types.ObjectId })
@@ -49,7 +53,11 @@ export class Requirement {
   @Prop({ type: String })
   source?: string; // De onde veio (ex: "SMART objective", "user input", "IA extracted")
 
-  @Prop({ type: String, enum: ['open', 'satisfied', 'at_risk'], default: 'open' })
+  @Prop({
+    type: String,
+    enum: ['open', 'satisfied', 'at_risk'],
+    default: 'open',
+  })
   status: 'open' | 'satisfied' | 'at_risk';
 
   @Prop({ type: Date })

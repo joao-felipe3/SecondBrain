@@ -50,7 +50,11 @@ describe('ChecklistService', () => {
     });
 
     it('should reject checklist with duplicate items', () => {
-      const result = service.validateChecklistStructure(['item1', 'item2', 'ITEM1']);
+      const result = service.validateChecklistStructure([
+        'item1',
+        'item2',
+        'ITEM1',
+      ]);
       expect(result.isValid).toBe(false);
       expect(result.reason).toContain('duplicado');
     });
@@ -62,7 +66,11 @@ describe('ChecklistService', () => {
     });
 
     it('should accept valid checklist with strings', () => {
-      const result = service.validateChecklistStructure(['item1', 'item2', 'item3']);
+      const result = service.validateChecklistStructure([
+        'item1',
+        'item2',
+        'item3',
+      ]);
       expect(result.isValid).toBe(true);
       expect(result.reason).toBeUndefined();
     });
@@ -83,7 +91,11 @@ describe('ChecklistService', () => {
     });
 
     it('should accept checklist with 3 items (boundary)', () => {
-      const result = service.validateChecklistStructure(['item1', 'item2', 'item3']);
+      const result = service.validateChecklistStructure([
+        'item1',
+        'item2',
+        'item3',
+      ]);
       expect(result.isValid).toBe(true);
     });
   });
@@ -222,13 +234,19 @@ describe('ChecklistService', () => {
 
   describe('findSimilarTasksInProject', () => {
     it('should return empty array for invalid projectId', async () => {
-      const result = await service.findSimilarTasksInProject('invalid-id', 'habit');
+      const result = await service.findSimilarTasksInProject(
+        'invalid-id',
+        'habit',
+      );
       expect(result).toEqual([]);
     });
 
     it('should return empty array for invalid microTaskType', async () => {
       const projectId = new Types.ObjectId().toString();
-      const result = await service.findSimilarTasksInProject(projectId, 'invalid-type');
+      const result = await service.findSimilarTasksInProject(
+        projectId,
+        'invalid-type',
+      );
       expect(result).toEqual([]);
     });
 
@@ -245,7 +263,11 @@ describe('ChecklistService', () => {
       const mockSelect = jest.fn().mockReturnValue({ limit: mockLimit });
       mockTaskModel.find.mockReturnValue({ select: mockSelect });
 
-      const result = await service.findSimilarTasksInProject(projectId.toString(), 'habit', 1);
+      const result = await service.findSimilarTasksInProject(
+        projectId.toString(),
+        'habit',
+        1,
+      );
 
       expect(mockTaskModel.find).toHaveBeenCalled();
       expect(mockSelect).toHaveBeenCalledWith('name description checklist');
@@ -258,7 +280,9 @@ describe('ChecklistService', () => {
       const projectId = new Types.ObjectId();
       const mockExec = jest.fn().mockResolvedValue([]);
       const mockLimit = jest.fn().mockReturnValue({ exec: mockExec });
-      mockTaskModel.find.mockReturnValue({ select: jest.fn().mockReturnValue({ limit: mockLimit }) });
+      mockTaskModel.find.mockReturnValue({
+        select: jest.fn().mockReturnValue({ limit: mockLimit }),
+      });
 
       await service.findSimilarTasksInProject(projectId.toString(), 'habit', 5);
 
@@ -271,7 +295,10 @@ describe('ChecklistService', () => {
         throw new Error('DB error');
       });
 
-      const result = await service.findSimilarTasksInProject(projectId.toString(), 'habit');
+      const result = await service.findSimilarTasksInProject(
+        projectId.toString(),
+        'habit',
+      );
 
       expect(result).toEqual([]);
     });

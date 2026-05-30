@@ -22,7 +22,6 @@ export class WbsValidationService {
 
   // Validate a single WBS node against the 8/80 rule
   validateNode(node: WBSNodeDto): ValidateWBSResponseDto {
-
     // Only validate leaf nodes (no children or empty children)
     const isLeaf = !node.children || node.children.length === 0;
     if (!isLeaf) return { valid: true };
@@ -43,9 +42,12 @@ export class WbsValidationService {
 
     return { valid: true };
   }
-  
+
   // Validate all nodes in the WBS tree and return all violations
-  validateTree(nodes: WBSNodeDto[]): { valid: boolean; violations: ValidateWBSResponseDto[] } {
+  validateTree(nodes: WBSNodeDto[]): {
+    valid: boolean;
+    violations: ValidateWBSResponseDto[];
+  } {
     const violations: ValidateWBSResponseDto[] = [];
 
     const traverse = (nodeList: WBSNodeDto[]) => {
@@ -73,9 +75,10 @@ export class WbsValidationService {
     const totalLeafHours = this.roundHours(
       leaves.reduce((sum, node) => sum + (Number(node.estimatedHours) || 0), 0),
     );
-    const safeBudget = Number.isFinite(Number(budgetHours)) && Number(budgetHours) > 0
-      ? Number(budgetHours)
-      : 0;
+    const safeBudget =
+      Number.isFinite(Number(budgetHours)) && Number(budgetHours) > 0
+        ? Number(budgetHours)
+        : 0;
     const deltaHours = this.roundHours(totalLeafHours - safeBudget);
     const overBudget = safeBudget > 0 ? totalLeafHours > safeBudget : false;
 
@@ -84,22 +87,37 @@ export class WbsValidationService {
       totalLeafHours,
       overBudget,
       deltaHours,
-      utilizationPct: safeBudget > 0 ? this.roundHours((totalLeafHours / safeBudget) * 100) : 0,
+      utilizationPct:
+        safeBudget > 0
+          ? this.roundHours((totalLeafHours / safeBudget) * 100)
+          : 0,
       ...(context?.weeklyHours ? { weeklyHours: context.weeklyHours } : {}),
-      ...(context?.weeksAvailable ? { weeksAvailable: context.weeksAvailable } : {}),
+      ...(context?.weeksAvailable
+        ? { weeksAvailable: context.weeksAvailable }
+        : {}),
     };
   }
 
-  normalizeTreeToBudget(nodes: WBSNodeDto[], budgetHours: number): WBSNodeDto[] {
+  normalizeTreeToBudget(
+    nodes: WBSNodeDto[],
+    budgetHours: number,
+  ): WBSNodeDto[] {
     const normalized = this.cloneNodes(nodes);
     const leaves = this.collectLeafNodes(normalized);
     const safeBudget = Number(budgetHours);
 
-    if (!Number.isFinite(safeBudget) || safeBudget <= 0 || leaves.length === 0) {
+    if (
+      !Number.isFinite(safeBudget) ||
+      safeBudget <= 0 ||
+      leaves.length === 0
+    ) {
       return normalized;
     }
 
-    const currentTotal = leaves.reduce((sum, node) => sum + (Number(node.estimatedHours) || 0), 0);
+    const currentTotal = leaves.reduce(
+      (sum, node) => sum + (Number(node.estimatedHours) || 0),
+      0,
+    );
     if (!Number.isFinite(currentTotal) || currentTotal <= 0) {
       return normalized;
     }
@@ -110,7 +128,10 @@ export class WbsValidationService {
       leaf.estimatedHours = this.roundHours(Math.min(80, Math.max(8, scaled)));
     }
 
-    let adjustedTotal = leaves.reduce((sum, node) => sum + (Number(node.estimatedHours) || 0), 0);
+    let adjustedTotal = leaves.reduce(
+      (sum, node) => sum + (Number(node.estimatedHours) || 0),
+      0,
+    );
     let guard = 0;
 
     while (Math.abs(adjustedTotal - safeBudget) > 0.1 && guard < 1000) {
@@ -175,7 +196,10 @@ export class WbsValidationService {
       return node.estimatedHours;
     }
 
-    const total = node.children.reduce((sum, child) => sum + this.recalculateNodeHours(child), 0);
+    const total = node.children.reduce(
+      (sum, child) => sum + this.recalculateNodeHours(child),
+      0,
+    );
     node.estimatedHours = this.roundHours(total);
     return node.estimatedHours;
   }
@@ -198,9 +222,10 @@ Nome: "${node.name}"
 Descrição: "${node.description || 'Sem descrição'}"
 Horas Estimadas: ${node.estimatedHours}h
 
-${node.estimatedHours > 80
-  ? `Este pacote é MUITO GRANDE (${node.estimatedHours}h > 80h). Sugira como decompor em sub-pacotes menores, cada um entre 8-80 horas.`
-  : `Este pacote é MUITO PEQUENO (${node.estimatedHours}h < 8h). Sugira como combinar com outras atividades ou expandir o escopo para atingir pelo menos 8 horas.`
+${
+  node.estimatedHours > 80
+    ? `Este pacote é MUITO GRANDE (${node.estimatedHours}h > 80h). Sugira como decompor em sub-pacotes menores, cada um entre 8-80 horas.`
+    : `Este pacote é MUITO PEQUENO (${node.estimatedHours}h < 8h). Sugira como combinar com outras atividades ou expandir o escopo para atingir pelo menos 8 horas.`
 }
 
 Retorne APENAS um array JSON com os sub-pacotes sugeridos:

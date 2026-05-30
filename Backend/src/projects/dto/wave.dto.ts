@@ -1,38 +1,45 @@
-import { IsString, IsDateString, IsEnum, IsOptional, IsArray, IsNumber } from 'class-validator'
+import {
+  IsString,
+  IsDateString,
+  IsEnum,
+  IsOptional,
+  IsArray,
+  IsNumber,
+} from 'class-validator';
 
 export class CreateWaveDto {
   @IsNumber()
-  waveNumber: number
+  waveNumber: number;
 
   @IsDateString()
-  startDate: string
+  startDate: string;
 
   @IsDateString()
-  endDate: string
+  endDate: string;
 
   @IsEnum(['planned', 'active', 'completed'])
   @IsOptional()
-  status?: 'planned' | 'active' | 'completed'
+  status?: 'planned' | 'active' | 'completed';
 
   @IsArray()
   @IsOptional()
-  taskIds?: string[]
+  taskIds?: string[];
 
   @IsString()
   @IsOptional()
-  description?: string
+  description?: string;
 }
 
 export class UpdateWaveDto {
   @IsEnum(['planned', 'active', 'completed'])
   @IsOptional()
-  status?: 'planned' | 'active' | 'completed'
+  status?: 'planned' | 'active' | 'completed';
 
   @IsArray()
   @IsOptional()
-  taskIds?: string[]
+  taskIds?: string[];
 
   @IsString()
   @IsOptional()
-  description?: string
+  description?: string;
 }

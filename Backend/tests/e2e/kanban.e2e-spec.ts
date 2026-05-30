@@ -5,7 +5,7 @@ import { AppModule } from '../../src/app.module';
 
 /**
  * Sprint 4 E2E Test Suite: Kanban + Rastreabilidade
- * 
+ *
  * Tests the full flow:
  * 1. Create task in project
  * 2. View task in Kanban (default status = 'todo')
@@ -142,8 +142,12 @@ describe('Sprint 4: Kanban Board E2E Tests', () => {
         .expect(200);
 
       expect(response.body.length).toBe(3);
-      expect(response.body[0].kanbanOrder).toBeLessThan(response.body[1].kanbanOrder);
-      expect(response.body[1].kanbanOrder).toBeLessThan(response.body[2].kanbanOrder);
+      expect(response.body[0].kanbanOrder).toBeLessThan(
+        response.body[1].kanbanOrder,
+      );
+      expect(response.body[1].kanbanOrder).toBeLessThan(
+        response.body[2].kanbanOrder,
+      );
     });
   });
 
@@ -172,7 +176,10 @@ describe('Sprint 4: Kanban Board E2E Tests', () => {
 
       // Should show chain up to root
       expect(response.body.ancestors.length).toBeGreaterThan(0);
-      expect(response.body.ancestors[response.body.ancestors.length - 1].parentTaskId).toBeNull();
+      expect(
+        response.body.ancestors[response.body.ancestors.length - 1]
+          .parentTaskId,
+      ).toBeNull();
     });
   });
 
@@ -193,7 +200,7 @@ describe('Sprint 4: Kanban Board E2E Tests', () => {
         .expect(200);
 
       // Small delay for async feedback generation
-      await new Promise(resolve => setTimeout(resolve, 500));
+      await new Promise((resolve) => setTimeout(resolve, 500));
 
       // Fetch feedback
       const response = await request(app.getHttpServer())
@@ -225,7 +232,7 @@ describe('Sprint 4: Kanban Board E2E Tests', () => {
         .expect(200);
 
       // Wait a bit
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise((resolve) => setTimeout(resolve, 100));
 
       // Generate second feedback
       const second = await request(app.getHttpServer())
@@ -264,7 +271,12 @@ describe('Sprint 4: Kanban Board E2E Tests', () => {
         impediments: 'Nenhum impeditivo relevante',
         impedimentType: 'none',
         action: null,
-        selectedSteps: [{ title: 'Registrar no board', description: 'Atualizar status final' }],
+        selectedSteps: [
+          {
+            title: 'Registrar no board',
+            description: 'Atualizar status final',
+          },
+        ],
       };
 
       const postResponse = await request(app.getHttpServer())
@@ -272,14 +284,20 @@ describe('Sprint 4: Kanban Board E2E Tests', () => {
         .send(userFeedbackPayload)
         .expect(200);
 
-      expect(postResponse.body.feedback).toContain('Entrega concluída com sucesso');
+      expect(postResponse.body.feedback).toContain(
+        'Entrega concluída com sucesso',
+      );
 
       const getResponse = await request(app.getHttpServer())
         .get(`/tasks/${taskId}/completion-feedback`)
         .expect(200);
 
-      expect(getResponse.body.feedback).toContain('Entrega concluída com sucesso');
-      expect(getResponse.body.feedback).toContain('Nenhum impeditivo relevante');
+      expect(getResponse.body.feedback).toContain(
+        'Entrega concluída com sucesso',
+      );
+      expect(getResponse.body.feedback).toContain(
+        'Nenhum impeditivo relevante',
+      );
     });
   });
 

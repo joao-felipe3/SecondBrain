@@ -1,6 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getModelToken } from '@nestjs/mongoose';
-import { CPMService, TaskNode } from '../../../../src/tasks/services/cpm.service';
+import {
+  CPMService,
+  TaskNode,
+} from '../../../../src/tasks/services/cpm.service';
 import { TaskDependency } from '../../../../src/tasks/schemas/task-dependency.schema';
 import { DependencyType } from '../../../../src/tasks/schemas/task-dependency.schema';
 
@@ -66,7 +69,7 @@ describe('CPMService - Critical Path Method', () => {
       expect(analysis.projectDuration).toBe(9);
 
       // Verifica métricas
-      const taskB = analysis.tasksByImpact.find(t => t.id === 'B');
+      const taskB = analysis.tasksByImpact.find((t) => t.id === 'B');
       expect(taskB?.earlyStart).toBe(2); // Começa após A terminar
       expect(taskB?.earlyFinish).toBe(7); // 2 + 5
       expect(taskB?.lateStart).toBe(2); // Sem atraso possível
@@ -114,7 +117,7 @@ describe('CPMService - Critical Path Method', () => {
       expect(analysis.criticalPath).not.toContain('C'); // C não é crítica
 
       // Verifica folga de C
-      const taskC = analysis.tasksByImpact.find(t => t.id === 'C');
+      const taskC = analysis.tasksByImpact.find((t) => t.id === 'C');
       expect(taskC?.slack).toBeCloseTo(1, 0.1); // Folga ≈ 1h
       expect(taskC?.isCritical).toBe(false);
     });
@@ -128,7 +131,12 @@ describe('CPMService - Critical Path Method', () => {
         { id: 't3', name: 'Frontend', duration: 720, dependencies: ['t2'] }, // 12h
         { id: 't4', name: 'Backend', duration: 1200, dependencies: ['t2'] }, // 20h (crítica esperada)
         { id: 't5', name: 'Testes Unit.', duration: 480, dependencies: ['t4'] }, // 8h
-        { id: 't6', name: 'Testes Int.', duration: 600, dependencies: ['t3', 't5'] }, // 10h
+        {
+          id: 't6',
+          name: 'Testes Int.',
+          duration: 600,
+          dependencies: ['t3', 't5'],
+        }, // 10h
         { id: 't7', name: 'Docs', duration: 240, dependencies: ['t4'] }, // 4h
         { id: 't8', name: 'Review', duration: 180, dependencies: ['t6', 't7'] }, // 3h
         { id: 't9', name: 'Deploy Pré', duration: 120, dependencies: ['t8'] }, // 2h
@@ -145,11 +153,11 @@ describe('CPMService - Critical Path Method', () => {
       expect(analysis.alerts.length).toBeGreaterThan(0);
 
       // Task 4 (Backend - 20h) deve ter folga 0
-      const task4 = analysis.tasksByImpact.find(t => t.id === 't4');
+      const task4 = analysis.tasksByImpact.find((t) => t.id === 't4');
       expect(task4?.isCritical).toBe(true);
 
       // Task 3 (Frontend) deve ter folga (Frontend é paralelo ao Backend)
-      const task3 = analysis.tasksByImpact.find(t => t.id === 't3');
+      const task3 = analysis.tasksByImpact.find((t) => t.id === 't3');
       expect(task3?.slack).toBeGreaterThan(0);
     });
   });
@@ -200,7 +208,9 @@ describe('CPMService - Critical Path Method', () => {
 
       // Deve logar warning, não crashar
       const analysis = service.calculateCriticalPath(tasks);
-      expect(analysis.alerts.some((a) => String(a).toLowerCase().includes('ciclo'))).toBe(true);
+      expect(
+        analysis.alerts.some((a) => String(a).toLowerCase().includes('ciclo')),
+      ).toBe(true);
     });
   });
 
@@ -218,7 +228,9 @@ describe('CPMService - Critical Path Method', () => {
           name: 'B',
           duration: 180, // 3h
           dependencies: ['A'],
-          dependencyEdges: [{ predecessorId: 'A', relationship: DependencyType.START_TO_START }],
+          dependencyEdges: [
+            { predecessorId: 'A', relationship: DependencyType.START_TO_START },
+          ],
         },
       ];
 
@@ -246,7 +258,12 @@ describe('CPMService - Critical Path Method', () => {
           name: 'C',
           duration: 120, // 2h
           dependencies: ['A'],
-          dependencyEdges: [{ predecessorId: 'A', relationship: DependencyType.FINISH_TO_FINISH }],
+          dependencyEdges: [
+            {
+              predecessorId: 'A',
+              relationship: DependencyType.FINISH_TO_FINISH,
+            },
+          ],
         },
       ];
 
@@ -296,10 +313,12 @@ describe('CPMService - Critical Path Method', () => {
       expect(Array.isArray(analysis.packageCriticality)).toBe(true);
       expect((analysis.packageCriticality || []).length).toBeGreaterThan(0);
 
-      const buildPackage = (analysis.packageCriticality || []).find((p) => p.packageId === 'pkg-build');
+      const buildPackage = (analysis.packageCriticality || []).find(
+        (p) => p.packageId === 'pkg-build',
+      );
       expect(buildPackage).toBeDefined();
-      expect((buildPackage?.taskCount || 0)).toBe(2);
-      expect((buildPackage?.criticalTaskCount || 0)).toBeGreaterThan(0);
+      expect(buildPackage?.taskCount || 0).toBe(2);
+      expect(buildPackage?.criticalTaskCount || 0).toBeGreaterThan(0);
       expect(typeof buildPackage?.score).toBe('number');
     });
   });

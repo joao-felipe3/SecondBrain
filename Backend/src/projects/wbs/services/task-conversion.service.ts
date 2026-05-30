@@ -10,7 +10,6 @@ import {
 } from '../utils/metrics-calculator.util';
 import { computeLeafHours } from '../utils/wbs-helpers.util';
 
-
 // Handles conversion of WBS nodes to micro-tasks, including AI enrichment and auto-audit/apply logic
 @Injectable()
 export class TaskConversionService {
@@ -50,7 +49,9 @@ export class TaskConversionService {
     modelOverride?: string;
   }): string {
     // Key MUST start with drafts_with_plan:${projectId}: so CacheService.clearForProject can purge it.
-    const nodeId = (params.node as any)?._id ? String((params.node as any)._id) : undefined;
+    const nodeId = (params.node as any)?._id
+      ? String((params.node as any)._id)
+      : undefined;
     const model =
       params.modelOverride ||
       this.safeEnv('WBS_GEMINI_MODEL') ||
@@ -107,7 +108,8 @@ export class TaskConversionService {
     parentPath: string = '',
     level: number = 1,
   ): Array<{ node: WBSNodeDto; nodePath: string; level: number }> {
-    const out: Array<{ node: WBSNodeDto; nodePath: string; level: number }> = [];
+    const out: Array<{ node: WBSNodeDto; nodePath: string; level: number }> =
+      [];
     const traverse = (nodeList: WBSNodeDto[], p: string, lvl: number) => {
       for (const node of nodeList) {
         const currentPath = p ? `${p} > ${node.name}` : node.name;
@@ -148,16 +150,24 @@ export class TaskConversionService {
 
     const traverse = (nodeList: WBSNodeDto[], parentPath: string = '') => {
       for (const node of nodeList) {
-        const currentPath = parentPath ? `${parentPath} > ${node.name}` : node.name;
+        const currentPath = parentPath
+          ? `${parentPath} > ${node.name}`
+          : node.name;
 
         if (!node.children || node.children.length === 0) {
-          const totalMinutes = Math.max(0, Math.round((node.estimatedHours || 0) * 60));
+          const totalMinutes = Math.max(
+            0,
+            Math.round((node.estimatedHours || 0) * 60),
+          );
           const chunkMinutes = computeChunkMinutes(totalMinutes);
           const chunks = chunkMinutes.length;
 
           for (let chunkIndex = 0; chunkIndex < chunks; chunkIndex++) {
             const estimatedMinutes = chunkMinutes[chunkIndex];
-            const pomodorosPlanned = Math.max(1, Math.ceil(estimatedMinutes / 25));
+            const pomodorosPlanned = Math.max(
+              1,
+              Math.ceil(estimatedMinutes / 25),
+            );
             const suffix = chunks > 1 ? ` (${chunkIndex + 1}/${chunks})` : '';
 
             tasks.push({
@@ -242,12 +252,17 @@ export class TaskConversionService {
     // Process leaf nodes with optional parallelism (per-leaf), keeping per-leaf generation quality intact.
     const leafConcurrency = this.getNumericEnv('WBS_LEAF_CONCURRENCY', 1);
     const leaves = this.collectLeafNodesInOrder(nodes);
-    console.log(`[WBS-Conversion] Found ${leaves.length} leaf node(s). leafConcurrency=${leafConcurrency}`);
+    console.log(
+      `[WBS-Conversion] Found ${leaves.length} leaf node(s). leafConcurrency=${leafConcurrency}`,
+    );
 
     // Pre-compute deterministic priority offsets based on traversal order.
     let runningOffset = 0;
     const leafJobs = leaves.map((l) => {
-      const totalMinutes = Math.max(0, Math.round((l.node.estimatedHours || 0) * 60));
+      const totalMinutes = Math.max(
+        0,
+        Math.round((l.node.estimatedHours || 0) * 60),
+      );
       const chunkMinutes = computeChunkMinutes(totalMinutes);
       const chunks = chunkMinutes.length;
       const baseOffset = runningOffset;
@@ -261,8 +276,19 @@ export class TaskConversionService {
     });
 
     await this.mapWithConcurrency(leafJobs, leafConcurrency, async (job) => {
-      console.log(`[WBS-Conversion] Processing leaf node: "${job.nodePath}" (chunks=${job.chunks})`);
-      await this.processLeafNode(job.node, job.nodePath, projectId, project, tasksService, options, result, job.priorityOffset);
+      console.log(
+        `[WBS-Conversion] Processing leaf node: "${job.nodePath}" (chunks=${job.chunks})`,
+      );
+      await this.processLeafNode(
+        job.node,
+        job.nodePath,
+        projectId,
+        project,
+        tasksService,
+        options,
+        result,
+        job.priorityOffset,
+      );
     });
 
     // Finalize: recalculate project stats
@@ -284,20 +310,36 @@ export class TaskConversionService {
     parentPath: string = '',
     level: number = 1,
   ): Promise<void> {
-    console.log(`[WBS-Conversion] Processing ${nodeList.length} nodes at level ${level}`);
+    console.log(
+      `[WBS-Conversion] Processing ${nodeList.length} nodes at level ${level}`,
+    );
     for (const node of nodeList) {
-      const currentPath = parentPath ? `${parentPath} > ${node.name}` : node.name;
+      const currentPath = parentPath
+        ? `${parentPath} > ${node.name}`
+        : node.name;
       const isLeaf = !node.children || node.children.length === 0;
-      
-      console.log(`[WBS-Conversion] Node: "${node.name}" (level ${level}, isLeaf: ${isLeaf}, hours: ${node.estimatedHours}h)`);
+
+      console.log(
+        `[WBS-Conversion] Node: "${node.name}" (level ${level}, isLeaf: ${isLeaf}, hours: ${node.estimatedHours}h)`,
+      );
 
       if (isLeaf) {
         // Leaf node: process with audit and creation
         console.log(`[WBS-Conversion] Processing leaf node: "${currentPath}"`);
-        await this.processLeafNode(node, currentPath, projectId, project, tasksService, options, result);
+        await this.processLeafNode(
+          node,
+          currentPath,
+          projectId,
+          project,
+          tasksService,
+          options,
+          result,
+        );
       } else {
         // Intermediate node: recurse to children
-        console.log(`[WBS-Conversion] Recursing into branch: "${currentPath}" (${node.children?.length} children)`);
+        console.log(
+          `[WBS-Conversion] Recursing into branch: "${currentPath}" (${node.children?.length} children)`,
+        );
         await this.processWBSNodesRecursively(
           node.children || [],
           projectId,
@@ -324,27 +366,45 @@ export class TaskConversionService {
     result: any,
     priorityOffset: number = 0,
   ): Promise<void> {
-    console.log(`[WBS-Conversion] === Processing Leaf: "${nodePath}" (${node.estimatedHours}h) ===`);
-    
+    console.log(
+      `[WBS-Conversion] === Processing Leaf: "${nodePath}" (${node.estimatedHours}h) ===`,
+    );
+
     const autoResolveEnabled = !!options?.autoResolveDiscrepancies;
     const autoAuditThresholdPct =
-      typeof options?.autoAuditThresholdPct === 'number' && Number.isFinite(options.autoAuditThresholdPct)
+      typeof options?.autoAuditThresholdPct === 'number' &&
+      Number.isFinite(options.autoAuditThresholdPct)
         ? options.autoAuditThresholdPct
         : 60;
 
     // Generate tasks for this leaf node based on time estimates and breaks them into chunks
-    const leafTaskDtos = await this.generateTasksForLeafNode(node, nodePath, projectId, priorityOffset);
-    console.log(`[WBS-Conversion] Generated ${leafTaskDtos.length} task(s) for leaf: "${nodePath}"`, leafTaskDtos.length > 0 ? leafTaskDtos[0] : 'EMPTY');
+    const leafTaskDtos = await this.generateTasksForLeafNode(
+      node,
+      nodePath,
+      projectId,
+      priorityOffset,
+    );
+    console.log(
+      `[WBS-Conversion] Generated ${leafTaskDtos.length} task(s) for leaf: "${nodePath}"`,
+      leafTaskDtos.length > 0 ? leafTaskDtos[0] : 'EMPTY',
+    );
 
     if (autoResolveEnabled && leafTaskDtos.length > 0) {
       const budgetHours = Number(node.estimatedHours || 0);
       const generatedHoursBefore = computeLeafHours(leafTaskDtos);
-      const diffPct = budgetHours > 0 ? ((generatedHoursBefore - budgetHours) / budgetHours) * 100 : 0;
-      console.log(`[WBS-Conversion] Audit check: budget=${budgetHours}h, generated=${generatedHoursBefore}h, diff=${diffPct.toFixed(1)}%`);
+      const diffPct =
+        budgetHours > 0
+          ? ((generatedHoursBefore - budgetHours) / budgetHours) * 100
+          : 0;
+      console.log(
+        `[WBS-Conversion] Audit check: budget=${budgetHours}h, generated=${generatedHoursBefore}h, diff=${diffPct.toFixed(1)}%`,
+      );
 
       // Only audit if discrepancy exceeds threshold
       if (diffPct >= autoAuditThresholdPct) {
-        console.log(`[WBS-Conversion] Discrepancy exceeds threshold (${autoAuditThresholdPct}%), auditing...`);
+        console.log(
+          `[WBS-Conversion] Discrepancy exceeds threshold (${autoAuditThresholdPct}%), auditing...`,
+        );
         await this.auditAndResolveLeafDiscrepancy(
           node,
           nodePath,
@@ -358,10 +418,19 @@ export class TaskConversionService {
 
     // Create tasks if any were generated
     if (leafTaskDtos.length > 0) {
-      console.log(`[WBS-Conversion] Creating ${leafTaskDtos.length} task(s) for "${nodePath}"`);
-      await this.createAndSaveLeaveTasks(leafTaskDtos, tasksService, nodePath, result);
+      console.log(
+        `[WBS-Conversion] Creating ${leafTaskDtos.length} task(s) for "${nodePath}"`,
+      );
+      await this.createAndSaveLeaveTasks(
+        leafTaskDtos,
+        tasksService,
+        nodePath,
+        result,
+      );
     } else {
-      console.warn(`[WBS-Conversion] ⚠️ No tasks generated for "${nodePath}" (might be invalid leaf or zero hours)`);
+      console.warn(
+        `[WBS-Conversion] ⚠️ No tasks generated for "${nodePath}" (might be invalid leaf or zero hours)`,
+      );
     }
   }
 
@@ -371,19 +440,21 @@ export class TaskConversionService {
     nodePath: string,
     projectId: string,
     priorityOffset: number = 0,
-  ): Promise<Array<{
-    name: string;
-    description: string;
-    estimatedMinutes: number;
-    pomodorosPlanned: number;
-    priority: number;
-    project: string;
-    deadline: Date;
-    isConcluded: boolean;
-    late: boolean;
-    recurrency: string;
-    wbsPath: string;
-  }>> {
+  ): Promise<
+    Array<{
+      name: string;
+      description: string;
+      estimatedMinutes: number;
+      pomodorosPlanned: number;
+      priority: number;
+      project: string;
+      deadline: Date;
+      isConcluded: boolean;
+      late: boolean;
+      recurrency: string;
+      wbsPath: string;
+    }>
+  > {
     const tasks: Array<{
       name: string;
       description: string;
@@ -400,15 +471,24 @@ export class TaskConversionService {
 
     // Only process leaf nodes (no children)
     if (node.children && node.children.length > 0) {
-      console.warn(`[WBS-Conversion] Node "${node.name}" is not a leaf (has ${node.children.length} children), skipping`);
+      console.warn(
+        `[WBS-Conversion] Node "${node.name}" is not a leaf (has ${node.children.length} children), skipping`,
+      );
       return tasks;
     }
 
-    const totalMinutes = Math.max(0, Math.round((node.estimatedHours || 0) * 60));
-    console.log(`[WBS-Conversion] Generating chunks for "${nodePath}": ${totalMinutes} minutes total`);
+    const totalMinutes = Math.max(
+      0,
+      Math.round((node.estimatedHours || 0) * 60),
+    );
+    console.log(
+      `[WBS-Conversion] Generating chunks for "${nodePath}": ${totalMinutes} minutes total`,
+    );
     const chunkMinutes = computeChunkMinutes(totalMinutes);
     const chunks = chunkMinutes.length;
-    console.log(`[WBS-Conversion] Split into ${chunks} chunk(s): [${chunkMinutes.join(', ')}] minutes`);
+    console.log(
+      `[WBS-Conversion] Split into ${chunks} chunk(s): [${chunkMinutes.join(', ')}] minutes`,
+    );
 
     // Calculate deadline: 30 days from now
     const deadline = new Date();
@@ -416,7 +496,9 @@ export class TaskConversionService {
 
     // Generate full drafts using DraftGenerationService (same system as draft-generation)
     try {
-      console.log(`[WBS-Conversion] Generating ${chunks} drafts via DraftGenerationService...`);
+      console.log(
+        `[WBS-Conversion] Generating ${chunks} drafts via DraftGenerationService...`,
+      );
 
       const plan = {
         themes: [{ name: node.name }],
@@ -433,24 +515,29 @@ export class TaskConversionService {
       const cached = await this.cacheService.get(cacheKey);
       let drafts: any[];
       if (cached && Array.isArray(cached) && cached.length > 0) {
-        console.log(`[WBS-Conversion] ✅ Cache hit for drafts (items=${cached.length}) keyPrefix=${cacheKey.split(':').slice(0, 3).join(':')}`);
+        console.log(
+          `[WBS-Conversion] ✅ Cache hit for drafts (items=${cached.length}) keyPrefix=${cacheKey.split(':').slice(0, 3).join(':')}`,
+        );
         drafts = cached;
       } else {
-        drafts = await this.draftGenerationService.generateMicroTasksDraftsForLeafWithPlan(
-        {
-          project: { _id: projectId },
-          node,
-          currentPath: nodePath,
-          level: 3, // Typical level for leaf nodes
-          plan,
-        },
-        chunkMinutes,
-      );
+        drafts =
+          await this.draftGenerationService.generateMicroTasksDraftsForLeafWithPlan(
+            {
+              project: { _id: projectId },
+              node,
+              currentPath: nodePath,
+              level: 3, // Typical level for leaf nodes
+              plan,
+            },
+            chunkMinutes,
+          );
 
         await this.cacheService.set(cacheKey, drafts);
       }
 
-      console.log(`[WBS-Conversion] ✨ Generated ${drafts.length} micro-task drafts via AI`);
+      console.log(
+        `[WBS-Conversion] ✨ Generated ${drafts.length} micro-task drafts via AI`,
+      );
 
       // Convert drafts to task DTOs
       for (let i = 0; i < drafts.length; i++) {
@@ -475,7 +562,9 @@ export class TaskConversionService {
           wbsPath: nodePath,
         };
 
-        console.log(`[WBS-Conversion] Created task chunk: "${task.name}" (${estimatedMinutes}min, ${pomodorosPlanned} pomodoros)`);
+        console.log(
+          `[WBS-Conversion] Created task chunk: "${task.name}" (${estimatedMinutes}min, ${pomodorosPlanned} pomodoros)`,
+        );
         tasks.push(task);
       }
     } catch (error: any) {
@@ -507,7 +596,9 @@ export class TaskConversionService {
           wbsPath: nodePath,
         };
 
-        console.log(`[WBS-Conversion] Created task chunk (fallback): "${task.name}" (${estimatedMinutes}min, ${pomodorosPlanned} pomodoros)`);
+        console.log(
+          `[WBS-Conversion] Created task chunk (fallback): "${task.name}" (${estimatedMinutes}min, ${pomodorosPlanned} pomodoros)`,
+        );
         tasks.push(task);
       }
     }
@@ -536,7 +627,9 @@ export class TaskConversionService {
             pomodorosPlanned: Number(t?.pomodorosPlanned || 1),
             priority: typeof t?.priority === 'number' ? t.priority : undefined,
             microTaskType: t?.microTaskType,
-            themeTag: Array.isArray(t?.themeTag) ? String(t.themeTag[0] || '') : t?.themeTag,
+            themeTag: Array.isArray(t?.themeTag)
+              ? String(t.themeTag[0] || '')
+              : t?.themeTag,
             contextTag: t?.contextTag,
             cognitiveMode: t?.cognitiveMode,
           })),
@@ -545,12 +638,33 @@ export class TaskConversionService {
 
       const nodeId = (node as any)?._id ? String((node as any)._id) : undefined;
       const suggestedHoursRaw = Number((audit as any)?.suggestedEstimatedHours);
-      const hasSuggestedHours = Number.isFinite(suggestedHoursRaw) && suggestedHoursRaw > 0;
+      const hasSuggestedHours =
+        Number.isFinite(suggestedHoursRaw) && suggestedHoursRaw > 0;
 
       if ((audit as any)?.suggestedAction === 'simplify') {
-        this.applySimplifyFix(node, nodeId, leafTaskDtos, budgetHours, suggestedHoursRaw, hasSuggestedHours, nodePath, audit, result);
+        this.applySimplifyFix(
+          node,
+          nodeId,
+          leafTaskDtos,
+          budgetHours,
+          suggestedHoursRaw,
+          hasSuggestedHours,
+          nodePath,
+          audit,
+          result,
+        );
       } else if ((audit as any)?.suggestedAction === 'rebaseline') {
-        this.applyRebaselineFix(node, nodeId, budgetHours, generatedHoursBefore, suggestedHoursRaw, hasSuggestedHours, nodePath, audit, result);
+        this.applyRebaselineFix(
+          node,
+          nodeId,
+          budgetHours,
+          generatedHoursBefore,
+          suggestedHoursRaw,
+          hasSuggestedHours,
+          nodePath,
+          audit,
+          result,
+        );
       } else {
         result.auditsApplied.push({
           nodeId,
@@ -559,7 +673,9 @@ export class TaskConversionService {
           generatedHours: generatedHoursBefore,
           appliedAction: 'none',
           diagnosis: (audit as any)?.diagnosis,
-          suggestedEstimatedHours: hasSuggestedHours ? suggestedHoursRaw : undefined,
+          suggestedEstimatedHours: hasSuggestedHours
+            ? suggestedHoursRaw
+            : undefined,
           finalHours: generatedHoursBefore,
         });
       }
@@ -585,11 +701,15 @@ export class TaskConversionService {
     const targetHours = hasSuggestedHours ? suggestedHoursRaw : budgetHours;
     const shrink = this.shrinkLeafTasksToTargetHours(leafTaskDtos, targetHours);
     const finalHours = shrink.finalHours;
-    const finalEstimatedHours = Math.round((hasSuggestedHours ? shrink.targetHours : finalHours) * 2) / 2;
+    const finalEstimatedHours =
+      Math.round((hasSuggestedHours ? shrink.targetHours : finalHours) * 2) / 2;
 
     node.estimatedHours = finalEstimatedHours;
     if (nodeId) {
-      result.wbsUpdates.push({ nodeId, newEstimatedHours: finalEstimatedHours });
+      result.wbsUpdates.push({
+        nodeId,
+        newEstimatedHours: finalEstimatedHours,
+      });
     }
 
     result.auditsApplied.push({
@@ -599,7 +719,9 @@ export class TaskConversionService {
       generatedHours: computeLeafHours(leafTaskDtos),
       appliedAction: 'simplify',
       diagnosis: audit?.diagnosis,
-      suggestedEstimatedHours: hasSuggestedHours ? suggestedHoursRaw : undefined,
+      suggestedEstimatedHours: hasSuggestedHours
+        ? suggestedHoursRaw
+        : undefined,
       finalHours,
     });
   }
@@ -616,7 +738,9 @@ export class TaskConversionService {
     audit: any,
     result: any,
   ): void {
-    const newHoursRaw = hasSuggestedHours ? suggestedHoursRaw : generatedHoursBefore;
+    const newHoursRaw = hasSuggestedHours
+      ? suggestedHoursRaw
+      : generatedHoursBefore;
     const newHours = Math.max(budgetHours, Math.round(newHoursRaw * 2) / 2);
 
     node.estimatedHours = newHours;
@@ -631,7 +755,9 @@ export class TaskConversionService {
       generatedHours: generatedHoursBefore,
       appliedAction: 'rebaseline',
       diagnosis: audit?.diagnosis,
-      suggestedEstimatedHours: hasSuggestedHours ? suggestedHoursRaw : undefined,
+      suggestedEstimatedHours: hasSuggestedHours
+        ? suggestedHoursRaw
+        : undefined,
       finalHours: generatedHoursBefore,
     });
   }
@@ -644,18 +770,23 @@ export class TaskConversionService {
     result: any,
   ): Promise<void> {
     try {
-      console.log(`[WBS-Conversion] Saving ${leafTaskDtos.length} tasks for "${nodePath}"`, {
-        firstTask: leafTaskDtos[0]?.name,
-        hasCreateMany: typeof tasksService.createMany === 'function',
-      });
-      
+      console.log(
+        `[WBS-Conversion] Saving ${leafTaskDtos.length} tasks for "${nodePath}"`,
+        {
+          firstTask: leafTaskDtos[0]?.name,
+          hasCreateMany: typeof tasksService.createMany === 'function',
+        },
+      );
+
       if (typeof tasksService.createMany === 'function') {
         console.log(`[WBS-Conversion] Using batch creation method`);
         const created = await tasksService.createMany(leafTaskDtos, {
           resolveProject: false,
           recalculateProjectStats: false,
         });
-        console.log(`[WBS-Conversion] Batch creation returned ${created?.length || 0} task(s)`);
+        console.log(
+          `[WBS-Conversion] Batch creation returned ${created?.length || 0} task(s)`,
+        );
         for (const createdTask of created) {
           result.createdTasks.push(createdTask);
         }
@@ -669,7 +800,10 @@ export class TaskConversionService {
             result.createdTasks.push(createdTask);
             console.log(`[WBS-Conversion] ✅ Created task: "${dto?.name}"`);
           } catch (error: any) {
-            console.error(`[WBS-Conversion] ❌ Failed to create "${dto?.name}": ${error?.message}`, error);
+            console.error(
+              `[WBS-Conversion] ❌ Failed to create "${dto?.name}": ${error?.message}`,
+              error,
+            );
           }
         }
       }
@@ -682,13 +816,18 @@ export class TaskConversionService {
   }
 
   // Finalize conversion: recalculate project statistics
-  private async finalizeConversion(tasksService: any, projectId: string): Promise<void> {
+  private async finalizeConversion(
+    tasksService: any,
+    projectId: string,
+  ): Promise<void> {
     try {
       if (typeof tasksService.recalculateProjectStats === 'function') {
         await tasksService.recalculateProjectStats(projectId);
       }
     } catch (err: any) {
-      console.warn(`[TaskConversion] Failed to recalculate project stats: ${err?.message || err}`);
+      console.warn(
+        `[TaskConversion] Failed to recalculate project stats: ${err?.message || err}`,
+      );
     }
   }
 
@@ -765,22 +904,30 @@ export class TaskConversionService {
     return tasks;
   }
 
-
   // Shrink leaf tasks to target hours by adjusting pomodoros down
   private shrinkLeafTasksToTargetHours(
-    tasks: Array<{ pomodorosPlanned: number; pertOptimisticMinutes?: number; pertMostLikelyMinutes?: number; pertPessimisticMinutes?: number; pertExpectedMinutes?: number; pertVariance?: number }>,
+    tasks: Array<{
+      pomodorosPlanned: number;
+      pertOptimisticMinutes?: number;
+      pertMostLikelyMinutes?: number;
+      pertPessimisticMinutes?: number;
+      pertExpectedMinutes?: number;
+      pertVariance?: number;
+    }>,
     targetHours: number,
   ): { targetHours: number; finalHours: number } {
-
     const chunks = tasks.length;
     const minHours = chunks * 0.5; // min 1 pomodoro per task
-    
+
     // Ensure the target hours is at least the minimum allowed (minHours)
     // and round the requested `targetHours` to the nearest 0.5 hour
     const target = Math.max(minHours, Math.round(targetHours * 2) / 2);
 
     // Sum current planned pomodoros across all tasks
-    let currentPom = tasks.reduce((sum, t) => sum + Number(t?.pomodorosPlanned || 0), 0);
+    let currentPom = tasks.reduce(
+      (sum, t) => sum + Number(t?.pomodorosPlanned || 0),
+      0,
+    );
 
     // Convert the target hours into an integer count expressed in "pomodoro units".
     const targetPom = Math.round(target / 0.5);
@@ -814,7 +961,10 @@ export class TaskConversionService {
     }
 
     // Recompute the final total minutes/hours based on updated pomodoro counts
-    const finalMinutes = tasks.reduce((sum, t) => sum + ((t.pomodorosPlanned || 0) * 25), 0);
+    const finalMinutes = tasks.reduce(
+      (sum, t) => sum + (t.pomodorosPlanned || 0) * 25,
+      0,
+    );
     const finalHours = finalMinutes / 60;
 
     return {
@@ -823,4 +973,3 @@ export class TaskConversionService {
     };
   }
 }
-

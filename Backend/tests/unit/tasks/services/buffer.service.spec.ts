@@ -38,7 +38,12 @@ describe('BufferService', () => {
       const tasks = [
         { taskId: 'task1', estimatedHours: 10, variance: 1, isCritical: true },
         { taskId: 'task2', estimatedHours: 15, variance: 2, isCritical: true },
-        { taskId: 'task3', estimatedHours: 5, variance: 0.5, isCritical: false },
+        {
+          taskId: 'task3',
+          estimatedHours: 5,
+          variance: 0.5,
+          isCritical: false,
+        },
       ];
       const criticalPath = ['task1', 'task2'];
 
@@ -307,7 +312,12 @@ describe('BufferService', () => {
     it('deve arredondar buffer a 1 decimal', async () => {
       // Arrange
       const tasks = [
-        { taskId: 'task1', estimatedHours: 7.33, variance: 1, isCritical: true },
+        {
+          taskId: 'task1',
+          estimatedHours: 7.33,
+          variance: 1,
+          isCritical: true,
+        },
       ];
       const criticalPath = ['task1'];
 
@@ -329,7 +339,9 @@ describe('BufferService', () => {
 
       // Assert
       expect(result).not.toBeNull();
-      expect(result!.projectBuffer.toString().split('.')[1].length).toBeLessThanOrEqual(1);
+      expect(
+        result!.projectBuffer.toString().split('.')[1].length,
+      ).toBeLessThanOrEqual(1);
     });
 
     it('deve lidar com buffer muito pequeno', async () => {

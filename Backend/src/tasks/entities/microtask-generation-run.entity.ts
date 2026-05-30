@@ -1,14 +1,14 @@
 export class MicroTaskGenerationRun {
-  id: String;
-  project?: String;
-  generationBatchId?: String;
-  parentWbsNodeId?: String;
-  wbsPath?: String;
-  promptVersion?: String;
-  modelName?: String;
+  id: string;
+  project?: string;
+  generationBatchId?: string;
+  parentWbsNodeId?: string;
+  wbsPath?: string;
+  promptVersion?: string;
+  modelName?: string;
   input?: any;
   metrics?: any;
-  error?: String;
+  error?: string;
   cost?: number;
   createdAt?: Date;
 }

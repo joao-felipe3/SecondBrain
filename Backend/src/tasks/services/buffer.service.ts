@@ -1,7 +1,10 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { ProjectBuffer, ProjectBufferDocument } from '../schemas/project-buffer.schema';
+import {
+  ProjectBuffer,
+  ProjectBufferDocument,
+} from '../schemas/project-buffer.schema';
 
 export interface TaskMetrics {
   taskId: string;
@@ -76,7 +79,6 @@ export class BufferService {
       variance: t.variance,
     }));
 
-
     // 4. Desviação estándar
     const standardDeviation = Math.sqrt(totalVariance);
 
@@ -109,7 +111,9 @@ export class BufferService {
     );
 
     if (!bufferDoc) {
-      this.logger.error(`Failed to create/update buffer for project ${projectId}`);
+      this.logger.error(
+        `Failed to create/update buffer for project ${projectId}`,
+      );
       return null;
     }
 
@@ -123,7 +127,10 @@ export class BufferService {
   /**
    * Registra consumo de buffer cuando se completan tareas
    */
-  async consumeBuffer(projectId: string, hoursUsed: number): Promise<BufferStatus> {
+  async consumeBuffer(
+    projectId: string,
+    hoursUsed: number,
+  ): Promise<BufferStatus> {
     this.logger.log(
       `Consumiendo ${hoursUsed}h de buffer para proyecto: ${projectId}`,
     );
@@ -216,7 +223,9 @@ export class BufferService {
   /**
    * Reseta el consumo de buffer (para recálculos)
    */
-  async resetBufferConsumption(projectId: string): Promise<ProjectBuffer | null> {
+  async resetBufferConsumption(
+    projectId: string,
+  ): Promise<ProjectBuffer | null> {
     const buffer = await this.bufferModel.findOneAndUpdate(
       { projectId },
       { consumed: 0 },

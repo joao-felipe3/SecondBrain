@@ -141,7 +141,10 @@ describe('RTMService', () => {
           projectId: mockProjectId,
         },
         expect.objectContaining({
-          $addToSet: { traceableItems: mockTaskId, traceableActionItems: mockTaskId },
+          $addToSet: {
+            traceableItems: mockTaskId,
+            traceableActionItems: mockTaskId,
+          },
           $set: { status: 'satisfied' },
         }),
         { new: true },
@@ -187,7 +190,12 @@ describe('RTMService', () => {
       expect(result).not.toBeNull();
       expect(mockModel.findByIdAndUpdate).toHaveBeenCalledWith(
         mockRequirementId,
-        { $pull: { traceableItems: mockTaskId, traceableActionItems: mockTaskId } },
+        {
+          $pull: {
+            traceableItems: mockTaskId,
+            traceableActionItems: mockTaskId,
+          },
+        },
         { new: true },
       );
     });
@@ -326,7 +334,10 @@ describe('RTMService', () => {
         .mockResolvedValueOnce(mockSavedRequirements[1]);
 
       // Act
-      const result = await service.saveRequirements(mockProjectId, requirementsData);
+      const result = await service.saveRequirements(
+        mockProjectId,
+        requirementsData,
+      );
 
       // Assert
       expect(result.length).toBe(2);
@@ -344,7 +355,9 @@ describe('RTMService', () => {
 
       // Assert
       expect(result).toBe(true);
-      expect(mockModel.findByIdAndDelete).toHaveBeenCalledWith(mockRequirementId);
+      expect(mockModel.findByIdAndDelete).toHaveBeenCalledWith(
+        mockRequirementId,
+      );
     });
 
     it('deve retornar false se requisito não existir', async () => {

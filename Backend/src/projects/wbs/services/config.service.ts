@@ -1,11 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService as NestConfigService } from '@nestjs/config';
 
-
 @Injectable()
 export class ConfigService {
   constructor(private readonly nestConfig: NestConfigService) {}
-
 
   getNumericEnv(key: string, defaultValue: number = 0): number {
     const value = this.nestConfig.get<string>(key);
@@ -26,7 +24,9 @@ export class ConfigService {
   }
 
   getWbsGenerationModelOverride(): string | undefined {
-    return this.getStringEnv('WBS_GENERATION_MODEL_OVERRIDE', '').trim() || undefined;
+    return (
+      this.getStringEnv('WBS_GENERATION_MODEL_OVERRIDE', '').trim() || undefined
+    );
   }
 
   getMaxPerCall(): number {
@@ -47,15 +47,14 @@ export class ConfigService {
 
   // ============ Cache Configuration ============
 
-
   getRedisUrl(): string | undefined {
     const url = this.getStringEnv('REDIS_URL', '');
     if (url) return url;
-    
+
     const host = this.getStringEnv('REDIS_HOST', '');
     const port = this.getStringEnv('REDIS_PORT', '');
     if (host && port) return `redis://${host}:${port}`;
-    
+
     return undefined;
   }
 
@@ -68,7 +67,6 @@ export class ConfigService {
   }
 
   // ============ WBS Sizing Constants ============
-
 
   getMicroTaskMinMinutes(): number {
     return this.getNumericEnv('WBS_MICRO_TASK_MIN_MINUTES', 15);
@@ -111,27 +109,41 @@ export class ConfigService {
   // ============ Debug & Logging Flags ============
 
   isTimingDebugEnabled(): boolean {
-    return this.getBooleanEnv('WBS_DEBUG_TIMING') || this.getBooleanEnv('DEBUG_TIMING', false);
+    return (
+      this.getBooleanEnv('WBS_DEBUG_TIMING') ||
+      this.getBooleanEnv('DEBUG_TIMING', false)
+    );
   }
 
   isCacheDebugEnabled(): boolean {
-    return this.getBooleanEnv('WBS_DEBUG_CACHE') || this.getBooleanEnv('DEBUG_CACHE', false);
+    return (
+      this.getBooleanEnv('WBS_DEBUG_CACHE') ||
+      this.getBooleanEnv('DEBUG_CACHE', false)
+    );
   }
 
   isVerboseTaskLogsEnabled(): boolean {
-    return this.getBooleanEnv('WBS_VERBOSE_TASK_LOGS') || this.getBooleanEnv('VERBOSE', false);
+    return (
+      this.getBooleanEnv('WBS_VERBOSE_TASK_LOGS') ||
+      this.getBooleanEnv('VERBOSE', false)
+    );
   }
 
   isValidationDebugEnabled(): boolean {
-    return this.getBooleanEnv('WBS_DEBUG_VALIDATION') || this.getBooleanEnv('DEBUG_VALIDATION', false);
+    return (
+      this.getBooleanEnv('WBS_DEBUG_VALIDATION') ||
+      this.getBooleanEnv('DEBUG_VALIDATION', false)
+    );
   }
 
   isLlmDebugEnabled(): boolean {
-    return this.getBooleanEnv('WBS_DEBUG_LLM') || this.getBooleanEnv('DEBUG_LLM', false);
+    return (
+      this.getBooleanEnv('WBS_DEBUG_LLM') ||
+      this.getBooleanEnv('DEBUG_LLM', false)
+    );
   }
 
   // ============ Utility Methods ============
-
 
   getNowIso(): string {
     return new Date().toISOString();
@@ -141,7 +153,7 @@ export class ConfigService {
     if (this.isTimingDebugEnabled()) {
       const ts = this.getNowIso();
       const output = data ? { ts, message, ...data } : { ts, message };
-      // eslint-disable-next-line no-console
+
       console.log('[WBS][timing]', output);
     }
   }
@@ -150,7 +162,7 @@ export class ConfigService {
     if (this.isCacheDebugEnabled()) {
       const ts = this.getNowIso();
       const output = data ? { ts, message, ...data } : { ts, message };
-      // eslint-disable-next-line no-console
+
       console.log('[WBS][cache]', output);
     }
   }
@@ -159,13 +171,12 @@ export class ConfigService {
     if (this.isVerboseTaskLogsEnabled()) {
       const ts = this.getNowIso();
       const output = data ? { ts, message, ...data } : { ts, message };
-      // eslint-disable-next-line no-console
+
       console.log('[WBS][verbose]', output);
     }
   }
 
   // ============ Summary/Debug Info ============
-
 
   getSummary(): any {
     return {

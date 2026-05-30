@@ -55,18 +55,34 @@ import { AlertsController } from './controllers/alerts.controller';
     MongooseModule.forFeature([
       { name: Task.name, schema: TaskSchema },
       { name: MicroTaskMilestone.name, schema: MicroTaskMilestoneSchema },
-      { name: MicroTaskGenerationRun.name, schema: MicroTaskGenerationRunSchema },
-      { name: MicroTaskSimilarityCache.name, schema: MicroTaskSimilarityCacheSchema },
+      {
+        name: MicroTaskGenerationRun.name,
+        schema: MicroTaskGenerationRunSchema,
+      },
+      {
+        name: MicroTaskSimilarityCache.name,
+        schema: MicroTaskSimilarityCacheSchema,
+      },
       { name: Project.name, schema: ProjectSchema },
       { name: TaskDependency.name, schema: TaskDependencySchema },
       { name: ProjectBuffer.name, schema: ProjectBufferSchema },
       { name: Requirement.name, schema: RequirementSchema },
-      { name: TaskCompletionFeedback.name, schema: TaskCompletionFeedbackSchema },
+      {
+        name: TaskCompletionFeedback.name,
+        schema: TaskCompletionFeedbackSchema,
+      },
       { name: TaskAlert.name, schema: TaskAlertSchema },
-    ]), 
-    forwardRef(() => ProjectsModule)
+    ]),
+    forwardRef(() => ProjectsModule),
   ],
-  controllers: [TasksController, CPMController, BufferController, RTMController, HabitsController, AlertsController],
+  controllers: [
+    TasksController,
+    CPMController,
+    BufferController,
+    RTMController,
+    HabitsController,
+    AlertsController,
+  ],
   providers: [
     TasksService,
     GeminiService,

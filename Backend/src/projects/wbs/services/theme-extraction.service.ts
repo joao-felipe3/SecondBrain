@@ -6,7 +6,11 @@ import {
   MIN_EMBEDDING_SEGMENTS,
   MAX_EMBEDDING_CLUSTERS,
 } from '../constants/wbs.constants';
-import { normalizeVector, kMeansClusters, cosineSimilarity } from '../utils/metrics-calculator.util';
+import {
+  normalizeVector,
+  kMeansClusters,
+  cosineSimilarity,
+} from '../utils/metrics-calculator.util';
 
 /**
  * Service for extracting themes from project/node descriptions
@@ -23,17 +27,28 @@ export class ThemeExtractionService {
    * Get theme suggestions using heuristics and keyword matching (fallback)
    * (Fast, no AI calls) - Private: used as fallback only
    */
-  private getThemeSuggestions(params: {
-    project?: any;
-    node: WBSNodeDto;
-  }): { category: 'vocab' | 'tech' | 'general'; themes: string[] } {
-    const projectSummary = params.project?.smartObjective?.summary || params.project?.description || '';
-    const text = `${params.node.name} ${params.node.description || ''} ${projectSummary}`.toLowerCase().trim();
+  private getThemeSuggestions(params: { project?: any; node: WBSNodeDto }): {
+    category: 'vocab' | 'tech' | 'general';
+    themes: string[];
+  } {
+    const projectSummary =
+      params.project?.smartObjective?.summary ||
+      params.project?.description ||
+      '';
+    const text =
+      `${params.node.name} ${params.node.description || ''} ${projectSummary}`
+        .toLowerCase()
+        .trim();
 
     // Vocabulary/language learning context
-    const isVocab = /vocab|vocabul|palavr|idiom|flashcard|kanji|hanzi|pinyin|词汇|词彙/i.test(text);
+    const isVocab =
+      /vocab|vocabul|palavr|idiom|flashcard|kanji|hanzi|pinyin|词汇|词彙/i.test(
+        text,
+      );
     const isMockOrExam = /simulad|prova|exame|mock/i.test(text);
-    const isListeningCtx = /audi|oral|compreens[aã]o|escuta|listening/i.test(text);
+    const isListeningCtx = /audi|oral|compreens[aã]o|escuta|listening/i.test(
+      text,
+    );
     const isConversation =
       /restaurante|comida|culin|transport|navega|compra|negoci|social|apresenta|cumpriment|hotel|reserva|hospedagem|emerg|socorro|hospital|comunic|diálogo|conversa/i.test(
         text,
@@ -49,14 +64,28 @@ export class ThemeExtractionService {
     if (isMockOrExam && !isVocab) {
       return {
         category: 'general' as const,
-        themes: ['leitura', 'escuta', 'gramática', 'escrita', 'vocabulário', 'estratégias'],
+        themes: [
+          'leitura',
+          'escuta',
+          'gramática',
+          'escrita',
+          'vocabulário',
+          'estratégias',
+        ],
       };
     }
 
     if (isListeningCtx && !isVocab) {
       return {
         category: 'general' as const,
-        themes: ['diálogos curtos', 'narrativas', 'notícias', 'entrevistas', 'anúncios', 'conversas'],
+        themes: [
+          'diálogos curtos',
+          'narrativas',
+          'notícias',
+          'entrevistas',
+          'anúncios',
+          'conversas',
+        ],
       };
     }
 
@@ -84,11 +113,14 @@ export class ThemeExtractionService {
       const prioritized = new Set<string>();
       if (/frontend|ui|ux|interface/.test(text)) prioritized.add('ui');
       if (/api|endpoint|rest|graphql/.test(text)) prioritized.add('api');
-      if (/database|banco|sql|postgres|mysql|mongo/.test(text)) prioritized.add('dados');
+      if (/database|banco|sql|postgres|mysql|mongo/.test(text))
+        prioritized.add('dados');
       if (/test|qa|unit|integration|e2e/.test(text)) prioritized.add('testes');
-      if (/observabil|monitor|log|trace|metric/.test(text)) prioritized.add('observabilidade');
+      if (/observabil|monitor|log|trace|metric/.test(text))
+        prioritized.add('observabilidade');
       if (/seguran|auth|oauth|jwt/.test(text)) prioritized.add('seguranca');
-      if (/deploy|docker|kubernetes|k8s|infra/.test(text)) prioritized.add('deploy');
+      if (/deploy|docker|kubernetes|k8s|infra/.test(text))
+        prioritized.add('deploy');
 
       const defaults = [
         'setup',
@@ -117,9 +149,30 @@ export class ThemeExtractionService {
     if (isConversation) {
       // Context-appropriate themes for conversational/practical topics
       const contextual: Record<string, string[]> = {
-        'restaurante|comida|culin': ['pedidos', 'cardápio', 'bebidas', 'conta', 'reserva', 'elogios'],
-        'transport|navega': ['direções', 'metrô/ônibus', 'táxi', 'bilhetes', 'horários', 'aeroporto'],
-        'compra|negoci|mercado': ['preços', 'tamanhos', 'cores', 'pagamento', 'devolução', 'pechincha'],
+        'restaurante|comida|culin': [
+          'pedidos',
+          'cardápio',
+          'bebidas',
+          'conta',
+          'reserva',
+          'elogios',
+        ],
+        'transport|navega': [
+          'direções',
+          'metrô/ônibus',
+          'táxi',
+          'bilhetes',
+          'horários',
+          'aeroporto',
+        ],
+        'compra|negoci|mercado': [
+          'preços',
+          'tamanhos',
+          'cores',
+          'pagamento',
+          'devolução',
+          'pechincha',
+        ],
         'social|apresenta|cumpriment': [
           'cumprimentos',
           'apresentação',
@@ -128,8 +181,22 @@ export class ThemeExtractionService {
           'convites',
           'despedidas',
         ],
-        'hotel|reserva|hospedagem': ['check-in', 'quarto', 'serviços', 'reclamações', 'check-out', 'locais'],
-        'emerg|socorro|hospital': ['sintomas', 'farmácia', 'hospital', 'polícia', 'acidente', 'ajuda'],
+        'hotel|reserva|hospedagem': [
+          'check-in',
+          'quarto',
+          'serviços',
+          'reclamações',
+          'check-out',
+          'locais',
+        ],
+        'emerg|socorro|hospital': [
+          'sintomas',
+          'farmácia',
+          'hospital',
+          'polícia',
+          'acidente',
+          'ajuda',
+        ],
       };
       for (const [pattern, cThemes] of Object.entries(contextual)) {
         if (new RegExp(pattern, 'i').test(text)) {
@@ -138,13 +205,27 @@ export class ThemeExtractionService {
       }
       return {
         category: 'general' as const,
-        themes: ['vocabulário prático', 'diálogos', 'expressões', 'cultura', 'pronúncia', 'revisão'],
+        themes: [
+          'vocabulário prático',
+          'diálogos',
+          'expressões',
+          'cultura',
+          'pronúncia',
+          'revisão',
+        ],
       };
     }
 
     return {
       category: 'general',
-      themes: ['conceitos', 'prática', 'aplicação', 'revisão', 'teste', 'consolidação'],
+      themes: [
+        'conceitos',
+        'prática',
+        'aplicação',
+        'revisão',
+        'teste',
+        'consolidação',
+      ],
     };
   }
 
@@ -155,9 +236,16 @@ export class ThemeExtractionService {
   async getThemeSuggestionsForLeaf(params: {
     project?: any;
     node: WBSNodeDto;
-  }): Promise<{ category: 'vocab' | 'tech' | 'general' | 'embedding'; themes: string[] }> {
-    const projectSummary = params.project?.smartObjective?.summary || params.project?.description || '';
-    const baseText = `${params.node.name}. ${params.node.description || ''} ${projectSummary}`.trim();
+  }): Promise<{
+    category: 'vocab' | 'tech' | 'general' | 'embedding';
+    themes: string[];
+  }> {
+    const projectSummary =
+      params.project?.smartObjective?.summary ||
+      params.project?.description ||
+      '';
+    const baseText =
+      `${params.node.name}. ${params.node.description || ''} ${projectSummary}`.trim();
 
     if (baseText.length < MIN_EMBEDDING_TEXT_LENGTH) {
       return this.getThemeSuggestions(params);
@@ -171,14 +259,18 @@ export class ThemeExtractionService {
     const embeddings: { segment: string; vector: number[] }[] = [];
     for (const segment of segments) {
       const vector = await this.geminiService.generateEmbedding(segment);
-      if (vector.length) embeddings.push({ segment, vector: normalizeVector(vector) });
+      if (vector.length)
+        embeddings.push({ segment, vector: normalizeVector(vector) });
     }
 
     if (embeddings.length < 2) {
       return this.getThemeSuggestions(params);
     }
 
-    const k = Math.min(MAX_EMBEDDING_CLUSTERS, Math.max(2, Math.round(Math.sqrt(embeddings.length))));
+    const k = Math.min(
+      MAX_EMBEDDING_CLUSTERS,
+      Math.max(2, Math.round(Math.sqrt(embeddings.length))),
+    );
     const { clusters, centroids } = kMeansClusters(
       embeddings.map((e) => e.vector),
       k,
@@ -190,7 +282,10 @@ export class ThemeExtractionService {
       let bestSegment = embeddings[cluster[0]].segment;
       let bestScore = -Infinity;
       cluster.forEach((segIdx) => {
-        const score = cosineSimilarity(embeddings[segIdx].vector, centroids[idx]);
+        const score = cosineSimilarity(
+          embeddings[segIdx].vector,
+          centroids[idx],
+        );
         if (score > bestScore) {
           bestScore = score;
           bestSegment = embeddings[segIdx].segment;
@@ -200,7 +295,10 @@ export class ThemeExtractionService {
       if (theme) themes.push(theme);
     });
 
-    const uniqueThemes = Array.from(new Set(themes)).slice(0, MAX_EMBEDDING_CLUSTERS);
+    const uniqueThemes = Array.from(new Set(themes)).slice(
+      0,
+      MAX_EMBEDDING_CLUSTERS,
+    );
     if (!uniqueThemes.length) {
       return this.getThemeSuggestions(params);
     }
@@ -213,7 +311,10 @@ export class ThemeExtractionService {
    */
   extractThemeSegments(text: string): string[] {
     if (!text) return [];
-    const cleaned = text.replace(/\r/g, ' ').replace(/\t/g, ' ').replace(/\u0000/g, ' ');
+    const cleaned = text
+      .replace(/\r/g, ' ')
+      .replace(/\t/g, ' ')
+      .replace(/\u0000/g, ' ');
 
     const parts = cleaned
       .split(/[\n;•]+/)

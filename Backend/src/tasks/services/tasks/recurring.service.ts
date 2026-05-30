@@ -1,7 +1,17 @@
-import { BadRequestException, Injectable, Inject, Optional, forwardRef } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  Inject,
+  Optional,
+  forwardRef,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
-import { RecurringExceptionDto, RecurringRuleDto, CreateTaskDto } from '../../dto/create-task.dto';
+import {
+  RecurringExceptionDto,
+  RecurringRuleDto,
+  CreateTaskDto,
+} from '../../dto/create-task.dto';
 import { ProjectsService } from '../../../projects/projects.service';
 import { TaskDocument } from '../../schemas/task.schema';
 
@@ -9,7 +19,9 @@ import { TaskDocument } from '../../schemas/task.schema';
 export class TasksRecurringService {
   constructor(
     @InjectModel('Task') private readonly taskModel?: Model<TaskDocument>,
-    @Inject(forwardRef(() => ProjectsService)) @Optional() private readonly projectsService?: ProjectsService,
+    @Inject(forwardRef(() => ProjectsService))
+    @Optional()
+    private readonly projectsService?: ProjectsService,
   ) {}
 
   normalizeRecurringRule(
@@ -20,40 +32,60 @@ export class TasksRecurringService {
     },
   ): RecurringRuleDto {
     if (!recurringRule?.frequency || !recurringRule?.interval) {
-      throw new BadRequestException('recurringRule inválida: frequency e interval são obrigatórios.');
+      throw new BadRequestException(
+        'recurringRule inválida: frequency e interval são obrigatórios.',
+      );
     }
 
     const frequency = String(recurringRule.frequency).toLowerCase();
-    const allowedFrequencies = ['daily', 'weekly', 'biweekly', 'monthly', 'custom'];
+    const allowedFrequencies = [
+      'daily',
+      'weekly',
+      'biweekly',
+      'monthly',
+      'custom',
+    ];
     if (!allowedFrequencies.includes(frequency)) {
-      throw new BadRequestException(`recurringRule inválida: frequency "${recurringRule.frequency}" não suportada.`);
+      throw new BadRequestException(
+        `recurringRule inválida: frequency "${recurringRule.frequency}" não suportada.`,
+      );
     }
 
     const interval = Number(recurringRule.interval);
     if (!Number.isFinite(interval) || interval <= 0) {
-      throw new BadRequestException('recurringRule inválida: interval deve ser maior que zero.');
+      throw new BadRequestException(
+        'recurringRule inválida: interval deve ser maior que zero.',
+      );
     }
 
     if (recurringRule.endDate) {
       const endDate = new Date(recurringRule.endDate);
       if (Number.isNaN(endDate.getTime())) {
-        throw new BadRequestException('recurringRule inválida: endDate inválida.');
+        throw new BadRequestException(
+          'recurringRule inválida: endDate inválida.',
+        );
       }
-      if (!options?.allowPastEndDate && endDate.getTime() < Date.now() - 24 * 60 * 60 * 1000) {
-        throw new BadRequestException('recurringRule inválida: endDate não pode estar no passado.');
+      if (
+        !options?.allowPastEndDate &&
+        endDate.getTime() < Date.now() - 24 * 60 * 60 * 1000
+      ) {
+        throw new BadRequestException(
+          'recurringRule inválida: endDate não pode estar no passado.',
+        );
       }
     }
 
     const daysOfWeek = Array.isArray(recurringRule.daysOfWeek)
-      ? recurringRule.daysOfWeek.filter((day) => Number.isInteger(day) && day >= 0 && day <= 6)
+      ? recurringRule.daysOfWeek.filter(
+          (day) => Number.isInteger(day) && day >= 0 && day <= 6,
+        )
       : undefined;
 
     const exceptions = Array.isArray(recurringRule.exceptions)
       ? recurringRule.exceptions
           .map((exception): RecurringExceptionDto | null => {
-            const rawDate = exception instanceof Date
-              ? exception
-              : (exception as any)?.date;
+            const rawDate =
+              exception instanceof Date ? exception : (exception as any)?.date;
             const parsedDate = new Date(rawDate);
             if (Number.isNaN(parsedDate.getTime())) {
               return null;
@@ -66,7 +98,9 @@ export class TasksRecurringService {
               reason: (exception as any)?.reason,
             };
           })
-          .filter((exception): exception is RecurringExceptionDto => Boolean(exception))
+          .filter((exception): exception is RecurringExceptionDto =>
+            Boolean(exception),
+          )
       : undefined;
 
     const cleanedExceptions = exceptions
@@ -119,17 +153,24 @@ export class TasksRecurringService {
     return next;
   }
 
-  isRecurringDateExcluded(date: Date, recurringRule: RecurringRuleDto): boolean {
+  isRecurringDateExcluded(
+    date: Date,
+    recurringRule: RecurringRuleDto,
+  ): boolean {
     const dateKey = this.toDateKey(date);
     return Array.isArray(recurringRule.exceptions)
       ? recurringRule.exceptions.some((exception: any) => {
-          const rawDate = exception instanceof Date ? exception : exception?.date;
+          const rawDate =
+            exception instanceof Date ? exception : exception?.date;
           return this.toDateKey(new Date(rawDate)) === dateKey;
         })
       : false;
   }
 
-  calculateNextRecurringDate(referenceDate: Date, recurringRule: RecurringRuleDto): Date | null {
+  calculateNextRecurringDate(
+    referenceDate: Date,
+    recurringRule: RecurringRuleDto,
+  ): Date | null {
     const rule = this.normalizeRecurringRule(recurringRule, {
       allowPastEndDate: true,
       prunePastExceptions: false,
@@ -146,7 +187,10 @@ export class TasksRecurringService {
 
     if (rule.frequency === 'monthly') {
       const monthCandidate = this.addMonths(base, rule.interval);
-      if (rule.endDate && monthCandidate.getTime() >= new Date(rule.endDate).getTime()) {
+      if (
+        rule.endDate &&
+        monthCandidate.getTime() >= new Date(rule.endDate).getTime()
+      ) {
         return null;
       }
       if (this.isRecurringDateExcluded(monthCandidate, rule)) {
@@ -163,7 +207,10 @@ export class TasksRecurringService {
     }
 
     const candidate = this.addDays(base, stepDays);
-    const allowedDays = Array.isArray(rule.daysOfWeek) && rule.daysOfWeek.length > 0 ? rule.daysOfWeek : null;
+    const allowedDays =
+      Array.isArray(rule.daysOfWeek) && rule.daysOfWeek.length > 0
+        ? rule.daysOfWeek
+        : null;
 
     for (let offset = 0; offset < 365; offset++) {
       const probe = this.addDays(candidate, offset);
@@ -186,7 +233,10 @@ export class TasksRecurringService {
     return null;
   }
 
-  calculateFirstRecurringDate(startDate: Date, recurringRule: RecurringRuleDto): Date | null {
+  calculateFirstRecurringDate(
+    startDate: Date,
+    recurringRule: RecurringRuleDto,
+  ): Date | null {
     const rule = this.normalizeRecurringRule(recurringRule, {
       allowPastEndDate: true,
       prunePastExceptions: false,
@@ -209,7 +259,10 @@ export class TasksRecurringService {
       return this.calculateNextRecurringDate(base, rule);
     }
 
-    const allowedDays = Array.isArray(rule.daysOfWeek) && rule.daysOfWeek.length > 0 ? rule.daysOfWeek : null;
+    const allowedDays =
+      Array.isArray(rule.daysOfWeek) && rule.daysOfWeek.length > 0
+        ? rule.daysOfWeek
+        : null;
 
     for (let offset = 0; offset < 365; offset++) {
       const probe = this.addDays(base, offset);
@@ -232,33 +285,38 @@ export class TasksRecurringService {
     return null;
   }
 
-  async findRecurringSeries(parentRecurringId: string): Promise<TaskDocument[]> {
+  async findRecurringSeries(
+    parentRecurringId: string,
+  ): Promise<TaskDocument[]> {
     if (!parentRecurringId || !Types.ObjectId.isValid(parentRecurringId)) {
       throw new BadRequestException(`ID inválido: ${parentRecurringId}`);
     }
 
     if (!this.taskModel) {
-      throw new BadRequestException('TasksRecurringService não está inicializado com taskModel');
+      throw new BadRequestException(
+        'TasksRecurringService não está inicializado com taskModel',
+      );
     }
 
     return this.taskModel
       .find({
-        $or: [
-          { _id: parentRecurringId },
-          { parentRecurringId },
-        ],
+        $or: [{ _id: parentRecurringId }, { parentRecurringId }],
       })
       .sort({ createdAt: 1 })
       .exec();
   }
 
-  async deleteRecurringSeries(parentRecurringId: string): Promise<{ deletedCount: number }> {
+  async deleteRecurringSeries(
+    parentRecurringId: string,
+  ): Promise<{ deletedCount: number }> {
     const tasks = await this.findRecurringSeries(parentRecurringId);
     let deletedCount = 0;
     const affectedProjects = new Set<string>();
 
     if (!this.taskModel) {
-      throw new BadRequestException('TasksRecurringService não está inicializado com taskModel');
+      throw new BadRequestException(
+        'TasksRecurringService não está inicializado com taskModel',
+      );
     }
 
     for (const task of tasks) {
@@ -282,8 +340,13 @@ export class TasksRecurringService {
     return { deletedCount };
   }
 
-  buildOccurrencePayload(task: TaskDocument, nextDeadline: Date): CreateTaskDto {
-    const recurringRule = this.normalizeRecurringRule(task.recurringRule as any);
+  buildOccurrencePayload(
+    task: TaskDocument,
+    nextDeadline: Date,
+  ): CreateTaskDto {
+    const recurringRule = this.normalizeRecurringRule(
+      task.recurringRule as any,
+    );
     const normalizedChecklist = Array.isArray(task.checklist)
       ? task.checklist
           .map((entry: any, index: number) => {
@@ -293,7 +356,9 @@ export class TasksRecurringService {
             return {
               item: String(entry?.item || ''),
               completed: false,
-              order: Number.isFinite(entry?.order) ? Number(entry.order) : index,
+              order: Number.isFinite(entry?.order)
+                ? Number(entry.order)
+                : index,
             };
           })
           .filter((item) => item.item)

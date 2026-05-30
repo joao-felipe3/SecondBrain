@@ -95,7 +95,11 @@ export const TaskSchema = new Schema<TaskDocument>({
   microTaskType: { type: String },
   parentRecurringId: { type: Schema.Types.ObjectId, ref: 'Task' },
   isRecurringInstance: { type: Boolean, default: false },
-  recurringState: { type: String, enum: ['pending', 'completed', 'skipped'], default: 'pending' },
+  recurringState: {
+    type: String,
+    enum: ['pending', 'completed', 'skipped'],
+    default: 'pending',
+  },
   recurringRule: {
     type: {
       frequency: { type: String },
@@ -125,7 +129,11 @@ export const TaskSchema = new Schema<TaskDocument>({
   evmEarnedValueMinutes: { type: Number },
   evmSchedulePerformanceIndex: { type: Number },
   evmAlert: { type: String },
-  status: { type: String, enum: ['todo', 'doing', 'review', 'done'], default: 'todo' },
+  status: {
+    type: String,
+    enum: ['todo', 'doing', 'review', 'done'],
+    default: 'todo',
+  },
   statusUpdatedAt: { type: Date, default: Date.now },
   kanbanOrder: { type: Number, default: 0 },
   createdAt: { type: Date, default: Date.now },

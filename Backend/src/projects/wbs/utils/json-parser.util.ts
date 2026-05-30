@@ -29,7 +29,10 @@ export function repairJsonString(raw: string): string {
   // (Gemma sometimes outputs real newlines inside JSON strings)
   // We'll handle this by replacing newlines inside string values only — risky to do globally,
   // so just replace raw \r\n inside strings with space.
-  s = s.replace(/([^\\])(\r?\n)(\s*[^"\[\{])/g, (_, pre, _nl, post) => pre + ' ' + post);
+  s = s.replace(
+    /([^\\])(\r?\n)(\s*[^"\[\{])/g,
+    (_, pre, _nl, post) => pre + ' ' + post,
+  );
 
   // Remove trailing commas before ] or }
   s = s.replace(/,\s*([\]\}])/g, '$1');
@@ -109,14 +112,18 @@ export function extractJsonArray<T = any>(response: string): T[] {
   try {
     const parsed = JSON.parse(cleaned);
     if (Array.isArray(parsed)) return parsed as T[];
-  } catch { /* fall through */ }
+  } catch {
+    /* fall through */
+  }
 
   // --- Attempt 2: repair then parse ---
   const repaired = repairJsonString(cleaned);
   try {
     const parsed = JSON.parse(repaired);
     if (Array.isArray(parsed)) return parsed as T[];
-  } catch { /* fall through */ }
+  } catch {
+    /* fall through */
+  }
 
   // --- Attempt 3: partial salvage (array was truncated mid-object) ---
   const salvaged = extractPartialArray(repaired || cleaned);
@@ -129,7 +136,9 @@ export function extractJsonArray<T = any>(response: string): T[] {
 
   // Nothing worked — throw with useful context
   const preview = cleaned.slice(0, 120).replace(/\s+/g, ' ');
-  throw new Error(`Não foi possível extrair array JSON da resposta da IA. Preview: ${preview}`);
+  throw new Error(
+    `Não foi possível extrair array JSON da resposta da IA. Preview: ${preview}`,
+  );
 }
 
 /**
@@ -187,7 +196,8 @@ function salvageIncompleteObject(raw: string): any | null {
 
   try {
     const parsed = JSON.parse(repairJsonString(candidate));
-    if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) return parsed;
+    if (parsed && typeof parsed === 'object' && !Array.isArray(parsed))
+      return parsed;
   } catch {
     return null;
   }
@@ -212,23 +222,33 @@ export function extractJsonObject<T = any>(response: string): T {
   // --- Attempt 1: direct parse ---
   try {
     const parsed = JSON.parse(cleaned);
-    if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) return parsed as T;
-  } catch { /* fall through */ }
+    if (parsed && typeof parsed === 'object' && !Array.isArray(parsed))
+      return parsed as T;
+  } catch {
+    /* fall through */
+  }
 
   // --- Attempt 2: repair then parse ---
   const repaired = repairJsonString(cleaned);
   try {
     const parsed = JSON.parse(repaired);
-    if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) return parsed as T;
-  } catch { /* fall through */ }
+    if (parsed && typeof parsed === 'object' && !Array.isArray(parsed))
+      return parsed as T;
+  } catch {
+    /* fall through */
+  }
 
   // --- Attempt 3: salvage truncated object (AI cut off mid-string) ---
   const salvaged = salvageIncompleteObject(repaired || cleaned);
   if (salvaged) {
-    console.warn('[json-parser] extractJsonObject: salvaged truncated object from partial AI response.');
+    console.warn(
+      '[json-parser] extractJsonObject: salvaged truncated object from partial AI response.',
+    );
     return salvaged as T;
   }
 
   const preview = cleaned.slice(0, 120).replace(/\s+/g, ' ');
-  throw new Error(`Não foi possível extrair objeto JSON da resposta da IA. Preview: ${preview}`);
+  throw new Error(
+    `Não foi possível extrair objeto JSON da resposta da IA. Preview: ${preview}`,
+  );
 }

@@ -1,16 +1,16 @@
-import { EVMService } from '../../../../src/projects/services/evm.service'
-import { Types } from 'mongoose'
+import { EVMService } from '../../../../src/projects/services/evm.service';
+import { Types } from 'mongoose';
 
 describe('EVMService', () => {
-  let service: EVMService
+  let service: EVMService;
 
   beforeEach(() => {
-    service = new EVMService({} as any, {} as any, {} as any)
-  })
+    service = new EVMService({} as any, {} as any, {} as any);
+  });
 
   afterEach(() => {
-    jest.restoreAllMocks()
-  })
+    jest.restoreAllMocks();
+  });
 
   it('calculateSPI should return EV/PV', async () => {
     jest.spyOn(service as any, 'getCoreMetrics').mockResolvedValue({
@@ -19,16 +19,16 @@ describe('EVMService', () => {
       bac: 50,
       completedHours: 10,
       plannedHours: 20,
-    })
+    });
 
-    const projectId = new Types.ObjectId().toString()
-    const result = await service.calculateSPI(projectId)
+    const projectId = new Types.ObjectId().toString();
+    const result = await service.calculateSPI(projectId);
 
-    expect(result).toBe(0.9)
-  })
+    expect(result).toBe(0.9);
+  });
 
   it('getEVMSummary should include personal metrics for personal projects', async () => {
-    const projectId = new Types.ObjectId().toString()
+    const projectId = new Types.ObjectId().toString();
     const entries = [
       {
         date: new Date('2026-03-01').toISOString(),
@@ -50,9 +50,9 @@ describe('EVMService', () => {
         completedHours: 3,
         plannedValue: 20,
       },
-    ]
+    ];
 
-    jest.spyOn(service, 'calculateSPI').mockResolvedValue(0.9)
+    jest.spyOn(service, 'calculateSPI').mockResolvedValue(0.9);
     jest.spyOn(service, 'forecastCompletion').mockResolvedValue({
       estimatedDate: new Date('2026-04-10').toISOString(),
       variance: -5,
@@ -61,13 +61,13 @@ describe('EVMService', () => {
       bac: 100,
       ev: 50,
       pv: 55,
-    })
+    });
     jest.spyOn(service, 'getEVMCurve').mockResolvedValue({
       plannedValue: [20, 40, 60, 80],
       actualValue: [18, 35, 48, 55],
       dates: ['2026-03-01', '2026-03-08', '2026-03-15', '2026-03-22'],
-    })
-    jest.spyOn(service, 'getProgressEntries').mockResolvedValue(entries as any)
+    });
+    jest.spyOn(service, 'getProgressEntries').mockResolvedValue(entries as any);
     jest.spyOn(service as any, 'getDashboardPreferences').mockResolvedValue({
       mode: 'auto',
       manualVisibility: {
@@ -80,30 +80,34 @@ describe('EVMService', () => {
         perceivedProgress: true,
         remainingHours: true,
       },
-    })
+    });
     jest.spyOn(service as any, 'getMilestoneProgress').mockResolvedValue({
       totalMilestones: 0,
       completedMilestones: 0,
       overallPercent: 0,
       nextMilestone: null,
-    })
+    });
     jest.spyOn(service as any, 'getCoreMetrics').mockResolvedValue({
       pv: 80,
       ev: 55,
       bac: 100,
       completedHours: 21,
       plannedHours: 40,
-    })
+    });
 
-    const summary = await service.getEVMSummary(projectId)
+    const summary = await service.getEVMSummary(projectId);
 
-    expect(summary.totals.completedHours).toBe(21)
-    expect(summary.personalMetrics).toBeDefined()
-    expect(summary.personalMetrics.consistencyScore).toBeGreaterThanOrEqual(0)
-    expect(summary.personalMetrics.planAdherence).toBeGreaterThanOrEqual(0)
-    expect(summary.personalMetrics.perceivedValueScore).toBeGreaterThanOrEqual(0)
-    expect(summary.personalMetrics.completionTrend).toMatch(/acelerando|estavel|desacelerando|insuficiente/)
-    expect(typeof summary.personalMetrics.actionHint).toBe('string')
-    expect(summary.personalMetrics.actionHint.length).toBeGreaterThan(5)
-  })
-})
+    expect(summary.totals.completedHours).toBe(21);
+    expect(summary.personalMetrics).toBeDefined();
+    expect(summary.personalMetrics.consistencyScore).toBeGreaterThanOrEqual(0);
+    expect(summary.personalMetrics.planAdherence).toBeGreaterThanOrEqual(0);
+    expect(summary.personalMetrics.perceivedValueScore).toBeGreaterThanOrEqual(
+      0,
+    );
+    expect(summary.personalMetrics.completionTrend).toMatch(
+      /acelerando|estavel|desacelerando|insuficiente/,
+    );
+    expect(typeof summary.personalMetrics.actionHint).toBe('string');
+    expect(summary.personalMetrics.actionHint.length).toBeGreaterThan(5);
+  });
+});

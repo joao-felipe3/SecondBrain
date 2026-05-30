@@ -2,18 +2,32 @@
  * Helper functions for WBS task processing
  */
 
-
 // Infer cognitive type from task title and description
-export function inferCognitiveType(title?: string, description?: string): string {
+export function inferCognitiveType(
+  title?: string,
+  description?: string,
+): string {
   const text = `${title || ''} ${description || ''}`.toLowerCase();
   if (!text.trim()) return 'other';
 
-  if (/(teste|testar|simulad|quiz|prova|avaliar|verificar|checagem)/i.test(text)) return 'test';
-  if (/(revisar|review|reforç|consolidar|flashcard|recall)/i.test(text)) return 'review';
-  if (/(escrever|redigir|produzir|criar|implementar|codificar|construir|diagramar|desenvolver)/i.test(text)) {
+  if (
+    /(teste|testar|simulad|quiz|prova|avaliar|verificar|checagem)/i.test(text)
+  )
+    return 'test';
+  if (/(revisar|review|reforç|consolidar|flashcard|recall)/i.test(text))
+    return 'review';
+  if (
+    /(escrever|redigir|produzir|criar|implementar|codificar|construir|diagramar|desenvolver)/i.test(
+      text,
+    )
+  ) {
     return 'deep';
   }
-  if (/(capturar|coletar|levantar|listar|mapear|pesquisar|ler|ouvir|anotar|preparar|organizar|configurar)/i.test(text)) {
+  if (
+    /(capturar|coletar|levantar|listar|mapear|pesquisar|ler|ouvir|anotar|preparar|organizar|configurar)/i.test(
+      text,
+    )
+  ) {
     return 'capture';
   }
 
@@ -21,17 +35,23 @@ export function inferCognitiveType(title?: string, description?: string): string
 }
 
 // Extract definition of done from description text
-export function extractDefinitionOfDone(description?: string): string | undefined {
+export function extractDefinitionOfDone(
+  description?: string,
+): string | undefined {
   if (!description) return undefined;
 
-  const match = description.split(/(?:defini[cç][aã]o de pronto|pronto quando)\s*:/i);
+  const match = description.split(
+    /(?:defini[cç][aã]o de pronto|pronto quando)\s*:/i,
+  );
   if (match.length < 2) return undefined;
   const trimmed = (match[1] || '').trim();
   return trimmed ? trimmed : undefined;
 }
 
 // Extract checklist steps from description text
-export function extractChecklistSteps(description?: string): string[] | undefined {
+export function extractChecklistSteps(
+  description?: string,
+): string[] | undefined {
   if (!description) return undefined;
 
   const lines = description.split('\n');
@@ -72,7 +92,6 @@ export function extractChecklistSteps(description?: string): string[] | undefine
   return undefined;
 }
 
-
 // Returns all "leaf" nodes from a WBS tree,
 export function getLeafNodesWithPaths(nodes: any[]): Array<{
   node: any;
@@ -82,7 +101,11 @@ export function getLeafNodesWithPaths(nodes: any[]): Array<{
   const leafNodes: Array<{ node: any; path: string; level: number }> = [];
 
   // Recursive function to traverse WBS nodes
-  const traverse = (nodeList: any[], parentPath: string = '', level: number = 1) => {
+  const traverse = (
+    nodeList: any[],
+    parentPath: string = '',
+    level: number = 1,
+  ) => {
     for (const node of nodeList) {
       // Build the readable path to the current node
       const nodePath = parentPath ? `${parentPath} > ${node.name}` : node.name;
@@ -101,8 +124,13 @@ export function getLeafNodesWithPaths(nodes: any[]): Array<{
 }
 
 // Compute leaf hours for audit
-export function computeLeafHours(tasks: Array<{ pomodorosPlanned?: number }>): number {
-  const totalPoms = tasks.reduce((sum, task) => sum + (task?.pomodorosPlanned || 0), 0);
+export function computeLeafHours(
+  tasks: Array<{ pomodorosPlanned?: number }>,
+): number {
+  const totalPoms = tasks.reduce(
+    (sum, task) => sum + (task?.pomodorosPlanned || 0),
+    0,
+  );
   return totalPoms * 0.5;
 }
 

@@ -15,7 +15,11 @@ export const TaskAlertSchema = new Schema<TaskAlertDocument>({
   userId: { type: Schema.Types.Mixed },
   task: { type: Schema.Types.ObjectId, ref: 'Task' },
   project: { type: Schema.Types.ObjectId, ref: 'Project' },
-  type: { type: String, enum: ['warning', 'error', 'info'], default: 'warning' },
+  type: {
+    type: String,
+    enum: ['warning', 'error', 'info'],
+    default: 'warning',
+  },
   message: { type: String, required: true },
   recommendation: { type: String },
   createdAt: { type: Date, default: Date.now },

@@ -37,7 +37,9 @@ export class TasksAiSuggestionsService {
   /**
    * Versao original que retorna Promise (mantida para compatibilidade)
    */
-  async generateAiSuggestions(dto: GenerateAiSuggestionsDto): Promise<AiSuggestionsResponseDto> {
+  async generateAiSuggestions(
+    dto: GenerateAiSuggestionsDto,
+  ): Promise<AiSuggestionsResponseDto> {
     return this.generateAiSuggestionsInternal(dto, null);
   }
 
@@ -74,7 +76,10 @@ export class TasksAiSuggestionsService {
     });
 
     // Funcao helper para emitir progresso
-    const emitProgress = (status: 'loading' | 'success' | 'error' | 'partial', message: string) => {
+    const emitProgress = (
+      status: 'loading' | 'success' | 'error' | 'partial',
+      message: string,
+    ) => {
       if (onProgress) {
         onProgress({
           currentIteration,
@@ -93,17 +98,21 @@ export class TasksAiSuggestionsService {
 
       // Busca as tarefas ja existentes no projeto para calcular horas ja planejadas
       if (dto.projectId) {
-        const existingTasks = await this.taskModel.find({ project: dto.projectId }).exec();
+        const existingTasks = await this.taskModel
+          .find({ project: dto.projectId })
+          .exec();
 
         // Calcula horas ja planejadas (pomodoros * 0.5h)
         alreadyPlannedHours = existingTasks.reduce((total, task) => {
-          return total + ((task.pomodorosPlanned || 0) * 0.5);
+          return total + (task.pomodorosPlanned || 0) * 0.5;
         }, 0);
 
         // Adiciona nomes das tarefas existentes para evitar duplicatas
-        existingTaskNames.push(...existingTasks.map(task => task.name));
+        existingTaskNames.push(...existingTasks.map((task) => task.name));
 
-        console.log(`Projeto ja tem ${existingTasks.length} tarefas (${alreadyPlannedHours.toFixed(1)}h planejadas)`);
+        console.log(
+          `Projeto ja tem ${existingTasks.length} tarefas (${alreadyPlannedHours.toFixed(1)}h planejadas)`,
+        );
       }
 
       // Se targetHours nao foi especificado, gera apenas uma vez (comportamento antigo)
@@ -122,14 +131,22 @@ export class TasksAiSuggestionsService {
 
         const suggestions = this.safeParseGeminiJson(aiResponse);
         if (suggestions.length === 0) {
-          console.warn('A resposta da IA esta vazia ou malformada, retornando fallback.');
+          console.warn(
+            'A resposta da IA esta vazia ou malformada, retornando fallback.',
+          );
           const mockSuggestions = this.generateMockSuggestions(dto);
           allSuggestions.push(...mockSuggestions);
-          return createResponse('partial', 'Usando sugestoes de fallback devido a resposta invalida da IA');
+          return createResponse(
+            'partial',
+            'Usando sugestoes de fallback devido a resposta invalida da IA',
+          );
         }
 
         allSuggestions.push(...(suggestions as AiTaskSuggestionDto[]));
-        currentHours = allSuggestions.reduce((sum, t) => sum + (t.pomodoros || 0) * 0.5, 0);
+        currentHours = allSuggestions.reduce(
+          (sum, t) => sum + (t.pomodoros || 0) * 0.5,
+          0,
+        );
         return createResponse('success', 'Sugestoes geradas com sucesso');
       }
 
@@ -137,27 +154,46 @@ export class TasksAiSuggestionsService {
       const remainingHours = Math.max(0, targetHours - alreadyPlannedHours);
 
       if (remainingHours <= 0) {
-        console.log(`Projeto ja atingiu o target (${alreadyPlannedHours.toFixed(1)}h >= ${targetHours}h). Nao gerando novas tarefas.`);
-        return createResponse('success', 'Projeto ja atingiu o total de horas planejadas');
+        console.log(
+          `Projeto ja atingiu o target (${alreadyPlannedHours.toFixed(1)}h >= ${targetHours}h). Nao gerando novas tarefas.`,
+        );
+        return createResponse(
+          'success',
+          'Projeto ja atingiu o total de horas planejadas',
+        );
       }
 
-      console.log(`Gerando tarefas para completar ${remainingHours.toFixed(1)}h (de ${targetHours}h total)`);
+      console.log(
+        `Gerando tarefas para completar ${remainingHours.toFixed(1)}h (de ${targetHours}h total)`,
+      );
 
       // Loop para gerar tarefas ate atingir as horas restantes
       let consecutiveRateLimits = 0;
       const interIterationDelayMs = 3000; // delay fixo entre iteracoes para reduzir 429
 
-      while (currentHours < remainingHours && currentIteration < maxIterations) {
+      while (
+        currentHours < remainingHours &&
+        currentIteration < maxIterations
+      ) {
         currentIteration++;
 
-        emitProgress('loading', `Gerando lote ${currentIteration}/${maxIterations}...`);
+        emitProgress(
+          'loading',
+          `Gerando lote ${currentIteration}/${maxIterations}...`,
+        );
 
-        console.log(`Iteracao ${currentIteration}: ${currentHours.toFixed(1)}h de ${remainingHours.toFixed(1)}h geradas`);
+        console.log(
+          `Iteracao ${currentIteration}: ${currentHours.toFixed(1)}h de ${remainingHours.toFixed(1)}h geradas`,
+        );
 
         // Delay de 1 segundo entre requisicoes para evitar rate limiting (429)
         if (currentIteration > 1) {
-          console.log(`Aguardando ${interIterationDelayMs}ms antes da proxima requisicao...`);
-          await new Promise(resolve => setTimeout(resolve, interIterationDelayMs));
+          console.log(
+            `Aguardando ${interIterationDelayMs}ms antes da proxima requisicao...`,
+          );
+          await new Promise((resolve) =>
+            setTimeout(resolve, interIterationDelayMs),
+          );
         }
 
         // Gera em lotes menores para reduzir risco de 429 e consumo de tokens
@@ -179,7 +215,9 @@ export class TasksAiSuggestionsService {
           if (err?.code === 'RATE_LIMIT') {
             consecutiveRateLimits++;
             const waitMs = Math.min(15000 * consecutiveRateLimits, 45000);
-            console.warn(`Gemini RATE_LIMIT recebido. Aguardando ${waitMs}ms antes de tentar novamente (strike ${consecutiveRateLimits}).`);
+            console.warn(
+              `Gemini RATE_LIMIT recebido. Aguardando ${waitMs}ms antes de tentar novamente (strike ${consecutiveRateLimits}).`,
+            );
             await new Promise((r) => setTimeout(r, waitMs));
             // tenta proxima iteracao sem contar como iteracao concluida
             continue;
@@ -190,7 +228,9 @@ export class TasksAiSuggestionsService {
         const suggestions = this.safeParseGeminiJson(aiResponse);
 
         if (suggestions.length === 0) {
-          console.warn('A resposta da IA esta vazia ou malformada nesta iteracao.');
+          console.warn(
+            'A resposta da IA esta vazia ou malformada nesta iteracao.',
+          );
           // Continua tentando nas proximas iteracoes ao inves de quebrar
           continue;
         }
@@ -200,13 +240,16 @@ export class TasksAiSuggestionsService {
           (newTask) => {
             const normalizedName = newTask.name.toLowerCase().trim();
             return !existingTaskNames.some(
-              (existingName) => existingName.toLowerCase().trim() === normalizedName,
+              (existingName) =>
+                existingName.toLowerCase().trim() === normalizedName,
             );
           },
         );
 
         if (newSuggestions.length === 0) {
-          console.warn('Nenhuma nova tarefa foi gerada (todas sao duplicatas).');
+          console.warn(
+            'Nenhuma nova tarefa foi gerada (todas sao duplicatas).',
+          );
           break;
         }
 
@@ -219,29 +262,52 @@ export class TasksAiSuggestionsService {
         }
 
         // Emite progresso apos adicionar novas tarefas
-        emitProgress('loading', `${allSuggestions.length} tarefas geradas (${currentHours.toFixed(1)}h/${remainingHours.toFixed(1)}h)...`);
+        emitProgress(
+          'loading',
+          `${allSuggestions.length} tarefas geradas (${currentHours.toFixed(1)}h/${remainingHours.toFixed(1)}h)...`,
+        );
       }
 
       if (currentIteration >= maxIterations) {
-        console.warn(`Limite de ${maxIterations} iteracoes atingido. Retornando ${allSuggestions.length} tarefas.`);
-        return createResponse('partial', `Limite de iteracoes atingido. ${allSuggestions.length} tarefas geradas.`);
+        console.warn(
+          `Limite de ${maxIterations} iteracoes atingido. Retornando ${allSuggestions.length} tarefas.`,
+        );
+        return createResponse(
+          'partial',
+          `Limite de iteracoes atingido. ${allSuggestions.length} tarefas geradas.`,
+        );
       }
 
-      console.log(`Geradas ${allSuggestions.length} novas tarefas totalizando ${currentHours.toFixed(1)}h (total do projeto: ${(alreadyPlannedHours + currentHours).toFixed(1)}h)`);
-      return createResponse('success', `${allSuggestions.length} tarefas geradas com sucesso (${currentHours.toFixed(1)}h)`);
-
+      console.log(
+        `Geradas ${allSuggestions.length} novas tarefas totalizando ${currentHours.toFixed(1)}h (total do projeto: ${(alreadyPlannedHours + currentHours).toFixed(1)}h)`,
+      );
+      return createResponse(
+        'success',
+        `${allSuggestions.length} tarefas geradas com sucesso (${currentHours.toFixed(1)}h)`,
+      );
     } catch (error: any) {
       console.error('Erro ao usar a API do Gemini:', error?.message ?? error);
       // Se acumulamos algo, devolve parcial; senao fallback
       if (allSuggestions.length > 0) {
         console.warn('Retornando sugestoes parciais acumuladas devido a erro.');
-        return createResponse('partial', `Erro parcial: ${allSuggestions.length} tarefas geradas antes do erro`);
+        return createResponse(
+          'partial',
+          `Erro parcial: ${allSuggestions.length} tarefas geradas antes do erro`,
+        );
       }
-      console.warn('Usando fallback de mock por ausencia de sugestoes acumuladas.');
+      console.warn(
+        'Usando fallback de mock por ausencia de sugestoes acumuladas.',
+      );
       const mockSuggestions = this.generateMockSuggestions(dto);
       allSuggestions.push(...mockSuggestions);
-      currentHours = allSuggestions.reduce((sum, t) => sum + (t.pomodoros || 0) * 0.5, 0);
-      return createResponse('error', 'Falha na IA. Usando sugestoes de fallback.');
+      currentHours = allSuggestions.reduce(
+        (sum, t) => sum + (t.pomodoros || 0) * 0.5,
+        0,
+      );
+      return createResponse(
+        'error',
+        'Falha na IA. Usando sugestoes de fallback.',
+      );
     }
   }
 
@@ -312,7 +378,9 @@ export class TasksAiSuggestionsService {
       }
       return [];
     } catch (secondError) {
-      console.warn('Segundo parse tambem falhou, tentando extrair objetos manualmente...');
+      console.warn(
+        'Segundo parse tambem falhou, tentando extrair objetos manualmente...',
+      );
     }
 
     // Ultima tentativa: extrair objetos individualmente usando regex
@@ -332,22 +400,30 @@ export class TasksAiSuggestionsService {
       }
 
       if (objects.length > 0) {
-        console.log(`Extraidos ${objects.length} objetos manualmente do JSON malformado`);
+        console.log(
+          `Extraidos ${objects.length} objetos manualmente do JSON malformado`,
+        );
         return objects;
       }
     } catch {
       // Falhou completamente
     }
 
-    console.error('Nao foi possivel parsear a resposta do Gemini:', cleaned.substring(0, 200));
+    console.error(
+      'Nao foi possivel parsear a resposta do Gemini:',
+      cleaned.substring(0, 200),
+    );
     return [];
   }
 
   /**
    * Fallback para gerar sugestoes mockadas inteligentes quando a IA nao esta disponivel.
    */
-  private generateMockSuggestions(dto: GenerateAiSuggestionsDto): AiTaskSuggestionDto[] {
-    const keywords = `${dto.projectName} ${dto.shortTermGoal} ${dto.midTermGoal} ${dto.longTermGoal} ${dto.userPrompt}`.toLowerCase();
+  private generateMockSuggestions(
+    dto: GenerateAiSuggestionsDto,
+  ): AiTaskSuggestionDto[] {
+    const keywords =
+      `${dto.projectName} ${dto.shortTermGoal} ${dto.midTermGoal} ${dto.longTermGoal} ${dto.userPrompt}`.toLowerCase();
     const suggestions: AiTaskSuggestionDto[] = [];
     const today = new Date();
 
@@ -358,19 +434,72 @@ export class TasksAiSuggestionsService {
     };
 
     if (keywords.includes('api') || keywords.includes('backend')) {
-      suggestions.push({ name: 'Definir endpoints da API REST', deadline: getDatePlusDays(3), pomodoros: 3, priority: 4, difficulty: 3, selected: true });
-      suggestions.push({ name: 'Configurar autenticacao com JWT', deadline: getDatePlusDays(7), pomodoros: 4, priority: 3, difficulty: 4, selected: false });
+      suggestions.push({
+        name: 'Definir endpoints da API REST',
+        deadline: getDatePlusDays(3),
+        pomodoros: 3,
+        priority: 4,
+        difficulty: 3,
+        selected: true,
+      });
+      suggestions.push({
+        name: 'Configurar autenticacao com JWT',
+        deadline: getDatePlusDays(7),
+        pomodoros: 4,
+        priority: 3,
+        difficulty: 4,
+        selected: false,
+      });
     }
-    if (keywords.includes('ui') || keywords.includes('frontend') || keywords.includes('design')) {
-      suggestions.push({ name: 'Criar prototipo de baixa fidelidade da UI', deadline: getDatePlusDays(2), pomodoros: 2, priority: 4, difficulty: 2, selected: true });
-      suggestions.push({ name: 'Desenvolver componentes reutilizaveis em Vue/React', deadline: getDatePlusDays(10), pomodoros: 6, priority: 3, difficulty: 3, selected: true });
+    if (
+      keywords.includes('ui') ||
+      keywords.includes('frontend') ||
+      keywords.includes('design')
+    ) {
+      suggestions.push({
+        name: 'Criar prototipo de baixa fidelidade da UI',
+        deadline: getDatePlusDays(2),
+        pomodoros: 2,
+        priority: 4,
+        difficulty: 2,
+        selected: true,
+      });
+      suggestions.push({
+        name: 'Desenvolver componentes reutilizaveis em Vue/React',
+        deadline: getDatePlusDays(10),
+        pomodoros: 6,
+        priority: 3,
+        difficulty: 3,
+        selected: true,
+      });
     }
     if (keywords.includes('banco de dados') || keywords.includes('database')) {
-      suggestions.push({ name: 'Modelar o esquema do banco de dados', deadline: getDatePlusDays(4), pomodoros: 4, priority: 4, difficulty: 3, selected: true });
+      suggestions.push({
+        name: 'Modelar o esquema do banco de dados',
+        deadline: getDatePlusDays(4),
+        pomodoros: 4,
+        priority: 4,
+        difficulty: 3,
+        selected: true,
+      });
     }
     if (suggestions.length === 0) {
-      suggestions.push({ name: 'Reuniao de brainstorming para definir os proximos passos', deadline: getDatePlusDays(1), pomodoros: 1, priority: 4, difficulty: 1, selected: true });
-      suggestions.push({ name: 'Pesquisar tecnologias concorrentes', deadline: getDatePlusDays(5), pomodoros: 3, priority: 2, difficulty: 2, selected: false });
+      suggestions.push({
+        name: 'Reuniao de brainstorming para definir os proximos passos',
+        deadline: getDatePlusDays(1),
+        pomodoros: 1,
+        priority: 4,
+        difficulty: 1,
+        selected: true,
+      });
+      suggestions.push({
+        name: 'Pesquisar tecnologias concorrentes',
+        deadline: getDatePlusDays(5),
+        pomodoros: 3,
+        priority: 2,
+        difficulty: 2,
+        selected: false,
+      });
     }
 
     return suggestions.slice(0, 5);

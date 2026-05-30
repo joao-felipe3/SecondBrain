@@ -42,7 +42,8 @@ export class DeviationDetectionService {
       };
     }
 
-    const percentOver = ((actualMinutes - expectedMinutes) / expectedMinutes) * 100;
+    const percentOver =
+      ((actualMinutes - expectedMinutes) / expectedMinutes) * 100;
     const isDeviated = percentOver >= 25;
 
     if (!isDeviated) {
@@ -64,7 +65,9 @@ export class DeviationDetectionService {
     };
   }
 
-  async generateDeviationAlert(taskId: string): Promise<DeviationResult | null> {
+  async generateDeviationAlert(
+    taskId: string,
+  ): Promise<DeviationResult | null> {
     const result = await this.checkTimeDeviation(taskId);
     if (!result.isDeviated) {
       return null;

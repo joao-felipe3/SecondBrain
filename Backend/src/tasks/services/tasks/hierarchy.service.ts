@@ -1,4 +1,8 @@
-import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  BadRequestException,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { TaskDocument } from '../../schemas/task.schema';
@@ -9,7 +13,10 @@ export class TasksHierarchyService {
     @InjectModel('Task') private readonly taskModel: Model<TaskDocument>,
   ) {}
 
-  async getTaskLineage(id: string, maxDepth: number = 50): Promise<{
+  async getTaskLineage(
+    id: string,
+    maxDepth: number = 50,
+  ): Promise<{
     ancestors: any[];
     children: any[];
     warnings: string[];
@@ -133,7 +140,11 @@ export class TasksHierarchyService {
       .select('_id experience isConcluded')
       .exec();
 
-    const allNodes = [] as Array<{ _id: any; experience: number; isConcluded: boolean }>;
+    const allNodes = [] as Array<{
+      _id: any;
+      experience: number;
+      isConcluded: boolean;
+    }>;
     if (rootTask) {
       allNodes.push({
         _id: rootTask._id,
@@ -156,7 +167,11 @@ export class TasksHierarchyService {
 
     // Obter subtree do task (inclui o próprio task + seus descendentes)
     const subtreeDescendants = await this.getDescendants(id, 5000);
-    const subtreeNodes = [] as Array<{ _id: any; experience: number; isConcluded: boolean }>;
+    const subtreeNodes = [] as Array<{
+      _id: any;
+      experience: number;
+      isConcluded: boolean;
+    }>;
     const taskSel = await this.taskModel
       .findById(id)
       .select('_id experience isConcluded')
@@ -181,9 +196,8 @@ export class TasksHierarchyService {
       0,
     );
 
-    const contributionPercent = totalCompletedXP > 0
-      ? (subtreeCompletedXP / totalCompletedXP) * 100
-      : 0;
+    const contributionPercent =
+      totalCompletedXP > 0 ? (subtreeCompletedXP / totalCompletedXP) * 100 : 0;
 
     return {
       contributionPercent: Math.round(contributionPercent * 100) / 100,

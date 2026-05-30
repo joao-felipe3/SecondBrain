@@ -49,8 +49,12 @@ export class AuditService {
     suggestedEstimatedHours?: number;
   }> {
     const discrepancyMetrics = this.computeDiscrepancyMetrics(dto);
-    const duplicateMetrics = this.computeDuplicateMetrics(Array.isArray(dto?.tasks) ? dto.tasks : []);
-    const tasksPreview = this.formatTasksPreview(Array.isArray(dto?.tasks) ? dto.tasks : []);
+    const duplicateMetrics = this.computeDuplicateMetrics(
+      Array.isArray(dto?.tasks) ? dto.tasks : [],
+    );
+    const tasksPreview = this.formatTasksPreview(
+      Array.isArray(dto?.tasks) ? dto.tasks : [],
+    );
 
     const prompt = this.buildAuditPrompt(
       project,
@@ -95,7 +99,10 @@ export class AuditService {
   } {
     const budgetHours = Number(dto?.leafNode?.estimatedHours || 0);
     const generatedHours = Number(dto?.generatedHours || 0);
-    const diffPct = budgetHours > 0 ? ((generatedHours - budgetHours) / budgetHours) * 100 : 0;
+    const diffPct =
+      budgetHours > 0
+        ? ((generatedHours - budgetHours) / budgetHours) * 100
+        : 0;
 
     return { budgetHours, generatedHours, diffPct };
   }
@@ -118,7 +125,8 @@ export class AuditService {
       (sum, count) => sum + Math.max(0, count - 1),
       0,
     );
-    const duplicateRatio = taskList.length > 0 ? duplicatesRemovedIfDedupe / taskList.length : 0;
+    const duplicateRatio =
+      taskList.length > 0 ? duplicatesRemovedIfDedupe / taskList.length : 0;
 
     const topDuplicateKeys = Array.from(keyCounts.entries())
       .filter(([, count]) => count >= 2)
@@ -139,10 +147,13 @@ export class AuditService {
     return { duplicateRatio, topDuplicateKeys, repetitionMetrics };
   }
 
-
   private normalizeTaskKey(name: string): string {
-    const raw = String(name || '').trim().toLowerCase();
-    const withoutCounters = raw.replace(/\(\s*\d+\s*\/\s*\d+\s*\)\s*$/g, '').trim();
+    const raw = String(name || '')
+      .trim()
+      .toLowerCase();
+    const withoutCounters = raw
+      .replace(/\(\s*\d+\s*\/\s*\d+\s*\)\s*$/g, '')
+      .trim();
     const normalized = withoutCounters
       .normalize('NFD')
       .replace(/[\u0300-\u036f]/g, '')
@@ -152,11 +163,13 @@ export class AuditService {
     return normalized;
   }
 
-
   private async callGeminiWithRetry(prompt: string): Promise<string> {
     const modelOverride = this.getModelOverride();
 
-    const attemptCall = async (maxOutputTokens: number, temperature: number): Promise<string> => {
+    const attemptCall = async (
+      maxOutputTokens: number,
+      temperature: number,
+    ): Promise<string> => {
       return this.geminiService.generateContent(prompt, {
         model: modelOverride,
         responseMimeType: 'application/json',
@@ -171,7 +184,6 @@ export class AuditService {
       return await attemptCall(4096, 0.1);
     }
   }
-
 
   private parseAuditResponse(response: string): {
     diagnosis: 'underestimated' | 'gold_plating' | 'mixed';
@@ -193,10 +205,14 @@ export class AuditService {
     const suggestedAction: 'rebaseline' | 'simplify' =
       suggestedActionRaw === 'simplify' ? 'simplify' : 'rebaseline';
 
-    const rationale = String(parsed?.rationale || '').trim() || 'Sem justificativa.';
+    const rationale =
+      String(parsed?.rationale || '').trim() || 'Sem justificativa.';
 
     let suggestedEstimatedHours: number | undefined;
-    if (parsed?.suggestedEstimatedHours !== undefined && parsed?.suggestedEstimatedHours !== null) {
+    if (
+      parsed?.suggestedEstimatedHours !== undefined &&
+      parsed?.suggestedEstimatedHours !== null
+    ) {
       const hours = this.parseHoursValue(parsed.suggestedEstimatedHours);
       if (hours !== undefined) {
         suggestedEstimatedHours = Math.round(hours * 2) / 2;
@@ -205,7 +221,6 @@ export class AuditService {
 
     return { diagnosis, rationale, suggestedAction, suggestedEstimatedHours };
   }
-
 
   private parseHoursValue(value: unknown): number | undefined {
     if (value === undefined || value === null) return undefined;
@@ -226,7 +241,6 @@ export class AuditService {
     return Number.isFinite(n) && n > 0 ? n : undefined;
   }
 
-
   private formatTasksPreview(taskList: any[]): string {
     return taskList
       .slice(0, 30)
@@ -234,7 +248,6 @@ export class AuditService {
       .join('\n');
   }
 
-  
   private formatTaskLine(task: any, index: number): string {
     const priority = Number(task?.priority ?? 4);
     const pomodoros = Number(task?.pomodorosPlanned ?? 1);
@@ -272,7 +285,8 @@ export class AuditService {
     const repetitionMetrics = duplicateMetrics.repetitionMetrics;
     const dupScore = Number(repetitionMetrics?.dupScore ?? 0);
     const similarScore = Number(repetitionMetrics?.similarScore ?? 0);
-    return `Você é um auditor de escopo e estimativas (WBS/PERT/EVM).\n\n` +
+    return (
+      `Você é um auditor de escopo e estimativas (WBS/PERT/EVM).\n\n` +
       `Contexto do projeto: ${String(project?.name || 'Projeto').trim()}\n` +
       `Pacote (WBS leaf): "${String(dto.leafNode?.name || '').trim()}"\n` +
       `Caminho: ${String(dto.nodePath || '').trim()}\n` +
@@ -307,7 +321,8 @@ export class AuditService {
       `  "suggestedAction": "rebaseline" | "simplify",\n` +
       `  "suggestedEstimatedHours": 32,\n` +
       `  "simplifyNotes": ["...", "..."]\n` +
-      `}`;
+      `}`
+    );
   }
 
   private applyGuardrails(
@@ -334,9 +349,7 @@ export class AuditService {
     const moderateRedundancy = duplicateRatio >= 0.4 || dupScore >= 0.4;
     // Keep "low redundancy" strict (aligns with prompt): below ~25% duplication signals.
     const lowRedundancy =
-      duplicateRatio < 0.25 &&
-      dupScore < 0.25 &&
-      similarScore < 0.35;
+      duplicateRatio < 0.25 && dupScore < 0.25 && similarScore < 0.35;
     const highVariety =
       themesCount >= Math.min(6, Math.ceil(Math.max(1, taskLength) / 6)) ||
       verbVariety >= 0.45 ||

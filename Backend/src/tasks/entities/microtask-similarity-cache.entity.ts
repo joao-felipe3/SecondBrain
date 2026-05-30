@@ -1,10 +1,10 @@
 export class MicroTaskSimilarityCache {
-  id: String;
-  project?: String;
+  id: string;
+  project?: string;
   taskIdA: any;
   taskIdB: any;
   score: number;
-  method?: String;
+  method?: string;
   createdAt?: Date;
   updatedAt?: Date;
 }

@@ -21,13 +21,13 @@ describe('PertService', () => {
     it('should calculate expected time correctly using PERT formula', () => {
       // Exemplo do guia: O=8h, M=12h, P=20h → TE=12.7h
       const estimate: PertEstimateDto = {
-        optimistic: 480,    // 8 horas
-        mostLikely: 720,    // 12 horas
-        pessimistic: 1200,  // 20 horas
+        optimistic: 480, // 8 horas
+        mostLikely: 720, // 12 horas
+        pessimistic: 1200, // 20 horas
       };
 
       const expectedTime = service.calculateExpectedTime(estimate);
-      
+
       // (480 + 4*720 + 1200) / 6 = (480 + 2880 + 1200) / 6 = 4560 / 6 = 760 minutos = 12.67h
       expect(expectedTime).toBeCloseTo(760, 0);
     });
@@ -53,7 +53,7 @@ describe('PertService', () => {
       };
 
       const variance = service.calculateVariance(estimate);
-      
+
       // Variância = ((1200 - 480) / 6)² = (720/6)² = 120² = 14400
       expect(variance).toBeCloseTo(14400, 0);
     });
@@ -79,7 +79,7 @@ describe('PertService', () => {
       };
 
       const stdDev = service.calculateStandardDeviation(estimate);
-      
+
       // Desvio padrão = √14400 = 120
       expect(stdDev).toBeCloseTo(120, 0);
     });
@@ -152,7 +152,7 @@ describe('PertService', () => {
       };
 
       expect(() => service.calculatePertMetrics(invalidEstimate)).toThrow(
-        'Estimativas inválidas: deve ser Otimista ≤ Provável ≤ Pessimista'
+        'Estimativas inválidas: deve ser Otimista ≤ Provável ≤ Pessimista',
       );
     });
 
@@ -167,7 +167,7 @@ describe('PertService', () => {
 
       // (1 + 4*1 + 100) / 6 = 105/6 = 17.5
       expect(metrics.expectedTime).toBeCloseTo(17.5, 1);
-      
+
       // Variância = ((100-1)/6)² = (99/6)² = 16.5² = 272.25
       expect(metrics.variance).toBeCloseTo(272.25, 1);
     });
@@ -195,7 +195,7 @@ describe('PertService', () => {
     it('should warn about high uncertainty (CV > 0.5)', () => {
       const variance = 14400; // Desvio padrão = 120
       const expectedTime = 200; // CV = 120/200 = 0.6
-      
+
       const recommendation = service.getRecommendation(variance, expectedTime);
       expect(recommendation).toContain('Alta incerteza');
     });
@@ -203,7 +203,7 @@ describe('PertService', () => {
     it('should note moderate uncertainty (0.3 < CV ≤ 0.5)', () => {
       const variance = 10000; // Desvio padrão = 100
       const expectedTime = 250; // CV = 100/250 = 0.4
-      
+
       const recommendation = service.getRecommendation(variance, expectedTime);
       expect(recommendation).toContain('Incerteza moderada');
     });
@@ -211,7 +211,7 @@ describe('PertService', () => {
     it('should confirm low uncertainty (CV ≤ 0.3)', () => {
       const variance = 2500; // Desvio padrão = 50
       const expectedTime = 500; // CV = 50/500 = 0.1
-      
+
       const recommendation = service.getRecommendation(variance, expectedTime);
       expect(recommendation).toContain('Incerteza baixa');
     });

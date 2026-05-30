@@ -6,7 +6,10 @@ import { SmartObjectiveDto } from '../dto/smart-objective.dto';
 export class PlanningService {
   private conversationHistory = new Map<string, string[]>();
 
-  constructor(@Inject(forwardRef(() => GeminiService)) private readonly geminiService: GeminiService) {}
+  constructor(
+    @Inject(forwardRef(() => GeminiService))
+    private readonly geminiService: GeminiService,
+  ) {}
 
   async startCatchball(projectData: {
     projectName: string;
@@ -16,12 +19,15 @@ export class PlanningService {
     longTermGoal?: string;
   }): Promise<{ questions: string[]; conversationId: string }> {
     const conversationId = this.generateConversationId();
-    
+
     const goalsContext: string[] = [];
-    if (projectData.shortTermGoal) goalsContext.push(`Curto prazo: ${projectData.shortTermGoal}`);
-    if (projectData.midTermGoal) goalsContext.push(`Médio prazo: ${projectData.midTermGoal}`);
-    if (projectData.longTermGoal) goalsContext.push(`Longo prazo: ${projectData.longTermGoal}`);
-    
+    if (projectData.shortTermGoal)
+      goalsContext.push(`Curto prazo: ${projectData.shortTermGoal}`);
+    if (projectData.midTermGoal)
+      goalsContext.push(`Médio prazo: ${projectData.midTermGoal}`);
+    if (projectData.longTermGoal)
+      goalsContext.push(`Longo prazo: ${projectData.longTermGoal}`);
+
     const prompt = `Você é um consultor de gestão de projetos especializado em metodologias PMBOK e PRINCE2.
 
 Um usuário tem um projeto com as seguintes informações:
@@ -44,11 +50,11 @@ Retorne APENAS um array JSON com as perguntas, sem texto adicional:
     try {
       const response = await this.geminiService.generateContent(prompt);
       const questions = this.parseQuestionsFromResponse(response);
-      
+
       // Armazena histórico com todos os dados
       const contextData = `Nome: ${projectData.projectName}\nDescrição: ${projectData.projectDescription}\n${goalsContext.join('\n')}`;
       this.conversationHistory.set(conversationId, [contextData]);
-      
+
       return { questions, conversationId };
     } catch (error) {
       console.error('Erro ao gerar perguntas de Catchball:', error);
@@ -56,14 +62,20 @@ Retorne APENAS um array JSON com as perguntas, sem texto adicional:
     }
   }
 
-  async suggestAnswer(conversationId: string, questionIndex: number, question: string, previousAnswers: string[]): Promise<string> {
+  async suggestAnswer(
+    conversationId: string,
+    questionIndex: number,
+    question: string,
+    previousAnswers: string[],
+  ): Promise<string> {
     const history = this.conversationHistory.get(conversationId) || [];
     const projectContext = history[0] || '';
-    
-    const previousContext = previousAnswers.length > 0 
-      ? `\n\nRespostas anteriores:\n${previousAnswers.map((ans, i) => `Pergunta ${i + 1}: ${ans}`).join('\n')}`
-      : '';
-    
+
+    const previousContext =
+      previousAnswers.length > 0
+        ? `\n\nRespostas anteriores:\n${previousAnswers.map((ans, i) => `Pergunta ${i + 1}: ${ans}`).join('\n')}`
+        : '';
+
     const prompt = `Você é um consultor de gestão de projetos especializado em metodologias PMBOK e PRINCE2.
 
 Contexto do projeto:
@@ -80,7 +92,11 @@ Retorne APENAS a resposta sugerida, sem explicações adicionais ou formatação
       const response = await this.geminiService.generateContent(prompt);
       // Some models/providers may still wrap the answer in JSON.
       const parsed = this.tryParseJson<{ suggestedAnswer?: string }>(response);
-      if (parsed && typeof parsed.suggestedAnswer === 'string' && parsed.suggestedAnswer.trim()) {
+      if (
+        parsed &&
+        typeof parsed.suggestedAnswer === 'string' &&
+        parsed.suggestedAnswer.trim()
+      ) {
         return parsed.suggestedAnswer.trim();
       }
       return String(response || '').trim();
@@ -90,10 +106,13 @@ Retorne APENAS a resposta sugerida, sem explicações adicionais ou formatação
     }
   }
 
-  async generateSmartObjective(conversationId: string, answers: string[]): Promise<SmartObjectiveDto> {
+  async generateSmartObjective(
+    conversationId: string,
+    answers: string[],
+  ): Promise<SmartObjectiveDto> {
     const history = this.conversationHistory.get(conversationId) || [];
     const projectContext = history[0] || '';
-    
+
     const prompt = `Você é um consultor de gestão de projetos especializado em metodologias PMBOK e PRINCE2.
 
 Contexto do projeto:
@@ -145,7 +164,10 @@ Retorne APENAS um objeto JSON no seguinte formato, sem texto adicional:
 
       // Remove ```json ... ``` or ``` ... ```
       if (cleanResponse.startsWith('```')) {
-        cleanResponse = cleanResponse.replace(/^```(?:json)?\s*/i, '').replace(/```\s*$/i, '').trim();
+        cleanResponse = cleanResponse
+          .replace(/^```(?:json)?\s*/i, '')
+          .replace(/```\s*$/i, '')
+          .trim();
       }
 
       // Quick guard: avoid throwing on plain text responses.
@@ -162,21 +184,23 @@ Retorne APENAS um objeto JSON no seguinte formato, sem texto adicional:
     try {
       // Remove markdown code blocks de várias formas
       let cleanResponse = response.trim();
-      
+
       // Remove ```json ... ``` ou ``` ... ```
       if (cleanResponse.startsWith('```')) {
-        cleanResponse = cleanResponse.replace(/^```(?:json)?\s*/, '').replace(/```\s*$/, '');
+        cleanResponse = cleanResponse
+          .replace(/^```(?:json)?\s*/, '')
+          .replace(/```\s*$/, '');
       }
-      
+
       // Remove espaços e quebras de linha extras
       cleanResponse = cleanResponse.trim();
-      
+
       const questions = JSON.parse(cleanResponse);
-      
+
       if (!Array.isArray(questions)) {
         throw new Error('Resposta não é um array');
       }
-      
+
       return questions;
     } catch (error) {
       console.error('Erro ao fazer parse das perguntas:', error);
@@ -187,7 +211,7 @@ Retorne APENAS um objeto JSON no seguinte formato, sem texto adicional:
         'Quais são as principais funcionalidades que devem ser implementadas?',
         'Qual é o prazo ideal para conclusão?',
         'Existem integrações com sistemas existentes?',
-        'Quais são os critérios de sucesso mensuráveis?'
+        'Quais são os critérios de sucesso mensuráveis?',
       ];
     }
   }
@@ -196,27 +220,31 @@ Retorne APENAS um objeto JSON no seguinte formato, sem texto adicional:
     try {
       // Remove markdown code blocks de várias formas
       let cleanResponse = response.trim();
-      
+
       // Remove ```json ... ``` ou ``` ... ```
       if (cleanResponse.startsWith('```')) {
-        cleanResponse = cleanResponse.replace(/^```(?:json)?\s*/, '').replace(/```\s*$/, '');
+        cleanResponse = cleanResponse
+          .replace(/^```(?:json)?\s*/, '')
+          .replace(/```\s*$/, '');
       }
-      
+
       // Remove espaços e quebras de linha extras
       cleanResponse = cleanResponse.trim();
-      
+
       const smartObj = JSON.parse(cleanResponse);
       const weeklyHours = Number(smartObj.weeklyHours);
-      
+
       return {
         specific: smartObj.specific || '',
         measurable: smartObj.measurable || '',
         achievable: smartObj.achievable || '',
         relevant: smartObj.relevant || '',
         temporal: smartObj.temporal || '',
-        ...(Number.isFinite(weeklyHours) && weeklyHours > 0 ? { weeklyHours } : {}),
+        ...(Number.isFinite(weeklyHours) && weeklyHours > 0
+          ? { weeklyHours }
+          : {}),
         summary: smartObj.summary || '',
-        risks: Array.isArray(smartObj.risks) ? smartObj.risks : []
+        risks: Array.isArray(smartObj.risks) ? smartObj.risks : [],
       };
     } catch (error) {
       console.error('Erro ao fazer parse do objetivo SMART:', error);

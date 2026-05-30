@@ -9,10 +9,7 @@ import {
   WbsGenerationService,
   WbsConversionOrchestrationService,
 } from './services';
-import {
-  getLeafNodesWithPaths,
-} from './utils/wbs-helpers.util';
-
+import { getLeafNodesWithPaths } from './utils/wbs-helpers.util';
 
 export interface ValidationResult {
   valid: boolean;
@@ -30,7 +27,7 @@ export class WBSService {
     private readonly persistence: WbsPersistenceService,
     private readonly generation: WbsGenerationService,
     private readonly orchestrator: WbsConversionOrchestrationService,
-  ) {} 
+  ) {}
 
   validateWBSNode(node: WBSNodeDto): { valid: boolean; reason?: string } {
     const isLeaf = !node.children || node.children.length === 0;
@@ -55,7 +52,10 @@ export class WBSService {
     return { valid: true };
   }
 
-  validateWBS(nodes: WBSNodeDto[]): { valid: boolean; violations: Array<{ valid: boolean; reason?: string }> } {
+  validateWBS(nodes: WBSNodeDto[]): {
+    valid: boolean;
+    violations: Array<{ valid: boolean; reason?: string }>;
+  } {
     const violations: Array<{ valid: boolean; reason?: string }> = [];
 
     const traverse = (nodeList: WBSNodeDto[]) => {
@@ -87,9 +87,10 @@ Nome: "${node.name}"
 Descrição: "${node.description || 'Sem descrição'}"
 Horas Estimadas: ${node.estimatedHours}h
 
-${node.estimatedHours > 80
-  ? `Este pacote é MUITO GRANDE (${node.estimatedHours}h > 80h). Sugira como decompor em sub-pacotes menores, cada um entre 8-80 horas.`
-  : `Este pacote é MUITO PEQUENO (${node.estimatedHours}h < 8h). Sugira como combinar com outras atividades ou expandir o escopo para atingir pelo menos 8 horas.`
+${
+  node.estimatedHours > 80
+    ? `Este pacote é MUITO GRANDE (${node.estimatedHours}h > 80h). Sugira como decompor em sub-pacotes menores, cada um entre 8-80 horas.`
+    : `Este pacote é MUITO PEQUENO (${node.estimatedHours}h < 8h). Sugira como combinar com outras atividades ou expandir o escopo para atingir pelo menos 8 horas.`
 }
 
 Retorne APENAS um array JSON com os sub-pacotes sugeridos:
@@ -110,7 +111,6 @@ Retorne APENAS um array JSON com os sub-pacotes sugeridos:
     }
   }
 
-  
   // Extract all leaf nodes from WBS tree with their full paths
   getLeafNodesWithPaths(nodes: WBSNodeDto[]): Array<{
     node: WBSNodeDto;
@@ -119,7 +119,6 @@ Retorne APENAS um array JSON com os sub-pacotes sugeridos:
   }> {
     return getLeafNodesWithPaths(nodes);
   }
-
 
   // Generate a WBS from a SMART objective using Gemini (delegate to generation service)
   async generateWBS(smartObjective: {
@@ -135,7 +134,6 @@ Retorne APENAS um array JSON com os sub-pacotes sugeridos:
   }): Promise<WBSNodeDto[]> {
     return this.generation.generate(smartObjective);
   }
-
 
   // Generate tasks for a single leaf node only (interactive mode)
   // Delegates to WbsConversionOrchestrationService and enriches result for backward compatibility
@@ -159,7 +157,6 @@ Retorne APENAS um array JSON com os sub-pacotes sugeridos:
     generatedHours: number;
     pomodorosGenerated: number;
   }> {
-
     // Use orchestrator to convert WBS node to tasks
     const result = await this.orchestrator.convertWbsToTasks(
       leafNode,
@@ -174,7 +171,9 @@ Retorne APENAS um array JSON com os sub-pacotes sugeridos:
     );
 
     if (!result.success && result.error) {
-      console.error(`Erro na conversão: ${result.error.stage} - ${result.error.message}`);
+      console.error(
+        `Erro na conversão: ${result.error.stage} - ${result.error.message}`,
+      );
       if (result.error.originalError) {
         throw result.error.originalError;
       }
@@ -184,7 +183,7 @@ Retorne APENAS um array JSON com os sub-pacotes sugeridos:
     // Save tasks if requested
     let generatedTasks = result.tasks;
     if (saveTasks && generatedTasks.length > 0) {
-      const tasksToSave = generatedTasks.map(task => ({
+      const tasksToSave = generatedTasks.map((task) => ({
         ...task,
         project: projectId,
       }));
@@ -231,8 +230,10 @@ Retorne APENAS um array JSON com os sub-pacotes sugeridos:
     };
   }
 
-
-  async saveWBS(projectId: string, nodes: WBSNodeDto[]): Promise<WBSNodeDocument[]> {
+  async saveWBS(
+    projectId: string,
+    nodes: WBSNodeDto[],
+  ): Promise<WBSNodeDocument[]> {
     return this.persistence.save(projectId, nodes);
   }
 

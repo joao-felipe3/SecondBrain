@@ -11,11 +11,11 @@ import { Types } from 'mongoose';
 
 /**
  * Sprint 1 E2E Tests: Foundation Backend + Schema
- * 
+ *
  * SETUP REQUIRED:
  * Install mongodb-memory-server for in-memory MongoDB testing:
  * $ npm install --save-dev mongodb-memory-server
- * 
+ *
  * Run tests with:
  * $ npm run test:e2e
  *
@@ -38,15 +38,9 @@ describe('Sprint 1: Foundation Backend + Schema (E2E)', () => {
     const mongoUri = mongoServer.getUri();
 
     const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [
-        MongooseModule.forRoot(mongoUri),
-      ],
+      imports: [MongooseModule.forRoot(mongoUri)],
       controllers: [TasksController],
-      providers: [
-        TasksService,
-        GeminiService,
-        ProjectsService,
-      ],
+      providers: [TasksService, GeminiService, ProjectsService],
     }).compile();
 
     app = moduleFixture.createNestApplication();

@@ -20,7 +20,11 @@ export class Requirement {
   @Prop({ type: String })
   source?: string;
 
-  @Prop({ type: String, enum: ['open', 'satisfied', 'at_risk'], default: 'open' })
+  @Prop({
+    type: String,
+    enum: ['open', 'satisfied', 'at_risk'],
+    default: 'open',
+  })
   status: 'open' | 'satisfied' | 'at_risk';
 
   @Prop({ type: Date })

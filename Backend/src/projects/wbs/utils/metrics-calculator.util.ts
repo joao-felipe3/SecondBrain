@@ -8,7 +8,12 @@ import {
   MICRO_TASK_MAX_PER_LEAF,
   MICRO_TASK_PREFERRED_MINUTES,
 } from '../constants/wbs.constants';
-import { normalizeTitle, templateTitle, extractVerb, normalizePreferredPomodoros } from './normalizers.util';
+import {
+  normalizeTitle,
+  templateTitle,
+  extractVerb,
+  normalizePreferredPomodoros,
+} from './normalizers.util';
 import { WBSNodeDto } from '../../dto/wbs.dto';
 
 /**
@@ -26,7 +31,9 @@ export function computePertFromMinutes(minutes: number): {
   const mostLikely = Math.max(optimistic, base);
   const pessimistic = Math.max(mostLikely, Math.round(base * 1.5));
   const expected = Math.round((optimistic + 4 * mostLikely + pessimistic) / 6);
-  const variance = Number(Math.pow((pessimistic - optimistic) / 6, 2).toFixed(2));
+  const variance = Number(
+    Math.pow((pessimistic - optimistic) / 6, 2).toFixed(2),
+  );
 
   return { optimistic, mostLikely, pessimistic, expected, variance };
 }
@@ -39,7 +46,10 @@ export function estimateMicroTaskCount(nodes: WBSNodeDto[]): number {
   const traverse = (list: WBSNodeDto[]) => {
     for (const node of list) {
       if (!node.children || node.children.length === 0) {
-        const totalMinutes = Math.max(0, Math.round((node.estimatedHours || 0) * 60));
+        const totalMinutes = Math.max(
+          0,
+          Math.round((node.estimatedHours || 0) * 60),
+        );
         count += computeChunkMinutes(totalMinutes).length;
       } else {
         traverse(node.children);
@@ -61,9 +71,14 @@ export function computeChunkMinutes(
 ): number[] {
   const minutes = Math.max(1, Math.round(totalMinutes));
   const minM = MICRO_TASK_MIN_MINUTES;
-  const preferredPomodoros = normalizePreferredPomodoros(options?.preferredPomodoros);
+  const preferredPomodoros = normalizePreferredPomodoros(
+    options?.preferredPomodoros,
+  );
   const preferredM = preferredPomodoros * 25;
-  const softMaxM = Math.min(MICRO_TASK_HARD_MAX_MINUTES, Math.max(preferredM, preferredPomodoros * 40));
+  const softMaxM = Math.min(
+    MICRO_TASK_HARD_MAX_MINUTES,
+    Math.max(preferredM, preferredPomodoros * 40),
+  );
   const hardMaxM = MICRO_TASK_HARD_MAX_MINUTES;
 
   // Minimum chunks needed to respect hard max
@@ -122,7 +137,12 @@ export function computeChunkMinutes(
  * Compute batch metrics for quality assessment
  */
 export function computeBatchMetrics(
-  tasks: Array<{ name?: string; description?: string; themeTag?: string; microTaskType?: string }>,
+  tasks: Array<{
+    name?: string;
+    description?: string;
+    themeTag?: string;
+    microTaskType?: string;
+  }>,
   options?: {
     inferCognitiveType?: (title?: string, description?: string) => string;
   },
@@ -163,8 +183,9 @@ export function computeBatchMetrics(
     if (t.microTaskType) return [t.microTaskType];
     return [];
   });
-  
-  const inferCognitive = options?.inferCognitiveType || inferCognitiveTypeDefault;
+
+  const inferCognitive =
+    options?.inferCognitiveType || inferCognitiveTypeDefault;
   const cognitiveTypes = tasks.map((t) => {
     const mapped = mapMicroTaskTypeToCognitiveType(t.microTaskType);
     if (mapped) return mapped;
@@ -175,7 +196,9 @@ export function computeBatchMetrics(
   const uniqueTemplates = new Set(templateTitles).size;
   const uniqueVerbs = new Set(verbs).size;
   const uniqueThemes = new Set(themes).size;
-  const uniqueCognitiveTypes = new Set(cognitiveTypes.filter((t) => t !== 'other')).size;
+  const uniqueCognitiveTypes = new Set(
+    cognitiveTypes.filter((t) => t !== 'other'),
+  ).size;
 
   const dupScore = 1 - uniqueTitles / total;
   const similarScore = 1 - uniqueTemplates / total;
@@ -196,8 +219,12 @@ export function computeBatchMetrics(
   };
 }
 
-function mapMicroTaskTypeToCognitiveType(microTaskType?: string): 'capture' | 'review' | 'test' | 'deep' | undefined {
-  const t = String(microTaskType || '').trim().toLowerCase();
+function mapMicroTaskTypeToCognitiveType(
+  microTaskType?: string,
+): 'capture' | 'review' | 'test' | 'deep' | undefined {
+  const t = String(microTaskType || '')
+    .trim()
+    .toLowerCase();
   if (!t) return undefined;
 
   // Keep this mapping intentionally small and stable; it exists to make metrics reflect the pipeline.
@@ -212,12 +239,17 @@ function mapMicroTaskTypeToCognitiveType(microTaskType?: string): 'capture' | 'r
 /**
  * Infer cognitive type from title/description
  */
-function inferCognitiveTypeDefault(title?: string, description?: string): string {
+function inferCognitiveTypeDefault(
+  title?: string,
+  description?: string,
+): string {
   const text = `${title || ''} ${description || ''}`.toLowerCase();
-  if (/\b(coletar|compilar|baixar|buscar|encontrar|reunir)\b/.test(text)) return 'capture';
+  if (/\b(coletar|compilar|baixar|buscar|encontrar|reunir)\b/.test(text))
+    return 'capture';
   if (/\b(revisar|reler|verificar)\b/.test(text)) return 'review';
   if (/\b(testar|avaliar|quiz|simulad[ao])\b/.test(text)) return 'test';
-  if (/\b(criar|redigir|escrever|produzir|implementar)\b/.test(text)) return 'deep';
+  if (/\b(criar|redigir|escrever|produzir|implementar)\b/.test(text))
+    return 'deep';
   return 'other';
 }
 
@@ -250,7 +282,10 @@ export function normalizeVector(vec: number[]): number[] {
 /**
  * Simple k-means clustering for embeddings
  */
-export function kMeansClusters(vectors: number[][], k: number): { clusters: number[][]; centroids: number[][] } {
+export function kMeansClusters(
+  vectors: number[][],
+  k: number,
+): { clusters: number[][]; centroids: number[][] } {
   const safeK = Math.max(1, Math.min(k, vectors.length));
   const centroids = vectors.slice(0, safeK).map((v) => normalizeVector([...v]));
   const clusters: number[][] = Array.from({ length: safeK }, () => []);

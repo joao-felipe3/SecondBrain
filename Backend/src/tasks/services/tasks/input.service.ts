@@ -18,7 +18,9 @@ export class TasksInputService {
       throw new BadRequestException('Valores PERT devem ser maiores que zero.');
     }
     if (!(o < m && m < p)) {
-      throw new BadRequestException('PERT inválido: use optimistic < mostLikely < pessimistic.');
+      throw new BadRequestException(
+        'PERT inválido: use optimistic < mostLikely < pessimistic.',
+      );
     }
   }
 
@@ -44,7 +46,11 @@ export class TasksInputService {
           order: Number.isFinite(entry.order) ? Number(entry.order) : index,
         };
       })
-      .filter(Boolean) as Array<{ item: string; completed: boolean; order: number }>;
+      .filter(Boolean) as Array<{
+      item: string;
+      completed: boolean;
+      order: number;
+    }>;
 
     return normalized.length > 0 ? normalized : undefined;
   }

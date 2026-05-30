@@ -1,14 +1,17 @@
 import { Injectable } from '@nestjs/common';
-import { PertEstimateDto, PertEstimateResponseDto } from '../dto/pert-estimate.dto';
+import {
+  PertEstimateDto,
+  PertEstimateResponseDto,
+} from '../dto/pert-estimate.dto';
 
 /**
  * Serviço para cálculos de estimativas PERT (Program Evaluation and Review Technique)
- * 
+ *
  * PERT é uma técnica de estimativa probabilística que usa três pontos:
  * - Otimista (O): melhor caso, tudo dá certo
  * - Mais Provável (M): caso normal, alguns atrasos esperados
  * - Pessimista (P): pior caso, tudo dá errado
- * 
+ *
  * Fórmula: TE = (O + 4M + P) / 6
  * Esta fórmula pondera a estimativa mais provável (4x) porque é mais confiável.
  */
@@ -24,9 +27,9 @@ export class PertService {
 
   /**
    * Calcula a variância da estimativa
-   * 
+   *
    * Variância = ((P - O) / 6)²
-   * 
+   *
    * A variância indica o nível de incerteza na estimativa.
    * Quanto maior a variância, maior a incerteza.
    */
@@ -58,7 +61,7 @@ export class PertService {
   calculatePertMetrics(estimate: PertEstimateDto): PertEstimateResponseDto {
     if (!this.validateEstimate(estimate)) {
       throw new Error(
-        'Estimativas inválidas: deve ser Otimista ≤ Provável ≤ Pessimista'
+        'Estimativas inválidas: deve ser Otimista ≤ Provável ≤ Pessimista',
       );
     }
 
@@ -81,7 +84,7 @@ export class PertService {
   formatMinutes(minutes: number): string {
     const hours = Math.floor(minutes / 60);
     const mins = Math.round(minutes % 60);
-    
+
     if (hours === 0) {
       return `${mins}min`;
     }

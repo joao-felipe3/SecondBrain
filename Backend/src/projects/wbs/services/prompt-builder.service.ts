@@ -7,7 +7,6 @@ import { normalizeWorkflowTypes } from '../utils/normalizers.util';
  */
 @Injectable()
 export class PromptBuilderService {
-
   buildMicroTasksOutlinePrompt(params: {
     project: any;
     node: WBSNodeDto;
@@ -17,7 +16,10 @@ export class PromptBuilderService {
     avoidTaskTitles?: string[];
   }): string {
     const today = new Date().toISOString().split('T')[0];
-    const projectSummary = params.project?.smartObjective?.summary || params.project?.description || '';
+    const projectSummary =
+      params.project?.smartObjective?.summary ||
+      params.project?.description ||
+      '';
 
     // Short payload, preserves order.
     const minutesList = JSON.stringify(params.chunkMinutes);
@@ -72,7 +74,6 @@ Obrigatórias:
 Use hoje como ${today}.`;
   }
 
-
   buildMicroTasksOutlineWithPlanPrompt(params: {
     project: any;
     node: WBSNodeDto;
@@ -87,15 +88,23 @@ Use hoje como ${today}.`;
     };
   }): string {
     const today = new Date().toISOString().split('T')[0];
-    const projectSummary = params.project?.smartObjective?.summary || params.project?.description || '';
+    const projectSummary =
+      params.project?.smartObjective?.summary ||
+      params.project?.description ||
+      '';
 
-    const workflow = normalizeWorkflowTypes(params.plan.workflow || [], params.chunkMinutes.length);
+    const workflow = normalizeWorkflowTypes(
+      params.plan.workflow || [],
+      params.chunkMinutes.length,
+    );
     const minutesList = params.chunkMinutes
       .map((m, i) => `${i + 1}: ${m}min (tipo: ${workflow[i] || 'practice'})`)
       .join(', ');
 
     const themes = (params.plan.themes || [])
-      .map((t, i) => `${i + 1}. ${t.name}${t.criteria ? ` — ${t.criteria}` : ''}`)
+      .map(
+        (t, i) => `${i + 1}. ${t.name}${t.criteria ? ` — ${t.criteria}` : ''}`,
+      )
       .join('\n');
 
     const avoidTitles = (params.avoidTaskTitles || [])
@@ -154,7 +163,6 @@ Obrigatórias:
 Use hoje como ${today}.`;
   }
 
-
   buildMicroTaskDetailsPrompt(params: {
     project: any;
     node: WBSNodeDto;
@@ -175,9 +183,14 @@ Use hoje como ${today}.`;
     };
   }): string {
     const today = new Date().toISOString().split('T')[0];
-    const projectSummary = params.project?.smartObjective?.summary || params.project?.description || '';
+    const projectSummary =
+      params.project?.smartObjective?.summary ||
+      params.project?.description ||
+      '';
     const themes = (params.plan?.themes || [])
-      .map((t, i) => `${i + 1}. ${t.name}${t.criteria ? ` — ${t.criteria}` : ''}`)
+      .map(
+        (t, i) => `${i + 1}. ${t.name}${t.criteria ? ` — ${t.criteria}` : ''}`,
+      )
       .join('\n');
 
     return `Você é um especialista em micro-tarefas de execução. Você já recebeu o TÍTULO e metadados; agora gere apenas os detalhes.
@@ -214,7 +227,6 @@ Retorne APENAS um JSON object válido (sem markdown), com APENAS estas proprieda
 Use hoje como ${today}.`;
   }
 
-
   buildMicroTaskDetailsBatchPrompt(params: {
     project: any;
     node: WBSNodeDto;
@@ -237,9 +249,14 @@ Use hoje como ${today}.`;
     };
   }): string {
     const today = new Date().toISOString().split('T')[0];
-    const projectSummary = params.project?.smartObjective?.summary || params.project?.description || '';
+    const projectSummary =
+      params.project?.smartObjective?.summary ||
+      params.project?.description ||
+      '';
     const themes = (params.plan?.themes || [])
-      .map((t, i) => `${i + 1}. ${t.name}${t.criteria ? ` — ${t.criteria}` : ''}`)
+      .map(
+        (t, i) => `${i + 1}. ${t.name}${t.criteria ? ` — ${t.criteria}` : ''}`,
+      )
       .join('\n');
 
     const tasksBlock = params.items
@@ -297,10 +314,15 @@ Use hoje como ${today}.`;
     avoidTaskTitles?: string[];
   }): string {
     const today = new Date().toISOString().split('T')[0];
-    const projectSummary = params.project?.smartObjective?.summary || params.project?.description || '';
+    const projectSummary =
+      params.project?.smartObjective?.summary ||
+      params.project?.description ||
+      '';
 
     const compact = ['1', 'true', 'yes', 'on'].includes(
-      String(process.env.WBS_COMPACT_OUTPUT || '').trim().toLowerCase(),
+      String(process.env.WBS_COMPACT_OUTPUT || '')
+        .trim()
+        .toLowerCase(),
     );
 
     // Shorter payload than "1: 50min, 2: 50min..." while still preserving order.
@@ -347,14 +369,16 @@ FORMATO DE RESPOSTA OBRIGATÓRIO:
 Retorne APENAS um array JSON válido (sem markdown). NÃO inclua nenhum texto fora do JSON.
 Cada item deve ter APENAS as propriedades abaixo.
 
-${compact
-  ? `MODO COMPACTO (priorize latência):
+${
+  compact
+    ? `MODO COMPACTO (priorize latência):
 - Strings CURTAS. Sem explicações.
 - checklist: EXATAMENTE 2 itens curtos (<= 60 caracteres cada).
 - definitionOfDone: EXATAMENTE 1 frase curta (<= 80 caracteres).
 - NÃO inclua "description".
 `
-  : ''}
+    : ''
+}
 
 Obrigatórias:
 - "name": string
@@ -374,7 +398,6 @@ Opcional:
 Use hoje como ${today}.`;
   }
 
-
   buildMicroTasksPlannerPrompt(params: {
     project: any;
     node: WBSNodeDto;
@@ -384,9 +407,16 @@ Use hoje como ${today}.`;
     themeHints?: string[];
     workflowMix?: Record<string, number>;
   }): string {
-    const projectSummary = params.project?.smartObjective?.summary || params.project?.description || '';
-    const minutesList = params.chunkMinutes.map((m, i) => `${i + 1}: ${m}min`).join(', ');
-    const themeHintsText = params.themeHints?.length ? params.themeHints.join(', ') : 'Sem sugestões';
+    const projectSummary =
+      params.project?.smartObjective?.summary ||
+      params.project?.description ||
+      '';
+    const minutesList = params.chunkMinutes
+      .map((m, i) => `${i + 1}: ${m}min`)
+      .join(', ');
+    const themeHintsText = params.themeHints?.length
+      ? params.themeHints.join(', ')
+      : 'Sem sugestões';
 
     const mixHint = params.workflowMix
       ? `
@@ -431,7 +461,6 @@ FORMATO DE RESPOSTA OBRIGATÓRIO (JSON válido, sem markdown):
 `;
   }
 
-
   buildMicroTasksGeneratorPrompt(params: {
     project: any;
     node: WBSNodeDto;
@@ -446,23 +475,36 @@ FORMATO DE RESPOSTA OBRIGATÓRIO (JSON válido, sem markdown):
     };
   }): string {
     const today = new Date().toISOString().split('T')[0];
-    const projectSummary = params.project?.smartObjective?.summary || params.project?.description || '';
+    const projectSummary =
+      params.project?.smartObjective?.summary ||
+      params.project?.description ||
+      '';
 
     const compact = ['1', 'true', 'yes', 'on'].includes(
-      String(process.env.WBS_COMPACT_OUTPUT || '').trim().toLowerCase(),
+      String(process.env.WBS_COMPACT_OUTPUT || '')
+        .trim()
+        .toLowerCase(),
     );
 
-    const workflow = normalizeWorkflowTypes(params.plan.workflow || [], params.chunkMinutes.length);
+    const workflow = normalizeWorkflowTypes(
+      params.plan.workflow || [],
+      params.chunkMinutes.length,
+    );
     const minutesList = params.chunkMinutes
       .map((m, i) => `${i + 1}: ${m}min (tipo: ${workflow[i] || 'practice'})`)
       .join(', ');
 
     const themes = (params.plan.themes || [])
-      .map((t, i) => `${i + 1}. ${t.name}${t.criteria ? ` — ${t.criteria}` : ''}`)
+      .map(
+        (t, i) => `${i + 1}. ${t.name}${t.criteria ? ` — ${t.criteria}` : ''}`,
+      )
       .join('\n');
 
     const milestones = (params.plan.milestones || [])
-      .map((m, i) => `${i + 1}. ${m?.name || 'Milestone'} (${m?.atMinutes || '?'}min): ${m?.goal || ''}`)
+      .map(
+        (m, i) =>
+          `${i + 1}. ${m?.name || 'Milestone'} (${m?.atMinutes || '?'}min): ${m?.goal || ''}`,
+      )
       .join('\n');
 
     const verbLibrary = `
@@ -523,14 +565,16 @@ REGRAS IMPORTANTES (anti-repetição):
 FORMATO DE RESPOSTA OBRIGATÓRIO:
 Retorne APENAS um array JSON válido (sem markdown). Cada item deve ter APENAS as propriedades abaixo.
 
-${compact
-  ? `MODO COMPACTO (priorize qualidade e evitar truncamento):
+${
+  compact
+    ? `MODO COMPACTO (priorize qualidade e evitar truncamento):
 - Strings CURTAS. Sem explicações longas.
 - checklist: EXATAMENTE 2 itens curtos (<= 60 caracteres cada).
 - definitionOfDone: EXATAMENTE 1 frase curta (<= 90 caracteres).
 - NÃO inclua "description".
 `
-  : ''}
+    : ''
+}
 
 Obrigatórias:
 - "name": string

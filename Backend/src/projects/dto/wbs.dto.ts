@@ -1,4 +1,12 @@
-import { IsString, IsNumber, IsOptional, IsArray, IsEnum, IsBoolean, IsIn } from 'class-validator';
+import {
+  IsString,
+  IsNumber,
+  IsOptional,
+  IsArray,
+  IsEnum,
+  IsBoolean,
+  IsIn,
+} from 'class-validator';
 import { Type } from 'class-transformer';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
@@ -68,12 +76,16 @@ export class GenerateWBSDto {
   @IsString()
   summary?: string;
 
-  @ApiPropertyOptional({ description: 'Weekly available hours for execution capacity' })
+  @ApiPropertyOptional({
+    description: 'Weekly available hours for execution capacity',
+  })
   @IsOptional()
   @IsNumber()
   weeklyHours?: number;
 
-  @ApiPropertyOptional({ description: 'Optional explicit global budget hours for WBS generation' })
+  @ApiPropertyOptional({
+    description: 'Optional explicit global budget hours for WBS generation',
+  })
   @IsOptional()
   @IsNumber()
   budgetHours?: number;
@@ -113,7 +125,10 @@ export class ValidateWBSResponseDto {
 }
 
 export class ConvertWBSToTasksDto {
-  @ApiProperty({ description: 'WBS nodes to convert to tasks', type: [WBSNodeDto] })
+  @ApiProperty({
+    description: 'WBS nodes to convert to tasks',
+    type: [WBSNodeDto],
+  })
   @IsArray()
   @Type(() => WBSNodeDto)
   nodes: WBSNodeDto[];
@@ -137,8 +152,12 @@ export class ConvertWBSToTasksDto {
   autoAuditThresholdPct?: number;
 
   @ApiPropertyOptional({
-    description: 'Conversion preferences for micro-task granularity and workflow mix',
-    example: { targetPomodoros: 2, workflowMix: { prepare: 0.2, practice: 0.4, produce: 0.3, test: 0.1 } }
+    description:
+      'Conversion preferences for micro-task granularity and workflow mix',
+    example: {
+      targetPomodoros: 2,
+      workflowMix: { prepare: 0.2, practice: 0.4, produce: 0.3, test: 0.1 },
+    },
   })
   @IsOptional()
   preferences?: {
@@ -148,7 +167,10 @@ export class ConvertWBSToTasksDto {
 }
 
 export class GetLeafNodesDto {
-  @ApiProperty({ description: 'WBS nodes to extract leaf nodes from', type: [WBSNodeDto] })
+  @ApiProperty({
+    description: 'WBS nodes to extract leaf nodes from',
+    type: [WBSNodeDto],
+  })
   @IsArray()
   @Type(() => WBSNodeDto)
   nodes: WBSNodeDto[];
@@ -164,8 +186,12 @@ export class GenerateTasksForLeafDto {
   nodePath: string;
 
   @ApiPropertyOptional({
-    description: 'Conversion preferences for micro-task granularity and workflow mix',
-    example: { targetPomodoros: 2, workflowMix: { prepare: 0.2, practice: 0.4, produce: 0.3, test: 0.1 } }
+    description:
+      'Conversion preferences for micro-task granularity and workflow mix',
+    example: {
+      targetPomodoros: 2,
+      workflowMix: { prepare: 0.2, practice: 0.4, produce: 0.3, test: 0.1 },
+    },
   })
   @IsOptional()
   preferences?: {
@@ -186,7 +212,9 @@ export class GenerateTasksForLeafDto {
     nodePath: string;
   }>;
 
-  @ApiPropertyOptional({ description: 'Whether to save tasks to database or return them only' })
+  @ApiPropertyOptional({
+    description: 'Whether to save tasks to database or return them only',
+  })
   @IsOptional()
   saveTasks?: boolean;
 }
@@ -200,7 +228,9 @@ export class AuditLeafDiscrepancyDto {
   @IsString()
   nodePath: string;
 
-  @ApiProperty({ description: 'Generated hours total from micro-tasks for this leaf' })
+  @ApiProperty({
+    description: 'Generated hours total from micro-tasks for this leaf',
+  })
   @IsNumber()
   generatedHours: number;
 
@@ -218,7 +248,10 @@ export class AuditLeafDiscrepancyDto {
 }
 
 export class ResolveWBSBudgetDto {
-  @ApiProperty({ description: 'WBS nodes to resolve against a budget', type: [WBSNodeDto] })
+  @ApiProperty({
+    description: 'WBS nodes to resolve against a budget',
+    type: [WBSNodeDto],
+  })
   @IsArray()
   @Type(() => WBSNodeDto)
   nodes: WBSNodeDto[];
@@ -227,7 +260,10 @@ export class ResolveWBSBudgetDto {
   @IsNumber()
   budgetHours: number;
 
-  @ApiProperty({ description: 'Resolution strategy for over-budget trees', enum: ['normalize', 'reject'] })
+  @ApiProperty({
+    description: 'Resolution strategy for over-budget trees',
+    enum: ['normalize', 'reject'],
+  })
   @IsString()
   @IsIn(['normalize', 'reject'])
   strategy: 'normalize' | 'reject';

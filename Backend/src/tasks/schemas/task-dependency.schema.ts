@@ -76,7 +76,8 @@ export class TaskDependency {
   updatedAt?: Date;
 }
 
-export const TaskDependencySchema = SchemaFactory.createForClass(TaskDependency);
+export const TaskDependencySchema =
+  SchemaFactory.createForClass(TaskDependency);
 
 // Índices para performance
 TaskDependencySchema.index({ taskId: 1, projectId: 1 });

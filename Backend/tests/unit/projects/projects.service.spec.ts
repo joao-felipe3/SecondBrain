@@ -15,8 +15,18 @@ describe('ProjectsService', () => {
         { provide: getModelToken('Project'), useValue: {} },
         { provide: getModelToken('Task'), useValue: {} },
         { provide: getModelToken(ProjectWave.name), useValue: {} },
-        { provide: CPMService, useValue: { getDependencies: jest.fn(), calculateCriticalPath: jest.fn(), normalizeRelationship: jest.fn() } },
-        { provide: ProjectsXMatrixService, useValue: { createXMatrix: jest.fn(), getSavedXMatrix: jest.fn() } },
+        {
+          provide: CPMService,
+          useValue: {
+            getDependencies: jest.fn(),
+            calculateCriticalPath: jest.fn(),
+            normalizeRelationship: jest.fn(),
+          },
+        },
+        {
+          provide: ProjectsXMatrixService,
+          useValue: { createXMatrix: jest.fn(), getSavedXMatrix: jest.fn() },
+        },
       ],
     }).compile();
 

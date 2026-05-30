@@ -26,7 +26,9 @@ export class WbsGenerationService {
     weeksAvailable?: number;
     summary?: string;
   }): Promise<WBSNodeDto[]> {
-    const hasBudgetContext = Number.isFinite(Number(smartObjective.budgetHours)) && Number(smartObjective.budgetHours) > 0;
+    const hasBudgetContext =
+      Number.isFinite(Number(smartObjective.budgetHours)) &&
+      Number(smartObjective.budgetHours) > 0;
     const weeklyHours = Number(smartObjective.weeklyHours);
     const weeksAvailable = Number(smartObjective.weeksAvailable);
 
@@ -95,7 +97,6 @@ Retorne APENAS um array JSON válido e completo, sem texto adicional:
     }
   }
 
-
   private parseFromResponse(response: string): WBSNodeDto[] {
     try {
       let cleanResponse = response.trim();
@@ -122,7 +123,6 @@ Retorne APENAS um array JSON válido e completo, sem texto adicional:
     }
   }
 
-
   private normalizeNodes(nodes: any[], level: number): WBSNodeDto[] {
     return nodes.map((node, index) => ({
       name: String(node.name || 'Sem nome'),
@@ -130,9 +130,10 @@ Retorne APENAS um array JSON válido e completo, sem texto adicional:
       level: level,
       estimatedHours: Number(node.estimatedHours) || 0,
       order: node.order || index + 1,
-      children: node.children && Array.isArray(node.children)
-        ? this.normalizeNodes(node.children, level + 1)
-        : [],
+      children:
+        node.children && Array.isArray(node.children)
+          ? this.normalizeNodes(node.children, level + 1)
+          : [],
     }));
   }
 }

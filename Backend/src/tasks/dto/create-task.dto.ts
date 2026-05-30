@@ -21,7 +21,7 @@ export interface RecurringRuleDto {
 
 export class CreateTaskDto {
   name!: string;
-  description?: string; 
+  description?: string;
   definitionOfDone?: string;
   checklist?: Array<string | ChecklistItemDto>;
   pomodorosPlanned!: number;
@@ -41,7 +41,7 @@ export class CreateTaskDto {
   evmSchedulePerformanceIndex?: number;
   evmAlert?: string;
   deadline!: Date;
-  priority?: number; 
+  priority?: number;
   difficult?: number;
   project!: string | Types.ObjectId;
   parentTaskId?: string | Types.ObjectId;

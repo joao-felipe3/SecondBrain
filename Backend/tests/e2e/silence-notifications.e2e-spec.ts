@@ -35,7 +35,10 @@ describe('Settings E2E Tests (e2e)', () => {
       expect(response.body).toHaveProperty('silenceNotifications', false);
       expect(response.body).toHaveProperty('darkMode', false);
       expect(response.body).toHaveProperty('soundEnabled', true);
-      expect(response.body).toHaveProperty('notificationTimeBeforeDueMinutes', 10);
+      expect(response.body).toHaveProperty(
+        'notificationTimeBeforeDueMinutes',
+        10,
+      );
     });
 
     it('should return existing settings for known user', async () => {

@@ -44,7 +44,9 @@ describe('WBSService', () => {
     // Reset mocks
     jest.clearAllMocks();
 
-    const MockModel: any = jest.fn().mockImplementation((data) => createMockModel(data));
+    const MockModel: any = jest
+      .fn()
+      .mockImplementation((data) => createMockModel(data));
     MockModel.find = jest.fn().mockReturnValue({
       sort: jest.fn().mockReturnValue({
         exec: jest.fn().mockResolvedValue([]),
@@ -71,7 +73,10 @@ describe('WBSService', () => {
         },
         {
           provide: WbsConversionOrchestrationService,
-          useValue: { generateTasksForSingleLeaf: jest.fn(), generateTasksForLeaves: jest.fn() },
+          useValue: {
+            generateTasksForSingleLeaf: jest.fn(),
+            generateTasksForLeaves: jest.fn(),
+          },
         },
         {
           provide: getModelToken('WBSNode'),
@@ -220,8 +225,18 @@ describe('WBSService', () => {
               level: 2,
               estimatedHours: 100,
               children: [
-                { name: 'Valid Leaf', level: 3, estimatedHours: 20, children: [] },
-                { name: 'Invalid Leaf', level: 3, estimatedHours: 3, children: [] },
+                {
+                  name: 'Valid Leaf',
+                  level: 3,
+                  estimatedHours: 20,
+                  children: [],
+                },
+                {
+                  name: 'Invalid Leaf',
+                  level: 3,
+                  estimatedHours: 3,
+                  children: [],
+                },
               ],
             },
           ],
@@ -281,7 +296,8 @@ describe('WBSService', () => {
     });
 
     it('should handle Gemini response with markdown code blocks', async () => {
-      const mockWBS = '```json\n[{"name":"Dev","level":1,"estimatedHours":40,"children":[]}]\n```';
+      const mockWBS =
+        '```json\n[{"name":"Dev","level":1,"estimatedHours":40,"children":[]}]\n```';
 
       mockGenerationService.generate.mockResolvedValue([
         { name: 'Dev', level: 1, estimatedHours: 40, children: [] },
@@ -300,7 +316,9 @@ describe('WBSService', () => {
     });
 
     it('should throw error on invalid Gemini response', async () => {
-      mockGenerationService.generate.mockRejectedValue(new Error('invalid json'));
+      mockGenerationService.generate.mockRejectedValue(
+        new Error('invalid json'),
+      );
 
       await expect(
         service.generateWBS({

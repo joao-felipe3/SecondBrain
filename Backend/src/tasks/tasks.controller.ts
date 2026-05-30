@@ -23,8 +23,15 @@ import { UpdateChecklistItemDto } from './dto/update-checklist-item.dto';
 import { UpdateRecurringRuleDto } from './dto/update-recurring-rule.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
 import { GenerateAiSuggestionsDto } from './dto/generate-ai-suggestions.dto';
-import { PertEstimateDto, PertEstimateResponseDto } from './dto/pert-estimate.dto';
-import { SuggestPertDto, PertSuggestionResponseDto, UpdatePertDto } from './dto/suggest-pert.dto';
+import {
+  PertEstimateDto,
+  PertEstimateResponseDto,
+} from './dto/pert-estimate.dto';
+import {
+  SuggestPertDto,
+  PertSuggestionResponseDto,
+  UpdatePertDto,
+} from './dto/suggest-pert.dto';
 import { MoveTaskStatusDto } from './dto/move-task-status.dto'; // Sprint 4
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { CPMService } from './services/cpm.service';
@@ -48,7 +55,9 @@ export class TasksController {
   ) {
     const tasks = Array.isArray(body?.tasks) ? body.tasks : [];
     if (tasks.length === 0) {
-      throw new BadRequestException('Body inválido: "tasks" deve ser um array não-vazio');
+      throw new BadRequestException(
+        'Body inválido: "tasks" deve ser um array não-vazio',
+      );
     }
 
     // Inserção em lote, preservando a ordem para que possamos gerar dependências coerentes.
@@ -60,7 +69,8 @@ export class TasksController {
 
     const mode = body?.autoDependencies?.mode ?? 'none';
     const relationship = body?.autoDependencies?.relationship;
-    const reason = body?.autoDependencies?.reason ?? 'Auto-generated dependency (bulk save)';
+    const reason =
+      body?.autoDependencies?.reason ?? 'Auto-generated dependency (bulk save)';
 
     let dependencyOps = 0;
     if (mode !== 'none' && inserted.length >= 2) {
@@ -91,15 +101,17 @@ export class TasksController {
 
       for (let gi = 0; gi < groups.length; gi++) {
         const g = groups[gi];
-        const projectId = String((g.tasks[0] as any)?.project?.toString?.() ?? (g.tasks[0] as any)?.project ?? '').trim();
+        const projectId = String(
+          g.tasks[0]?.project?.toString?.() ?? g.tasks[0]?.project ?? '',
+        ).trim();
         if (!projectId) continue;
 
         // within-leaf chain
         if (mode === 'within-leaf' || mode === 'within-and-between-leafs') {
           for (let i = 1; i < g.tasks.length; i++) {
             deps.push({
-              taskId: String((g.tasks[i] as any)._id),
-              dependsOnTaskId: String((g.tasks[i - 1] as any)._id),
+              taskId: String(g.tasks[i]._id),
+              dependsOnTaskId: String(g.tasks[i - 1]._id),
               projectId,
               relationship,
               reason,
@@ -145,11 +157,13 @@ export class TasksController {
             const prevLast = prev.tasks[prev.tasks.length - 1];
             const currentFirst = g.tasks[0];
             deps.push({
-              taskId: String((currentFirst as any)._id),
-              dependsOnTaskId: String((prevLast as any)._id),
+              taskId: String(currentFirst._id),
+              dependsOnTaskId: String(prevLast._id),
               projectId,
               relationship,
-              reason: body?.autoDependencies?.reason ?? 'Auto: WBS leaf sequence (bulk save)',
+              reason:
+                body?.autoDependencies?.reason ??
+                'Auto: WBS leaf sequence (bulk save)',
               isAutoIdentified: true,
             });
           }
@@ -163,7 +177,9 @@ export class TasksController {
     return {
       insertedCount: inserted.length,
       autoDependenciesCreatedOrUpdated: dependencyOps,
-      taskIds: inserted.map((t: any) => String(t?._id ?? t?.id ?? '')).filter(Boolean),
+      taskIds: inserted
+        .map((t: any) => String(t?._id ?? t?.id ?? ''))
+        .filter(Boolean),
     };
   }
 
@@ -183,17 +199,25 @@ export class TasksController {
 
   @Post('micro/recurring')
   @ApiOperation({ summary: 'Criar micro-task recorrente (base inicial)' })
-  @ApiResponse({ status: 201, description: 'Micro-task recorrente criada com sucesso.' })
+  @ApiResponse({
+    status: 201,
+    description: 'Micro-task recorrente criada com sucesso.',
+  })
   createRecurringMicroTask(@Body() createMicroTaskDto: CreateMicroTaskDto) {
     return this.tasksService.createRecurringMicroTask(createMicroTaskDto);
   }
 
   @Post('micro/suggest-estimates')
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Sugerir estimativas PERT via LLM',
-    description: 'Gera sugestões automáticas de estimativas Otimista, Provável e Pessimista usando IA. Retorna valores em minutos.'
+    description:
+      'Gera sugestões automáticas de estimativas Otimista, Provável e Pessimista usando IA. Retorna valores em minutos.',
   })
-  @ApiResponse({ status: 200, description: 'Sugestões geradas com sucesso.', type: PertSuggestionResponseDto })
+  @ApiResponse({
+    status: 200,
+    description: 'Sugestões geradas com sucesso.',
+    type: PertSuggestionResponseDto,
+  })
   async suggestPertEstimates(@Body() suggestDto: SuggestPertDto) {
     return this.tasksService.suggestPertEstimates(
       suggestDto.taskType,
@@ -204,7 +228,10 @@ export class TasksController {
 
   @Get()
   @ApiOperation({ summary: 'Listar todas as tasks' })
-  @ApiResponse({ status: 200, description: 'Lista de tasks retornada com sucesso.' })
+  @ApiResponse({
+    status: 200,
+    description: 'Lista de tasks retornada com sucesso.',
+  })
   findAll() {
     return this.tasksService.findAll();
   }
@@ -212,7 +239,10 @@ export class TasksController {
   // ===== ROTAS ESPECÍFICAS DEVEM VIR ANTES DE :id =====
 
   @Post('ai-suggestions')
-  @ApiOperation({ summary: 'Gerar sugestões de tarefas usando IA baseado nos objetivos do projeto' })
+  @ApiOperation({
+    summary:
+      'Gerar sugestões de tarefas usando IA baseado nos objetivos do projeto',
+  })
   @ApiResponse({ status: 200, description: 'Sugestões geradas com sucesso.' })
   async generateAiSuggestions(@Body() generateDto: GenerateAiSuggestionsDto) {
     return this.tasksService.generateAiSuggestions(generateDto);
@@ -220,14 +250,20 @@ export class TasksController {
 
   @Get('micro/:id')
   @ApiOperation({ summary: 'Buscar uma micro-task por id' })
-  @ApiResponse({ status: 200, description: 'Micro-task retornada com sucesso.' })
+  @ApiResponse({
+    status: 200,
+    description: 'Micro-task retornada com sucesso.',
+  })
   findMicroTask(@Param('id') id: string) {
     return this.tasksService.findMicroTask(id);
   }
 
   @Post(':id/checklist')
   @ApiOperation({ summary: 'Atualizar checklist de uma micro-task' })
-  @ApiResponse({ status: 200, description: 'Checklist atualizado com sucesso.' })
+  @ApiResponse({
+    status: 200,
+    description: 'Checklist atualizado com sucesso.',
+  })
   updateMicroTaskChecklist(
     @Param('id') id: string,
     @Body() body: UpdateChecklistDto,
@@ -236,20 +272,34 @@ export class TasksController {
   }
 
   @Patch(':id/checklist/:itemId')
-  @ApiOperation({ summary: 'Atualizar um item específico do checklist (Sprint 2)' })
-  @ApiResponse({ status: 200, description: 'Item do checklist atualizado com sucesso.' })
+  @ApiOperation({
+    summary: 'Atualizar um item específico do checklist (Sprint 2)',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Item do checklist atualizado com sucesso.',
+  })
   @ApiResponse({ status: 404, description: 'Tarefa ou item não encontrado.' })
   async updateChecklistItem(
     @Param('id') taskId: string,
     @Param('itemId') itemId: string,
     @Body() body: UpdateChecklistItemDto,
   ) {
-    return this.tasksService.updateChecklistItem(taskId, itemId, body.completed);
+    return this.tasksService.updateChecklistItem(
+      taskId,
+      itemId,
+      body.completed,
+    );
   }
 
   @Patch(':id/recurring-rule')
-  @ApiOperation({ summary: 'Atualizar regra de recorrência de uma task (compat)' })
-  @ApiResponse({ status: 200, description: 'Regra de recorrência atualizada com sucesso.' })
+  @ApiOperation({
+    summary: 'Atualizar regra de recorrência de uma task (compat)',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Regra de recorrência atualizada com sucesso.',
+  })
   updateRecurringRuleCompat(
     @Param('id') id: string,
     @Body() body: UpdateRecurringRuleDto,
@@ -259,7 +309,10 @@ export class TasksController {
 
   @Put(':id/recurring-rule')
   @ApiOperation({ summary: 'Atualizar regra de recorrência de uma task' })
-  @ApiResponse({ status: 200, description: 'Regra de recorrência atualizada com sucesso.' })
+  @ApiResponse({
+    status: 200,
+    description: 'Regra de recorrência atualizada com sucesso.',
+  })
   updateRecurringRule(
     @Param('id') id: string,
     @Body() body: UpdateRecurringRuleDto,
@@ -269,7 +322,10 @@ export class TasksController {
 
   @Post('habit/create')
   @ApiOperation({ summary: 'Criar template recorrente e primeira ocorrência' })
-  @ApiResponse({ status: 201, description: 'Hábito recorrente criado com sucesso.' })
+  @ApiResponse({
+    status: 201,
+    description: 'Hábito recorrente criado com sucesso.',
+  })
   createHabit(@Body() createMicroTaskDto: CreateMicroTaskDto) {
     return this.tasksService.createRecurringMicroTask(createMicroTaskDto);
   }
@@ -283,40 +339,53 @@ export class TasksController {
 
   @Get(':parentRecurringId/streak')
   @ApiOperation({ summary: 'Buscar streak de uma série recorrente' })
-  @ApiResponse({ status: 200, description: 'Dados de streak retornados com sucesso.' })
+  @ApiResponse({
+    status: 200,
+    description: 'Dados de streak retornados com sucesso.',
+  })
   getRecurringStreak(@Param('parentRecurringId') parentRecurringId: string) {
     return this.tasksService.getStreakData(parentRecurringId);
   }
 
   @Delete(':parentRecurringId')
-  @ApiOperation({ summary: 'Remover série recorrente inteira (com confirmação)' })
-  @ApiResponse({ status: 200, description: 'Série recorrente removida com sucesso.' })
+  @ApiOperation({
+    summary: 'Remover série recorrente inteira (com confirmação)',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Série recorrente removida com sucesso.',
+  })
   async deleteRecurringSeries(
     @Param('parentRecurringId') parentRecurringId: string,
     @Query('confirm') confirm?: string,
   ) {
     if (String(confirm || '').toLowerCase() !== 'true') {
-      throw new BadRequestException('Confirmação obrigatória: use ?confirm=true para remover a série.');
+      throw new BadRequestException(
+        'Confirmação obrigatória: use ?confirm=true para remover a série.',
+      );
     }
 
     return this.tasksService.deleteRecurringSeries(parentRecurringId);
   }
 
   @Patch(':id/pert')
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Atualizar estimativas PERT de uma tarefa',
-    description: 'Permite editar as estimativas PERT (Otimista, Provável, Pessimista) após a criação. Recalcula automaticamente o TE e deadline.'
+    description:
+      'Permite editar as estimativas PERT (Otimista, Provável, Pessimista) após a criação. Recalcula automaticamente o TE e deadline.',
   })
-  @ApiResponse({ status: 200, description: 'Estimativas PERT atualizadas com sucesso.' })
-  updatePert(
-    @Param('id') id: string,
-    @Body() updatePertDto: UpdatePertDto,
-  ) {
+  @ApiResponse({
+    status: 200,
+    description: 'Estimativas PERT atualizadas com sucesso.',
+  })
+  updatePert(@Param('id') id: string, @Body() updatePertDto: UpdatePertDto) {
     return this.tasksService.updatePert(id, updatePertDto);
   }
 
   @Sse('ai-suggestions-stream')
-  @ApiOperation({ summary: 'Stream de progresso da geração de tarefas via Server-Sent Events' })
+  @ApiOperation({
+    summary: 'Stream de progresso da geração de tarefas via Server-Sent Events',
+  })
   generateAiSuggestionsStream(
     @Query('projectName') projectName: string,
     @Query('projectId') projectId: string,
@@ -346,11 +415,15 @@ export class TasksController {
               observer.next({ data: progress } as MessageEvent);
             },
             (result) => {
-              observer.next({ data: { type: 'complete', result } } as MessageEvent);
+              observer.next({
+                data: { type: 'complete', result },
+              } as MessageEvent);
               observer.complete();
             },
             (error) => {
-              observer.next({ data: { type: 'error', error: error.message } } as MessageEvent);
+              observer.next({
+                data: { type: 'error', error: error.message },
+              } as MessageEvent);
               observer.error(error);
             },
           );
@@ -362,12 +435,17 @@ export class TasksController {
   }
 
   @Patch(':id/status')
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Mover task para novo status (Kanban board)',
-    description: 'Move a task entre colunas do Kanban. Se status="done", valida checklist e marca como concluída. Outros status apenas atualizam a ordem.'
+    description:
+      'Move a task entre colunas do Kanban. Se status="done", valida checklist e marca como concluída. Outros status apenas atualizam a ordem.',
   })
   @ApiResponse({ status: 200, description: 'Task movida com sucesso.' })
-  @ApiResponse({ status: 400, description: 'Validação falhou (checklist incompleto ao mover para done, ou task concluída tentando sair de done).' })
+  @ApiResponse({
+    status: 400,
+    description:
+      'Validação falhou (checklist incompleto ao mover para done, ou task concluída tentando sair de done).',
+  })
   @ApiResponse({ status: 404, description: 'Task não encontrada.' })
   async moveTaskStatus(
     @Param('id') id: string,
@@ -391,9 +469,10 @@ export class TasksController {
   }
 
   @Get(':id/lineage')
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Buscar lineage de uma task (ancestrais + filhos)',
-    description: 'Retorna cadeia de tasks parentes até a raiz e lista de filhos diretos.'
+    description:
+      'Retorna cadeia de tasks parentes até a raiz e lista de filhos diretos.',
   })
   @ApiResponse({ status: 200, description: 'Lineage retornada com sucesso.' })
   @ApiResponse({ status: 404, description: 'Task não encontrada.' })
@@ -404,37 +483,49 @@ export class TasksController {
   @Get(':id/value-contribution')
   @ApiOperation({
     summary: 'Calcular contribuição de valor (XP) da task para o objetivo raiz',
-    description: 'Retorna percentual de contribuição com base em XP de tasks concluídas na árvore do objetivo.'
+    description:
+      'Retorna percentual de contribuição com base em XP de tasks concluídas na árvore do objetivo.',
   })
-  @ApiResponse({ status: 200, description: 'Contribuição calculada com sucesso.' })
+  @ApiResponse({
+    status: 200,
+    description: 'Contribuição calculada com sucesso.',
+  })
   async getValueContribution(@Param('id') id: string) {
     return this.tasksService.calculateValueContribution(id);
   }
 
   @Post(':id/completion-feedback')
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Gerar feedback de conclusão via LLM',
-    description: 'Gera feedback automático (catchball) para uma task concluída e persiste no banco.'
+    description:
+      'Gera feedback automático (catchball) para uma task concluída e persiste no banco.',
   })
   @ApiResponse({ status: 200, description: 'Feedback gerado com sucesso.' })
   @ApiResponse({ status: 400, description: 'Task não está concluída.' })
   @ApiResponse({ status: 404, description: 'Task não encontrada.' })
   async generateCompletionFeedback(@Param('id') id: string, @Body() body: any) {
-    const feedback = await this.tasksService.generateCompletionFeedback(id, body);
+    const feedback = await this.tasksService.generateCompletionFeedback(
+      id,
+      body,
+    );
     return { feedback };
   }
 
   @Get(':id/completion-feedback')
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Buscar último feedback de conclusão',
-    description: 'Retorna o feedback mais recente de uma task (gerado via LLM).'
+    description:
+      'Retorna o feedback mais recente de uma task (gerado via LLM).',
   })
-  @ApiResponse({ status: 200, description: 'Feedback retornado (pode ser null se não existir).' })
+  @ApiResponse({
+    status: 200,
+    description: 'Feedback retornado (pode ser null se não existir).',
+  })
   @ApiResponse({ status: 404, description: 'Task não encontrada.' })
   async getCompletionFeedback(@Param('id') id: string) {
     const task = await this.tasksService.findOne(id);
     if (!task) throw new NotFoundException('Task not found');
-    
+
     const feedback = await this.tasksService.getCompletionFeedback(id);
     return feedback;
   }
@@ -473,17 +564,21 @@ export class TasksController {
   }
 
   @Post(':id/pert-estimate')
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Salvar estimativa PERT (3 pontos) para uma tarefa',
-    description: 'Recebe estimativas otimista, provável e pessimista e calcula o tempo esperado via fórmula PERT: (O + 4M + P) / 6'
+    description:
+      'Recebe estimativas otimista, provável e pessimista e calcula o tempo esperado via fórmula PERT: (O + 4M + P) / 6',
   })
-  @ApiResponse({ 
-    status: 200, 
+  @ApiResponse({
+    status: 200,
     description: 'Estimativa PERT salva com sucesso e métricas calculadas.',
     type: PertEstimateResponseDto,
   })
   @ApiResponse({ status: 404, description: 'Tarefa não encontrada.' })
-  @ApiResponse({ status: 400, description: 'Estimativas inválidas (deve ser O ≤ M ≤ P).' })
+  @ApiResponse({
+    status: 400,
+    description: 'Estimativas inválidas (deve ser O ≤ M ≤ P).',
+  })
   async savePertEstimate(
     @Param('id') id: string,
     @Body() pertEstimateDto: PertEstimateDto,
@@ -492,7 +587,9 @@ export class TasksController {
       return await this.tasksService.savePertEstimate(id, pertEstimateDto);
     } catch (error: unknown) {
       const message =
-        error instanceof Error ? error.message : 'Erro ao salvar estimativa PERT';
+        error instanceof Error
+          ? error.message
+          : 'Erro ao salvar estimativa PERT';
 
       if (message.includes('não encontrada')) {
         throw new NotFoundException(message);

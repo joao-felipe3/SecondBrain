@@ -42,6 +42,11 @@ import {
     ConfigService,
     WbsConversionOrchestrationService,
   ],
-  exports: [WBSService, WbsValidationService, TaskConversionService, AuditService],
+  exports: [
+    WBSService,
+    WbsValidationService,
+    TaskConversionService,
+    AuditService,
+  ],
 })
 export class WBSModule {}

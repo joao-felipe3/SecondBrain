@@ -160,7 +160,9 @@ describe('TasksService - PERT Methods (Unit Tests)', () => {
       const result = await service.updatePert(validTaskId, validUpdateDto);
 
       expect(result.deadline).toBeDefined();
-      expect(result.deadline.getTime()).toBeGreaterThan(mockTask.createdAt.getTime());
+      expect(result.deadline.getTime()).toBeGreaterThan(
+        mockTask.createdAt.getTime(),
+      );
     });
 
     it('should reject if O > M', async () => {
@@ -218,9 +220,9 @@ describe('TasksService - PERT Methods (Unit Tests)', () => {
         pertPessimisticMinutes: 50,
       };
 
-      await expect(service.updatePert('invalid_id', invalidDto)).rejects.toThrow(
-        BadRequestException,
-      );
+      await expect(
+        service.updatePert('invalid_id', invalidDto),
+      ).rejects.toThrow(BadRequestException);
     });
 
     it('should throw NotFoundException if task not found', async () => {
@@ -228,9 +230,9 @@ describe('TasksService - PERT Methods (Unit Tests)', () => {
         exec: jest.fn().mockResolvedValue(null),
       });
 
-      await expect(service.updatePert(validTaskId, validUpdateDto)).rejects.toThrow(
-        NotFoundException,
-      );
+      await expect(
+        service.updatePert(validTaskId, validUpdateDto),
+      ).rejects.toThrow(NotFoundException);
     });
 
     it('should handle edge case: O = M = P (zero variance)', async () => {
