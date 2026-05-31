@@ -10,8 +10,7 @@ import { TasksMetricsService } from '../analysis/metrics.service';
 import { CreateManyTasksOptionsDto } from '../../dto/create-many-tasks-options.dto';
 import { MoveTaskStatusDto } from '../../dto/move-task-status.dto';
 import { TasksInputService } from './input.service';
-import { TasksChecklistService } from '../intelligence/checklist.service';
-import { ChecklistService } from '../shared/checklist.service';
+import { TasksChecklistService, ChecklistService } from '../intelligence/checklist.service';
 import { TasksCompletionService } from './completion.service';
 import { InsertManyError } from '../../interfaces/db-errors';
 

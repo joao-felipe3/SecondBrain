@@ -2,11 +2,11 @@ import { TasksInputService } from '../../../src/tasks/services/workflow/input.se
 import { TasksMetricsService } from '../../../src/tasks/services/analysis/metrics.service';
 import { TasksRecurringService } from '../../../src/tasks/services/workflow/recurring.service';
 import { TasksAiSuggestionsService } from '../../../src/tasks/services/intelligence/ai-suggestions.service';
-import { TasksHabitsService } from '../../../src/tasks/services/insights/habits.service';
-import { TasksHierarchyService } from '../../../src/tasks/services/analysis/hierarchy.service';
+import { TasksHabitsService } from '../../../src/tasks/services/monitoring/habits.service';
+import { TasksHierarchyService } from '../../../src/tasks/services/traceability/hierarchy.service';
 import { TasksChecklistService } from '../../../src/tasks/services/intelligence/checklist.service';
 import { TasksCompletionService } from '../../../src/tasks/services/workflow/completion.service';
-import { TasksPertService } from '../../../src/tasks/services/analysis/tasks-pert.service';
+import { TasksPertService } from '../../../src/tasks/services/analysis/pert.service';
 import { TasksWriteService } from '../../../src/tasks/services/workflow/write.service';
 
 type TasksServiceTestDeps = {

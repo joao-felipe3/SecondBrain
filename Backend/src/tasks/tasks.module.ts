@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { TasksService } from './tasks.service';
 import { GeminiService } from '../ai/gemini.service';
-import { ChecklistService } from './services/shared';
+import { ChecklistService } from './services/intelligence';
 import { PertService, CPMService, DependencyInferenceService, BufferService } from './services/analysis';
 import { TasksController } from './tasks.controller';
 import { CPMController } from './controllers/cpm.controller';
@@ -31,7 +31,7 @@ import { TaskCompletionFeedback } from './entities/task-completion-feedback.enti
 import { FeedbackService } from './services/intelligence';
 import { TasksRecurringService, TasksInputService, TasksCompletionService, TasksWriteService } from './services/workflow';
 import { TasksAiSuggestionsService, TasksChecklistService } from './services/intelligence';
-import { TasksHabitsService } from './services/insights';
+import { TasksHabitsService } from './services/monitoring';
 import { TasksMetricsService, TasksHierarchyService, TasksPertService } from './services/analysis';
 import { forwardRef } from '@nestjs/common';
 import { ProjectsModule } from '../projects/projects.module';
