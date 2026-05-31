@@ -65,3 +65,8 @@ export class CreateTaskDto {
   themeTag?: string[];
   status?: 'todo' | 'doing' | 'review' | 'done';
 }
+
+export interface RecurringTaskOccurrenceDto extends CreateTaskDto {
+  kanbanOrder: number;
+  statusUpdatedAt: Date;
+}

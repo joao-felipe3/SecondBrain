@@ -56,19 +56,19 @@ export class TasksService {
     private readonly tasksCompletionService: TasksCompletionService,
   ) {}
 
-  async recalculateProjectStats(projectId: string): Promise<void> {
+  public async recalculateProjectStats(projectId: string): Promise<void> {
     await this.projectsService.recalculateProjectStats(projectId);
   }
 
   // ---------------------------------------- Creation / Write operations ----------------------------------------
-  async createMany(
+  public async createMany(
     createTaskDtos: CreateTaskDto[],
     options?: CreateManyTasksOptionsDto,
   ): Promise<TaskDocument[]> {
     return this.tasksWriteService.createMany(createTaskDtos, options);
   }
 
-  async create(createTaskDto: CreateTaskDto): Promise<TaskDocument> {
+  public async create(createTaskDto: CreateTaskDto): Promise<TaskDocument> {
     if (createTaskDto.microTaskType) {
       return this.createMicroTask({
         ...createTaskDto,
@@ -79,15 +79,15 @@ export class TasksService {
     return this.createTaskCore(createTaskDto);
   }
 
-  async createMicroTask(createMicroTaskDto: CreateMicroTaskDto): Promise<TaskDocument> {
+  public async createMicroTask(createMicroTaskDto: CreateMicroTaskDto): Promise<TaskDocument> {
     return this.tasksWriteService.createMicroTask(createMicroTaskDto);
   }
 
-  async createRecurringTemplate(createMicroTaskDto: CreateMicroTaskDto): Promise<TaskDocument> {
+  public async createRecurringTemplate(createMicroTaskDto: CreateMicroTaskDto): Promise<TaskDocument> {
     return this.tasksRecurringService.createRecurringTemplate(createMicroTaskDto);
   }
 
-  async createRecurringMicroTask(createMicroTaskDto: CreateMicroTaskDto): Promise<TaskDocument> {
+  public async createRecurringMicroTask(createMicroTaskDto: CreateMicroTaskDto): Promise<TaskDocument> {
     return this.tasksRecurringService.createRecurringMicroTask(createMicroTaskDto);
   }
 
@@ -96,20 +96,20 @@ export class TasksService {
   }
 
   // ------------------------------ Update / Delete / Move ------------------------------
-  async update(id: string, updateTaskDto: Partial<CreateTaskDto>): Promise<TaskDocument | null> {
+  public async update(id: string, updateTaskDto: Partial<CreateTaskDto>): Promise<TaskDocument | null> {
     return this.tasksWriteService.update(id, updateTaskDto);
   }
 
-  async remove(id: string): Promise<boolean> {
+  public async remove(id: string): Promise<boolean> {
     return this.tasksWriteService.remove(id);
   }
 
-  async moveTaskStatus(id: string, move: MoveTaskStatusDto): Promise<TaskDocument> {
+  public async moveTaskStatus(id: string, move: MoveTaskStatusDto): Promise<TaskDocument> {
     return this.tasksWriteService.moveTaskStatus(id, move);
   }
 
   // ------------------------------ Checklist / Validation ------------------------------
-  async generateChecklistViaCopilot(
+  public async generateChecklistViaCopilot(
     taskName: string,
     description?: string,
     microTaskType?: string,
@@ -117,7 +117,7 @@ export class TasksService {
     return this.tasksChecklistService.generateChecklistForTask(taskName, description, microTaskType);
   }
 
-  async generateChecklistViaCopilotWithHistory(
+  public async generateChecklistViaCopilotWithHistory(
     taskName: string,
     description?: string,
     microTaskType?: string,
@@ -131,7 +131,7 @@ export class TasksService {
     );
   }
 
-  async updateChecklistItem(
+  public async updateChecklistItem(
     taskId: string,
     itemIndex: string,
     completed: boolean,
@@ -139,23 +139,23 @@ export class TasksService {
     return this.tasksChecklistService.updateChecklistItem(taskId, itemIndex, completed);
   }
 
-  async updateMicroTaskChecklist(
+  public async updateMicroTaskChecklist(
     id: string,
     checklist: Array<string | ChecklistItemDto>,
   ): Promise<TaskDocument> {
     return this.tasksChecklistService.updateMicroTaskChecklist(id, checklist);
   }
 
-  async validateCompletionRequirements(taskId: string): Promise<{ isValid: boolean; reason?: string }> {
+  public async validateCompletionRequirements(taskId: string): Promise<{ isValid: boolean; reason?: string }> {
     return this.tasksChecklistService.validateCompletionRequirements(taskId);
   }
 
-  async getValidationErrors(taskId: string): Promise<{ valid: boolean; errors: string[] }> {
+  public async getValidationErrors(taskId: string): Promise<{ valid: boolean; errors: string[] }> {
     return this.tasksChecklistService.getValidationErrors(taskId);
   }
 
   // ------------------------------ Completion / Feedback ------------------------------
-  async markAsConcluded(id: string): Promise<TaskDocument> {
+  public async markAsConcluded(id: string): Promise<TaskDocument> {
     const result: TaskDocument = await this.tasksCompletionService.markAsConcluded(id);
 
     // if recurringRule exists, generate next occurrence
@@ -166,58 +166,58 @@ export class TasksService {
     return result;
   }
 
-  async incrementPomodorosDid(id: string): Promise<TaskDocument> {
+  public async incrementPomodorosDid(id: string): Promise<TaskDocument> {
     return this.tasksCompletionService.incrementPomodorosDid(id);
   }
 
-  async handleTaskCompletion(taskId: string): Promise<TaskDocument | null> {
+  public async handleTaskCompletion(taskId: string): Promise<TaskDocument | null> {
     const task: TaskDocument | null = await this.tasksCompletionService.handleTaskCompletion(taskId);
     return task;
   }
 
-  async handleTaskSkipped(taskId: string): Promise<TaskDocument> {
+  public async handleTaskSkipped(taskId: string): Promise<TaskDocument> {
     const task: TaskDocument = await this.tasksCompletionService.handleTaskSkipped(taskId);
     return task;
   }
 
-  async handleTaskDeferred(taskId: string, newDeadline: Date): Promise<TaskDocument> {
+  public async handleTaskDeferred(taskId: string, newDeadline: Date): Promise<TaskDocument> {
     const task: TaskDocument = await this.tasksCompletionService.handleTaskDeferred(taskId, newDeadline);
     return task;
   }
 
-  async checkDeviationAndCreateAlert(taskId: string): Promise<{
+  public async checkDeviationAndCreateAlert(taskId: string): Promise<{
     alertCreated: boolean;
     alert?: TaskAlertDocument;
   }> {
     return this.tasksCompletionService.createDeviationAlertForTask(taskId);
   }
 
-  async generateCompletionFeedback(id: string, payload?: CompletionFeedbackPayload): Promise<string> {
+  public async generateCompletionFeedback(id: string, payload?: CompletionFeedbackPayload): Promise<string> {
     return this.feedbackService.generateCompletionFeedback(id, payload);
   }
 
-  async getCompletionFeedback(id: string): Promise<{ feedback: string; createdAt: Date } | null> {
+  public async getCompletionFeedback(id: string): Promise<{ feedback: string; createdAt: Date } | null> {
     return this.feedbackService.getCompletionFeedback(id);
   }
 
   // ------------------------------ Recurring / Habits ------------------------------
-  async updateRecurringRule(id: string, recurringRule: RecurringRuleDto): Promise<TaskDocument> {
+  public async updateRecurringRule(id: string, recurringRule: RecurringRuleDto): Promise<TaskDocument> {
     return this.tasksRecurringService.updateRecurringRule(id, recurringRule);
   }
 
-  async generateNextOccurrence(taskOrId: string | TaskDocument): Promise<TaskDocument | null> {
+  public async generateNextOccurrence(taskOrId: string | TaskDocument): Promise<TaskDocument | null> {
     return this.tasksRecurringService.generateNextOccurrence(taskOrId);
   }
 
-  async findRecurringSeries(parentRecurringId: string): Promise<TaskDocument[]> {
+  public async findRecurringSeries(parentRecurringId: string): Promise<TaskDocument[]> {
     return this.tasksRecurringService.findRecurringSeries(parentRecurringId);
   }
 
-  async deleteRecurringSeries(parentRecurringId: string): Promise<{ deletedCount: number }> {
+  public async deleteRecurringSeries(parentRecurringId: string): Promise<{ deletedCount: number }> {
     return this.tasksRecurringService.deleteRecurringSeries(parentRecurringId);
   }
 
-  async getStreakData(parentRecurringId: string): Promise<{
+  public async getStreakData(parentRecurringId: string): Promise<{
     currentStreak: number;
     longestStreak: number;
     aderencePercent: number;
@@ -226,12 +226,12 @@ export class TasksService {
     return this.tasksHabitsService.getStreakData(parentRecurringId);
   }
 
-  async getHabitsDashboard(query: GetHabitsDashboardDto = {}): Promise<GetHabitsDashboardResponseDto> {
+  public async getHabitsDashboard(query: GetHabitsDashboardDto = {}): Promise<GetHabitsDashboardResponseDto> {
     return this.tasksHabitsService.getHabitsDashboard(query);
   }
 
   // ------------------------------ AI / PERT ------------------------------
-  async generateAiSuggestionsWithProgress(
+  public async generateAiSuggestionsWithProgress(
     dto: GenerateAiSuggestionsDto,
     onProgress: (progress: AiSuggestionsProgressDto) => void,
     onComplete: (result: AiSuggestionsResponseDto) => void,
@@ -245,13 +245,13 @@ export class TasksService {
     );
   }
 
-  async generateAiSuggestions(dto: GenerateAiSuggestionsDto): Promise<AiSuggestionsResponseDto> {
+  public async generateAiSuggestions(dto: GenerateAiSuggestionsDto): Promise<AiSuggestionsResponseDto> {
     const suggestions: AiSuggestionsResponseDto =
       await this.tasksAiSuggestionsService.generateAiSuggestions(dto);
     return suggestions;
   }
 
-  async suggestPertEstimates(
+  public async suggestPertEstimates(
     taskType: string,
     description: string,
     projectContext?: string,
@@ -264,11 +264,11 @@ export class TasksService {
     return estimates;
   }
 
-  async updatePert(taskId: string, updatePertDto: UpdatePertDto): Promise<TaskDocument> {
+  public async updatePert(taskId: string, updatePertDto: UpdatePertDto): Promise<TaskDocument> {
     return this.tasksPertService.updatePert(taskId, updatePertDto);
   }
 
-  async savePertEstimate(
+  public async savePertEstimate(
     taskId: string,
     pertEstimateDto: PertEstimateDto,
   ): Promise<PertEstimateResponseDto> {
@@ -276,11 +276,11 @@ export class TasksService {
   }
 
   // ------------------------------ Read / Find operations ------------------------------
-  async findAll(): Promise<TaskDocument[]> {
+  public async findAll(): Promise<TaskDocument[]> {
     return await this.taskModel.find().exec();
   }
 
-  async findByProjectId(projectId: string, opts?: FindByProjectIdOptionsDto): Promise<TaskDocument[]> {
+  public async findByProjectId(projectId: string, opts?: FindByProjectIdOptionsDto): Promise<TaskDocument[]> {
     if (!projectId || projectId === 'null' || projectId === 'undefined') {
       throw new BadRequestException(`Project ID inválido: ${projectId}`);
     }
@@ -306,14 +306,14 @@ export class TasksService {
     return await this.taskModel.find(query).exec();
   }
 
-  async findOne(id: string): Promise<TaskDocument | null> {
+  public async findOne(id: string): Promise<TaskDocument | null> {
     if (!id || id === 'null' || id === 'undefined' || !Types.ObjectId.isValid(id)) {
       throw new BadRequestException(`ID inválido: ${id}`);
     }
     return await this.taskModel.findById(id).exec();
   }
 
-  async findMicroTask(id: string): Promise<TaskDocument> {
+  public async findMicroTask(id: string): Promise<TaskDocument> {
     const task = await this.findOne(id);
     if (!task) {
       throw new NotFoundException(`Task with id ${id} not found`);
@@ -322,15 +322,15 @@ export class TasksService {
   }
 
   // ------------------------------ Hierarchy / Value ------------------------------
-  async getTaskLineage(id: string, maxDepth: number = 50): Promise<TaskLineageResult> {
+  public async getTaskLineage(id: string, maxDepth: number = 50): Promise<TaskLineageResult> {
     return this.tasksHierarchyService.getTaskLineage(id, maxDepth);
   }
 
-  async getDescendants(id: string, maxDepth: number = 1000): Promise<TaskDescendantNode[]> {
+  public async getDescendants(id: string, maxDepth: number = 1000): Promise<TaskDescendantNode[]> {
     return this.tasksHierarchyService.getDescendants(id, maxDepth);
   }
 
-  async calculateValueContribution(id: string): Promise<{
+  public async calculateValueContribution(id: string): Promise<{
     contributionPercent: number;
     subtreeCompletedXP: number;
     totalCompletedXP: number;

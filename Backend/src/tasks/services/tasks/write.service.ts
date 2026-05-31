@@ -13,6 +13,7 @@ import { TasksInputService } from './input.service';
 import { TasksChecklistService } from './checklist.service';
 import { ChecklistService } from '../checklist.service';
 import { TasksCompletionService } from './completion.service';
+import { InsertManyError } from '../../interfaces/db-errors';
 
 @Injectable()
 export class TasksWriteService {
@@ -28,7 +29,7 @@ export class TasksWriteService {
     private readonly tasksCompletionService: TasksCompletionService,
   ) {}
 
-  async createMany(
+  public async createMany(
     createTaskDtos: CreateTaskDto[],
     options?: CreateManyTasksOptionsDto,
   ): Promise<TaskDocument[]> {
@@ -52,13 +53,14 @@ export class TasksWriteService {
     let inserted: TaskDocument[] = [];
     try {
       inserted = await this.taskModel.insertMany(tasks, { ordered });
-    } catch (err: any) {
-      inserted = (err?.insertedDocs as TaskDocument[]) || [];
+    } catch (err: unknown) {
+      const insertError = err as InsertManyError;
+      inserted = insertError.insertedDocs || [];
 
-      const writeErrors = Array.isArray(err?.writeErrors) ? err.writeErrors.length : undefined;
+      const writeErrors = Array.isArray(insertError.writeErrors) ? insertError.writeErrors.length : undefined;
 
       console.warn('[TasksWriteService][createMany] insertMany error (partial inserts possible)', {
-        message: err?.message,
+        message: insertError.message,
         inserted: inserted.length,
         writeErrors,
       });
@@ -66,7 +68,9 @@ export class TasksWriteService {
 
     if (shouldRecalculateStats) {
       const uniqueProjectIds = new Set(
-        inserted.map((t: any) => t?.project?.toString?.() ?? t?.project).filter(Boolean),
+        inserted.map(
+          (task: TaskDocument) => task.project?.toString?.() ?? task.project
+        ).filter(Boolean),
       );
 
       for (const pid of uniqueProjectIds) {
@@ -77,15 +81,15 @@ export class TasksWriteService {
     return inserted;
   }
 
-  async createMicroTask(createMicroTaskDto: CreateMicroTaskDto): Promise<TaskDocument> {
+  public async createMicroTask(createMicroTaskDto: CreateMicroTaskDto): Promise<TaskDocument> {
     this.tasksInputService.validatePertInput(createMicroTaskDto);
 
-    const checklistWasProvided = Object.prototype.hasOwnProperty.call(createMicroTaskDto, 'checklist');
+    const checklistWasProvided: boolean = 'checklist' in createMicroTaskDto;
 
     const normalizedChecklist = this.tasksInputService.normalizeChecklist(createMicroTaskDto.checklist);
     const payload: CreateTaskDto = {
       ...createMicroTaskDto,
-      checklist: normalizedChecklist as any,
+      checklist: normalizedChecklist as CreateTaskDto['checklist'],
       isRecurringInstance: Boolean(createMicroTaskDto.isRecurringInstance),
     };
 
@@ -128,7 +132,7 @@ export class TasksWriteService {
     return this.createTaskCore(payload);
   }
 
-  async createTaskCore(createTaskDto: CreateTaskDto): Promise<TaskDocument> {
+  public async createTaskCore(createTaskDto: CreateTaskDto): Promise<TaskDocument> {
     await this.resolveProject(createTaskDto);
     this.applyDerivedFields(createTaskDto);
 
@@ -142,7 +146,7 @@ export class TasksWriteService {
     return savedTask;
   }
 
-  async update(id: string, updateTaskDto: Partial<CreateTaskDto>): Promise<TaskDocument | null> {
+  public async update(id: string, updateTaskDto: Partial<CreateTaskDto>): Promise<TaskDocument | null> {
     if (!id || id === 'null' || id === 'undefined' || !/^[a-f\d]{24}$/i.test(id)) {
       throw new BadRequestException(`ID inválido: ${id}`);
     }
@@ -170,7 +174,7 @@ export class TasksWriteService {
     return updatedTask;
   }
 
-  async remove(id: string): Promise<boolean> {
+  public async remove(id: string): Promise<boolean> {
     if (!id || id === 'null' || id === 'undefined' || !/^[a-f\d]{24}$/i.test(id)) {
       throw new BadRequestException(`ID inválido: ${id}`);
     }
@@ -190,7 +194,7 @@ export class TasksWriteService {
     return result !== null;
   }
 
-  async moveTaskStatus(id: string, move: MoveTaskStatusDto): Promise<TaskDocument> {
+  public async moveTaskStatus(id: string, move: MoveTaskStatusDto): Promise<TaskDocument> {
     if (!id || !/^[a-f\d]{24}$/i.test(id)) {
       throw new BadRequestException(`ID inválido: ${id}`);
     }
@@ -202,17 +206,14 @@ export class TasksWriteService {
 
     const toStatus = move.status;
 
-    // Rule: if task is concluded, it must stay in 'done' status
     if (task.isConcluded && toStatus !== 'done') {
       throw new BadRequestException('Tarefa concluída não pode ser movida para fora de "done"');
     }
 
-    // If moving to 'done', use the conclude endpoint (with checklist validation)
     if (toStatus === 'done') {
       return this.tasksCompletionService.markAsConcluded(id);
     }
 
-    // Compute target kanbanOrder
     const projectId = task.project?.toString();
 
     let targetOrder: number | undefined = undefined;
@@ -220,7 +221,6 @@ export class TasksWriteService {
       targetOrder = move.toOrder;
     }
 
-    // If toIndex provided, compute order between neighbors
     if (targetOrder === undefined && typeof move.toIndex === 'number' && projectId) {
       const destinationTasks = await this.taskModel
         .find({ project: projectId, status: toStatus })
@@ -278,18 +278,18 @@ export class TasksWriteService {
       return;
     }
 
-    const value = createTaskDto.project;
-    const isObjectId = /^[a-f\d]{24}$/i.test(value);
+    const project = createTaskDto.project;
+    const isObjectId = /^[a-f\d]{24}$/i.test(project);
     let projectDoc: ProjectDocument | null = null;
 
     if (isObjectId) {
-      projectDoc = await this.projectModel.findById(value).exec();
+      projectDoc = await this.projectModel.findById(project).exec();
     }
     if (!projectDoc) {
-      projectDoc = await this.projectModel.findOne({ name: value }).exec();
+      projectDoc = await this.projectModel.findOne({ name: project }).exec();
     }
     if (!projectDoc) {
-      throw new NotFoundException(`Project not found by id or name '${value}'`);
+      throw new NotFoundException(`Project not found by id or name '${project}'`);
     }
 
     createTaskDto.project = projectDoc._id;

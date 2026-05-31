@@ -8,7 +8,12 @@ import {
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
-import { RecurringExceptionDto, RecurringRuleDto, CreateTaskDto } from '../../dto/create-task.dto';
+import {
+  RecurringExceptionDto,
+  RecurringRuleDto,
+  CreateTaskDto,
+  RecurringTaskOccurrenceDto,
+} from '../../dto/create-task.dto';
 import { CreateMicroTaskDto } from '../../dto/create-micro-task.dto';
 import { ProjectsService } from '../../../projects/projects.service';
 import { TaskDocument } from '../../schemas/task.schema';
@@ -24,7 +29,7 @@ export class TasksRecurringService {
     private readonly tasksWriteService?: TasksWriteService,
   ) {}
 
-  normalizeRecurringRule(
+  public normalizeRecurringRule(
     recurringRule?: RecurringRuleDto,
     options?: {
       allowPastEndDate?: boolean;
@@ -48,58 +53,12 @@ export class TasksRecurringService {
       throw new BadRequestException('recurringRule inválida: interval deve ser maior que zero.');
     }
 
-    if (recurringRule.endDate) {
-      const endDate = new Date(recurringRule.endDate);
-      if (Number.isNaN(endDate.getTime())) {
-        throw new BadRequestException('recurringRule inválida: endDate inválida.');
-      }
-      if (!options?.allowPastEndDate && endDate.getTime() < Date.now() - 24 * 60 * 60 * 1000) {
-        throw new BadRequestException('recurringRule inválida: endDate não pode estar no passado.');
-      }
-    }
+    const endDate = this.parseAndValidateEndDate(recurringRule.endDate, Boolean(options?.allowPastEndDate));
+    const daysOfWeek = this.normalizeDaysOfWeek(recurringRule.daysOfWeek);
 
-    const daysOfWeek = Array.isArray(recurringRule.daysOfWeek)
-      ? recurringRule.daysOfWeek.filter((day) => Number.isInteger(day) && day >= 0 && day <= 6)
-      : undefined;
-
-    const exceptions = Array.isArray(recurringRule.exceptions)
-      ? recurringRule.exceptions
-          .map((exception): RecurringExceptionDto | null => {
-            const rawDate = exception instanceof Date ? exception : (exception as any)?.date;
-            const parsedDate = new Date(rawDate);
-            if (Number.isNaN(parsedDate.getTime())) {
-              return null;
-            }
-
-            const normalizedDate = new Date(parsedDate);
-            normalizedDate.setUTCHours(0, 0, 0, 0);
-            return {
-              date: normalizedDate,
-              reason: (exception as any)?.reason,
-            };
-          })
-          .filter((exception): exception is RecurringExceptionDto => Boolean(exception))
-      : undefined;
-
+    const exceptions = this.parseExceptions(recurringRule.exceptions);
     const cleanedExceptions = exceptions
-      ? exceptions.filter((exception) => {
-          if (recurringRule.endDate) {
-            const endDate = new Date(recurringRule.endDate);
-            endDate.setUTCHours(23, 59, 59, 999);
-            if (exception.date.getTime() > endDate.getTime()) {
-              return false;
-            }
-          }
-
-          if (options?.prunePastExceptions === false) {
-            return true;
-          }
-
-          const yesterday = new Date();
-          yesterday.setHours(0, 0, 0, 0);
-          yesterday.setDate(yesterday.getDate() - 1);
-          return exception.date.getTime() >= yesterday.getTime();
-        })
+      ? this.cleanExceptions(exceptions, endDate, options?.prunePastExceptions)
       : undefined;
 
     return {
@@ -111,7 +70,85 @@ export class TasksRecurringService {
     };
   }
 
-  toDateKey(date: Date): string {
+  private parseAndValidateEndDate(raw?: unknown, allowPast = false): Date | undefined {
+    if (raw === undefined || raw === null) return undefined;
+    const endDate = raw instanceof Date ? raw : new Date(String(raw));
+    if (Number.isNaN(endDate.getTime())) {
+      throw new BadRequestException('recurringRule inválida: endDate inválida.');
+    }
+    if (!allowPast && endDate.getTime() < Date.now() - 24 * 60 * 60 * 1000) {
+      throw new BadRequestException('recurringRule inválida: endDate não pode estar no passado.');
+    }
+    return endDate;
+  }
+
+  private normalizeDaysOfWeek(raw?: unknown): number[] | undefined {
+    if (!Array.isArray(raw)) return undefined;
+    const filtered = raw.filter((d) => Number.isInteger(d) && d >= 0 && d <= 6) as number[];
+    return filtered.length > 0 ? filtered : undefined;
+  }
+
+  private parseExceptions(raw?: unknown): RecurringExceptionDto[] | undefined {
+    if (!Array.isArray(raw)) return undefined;
+
+    const out: RecurringExceptionDto[] = [];
+    for (const exception of raw) {
+      const date = this.extractExceptionDate(exception);
+      if (!date) continue;
+
+      const normalizedDate = new Date(date);
+      normalizedDate.setUTCHours(0, 0, 0, 0);
+
+      const reason = this.extractExceptionReason(exception);
+      out.push({ date: normalizedDate, reason });
+    }
+
+    return out.length > 0 ? out : undefined;
+  }
+
+  private extractExceptionDate(rawException: unknown): Date | undefined {
+    if (rawException instanceof Date) return rawException;
+    if (!rawException || typeof rawException !== 'object') return undefined;
+
+    const candidate = (rawException as Record<string, unknown>)['date'];
+    if (candidate instanceof Date) return candidate;
+    if (candidate === undefined || candidate === null) return undefined;
+
+    const parsed = new Date(String(candidate));
+    return Number.isNaN(parsed.getTime()) ? undefined : parsed;
+  }
+
+  private extractExceptionReason(rawException: unknown): string | undefined {
+    if (!rawException || typeof rawException !== 'object') return undefined;
+    const r = (rawException as Record<string, unknown>)['reason'];
+    return typeof r === 'string' ? r : undefined;
+  }
+
+  private cleanExceptions(
+    exceptions: RecurringExceptionDto[],
+    endDateRaw?: string | Date,
+    prunePastExceptions?: boolean,
+  ): RecurringExceptionDto[] {
+    return exceptions.filter((exception) => {
+
+      if (endDateRaw) {
+        const endDate = this.parseAndValidateEndDate(endDateRaw, true);
+        if (endDate) {
+          endDate.setUTCHours(23, 59, 59, 999);
+          if (exception.date.getTime() > endDate.getTime()) return false;
+        }
+      }
+      
+      if (prunePastExceptions === false) return true;
+
+      const yesterday = new Date();
+      yesterday.setHours(0, 0, 0, 0);
+      yesterday.setDate(yesterday.getDate() - 1);
+      return exception.date.getTime() >= yesterday.getTime();
+    });
+  }
+
+  private toDateKey(date: Date): string {
     const normalized = new Date(date);
     const year = normalized.getUTCFullYear();
     const month = String(normalized.getUTCMonth() + 1).padStart(2, '0');
@@ -119,87 +156,107 @@ export class TasksRecurringService {
     return `${year}-${month}-${day}`;
   }
 
-  addDays(date: Date, days: number): Date {
+  private addDays(date: Date, days: number): Date {
     const next = new Date(date);
     next.setUTCDate(next.getUTCDate() + days);
     return next;
   }
 
-  addMonths(date: Date, months: number): Date {
+  private addMonths(date: Date, months: number): Date {
     const next = new Date(date);
     next.setUTCMonth(next.getUTCMonth() + months);
     return next;
   }
 
-  isRecurringDateExcluded(date: Date, recurringRule: RecurringRuleDto): boolean {
+  private isRecurringDateExcluded(date: Date, recurringRule: RecurringRuleDto): boolean {
     const dateKey = this.toDateKey(date);
     return Array.isArray(recurringRule.exceptions)
-      ? recurringRule.exceptions.some((exception: any) => {
-          const rawDate = exception instanceof Date ? exception : exception?.date;
-          return this.toDateKey(new Date(rawDate)) === dateKey;
+      ? recurringRule.exceptions.some((exception: unknown) => {
+          let rawDate: unknown;
+          if (exception instanceof Date) rawDate = exception;
+          else if (exception && typeof exception === 'object' && 'date' in exception) {
+            rawDate = (exception as Record<string, unknown>)['date'];
+          } else {
+            rawDate = undefined;
+          }
+
+          const parsed = rawDate instanceof Date ? rawDate : new Date(String(rawDate));
+          if (Number.isNaN(parsed.getTime())) return false;
+          return this.toDateKey(parsed) === dateKey;
         })
       : false;
   }
 
-  calculateNextRecurringDate(referenceDate: Date, recurringRule: RecurringRuleDto): Date | null {
+  public calculateNextRecurringDate(referenceDate: Date, recurringRule: RecurringRuleDto): Date | null {
     const rule = this.normalizeRecurringRule(recurringRule, {
       allowPastEndDate: true,
       prunePastExceptions: false,
     });
+
     const base = new Date(referenceDate);
     base.setSeconds(0, 0);
 
-    if (rule.endDate) {
-      const endDate = new Date(rule.endDate);
-      if (base.getTime() >= endDate.getTime()) {
-        return null;
-      }
-    }
+    const endDate = this.getRecurringEndDate(rule);
+    if (this.isAfterRecurringEnd(base, endDate)) return null;
 
     if (rule.frequency === 'monthly') {
-      const monthCandidate = this.addMonths(base, rule.interval);
-      if (rule.endDate && monthCandidate.getTime() >= new Date(rule.endDate).getTime()) {
-        return null;
-      }
-      if (this.isRecurringDateExcluded(monthCandidate, rule)) {
-        return this.calculateNextRecurringDate(monthCandidate, rule);
-      }
-      return monthCandidate;
+      return this.calculateMonthlyRecurringDate(base, rule, endDate);
     }
 
-    let stepDays = rule.interval;
-    if (rule.frequency === 'weekly') {
-      stepDays = rule.interval * 7;
-    } else if (rule.frequency === 'biweekly') {
-      stepDays = rule.interval * 14;
-    }
+    return this.calculateSteppedRecurringDate(base, rule, endDate);
+  }
 
-    const candidate = this.addDays(base, stepDays);
-    const allowedDays =
-      Array.isArray(rule.daysOfWeek) && rule.daysOfWeek.length > 0 ? rule.daysOfWeek : null;
+  private calculateMonthlyRecurringDate(base: Date, rule: RecurringRuleDto, endDate?: Date): Date | null {
+    const monthCandidate = this.addMonths(base, rule.interval);
+    if (this.isAfterRecurringEnd(monthCandidate, endDate)) return null;
+
+    return this.isRecurringDateExcluded(monthCandidate, rule)
+      ? this.calculateNextRecurringDate(monthCandidate, rule)
+      : monthCandidate;
+  }
+
+  private calculateSteppedRecurringDate(
+    base: Date,
+    rule: RecurringRuleDto,
+    endDate?: Date,
+  ): Date | null {
+    const candidate = this.addDays(base, this.getRecurringStepDays(rule));
+    const allowedDays = this.getAllowedDays(rule);
 
     for (let offset = 0; offset < 365; offset++) {
       const probe = this.addDays(candidate, offset);
-
-      if (rule.endDate && probe.getTime() >= new Date(rule.endDate).getTime()) {
-        return null;
-      }
-
-      if (allowedDays && !allowedDays.includes(probe.getUTCDay())) {
-        continue;
-      }
-
-      if (this.isRecurringDateExcluded(probe, rule)) {
-        continue;
-      }
-
+      if (this.isAfterRecurringEnd(probe, endDate)) return null;
+      if (allowedDays && !allowedDays.includes(probe.getUTCDay())) continue;
+      if (this.isRecurringDateExcluded(probe, rule)) continue;
       return probe;
     }
 
     return null;
   }
 
-  calculateFirstRecurringDate(startDate: Date, recurringRule: RecurringRuleDto): Date | null {
+  private getRecurringEndDate(rule: RecurringRuleDto): Date | undefined {
+    return rule.endDate instanceof Date ? rule.endDate : undefined;
+  }
+
+  private isAfterRecurringEnd(date: Date, endDate?: Date): boolean {
+    if (!endDate) return false;
+
+    return date.getTime() >= endDate.getTime();
+  }
+
+  private getRecurringStepDays(rule: RecurringRuleDto): number {
+    
+    if (rule.frequency === 'weekly') return rule.interval * 7;
+    if (rule.frequency === 'biweekly') return rule.interval * 14;
+
+    return rule.interval;
+  }
+
+  private getAllowedDays(rule: RecurringRuleDto): number[] | null {
+    return Array.isArray(rule.daysOfWeek) && rule.daysOfWeek.length > 0 ? rule.daysOfWeek : null;
+  }
+
+  private calculateFirstRecurringDate(startDate: Date, recurringRule: RecurringRuleDto): Date | null {
     const rule = this.normalizeRecurringRule(recurringRule, {
       allowPastEndDate: true,
       prunePastExceptions: false,
@@ -208,37 +265,44 @@ export class TasksRecurringService {
     const base = new Date(startDate);
     base.setSeconds(0, 0);
 
-    if (rule.endDate) {
-      const endDate = new Date(rule.endDate);
-      if (base.getTime() > endDate.getTime()) {
-        return null;
-      }
-    }
+    const endDate = this.getRecurringEndDate(rule);
+    if (this.isAfterRecurringEnd(base, endDate) && endDate !== undefined) return null;
 
     if (rule.frequency === 'monthly') {
-      if (!this.isRecurringDateExcluded(base, rule)) {
-        return base;
-      }
-      return this.calculateNextRecurringDate(base, rule);
+      return this.calculateFirstMonthlyRecurringDate(base, rule, endDate);
     }
 
-    const allowedDays =
-      Array.isArray(rule.daysOfWeek) && rule.daysOfWeek.length > 0 ? rule.daysOfWeek : null;
+    return this.findFirstAllowedRecurringDate(base, rule, endDate);
+  }
+
+  private calculateFirstMonthlyRecurringDate(
+    base: Date,
+    rule: RecurringRuleDto,
+    endDate?: Date,
+  ): Date | null {
+    if (!this.isRecurringDateExcluded(base, rule)) {
+      return base;
+    }
+
+    const nextDate = this.calculateNextRecurringDate(base, rule);
+    return this.isAfterRecurringEnd(nextDate ?? base, endDate) ? null : nextDate;
+  }
+
+  private findFirstAllowedRecurringDate(
+    base: Date,
+    rule: RecurringRuleDto,
+    endDate?: Date,
+  ): Date | null {
+    const allowedDays = this.getAllowedDays(rule);
 
     for (let offset = 0; offset < 365; offset++) {
       const probe = this.addDays(base, offset);
 
-      if (rule.endDate && probe.getTime() > new Date(rule.endDate).getTime()) {
-        return null;
-      }
+      if (this.isAfterRecurringEnd(probe, endDate)) return null;
 
-      if (allowedDays && !allowedDays.includes(probe.getUTCDay())) {
-        continue;
-      }
+      if (allowedDays && !allowedDays.includes(probe.getUTCDay())) continue;
 
-      if (this.isRecurringDateExcluded(probe, rule)) {
-        continue;
-      }
+      if (this.isRecurringDateExcluded(probe, rule)) continue;
 
       return probe;
     }
@@ -246,7 +310,7 @@ export class TasksRecurringService {
     return null;
   }
 
-  async findRecurringSeries(parentRecurringId: string): Promise<TaskDocument[]> {
+  public async findRecurringSeries(parentRecurringId: string): Promise<TaskDocument[]> {
     if (!parentRecurringId || !Types.ObjectId.isValid(parentRecurringId)) {
       throw new BadRequestException(`ID inválido: ${parentRecurringId}`);
     }
@@ -263,7 +327,7 @@ export class TasksRecurringService {
       .exec();
   }
 
-  async deleteRecurringSeries(parentRecurringId: string): Promise<{ deletedCount: number }> {
+  public async deleteRecurringSeries(parentRecurringId: string): Promise<{ deletedCount: number }> {
     const tasks = await this.findRecurringSeries(parentRecurringId);
     let deletedCount = 0;
     const affectedProjects = new Set<string>();
@@ -274,14 +338,10 @@ export class TasksRecurringService {
 
     for (const task of tasks) {
       const projectId = task.project?.toString();
-      if (projectId) {
-        affectedProjects.add(projectId);
-      }
+      if (projectId) affectedProjects.add(projectId);
 
       const removed = await this.taskModel.findByIdAndDelete(task._id).exec();
-      if (removed) {
-        deletedCount += 1;
-      }
+      if (removed) deletedCount += 1;
     }
 
     if (this.projectsService) {
@@ -293,39 +353,37 @@ export class TasksRecurringService {
     return { deletedCount };
   }
 
-  async createRecurringTemplate(createMicroTaskDto: CreateMicroTaskDto): Promise<TaskDocument> {
+  public async createRecurringTemplate(createMicroTaskDto: CreateMicroTaskDto): Promise<TaskDocument> {
     const recurringRule = this.normalizeRecurringRule(createMicroTaskDto.recurringRule);
     if (!this.tasksWriteService) {
       throw new BadRequestException('TasksRecurringService não está inicializado com tasksWriteService');
     }
 
-    return this.tasksWriteService.createMicroTask({
+    const payload: CreateMicroTaskDto = {
       ...createMicroTaskDto,
       recurringRule,
       isRecurringInstance: false,
       recurringState: 'pending',
-    } as any);
+    };
+
+    return this.tasksWriteService.createMicroTask(payload);
   }
 
-  async createRecurringMicroTask(createMicroTaskDto: CreateMicroTaskDto): Promise<TaskDocument> {
-    const template = await this.createRecurringTemplate({
+  public async createRecurringMicroTask(createMicroTaskDto: CreateMicroTaskDto): Promise<TaskDocument> {
+    const templatePayload: CreateMicroTaskDto = {
       ...createMicroTaskDto,
       isRecurringInstance: false,
       recurringState: 'pending',
-    } as any);
+    };
 
-    // IMPORTANT: First occurrence should be on the start date (deadline provided / today),
-    // not on the *next* interval date. Otherwise the UI shows two papers (template=day0 + occurrence=day1).
+    const template = await this.createRecurringTemplate(templatePayload);
+
     const recurringRule = template.recurringRule
-      ? this.normalizeRecurringRule(template.recurringRule as any)
+      ? this.normalizeRecurringRule(template.recurringRule)
       : undefined;
-    if (!recurringRule) {
-      return template;
-    }
+    if (!recurringRule) return template;
 
-    const referenceStart = new Date(
-      (createMicroTaskDto as any)?.deadline || template.deadline || template.createdAt || new Date(),
-    );
+    const referenceStart = new Date(createMicroTaskDto.deadline || template.deadline || template.createdAt || new Date());
     const firstDeadline = this.calculateFirstRecurringDate(referenceStart, recurringRule);
     if (!firstDeadline) {
       return template;
@@ -336,83 +394,61 @@ export class TasksRecurringService {
     }
 
     const firstOccurrence = await this.tasksWriteService.createTaskCore(
-      this.buildOccurrencePayload(template, firstDeadline) as any,
+      this.buildOccurrencePayload(template, firstDeadline),
     );
     return firstOccurrence || template;
   }
 
-  buildOccurrencePayload(task: TaskDocument, nextDeadline: Date): CreateTaskDto {
-    const recurringRule = this.normalizeRecurringRule(task.recurringRule as any);
-    const normalizedChecklist = Array.isArray(task.checklist)
+  public buildOccurrencePayload(task: TaskDocument, nextDeadline: Date): RecurringTaskOccurrenceDto {
+    const recurringRule = task.recurringRule ? this.normalizeRecurringRule(task.recurringRule) : undefined;
+    const normalizedChecklist: CreateTaskDto['checklist'] = Array.isArray(task.checklist)
       ? task.checklist
-          .map((entry: any, index: number) => {
+          .map((entry, index): NonNullable<CreateTaskDto['checklist']>[number] | null => {
             if (typeof entry === 'string') {
               return { item: entry, completed: false, order: index };
             }
+
+            const item = String(entry.item || '');
+            if (!item) {
+              return null;
+            }
+
             return {
-              item: String(entry?.item || ''),
+              item,
               completed: false,
-              order: Number.isFinite(entry?.order) ? Number(entry.order) : index,
+              order: Number.isFinite(entry.order) ? Number(entry.order) : index,
             };
           })
-          .filter((item) => item.item)
+          .filter((item): item is NonNullable<CreateTaskDto['checklist']>[number] => item !== null)
       : [];
+
+    if (!task.project) {
+      throw new BadRequestException('Task recorrente precisa de project para gerar a ocorrência.');
+    }
 
     const parentRecurringId = String(task.parentRecurringId || task._id);
 
-    const payload: any = {
-      name: task.name,
-      description: task.description,
-      definitionOfDone: task.definitionOfDone,
+    const payload: RecurringTaskOccurrenceDto = {
+      ...task,
       checklist: normalizedChecklist,
       deadline: nextDeadline,
-      pomodorosPlanned: task.pomodorosPlanned,
       pomodorosDid: 0,
-      pertOptimisticMinutes: task.pertOptimisticMinutes,
-      pertMostLikelyMinutes: task.pertMostLikelyMinutes,
-      pertPessimisticMinutes: task.pertPessimisticMinutes,
-      pertExpectedMinutes: task.pertExpectedMinutes,
-      pertVariance: task.pertVariance,
-      priority: task.priority,
-      difficult: task.difficult,
-      project: task.project,
-      parentTaskId: task.parentTaskId,
-      parentWbsNodeId: task.parentWbsNodeId,
-      wbsPath: task.wbsPath,
-      generationBatchId: task.generationBatchId,
-      milestoneId: task.milestoneId,
-      experience: task.experience,
       isConcluded: false,
       late: false,
-      prize: task.prize,
-      recurrency: task.recurrency,
       notification: new Date(nextDeadline.getTime() - 60 * 60 * 1000),
-      microTaskType: task.microTaskType,
       parentRecurringId,
       isRecurringInstance: true,
       recurringState: 'pending',
       recurringRule,
-      cognitiveMode: task.cognitiveMode,
-      contextTag: task.contextTag,
-      themeTag: task.themeTag,
-      requirementIds: task.requirementIds,
-      journeyItemIds: task.journeyItemIds,
-      rtmRisk: task.rtmRisk,
-      rtmRiskReason: task.rtmRiskReason,
-      evmProgress: task.evmProgress,
-      evmPlannedValueMinutes: task.evmPlannedValueMinutes,
-      evmEarnedValueMinutes: task.evmEarnedValueMinutes,
-      evmSchedulePerformanceIndex: task.evmSchedulePerformanceIndex,
-      evmAlert: task.evmAlert,
       status: 'todo',
       statusUpdatedAt: new Date(),
       kanbanOrder: 0,
-    } as CreateTaskDto;
+    } as RecurringTaskOccurrenceDto;
 
     return payload;
   }
 
-  async updateRecurringRule(id: string, recurringRule: RecurringRuleDto): Promise<TaskDocument> {
+  public async updateRecurringRule(id: string, recurringRule: RecurringRuleDto): Promise<TaskDocument> {
     if (!id || !Types.ObjectId.isValid(id)) {
       throw new BadRequestException(`ID inválido: ${id}`);
     }
@@ -434,34 +470,26 @@ export class TasksRecurringService {
     return updatedTask;
   }
 
-  async generateNextOccurrence(taskOrId: string | TaskDocument): Promise<TaskDocument | null> {
+  public async generateNextOccurrence(taskOrId: string | TaskDocument): Promise<TaskDocument | null> {
     const task: TaskDocument | null =
       typeof taskOrId === 'string'
         ? await (this.taskModel ? this.taskModel.findById(taskOrId).exec() : null)
         : taskOrId;
-    if (!task) {
-      throw new NotFoundException('Task not found');
-    }
+    if (!task) throw new NotFoundException('Task not found');
 
-    const recurringRule = task.recurringRule
-      ? this.normalizeRecurringRule(task.recurringRule as any)
-      : undefined;
-    if (!recurringRule) {
-      return null;
-    }
+    const recurringRule = task.recurringRule ? this.normalizeRecurringRule(task.recurringRule) : undefined;
+    if (!recurringRule) return null;
 
     const nextDeadline = this.calculateNextRecurringDate(
       task.deadline || task.createdAt || new Date(),
       recurringRule,
     );
-    if (!nextDeadline) {
-      return null;
-    }
+    if (!nextDeadline) return null;
 
     if (!this.tasksWriteService) {
       throw new BadRequestException('TasksRecurringService não está inicializado com tasksWriteService');
     }
 
-    return this.tasksWriteService.createTaskCore(this.buildOccurrencePayload(task, nextDeadline) as any);
+    return this.tasksWriteService.createTaskCore(this.buildOccurrencePayload(task, nextDeadline));
   }
 }
