@@ -1,5 +1,5 @@
 import { Types } from 'mongoose';
-import { TasksRecurringService } from '../../../src/tasks/services/tasks/recurring.service';
+import { TasksRecurringService } from '../../../src/tasks/services/workflow/recurring.service';
 
 /**
  * Unit tests for calculateNextRecurringDate private method

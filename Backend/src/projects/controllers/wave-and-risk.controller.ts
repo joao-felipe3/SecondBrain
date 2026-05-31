@@ -15,7 +15,7 @@ import { RollingWaveService } from '../services/rolling-wave.service';
 import { RiskService } from '../services/risk.service';
 import { EVMService } from '../services/evm.service';
 import { TasksService } from '../../tasks/tasks.service';
-import { CPMService, TaskNode, TaskDependencyEdge } from '../../tasks/services/cpm.service';
+import { CPMService, TaskNode, TaskDependencyEdge } from '../../tasks/services/analysis';
 import { CreateWaveDto, UpdateWaveDto } from '../dto/wave.dto';
 import { CreateRiskDto, UpdateRiskDto, AssessRisksDto } from '../dto/risk.dto';
 import { RecordProjectProgressDto } from '../dto/evm.dto';

@@ -42,7 +42,6 @@ export class TasksHierarchyService {
     let current = task;
     let depth = 0;
 
-    // Build ancestor chain (parents)
     while (current.parentTaskId && depth < maxDepth) {
       const parent = await this.taskModel.findById(current.parentTaskId).exec();
       if (!parent) break;
@@ -61,7 +60,6 @@ export class TasksHierarchyService {
       warnings.push(`Ancestor chain depth limit (${maxDepth}) reached`);
     }
 
-    // Get direct children
     const children = await this.taskModel.find({ parentTaskId: id }).select('_id name status').exec();
 
     return {
@@ -126,7 +124,6 @@ export class TasksHierarchyService {
       throw new NotFoundException(`Task with id ${id} not found`);
     }
 
-    // Encontra root (top ancestor)
     let current: any = task;
     while (current.parentTaskId) {
       const parent = await this.taskModel.findById(current.parentTaskId).exec();
@@ -135,10 +132,7 @@ export class TasksHierarchyService {
     }
     const rootId = String(current._id ?? id);
 
-    // Pega todos os descendentes do root (inclui filhos diretos e recursivos)
     const rootDescendants = await this.getDescendants(rootId, 5000);
-
-    // Inclui o root também na lista para cálculo, caso tenha experience
     const rootTask = await this.taskModel.findById(rootId).select('_id experience isConcluded').exec();
 
     const allNodes = [] as Array<{
@@ -166,7 +160,6 @@ export class TasksHierarchyService {
       0,
     );
 
-    // Obter subtree do task (inclui o próprio task + seus descendentes)
     const subtreeDescendants = await this.getDescendants(id, 5000);
     const subtreeNodes = [] as Array<{
       _id: any;

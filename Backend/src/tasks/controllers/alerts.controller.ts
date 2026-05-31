@@ -1,6 +1,6 @@
 import { Controller, Get, Patch, Param, Query } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { AlertsService } from '../services/alerts.service';
+import { AlertsService } from '../services/monitoring';
 
 @ApiTags('alerts')
 @Controller('alerts')

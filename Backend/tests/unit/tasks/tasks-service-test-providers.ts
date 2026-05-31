@@ -1,13 +1,13 @@
-import { TasksInputService } from '../../../src/tasks/services/tasks/input.service';
-import { TasksMetricsService } from '../../../src/tasks/services/tasks/metrics.service';
-import { TasksRecurringService } from '../../../src/tasks/services/tasks/recurring.service';
-import { TasksAiSuggestionsService } from '../../../src/tasks/services/tasks/ai-suggestions.service';
-import { TasksHabitsService } from '../../../src/tasks/services/tasks/habits.service';
-import { TasksHierarchyService } from '../../../src/tasks/services/tasks/hierarchy.service';
-import { TasksChecklistService } from '../../../src/tasks/services/tasks/checklist.service';
-import { TasksCompletionService } from '../../../src/tasks/services/tasks/completion.service';
-import { TasksPertService } from '../../../src/tasks/services/tasks/tasks-pert.service';
-import { TasksWriteService } from '../../../src/tasks/services/tasks/write.service';
+import { TasksInputService } from '../../../src/tasks/services/workflow/input.service';
+import { TasksMetricsService } from '../../../src/tasks/services/analysis/metrics.service';
+import { TasksRecurringService } from '../../../src/tasks/services/workflow/recurring.service';
+import { TasksAiSuggestionsService } from '../../../src/tasks/services/intelligence/ai-suggestions.service';
+import { TasksHabitsService } from '../../../src/tasks/services/insights/habits.service';
+import { TasksHierarchyService } from '../../../src/tasks/services/analysis/hierarchy.service';
+import { TasksChecklistService } from '../../../src/tasks/services/intelligence/checklist.service';
+import { TasksCompletionService } from '../../../src/tasks/services/workflow/completion.service';
+import { TasksPertService } from '../../../src/tasks/services/analysis/tasks-pert.service';
+import { TasksWriteService } from '../../../src/tasks/services/workflow/write.service';
 
 type TasksServiceTestDeps = {
   taskModel: any;

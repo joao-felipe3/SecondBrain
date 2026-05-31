@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getModelToken } from '@nestjs/mongoose';
-import { CPMService, TaskNode } from '../../../../src/tasks/services/cpm.service';
+import { CPMService, TaskNode } from '../../../../src/tasks/services/analysis/cpm.service';
 import { TaskDependency } from '../../../../src/tasks/schemas/task-dependency.schema';
 import { DependencyType } from '../../../../src/tasks/schemas/task-dependency.schema';
 

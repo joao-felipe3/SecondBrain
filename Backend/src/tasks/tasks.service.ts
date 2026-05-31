@@ -25,17 +25,16 @@ import { TaskAlertDocument } from './schemas/task-alert.schema';
 // Services
 import { ProjectsService } from '../projects/projects.service';
 import { GeminiService } from '../ai/gemini.service';
-import { CompletionFeedbackPayload, FeedbackService } from './services/feedback.service';
-import { TasksRecurringService } from './services/tasks/recurring.service';
-import { TasksAiSuggestionsService } from './services/tasks/ai-suggestions.service';
-import { TasksHabitsService } from './services/tasks/habits.service';
-import { TasksHierarchyService } from './services/tasks/hierarchy.service';
-import { TasksChecklistService } from './services/tasks/checklist.service';
-import { ChecklistHistoryProjectRef } from './services/tasks/checklist.service';
-import { TasksCompletionService } from './services/tasks/completion.service';
-import { TaskDescendantNode, TaskLineageResult } from './services/tasks/hierarchy.service';
-import { TasksPertService } from './services/tasks/tasks-pert.service';
-import { TasksWriteService } from './services/tasks/write.service';
+import { CompletionFeedbackPayload, FeedbackService } from './services/intelligence';
+import { TasksRecurringService, TasksCompletionService, TasksWriteService } from './services/workflow';
+import { TasksAiSuggestionsService, TasksChecklistService, ChecklistHistoryProjectRef } from './services/intelligence';
+import { TasksHabitsService } from './services/insights';
+import {
+  TasksHierarchyService,
+  TaskDescendantNode,
+  TaskLineageResult,
+  TasksPertService,
+} from './services/analysis';
 
 @Injectable()
 export class TasksService {
@@ -146,7 +145,9 @@ export class TasksService {
     return this.tasksChecklistService.updateMicroTaskChecklist(id, checklist);
   }
 
-  public async validateCompletionRequirements(taskId: string): Promise<{ isValid: boolean; reason?: string }> {
+  public async validateCompletionRequirements(
+    taskId: string,
+  ): Promise<{ isValid: boolean; reason?: string }> {
     return this.tasksChecklistService.validateCompletionRequirements(taskId);
   }
 
@@ -192,7 +193,10 @@ export class TasksService {
     return this.tasksCompletionService.createDeviationAlertForTask(taskId);
   }
 
-  public async generateCompletionFeedback(id: string, payload?: CompletionFeedbackPayload): Promise<string> {
+  public async generateCompletionFeedback(
+    id: string,
+    payload?: CompletionFeedbackPayload,
+  ): Promise<string> {
     return this.feedbackService.generateCompletionFeedback(id, payload);
   }
 
@@ -226,7 +230,9 @@ export class TasksService {
     return this.tasksHabitsService.getStreakData(parentRecurringId);
   }
 
-  public async getHabitsDashboard(query: GetHabitsDashboardDto = {}): Promise<GetHabitsDashboardResponseDto> {
+  public async getHabitsDashboard(
+    query: GetHabitsDashboardDto = {},
+  ): Promise<GetHabitsDashboardResponseDto> {
     return this.tasksHabitsService.getHabitsDashboard(query);
   }
 
@@ -280,7 +286,10 @@ export class TasksService {
     return await this.taskModel.find().exec();
   }
 
-  public async findByProjectId(projectId: string, opts?: FindByProjectIdOptionsDto): Promise<TaskDocument[]> {
+  public async findByProjectId(
+    projectId: string,
+    opts?: FindByProjectIdOptionsDto,
+  ): Promise<TaskDocument[]> {
     if (!projectId || projectId === 'null' || projectId === 'undefined') {
       throw new BadRequestException(`Project ID inválido: ${projectId}`);
     }

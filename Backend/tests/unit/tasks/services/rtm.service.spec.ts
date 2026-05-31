@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getModelToken } from '@nestjs/mongoose';
-import { RTMService } from '../../../../src/tasks/services/rtm.service';
+import { RTMService } from '../../../../src/tasks/services/traceability/rtm.service';
 import { Requirement } from '../../../../src/tasks/schemas/requirement.schema';
 import { GeminiService } from '../../../../src/ai/gemini.service';
 import { TasksService } from '../../../../src/tasks/tasks.service';

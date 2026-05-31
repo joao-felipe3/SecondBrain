@@ -2,8 +2,8 @@ import { Injectable, BadRequestException, NotFoundException } from '@nestjs/comm
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { TaskDocument } from '../../schemas/task.schema';
-import { ChecklistService } from '../checklist.service';
-import { TasksInputService } from './input.service';
+import { ChecklistService } from '../shared/checklist.service';
+import { TasksInputService } from '../workflow/input.service';
 import { GeminiService } from '../../../ai/gemini.service';
 
 export type ChecklistHistoryProjectRef =

@@ -5,9 +5,8 @@ import { TaskDocument } from '../../schemas/task.schema';
 import { TaskAlertDocument } from '../../schemas/task-alert.schema';
 import { ProjectsService } from '../../../projects/projects.service';
 import { EVMService } from '../../../projects/services/evm.service';
-import { TasksMetricsService } from './metrics.service';
-import { DeviationDetectionService } from '../deviation-detection.service';
-import { AlertsService } from '../alerts.service';
+import { TasksMetricsService } from '../analysis/metrics.service';
+import { DeviationDetectionService, AlertsService } from '../monitoring';
 import { TasksRecurringService } from './recurring.service';
 import { TasksWriteService } from './write.service';
 
@@ -247,9 +246,6 @@ export class TasksCompletionService {
     });
   }
 
-  /**
-   * Public wrapper to generate deviation alert and return created alert info.
-   */
   async createDeviationAlertForTask(taskId: string): Promise<{
     alertCreated: boolean;
     alert?: TaskAlertDocument;

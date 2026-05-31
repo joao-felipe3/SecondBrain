@@ -6,12 +6,12 @@ import { CreateMicroTaskDto } from '../../dto/create-micro-task.dto';
 import { TaskDocument } from '../../schemas/task.schema';
 import { ProjectDocument } from '../../../projects/schemas/project.schema';
 import { ProjectsService } from '../../../projects/projects.service';
-import { TasksMetricsService } from './metrics.service';
+import { TasksMetricsService } from '../analysis/metrics.service';
 import { CreateManyTasksOptionsDto } from '../../dto/create-many-tasks-options.dto';
 import { MoveTaskStatusDto } from '../../dto/move-task-status.dto';
 import { TasksInputService } from './input.service';
-import { TasksChecklistService } from './checklist.service';
-import { ChecklistService } from '../checklist.service';
+import { TasksChecklistService } from '../intelligence/checklist.service';
+import { ChecklistService } from '../shared/checklist.service';
 import { TasksCompletionService } from './completion.service';
 import { InsertManyError } from '../../interfaces/db-errors';
 
@@ -57,7 +57,9 @@ export class TasksWriteService {
       const insertError = err as InsertManyError;
       inserted = insertError.insertedDocs || [];
 
-      const writeErrors = Array.isArray(insertError.writeErrors) ? insertError.writeErrors.length : undefined;
+      const writeErrors = Array.isArray(insertError.writeErrors)
+        ? insertError.writeErrors.length
+        : undefined;
 
       console.warn('[TasksWriteService][createMany] insertMany error (partial inserts possible)', {
         message: insertError.message,
@@ -68,9 +70,7 @@ export class TasksWriteService {
 
     if (shouldRecalculateStats) {
       const uniqueProjectIds = new Set(
-        inserted.map(
-          (task: TaskDocument) => task.project?.toString?.() ?? task.project
-        ).filter(Boolean),
+        inserted.map((task: TaskDocument) => task.project?.toString?.() ?? task.project).filter(Boolean),
       );
 
       for (const pid of uniqueProjectIds) {
@@ -244,7 +244,6 @@ export class TasksWriteService {
       }
     }
 
-    // Fallback: append to end of column
     if (targetOrder === undefined) {
       const maxOrder = await this.taskModel
         .findOne({ project: projectId, status: toStatus })

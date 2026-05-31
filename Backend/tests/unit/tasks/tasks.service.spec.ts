@@ -6,11 +6,11 @@ import { TasksService } from '../../../src/tasks/tasks.service';
 import { ProjectsService } from '../../../src/projects/projects.service';
 import { GeminiService } from '../../../src/ai/gemini.service';
 import { EVMService } from '../../../src/projects/services/evm.service';
-import { PertService } from '../../../src/tasks/services/pert.service';
-import { ChecklistService } from '../../../src/tasks/services/checklist.service';
-import { FeedbackService } from '../../../src/tasks/services/feedback.service';
-import { AlertsService } from '../../../src/tasks/services/alerts.service';
-import { DeviationDetectionService } from '../../../src/tasks/services/deviation-detection.service';
+import { PertService } from '../../../src/tasks/services/analysis/pert.service';
+import { ChecklistService } from '../../../src/tasks/services/shared/checklist.service';
+import { FeedbackService } from '../../../src/tasks/services/intelligence/feedback.service';
+import { AlertsService } from '../../../src/tasks/services/monitoring/alerts.service';
+import { DeviationDetectionService } from '../../../src/tasks/services/monitoring/deviation-detection.service';
 import { beforeEach, describe, expect, it, jest } from '@jest/globals';
 import { createTasksServiceTestProviders } from './tasks-service-test-providers';
 

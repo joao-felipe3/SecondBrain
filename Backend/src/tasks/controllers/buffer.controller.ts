@@ -1,6 +1,6 @@
 import { Controller, Get, Post, Param, Body, Logger, Inject, forwardRef } from '@nestjs/common';
-import { BufferService, TaskMetrics, BufferAlert } from '../services/buffer.service';
-import { CPMService, TaskNode, CPMAnalysis } from '../services/cpm.service';
+import { BufferService, CPMService, TaskNode, CPMAnalysis } from '../services/analysis';
+import type { TaskMetrics as BufferTaskMetrics } from '../services/analysis/buffer.service';
 import { TasksService } from '../tasks.service';
 
 @Controller('buffers')
@@ -50,7 +50,7 @@ export class BufferController {
       const analysis: CPMAnalysis = this.cpmService.calculateCriticalPath(taskNodes);
 
       // Convertir a TaskMetrics para BufferService
-      const taskMetrics: TaskMetrics[] = (analysis.tasksByImpact || []).map((task: any) => ({
+      const taskMetrics: BufferTaskMetrics[] = (analysis.tasksByImpact || []).map((task: any) => ({
         taskId: task.id,
         estimatedHours: task.duration || 0,
         variance: task.variance || 0,

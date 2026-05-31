@@ -2,10 +2,10 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { getModelToken } from '@nestjs/mongoose';
 import { TasksService } from '../../../src/tasks/tasks.service';
 import { GeminiService } from '../../../src/ai/gemini.service';
-import { ChecklistService } from '../../../src/tasks/services/checklist.service';
-import { PertService } from '../../../src/tasks/services/pert.service';
-import { TasksMetricsService } from '../../../src/tasks/services/tasks/metrics.service';
-import { TasksPertService } from '../../../src/tasks/services/tasks/tasks-pert.service';
+import { ChecklistService } from '../../../src/tasks/services/shared/checklist.service';
+import { PertService } from '../../../src/tasks/services/analysis/pert.service';
+import { TasksMetricsService } from '../../../src/tasks/services/analysis/metrics.service';
+import { TasksPertService } from '../../../src/tasks/services/analysis/tasks-pert.service';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { Types } from 'mongoose';
 

@@ -98,7 +98,6 @@ export class TasksMetricsService {
   }
 
   calculateDeadline(createdAt: Date, expectedTimeMinutes: number): Date {
-    // Arredonda para proxima hora cheia
     const hoursNeeded = Math.ceil((expectedTimeMinutes * 1.1) / 60);
     const deadlineMs = createdAt.getTime() + hoursNeeded * 60 * 60 * 1000;
     return new Date(deadlineMs);

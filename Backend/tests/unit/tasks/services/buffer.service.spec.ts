@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getModelToken } from '@nestjs/mongoose';
-import { BufferService } from '../../../../src/tasks/services/buffer.service';
+import { BufferService } from '../../../../src/tasks/services/analysis/buffer.service';
 import { ProjectBuffer } from '../../../../src/tasks/schemas/project-buffer.schema';
 
 describe('BufferService', () => {

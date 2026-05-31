@@ -1,0 +1,21 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "test-sprint5-recurring",
+			"type": "shell",
+			"command": "& 'C:\\Program Files\\nodejs\\npm.cmd'",
+			"args": [
+				"run",
+				"test",
+				"--",
+				"tests/unit/tasks/tasks.service.sprint5.spec.ts"
+			],
+			"isBackground": false,
+			"problemMatcher": [
+				"$tsc"
+			],
+			"group": "test"
+		}
+	]
+}

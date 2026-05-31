@@ -5,7 +5,7 @@ import { Model, Types } from 'mongoose';
 import { CreateProjectDto } from './dto/create-project.dto';
 import { UpdateProjectDto } from './dto/update-project.dto';
 import { ProjectDocument } from './schemas/project.schema';
-import { CPMService, type TaskNode } from '../tasks/services/cpm.service';
+import { CPMService, type TaskNode } from '../tasks/services/analysis';
 import type { GanttDataResponse } from './dto/gantt.dto';
 import type { PertDiagramDataResponse } from './dto/pert-diagram.dto';
 import { ProjectWave, type ProjectWaveDocument } from './schemas/project-wave.schema';

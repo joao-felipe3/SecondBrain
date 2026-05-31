@@ -53,7 +53,10 @@ export class TasksRecurringService {
       throw new BadRequestException('recurringRule inválida: interval deve ser maior que zero.');
     }
 
-    const endDate = this.parseAndValidateEndDate(recurringRule.endDate, Boolean(options?.allowPastEndDate));
+    const endDate = this.parseAndValidateEndDate(
+      recurringRule.endDate,
+      Boolean(options?.allowPastEndDate),
+    );
     const daysOfWeek = this.normalizeDaysOfWeek(recurringRule.daysOfWeek);
 
     const exceptions = this.parseExceptions(recurringRule.exceptions);
@@ -130,7 +133,6 @@ export class TasksRecurringService {
     prunePastExceptions?: boolean,
   ): RecurringExceptionDto[] {
     return exceptions.filter((exception) => {
-
       if (endDateRaw) {
         const endDate = this.parseAndValidateEndDate(endDateRaw, true);
         if (endDate) {
@@ -138,7 +140,7 @@ export class TasksRecurringService {
           if (exception.date.getTime() > endDate.getTime()) return false;
         }
       }
-      
+
       if (prunePastExceptions === false) return true;
 
       const yesterday = new Date();
@@ -206,7 +208,11 @@ export class TasksRecurringService {
     return this.calculateSteppedRecurringDate(base, rule, endDate);
   }
 
-  private calculateMonthlyRecurringDate(base: Date, rule: RecurringRuleDto, endDate?: Date): Date | null {
+  private calculateMonthlyRecurringDate(
+    base: Date,
+    rule: RecurringRuleDto,
+    endDate?: Date,
+  ): Date | null {
     const monthCandidate = this.addMonths(base, rule.interval);
     if (this.isAfterRecurringEnd(monthCandidate, endDate)) return null;
 
@@ -245,7 +251,6 @@ export class TasksRecurringService {
   }
 
   private getRecurringStepDays(rule: RecurringRuleDto): number {
-    
     if (rule.frequency === 'weekly') return rule.interval * 7;
     if (rule.frequency === 'biweekly') return rule.interval * 14;
 
@@ -383,7 +388,9 @@ export class TasksRecurringService {
       : undefined;
     if (!recurringRule) return template;
 
-    const referenceStart = new Date(createMicroTaskDto.deadline || template.deadline || template.createdAt || new Date());
+    const referenceStart = new Date(
+      createMicroTaskDto.deadline || template.deadline || template.createdAt || new Date(),
+    );
     const firstDeadline = this.calculateFirstRecurringDate(referenceStart, recurringRule);
     if (!firstDeadline) {
       return template;
@@ -400,7 +407,9 @@ export class TasksRecurringService {
   }
 
   public buildOccurrencePayload(task: TaskDocument, nextDeadline: Date): RecurringTaskOccurrenceDto {
-    const recurringRule = task.recurringRule ? this.normalizeRecurringRule(task.recurringRule) : undefined;
+    const recurringRule = task.recurringRule
+      ? this.normalizeRecurringRule(task.recurringRule)
+      : undefined;
     const normalizedChecklist: CreateTaskDto['checklist'] = Array.isArray(task.checklist)
       ? task.checklist
           .map((entry, index): NonNullable<CreateTaskDto['checklist']>[number] | null => {
@@ -421,10 +430,6 @@ export class TasksRecurringService {
           })
           .filter((item): item is NonNullable<CreateTaskDto['checklist']>[number] => item !== null)
       : [];
-
-    if (!task.project) {
-      throw new BadRequestException('Task recorrente precisa de project para gerar a ocorrência.');
-    }
 
     const parentRecurringId = String(task.parentRecurringId || task._id);
 
@@ -477,7 +482,9 @@ export class TasksRecurringService {
         : taskOrId;
     if (!task) throw new NotFoundException('Task not found');
 
-    const recurringRule = task.recurringRule ? this.normalizeRecurringRule(task.recurringRule) : undefined;
+    const recurringRule = task.recurringRule
+      ? this.normalizeRecurringRule(task.recurringRule)
+      : undefined;
     if (!recurringRule) return null;
 
     const nextDeadline = this.calculateNextRecurringDate(

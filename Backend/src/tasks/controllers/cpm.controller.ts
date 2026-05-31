@@ -6,10 +6,10 @@ import {
   CPMAnalysis,
   TaskNode,
   TaskMetrics as CpmTaskMetrics,
-} from '../services/cpm.service';
+} from '../services/analysis';
 import { TasksService } from '../tasks.service';
-import { DependencyInferenceService } from '../services/dependency-inference.service';
-import { BufferService, TaskMetrics as BufferTaskMetrics } from '../services/buffer.service'; // NOVO: Importa BufferService e tipo
+import { DependencyInferenceService, BufferService } from '../services/analysis';
+import type { TaskMetrics as BufferTaskMetrics } from '../services/analysis/buffer.service';
 import type { TaskDependency } from '../schemas/task-dependency.schema';
 
 class AddDependencyDto {
@@ -1266,7 +1266,16 @@ export class CPMController {
       throw new Error('Não foi possível calcular métricas para a tarefa');
     }
 
-    return this.cpmService.getTaskMetrics(taskWithMetrics);
+    return {
+      taskId: taskWithMetrics.id,
+      taskName: taskWithMetrics.name,
+      earlyStart: taskWithMetrics.earlyStart ?? 0,
+      earlyFinish: taskWithMetrics.earlyFinish ?? 0,
+      lateStart: taskWithMetrics.lateStart ?? 0,
+      lateFinish: taskWithMetrics.lateFinish ?? 0,
+      slack: taskWithMetrics.slack ?? 0,
+      isCritical: Boolean(taskWithMetrics.isCritical),
+    };
   }
 
   /**

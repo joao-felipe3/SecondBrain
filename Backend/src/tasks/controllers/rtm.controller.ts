@@ -1,6 +1,6 @@
 import { Controller, Post, Get, Delete, Param, Body, Logger } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
-import { RTMService } from '../services/rtm.service';
+import { RTMService } from '../services/traceability';
 import { TasksService } from '../tasks.service';
 import { RequirementDocument } from '../schemas/requirement.schema';
 
