@@ -28,6 +28,7 @@ export class TasksWriteService {
     private readonly tasksCompletionService: TasksCompletionService,
   ) {}
 
+  // ----------------------------------- Creation -----------------------------------
   public async createMany(
     createTaskDtos: CreateTaskDto[],
     options?: CreateManyTasksOptionsDto,
@@ -35,47 +36,14 @@ export class TasksWriteService {
     const tasks = Array.isArray(createTaskDtos) ? createTaskDtos : [];
     if (tasks.length === 0) return [];
 
-    const resolveProject = Boolean(options?.resolveProject);
-    const shouldRecalculateStats = Boolean(options?.recalculateProjectStats);
     const ordered = Boolean(options?.ordered);
+    const shouldRecalculateStats = Boolean(options?.recalculateProjectStats);
 
-    if (resolveProject) {
-      for (const task of tasks) {
-        await this.resolveProject(task);
-      }
-    }
+    await this.prepareTasksForInsert(tasks, options);
 
-    for (const task of tasks) {
-      this.applyDerivedFields(task);
-    }
+    const inserted = await this.performInsertMany(tasks, ordered);
 
-    let inserted: TaskDocument[] = [];
-    try {
-      inserted = await this.taskModel.insertMany(tasks, { ordered });
-    } catch (err: unknown) {
-      const insertError = err as InsertManyError;
-      inserted = insertError.insertedDocs || [];
-
-      const writeErrors = Array.isArray(insertError.writeErrors)
-        ? insertError.writeErrors.length
-        : undefined;
-
-      console.warn('[TasksWriteService][createMany] insertMany error (partial inserts possible)', {
-        message: insertError.message,
-        inserted: inserted.length,
-        writeErrors,
-      });
-    }
-
-    if (shouldRecalculateStats) {
-      const uniqueProjectIds = new Set(
-        inserted.map((task: TaskDocument) => task.project?.toString?.() ?? task.project).filter(Boolean),
-      );
-
-      for (const pid of uniqueProjectIds) {
-        await this.projectsService.recalculateProjectStats(String(pid));
-      }
-    }
+    await this.postInsertProcessing(inserted, shouldRecalculateStats);
 
     return inserted;
   }
@@ -83,50 +51,12 @@ export class TasksWriteService {
   public async createMicroTask(createMicroTaskDto: CreateMicroTaskDto): Promise<TaskDocument> {
     this.tasksInputService.validatePertInput(createMicroTaskDto);
 
-    const checklistWasProvided: boolean = 'checklist' in createMicroTaskDto;
-
     const normalizedChecklist = this.tasksInputService.normalizeChecklist(createMicroTaskDto.checklist);
-    const payload: CreateTaskDto = {
-      ...createMicroTaskDto,
-      checklist: normalizedChecklist as CreateTaskDto['checklist'],
-      isRecurringInstance: Boolean(createMicroTaskDto.isRecurringInstance),
-    };
+    const payload = await this.buildMicroTaskPayload(createMicroTaskDto, normalizedChecklist);
 
-    if (
-      checklistWasProvided &&
-      createMicroTaskDto.autoGenerateChecklist === false &&
-      (!normalizedChecklist || normalizedChecklist.length === 0)
-    ) {
-      throw new BadRequestException(
-        'Checklist inválido: informe ao menos um item válido ou habilite autoGenerateChecklist.',
-      );
-    }
-
-    const shouldGenerateChecklist =
-      createMicroTaskDto.autoGenerateChecklist !== false &&
-      (!payload.checklist || payload.checklist.length === 0);
-
-    if (shouldGenerateChecklist) {
-      const generated = await this.tasksChecklistService.generateChecklistWithHistory(
-        payload.name,
-        payload.description,
-        payload.microTaskType,
-        payload.project,
-      );
-      payload.checklist = this.tasksInputService.normalizeChecklist(generated);
-    }
-
-    if (normalizedChecklist && normalizedChecklist.length > 0) {
-      const validation = this.checklistService.validateChecklistStructure(
-        normalizedChecklist.map((item) => ({
-          item: item.item,
-          completed: item.completed,
-        })),
-      );
-      if (!validation.isValid) {
-        throw new BadRequestException(validation.reason);
-      }
-    }
+    this.validateMicroTaskChecklistInput(createMicroTaskDto, normalizedChecklist);
+    await this.ensureChecklistGenerated(createMicroTaskDto, payload);
+    this.validateChecklistStructure(normalizedChecklist);
 
     return this.createTaskCore(payload);
   }
@@ -145,10 +75,9 @@ export class TasksWriteService {
     return savedTask;
   }
 
+  // ----------------------------------- Update -----------------------------------
   public async update(id: string, updateTaskDto: Partial<CreateTaskDto>): Promise<TaskDocument | null> {
-    if (!id || id === 'null' || id === 'undefined' || !/^[a-f\d]{24}$/i.test(id)) {
-      throw new BadRequestException(`ID inválido: ${id}`);
-    }
+    this.assertValidObjectId(id);
 
     const oldTask = await this.taskModel.findById(id).exec();
     const oldProjectId = oldTask?.project?.toString();
@@ -173,15 +102,11 @@ export class TasksWriteService {
     return updatedTask;
   }
 
+  // ----------------------------------- Delete -----------------------------------
   public async remove(id: string): Promise<boolean> {
-    if (!id || id === 'null' || id === 'undefined' || !/^[a-f\d]{24}$/i.test(id)) {
-      throw new BadRequestException(`ID inválido: ${id}`);
-    }
+    this.assertValidObjectId(id);
 
-    const task = await this.taskModel.findById(id).exec();
-    if (!task) {
-      throw new NotFoundException(`Task com ID ${id} não encontrada`);
-    }
+    const task = await this.getTaskOrThrow(id);
 
     const projectId = task?.project?.toString();
     const result = await this.taskModel.findByIdAndDelete(id).exec();
@@ -193,15 +118,11 @@ export class TasksWriteService {
     return result !== null;
   }
 
+  // ----------------------------------- Workflow -----------------------------------
   public async moveTaskStatus(id: string, move: MoveTaskStatusDto): Promise<TaskDocument> {
-    if (!id || !/^[a-f\d]{24}$/i.test(id)) {
-      throw new BadRequestException(`ID inválido: ${id}`);
-    }
+    this.assertValidObjectId(id);
 
-    const task = await this.taskModel.findById(id).exec();
-    if (!task) {
-      throw new NotFoundException(`Task with id ${id} not found`);
-    }
+    const task = await this.getTaskOrThrow(id);
 
     const toStatus = move.status;
 
@@ -209,48 +130,10 @@ export class TasksWriteService {
       throw new BadRequestException('Tarefa concluída não pode ser movida para fora de "done"');
     }
 
-    if (toStatus === 'done') {
-      return this.tasksCompletionService.markAsConcluded(id);
-    }
+    if (toStatus === 'done') return this.tasksCompletionService.markAsConcluded(id);
 
     const projectId = task.project?.toString();
-
-    let targetOrder: number | undefined = undefined;
-    if (typeof move.toOrder === 'number' && Number.isFinite(move.toOrder)) {
-      targetOrder = move.toOrder;
-    }
-
-    if (targetOrder === undefined && typeof move.toIndex === 'number' && projectId) {
-      const destinationTasks = await this.taskModel
-        .find({ project: projectId, status: toStatus })
-        .sort({ kanbanOrder: 1 })
-        .select('kanbanOrder')
-        .exec();
-
-      const idx = Math.max(0, Math.floor(move.toIndex));
-      const len = destinationTasks.length;
-
-      if (len === 0) {
-        targetOrder = 1;
-      } else if (idx <= 0) {
-        targetOrder = (destinationTasks[0].kanbanOrder || 0) - 1;
-      } else if (idx >= len) {
-        targetOrder = (destinationTasks[len - 1].kanbanOrder || 0) + 1;
-      } else {
-        const prev = destinationTasks[idx - 1].kanbanOrder || 0;
-        const next = destinationTasks[idx].kanbanOrder || prev + 2;
-        targetOrder = (prev + next) / 2;
-      }
-    }
-
-    if (targetOrder === undefined) {
-      const maxOrder = await this.taskModel
-        .findOne({ project: projectId, status: toStatus })
-        .sort({ kanbanOrder: -1 })
-        .select('kanbanOrder')
-        .exec();
-      targetOrder = (maxOrder?.kanbanOrder || 0) + 1;
-    }
+    const targetOrder = await this.resolveTargetOrder(projectId, toStatus, move);
 
     const updatedTask = await this.taskModel
       .findByIdAndUpdate(
@@ -264,13 +147,12 @@ export class TasksWriteService {
       )
       .exec();
 
-    if (!updatedTask) {
-      throw new NotFoundException(`Task with id ${id} not found`);
-    }
+    if (!updatedTask) throw new NotFoundException(`Task with id ${id} not found`);
 
     return updatedTask;
   }
 
+  // ----------------------------------- Private helpers -----------------------------------
   private async resolveProject(createTaskDto: CreateTaskDto): Promise<void> {
     if (!createTaskDto.project || typeof createTaskDto.project !== 'string') {
       return;
@@ -302,5 +184,179 @@ export class TasksWriteService {
     const difficult = (dto.difficult as number) || 0;
     dto.prize = priority * 5 + difficult * 2;
     dto.experience = priority * 2 + difficult * 5;
+  }
+
+  private async resolveProjects(tasks: CreateTaskDto[]): Promise<void> {
+    for (const task of tasks) {
+      await this.resolveProject(task);
+    }
+  }
+
+  private applyDerivedFieldsBatch(tasks: CreateTaskDto[]): void {
+    for (const task of tasks) {
+      this.applyDerivedFields(task);
+    }
+  }
+
+  private async recalculateProjectsStats(tasks: TaskDocument[]): Promise<void> {
+    const uniqueProjectIds = new Set(
+      tasks.map((task) => task.project?.toString?.() ?? task.project).filter(Boolean),
+    );
+
+    for (const pid of uniqueProjectIds) {
+      await this.projectsService.recalculateProjectStats(String(pid));
+    }
+  }
+
+  private assertValidObjectId(id: string): void {
+    if (!id || id === 'null' || id === 'undefined' || !/^[a-f\d]{24}$/i.test(id)) {
+      throw new BadRequestException(`ID inválido: ${id}`);
+    }
+  }
+
+  private async getTaskOrThrow(id: string): Promise<TaskDocument> {
+    const task = await this.taskModel.findById(id).exec();
+    if (!task) {
+      throw new NotFoundException(`Task com ID ${id} não encontrada`);
+    }
+    return task;
+  }
+
+  private validateMicroTaskChecklistInput(
+    dto: CreateMicroTaskDto,
+    normalizedChecklist: CreateTaskDto['checklist'],
+  ): void {
+    const checklistWasProvided = 'checklist' in dto;
+
+    if (
+      checklistWasProvided &&
+      dto.autoGenerateChecklist === false &&
+      (!normalizedChecklist || normalizedChecklist.length === 0)
+    ) {
+      throw new BadRequestException(
+        'Checklist inválido: informe ao menos um item válido ou habilite autoGenerateChecklist.',
+      );
+    }
+  }
+
+  private async ensureChecklistGenerated(
+    dto: CreateMicroTaskDto,
+    payload: CreateTaskDto,
+  ): Promise<void> {
+    const shouldGenerateChecklist =
+      dto.autoGenerateChecklist !== false && (!payload.checklist || payload.checklist.length === 0);
+
+    if (!shouldGenerateChecklist) return;
+
+    const generated = await this.tasksChecklistService.generateChecklistWithHistory(
+      payload.name,
+      payload.description,
+      payload.microTaskType,
+      payload.project,
+    );
+    payload.checklist = this.tasksInputService.normalizeChecklist(generated);
+  }
+
+  private validateChecklistStructure(normalizedChecklist: CreateTaskDto['checklist']): void {
+    if (!normalizedChecklist || normalizedChecklist.length === 0) return;
+
+    const shape = normalizedChecklist.map((it) =>
+      typeof it === 'string'
+        ? { item: it, completed: false }
+        : { item: it.item, completed: it.completed },
+    );
+
+    const validation = this.checklistService.validateChecklistStructure(shape);
+
+    if (!validation.isValid) {
+      throw new BadRequestException(validation.reason);
+    }
+  }
+
+  private async buildMicroTaskPayload(
+    dto: CreateMicroTaskDto,
+    normalizedChecklist: CreateTaskDto['checklist'],
+  ): Promise<CreateTaskDto> {
+    return {
+      ...dto,
+      checklist: normalizedChecklist,
+      isRecurringInstance: Boolean(dto.isRecurringInstance),
+    };
+  }
+
+  private async resolveTargetOrder(
+    projectId: string | undefined,
+    status: MoveTaskStatusDto['status'],
+    move: MoveTaskStatusDto,
+  ): Promise<number> {
+    if (typeof move.toOrder === 'number' && Number.isFinite(move.toOrder)) {
+      return move.toOrder;
+    }
+
+    if (typeof move.toIndex === 'number' && projectId) {
+      const destinationTasks = await this.taskModel
+        .find({ project: projectId, status })
+        .sort({ kanbanOrder: 1 })
+        .select('kanbanOrder')
+        .exec();
+
+      const idx = Math.max(0, Math.floor(move.toIndex));
+      const len = destinationTasks.length;
+
+      if (len === 0) return 1;
+      if (idx <= 0) return (destinationTasks[0].kanbanOrder || 0) - 1;
+      if (idx >= len) return (destinationTasks[len - 1].kanbanOrder || 0) + 1;
+
+      const prev = destinationTasks[idx - 1].kanbanOrder || 0;
+      const next = destinationTasks[idx].kanbanOrder || prev + 2;
+      return (prev + next) / 2;
+    }
+
+    const maxOrder = await this.taskModel
+      .findOne({ project: projectId, status })
+      .sort({ kanbanOrder: -1 })
+      .select('kanbanOrder')
+      .exec();
+    return (maxOrder?.kanbanOrder || 0) + 1;
+  }
+
+  // Helper steps for createMany orchestration
+  private async prepareTasksForInsert(
+    tasks: CreateTaskDto[],
+    options?: CreateManyTasksOptionsDto,
+  ): Promise<void> {
+    const resolveProject = Boolean(options?.resolveProject);
+    if (resolveProject) await this.resolveProjects(tasks);
+
+    this.applyDerivedFieldsBatch(tasks);
+  }
+
+  private async performInsertMany(tasks: CreateTaskDto[], ordered: boolean): Promise<TaskDocument[]> {
+    let inserted: TaskDocument[] = [];
+    try {
+      inserted = await this.taskModel.insertMany(tasks, { ordered });
+    } catch (err: unknown) {
+      const insertError = err as InsertManyError;
+      inserted = insertError.insertedDocs || [];
+
+      const writeErrors = Array.isArray(insertError.writeErrors)
+        ? insertError.writeErrors.length
+        : undefined;
+
+      console.warn('[TasksWriteService][createMany] insertMany error (partial inserts possible)', {
+        message: insertError.message,
+        inserted: inserted.length,
+        writeErrors,
+      });
+    }
+    return inserted;
+  }
+
+  private async postInsertProcessing(
+    inserted: TaskDocument[],
+    shouldRecalculateStats: boolean,
+  ): Promise<void> {
+    if (!shouldRecalculateStats) return;
+    await this.recalculateProjectsStats(inserted);
   }
 }

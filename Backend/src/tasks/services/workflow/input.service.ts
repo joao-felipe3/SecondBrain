@@ -3,7 +3,7 @@ import { CreateTaskDto, ChecklistItemDto } from '../../dto/create-task.dto';
 
 @Injectable()
 export class TasksInputService {
-  validatePertInput(dto: Partial<CreateTaskDto>) {
+  public validatePertInput(dto: Partial<CreateTaskDto>) {
     const o = dto.pertOptimisticMinutes;
     const m = dto.pertMostLikelyMinutes;
     const p = dto.pertPessimisticMinutes;
@@ -22,7 +22,7 @@ export class TasksInputService {
     }
   }
 
-  normalizeChecklist(
+  public normalizeChecklist(
     checklist?: Array<string | ChecklistItemDto>,
   ): Array<{ item: string; completed: boolean; order: number }> | undefined {
     if (!Array.isArray(checklist) || checklist.length === 0) return undefined;

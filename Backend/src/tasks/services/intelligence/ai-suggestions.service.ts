@@ -253,8 +253,8 @@ export class TasksAiSuggestionsService {
     try {
       const parsed = JSON.parse(trimmed);
       if (Array.isArray(parsed)) return parsed;
-      if (Array.isArray((parsed as any)?.suggestions)) return (parsed as any).suggestions;
-      if (Array.isArray((parsed as any)?.tasks)) return (parsed as any).tasks;
+      if (Array.isArray(parsed?.suggestions)) return parsed.suggestions;
+      if (Array.isArray(parsed?.tasks)) return parsed.tasks;
       return [];
     } catch {
       const match = trimmed.match(/\[[\s\S]*\]/);

@@ -27,7 +27,11 @@ import { ProjectsService } from '../projects/projects.service';
 import { GeminiService } from '../ai/gemini.service';
 import { CompletionFeedbackPayload, FeedbackService } from './services/intelligence';
 import { TasksRecurringService, TasksCompletionService, TasksWriteService } from './services/workflow';
-import { TasksAiSuggestionsService, TasksChecklistService, ChecklistHistoryProjectRef } from './services/intelligence';
+import {
+  TasksAiSuggestionsService,
+  TasksChecklistService,
+  ChecklistHistoryProjectRef,
+} from './services/intelligence';
 import { TasksHabitsService } from './services/monitoring';
 import {
   TasksHierarchyService,

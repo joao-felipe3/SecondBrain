@@ -29,7 +29,12 @@ import { Requirement } from './entities/requirement.entity';
 import { TaskCompletionFeedbackSchema } from './schemas/task-completion-feedback.schema';
 import { TaskCompletionFeedback } from './entities/task-completion-feedback.entity';
 import { FeedbackService } from './services/intelligence';
-import { TasksRecurringService, TasksInputService, TasksCompletionService, TasksWriteService } from './services/workflow';
+import {
+  TasksRecurringService,
+  TasksInputService,
+  TasksCompletionService,
+  TasksWriteService,
+} from './services/workflow';
 import { TasksAiSuggestionsService, TasksChecklistService } from './services/intelligence';
 import { TasksHabitsService } from './services/monitoring';
 import { TasksMetricsService, TasksHierarchyService, TasksPertService } from './services/analysis';
