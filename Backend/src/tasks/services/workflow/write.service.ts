@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { CreateTaskDto } from '../../dto/create-task.dto';
 import { CreateMicroTaskDto } from '../../dto/create-micro-task.dto';
 import { TaskDocument } from '../../schemas/task.schema';
@@ -28,7 +28,10 @@ export class TasksWriteService {
     private readonly tasksCompletionService: TasksCompletionService,
   ) {}
 
-  // ----------------------------------- Creation -----------------------------------
+  // ===========================================================================
+  // 1. Creation
+  // ===========================================================================
+
   public async createMany(
     createTaskDtos: CreateTaskDto[],
     options?: CreateManyTasksOptionsDto,
@@ -75,7 +78,10 @@ export class TasksWriteService {
     return savedTask;
   }
 
-  // ----------------------------------- Update -----------------------------------
+  // ===========================================================================
+  // 2. Update
+  // ===========================================================================
+
   public async update(id: string, updateTaskDto: Partial<CreateTaskDto>): Promise<TaskDocument | null> {
     this.assertValidObjectId(id);
 
@@ -102,7 +108,10 @@ export class TasksWriteService {
     return updatedTask;
   }
 
-  // ----------------------------------- Delete -----------------------------------
+  // ===========================================================================
+  // 3. Delete
+  // ===========================================================================
+
   public async remove(id: string): Promise<boolean> {
     this.assertValidObjectId(id);
 
@@ -118,7 +127,10 @@ export class TasksWriteService {
     return result !== null;
   }
 
-  // ----------------------------------- Workflow -----------------------------------
+  // ===========================================================================
+  // 4. Workflow
+  // ===========================================================================
+
   public async moveTaskStatus(id: string, move: MoveTaskStatusDto): Promise<TaskDocument> {
     this.assertValidObjectId(id);
 
@@ -152,7 +164,10 @@ export class TasksWriteService {
     return updatedTask;
   }
 
-  // ----------------------------------- Private helpers -----------------------------------
+  // ===========================================================================
+  // 5. Private Helpers
+  // ===========================================================================
+
   private async resolveProject(createTaskDto: CreateTaskDto): Promise<void> {
     if (!createTaskDto.project || typeof createTaskDto.project !== 'string') {
       return;
@@ -172,7 +187,7 @@ export class TasksWriteService {
       throw new NotFoundException(`Project not found by id or name '${project}'`);
     }
 
-    createTaskDto.project = projectDoc._id;
+    createTaskDto.project = projectDoc._id as Types.ObjectId;
   }
 
   private applyDerivedFields(dto: Partial<CreateTaskDto>): void {
@@ -320,7 +335,6 @@ export class TasksWriteService {
     return (maxOrder?.kanbanOrder || 0) + 1;
   }
 
-  // Helper steps for createMany orchestration
   private async prepareTasksForInsert(
     tasks: CreateTaskDto[],
     options?: CreateManyTasksOptionsDto,

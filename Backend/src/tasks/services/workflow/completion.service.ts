@@ -25,6 +25,65 @@ export class TasksCompletionService {
     private readonly tasksWriteService: TasksWriteService,
   ) {}
 
+  // ===========================================================================
+  // 1. Core Lifecycle / Completion
+  // ===========================================================================
+
+  async markAsConcluded(id: string): Promise<TaskDocument> {
+    this.validateTaskId(id);
+
+    const task = await this.getTaskOrThrow(id);
+    if (task.isConcluded) {
+      return task;
+    }
+
+    const { remainingHours } = this.calculateRemainingPomodorosAndHours(task);
+
+    await this.updateTaskToConcludedStatus(task);
+    this.metricsService.applyEvmMetrics(task, task);
+    const updatedTask = await task.save();
+
+    if (updatedTask.project && remainingHours > 0) {
+      await this.updateProjectMetricsAfterCompletion(
+        updatedTask.project.toString(),
+        id,
+        remainingHours,
+      );
+    }
+
+    await this.checkDeviationAndCreateAlert(id);
+
+    return updatedTask;
+  }
+
+  // ===========================================================================
+  // 2. Pomodoro Management
+  // ===========================================================================
+
+  async incrementPomodorosDid(id: string): Promise<TaskDocument> {
+    this.validateTaskId(id);
+
+    const task = await this.getTaskOrThrow(id);
+
+    if (task.pomodorosDid === undefined || task.pomodorosDid === null) {
+      task.pomodorosDid = 0;
+    }
+    task.pomodorosDid += 1;
+
+    this.metricsService.applyEvmMetrics(task, task);
+    const updatedTask = await task.save();
+
+    if (task.project) {
+      await this.updateProjectMetricsAfterPomodoro(task.project.toString(), id);
+    }
+
+    return updatedTask;
+  }
+
+  // ===========================================================================
+  // 3. Recurring / Deferred Workflows
+  // ===========================================================================
+
   async handleTaskCompletion(taskId: string): Promise<TaskDocument | null> {
     const task = await this.taskModel.findById(taskId).exec();
     if (!task) return null;
@@ -34,27 +93,14 @@ export class TasksCompletionService {
         .findByIdAndUpdate(taskId, { recurringState: 'completed' }, { new: true })
         .exec();
 
-      const recurringRule = this.tasksRecurringService.normalizeRecurringRule(task.recurringRule);
-      if (recurringRule) {
-        const nextDeadline = this.tasksRecurringService.calculateNextRecurringDate(
-          task.deadline || task.createdAt || new Date(),
-          recurringRule,
-        );
-        if (nextDeadline) {
-          const payload = this.tasksRecurringService.buildOccurrencePayload(task, nextDeadline);
-          await this.tasksWriteService.createTaskCore(payload as any);
-        }
-      }
+      await this.scheduleNextRecurringOccurrence(task);
     }
 
     return task;
   }
 
   async handleTaskSkipped(taskId: string): Promise<TaskDocument> {
-    const task = await this.taskModel.findById(taskId).exec();
-    if (!task) {
-      throw new NotFoundException(`Task with id ${taskId} not found`);
-    }
+    const task = await this.getTaskOrThrow(taskId);
 
     const updatedTask = await this.taskModel
       .findByIdAndUpdate(
@@ -73,37 +119,20 @@ export class TasksCompletionService {
       throw new NotFoundException(`Task with id ${taskId} not found`);
     }
 
-    if (updatedTask.recurringRule) {
-      const recurringRule = this.tasksRecurringService.normalizeRecurringRule(updatedTask.recurringRule);
-      if (recurringRule) {
-        const nextDeadline = this.tasksRecurringService.calculateNextRecurringDate(
-          updatedTask.deadline || updatedTask.createdAt || new Date(),
-          recurringRule,
-        );
-        if (nextDeadline) {
-          const payload = this.tasksRecurringService.buildOccurrencePayload(updatedTask, nextDeadline);
-          await this.tasksWriteService.createTaskCore(payload as any);
-        }
-      }
-    }
+    await this.scheduleNextRecurringOccurrence(updatedTask);
 
     return updatedTask;
   }
 
   async handleTaskDeferred(taskId: string, newDeadline: Date): Promise<TaskDocument> {
-    if (!taskId || !Types.ObjectId.isValid(taskId)) {
-      throw new BadRequestException(`ID inválido: ${taskId}`);
-    }
+    this.validateTaskId(taskId);
 
     const parsedDeadline = new Date(newDeadline);
     if (Number.isNaN(parsedDeadline.getTime())) {
       throw new BadRequestException('newDeadline inválido');
     }
 
-    const task = await this.taskModel.findById(taskId).exec();
-    if (!task) {
-      throw new NotFoundException(`Task with id ${taskId} not found`);
-    }
+    const task = await this.getTaskOrThrow(taskId);
 
     const updatedTask = await this.taskModel
       .findByIdAndUpdate(
@@ -123,31 +152,69 @@ export class TasksCompletionService {
     return updatedTask;
   }
 
-  async markAsConcluded(id: string): Promise<TaskDocument> {
+  // ===========================================================================
+  // 4. Monitoring & Alerts
+  // ===========================================================================
+
+  async createDeviationAlertForTask(taskId: string): Promise<{
+    alertCreated: boolean;
+    alert?: TaskAlertDocument;
+  }> {
+    const deviation = await this.deviationDetectionService.generateDeviationAlert(taskId);
+    if (!deviation) {
+      return { alertCreated: false };
+    }
+
+    const task = await this.taskModel.findById(taskId).exec();
+    if (!task) {
+      return { alertCreated: false };
+    }
+
+    const created: TaskAlertDocument = await this.alertsService.createAlert({
+      taskId: task._id as any,
+      projectId: task.project as any,
+      type: 'warning',
+      message: deviation.message || 'Time deviation detected',
+      recommendation: deviation.recommendation,
+    });
+
+    return { alertCreated: true, alert: created };
+  }
+
+  // ===========================================================================
+  // 5. Private Helpers
+  // ===========================================================================
+
+  private validateTaskId(id: string): void {
     if (!id || id === 'null' || id === 'undefined' || !Types.ObjectId.isValid(id)) {
       throw new BadRequestException(`ID inválido: ${id}`);
     }
+  }
 
+  private async getTaskOrThrow(id: string): Promise<TaskDocument> {
     const task = await this.taskModel.findById(id).exec();
     if (!task) {
       throw new NotFoundException(`Task with id ${id} not found`);
     }
+    return task;
+  }
 
-    if (task.isConcluded) {
-      return task;
-    }
-
-    const isHabit =
-      task.microTaskType === 'habit' || Boolean(task.parentRecurringId) || Boolean(task.recurringRule);
-
-    if (!isHabit) {
-      // Validation is delegated to caller (TasksService) which may call checklist validators
-    }
-
+  private calculateRemainingPomodorosAndHours(task: TaskDocument): {
+    remainingPomodoros: number;
+    remainingHours: number;
+  } {
     const currentPomodorosDid = Math.max(0, task.pomodorosDid || 0);
     const plannedPomodoros = Math.max(0, task.pomodorosPlanned || 0);
     const remainingPomodoros = Math.max(0, plannedPomodoros - currentPomodorosDid);
     const remainingHours = remainingPomodoros * 0.5;
+
+    return { remainingPomodoros, remainingHours };
+  }
+
+  private async updateTaskToConcludedStatus(task: TaskDocument): Promise<void> {
+    const currentPomodorosDid = Math.max(0, task.pomodorosDid || 0);
+    const plannedPomodoros = Math.max(0, task.pomodorosPlanned || 0);
+    const remainingPomodoros = Math.max(0, plannedPomodoros - currentPomodorosDid);
 
     task.isConcluded = true;
     if (remainingPomodoros > 0) {
@@ -165,46 +232,20 @@ export class TasksCompletionService {
       task.kanbanOrder = (maxOrder?.kanbanOrder || 0) + 1;
       task.statusUpdatedAt = new Date();
     }
-
-    this.metricsService.applyEvmMetrics(task, task);
-    const updatedTask = await task.save();
-
-    if (updatedTask.project && remainingHours > 0) {
-      const pid = updatedTask.project.toString();
-      await this.projectsService.incrementHoursWorked(pid, remainingHours);
-      await this.registerAutoEvmProgress(pid, id, remainingHours, 'completion');
-    }
-
-    await this.checkDeviationAndCreateAlert(id);
-
-    return updatedTask;
   }
 
-  async incrementPomodorosDid(id: string): Promise<TaskDocument> {
-    if (!id || id === 'null' || id === 'undefined' || !Types.ObjectId.isValid(id)) {
-      throw new BadRequestException(`ID inválido: ${id}`);
-    }
+  private async updateProjectMetricsAfterCompletion(
+    projectId: string,
+    taskId: string,
+    remainingHours: number,
+  ): Promise<void> {
+    await this.projectsService.incrementHoursWorked(projectId, remainingHours);
+    await this.registerAutoEvmProgress(projectId, taskId, remainingHours, 'completion');
+  }
 
-    const task = await this.taskModel.findById(id).exec();
-    if (!task) {
-      throw new NotFoundException(`Task with id ${id} not found`);
-    }
-
-    if (task.pomodorosDid === undefined || task.pomodorosDid === null) {
-      task.pomodorosDid = 0;
-    }
-
-    task.pomodorosDid += 1;
-    this.metricsService.applyEvmMetrics(task, task);
-    const updatedTask = await task.save();
-
-    if (task.project) {
-      const projectId = task.project.toString();
-      await this.projectsService.incrementHoursWorked(projectId, 0.5);
-      await this.registerAutoEvmProgress(projectId, id, 0.5, 'pomodoro');
-    }
-
-    return updatedTask;
+  private async updateProjectMetricsAfterPomodoro(projectId: string, taskId: string): Promise<void> {
+    await this.projectsService.incrementHoursWorked(projectId, 0.5);
+    await this.registerAutoEvmProgress(projectId, taskId, 0.5, 'pomodoro');
   }
 
   private async registerAutoEvmProgress(
@@ -246,28 +287,19 @@ export class TasksCompletionService {
     });
   }
 
-  async createDeviationAlertForTask(taskId: string): Promise<{
-    alertCreated: boolean;
-    alert?: TaskAlertDocument;
-  }> {
-    const deviation = await this.deviationDetectionService.generateDeviationAlert(taskId);
-    if (!deviation) {
-      return { alertCreated: false };
-    }
+  private async scheduleNextRecurringOccurrence(task: TaskDocument): Promise<void> {
+    if (!task.recurringRule) return;
 
-    const task = await this.taskModel.findById(taskId).exec();
-    if (!task) {
-      return { alertCreated: false };
-    }
+    const recurringRule = this.tasksRecurringService.normalizeRecurringRule(task.recurringRule);
+    if (!recurringRule) return;
 
-    const created: TaskAlertDocument = await this.alertsService.createAlert({
-      taskId: task._id as any,
-      projectId: task.project as any,
-      type: 'warning',
-      message: deviation.message || 'Time deviation detected',
-      recommendation: deviation.recommendation,
-    });
+    const nextDeadline = this.tasksRecurringService.calculateNextRecurringDate(
+      task.deadline || task.createdAt || new Date(),
+      recurringRule,
+    );
+    if (!nextDeadline) return;
 
-    return { alertCreated: true, alert: created };
+    const payload = this.tasksRecurringService.buildOccurrencePayload(task, nextDeadline);
+    await this.tasksWriteService.createTaskCore(payload as any);
   }
 }

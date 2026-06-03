@@ -37,7 +37,9 @@ export class TasksRecurringService {
     private readonly tasksWriteService?: TasksWriteService,
   ) {}
 
-  // ----------------------------------- Validation & Normalization -----------------------------------
+  // ===========================================================================
+  // 1. Rule Normalization & Validation
+  // ===========================================================================
 
   public normalizeRecurringRule(
     recurringRule?: RecurringRuleDto,
@@ -130,8 +132,10 @@ export class TasksRecurringService {
     return out.length > 0 ? out : undefined;
   }
 
-  // ----------------------------------- Exception parsing helpers -----------------------------------
-  
+  // ===========================================================================
+  // 2. Exception Parsing Helpers
+  // ===========================================================================
+
   private extractExceptionDate(rawException: unknown): Date | undefined {
     if (rawException instanceof Date) return rawException;
     if (!rawException || typeof rawException !== 'object') return undefined;
@@ -173,8 +177,6 @@ export class TasksRecurringService {
     });
   }
 
-  // ----------------------------------- Date utilities (moved to recurring.utils.ts) -----------------------------------
-
   private isRecurringDateExcluded(date: Date, recurringRule: RecurringRuleDto): boolean {
     const dateKey = toDateKey(date);
     return Array.isArray(recurringRule.exceptions)
@@ -194,7 +196,10 @@ export class TasksRecurringService {
       : false;
   }
 
-  // ----------------------------------- Recurrence calculations -----------------------------------
+  // ===========================================================================
+  // 3. Recurrence Date Calculations
+  // ===========================================================================
+
   public calculateNextRecurringDate(referenceDate: Date, recurringRule: RecurringRuleDto): Date | null {
     const rule = this.normalizeRecurringRule(recurringRule, {
       allowPastEndDate: true,
@@ -321,7 +326,9 @@ export class TasksRecurringService {
     return null;
   }
 
-  // ----------------------------------- Series management -----------------------------------
+  // ===========================================================================
+  // 4. Series Management
+  // ===========================================================================
 
   public async findRecurringSeries(parentRecurringId: string): Promise<TaskDocument[]> {
     if (!parentRecurringId || !Types.ObjectId.isValid(parentRecurringId)) {
@@ -365,6 +372,10 @@ export class TasksRecurringService {
 
     return { deletedCount };
   }
+
+  // ===========================================================================
+  // 5. Template & Occurrence Creation
+  // ===========================================================================
 
   public async createRecurringTemplate(createMicroTaskDto: CreateMicroTaskDto): Promise<TaskDocument> {
     const recurringRule = this.normalizeRecurringRule(createMicroTaskDto.recurringRule);

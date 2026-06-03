@@ -7,6 +7,8 @@ import {
   RequirementType,
   JourneyKind,
 } from '../../schemas/requirement.schema';
+import { TaskDocument } from '../../schemas/task.schema';
+import { CreateTaskDto } from '../../dto/create-task.dto';
 import { GeminiService } from '../../../ai/gemini.service';
 import { TasksService } from '../../tasks.service';
 
@@ -51,432 +53,18 @@ export class RTMService {
 
   constructor(
     @InjectModel(Requirement.name)
-    private requirementModel: Model<RequirementDocument>,
-    private geminiService: GeminiService,
+    private readonly requirementModel: Model<RequirementDocument>,
+    private readonly geminiService: GeminiService,
     @Inject(forwardRef(() => TasksService))
-    private tasksService: TasksService,
+    private readonly tasksService: TasksService,
   ) {}
 
-  private normalizeKind(value: unknown): JourneyKind {
-    const raw = String(value ?? '')
-      .trim()
-      .toLowerCase();
-    if (raw === 'objective' || raw === 'objetivo') return 'objective';
-    if (raw === 'habit' || raw === 'habito' || raw === 'hábito') return 'habit';
-    if (raw === 'stage' || raw === 'etapa') return 'stage';
-    return 'action';
-  }
-  private normalizeType(value: unknown, fallbackKind?: JourneyKind): RequirementType {
-    const raw = String(value ?? '')
-      .trim()
-      .toLowerCase();
-    if (raw === 'functional') return 'functional';
-    if (raw === 'non_functional' || raw === 'non-functional' || raw === 'nonfunctional') {
-      return 'non_functional';
-    }
-    if (raw === 'constraint') return 'constraint';
-    if (raw === 'objective' || raw === 'objetivo') return 'objective';
-    if (raw === 'habit' || raw === 'habito' || raw === 'hábito') return 'habit';
-    if (raw === 'stage' || raw === 'etapa') return 'stage';
-    if (raw === 'action' || raw === 'acao' || raw === 'ação') return 'action';
-    if (fallbackKind) return fallbackKind;
-    return 'action';
-  }
-  private levelForKind(kind: JourneyKind): number {
-    if (kind === 'objective') return 0;
-    if (kind === 'habit') return 1;
-    if (kind === 'stage') return 2;
-    return 3;
-  }
-  private getLinkedActions(requirement: any): string[] {
-    const modern = Array.isArray(requirement?.traceableActionItems)
-      ? requirement.traceableActionItems.map(String)
-      : [];
-    if (modern.length > 0) return modern;
-    const legacy = Array.isArray(requirement?.traceableItems)
-      ? requirement?.traceableItems.map(String)
-      : [];
-    return legacy;
-  }
-  private parseJsonArray(rawResponse: string): any[] | null {
-    const cleaned = String(rawResponse || '')
-      .replace(/```json\n?/gi, '')
-      .replace(/```\n?/g, '')
-      .trim();
-    const tryParse = (text: string) => {
-      try {
-        const parsed = JSON.parse(text);
-        return Array.isArray(parsed) ? parsed : null;
-      } catch {
-        return null;
-      }
-    };
-    const direct = tryParse(cleaned);
-    if (direct) return direct;
-    const match = cleaned.match(/\[[\s\S]*\]/);
-    if (match?.[0]) {
-      return tryParse(match[0]);
-    }
-    return null;
-  }
+  // ===========================================================================
+  // 1. Requirements Database CRUD & Mapping Operations
+  // ===========================================================================
 
-  async generateRequirements(smartObjective: any): Promise<
-    Array<{
-      description: string;
-      type: RequirementType;
-      kind?: JourneyKind;
-      ref?: string;
-      parentRef?: string;
-    }>
-  > {
-    this.logger.log('Gerando itens de jornada para Smart Objective...');
-    if (!smartObjective) {
-      this.logger.warn('Smart Objective vazio, retornando array vazio');
-      return [];
-    }
-
-    try {
-      const prompt = `Você é um planejador de desenvolvimento pessoal.
-
-Objetivo:
-Gerar uma estrutura rastreável no formato objetivo -> hábito -> etapa -> ação.
-
-Regras:
-- Foque em projetos pessoais (aprendizado, rotina, hábitos, produtividade).
-- Gere uma árvore prática e rastreável.
-- Retorne entre 10 e 24 itens no total.
-- Cada item deve ter:
-	- ref: identificador curto único (ex: O1, H1, E1, A1)
-	- parentRef: referência do pai (null apenas para objective)
-	- kind: objective | habit | stage | action
-	- description: descrição clara, específica e mensurável
-- Ações devem ser executáveis (o que fazer de fato).
-- Sem markdown.
-
-Smart Objective:
-- O: ${smartObjective.objective || ''}
-- Específico: ${smartObjective.specific || ''}
-- Mensurável: ${smartObjective.measurable || ''}
-- Alcançável: ${smartObjective.achievable || ''}
-- Relevante: ${smartObjective.relevant || ''}
-- Temporal: ${smartObjective.temporal || ''}
-
-Retorne SOMENTE um JSON array:
-[
-	{ "ref": "O1", "parentRef": null, "kind": "objective", "description": "..." },
-	{ "ref": "H1", "parentRef": "O1", "kind": "habit", "description": "..." },
-	{ "ref": "E1", "parentRef": "H1", "kind": "stage", "description": "..." },
-	{ "ref": "A1", "parentRef": "E1", "kind": "action", "description": "..." }
-]`;
-
-      const response = await this.geminiService.generateContent(prompt, {
-        responseMimeType: 'application/json',
-        temperature: 0.2,
-        maxOutputTokens: 3072,
-      });
-
-      const parsed = this.parseJsonArray(response);
-      if (!parsed) {
-        this.logger.warn('Resposta da IA não contém um JSON array válido');
-        return [];
-      }
-
-      const normalized: JourneyDraft[] = parsed
-        .map((item: any, index: number) => {
-          const kind = this.normalizeKind(item?.kind);
-          const defaultRefPrefix =
-            kind === 'objective' ? 'O' : kind === 'habit' ? 'H' : kind === 'stage' ? 'E' : 'A';
-          const ref = String(item?.ref ?? `${defaultRefPrefix}${index + 1}`).trim();
-          const parentRef = item?.parentRef == null ? undefined : String(item.parentRef).trim();
-          const description = String(item?.description ?? '').trim();
-
-          return {
-            ref,
-            parentRef,
-            kind,
-            description,
-            type: this.normalizeType(item?.type, kind),
-          };
-        })
-        .filter((item) => item.description.length > 0);
-
-      const deduped: JourneyDraft[] = [];
-      const seen = new Set<string>();
-      for (const item of normalized) {
-        const key = `${item.kind}::${item.description.toLowerCase()}`;
-        if (seen.has(key)) continue;
-        seen.add(key);
-        deduped.push(item);
-      }
-
-      this.logger.log(`${deduped.length} itens de jornada extraídos com sucesso`);
-      return deduped.map((item) => ({
-        description: item.description,
-        type: item.type || item.kind,
-        kind: item.kind,
-        ref: item.ref,
-        parentRef: item.parentRef,
-      }));
-    } catch (error: any) {
-      this.logger.error(`Erro ao gerar itens de jornada: ${error?.message}`);
-      return [];
-    }
-  }
-
-  async mapRequirementToTask(
-    projectId: string,
-    requirementId: string,
-    taskId: string,
-  ): Promise<Requirement | null> {
-    this.logger.log(`Mapeando item ${requirementId} -> tarefa ${taskId}`);
-    try {
-      const requirement = await this.requirementModel.findOneAndUpdate(
-        {
-          _id: new Types.ObjectId(requirementId),
-          projectId,
-        },
-        {
-          $addToSet: {
-            traceableActionItems: taskId,
-            traceableItems: taskId,
-          },
-          $set: { status: 'satisfied' },
-        },
-        { new: true },
-      );
-
-      if (!requirement) {
-        this.logger.warn(`Item ${requirementId} não encontrado`);
-        return null;
-      }
-
-      this.logger.log(`Item ${requirementId} mapeado para tarefa ${taskId}`);
-      return requirement;
-    } catch (error: any) {
-      this.logger.error(`Erro ao mapear item: ${error?.message}`);
-      return null;
-    }
-  }
-
-  async unmapRequirementFromTask(requirementId: string, taskId: string): Promise<Requirement | null> {
-    this.logger.log(`Removendo mapeamento: item ${requirementId} <- tarefa ${taskId}`);
-    try {
-      const requirement = await this.requirementModel.findByIdAndUpdate(
-        requirementId,
-        {
-          $pull: {
-            traceableActionItems: taskId,
-            traceableItems: taskId,
-          },
-        },
-        { new: true },
-      );
-
-      if (!requirement) {
-        this.logger.warn(`Item ${requirementId} não encontrado`);
-        return null;
-      }
-
-      if (this.getLinkedActions(requirement).length === 0) {
-        requirement.status = 'open';
-        await requirement.save();
-      }
-
-      this.logger.log(`Mapeamento removido do item ${requirementId}`);
-      return requirement;
-    } catch (error: any) {
-      this.logger.error(`Erro ao remover mapeamento: ${error?.message}`);
-      return null;
-    }
-  }
-
-  async validateRTM(projectId: string): Promise<RTMValidation> {
-    this.logger.log(`Validando jornada para projeto ${projectId}`);
-    try {
-      const requirements = await this.requirementModel.find({ projectId });
-      const total = requirements.length;
-
-      if (total === 0) {
-        return {
-          isValid: false,
-          unmappedRequirements: [],
-          risks: ['Nenhum item de jornada definido para o projeto'],
-          coverage: 0,
-        };
-      }
-
-      const byId = new Map<string, any>();
-      const childrenByParent = new Map<string, any[]>();
-      const unmappedRequirements: string[] = [];
-      const risks: string[] = [];
-
-      for (const req of requirements as any[]) {
-        const id = String(req._id ?? req.id ?? '');
-        byId.set(id, req);
-      }
-
-      for (const req of requirements as any[]) {
-        const id = String(req._id ?? req.id ?? '');
-        const parentId = req.parentItemId ? String(req.parentItemId) : undefined;
-        if (!parentId) continue;
-        const list = childrenByParent.get(parentId) || [];
-        list.push(req);
-        childrenByParent.set(parentId, list);
-
-        if (!byId.has(parentId)) {
-          risks.push(`Item ${id} aponta para pai inexistente (${parentId})`);
-        }
-      }
-
-      const hasChildOfKind = (id: string, kind: JourneyKind) => {
-        const children = childrenByParent.get(id) || [];
-        return children.some((child) => this.normalizeKind(child.kind || child.type) === kind);
-      };
-
-      for (const req of requirements as any[]) {
-        const id = String(req._id ?? req.id ?? '');
-        const description = String(req.description || 'Item');
-        const kind = this.normalizeKind(req.kind || req.type);
-        const linkedActions = this.getLinkedActions(req);
-
-        if (kind === 'objective') {
-          if (!hasChildOfKind(id, 'habit')) {
-            unmappedRequirements.push(id);
-            risks.push(`Objetivo sem hábito vinculado: "${description}"`);
-          }
-          continue;
-        }
-
-        if (kind === 'habit') {
-          if (!hasChildOfKind(id, 'stage')) {
-            unmappedRequirements.push(id);
-            risks.push(`Hábito sem etapa vinculada: "${description}"`);
-          }
-          continue;
-        }
-
-        if (kind === 'stage') {
-          if (!hasChildOfKind(id, 'action')) {
-            unmappedRequirements.push(id);
-            risks.push(`Etapa sem ação vinculada: "${description}"`);
-          }
-          continue;
-        }
-
-        if (linkedActions.length === 0) {
-          unmappedRequirements.push(id);
-          risks.push(`Ação sem tarefa rastreada: "${description}"`);
-        } else if (linkedActions.length > 3) {
-          risks.push(
-            `Ação "${description}" vinculada a ${linkedActions.length} tarefas (avaliar granularidade)`,
-          );
-        }
-      }
-
-      const mapped = total - unmappedRequirements.length;
-      const coverage = (mapped / total) * 100;
-      const isValid = unmappedRequirements.length === 0;
-
-      if (!isValid) {
-        risks.push(`${unmappedRequirements.length} item(ns) da jornada sem rastreabilidade completa`);
-      }
-
-      return {
-        isValid,
-        unmappedRequirements,
-        risks,
-        coverage: Math.round(coverage * 10) / 10,
-      };
-    } catch (error: any) {
-      this.logger.error(`Erro ao validar jornada: ${error?.message}`);
-      return {
-        isValid: false,
-        unmappedRequirements: [],
-        risks: [`Erro ao validar jornada: ${error?.message}`],
-        coverage: 0,
-      };
-    }
-  }
-
-  async getRTMMatrix(projectId: string, tasks: any[]): Promise<RTMMatrixData> {
-    this.logger.log(`Gerando matriz de jornada para projeto ${projectId}`);
-    try {
-      const requirements = await this.requirementModel
-        .find({ projectId })
-        .sort({ hierarchyLevel: 1, createdAt: 1, _id: 1 });
-
-      const matrix = new Map<string, Set<string>>();
-      for (const req of requirements as any[]) {
-        const reqId = String(req._id ?? req.id ?? '');
-        const traceable = this.getLinkedActions(req);
-        matrix.set(reqId, new Set(traceable));
-      }
-
-      const validation = await this.validateRTM(projectId);
-
-      const requirementsData = (requirements as any[]).map((req) => {
-        const kind = this.normalizeKind(req.kind || req.type);
-        return {
-          id: String(req._id ?? req.id ?? ''),
-          description: req.description,
-          type: req.type || kind,
-          status: req.status,
-          kind,
-          parentItemId: req.parentItemId ? String(req.parentItemId) : undefined,
-          hierarchyLevel: Number(req.hierarchyLevel ?? this.levelForKind(kind)),
-        };
-      });
-
-      const wbsNameMap = new Map<string, string>();
-      const tasksData = tasks.map((task) => {
-        const wbsNodeId = task.parentWbsNodeId ? String(task.parentWbsNodeId) : undefined;
-
-        let wbsNodeName = 'Sem WBS';
-        if (wbsNodeId) {
-          if (wbsNameMap.has(wbsNodeId)) {
-            wbsNodeName = wbsNameMap.get(wbsNodeId) || 'Sem WBS';
-          } else {
-            if (task.wbsPath) {
-              const pathParts = String(task.wbsPath)
-                .split('>')
-                .map((p: string) => p.trim())
-                .filter(Boolean);
-              wbsNodeName = pathParts[pathParts.length - 1] || wbsNodeId.slice(0, 12);
-            } else {
-              wbsNodeName = `WBS: ${wbsNodeId.slice(0, 12)}`;
-            }
-            wbsNameMap.set(wbsNodeId, wbsNodeName);
-          }
-        }
-
-        return {
-          id: String(task._id ?? task.id ?? ''),
-          name: task.title || task.name || 'Task',
-          wbsNodeId,
-          wbsNodeName,
-        };
-      });
-
-      return {
-        requirements: requirementsData,
-        tasks: tasksData,
-        matrix,
-        validation,
-      };
-    } catch (error: any) {
-      this.logger.error(`Erro ao gerar matriz de jornada: ${error?.message}`);
-      return {
-        requirements: [],
-        tasks: [],
-        matrix: new Map(),
-        validation: {
-          isValid: false,
-          unmappedRequirements: [],
-          risks: [`Erro ao gerar matriz: ${error?.message}`],
-          coverage: 0,
-        },
-      };
-    }
+  async getRequirements(projectId: string): Promise<RequirementDocument[]> {
+    return this.requirementModel.find({ projectId }).sort({ hierarchyLevel: 1, createdAt: 1, _id: 1 });
   }
 
   async saveRequirements(
@@ -541,28 +129,26 @@ Retorne SOMENTE um JSON array:
         });
 
         inserted.push(created as RequirementDocument);
-        refToId.set(item.ref, String((created as any)._id));
+        refToId.set(item.ref, String(created._id as Types.ObjectId));
         insertedIds.add(dedupKey);
       }
 
       this.logger.log(`${inserted.length} itens de jornada salvos com sucesso`);
       return inserted;
-    } catch (error: any) {
-      this.logger.error(`Erro ao salvar itens de jornada: ${error?.message}`);
+    } catch (error: unknown) {
+      const err = error as Error;
+      this.logger.error(`Erro ao salvar itens de jornada: ${err.message}`);
       return [];
     }
-  }
-
-  async getRequirements(projectId: string): Promise<RequirementDocument[]> {
-    return this.requirementModel.find({ projectId }).sort({ hierarchyLevel: 1, createdAt: 1, _id: 1 });
   }
 
   async deleteRequirement(requirementId: string): Promise<boolean> {
     try {
       const result = await this.requirementModel.findByIdAndDelete(requirementId);
       return !!result;
-    } catch (error: any) {
-      this.logger.error(`Erro ao deletar item de jornada: ${error?.message}`);
+    } catch (error: unknown) {
+      const err = error as Error;
+      this.logger.error(`Erro ao deletar item de jornada: ${err.message}`);
       return false;
     }
   }
@@ -574,15 +160,194 @@ Retorne SOMENTE um JSON array:
         `[delete-all-journey] projectId=${projectId} ${result.deletedCount} itens deletados`,
       );
       return result.deletedCount || 0;
-    } catch (error: any) {
-      this.logger.error(`Erro ao deletar todos os itens de jornada: ${error?.message}`);
+    } catch (error: unknown) {
+      const err = error as Error;
+      this.logger.error(`Erro ao deletar todos os itens de jornada: ${err.message}`);
       return 0;
+    }
+  }
+
+  async mapRequirementToTask(
+    projectId: string,
+    requirementId: string,
+    taskId: string,
+  ): Promise<Requirement | null> {
+    this.logger.log(`Mapeando item ${requirementId} -> tarefa ${taskId}`);
+    try {
+      const requirement = await this.requirementModel.findOneAndUpdate(
+        {
+          _id: new Types.ObjectId(requirementId),
+          projectId,
+        },
+        {
+          $addToSet: {
+            traceableActionItems: taskId,
+            traceableItems: taskId,
+          },
+          $set: { status: 'satisfied' },
+        },
+        { new: true },
+      );
+
+      if (!requirement) {
+        this.logger.warn(`Item ${requirementId} não encontrado`);
+        return null;
+      }
+
+      this.logger.log(`Item ${requirementId} mapeado para tarefa ${taskId}`);
+      return requirement;
+    } catch (error: unknown) {
+      const err = error as Error;
+      this.logger.error(`Erro ao mapear item: ${err.message}`);
+      return null;
+    }
+  }
+
+  async unmapRequirementFromTask(requirementId: string, taskId: string): Promise<Requirement | null> {
+    this.logger.log(`Removendo mapeamento: item ${requirementId} <- tarefa ${taskId}`);
+    try {
+      const requirement = await this.requirementModel.findByIdAndUpdate(
+        requirementId,
+        {
+          $pull: {
+            traceableActionItems: taskId,
+            traceableItems: taskId,
+          },
+        },
+        { new: true },
+      );
+
+      if (!requirement) {
+        this.logger.warn(`Item ${requirementId} não encontrado`);
+        return null;
+      }
+
+      if (this.getLinkedActions(requirement).length === 0) {
+        requirement.status = 'open';
+        await requirement.save();
+      }
+
+      this.logger.log(`Mapeamento removido do item ${requirementId}`);
+      return requirement;
+    } catch (error: unknown) {
+      const err = error as Error;
+      this.logger.error(`Erro ao remover mapeamento: ${err.message}`);
+      return null;
+    }
+  }
+
+  // ===========================================================================
+  // 2. AI-based Generation & Mapping
+  // ===========================================================================
+
+  async generateRequirements(smartObjective: Record<string, string | undefined>): Promise<
+    Array<{
+      description: string;
+      type: RequirementType;
+      kind?: JourneyKind;
+      ref?: string;
+      parentRef?: string;
+    }>
+  > {
+    this.logger.log('Gerando itens de jornada para Smart Objective...');
+    if (!smartObjective) {
+      this.logger.warn('Smart Objective vazio, retornando array vazio');
+      return [];
+    }
+
+    try {
+      const prompt = `Você é um planejador de desenvolvimento pessoal.
+
+Objetivo:
+Gerar uma estrutura rastreável no formato objetivo -> hábito -> etapa -> ação.
+
+Regras:
+- Foque em projetos pessoais (aprendizado, rotina, hábitos, produtividade).
+- Gere uma árvore prática e rastreável.
+- Retorne entre 10 e 24 itens no total.
+- Cada item deve ter:
+	- ref: identificador curto único (ex: O1, H1, E1, A1)
+	- parentRef: referência do pai (null apenas para objective)
+	- kind: objective | habit | stage | action
+	- description: descrição clara, específica e mensurável
+- Ações devem ser executáveis (o que fazer de fato).
+- Sem markdown.
+
+Smart Objective:
+- O: ${smartObjective.objective || ''}
+- Específico: ${smartObjective.specific || ''}
+- Mensurável: ${smartObjective.measurable || ''}
+- Alcançável: ${smartObjective.achievable || ''}
+- Relevante: ${smartObjective.relevant || ''}
+- Temporal: ${smartObjective.temporal || ''}
+
+Retorne SOMENTE um JSON array:
+[
+	{ "ref": "O1", "parentRef": null, "kind": "objective", "description": "..." },
+	{ "ref": "H1", "parentRef": "O1", "kind": "habit", "description": "..." },
+	{ "ref": "E1", "parentRef": "H1", "kind": "stage", "description": "..." },
+	{ "ref": "A1", "parentRef": "E1", "kind": "action", "description": "..." }
+]`;
+
+      const response = await this.geminiService.generateContent(prompt, {
+        responseMimeType: 'application/json',
+        temperature: 0.2,
+        maxOutputTokens: 3072,
+      });
+
+      const parsed = this.parseJsonArray(response);
+      if (!parsed) {
+        this.logger.warn('Resposta da IA não contém um JSON array válido');
+        return [];
+      }
+
+      const normalized: JourneyDraft[] = parsed
+        .map((item: unknown, index: number) => {
+          const anyItem = item as Record<string, unknown>;
+          const kind = this.normalizeKind(anyItem.kind);
+          const defaultRefPrefix =
+            kind === 'objective' ? 'O' : kind === 'habit' ? 'H' : kind === 'stage' ? 'E' : 'A';
+          const ref = String(anyItem.ref ?? `${defaultRefPrefix}${index + 1}`).trim();
+          const parentRef = anyItem.parentRef == null ? undefined : String(anyItem.parentRef).trim();
+          const description = String(anyItem.description ?? '').trim();
+
+          return {
+            ref,
+            parentRef,
+            kind,
+            description,
+            type: this.normalizeType(anyItem.type, kind),
+          };
+        })
+        .filter((item) => item.description.length > 0);
+
+      const deduped: JourneyDraft[] = [];
+      const seen = new Set<string>();
+      for (const item of normalized) {
+        const key = `${item.kind}::${item.description.toLowerCase()}`;
+        if (seen.has(key)) continue;
+        seen.add(key);
+        deduped.push(item);
+      }
+
+      this.logger.log(`${deduped.length} itens de jornada extraídos com sucesso`);
+      return deduped.map((item) => ({
+        description: item.description,
+        type: item.type || item.kind,
+        kind: item.kind,
+        ref: item.ref,
+        parentRef: item.parentRef,
+      }));
+    } catch (error: unknown) {
+      const err = error as Error;
+      this.logger.error(`Erro ao gerar itens de jornada: ${err.message}`);
+      return [];
     }
   }
 
   async autoMapRequirementsToTasks(
     projectId: string,
-    tasks: any[],
+    tasks: TaskDocument[],
   ): Promise<{
     mappedCount: number;
     createdRequirementsCount: number;
@@ -598,7 +363,7 @@ Retorne SOMENTE um JSON array:
     try {
       const allItems = await this.requirementModel.find({ projectId });
       const actionItems = allItems.filter(
-        (item: any) => this.normalizeKind(item.kind || item.type) === 'action',
+        (item: RequirementDocument) => this.normalizeKind(item.kind || item.type) === 'action',
       );
 
       if (allItems.length === 0) {
@@ -632,7 +397,7 @@ Retorne SOMENTE um JSON array:
       }
 
       const alreadyMappedTaskIds = new Set<string>();
-      for (const item of actionItems as any[]) {
+      for (const item of actionItems) {
         for (const taskId of this.getLinkedActions(item)) {
           alreadyMappedTaskIds.add(String(taskId));
         }
@@ -651,19 +416,19 @@ Retorne SOMENTE um JSON array:
       }
 
       const batchSize = 10;
-      const batches: any[][] = [];
+      const batches: TaskDocument[][] = [];
       for (let i = 0; i < tasksToMap.length; i += batchSize) {
         batches.push(tasksToMap.slice(i, i + batchSize));
       }
 
       const mappings: Record<string, string[]> = {};
-      const orphanTasks: any[] = [];
+      const orphanTasks: TaskDocument[] = [];
 
       for (let batchIdx = 0; batchIdx < batches.length; batchIdx += 1) {
         const batch = batches[batchIdx];
 
-        const tasksDesc = batch.map((t) => `- "${t.title || t.name}" (ID: ${t._id || t.id})`).join('\n');
-        const actionsDesc = actionItems.map((a: any) => `[ID: ${a._id}] ${a.description}`).join('\n');
+        const tasksDesc = batch.map((t) => `- "${t.name}" (ID: ${t._id || t.id})`).join('\n');
+        const actionsDesc = actionItems.map((a) => `[ID: ${a._id}] ${a.description}`).join('\n');
 
         const prompt = `Você é um analista de rastreabilidade para desenvolvimento pessoal.
 
@@ -697,21 +462,22 @@ Sem markdown.`;
           }
 
           for (const mapping of mappingArray) {
-            const taskId = String(mapping?.taskId || '');
+            const anyMapping = mapping as Record<string, unknown>;
+            const taskId = String(anyMapping.taskId || '');
             if (!taskId) continue;
 
-            if (String(mapping?.requirementId || '').toUpperCase() === 'ORPHAN') {
+            if (String(anyMapping.requirementId || '').toUpperCase() === 'ORPHAN') {
               const orphan = batch.find((t) => String(t._id || t.id) === taskId);
               if (orphan) orphanTasks.push(orphan);
               continue;
             }
 
-            const reqId = String(mapping.requirementId);
+            const reqId = String(anyMapping.requirementId);
             if (!mappings[reqId]) mappings[reqId] = [];
             mappings[reqId].push(taskId);
           }
         } catch {
-          const fallbackAction = actionItems[0] as any;
+          const fallbackAction = actionItems[0];
           const fallbackActionId = String(fallbackAction._id);
           if (!mappings[fallbackActionId]) mappings[fallbackActionId] = [];
           for (const task of batch) {
@@ -723,10 +489,10 @@ Sem markdown.`;
       let createdRequirementsCount = 0;
       if (orphanTasks.length > 0) {
         const stageItems = allItems.filter(
-          (item: any) => this.normalizeKind(item.kind || item.type) === 'stage',
+          (item: RequirementDocument) => this.normalizeKind(item.kind || item.type) === 'stage',
         );
         const fallbackParent = stageItems.length > 0 ? stageItems[0] : allItems[0];
-        const fallbackParentId = fallbackParent ? String((fallbackParent as any)._id) : undefined;
+        const fallbackParentId = fallbackParent ? String(fallbackParent._id as Types.ObjectId) : undefined;
 
         const groupSize = Math.max(1, Math.ceil(orphanTasks.length / 3));
         for (let i = 0; i < orphanTasks.length; i += groupSize) {
@@ -747,7 +513,7 @@ Sem markdown.`;
             status: 'satisfied',
           });
 
-          mappings[String((newAction as any)._id)] = group.map((task) => String(task._id || task.id));
+          mappings[String(newAction._id as Types.ObjectId)] = group.map((task) => String(task._id || task.id));
           createdRequirementsCount += 1;
         }
       }
@@ -767,8 +533,9 @@ Sem markdown.`;
             },
           );
           mappedCount += taskIds.length;
-        } catch (updateError: any) {
-          this.logger.warn(`[auto-map] erro ao atualizar item ${itemId}: ${updateError?.message}`);
+        } catch (updateError: unknown) {
+          const err = updateError as Error;
+          this.logger.warn(`[auto-map] erro ao atualizar item ${itemId}: ${err.message}`);
         }
       }
 
@@ -785,8 +552,9 @@ Sem markdown.`;
         validation,
         message: `Auto-vínculo concluído: ${mappedCount} tarefa(s) vinculada(s) + ${createdRequirementsCount} ação(ões) criada(s). Cobertura: ${validation.coverage}%`,
       };
-    } catch (error: any) {
-      this.logger.error(`[auto-map] projectId=${projectId} erro: ${error?.message}`);
+    } catch (error: unknown) {
+      const err = error as Error;
+      this.logger.error(`[auto-map] projectId=${projectId} erro: ${err.message}`);
       return {
         mappedCount: 0,
         createdRequirementsCount: 0,
@@ -795,9 +563,9 @@ Sem markdown.`;
           isValid: false,
           coverage: 0,
           unmappedRequirements: [],
-          risks: [`Erro ao mapear: ${error?.message}`],
+          risks: [`Erro ao mapear: ${err.message}`],
         },
-        message: `Erro: ${error?.message}`,
+        message: `Erro: ${err.message}`,
       };
     }
   }
@@ -828,7 +596,7 @@ Sem markdown.`;
       });
 
       const actionItems = requirements.filter(
-        (item: any) => this.normalizeKind(item.kind || item.type) === 'action',
+        (item: RequirementDocument) => this.normalizeKind(item.kind || item.type) === 'action',
       );
       if (actionItems.length === 0) {
         return {
@@ -842,7 +610,7 @@ Sem markdown.`;
 
       let createdTasksCount = 0;
 
-      for (const req of actionItems as any[]) {
+      for (const req of actionItems) {
         const prompt = `Você é um especialista em planejamento pessoal.
 
 Ação da jornada:
@@ -868,9 +636,10 @@ Sem markdown.`;
           const taskIds: string[] = [];
           for (const taskData of tasksToCreate) {
             try {
-              const createDto: any = {
-                name: String(taskData?.title || 'Nova Tarefa'),
-                description: String(taskData?.description || ''),
+              const anyTaskData = taskData as Record<string, unknown>;
+              const createDto: CreateTaskDto = {
+                name: String(anyTaskData.title || 'Nova Tarefa'),
+                description: String(anyTaskData.description || ''),
                 project: projectId,
                 pomodorosPlanned: 3,
                 deadline: new Date(),
@@ -883,10 +652,11 @@ Sem markdown.`;
               };
 
               const newTask = await this.tasksService.create(createDto);
-              taskIds.push(String((newTask as any)._id));
+              taskIds.push(String(newTask._id as Types.ObjectId));
               createdTasksCount += 1;
-            } catch (taskError: any) {
-              this.logger.warn(`[gen-tasks] erro ao criar tarefa: ${taskError?.message}`);
+            } catch (taskError: unknown) {
+              const err = taskError as Error;
+              this.logger.warn(`[gen-tasks] erro ao criar tarefa: ${err.message}`);
             }
           }
 
@@ -902,9 +672,10 @@ Sem markdown.`;
               },
             );
           }
-        } catch (genError: any) {
+        } catch (genError: unknown) {
+          const err = genError as Error;
           this.logger.warn(
-            `[gen-tasks] erro ao gerar tarefas para ação ${req._id}: ${genError?.message}`,
+            `[gen-tasks] erro ao gerar tarefas para ação ${req._id}: ${err.message}`,
           );
         }
       }
@@ -921,8 +692,9 @@ Sem markdown.`;
         validation: finalValidation,
         message: `${createdTasksCount} tarefa(s) gerada(s) para ações órfãs. Cobertura final: ${finalValidation.coverage}%`,
       };
-    } catch (error: any) {
-      this.logger.error(`[gen-tasks] projectId=${projectId} erro: ${error?.message}`);
+    } catch (error: unknown) {
+      const err = error as Error;
+      this.logger.error(`[gen-tasks] projectId=${projectId} erro: ${err.message}`);
       return {
         createdTasksCount: 0,
         coverage: 0,
@@ -930,10 +702,276 @@ Sem markdown.`;
           isValid: false,
           coverage: 0,
           unmappedRequirements: [],
-          risks: [`Erro ao gerar tarefas: ${error?.message}`],
+          risks: [`Erro ao gerar tarefas: ${err.message}`],
         },
-        message: `Erro: ${error?.message}`,
+        message: `Erro: ${err.message}`,
       };
     }
+  }
+
+  // ===========================================================================
+  // 3. RTM Validation & Matrix Generation
+  // ===========================================================================
+
+  async validateRTM(projectId: string): Promise<RTMValidation> {
+    this.logger.log(`Validando jornada para projeto ${projectId}`);
+    try {
+      const requirements = await this.requirementModel.find({ projectId });
+      const total = requirements.length;
+
+      if (total === 0) {
+        return {
+          isValid: false,
+          unmappedRequirements: [],
+          risks: ['Nenhum item de jornada definido para o projeto'],
+          coverage: 0,
+        };
+      }
+
+      const byId = new Map<string, RequirementDocument>();
+      const childrenByParent = new Map<string, RequirementDocument[]>();
+      const unmappedRequirements: string[] = [];
+      const risks: string[] = [];
+
+      for (const req of requirements) {
+        const id = String(req._id ?? req.id ?? '');
+        byId.set(id, req);
+      }
+
+      for (const req of requirements) {
+        const id = String(req._id ?? req.id ?? '');
+        const parentId = req.parentItemId ? String(req.parentItemId) : undefined;
+        if (!parentId) continue;
+        const list = childrenByParent.get(parentId) || [];
+        list.push(req);
+        childrenByParent.set(parentId, list);
+
+        if (!byId.has(parentId)) {
+          risks.push(`Item ${id} aponta para pai inexistente (${parentId})`);
+        }
+      }
+
+      const hasChildOfKind = (id: string, kind: JourneyKind): boolean => {
+        const children = childrenByParent.get(id) || [];
+        return children.some((child) => this.normalizeKind(child.kind || child.type) === kind);
+      };
+
+      for (const req of requirements) {
+        const id = String(req._id ?? req.id ?? '');
+        const description = String(req.description || 'Item');
+        const kind = this.normalizeKind(req.kind || req.type);
+        const linkedActions = this.getLinkedActions(req);
+
+        if (kind === 'objective') {
+          if (!hasChildOfKind(id, 'habit')) {
+            unmappedRequirements.push(id);
+            risks.push(`Objetivo sem hábito vinculado: "${description}"`);
+          }
+          continue;
+        }
+
+        if (kind === 'habit') {
+          if (!hasChildOfKind(id, 'stage')) {
+            unmappedRequirements.push(id);
+            risks.push(`Hábito sem etapa vinculada: "${description}"`);
+          }
+          continue;
+        }
+
+        if (kind === 'stage') {
+          if (!hasChildOfKind(id, 'action')) {
+            unmappedRequirements.push(id);
+            risks.push(`Etapa sem ação vinculada: "${description}"`);
+          }
+          continue;
+        }
+
+        if (linkedActions.length === 0) {
+          unmappedRequirements.push(id);
+          risks.push(`Ação sem tarefa rastreada: "${description}"`);
+        } else if (linkedActions.length > 3) {
+          risks.push(
+            `Ação "${description}" vinculada a ${linkedActions.length} tarefas (avaliar granularidade)`,
+          );
+        }
+      }
+
+      const mapped = total - unmappedRequirements.length;
+      const coverage = (mapped / total) * 100;
+      const isValid = unmappedRequirements.length === 0;
+
+      if (!isValid) {
+        risks.push(`${unmappedRequirements.length} item(ns) da jornada sem rastreabilidade completa`);
+      }
+
+      return {
+        isValid,
+        unmappedRequirements,
+        risks,
+        coverage: Math.round(coverage * 10) / 10,
+      };
+    } catch (error: unknown) {
+      const err = error as Error;
+      this.logger.error(`Erro ao validar jornada: ${err.message}`);
+      return {
+        isValid: false,
+        unmappedRequirements: [],
+        risks: [`Erro ao validar jornada: ${err.message}`],
+        coverage: 0,
+      };
+    }
+  }
+
+  async getRTMMatrix(projectId: string, tasks: TaskDocument[]): Promise<RTMMatrixData> {
+    this.logger.log(`Gerando matriz de jornada para projeto ${projectId}`);
+    try {
+      const requirements = await this.requirementModel
+        .find({ projectId })
+        .sort({ hierarchyLevel: 1, createdAt: 1, _id: 1 });
+
+      const matrix = new Map<string, Set<string>>();
+      for (const req of requirements) {
+        const reqId = String(req._id ?? req.id ?? '');
+        const traceable = this.getLinkedActions(req);
+        matrix.set(reqId, new Set(traceable));
+      }
+
+      const validation = await this.validateRTM(projectId);
+
+      const requirementsData = requirements.map((req) => {
+        const kind = this.normalizeKind(req.kind || req.type);
+        return {
+          id: String(req._id ?? req.id ?? ''),
+          description: req.description,
+          type: req.type || kind,
+          status: req.status,
+          kind,
+          parentItemId: req.parentItemId ? String(req.parentItemId) : undefined,
+          hierarchyLevel: Number(req.hierarchyLevel ?? this.levelForKind(kind)),
+        };
+      });
+
+      const wbsNameMap = new Map<string, string>();
+      const tasksData = tasks.map((task) => {
+        const wbsNodeId = task.parentWbsNodeId ? String(task.parentWbsNodeId) : undefined;
+
+        let wbsNodeName = 'Sem WBS';
+        if (wbsNodeId) {
+          if (wbsNameMap.has(wbsNodeId)) {
+            wbsNodeName = wbsNameMap.get(wbsNodeId) || 'Sem WBS';
+          } else {
+            if (task.wbsPath) {
+              const pathParts = String(task.wbsPath)
+                .split('>')
+                .map((p) => p.trim())
+                .filter(Boolean);
+              wbsNodeName = pathParts[pathParts.length - 1] || wbsNodeId.slice(0, 12);
+            } else {
+              wbsNodeName = `WBS: ${wbsNodeId.slice(0, 12)}`;
+            }
+            wbsNameMap.set(wbsNodeId, wbsNodeName);
+          }
+        }
+
+        return {
+          id: String(task._id ?? task.id ?? ''),
+          name: task.name || 'Task',
+          wbsNodeId,
+          wbsNodeName,
+        };
+      });
+
+      return {
+        requirements: requirementsData,
+        tasks: tasksData,
+        matrix,
+        validation,
+      };
+    } catch (error: unknown) {
+      const err = error as Error;
+      this.logger.error(`Erro ao gerar matriz de jornada: ${err.message}`);
+      return {
+        requirements: [],
+        tasks: [],
+        matrix: new Map(),
+        validation: {
+          isValid: false,
+          unmappedRequirements: [],
+          risks: [`Erro ao gerar matriz: ${err.message}`],
+          coverage: 0,
+        },
+      };
+    }
+  }
+
+  // ===========================================================================
+  // 4. Internal Helpers & Normalization
+  // ===========================================================================
+
+  private normalizeKind(value: unknown): JourneyKind {
+    const raw = String(value ?? '')
+      .trim()
+      .toLowerCase();
+    if (raw === 'objective' || raw === 'objetivo') return 'objective';
+    if (raw === 'habit' || raw === 'habito' || raw === 'hábito') return 'habit';
+    if (raw === 'stage' || raw === 'etapa') return 'stage';
+    return 'action';
+  }
+
+  private normalizeType(value: unknown, fallbackKind?: JourneyKind): RequirementType {
+    const raw = String(value ?? '')
+      .trim()
+      .toLowerCase();
+    if (raw === 'functional') return 'functional';
+    if (raw === 'non_functional' || raw === 'non-functional' || raw === 'nonfunctional') {
+      return 'non_functional';
+    }
+    if (raw === 'constraint') return 'constraint';
+    if (raw === 'objective' || raw === 'objetivo') return 'objective';
+    if (raw === 'habit' || raw === 'habito' || raw === 'hábito') return 'habit';
+    if (raw === 'stage' || raw === 'etapa') return 'stage';
+    if (raw === 'action' || raw === 'acao' || raw === 'ação') return 'action';
+    if (fallbackKind) return fallbackKind;
+    return 'action';
+  }
+
+  private levelForKind(kind: JourneyKind): number {
+    if (kind === 'objective') return 0;
+    if (kind === 'habit') return 1;
+    if (kind === 'stage') return 2;
+    return 3;
+  }
+
+  private getLinkedActions(requirement: Requirement | RequirementDocument | Partial<Requirement>): string[] {
+    const modern = Array.isArray(requirement?.traceableActionItems)
+      ? requirement.traceableActionItems.map(String)
+      : [];
+    if (modern.length > 0) return modern;
+    const legacy = Array.isArray(requirement?.traceableItems)
+      ? requirement?.traceableItems.map(String)
+      : [];
+    return legacy;
+  }
+
+  private parseJsonArray(rawResponse: string): unknown[] | null {
+    const cleaned = String(rawResponse || '')
+      .replace(/```json\n?/gi, '')
+      .replace(/```\n?/g, '')
+      .trim();
+    const tryParse = (text: string) => {
+      try {
+        const parsed = JSON.parse(text);
+        return Array.isArray(parsed) ? parsed : null;
+      } catch {
+        return null;
+      }
+    };
+    const direct = tryParse(cleaned);
+    if (direct) return direct;
+    const match = cleaned.match(/\[[\s\S]*\]/);
+    if (match?.[0]) {
+      return tryParse(match[0]);
+    }
+    return null;
   }
 }

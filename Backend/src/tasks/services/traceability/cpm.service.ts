@@ -105,224 +105,14 @@ export interface TaskMetrics {
 export class CPMService {
   private readonly logger = new Logger(CPMService.name);
 
-  getTaskMetrics(task: TaskNode): TaskMetrics {
-    return {
-      taskId: task.id,
-      taskName: task.name,
-      earlyStart: task.earlyStart ?? 0,
-      earlyFinish: task.earlyFinish ?? 0,
-      lateStart: task.lateStart ?? 0,
-      lateFinish: task.lateFinish ?? 0,
-      slack: task.slack ?? 0,
-      isCritical: Boolean(task.isCritical),
-    };
-  }
-
-  private getDependencyEdges(task: TaskNode): TaskDependencyEdge[] {
-    const normalized: TaskDependencyEdge[] = [];
-    const seen = new Set<string>();
-
-    const explicitEdges = Array.isArray(task.dependencyEdges) ? task.dependencyEdges : [];
-    for (const edge of explicitEdges) {
-      const predecessorId = String((edge as any)?.predecessorId ?? '').trim();
-      if (!predecessorId) continue;
-      if (seen.has(predecessorId)) continue;
-      seen.add(predecessorId);
-      normalized.push({
-        predecessorId,
-        relationship: this.normalizeRelationship((edge as any)?.relationship),
-      });
-    }
-
-    const fallbackDeps = Array.isArray(task.dependencies) ? task.dependencies : [];
-    for (const depId of fallbackDeps) {
-      const predecessorId = String(depId ?? '').trim();
-      if (!predecessorId) continue;
-      if (seen.has(predecessorId)) continue;
-      seen.add(predecessorId);
-      normalized.push({
-        predecessorId,
-        relationship: DependencyType.FINISH_TO_START,
-      });
-    }
-
-    return normalized;
-  }
-
-  private buildEdgeMap(tasks: TaskNode[]): Map<string, TaskDependencyEdge[]> {
-    const edgeMap = new Map<string, TaskDependencyEdge[]>();
-    for (const task of tasks) {
-      edgeMap.set(task.id, this.getDependencyEdges(task));
-    }
-    return edgeMap;
-  }
-
-  private computePackageCriticality(tasks: TaskNode[], criticalPath: string[]): PackageCriticality[] {
-    const criticalPathSet = new Set(criticalPath);
-    const grouped = new Map<string, { path?: string; tasks: TaskNode[] }>();
-
-    for (const task of tasks) {
-      const packageId = String(task.parentWbsNodeId || task.wbsPath || 'unassigned');
-      const existing = grouped.get(packageId) || {
-        path: task.wbsPath,
-        tasks: [],
-      };
-      existing.tasks.push(task);
-      if (!existing.path && task.wbsPath) existing.path = task.wbsPath;
-      grouped.set(packageId, existing);
-    }
-
-    if (grouped.size === 0) return [];
-
-    const byPackage = [...grouped.entries()].map(([packageId, group]) => {
-      const totalTaskCount = group.tasks.length;
-      const criticalTasks = group.tasks.filter((t) => Boolean(t.isCritical));
-      const criticalTaskCount = criticalTasks.length;
-      const criticalRatio = totalTaskCount > 0 ? criticalTaskCount / totalTaskCount : 0;
-
-      let minSlack = Number.POSITIVE_INFINITY;
-      for (const t of group.tasks) {
-        if (typeof t.slack === 'number') minSlack = Math.min(minSlack, t.slack);
-      }
-      if (!Number.isFinite(minSlack)) minSlack = 0;
-
-      const criticalDuration = criticalTasks.reduce((sum, t) => sum + (Number(t.duration) || 0), 0);
-      const criticalPathTaskCount = group.tasks.reduce(
-        (count, task) => count + (criticalPathSet.has(task.id) ? 1 : 0),
-        0,
-      );
-
-      return {
-        packageId,
-        packagePath: group.path,
-        taskCount: totalTaskCount,
-        criticalTaskCount,
-        criticalRatio,
-        minSlack,
-        criticalDuration,
-        criticalPathTaskCount,
-        score: 0,
-      };
-    });
-
-    const maxCriticalDuration = Math.max(...byPackage.map((item) => item.criticalDuration), 0);
-
-    const scored = byPackage.map((item) => {
-      const criticalRatioScore = item.criticalRatio * 100;
-      const slackRiskScore = (1 - Math.min(1, Math.max(0, item.minSlack) / 8)) * 100;
-      const durationScore =
-        maxCriticalDuration > 0 ? (item.criticalDuration / maxCriticalDuration) * 100 : 0;
-      const score = criticalRatioScore * 0.3 + slackRiskScore * 0.2 + durationScore * 0.5;
-
-      return {
-        packageId: item.packageId,
-        packagePath: item.packagePath,
-        taskCount: item.taskCount,
-        criticalTaskCount: item.criticalTaskCount,
-        criticalRatio: Math.round(item.criticalRatio * 1000) / 10,
-        minSlack: Math.round(item.minSlack * 100) / 100,
-        criticalDuration: Math.round(item.criticalDuration * 100) / 100,
-        criticalPathTaskCount: item.criticalPathTaskCount,
-        score: Math.round(score * 100) / 100,
-      };
-    });
-
-    scored.sort((a, b) => {
-      if (b.score !== a.score) return b.score - a.score;
-      if (b.criticalRatio !== a.criticalRatio) return b.criticalRatio - a.criticalRatio;
-      if (a.minSlack !== b.minSlack) return a.minSlack - b.minSlack;
-      return a.packageId.localeCompare(b.packageId);
-    });
-
-    return scored;
-  }
-
-  private buildCriticalPathSequence(
-    tasks: TaskNode[],
-    projectDuration: number,
-    edgeMap: Map<string, TaskDependencyEdge[]>,
-  ): string[] {
-    const taskById = new Map<string, TaskNode>();
-    for (const t of tasks) taskById.set(t.id, t);
-
-    const eps = 0.11;
-
-    let end: TaskNode | undefined;
-    for (const t of tasks) {
-      if (typeof t.earlyFinish !== 'number') continue;
-      if (!end || (t.earlyFinish ?? 0) > (end.earlyFinish ?? 0)) end = t;
-    }
-
-    if (!end || typeof end.earlyFinish !== 'number') return [];
-    if (projectDuration > 0 && Math.abs(end.earlyFinish - projectDuration) > eps) {
-      const candidate = tasks.find(
-        (t) =>
-          typeof t.earlyFinish === 'number' && Math.abs((t.earlyFinish ?? 0) - projectDuration) <= eps,
-      );
-      if (candidate) end = candidate;
-    }
-
-    const path: string[] = [];
-    const visited = new Set<string>();
-    let cur: TaskNode | undefined = end;
-
-    while (cur && !visited.has(cur.id)) {
-      visited.add(cur.id);
-      path.push(cur.id);
-
-      const deps = edgeMap.get(cur.id) || [];
-      if (deps.length === 0) break;
-
-      const es = typeof cur.earlyStart === 'number' ? cur.earlyStart : 0;
-      const ef = typeof cur.earlyFinish === 'number' ? cur.earlyFinish : es + (cur.duration || 0);
-      let bestPred: TaskNode | undefined;
-      let bestScore = -Infinity;
-
-      for (const dep of deps) {
-        const pred = taskById.get(dep.predecessorId);
-        if (!pred || typeof pred.earlyFinish !== 'number') continue;
-
-        const predES = typeof pred.earlyStart === 'number' ? pred.earlyStart : 0;
-        const predEF =
-          typeof pred.earlyFinish === 'number' ? pred.earlyFinish : predES + (pred.duration || 0);
-
-        let aligns = false;
-        let timelineRef = predEF;
-
-        if (dep.relationship === DependencyType.START_TO_START) {
-          aligns = Math.abs(predES - es) <= eps;
-          timelineRef = predES;
-        } else if (dep.relationship === DependencyType.FINISH_TO_FINISH) {
-          aligns = Math.abs(predEF - ef) <= eps;
-          timelineRef = predEF;
-        } else {
-          aligns = Math.abs(predEF - es) <= eps;
-          timelineRef = predEF;
-        }
-
-        const criticalBonus =
-          Math.abs(Number(pred.slack ?? Number.POSITIVE_INFINITY)) < 0.1 ? 1_000_000_000 : 0;
-        const alignmentBonus = aligns ? 1_000_000 : 0;
-        const score = criticalBonus + alignmentBonus + timelineRef;
-        if (score > bestScore) {
-          bestScore = score;
-          bestPred = pred;
-        } else if (score === bestScore && bestPred && pred.id.localeCompare(bestPred.id) < 0) {
-          bestPred = pred;
-        }
-      }
-
-      if (!bestPred) break;
-      cur = bestPred;
-    }
-
-    return path.reverse();
-  }
-
   constructor(
     @InjectModel(TaskDependency.name)
-    private dependencyModel: Model<TaskDependencyDocument>,
+    private readonly dependencyModel: Model<TaskDependencyDocument>,
   ) {}
+
+  // ===========================================================================
+  // 1. Dependency Database CRUD Operations
+  // ===========================================================================
 
   async addDependency(
     taskId: string,
@@ -381,12 +171,27 @@ export class CPMService {
       });
 
     if (ops.length === 0) return 0;
-    const result: any = await this.dependencyModel.bulkWrite(ops as any, {
+    const result = await this.dependencyModel.bulkWrite(ops, {
       ordered: false,
     });
     const upserted = Number(result?.upsertedCount || 0);
     const modified = Number(result?.modifiedCount || 0);
     return upserted + modified;
+  }
+
+  async removeDependency(taskId: string, dependsOnTaskId: string): Promise<void> {
+    await this.dependencyModel.deleteOne({ taskId, dependsOnTaskId });
+  }
+
+  async getDependencies(projectId: string): Promise<TaskDependency[]> {
+    return this.dependencyModel.find({ projectId }).exec();
+  }
+
+  async removeDependenciesByIds(ids: string[]): Promise<number> {
+    const list = Array.isArray(ids) ? ids.filter(Boolean).map((s) => String(s)) : [];
+    if (list.length === 0) return 0;
+    const res = await this.dependencyModel.deleteMany({ _id: { $in: list } }).exec();
+    return Number(res?.deletedCount || 0);
   }
 
   normalizeRelationship(input?: string): DependencyType {
@@ -409,20 +214,9 @@ export class CPMService {
     return DependencyType.FINISH_TO_START;
   }
 
-  async removeDependency(taskId: string, dependsOnTaskId: string): Promise<void> {
-    await this.dependencyModel.deleteOne({ taskId, dependsOnTaskId });
-  }
-
-  async getDependencies(projectId: string): Promise<TaskDependency[]> {
-    return this.dependencyModel.find({ projectId }).exec();
-  }
-
-  async removeDependenciesByIds(ids: string[]): Promise<number> {
-    const list = Array.isArray(ids) ? ids.filter(Boolean).map((s) => String(s)) : [];
-    if (list.length === 0) return 0;
-    const res: any = await this.dependencyModel.deleteMany({ _id: { $in: list } }).exec();
-    return Number(res?.deletedCount || 0);
-  }
+  // ===========================================================================
+  // 2. CPM & Critical Path Calculations
+  // ===========================================================================
 
   calculateCriticalPath(tasks: TaskNode[]): CPMAnalysis {
     if (tasks.length === 0) {
@@ -618,6 +412,181 @@ export class CPMService {
     };
   }
 
+  getTaskMetrics(task: TaskNode): TaskMetrics {
+    return {
+      taskId: task.id,
+      taskName: task.name,
+      earlyStart: task.earlyStart ?? 0,
+      earlyFinish: task.earlyFinish ?? 0,
+      lateStart: task.lateStart ?? 0,
+      lateFinish: task.lateFinish ?? 0,
+      slack: task.slack ?? 0,
+      isCritical: Boolean(task.isCritical),
+    };
+  }
+
+  private computePackageCriticality(tasks: TaskNode[], criticalPath: string[]): PackageCriticality[] {
+    const criticalPathSet = new Set(criticalPath);
+    const grouped = new Map<string, { path?: string; tasks: TaskNode[] }>();
+
+    for (const task of tasks) {
+      const packageId = String(task.parentWbsNodeId || task.wbsPath || 'unassigned');
+      const existing = grouped.get(packageId) || {
+        path: task.wbsPath,
+        tasks: [],
+      };
+      existing.tasks.push(task);
+      if (!existing.path && task.wbsPath) existing.path = task.wbsPath;
+      grouped.set(packageId, existing);
+    }
+
+    if (grouped.size === 0) return [];
+
+    const byPackage = [...grouped.entries()].map(([packageId, group]) => {
+      const totalTaskCount = group.tasks.length;
+      const criticalTasks = group.tasks.filter((t) => Boolean(t.isCritical));
+      const criticalTaskCount = criticalTasks.length;
+      const criticalRatio = totalTaskCount > 0 ? criticalTaskCount / totalTaskCount : 0;
+
+      let minSlack = Number.POSITIVE_INFINITY;
+      for (const t of group.tasks) {
+        if (typeof t.slack === 'number') minSlack = Math.min(minSlack, t.slack);
+      }
+      if (!Number.isFinite(minSlack)) minSlack = 0;
+
+      const criticalDuration = criticalTasks.reduce((sum, t) => sum + (Number(t.duration) || 0), 0);
+      const criticalPathTaskCount = group.tasks.reduce(
+        (count, task) => count + (criticalPathSet.has(task.id) ? 1 : 0),
+        0,
+      );
+
+      return {
+        packageId,
+        packagePath: group.path,
+        taskCount: totalTaskCount,
+        criticalTaskCount,
+        criticalRatio,
+        minSlack,
+        criticalDuration,
+        criticalPathTaskCount,
+        score: 0,
+      };
+    });
+
+    const maxCriticalDuration = Math.max(...byPackage.map((item) => item.criticalDuration), 0);
+
+    const scored = byPackage.map((item) => {
+      const criticalRatioScore = item.criticalRatio * 100;
+      const slackRiskScore = (1 - Math.min(1, Math.max(0, item.minSlack) / 8)) * 100;
+      const durationScore =
+        maxCriticalDuration > 0 ? (item.criticalDuration / maxCriticalDuration) * 100 : 0;
+      const score = criticalRatioScore * 0.3 + slackRiskScore * 0.2 + durationScore * 0.5;
+
+      return {
+        packageId: item.packageId,
+        packagePath: item.packagePath,
+        taskCount: item.taskCount,
+        criticalTaskCount: item.criticalTaskCount,
+        criticalRatio: Math.round(item.criticalRatio * 1000) / 10,
+        minSlack: Math.round(item.minSlack * 100) / 100,
+        criticalDuration: Math.round(item.criticalDuration * 100) / 100,
+        criticalPathTaskCount: item.criticalPathTaskCount,
+        score: Math.round(score * 100) / 100,
+      };
+    });
+
+    scored.sort((a, b) => {
+      if (b.score !== a.score) return b.score - a.score;
+      if (b.criticalRatio !== a.criticalRatio) return b.criticalRatio - a.criticalRatio;
+      if (a.minSlack !== b.minSlack) return a.minSlack - b.minSlack;
+      return a.packageId.localeCompare(b.packageId);
+    });
+
+    return scored;
+  }
+
+  private buildCriticalPathSequence(
+    tasks: TaskNode[],
+    projectDuration: number,
+    edgeMap: Map<string, TaskDependencyEdge[]>,
+  ): string[] {
+    const taskById = new Map<string, TaskNode>();
+    for (const t of tasks) taskById.set(t.id, t);
+
+    const eps = 0.11;
+
+    let end: TaskNode | undefined;
+    for (const t of tasks) {
+      if (typeof t.earlyFinish !== 'number') continue;
+      if (!end || (t.earlyFinish ?? 0) > (end.earlyFinish ?? 0)) end = t;
+    }
+
+    if (!end || typeof end.earlyFinish !== 'number') return [];
+    if (projectDuration > 0 && Math.abs(end.earlyFinish - projectDuration) > eps) {
+      const candidate = tasks.find(
+        (t) =>
+          typeof t.earlyFinish === 'number' && Math.abs((t.earlyFinish ?? 0) - projectDuration) <= eps,
+      );
+      if (candidate) end = candidate;
+    }
+
+    const path: string[] = [];
+    const visited = new Set<string>();
+    let cur: TaskNode | undefined = end;
+
+    while (cur && !visited.has(cur.id)) {
+      visited.add(cur.id);
+      path.push(cur.id);
+
+      const deps = edgeMap.get(cur.id) || [];
+      if (deps.length === 0) break;
+
+      const es = typeof cur.earlyStart === 'number' ? cur.earlyStart : 0;
+      const ef = typeof cur.earlyFinish === 'number' ? cur.earlyFinish : es + (cur.duration || 0);
+      let bestPred: TaskNode | undefined;
+      let bestScore = -Infinity;
+
+      for (const dep of deps) {
+        const pred = taskById.get(dep.predecessorId);
+        if (!pred || typeof pred.earlyFinish !== 'number') continue;
+
+        const predES = typeof pred.earlyStart === 'number' ? pred.earlyStart : 0;
+        const predEF =
+          typeof pred.earlyFinish === 'number' ? pred.earlyFinish : predES + (pred.duration || 0);
+
+        let aligns = false;
+        let timelineRef = predEF;
+
+        if (dep.relationship === DependencyType.START_TO_START) {
+          aligns = Math.abs(predES - es) <= eps;
+          timelineRef = predES;
+        } else if (dep.relationship === DependencyType.FINISH_TO_FINISH) {
+          aligns = Math.abs(predEF - ef) <= eps;
+          timelineRef = predEF;
+        } else {
+          aligns = Math.abs(predEF - es) <= eps;
+          timelineRef = predEF;
+        }
+
+        const criticalBonus =
+          Math.abs(Number(pred.slack ?? Number.POSITIVE_INFINITY)) < 0.1 ? 1_000_000_000 : 0;
+        const alignmentBonus = aligns ? 1_000_000 : 0;
+        const score = criticalBonus + alignmentBonus + timelineRef;
+        if (score > bestScore) {
+          bestScore = score;
+          bestPred = pred;
+        } else if (score === bestScore && bestPred && pred.id.localeCompare(bestPred.id) < 0) {
+          bestPred = pred;
+        }
+      }
+
+      if (!bestPred) break;
+      cur = bestPred;
+    }
+
+    return path.reverse();
+  }
+
   private forwardPass(
     tasks: TaskNode[],
     edgeMap: Map<string, TaskDependencyEdge[]>,
@@ -803,5 +772,48 @@ export class CPMService {
       alerts.push('O cronograma possui tarefas com folga; revise o paralelismo e o caminho crítico.');
     }
     return alerts;
+  }
+
+  // ===========================================================================
+  // 3. Internal Helpers & Utilities
+  // ===========================================================================
+
+  private getDependencyEdges(task: TaskNode): TaskDependencyEdge[] {
+    const normalized: TaskDependencyEdge[] = [];
+    const seen = new Set<string>();
+
+    const explicitEdges = Array.isArray(task.dependencyEdges) ? task.dependencyEdges : [];
+    for (const edge of explicitEdges) {
+      const predecessorId = String(edge?.predecessorId ?? '').trim();
+      if (!predecessorId) continue;
+      if (seen.has(predecessorId)) continue;
+      seen.add(predecessorId);
+      normalized.push({
+        predecessorId,
+        relationship: this.normalizeRelationship(edge?.relationship),
+      });
+    }
+
+    const fallbackDeps = Array.isArray(task.dependencies) ? task.dependencies : [];
+    for (const depId of fallbackDeps) {
+      const predecessorId = String(depId ?? '').trim();
+      if (!predecessorId) continue;
+      if (seen.has(predecessorId)) continue;
+      seen.add(predecessorId);
+      normalized.push({
+        predecessorId,
+        relationship: DependencyType.FINISH_TO_START,
+      });
+    }
+
+    return normalized;
+  }
+
+  private buildEdgeMap(tasks: TaskNode[]): Map<string, TaskDependencyEdge[]> {
+    const edgeMap = new Map<string, TaskDependencyEdge[]>();
+    for (const task of tasks) {
+      edgeMap.set(task.id, this.getDependencyEdges(task));
+    }
+    return edgeMap;
   }
 }

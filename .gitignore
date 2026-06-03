@@ -136,3 +136,6 @@ HOOKS.md
 .github/instructions/
 
 .vscode
+.agents/
+GEMINI.md
+skills-lock.json

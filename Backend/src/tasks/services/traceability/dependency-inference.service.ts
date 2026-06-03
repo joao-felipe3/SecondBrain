@@ -33,46 +33,7 @@ export type InferenceLeafGates = {
 export class DependencyInferenceService {
   private readonly logger = new Logger(DependencyInferenceService.name);
 
-  constructor(private readonly geminiService: GeminiService) {}
-
-  private truncateText(input: unknown, maxLen: number): string | undefined {
-    const s = String(input ?? '').trim();
-    if (!s) return undefined;
-    if (s.length <= maxLen) return s;
-    return s.slice(0, maxLen) + '…';
-  }
-
-  private safeEnv(name: string): string {
-    return String(process.env[name] ?? '').trim();
-  }
-
-  private isVerbose(): boolean {
-    const raw = this.safeEnv('CPM_DEP_INFER_VERBOSE');
-    return raw === '1' || raw.toLowerCase() === 'true' || raw.toLowerCase() === 'yes';
-  }
-
-  private previewText(input: unknown, maxLen: number): string {
-    const s = String(input ?? '')
-      .replace(/\s+/g, ' ')
-      .trim();
-    if (!s) return '';
-    if (s.length <= maxLen) return s;
-    return s.slice(0, maxLen) + '…';
-  }
-
-  private getNumericEnv(name: string, fallback: number): number {
-    const raw = this.safeEnv(name);
-    if (!raw) return fallback;
-    const n = Number(raw);
-    if (!Number.isFinite(n) || n <= 0) return fallback;
-    return Math.floor(n);
-  }
-
-  private getModelOverride(): string | undefined {
-    return this.safeEnv('CPM_DEP_INFER_MODEL') || this.safeEnv('WBS_GEMINI_MODEL') || undefined;
-  }
-
-  private dependencyObjectSchema = z.object({
+  private readonly dependencyObjectSchema = z.object({
     taskId: z.string().min(1),
     dependsOnTaskId: z.string().min(1),
     relationship: z.string().optional(),
@@ -80,13 +41,13 @@ export class DependencyInferenceService {
     confidence: z.number().min(0).max(1).optional(),
   });
 
-  private dependencyTupleSchema = z.tuple([
+  private readonly dependencyTupleSchema = z.tuple([
     z.string().min(1),
     z.string().min(1),
     z.string().min(1).optional(),
   ]);
 
-  private schema = z
+  private readonly schema = z
     .object({
       dependencies: z
         .array(z.union([this.dependencyObjectSchema, this.dependencyTupleSchema]))
@@ -94,33 +55,13 @@ export class DependencyInferenceService {
     })
     .passthrough();
 
-  private normalizeDependencies(raw: Array<unknown>): InferredDependency[] {
-    const out: InferredDependency[] = [];
-    for (const item of raw || []) {
-      if (Array.isArray(item)) {
-        const taskId = String(item[0] ?? '').trim();
-        const dependsOnTaskId = String(item[1] ?? '').trim();
-        const relationship = item[2] ? String(item[2]).trim() : 'FINISH_TO_START';
-        if (!taskId || !dependsOnTaskId) continue;
-        out.push({ taskId, dependsOnTaskId, relationship });
-        continue;
-      }
+  constructor(private readonly geminiService: GeminiService) {}
 
-      if (item && typeof item === 'object') {
-        const anyItem: any = item;
-        out.push({
-          taskId: String(anyItem.taskId ?? '').trim(),
-          dependsOnTaskId: String(anyItem.dependsOnTaskId ?? '').trim(),
-          relationship: anyItem.relationship ? String(anyItem.relationship).trim() : undefined,
-          reason: anyItem.reason ? String(anyItem.reason) : undefined,
-          confidence: typeof anyItem.confidence === 'number' ? anyItem.confidence : undefined,
-        });
-      }
-    }
-    return out;
-  }
+  // ===========================================================================
+  // 1. Heuristic & Local Inference
+  // ===========================================================================
 
-  inferHeuristicPhases(tasks: InferenceTask[]): InferredDependency[] {
+  public inferHeuristicPhases(tasks: InferenceTask[]): InferredDependency[] {
     const normalized = (tasks || []).filter((t) => t?.id && t?.name);
     if (normalized.length < 2) return [];
 
@@ -175,62 +116,11 @@ export class DependencyInferenceService {
     return deps;
   }
 
-  private filterInvalidAndSelfEdges(
-    deps: InferredDependency[],
-    validIds: Set<string>,
-  ): InferredDependency[] {
-    const seen = new Set<string>();
-    const out: InferredDependency[] = [];
-    for (const d of deps || []) {
-      const taskId = String(d?.taskId || '').trim();
-      const depId = String(d?.dependsOnTaskId || '').trim();
-      if (!taskId || !depId) continue;
-      if (taskId === depId) continue;
-      if (!validIds.has(taskId) || !validIds.has(depId)) continue;
-      const key = `${taskId}<-${depId}`;
-      if (seen.has(key)) continue;
-      seen.add(key);
-      out.push({ ...d, taskId, dependsOnTaskId: depId });
-    }
-    return out;
-  }
+  // ===========================================================================
+  // 2. AI-based Inference
+  // ===========================================================================
 
-  private keepAcyclic(taskIds: string[], deps: InferredDependency[]): InferredDependency[] {
-    const nodes = new Set(taskIds);
-    const adj = new Map<string, Set<string>>();
-    for (const id of nodes) adj.set(id, new Set());
-
-    const wouldCreateCycle = (from: string, to: string) => {
-      const start = from;
-      const target = to;
-      const stack = [start];
-      const visited = new Set<string>();
-      while (stack.length) {
-        const cur = stack.pop()!;
-        if (cur === target) return true;
-        if (visited.has(cur)) continue;
-        visited.add(cur);
-        const nexts = adj.get(cur);
-        if (!nexts) continue;
-        for (const n of nexts) stack.push(n);
-      }
-      return false;
-    };
-
-    const accepted: InferredDependency[] = [];
-    for (const d of deps) {
-      const taskId = d.taskId;
-      const depId = d.dependsOnTaskId;
-      if (!nodes.has(taskId) || !nodes.has(depId)) continue;
-
-      if (wouldCreateCycle(taskId, depId)) continue;
-      adj.get(depId)!.add(taskId);
-      accepted.push(d);
-    }
-    return accepted;
-  }
-
-  async inferWithAi(params: {
+  public async inferWithAi(params: {
     requestId?: string;
     leafName?: string;
     wbsPath?: string;
@@ -289,14 +179,12 @@ export class DependencyInferenceService {
         temperature: 0.2,
       });
 
-      const parsed = extractJsonObject<any>(response);
+      const parsed = extractJsonObject<Record<string, unknown>>(response);
       const validated = this.schema.parse(parsed);
 
       const validIds = new Set(tasks.map((t) => t.id));
-      const raw = Array.isArray((validated as any)?.dependencies)
-        ? ((validated as any).dependencies as any[])
-        : [];
-      const normalized = this.normalizeDependencies(raw as any);
+      const raw = validated.dependencies || [];
+      const normalized = this.normalizeDependencies(raw);
       const normalizedCount = normalized.length;
       let deps = this.filterInvalidAndSelfEdges(normalized, validIds);
       const filteredCount = deps.length;
@@ -333,7 +221,7 @@ export class DependencyInferenceService {
     }
   }
 
-  async inferInterLeafWithAi(params: {
+  public async inferInterLeafWithAi(params: {
     requestId?: string;
     projectId?: string;
     leaves: InferenceLeafGates[];
@@ -415,13 +303,11 @@ export class DependencyInferenceService {
         temperature: 0.2,
       });
 
-      const parsed = extractJsonObject<any>(response);
+      const parsed = extractJsonObject<Record<string, unknown>>(response);
       const validated = this.schema.parse(parsed);
-      const raw = Array.isArray((validated as any)?.dependencies)
-        ? ((validated as any).dependencies as any[])
-        : [];
+      const raw = validated.dependencies || [];
 
-      const normalized = this.normalizeDependencies(raw as any);
+      const normalized = this.normalizeDependencies(raw);
       const deps = this.filterInvalidAndSelfEdges(normalized, validIds);
 
       const normalizedCrossLeaf: InferredDependency[] = [];
@@ -475,5 +361,131 @@ export class DependencyInferenceService {
 
       return await tryOnce(retryPrompt, retryEdges, Math.max(800, Math.floor(maxOutputTokens * 0.85)));
     }
+  }
+
+  // ===========================================================================
+  // 3. Graph Validation & Cycle Checking
+  // ===========================================================================
+
+  private filterInvalidAndSelfEdges(
+    deps: InferredDependency[],
+    validIds: Set<string>,
+  ): InferredDependency[] {
+    const seen = new Set<string>();
+    const out: InferredDependency[] = [];
+    for (const d of deps || []) {
+      const taskId = String(d?.taskId || '').trim();
+      const depId = String(d?.dependsOnTaskId || '').trim();
+      if (!taskId || !depId) continue;
+      if (taskId === depId) continue;
+      if (!validIds.has(taskId) || !validIds.has(depId)) continue;
+      const key = `${taskId}<-${depId}`;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      out.push({ ...d, taskId, dependsOnTaskId: depId });
+    }
+    return out;
+  }
+
+  private keepAcyclic(taskIds: string[], deps: InferredDependency[]): InferredDependency[] {
+    const nodes = new Set(taskIds);
+    const adj = new Map<string, Set<string>>();
+    for (const id of nodes) adj.set(id, new Set());
+
+    const wouldCreateCycle = (from: string, to: string) => {
+      const start = from;
+      const target = to;
+      const stack = [start];
+      const visited = new Set<string>();
+      while (stack.length) {
+        const cur = stack.pop()!;
+        if (cur === target) return true;
+        if (visited.has(cur)) continue;
+        visited.add(cur);
+        const nexts = adj.get(cur);
+        if (!nexts) continue;
+        for (const n of nexts) stack.push(n);
+      }
+      return false;
+    };
+
+    const accepted: InferredDependency[] = [];
+    for (const d of deps) {
+      const taskId = d.taskId;
+      const depId = d.dependsOnTaskId;
+      if (!nodes.has(taskId) || !nodes.has(depId)) continue;
+
+      if (wouldCreateCycle(taskId, depId)) continue;
+      adj.get(depId)!.add(taskId);
+      accepted.push(d);
+    }
+    return accepted;
+  }
+
+  // ===========================================================================
+  // 4. Private Helpers & Utilities
+  // ===========================================================================
+
+  private truncateText(input: unknown, maxLen: number): string | undefined {
+    const s = String(input ?? '').trim();
+    if (!s) return undefined;
+    if (s.length <= maxLen) return s;
+    return s.slice(0, maxLen) + '…';
+  }
+
+  private safeEnv(name: string): string {
+    return String(process.env[name] ?? '').trim();
+  }
+
+  private isVerbose(): boolean {
+    const raw = this.safeEnv('CPM_DEP_INFER_VERBOSE');
+    return raw === '1' || raw.toLowerCase() === 'true' || raw.toLowerCase() === 'yes';
+  }
+
+  private previewText(input: unknown, maxLen: number): string {
+    const s = String(input ?? '')
+      .replace(/\s+/g, ' ')
+      .trim();
+    if (!s) return '';
+    if (s.length <= maxLen) return s;
+    return s.slice(0, maxLen) + '…';
+  }
+
+  private getNumericEnv(name: string, fallback: number): number {
+    const raw = this.safeEnv(name);
+    if (!raw) return fallback;
+    const n = Number(raw);
+    if (!Number.isFinite(n) || n <= 0) return fallback;
+    return Math.floor(n);
+  }
+
+  private getModelOverride(): string | undefined {
+    return this.safeEnv('CPM_DEP_INFER_MODEL') || this.safeEnv('WBS_GEMINI_MODEL') || undefined;
+  }
+
+  private normalizeDependencies(raw: Array<unknown>): InferredDependency[] {
+    const out: InferredDependency[] = [];
+    for (const item of raw || []) {
+      if (Array.isArray(item)) {
+        const taskId = String(item[0] ?? '').trim();
+        const dependsOnTaskId = String(item[1] ?? '').trim();
+        const relationship = item[2] ? String(item[2]).trim() : 'FINISH_TO_START';
+        if (!taskId || !dependsOnTaskId) continue;
+        out.push({ taskId, dependsOnTaskId, relationship });
+        continue;
+      }
+
+      if (item && typeof item === 'object') {
+        const anyItem = item as Record<string, unknown>;
+        out.push({
+          taskId: String(anyItem.taskId ?? '').trim(),
+          dependsOnTaskId: String(anyItem.dependsOnTaskId ?? '').trim(),
+          relationship: anyItem.relationship ? String(anyItem.relationship).trim() : undefined,
+          reason: anyItem.reason ? String(anyItem.reason) : undefined,
+          confidence: typeof anyItem.confidence === 'number' ? anyItem.confidence : undefined,
+        });
+      }
+    }
+    return out;
   }
 }
