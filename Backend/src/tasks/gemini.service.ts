@@ -21,7 +21,6 @@ export class GeminiService {
   private warnedEmbedding = false;
   private warnedJsonMode = false;
   private checklistCache = new Map<string, { value: string[]; exp: number }>();
-  private checklistRedisClient: any = null;
   private readonly checklistCacheTtlSeconds = 60 * 60;
   
   // PERT Suggestions cache
@@ -91,45 +90,6 @@ export class GeminiService {
       this.jsonModeForced = null;
     }
 
-    this.initializeChecklistRedis();
-  }
-
-  private initializeChecklistRedis(): void {
-    try {
-      const redisUrl =
-        this.configService.get<string>('REDIS_URL') ||
-        process.env.REDIS_URL;
-      if (!redisUrl) return;
-
-      // eslint-disable-next-line @typescript-eslint/no-var-requires
-      const IORedis = require('ioredis');
-      const redisClient = new IORedis(redisUrl, {
-        lazyConnect: true,
-        enableOfflineQueue: false,
-        maxRetriesPerRequest: 1,
-        connectTimeout: 2000,
-      });
-
-      const disableRedis = (): void => {
-        if (this.checklistRedisClient !== redisClient) return;
-        this.checklistRedisClient = null;
-        try {
-          redisClient.removeAllListeners();
-          redisClient.disconnect();
-        } catch {
-          // Keep in-memory fallback active.
-        }
-      };
-
-      redisClient.on('error', disableRedis);
-      redisClient.on('close', disableRedis);
-      redisClient.on('end', disableRedis);
-
-      this.checklistRedisClient = redisClient;
-      void redisClient.connect().catch(() => disableRedis());
-    } catch {
-      this.checklistRedisClient = null;
-    }
   }
 
   private getChecklistCacheKey(taskName: string, microTaskType?: string): string {
@@ -142,17 +102,6 @@ export class GeminiService {
   }
 
   private async getChecklistCache(key: string): Promise<string[] | null> {
-    try {
-      if (this.checklistRedisClient) {
-        const raw = await this.checklistRedisClient.get(key);
-        if (!raw) return null;
-        const parsed = JSON.parse(raw);
-        return Array.isArray(parsed) ? parsed : null;
-      }
-    } catch {
-      // fallback to memory
-    }
-
     const local = this.checklistCache.get(key);
     if (!local) return null;
     if (Date.now() > local.exp) {
@@ -163,20 +112,6 @@ export class GeminiService {
   }
 
   private async setChecklistCache(key: string, value: string[]): Promise<void> {
-    try {
-      if (this.checklistRedisClient) {
-        await this.checklistRedisClient.set(
-          key,
-          JSON.stringify(value),
-          'EX',
-          this.checklistCacheTtlSeconds,
-        );
-        return;
-      }
-    } catch {
-      // fallback to memory
-    }
-
     this.checklistCache.set(key, {
       value,
       exp: Date.now() + this.checklistCacheTtlSeconds * 1000,

@@ -202,7 +202,84 @@
 
 ---
 
-## 🔄 Fase 3 - Produtividade Avançada
+## Fase 2.5 - DevOps & Refactoring: Arquitetura, Documentação e Qualidade
+
+> **Status:** Planejado para execução após Fase 2  
+> **Objetivo:** Preparar codebase para escalar com qualidade, documentando decisões arquiteturais e refatorando módulos críticos (TasksService: 2067 linhas, ProjectsService: 804 linhas)  
+> **Duração Estimada:** 3-4 sprints (~150h)  
+> **📄 Documentação Detalhada:** Ver `DEVOPS_REFACTORING_PLAN.md`
+
+### 📚 Documentação de Arquitetura
+
+| # | Requisito | Tipo | Protótipo | Frontend | Backend | QA |
+|---|-----------|------|:---------:|:--------:|:-------:|:--:|
+| 1 | Criar ARCHITECTURE.md com overview do sistema e diagrama C4 | Doc | ⬜ | ⬜ | ⬜ | ⬜ |
+| 2 | Criar README.md para cada módulo principal (tasks, projects, settings) | Doc | ⬜ | ⬜ | ⬜ | ⬜ |
+| 3 | Escrever 5-7 Architecture Decision Records (ADRs) explicando decisões-chave | Doc | ⬜ | ⬜ | ⬜ | ⬜ |
+| 4 | Documentar fluxo de dados para features críticas (task creation, PERT, WBS) | Doc | ⬜ | ⬜ | ⬜ | ⬜ |
+| 5 | Criar diagrama de dependências entre módulos | Visualização | ⬜ | ⬜ | ⬜ | ⬜ |
+| 6 | Documentar decisões de segurança (auth, validation, error handling) | Doc | ⬜ | ⬜ | ⬜ | ⬜ |
+| 7 | Criar guia para adicionar novo módulo/feature | Doc | ⬜ | ⬜ | ⬜ | ⬜ |
+| 8 | Documentar tech stack rationale (NestJS, Mongoose, Gemini) | Doc | ⬜ | ⬜ | ⬜ | ⬜ |
+
+### 🔨 Refactoring - TasksService (2067 linhas → 5+ serviços)
+
+| # | Requisito | Tipo | Protótipo | Frontend | Backend | QA |
+|---|-----------|------|:---------:|:--------:|:-------:|:--:|
+| 9 | Criar TasksRecurringService e mover lógica de recorrência | Refactoring | ⬜ | ⬜ | ⬜ | ⬜ |
+| 10 | Criar TasksPertService e mover cálculos PERT | Refactoring | ⬜ | ⬜ | ⬜ | ⬜ |
+| 11 | Criar TasksValidatorService com validações centralizadas | Refactoring | ⬜ | ⬜ | ⬜ | ⬜ |
+| 12 | Criar TasksAiService como wrapper limpo para Gemini | Refactoring | ⬜ | ⬜ | ⬜ | ⬜ |
+| 13 | Refatorar TasksDeviationService (já existe, melhorar arquitetura) | Refactoring | ⬜ | ⬜ | ⬜ | ⬜ |
+| 14 | Reduzir TasksService para max 500 linhas (orquestração apenas) | Refactoring | ⬜ | ⬜ | ⬜ | ⬜ |
+| 15 | Atualizar e expandir testes (Target: 80%+ cobertura) | Testing | ⬜ | ⬜ | ⬜ | ⬜ |
+| 16 | Documentar novo design e como usar cada serviço | Doc | ⬜ | ⬜ | ⬜ | ⬜ |
+
+### 🏗️ Refactoring - ProjectsService & Controllers (804 linhas → componentes menores)
+
+| # | Requisito | Tipo | Protótipo | Frontend | Backend | QA |
+|---|-----------|------|:---------:|:--------:|:-------:|:--:|
+| 17 | Criar ProjectsWbsService e extrair lógica WBS | Refactoring | ⬜ | ⬜ | ⬜ | ⬜ |
+| 18 | Criar ProjectsPertService e extrair lógica PERT | Refactoring | ⬜ | ⬜ | ⬜ | ⬜ |
+| 19 | Criar ProjectsXMatrixService e extrair lógica X-Matrix | Refactoring | ⬜ | ⬜ | ⬜ | ⬜ |
+| 20 | Implementar camada de Use Cases com Command Pattern | Refactoring | ⬜ | ⬜ | ⬜ | ⬜ |
+| 21 | Dividir ProjectsController em 3 controllers (CRUD, Planning, Analytics) | Refactoring | ⬜ | ⬜ | ⬜ | ⬜ |
+| 22 | Reduzir ProjectsService para max 400 linhas | Refactoring | ⬜ | ⬜ | ⬜ | ⬜ |
+| 23 | Criar pipes e filters reutilizáveis | Refactoring | ⬜ | ⬜ | ⬜ | ⬜ |
+| 24 | Atualizar testes (Target: 75%+ cobertura) | Testing | ⬜ | ⬜ | ⬜ | ⬜ |
+
+### 🤖 Automações CI/CD com GitHub + Copilot
+
+| # | Requisito | Tipo | Protótipo | Frontend | Backend | QA |
+|---|-----------|------|:---------:|:--------:|:-------:|:--:|
+| 25 | Criar GitHub Actions workflow para lint (ESLint + Prettier) | Automação | ⬜ | ⬜ | ⬜ | ⬜ |
+| 26 | Criar GitHub Actions workflow para testes (Jest + Codecov) | Automação | ⬜ | ⬜ | ⬜ | ⬜ |
+| 27 | Criar GitHub Actions workflow para build validation | Automação | ⬜ | ⬜ | ⬜ | ⬜ |
+| 28 | Integrar SonarQube/Codacy para análise de qualidade (code smells, duplicação) | Automação | ⬜ | ⬜ | ⬜ | ⬜ |
+| 29 | Integrar Codecov para tracking de cobertura de testes | Automação | ⬜ | ⬜ | ⬜ | ⬜ |
+| 30 | Configurar pre-commit hooks com Husky (lint + format) | Configuração | ⬜ | ⬜ | ⬜ | ⬜ |
+
+### 📖 Padrões, Convenções e Documentação
+
+| # | Requisito | Tipo | Protótipo | Frontend | Backend | QA |
+|---|-----------|------|:---------:|:--------:|:-------:|:--:|
+| 31 | Finalizar .editorconfig (indentação, line endings, charset) | Configuração | ⬜ | ⬜ | ⬜ | ⬜ |
+| 32 | Finalizar .prettierrc e .eslintrc.json com regras claras | Configuração | ⬜ | ⬜ | ⬜ | ⬜ |
+| 33 | Documentar estrutura de pastas e propósito de cada uma | Doc | ⬜ | ⬜ | ⬜ | ⬜ |
+
+### 🧪 Testes e Cobertura
+
+| # | Requisito | Tipo | Protótipo | Frontend | Backend | QA |
+|---|-----------|------|:---------:|:--------:|:-------:|:--:|
+| 34 | Alcançar 80%+ cobertura em TasksService e dependências | Testing | ⬜ | ⬜ | ⬜ | ⬜ |
+| 35 | Alcançar 75%+ cobertura em ProjectsService e dependências | Testing | ⬜ | ⬜ | ⬜ | ⬜ |
+| 36 | Criar testes de integração para fluxos críticos (WBS → Tasks, PERT calc) | Testing | ⬜ | ⬜ | ⬜ | ⬜ |
+| 37 | Criar fixtures/seeds para testes (mock data consistente) | Testing | ⬜ | ⬜ | ⬜ | ⬜ |
+| 38 | Documentar como escrever testes (ex., handleres Gemini mocking) | Doc | ⬜ | ⬜ | ⬜ | ⬜ |
+
+---
+
+## ��� Fase 3 - Produtividade Avançada
 
 > **Objetivo:** Reduzir fricção e aumentar consistência no dia a dia, transformando backlog → plano executável. A fase foca em **planejamento visual**, **captura rápida**, **busca/organização**, **priorização assistida** e **foco**, mantendo a criação e execução de tarefas rápidas e previsíveis.
 

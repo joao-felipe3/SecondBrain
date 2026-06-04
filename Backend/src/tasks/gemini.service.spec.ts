@@ -17,7 +17,6 @@ describe('GeminiService', () => {
               const configMap: Record<string, string | undefined> = {
                 GEMINI_API_KEY: 'test-api-key',
                 GEMINI_MODEL: 'gemini-2.5-flash-lite',
-                REDIS_URL: undefined,
               };
               return configMap[key];
             }),

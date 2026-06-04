@@ -47,24 +47,8 @@ export class ConfigService {
 
   // ============ Cache Configuration ============
 
-
-  getRedisUrl(): string | undefined {
-    const url = this.getStringEnv('REDIS_URL', '');
-    if (url) return url;
-    
-    const host = this.getStringEnv('REDIS_HOST', '');
-    const port = this.getStringEnv('REDIS_PORT', '');
-    if (host && port) return `redis://${host}:${port}`;
-    
-    return undefined;
-  }
-
   getCacheTtlSeconds(): number {
     return this.getNumericEnv('CACHE_TTL_SECONDS', 86400);
-  }
-
-  getCacheBackendName(): 'redis' | 'memory' {
-    return this.getRedisUrl() ? 'redis' : 'memory';
   }
 
   // ============ WBS Sizing Constants ============
@@ -177,9 +161,8 @@ export class ConfigService {
         maxOutputTokensRetry: this.getMaxOutputTokensRetry(),
       },
       cache: {
-        backend: this.getCacheBackendName(),
+        backend: 'memory',
         ttlSeconds: this.getCacheTtlSeconds(),
-        redisUrl: this.getRedisUrl() ? '(configured)' : 'not configured',
       },
       sizing: {
         microTaskMinMinutes: this.getMicroTaskMinMinutes(),

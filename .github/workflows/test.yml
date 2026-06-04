@@ -28,15 +28,6 @@ jobs:
         ports:
           - 27017:27017
 
-      redis:
-        image: redis:7-alpine
-        options: >-
-          --health-cmd "redis-cli ping"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-        ports:
-          - 6379:6379
 
     steps:
       - name: 📥 Checkout code
@@ -55,7 +46,6 @@ jobs:
         run: npm run test:cov
         env:
           MONGODB_URI: mongodb://localhost:27017/second-brain-test
-          REDIS_URL: redis://localhost:6379
 
       - name: 📊 Upload coverage to Codecov
         uses: codecov/codecov-action@v3

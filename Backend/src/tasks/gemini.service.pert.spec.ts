@@ -15,7 +15,6 @@ describe('GeminiService - PERT Estimation (Unit Tests)', () => {
           useValue: {
             get: jest.fn((key: string) => {
               if (key === 'GEMINI_API_KEY') return process.env.GEMINI_API_KEY || 'test-key';
-              if (key === 'REDIS_ENABLED') return false; // Use in-memory for tests
               return undefined;
             }),
           },
