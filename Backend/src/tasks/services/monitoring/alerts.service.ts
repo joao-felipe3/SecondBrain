@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model, Types } from 'mongoose';
+import { Model, Types, FilterQuery } from 'mongoose';
 import { TaskAlertDocument } from '../../schemas/task-alert.schema';
 
 export interface CreateAlertInput {
@@ -17,19 +17,23 @@ export class AlertsService {
   constructor(
     @InjectModel('TaskAlert')
     private readonly alertModel: Model<TaskAlertDocument>,
-  ) {}
+  ) { }
+
+  // ===========================================================================
+  // 1. Alert Lifecycle Operations
+  // ===========================================================================
 
   async createAlert(input: CreateAlertInput): Promise<TaskAlertDocument> {
     const payload = {
       userId: input.userId,
-      task: input.taskId,
-      project: input.projectId,
+      task: input.taskId ? new Types.ObjectId(input.taskId.toString()) : undefined,
+      project: input.projectId ? new Types.ObjectId(input.projectId.toString()) : undefined,
       type: input.type,
       message: input.message,
       recommendation: input.recommendation,
       createdAt: new Date(),
       isRead: false,
-    } as any;
+    };
 
     return this.alertModel.create(payload);
   }
@@ -40,19 +44,13 @@ export class AlertsService {
     projectId?: string;
     limit?: number;
   }): Promise<TaskAlertDocument[]> {
-    const query: any = {};
+    const query: FilterQuery<TaskAlertDocument> = {};
 
-    if (options?.userId) {
-      query.userId = options.userId;
-    }
+    if (options?.userId) query.userId = options.userId;
 
-    if (options?.projectId) {
-      query.project = options.projectId;
-    }
+    if (options?.projectId) query.project = options.projectId;
 
-    if (options?.unreadOnly) {
-      query.isRead = false;
-    }
+    if (options?.unreadOnly) query.isRead = false;
 
     const limit = Number.isFinite(options?.limit) ? Number(options?.limit) : 50;
 
@@ -67,7 +65,7 @@ export class AlertsService {
   }
 
   async markRead(id: string, userId?: string): Promise<TaskAlertDocument | null> {
-    const query: any = { _id: id };
+    const query: FilterQuery<TaskAlertDocument> = { _id: id };
     if (userId) {
       query.userId = userId;
     }

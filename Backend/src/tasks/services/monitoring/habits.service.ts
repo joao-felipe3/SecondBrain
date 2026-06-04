@@ -1,6 +1,6 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model, Types } from 'mongoose';
+import { Model, Types, FilterQuery } from 'mongoose';
 import { TaskDocument } from '../../schemas/task.schema';
 import { GetHabitsDashboardDto } from '../../dto/get-habits-dashboard.dto';
 import { GetHabitsDashboardResponseDto } from '../../dto/habits-dashboard.dto';
@@ -8,6 +8,10 @@ import { GetHabitsDashboardResponseDto } from '../../dto/habits-dashboard.dto';
 @Injectable()
 export class TasksHabitsService {
   constructor(@InjectModel('Task') private readonly taskModel: Model<TaskDocument>) {}
+
+  // ===========================================================================
+  // 1. Habit Tracking & Streak Metrics
+  // ===========================================================================
 
   async getStreakData(parentRecurringId: string): Promise<{
     currentStreak: number;
@@ -36,14 +40,14 @@ export class TasksHabitsService {
       };
     }
 
-    const maintained = recurringTasks.filter((task: any) =>
+    const maintained = recurringTasks.filter((task) =>
       ['completed', 'skipped'].includes(String(task?.recurringState || '')),
     ).length;
     const aderencePercent = Math.round((maintained / recurringTasks.length) * 100);
 
     let currentStreak = 0;
     for (let i = recurringTasks.length - 1; i >= 0; i--) {
-      const state = String((recurringTasks[i] as any)?.recurringState || 'pending');
+      const state = String(recurringTasks[i]?.recurringState || 'pending');
       if (state === 'completed' || state === 'skipped') {
         currentStreak += 1;
       } else {
@@ -54,7 +58,7 @@ export class TasksHabitsService {
     let longestStreak = 0;
     let run = 0;
     let lastCompletedDate: Date | null = null;
-    for (const task of recurringTasks as any[]) {
+    for (const task of recurringTasks) {
       const state = String(task?.recurringState || 'pending');
       if (state === 'completed' || state === 'skipped') {
         run += 1;
@@ -76,7 +80,7 @@ export class TasksHabitsService {
   }
 
   async getHabitsDashboard(filter: GetHabitsDashboardDto = {}): Promise<GetHabitsDashboardResponseDto> {
-    const query: any = {
+    const query: FilterQuery<TaskDocument> = {
       $or: [{ microTaskType: 'habit' }, { recurringRule: { $exists: true, $ne: null } }],
     };
 
@@ -92,12 +96,12 @@ export class TasksHabitsService {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    for (const habit of habits as any[]) {
-      const rootId = String(habit.parentRecurringId || habit._id);
+    for (const habit of habits) {
+      const rootId = String(habit.parentRecurringId || (habit._id as Types.ObjectId));
       const streak = await this.getStreakData(rootId);
       const deadline = habit.deadline ? new Date(habit.deadline) : null;
       summaries.push({
-        id: String(habit._id),
+        id: String(habit._id as Types.ObjectId),
         name: String(habit.name || ''),
         status: String(habit.status || 'todo'),
         ...streak,
@@ -121,7 +125,7 @@ export class TasksHabitsService {
       .map((habit) => ({
         id: habit.id,
         name: habit.name,
-        deadline: habit.deadline,
+        deadline: habit.deadline!,
       }));
 
     return {

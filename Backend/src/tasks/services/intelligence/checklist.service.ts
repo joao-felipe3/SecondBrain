@@ -1,7 +1,7 @@
-import { Injectable, BadRequestException, Inject, forwardRef, NotFoundException } from '@nestjs/common';
+import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
-import { TaskDocument } from '../../schemas/task.schema';
+import { TaskDocument, TaskChecklistItem } from '../../schemas/task.schema';
 import { ChecklistItemDto } from '../../dto/create-task.dto';
 import { TasksInputService } from '../workflow/input.service';
 import { GeminiService } from '../../../ai/gemini.service';
@@ -17,18 +17,13 @@ export interface TaskHistorySummary {
   checklist?: Array<{ item: string }>;
 }
 
-/**
- * ChecklistService: Validação, enriquecimento com histórico, e gerenciamento de checklist.
- *
- * Sprint 2 Focus:
- * - Validar estrutura de checklist (min/max itens, sem duplicatas)
- * - Buscar histórico de tarefas similares (RAG-like)
- * - Enriquecer contexto para GeminiService
- * - Validar conclusão de tarefa (exigir checklist 100%)
- */
 @Injectable()
 export class ChecklistService {
   constructor(@InjectModel('Task') private readonly taskModel: Model<TaskDocument>) {}
+
+  // ===========================================================================
+  // 1. Historical Similarity Analysis
+  // ===========================================================================
 
   async findSimilarTasksInProject(
     projectId: string,
@@ -64,7 +59,10 @@ export class ChecklistService {
         name: task.name,
         description: task.description,
         checklist: task.checklist
-          ? task.checklist.map((item: any) => ({ item: item.item || '' }))
+          ? task.checklist.map((item) => {
+              if (typeof item === 'string') return { item };
+              return { item: item.item || '' };
+            })
           : undefined,
       }));
     } catch {
@@ -88,6 +86,10 @@ export class ChecklistService {
 
     return summaries ? `\n\nTarefas similares concluídas no histórico:\n${summaries}` : '';
   }
+
+  // ===========================================================================
+  // 2. Checklist Validation & Metrics
+  // ===========================================================================
 
   validateChecklistStructure(checklist?: Array<ChecklistItemDto | string>): ChecklistValidationResult {
     if (!Array.isArray(checklist) || checklist.length === 0) {
@@ -190,7 +192,11 @@ export class TasksChecklistService {
     private readonly geminiService: GeminiService,
   ) {}
 
-  async updateMicroTaskChecklist(id: string, checklist: Array<string | any>): Promise<any> {
+  // ===========================================================================
+  // 1. Checklist Lifecycle & Management
+  // ===========================================================================
+
+  async updateMicroTaskChecklist(id: string, checklist: Array<string | ChecklistItemDto>): Promise<TaskDocument> {
     if (!id || !Types.ObjectId.isValid(id)) {
       throw new BadRequestException(`ID inválido: ${id}`);
     }
@@ -211,7 +217,11 @@ export class TasksChecklistService {
     return updatedTask;
   }
 
-  async updateChecklistItem(taskId: string, itemIndex: string, completed: boolean): Promise<any> {
+  async updateChecklistItem(
+    taskId: string,
+    itemIndex: string,
+    completed: boolean,
+  ): Promise<TaskDocument & { completionPercentage: number }> {
     if (!taskId || !Types.ObjectId.isValid(taskId)) {
       throw new BadRequestException(`ID inválido: ${taskId}`);
     }
@@ -241,20 +251,23 @@ export class TasksChecklistService {
       throw new BadRequestException(`Item ${index} é uma string, não objeto com completed`);
     }
 
-    (checklistItem as any).completed = Boolean(completed);
+    checklistItem.completed = Boolean(completed);
 
-    const checklistItems = task.checklist.filter((item) => typeof item !== 'string');
+    const checklistItems = task.checklist.filter(
+      (item): item is TaskChecklistItem => typeof item !== 'string',
+    );
     const completionPercentage = this.checklistService.calculateCompletionPercentage(
-      checklistItems as any,
+      checklistItems,
     );
 
     const updatedTask = await task.save();
 
-    return {
-      ...updatedTask.toObject(),
-      completionPercentage,
-    } as any;
+    return Object.assign(updatedTask, { completionPercentage });
   }
+
+  // ===========================================================================
+  // 2. Quality Gates & Validation
+  // ===========================================================================
 
   async validateCompletionRequirements(taskId: string): Promise<{ isValid: boolean; reason?: string }> {
     if (!taskId || !Types.ObjectId.isValid(taskId)) {
@@ -276,13 +289,12 @@ export class TasksChecklistService {
       return { isValid: true };
     }
 
-    const checklistItems = task.checklist.map((entry: any) => {
+    const checklistItems = task.checklist.map((entry) => {
       if (typeof entry === 'string') return { completed: false };
-      if (entry && typeof entry === 'object') return { completed: Boolean(entry.completed) };
-      return { completed: false };
+      return { completed: Boolean(entry.completed) };
     });
 
-    return this.checklistService.validateChecklistCompletion(checklistItems as any);
+    return this.checklistService.validateChecklistCompletion(checklistItems);
   }
 
   async getValidationErrors(taskId: string): Promise<{ valid: boolean; errors: string[] }> {
@@ -300,13 +312,12 @@ export class TasksChecklistService {
       task.microTaskType === 'habit' || Boolean(task.parentRecurringId) || Boolean(task.recurringRule);
 
     if (!isHabit && Array.isArray(task.checklist) && task.checklist.length > 0) {
-      const checklistItems = task.checklist.map((entry: any) => {
+      const checklistItems = task.checklist.map((entry) => {
         if (typeof entry === 'string') return { completed: false };
-        if (entry && typeof entry === 'object') return { completed: Boolean(entry.completed) };
-        return { completed: false };
+        return { completed: Boolean(entry.completed) };
       });
 
-      const checklistResult = this.checklistService.validateChecklistCompletion(checklistItems as any);
+      const checklistResult = this.checklistService.validateChecklistCompletion(checklistItems);
       if (!checklistResult.isValid) {
         errors.push(checklistResult.reason || 'Checklist incomplete');
       }
@@ -318,6 +329,10 @@ export class TasksChecklistService {
 
     return { valid: errors.length === 0, errors };
   }
+
+  // ===========================================================================
+  // 3. AI Generation
+  // ===========================================================================
 
   async generateChecklistForTask(
     taskName: string,

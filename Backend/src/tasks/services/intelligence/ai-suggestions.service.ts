@@ -17,6 +17,10 @@ export class TasksAiSuggestionsService {
     private readonly geminiService: GeminiService,
   ) {}
 
+  // ===========================================================================
+  // 1. AI Task Generation & Progress Streaming
+  // ===========================================================================
+
   async generateAiSuggestionsWithProgress(
     dto: GenerateAiSuggestionsDto,
     onProgress: (progress: AiSuggestionsProgressDto) => void,
@@ -34,6 +38,10 @@ export class TasksAiSuggestionsService {
   async generateAiSuggestions(dto: GenerateAiSuggestionsDto): Promise<AiSuggestionsResponseDto> {
     return this.generateAiSuggestionsInternal(dto, null);
   }
+
+  // ===========================================================================
+  // 2. Private Generation & Parsing Logic
+  // ===========================================================================
 
   private async generateAiSuggestionsInternal(
     dto: GenerateAiSuggestionsDto,
@@ -115,7 +123,19 @@ export class TasksAiSuggestionsService {
           );
         }
 
-        allSuggestions.push(...(suggestions as AiTaskSuggestionDto[]));
+        const taskSuggestions = suggestions.map((item) => {
+          const anyItem = item as Record<string, unknown>;
+          return {
+            name: String(anyItem.name || ''),
+            deadline: anyItem.deadline ? String(anyItem.deadline) : undefined,
+            pomodoros: Number.isFinite(anyItem.pomodoros) ? Number(anyItem.pomodoros) : 0,
+            priority: Number.isFinite(anyItem.priority) ? Number(anyItem.priority) : 0,
+            difficulty: Number.isFinite(anyItem.difficulty) ? Number(anyItem.difficulty) : 0,
+            selected: Boolean(anyItem.selected),
+          } as AiTaskSuggestionDto;
+        });
+
+        allSuggestions.push(...taskSuggestions);
         currentHours = allSuggestions.reduce((sum, t) => sum + (t.pomodoros || 0) * 0.5, 0);
         return createResponse('success', 'Sugestoes geradas com sucesso');
       }
@@ -163,8 +183,9 @@ export class TasksAiSuggestionsService {
             chunkHours,
           );
           consecutiveRateLimits = 0;
-        } catch (err: any) {
-          if (err?.code === 'RATE_LIMIT') {
+        } catch (err: unknown) {
+          const errorObj = err as Record<string, unknown>;
+          if (errorObj && errorObj.code === 'RATE_LIMIT') {
             consecutiveRateLimits++;
             const waitMs = Math.min(15000 * consecutiveRateLimits, 45000);
             console.warn(
@@ -183,7 +204,19 @@ export class TasksAiSuggestionsService {
           continue;
         }
 
-        const newSuggestions = (suggestions as AiTaskSuggestionDto[]).filter((newTask) => {
+        const taskSuggestions = suggestions.map((item) => {
+          const anyItem = item as Record<string, unknown>;
+          return {
+            name: String(anyItem.name || ''),
+            deadline: anyItem.deadline ? String(anyItem.deadline) : undefined,
+            pomodoros: Number.isFinite(anyItem.pomodoros) ? Number(anyItem.pomodoros) : 0,
+            priority: Number.isFinite(anyItem.priority) ? Number(anyItem.priority) : 0,
+            difficulty: Number.isFinite(anyItem.difficulty) ? Number(anyItem.difficulty) : 0,
+            selected: Boolean(anyItem.selected),
+          } as AiTaskSuggestionDto;
+        });
+
+        const newSuggestions = taskSuggestions.filter((newTask) => {
           const normalizedName = newTask.name.toLowerCase().trim();
           return !existingTaskNames.some(
             (existingName) => existingName.toLowerCase().trim() === normalizedName,
@@ -224,8 +257,9 @@ export class TasksAiSuggestionsService {
         'success',
         `${allSuggestions.length} tarefas geradas com sucesso (${currentHours.toFixed(1)}h)`,
       );
-    } catch (error: any) {
-      console.error('Erro ao usar a API do Gemini:', error?.message ?? error);
+    } catch (error: unknown) {
+      const err = error as Error;
+      console.error('Erro ao usar a API do Gemini:', err.message ?? err);
       if (allSuggestions.length > 0) {
         console.warn('Retornando sugestoes parciais acumuladas devido a erro.');
         return createResponse(
@@ -241,7 +275,7 @@ export class TasksAiSuggestionsService {
     }
   }
 
-  private safeParseGeminiJson(response: string): any[] {
+  private safeParseGeminiJson(response: string): unknown[] {
     if (!response || typeof response !== 'string') {
       console.warn('Resposta do Gemini e nula ou nao e string');
       return [];
@@ -253,8 +287,11 @@ export class TasksAiSuggestionsService {
     try {
       const parsed = JSON.parse(trimmed);
       if (Array.isArray(parsed)) return parsed;
-      if (Array.isArray(parsed?.suggestions)) return parsed.suggestions;
-      if (Array.isArray(parsed?.tasks)) return parsed.tasks;
+      if (parsed && typeof parsed === 'object') {
+        const anyParsed = parsed as Record<string, unknown>;
+        if (Array.isArray(anyParsed.suggestions)) return anyParsed.suggestions;
+        if (Array.isArray(anyParsed.tasks)) return anyParsed.tasks;
+      }
       return [];
     } catch {
       const match = trimmed.match(/\[[\s\S]*\]/);

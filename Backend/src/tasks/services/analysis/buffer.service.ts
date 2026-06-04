@@ -31,8 +31,12 @@ export class BufferService {
 
   constructor(
     @InjectModel(ProjectBuffer.name)
-    private bufferModel: Model<ProjectBufferDocument>,
+    private readonly bufferModel: Model<ProjectBufferDocument>,
   ) {}
+
+  // ===========================================================================
+  // 1. Buffer Lifecycle Operations
+  // ===========================================================================
 
   async calculateProjectBuffer(
     projectId: string,
@@ -48,18 +52,9 @@ export class BufferService {
       return this.createDefaultBuffer(projectId);
     }
 
-    const criticalTasks = tasks.filter((t) => criticalPath.includes(t.taskId));
-    const criticalPathDuration = criticalTasks.reduce((sum, t) => sum + t.estimatedHours, 0);
-    const totalVariance = criticalTasks.reduce((sum, t) => sum + (t.variance || 0), 0);
-    const criticalTasksDebug = criticalTasks.map((t) => ({
-      taskId: t.taskId,
-      estimatedHours: t.estimatedHours,
-      variance: t.variance,
-    }));
-
-    const standardDeviation = Math.sqrt(totalVariance);
-
-    const projectBuffer = Math.max(criticalPathDuration * 0.5, standardDeviation * 1.645);
+    const criticalTasks = this.filterCriticalTasks(tasks, criticalPath);
+    const { criticalPathDuration, totalVariance, standardDeviation, projectBuffer } =
+      this.calculateMetrics(criticalTasks);
 
     const bufferDoc = await this.bufferModel.findOneAndUpdate(
       { projectId },
@@ -71,12 +66,7 @@ export class BufferService {
         criticalPathDuration: Math.round(criticalPathDuration * 10) / 10,
         totalVariance: Math.round(totalVariance * 100) / 100,
         standardDeviation: Math.round(standardDeviation * 10) / 10,
-        taskVariances: criticalTasks
-          .filter((t) => t.variance && t.variance > 0)
-          .map((t) => ({
-            taskId: t.taskId,
-            variance: Math.round(t.variance! * 100) / 100,
-          })),
+        taskVariances: this.mapTaskVariances(criticalTasks),
       },
       { upsert: true, new: true },
     );
@@ -91,6 +81,38 @@ export class BufferService {
     );
 
     return bufferDoc;
+  }
+
+  private filterCriticalTasks(tasks: TaskMetrics[], criticalPath: string[]): TaskMetrics[] {
+    return tasks.filter((t) => criticalPath.includes(t.taskId));
+  }
+
+  private calculateMetrics(criticalTasks: TaskMetrics[]): {
+    criticalPathDuration: number;
+    totalVariance: number;
+    standardDeviation: number;
+    projectBuffer: number;
+  } {
+    const criticalPathDuration = criticalTasks.reduce((sum, t) => sum + t.estimatedHours, 0);
+    const totalVariance = criticalTasks.reduce((sum, t) => sum + (t.variance || 0), 0);
+    const standardDeviation = Math.sqrt(totalVariance);
+    const projectBuffer = Math.max(criticalPathDuration * 0.5, standardDeviation * 1.645);
+
+    return {
+      criticalPathDuration,
+      totalVariance,
+      standardDeviation,
+      projectBuffer,
+    };
+  }
+
+  private mapTaskVariances(criticalTasks: TaskMetrics[]): { taskId: string; variance: number }[] {
+    return criticalTasks
+      .filter((t) => t.variance && t.variance > 0)
+      .map((t) => ({
+        taskId: t.taskId,
+        variance: Math.round(t.variance! * 100) / 100,
+      }));
   }
 
   async consumeBuffer(projectId: string, hoursUsed: number): Promise<BufferStatus> {
@@ -117,6 +139,21 @@ export class BufferService {
 
     return status;
   }
+
+  async resetBufferConsumption(projectId: string): Promise<ProjectBuffer | null> {
+    const buffer = await this.bufferModel.findOneAndUpdate(
+      { projectId },
+      { consumed: 0 },
+      { new: true },
+    );
+
+    this.logger.log(`Buffer reseteado para proyecto: ${projectId}`);
+    return buffer || null;
+  }
+
+  // ===========================================================================
+  // 2. Buffer Monitoring & Health
+  // ===========================================================================
 
   async getBufferStatus(projectId: string): Promise<BufferStatus> {
     const buffer = await this.bufferModel.findOne({ projectId });
@@ -171,17 +208,6 @@ export class BufferService {
     return alerts;
   }
 
-  async resetBufferConsumption(projectId: string): Promise<ProjectBuffer | null> {
-    const buffer = await this.bufferModel.findOneAndUpdate(
-      { projectId },
-      { consumed: 0 },
-      { new: true },
-    );
-
-    this.logger.log(`Buffer reseteado para proyecto: ${projectId}`);
-    return buffer || null;
-  }
-
   async getBufferHistory(
     projectId: string,
   ): Promise<Array<{ date: Date; consumed: number; percentageUsed: number }>> {
@@ -199,6 +225,10 @@ export class BufferService {
       },
     ];
   }
+
+  // ===========================================================================
+  // 3. Private Helpers
+  // ===========================================================================
 
   private createDefaultBuffer(projectId: string): ProjectBuffer {
     return {

@@ -16,10 +16,9 @@ export interface DeviationResult {
 export class DeviationDetectionService {
   constructor(@InjectModel('Task') private readonly taskModel: Model<TaskDocument>) {}
 
-  private getActualMinutes(task: TaskDocument): number {
-    const pomodorosDid = Math.max(0, Number(task.pomodorosDid || 0));
-    return pomodorosDid * 30;
-  }
+  // ===========================================================================
+  // 1. Deviation Detection Analysis
+  // ===========================================================================
 
   async checkTimeDeviation(taskId: string): Promise<DeviationResult> {
     const task = await this.taskModel.findById(taskId).exec();
@@ -68,5 +67,14 @@ export class DeviationDetectionService {
       return null;
     }
     return result;
+  }
+
+  // ===========================================================================
+  // 2. Private Helpers
+  // ===========================================================================
+
+  private getActualMinutes(task: TaskDocument): number {
+    const pomodorosDid = Math.max(0, Number(task.pomodorosDid || 0));
+    return pomodorosDid * 30;
   }
 }

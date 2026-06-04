@@ -9,6 +9,11 @@ import { UpdatePertDto } from '../../dto/suggest-pert.dto';
 
 @Injectable()
 export class PertService {
+
+  // ===========================================================================
+  // 1. Mathematical Calculations
+  // ===========================================================================
+
   calculateExpectedTime(estimate: PertEstimateDto): number {
     const { optimistic, mostLikely, pessimistic } = estimate;
     return (optimistic + 4 * mostLikely + pessimistic) / 6;
@@ -22,11 +27,6 @@ export class PertService {
   calculateStandardDeviation(estimate: PertEstimateDto): number {
     const variance = this.calculateVariance(estimate);
     return Math.sqrt(variance);
-  }
-
-  validateEstimate(estimate: PertEstimateDto): boolean {
-    const { optimistic, mostLikely, pessimistic } = estimate;
-    return optimistic <= mostLikely && mostLikely <= pessimistic;
   }
 
   calculatePertMetrics(estimate: PertEstimateDto): PertEstimateResponseDto {
@@ -45,6 +45,15 @@ export class PertService {
       formula: '(O + 4M + P) / 6',
       estimate,
     };
+  }
+
+  // ===========================================================================
+  // 2. Formatting & Insights
+  // ===========================================================================
+
+  validateEstimate(estimate: PertEstimateDto): boolean {
+    const { optimistic, mostLikely, pessimistic } = estimate;
+    return optimistic <= mostLikely && mostLikely <= pessimistic;
   }
 
   formatMinutes(minutes: number): string {
@@ -81,30 +90,12 @@ export class TasksPertService {
     private readonly metricsService: TasksMetricsService,
   ) {}
 
+  // ===========================================================================
+  // 1. Database Operations
+  // ===========================================================================
+
   async updatePert(taskId: string, updatePertDto: UpdatePertDto): Promise<TaskDocument> {
-    if (!taskId || !Types.ObjectId.isValid(taskId)) {
-      throw new BadRequestException(`ID inválido: ${taskId}`);
-    }
-
-    const {
-      pertOptimisticMinutes: optimistic,
-      pertMostLikelyMinutes: mostLikely,
-      pertPessimisticMinutes: pessimistic,
-    } = updatePertDto;
-
-    if (
-      typeof optimistic !== 'number' ||
-      typeof mostLikely !== 'number' ||
-      typeof pessimistic !== 'number'
-    ) {
-      throw new BadRequestException('Todos os valores PERT devem ser números');
-    }
-    if (!(optimistic > 0 && mostLikely > 0 && pessimistic > 0)) {
-      throw new BadRequestException('Valores PERT devem ser maiores que zero');
-    }
-    if (!(optimistic <= mostLikely && mostLikely <= pessimistic)) {
-      throw new BadRequestException('Ordem inválida: Otimista ≤ Provável ≤ Pessimista');
-    }
+    const { optimistic, mostLikely, pessimistic } = this.validateInputs(taskId, updatePertDto);
 
     const pertMetrics = this.pertService.calculatePertMetrics({
       optimistic,
@@ -140,6 +131,34 @@ export class TasksPertService {
     }
 
     return updatedTask;
+  }
+
+  private validateInputs(taskId: string, updatePertDto: UpdatePertDto): { optimistic: number; mostLikely: number; pessimistic: number } {
+    if (!taskId || !Types.ObjectId.isValid(taskId)) {
+      throw new BadRequestException(`ID inválido: ${taskId}`);
+    }
+
+    const {
+      pertOptimisticMinutes: optimistic,
+      pertMostLikelyMinutes: mostLikely,
+      pertPessimisticMinutes: pessimistic,
+    } = updatePertDto;
+
+    if (
+      typeof optimistic !== 'number' ||
+      typeof mostLikely !== 'number' ||
+      typeof pessimistic !== 'number'
+    ) {
+      throw new BadRequestException('Todos os valores PERT devem ser números');
+    }
+    if (!(optimistic > 0 && mostLikely > 0 && pessimistic > 0)) {
+      throw new BadRequestException('Valores PERT devem ser maiores que zero');
+    }
+    if (!(optimistic <= mostLikely && mostLikely <= pessimistic)) {
+      throw new BadRequestException('Ordem inválida: Otimista ≤ Provável ≤ Pessimista');
+    }
+
+    return { optimistic, mostLikely, pessimistic };
   }
 
   async savePertEstimate(
