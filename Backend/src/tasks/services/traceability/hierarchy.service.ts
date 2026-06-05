@@ -25,7 +25,7 @@ export interface TaskDescendantNode {
 
 @Injectable()
 export class TasksHierarchyService {
-  constructor(@InjectModel('Task') private readonly taskModel: Model<TaskDocument>) { }
+  constructor(@InjectModel('Task') private readonly taskModel: Model<TaskDocument>) {}
 
   // ===========================================================================
   // 1. Lineage & Hierarchy Retrieval
@@ -51,7 +51,7 @@ export class TasksHierarchyService {
       if (!parent) break;
 
       ancestors.unshift({
-        _id: parent._id as Types.ObjectId,
+        _id: parent._id,
         name: parent.name,
         status: parent.status || 'todo',
       });
@@ -69,7 +69,7 @@ export class TasksHierarchyService {
     return {
       ancestors,
       children: children.map((c) => ({
-        _id: c._id as Types.ObjectId,
+        _id: c._id,
         name: c.name,
         status: c.status || 'todo',
       })),
@@ -100,7 +100,7 @@ export class TasksHierarchyService {
         .exec();
       for (const child of children) {
         descendants.push({
-          _id: child._id as Types.ObjectId,
+          _id: child._id,
           name: child.name,
           status: child.status || 'todo',
           experience: child.experience || 0,
@@ -138,7 +138,7 @@ export class TasksHierarchyService {
       if (!parent) break;
       current = parent;
     }
-    const rootId = current ? String(current._id as Types.ObjectId) : id;
+    const rootId = current ? String(current._id) : id;
 
     const rootDescendants = await this.getDescendants(rootId, 5000);
     const rootTask = await this.taskModel.findById(rootId).select('_id experience isConcluded').exec();
@@ -150,7 +150,7 @@ export class TasksHierarchyService {
     }> = [];
     if (rootTask) {
       allNodes.push({
-        _id: rootTask._id as Types.ObjectId,
+        _id: rootTask._id,
         experience: rootTask.experience || 0,
         isConcluded: rootTask.isConcluded || false,
       });
@@ -177,7 +177,7 @@ export class TasksHierarchyService {
     const taskSel = await this.taskModel.findById(id).select('_id experience isConcluded').exec();
     if (taskSel) {
       subtreeNodes.push({
-        _id: taskSel._id as Types.ObjectId,
+        _id: taskSel._id,
         experience: taskSel.experience || 0,
         isConcluded: taskSel.isConcluded || false,
       });

@@ -9,7 +9,6 @@ import { UpdatePertDto } from '../../dto/suggest-pert.dto';
 
 @Injectable()
 export class PertService {
-
   // ===========================================================================
   // 1. Mathematical Calculations
   // ===========================================================================
@@ -133,7 +132,10 @@ export class TasksPertService {
     return updatedTask;
   }
 
-  private validateInputs(taskId: string, updatePertDto: UpdatePertDto): { optimistic: number; mostLikely: number; pessimistic: number } {
+  private validateInputs(
+    taskId: string,
+    updatePertDto: UpdatePertDto,
+  ): { optimistic: number; mostLikely: number; pessimistic: number } {
     if (!taskId || !Types.ObjectId.isValid(taskId)) {
       throw new BadRequestException(`ID inválido: ${taskId}`);
     }

@@ -17,7 +17,7 @@ export class AlertsService {
   constructor(
     @InjectModel('TaskAlert')
     private readonly alertModel: Model<TaskAlertDocument>,
-  ) { }
+  ) {}
 
   // ===========================================================================
   // 1. Alert Lifecycle Operations

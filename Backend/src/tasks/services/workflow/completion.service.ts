@@ -44,11 +44,7 @@ export class TasksCompletionService {
     const updatedTask = await task.save();
 
     if (updatedTask.project && remainingHours > 0) {
-      await this.updateProjectMetricsAfterCompletion(
-        updatedTask.project.toString(),
-        id,
-        remainingHours,
-      );
+      await this.updateProjectMetricsAfterCompletion(updatedTask.project.toString(), id, remainingHours);
     }
 
     await this.checkDeviationAndCreateAlert(id);

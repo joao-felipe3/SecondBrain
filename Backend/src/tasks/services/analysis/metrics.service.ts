@@ -4,7 +4,6 @@ import { TaskDocument } from '../../schemas/task.schema';
 
 @Injectable()
 export class TasksMetricsService {
-
   // ===========================================================================
   // 1. PERT Estimation Calculations & Application
   // ===========================================================================
@@ -16,7 +15,11 @@ export class TasksMetricsService {
 
     const baseMinutes = this.resolveBaseMinutes(dto, fallbackTask) ?? 0;
     const { optimistic, mostLikely, pessimistic } = this.calculatePertBounds(dto, baseMinutes);
-    const { expected, variance } = this.calculateExpectedAndVariance(optimistic, mostLikely, pessimistic);
+    const { expected, variance } = this.calculateExpectedAndVariance(
+      optimistic,
+      mostLikely,
+      pessimistic,
+    );
 
     dto.pertOptimisticMinutes = optimistic;
     dto.pertMostLikelyMinutes = mostLikely;
@@ -33,7 +36,10 @@ export class TasksMetricsService {
     );
   }
 
-  private resolveBaseMinutes(dto: Partial<CreateTaskDto>, fallbackTask?: TaskDocument | null): number | undefined {
+  private resolveBaseMinutes(
+    dto: Partial<CreateTaskDto>,
+    fallbackTask?: TaskDocument | null,
+  ): number | undefined {
     return (
       dto.pertMostLikelyMinutes ??
       (dto.pomodorosPlanned ? dto.pomodorosPlanned * 25 : undefined) ??
@@ -85,7 +91,10 @@ export class TasksMetricsService {
       'Ação sem vínculo com item da jornada pessoal (objetivo/hábito/etapa/ação) ou WBS.';
   }
 
-  private hasTraceabilityLinks(dto: Partial<CreateTaskDto>, fallbackTask?: TaskDocument | null): boolean {
+  private hasTraceabilityLinks(
+    dto: Partial<CreateTaskDto>,
+    fallbackTask?: TaskDocument | null,
+  ): boolean {
     const requirementIds = dto.requirementIds ?? fallbackTask?.requirementIds ?? [];
     const journeyItemIds = dto.journeyItemIds ?? fallbackTask?.journeyItemIds ?? [];
     const hasWbsLink = Boolean(
@@ -117,7 +126,10 @@ export class TasksMetricsService {
     dto.evmAlert = spi > 0 && spi < 0.9 ? 'SPI abaixo de 0.9 (risco de atraso)' : undefined;
   }
 
-  private resolveExpectedMinutes(dto: Partial<CreateTaskDto>, fallbackTask?: TaskDocument | null): number | undefined {
+  private resolveExpectedMinutes(
+    dto: Partial<CreateTaskDto>,
+    fallbackTask?: TaskDocument | null,
+  ): number | undefined {
     return (
       dto.pertExpectedMinutes ??
       fallbackTask?.pertExpectedMinutes ??
@@ -139,7 +151,10 @@ export class TasksMetricsService {
     return Math.max(0, Math.min(1, pomodorosPlanned ? pomodorosDid / pomodorosPlanned : 0));
   }
 
-  private calculateElapsedRatio(dto: Partial<CreateTaskDto>, fallbackTask?: TaskDocument | null): number {
+  private calculateElapsedRatio(
+    dto: Partial<CreateTaskDto>,
+    fallbackTask?: TaskDocument | null,
+  ): number {
     const createdAt = fallbackTask?.createdAt ? new Date(fallbackTask.createdAt) : new Date();
     const deadline = dto.deadline
       ? new Date(dto.deadline)

@@ -196,7 +196,10 @@ export class TasksChecklistService {
   // 1. Checklist Lifecycle & Management
   // ===========================================================================
 
-  async updateMicroTaskChecklist(id: string, checklist: Array<string | ChecklistItemDto>): Promise<TaskDocument> {
+  async updateMicroTaskChecklist(
+    id: string,
+    checklist: Array<string | ChecklistItemDto>,
+  ): Promise<TaskDocument> {
     if (!id || !Types.ObjectId.isValid(id)) {
       throw new BadRequestException(`ID inválido: ${id}`);
     }
@@ -256,9 +259,7 @@ export class TasksChecklistService {
     const checklistItems = task.checklist.filter(
       (item): item is TaskChecklistItem => typeof item !== 'string',
     );
-    const completionPercentage = this.checklistService.calculateCompletionPercentage(
-      checklistItems,
-    );
+    const completionPercentage = this.checklistService.calculateCompletionPercentage(checklistItems);
 
     const updatedTask = await task.save();
 

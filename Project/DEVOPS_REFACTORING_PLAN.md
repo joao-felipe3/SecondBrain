@@ -57,32 +57,37 @@ Estruturar documentação, melhorar CI/CD, implementar best practices de arquite
 #### ✅ Backend/src/projects/README.md
 - Estrutura de projetos e WBS
 
-## Sprint 2: Refactoring TasksService (0/40h) - ⏳ PRÓXIMO
+## Sprint 2: Refactoring TasksService ✅ CONCLUÍDO (40/40h)
 
 ### Objetivo
 Reduzir `Backend/src/tasks/tasks.service.ts` de ~2067 linhas para ~400 linhas
 
 ### Services a Extrair
 
-#### TasksRecurringService (~300 linhas)
+#### ✅ TasksRecurringService (~300 linhas)
 - Lógica de recorrência (daily, weekly, monthly, custom)
 - Métodos: `getNextOccurrence()`, `createRecurrence()`, `updateRecurrence()`, `calculateOccurrences()`
+- **Status**: ✅ Concluído
 
-#### TasksPertService (~200 linhas)
+#### ✅ TasksPertService (~200 linhas)
 - Estimativas PERT (optimistic, pessimistic, mostLikely)
 - Métodos: `calculatePert()`, `suggestEstimates()`, `updatePertMetrics()`
+- **Status**: ✅ Concluído
 
-#### TasksValidatorService (~100 linhas)
+#### ✅ TasksValidatorService (~100 linhas)
 - Validação centralizada de tarefas
 - Métodos: `validateTaskCreation()`, `validateTaskUpdate()`, `validateDates()`
+- **Status**: ✅ Concluído
 
-#### TasksAiService (~250 linhas)
+#### ✅ TasksAiService (~250 linhas)
 - Wrapper da GeminiService
 - Métodos: `generateChecklist()`, `suggestTitles()`, `analyzeDeviation()`
+- **Status**: ✅ Concluído
 
-#### TasksDeviationService (melhorar)
+#### ✅ TasksDeviationService (melhorar)
 - Lógica de desvios (delay, scope change, priority change)
 - Métodos: `recordDeviation()`, `analyzeDeviation()`, `suggestCorrections()`
+- **Status**: ✅ Concluído
 
 ### Resultado
 - `TasksService`: ~400 linhas (CRUD + orquestração apenas)
@@ -90,7 +95,7 @@ Reduzir `Backend/src/tasks/tasks.service.ts` de ~2067 linhas para ~400 linhas
 
 ---
 
-## Sprint 3: Refactoring ProjectsService (0/35h)
+## Sprint 3: Refactoring ProjectsService (0/35h) - ⏳ PRÓXIMO
 
 ### Objetivo
 Reduzir `Backend/src/projects/projects.service.ts` de ~804 linhas para ~300 linhas
@@ -271,6 +276,7 @@ Criar uma camada de consulta semântica para a documentação do repositório (A
 
 ---
 
-**Última Atualização**: Maio 21, 2026  
+**Última Atualização**: Junho 4, 2026  
 **Responsável**: DevOps Team  
-**Status**: 20% completo (30/150h)
+**Status**: 50% completo (85/170h)
+

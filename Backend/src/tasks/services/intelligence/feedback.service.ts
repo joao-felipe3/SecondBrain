@@ -65,7 +65,7 @@ export class FeedbackService {
       const feedbackText = JSON.stringify(payload);
 
       await this.feedbackModel.create({
-        task: task._id as Types.ObjectId,
+        task: task._id,
         project: task.project ? new Types.ObjectId(task.project.toString()) : undefined,
         modelName: 'user-feedback',
         promptVersion: 'catchball-user-v1',
@@ -89,7 +89,7 @@ export class FeedbackService {
     } catch (err: unknown) {
       const errorObj = err as Error;
       await this.feedbackModel.create({
-        task: task._id as Types.ObjectId,
+        task: task._id,
         project: task.project ? new Types.ObjectId(task.project.toString()) : undefined,
         modelName: this.geminiService.getModelName(),
         promptVersion: 'catchball-v1',
@@ -173,9 +173,7 @@ export class FeedbackService {
 
       const parsed = this.safeParseJson(raw) || {};
 
-      const celebration = String(
-        parsed.celebration ?? parsed.praise ?? parsed.recognition ?? '',
-      ).trim();
+      const celebration = String(parsed.celebration ?? parsed.praise ?? parsed.recognition ?? '').trim();
       const validation = String(parsed.validation ?? parsed.learning ?? '').trim();
       const question = String(parsed.question ?? parsed.inquiry ?? parsed.nextStep ?? '').trim();
       const suggestion = String(parsed.suggestion ?? parsed.suggest ?? parsed.nextStep ?? '').trim();
@@ -189,7 +187,7 @@ export class FeedbackService {
       };
 
       await this.feedbackModel.create({
-        task: task._id as Types.ObjectId,
+        task: task._id,
         project: task.project ? new Types.ObjectId(task.project.toString()) : undefined,
         modelName: this.geminiService.getModelName(),
         promptVersion: 'catchball-v1',
@@ -206,7 +204,7 @@ export class FeedbackService {
       const errorObj = err as Error;
       try {
         await this.feedbackModel.create({
-          task: task._id as Types.ObjectId,
+          task: task._id,
           project: task.project ? new Types.ObjectId(task.project.toString()) : undefined,
           modelName: this.geminiService.getModelName(),
           promptVersion: 'catchball-v1',

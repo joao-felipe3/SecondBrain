@@ -129,7 +129,7 @@ export class RTMService {
         });
 
         inserted.push(created as RequirementDocument);
-        refToId.set(item.ref, String(created._id as Types.ObjectId));
+        refToId.set(item.ref, String(created._id));
         insertedIds.add(dedupKey);
       }
 
@@ -492,7 +492,7 @@ Sem markdown.`;
           (item: RequirementDocument) => this.normalizeKind(item.kind || item.type) === 'stage',
         );
         const fallbackParent = stageItems.length > 0 ? stageItems[0] : allItems[0];
-        const fallbackParentId = fallbackParent ? String(fallbackParent._id as Types.ObjectId) : undefined;
+        const fallbackParentId = fallbackParent ? String(fallbackParent._id) : undefined;
 
         const groupSize = Math.max(1, Math.ceil(orphanTasks.length / 3));
         for (let i = 0; i < orphanTasks.length; i += groupSize) {
@@ -513,7 +513,7 @@ Sem markdown.`;
             status: 'satisfied',
           });
 
-          mappings[String(newAction._id as Types.ObjectId)] = group.map((task) => String(task._id || task.id));
+          mappings[String(newAction._id)] = group.map((task) => String(task._id || task.id));
           createdRequirementsCount += 1;
         }
       }
@@ -652,7 +652,7 @@ Sem markdown.`;
               };
 
               const newTask = await this.tasksService.create(createDto);
-              taskIds.push(String(newTask._id as Types.ObjectId));
+              taskIds.push(String(newTask._id));
               createdTasksCount += 1;
             } catch (taskError: unknown) {
               const err = taskError as Error;
@@ -674,9 +674,7 @@ Sem markdown.`;
           }
         } catch (genError: unknown) {
           const err = genError as Error;
-          this.logger.warn(
-            `[gen-tasks] erro ao gerar tarefas para ação ${req._id}: ${err.message}`,
-          );
+          this.logger.warn(`[gen-tasks] erro ao gerar tarefas para ação ${req._id}: ${err.message}`);
         }
       }
 
@@ -942,7 +940,9 @@ Sem markdown.`;
     return 3;
   }
 
-  private getLinkedActions(requirement: Requirement | RequirementDocument | Partial<Requirement>): string[] {
+  private getLinkedActions(
+    requirement: Requirement | RequirementDocument | Partial<Requirement>,
+  ): string[] {
     const modern = Array.isArray(requirement?.traceableActionItems)
       ? requirement.traceableActionItems.map(String)
       : [];

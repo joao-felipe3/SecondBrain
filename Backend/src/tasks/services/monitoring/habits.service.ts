@@ -97,11 +97,11 @@ export class TasksHabitsService {
     today.setHours(0, 0, 0, 0);
 
     for (const habit of habits) {
-      const rootId = String(habit.parentRecurringId || (habit._id as Types.ObjectId));
+      const rootId = String(habit.parentRecurringId || habit._id);
       const streak = await this.getStreakData(rootId);
       const deadline = habit.deadline ? new Date(habit.deadline) : null;
       summaries.push({
-        id: String(habit._id as Types.ObjectId),
+        id: String(habit._id),
         name: String(habit.name || ''),
         status: String(habit.status || 'todo'),
         ...streak,
