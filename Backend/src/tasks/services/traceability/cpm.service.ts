@@ -7,10 +7,20 @@ import {
   TaskDependencyDocument,
 } from '../../schemas/task-dependency.schema';
 import { TaskNode, CPMAnalysis, TaskMetrics } from '../../interfaces/cpm.interface';
-import { calculateCriticalPath as calculateCP, getTaskMetrics as getTM, normalizeRelationship } from './cpm.utils';
+import {
+  calculateCriticalPath as calculateCP,
+  getTaskMetrics as getTM,
+  normalizeRelationship,
+} from './cpm-analysis.utils';
 
 // Re-export interfaces for backwards compatibility
-export { TaskDependencyEdge, TaskNode, PackageCriticality, CPMAnalysis, TaskMetrics } from '../../interfaces/cpm.interface';
+export {
+  TaskDependencyEdge,
+  TaskNode,
+  PackageCriticality,
+  CPMAnalysis,
+  TaskMetrics,
+} from '../../interfaces/cpm.interface';
 
 @Injectable()
 export class CPMService {

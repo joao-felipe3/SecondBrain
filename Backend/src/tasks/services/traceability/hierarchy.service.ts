@@ -2,10 +2,18 @@ import { Injectable, BadRequestException, NotFoundException } from '@nestjs/comm
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { TaskDocument } from '../../schemas/task.schema';
-import { TaskLineageNode, TaskLineageResult, TaskDescendantNode } from '../../interfaces/hierarchy.interface';
+import {
+  TaskLineageNode,
+  TaskLineageResult,
+  TaskDescendantNode,
+} from '../../interfaces/hierarchy.interface';
 
 // Re-export interfaces for backwards compatibility
-export { TaskLineageNode, TaskLineageResult, TaskDescendantNode } from '../../interfaces/hierarchy.interface';
+export {
+  TaskLineageNode,
+  TaskLineageResult,
+  TaskDescendantNode,
+} from '../../interfaces/hierarchy.interface';
 
 @Injectable()
 export class TasksHierarchyService {

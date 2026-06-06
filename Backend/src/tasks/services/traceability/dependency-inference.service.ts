@@ -16,7 +16,11 @@ import {
 } from './dependency-inference.utils';
 
 // Re-export interfaces for backwards compatibility
-export { InferenceTask, InferredDependency, InferenceLeafGates } from '../../interfaces/dependency-inference.interface';
+export {
+  InferenceTask,
+  InferredDependency,
+  InferenceLeafGates,
+} from '../../interfaces/dependency-inference.interface';
 
 @Injectable()
 export class DependencyInferenceService {

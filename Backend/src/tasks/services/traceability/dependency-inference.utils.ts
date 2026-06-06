@@ -1,7 +1,4 @@
-import {
-  InferredDependency,
-  InferenceTask,
-} from '../../interfaces/dependency-inference.interface';
+import { InferredDependency, InferenceTask } from '../../interfaces/dependency-inference.interface';
 
 export function inferHeuristicPhases(tasks: InferenceTask[]): InferredDependency[] {
   const normalized = (tasks || []).filter((t) => t?.id && t?.name);

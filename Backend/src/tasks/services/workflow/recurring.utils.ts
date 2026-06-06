@@ -6,6 +6,7 @@ import { TaskDocument } from '../../schemas/task.schema';
 // ===========================================================================
 export * from './recurring-validation.utils';
 export * from './recurring-calculation.utils';
+export * from './recurring-exception.utils';
 
 // ===========================================================================
 // Date Helpers

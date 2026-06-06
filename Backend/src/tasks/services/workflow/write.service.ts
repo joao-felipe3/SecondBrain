@@ -22,7 +22,7 @@ export class TasksWriteService {
     private readonly metricsService: TasksMetricsService,
     private readonly tasksInputService: TasksInputService,
     private readonly tasksChecklistService: TasksChecklistService,
-  ) { }
+  ) {}
 
   // ===========================================================================
   // 1. Creation
@@ -123,8 +123,6 @@ export class TasksWriteService {
     return result !== null;
   }
 
-
-
   // ===========================================================================
   // 5. Private Helpers
   // ===========================================================================
@@ -219,8 +217,7 @@ export class TasksWriteService {
     payload: CreateTaskDto,
   ): Promise<void> {
     const shouldGenerateChecklist =
-      dto.autoGenerateChecklist !== false &&
-      (!payload.checklist || payload.checklist.length === 0);
+      dto.autoGenerateChecklist !== false && (!payload.checklist || payload.checklist.length === 0);
 
     if (!shouldGenerateChecklist) return;
 

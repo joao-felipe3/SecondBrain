@@ -1,8 +1,16 @@
 import { RecurringRuleDto } from '../../dto/create-task.dto';
-import { normalizeRecurringRule, isRecurringDateExcluded } from './recurring-validation.utils';
+import { normalizeRecurringRule } from './recurring-validation.utils';
+import { isRecurringDateExcluded } from './recurring-exception.utils';
 import { addDays, addMonths } from './recurring.utils';
 
-export function calculateNextRecurringDate(referenceDate: Date, recurringRule: RecurringRuleDto): Date | null {
+// ===========================================================================
+// Recurrence Date Calculation Utils
+// ===========================================================================
+
+export function calculateNextRecurringDate(
+  referenceDate: Date,
+  recurringRule: RecurringRuleDto,
+): Date | null {
   const rule = normalizeRecurringRule(recurringRule, {
     allowPastEndDate: true,
     prunePastExceptions: false,
@@ -54,26 +62,10 @@ export function calculateSteppedRecurringDate(
   return null;
 }
 
-export function getRecurringEndDate(rule: RecurringRuleDto): Date | undefined {
-  return rule.endDate instanceof Date ? rule.endDate : undefined;
-}
-
-export function isAfterRecurringEnd(date: Date, endDate?: Date): boolean {
-  if (!endDate) return false;
-  return date.getTime() >= endDate.getTime();
-}
-
-export function getRecurringStepDays(rule: RecurringRuleDto): number {
-  if (rule.frequency === 'weekly') return rule.interval * 7;
-  if (rule.frequency === 'biweekly') return rule.interval * 14;
-  return rule.interval;
-}
-
-export function getAllowedDays(rule: RecurringRuleDto): number[] | null {
-  return Array.isArray(rule.daysOfWeek) && rule.daysOfWeek.length > 0 ? rule.daysOfWeek : null;
-}
-
-export function calculateFirstRecurringDate(startDate: Date, recurringRule: RecurringRuleDto): Date | null {
+export function calculateFirstRecurringDate(
+  startDate: Date,
+  recurringRule: RecurringRuleDto,
+): Date | null {
   const rule = normalizeRecurringRule(recurringRule, {
     allowPastEndDate: true,
     prunePastExceptions: false,
@@ -123,4 +115,27 @@ export function findFirstAllowedRecurringDate(
   }
 
   return null;
+}
+
+// ===========================================================================
+// Date Helpers
+// ===========================================================================
+
+export function getRecurringEndDate(rule: RecurringRuleDto): Date | undefined {
+  return rule.endDate instanceof Date ? rule.endDate : undefined;
+}
+
+export function isAfterRecurringEnd(date: Date, endDate?: Date): boolean {
+  if (!endDate) return false;
+  return date.getTime() >= endDate.getTime();
+}
+
+export function getRecurringStepDays(rule: RecurringRuleDto): number {
+  if (rule.frequency === 'weekly') return rule.interval * 7;
+  if (rule.frequency === 'biweekly') return rule.interval * 14;
+  return rule.interval;
+}
+
+export function getAllowedDays(rule: RecurringRuleDto): number[] | null {
+  return Array.isArray(rule.daysOfWeek) && rule.daysOfWeek.length > 0 ? rule.daysOfWeek : null;
 }

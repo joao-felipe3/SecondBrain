@@ -192,10 +192,11 @@ export class TasksChecklistService {
     private readonly geminiService: GeminiService,
   ) {}
 
-  public validateChecklistStructure(checklist?: Array<ChecklistItemDto | string>): ChecklistValidationResult {
+  public validateChecklistStructure(
+    checklist?: Array<ChecklistItemDto | string>,
+  ): ChecklistValidationResult {
     return this.checklistService.validateChecklistStructure(checklist);
   }
-
 
   // ===========================================================================
   // 1. Checklist Lifecycle & Management

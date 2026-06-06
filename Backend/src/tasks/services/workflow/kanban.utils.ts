@@ -2,6 +2,31 @@ import { Model } from 'mongoose';
 import { TaskDocument } from '../../schemas/task.schema';
 import { MoveTaskStatusDto } from '../../dto/move-task-status.dto';
 
+// ===========================================================================
+// Pure Ordering Calculations
+// ===========================================================================
+
+export function interpolateOrderAtIndex(existingOrders: number[], targetIndex: number): number {
+  const idx = Math.max(0, Math.floor(targetIndex));
+  const len = existingOrders.length;
+
+  if (len === 0) return 1;
+  if (idx <= 0) return (existingOrders[0] || 0) - 1;
+  if (idx >= len) return (existingOrders[len - 1] || 0) + 1;
+
+  const prev = existingOrders[idx - 1] || 0;
+  const next = existingOrders[idx] || prev + 2;
+  return (prev + next) / 2;
+}
+
+export function calculateNextMaxOrder(maxOrder?: number | null): number {
+  return (maxOrder || 0) + 1;
+}
+
+// ===========================================================================
+// Database-coupled Orchestrators
+// ===========================================================================
+
 export async function resolveTargetOrder(
   taskModel: Model<TaskDocument>,
   projectId: string | undefined,
@@ -19,22 +44,15 @@ export async function resolveTargetOrder(
       .select('kanbanOrder')
       .exec();
 
-    const idx = Math.max(0, Math.floor(move.toIndex));
-    const len = destinationTasks.length;
-
-    if (len === 0) return 1;
-    if (idx <= 0) return (destinationTasks[0].kanbanOrder || 0) - 1;
-    if (idx >= len) return (destinationTasks[len - 1].kanbanOrder || 0) + 1;
-
-    const prev = destinationTasks[idx - 1].kanbanOrder || 0;
-    const next = destinationTasks[idx].kanbanOrder || prev + 2;
-    return (prev + next) / 2;
+    const existingOrders = destinationTasks.map((t) => t.kanbanOrder || 0);
+    return interpolateOrderAtIndex(existingOrders, move.toIndex);
   }
 
-  const maxOrder = await taskModel
+  const maxOrderDoc = await taskModel
     .findOne({ project: projectId, status })
     .sort({ kanbanOrder: -1 })
     .select('kanbanOrder')
     .exec();
-  return (maxOrder?.kanbanOrder || 0) + 1;
+
+  return calculateNextMaxOrder(maxOrderDoc?.kanbanOrder);
 }
