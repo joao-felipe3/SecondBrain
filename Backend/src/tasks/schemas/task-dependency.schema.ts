@@ -4,12 +4,6 @@ import { ApiProperty } from '@nestjs/swagger';
 
 export type TaskDependencyDocument = TaskDependency & Document;
 
-/**
- * Tipos de relação entre tarefas
- * finish-to-start: Tarefa B começa após Tarefa A terminar
- * start-to-start: Tarefa B começa quando Tarefa A começa
- * finish-to-finish: Tarefa B termina quando Tarefa A termina
- */
 export enum DependencyType {
   FINISH_TO_START = 'finish-to-start',
   START_TO_START = 'start-to-start',

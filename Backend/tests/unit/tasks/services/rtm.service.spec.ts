@@ -91,7 +91,7 @@ describe('RTMService', () => {
 
     it('deve retornar array vazio se Smart Objective for null', async () => {
       // Act
-      const result = await service.generateRequirements(null);
+      const result = await service.generateRequirements(null as any);
 
       // Assert
       expect(result).toEqual([]);
@@ -284,7 +284,7 @@ describe('RTMService', () => {
         .mockResolvedValueOnce(mockRequirements as any);
 
       // Act
-      const result = await service.getRTMMatrix(mockProjectId, mockTasks);
+      const result = await service.getRTMMatrix(mockProjectId, mockTasks as any);
 
       // Assert
       expect(result.requirements.length).toBe(1);

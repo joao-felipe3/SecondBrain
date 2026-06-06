@@ -1,4 +1,5 @@
-import { Injectable, BadRequestException, NotFoundException, Inject, forwardRef } from '@nestjs/common';
+import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
+import { MoveTaskStatusDto } from '../../dto/move-task-status.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { TaskDocument } from '../../schemas/task.schema';
@@ -9,6 +10,7 @@ import { TasksMetricsService } from '../analysis/metrics.service';
 import { DeviationDetectionService, AlertsService } from '../monitoring';
 import { TasksRecurringService } from './recurring.service';
 import { TasksWriteService } from './write.service';
+import { resolveTargetOrder } from './kanban.utils';
 
 @Injectable()
 export class TasksCompletionService {
@@ -19,11 +21,9 @@ export class TasksCompletionService {
     private readonly metricsService: TasksMetricsService,
     private readonly deviationDetectionService: DeviationDetectionService,
     private readonly alertsService: AlertsService,
-    @Inject(forwardRef(() => TasksRecurringService))
     private readonly tasksRecurringService: TasksRecurringService,
-    @Inject(forwardRef(() => TasksWriteService))
     private readonly tasksWriteService: TasksWriteService,
-  ) {}
+  ) { }
 
   // ===========================================================================
   // 1. Core Lifecycle / Completion
@@ -33,9 +33,7 @@ export class TasksCompletionService {
     this.validateTaskId(id);
 
     const task = await this.getTaskOrThrow(id);
-    if (task.isConcluded) {
-      return task;
-    }
+    if (task.isConcluded) return task;
 
     const { remainingHours } = this.calculateRemainingPomodorosAndHours(task);
 
@@ -213,9 +211,7 @@ export class TasksCompletionService {
     const remainingPomodoros = Math.max(0, plannedPomodoros - currentPomodorosDid);
 
     task.isConcluded = true;
-    if (remainingPomodoros > 0) {
-      task.pomodorosDid = plannedPomodoros;
-    }
+    if (remainingPomodoros > 0) task.pomodorosDid = plannedPomodoros;
 
     const projectId = task.project?.toString();
     if (projectId) {
@@ -298,4 +294,38 @@ export class TasksCompletionService {
     const payload = this.tasksRecurringService.buildOccurrencePayload(task, nextDeadline);
     await this.tasksWriteService.createTaskCore(payload as any);
   }
+
+  public async moveTaskStatus(id: string, move: MoveTaskStatusDto): Promise<TaskDocument> {
+    this.validateTaskId(id);
+
+    const task = await this.getTaskOrThrow(id);
+
+    const toStatus = move.status;
+
+    if (task.isConcluded && toStatus !== 'done') {
+      throw new BadRequestException('Tarefa concluída não pode ser movida para fora de "done"');
+    }
+
+    if (toStatus === 'done') return this.markAsConcluded(id);
+
+    const projectId = task.project?.toString();
+    const targetOrder = await resolveTargetOrder(this.taskModel, projectId, toStatus, move);
+
+    const updatedTask = await this.taskModel
+      .findByIdAndUpdate(
+        id,
+        {
+          status: toStatus,
+          statusUpdatedAt: new Date(),
+          kanbanOrder: targetOrder,
+        },
+        { new: true },
+      )
+      .exec();
+
+    if (!updatedTask) throw new NotFoundException(`Task with id ${id} not found`);
+
+    return updatedTask;
+  }
+
 }

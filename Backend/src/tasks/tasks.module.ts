@@ -12,22 +12,13 @@ import { HabitsController } from './controllers/habits.controller';
 import { MongooseModule } from '@nestjs/mongoose';
 import { TaskSchema } from './schemas/task.schema';
 import { Task } from './entities/task.entity';
-import { MicroTaskMilestoneSchema } from './schemas/microtask-milestone.schema';
-import { MicroTaskMilestone } from './entities/microtask-milestone.entity';
-import { MicroTaskGenerationRunSchema } from './schemas/microtask-generation-run.schema';
-import { MicroTaskGenerationRun } from './entities/microtask-generation-run.entity';
-import { MicroTaskSimilarityCacheSchema } from './schemas/microtask-similarity-cache.schema';
-import { MicroTaskSimilarityCache } from './entities/microtask-similarity-cache.entity';
 import { ProjectSchema } from '../projects/schemas/project.schema';
 import { Project } from '../projects/entities/project.entity';
 import { TaskDependencySchema } from './schemas/task-dependency.schema';
 import { TaskDependency } from './schemas/task-dependency.schema';
-import { ProjectBufferSchema } from './schemas/project-buffer.schema';
-import { ProjectBuffer } from './entities/project-buffer.entity';
-import { RequirementSchema } from './schemas/requirement.schema';
-import { Requirement } from './entities/requirement.entity';
+import { ProjectBufferSchema, ProjectBuffer } from './schemas/project-buffer.schema';
+import { RequirementSchema, Requirement } from './schemas/requirement.schema';
 import { TaskCompletionFeedbackSchema } from './schemas/task-completion-feedback.schema';
-import { TaskCompletionFeedback } from './entities/task-completion-feedback.entity';
 import { FeedbackService } from './services/intelligence';
 import {
   TasksRecurringService,
@@ -41,7 +32,6 @@ import { TasksMetricsService, TasksHierarchyService, TasksPertService } from './
 import { forwardRef } from '@nestjs/common';
 import { ProjectsModule } from '../projects/projects.module';
 import { TaskAlertSchema } from './schemas/task-alert.schema';
-import { TaskAlert } from './entities/task-alert.entity';
 import { AlertsService, DeviationDetectionService } from './services/monitoring';
 import { AlertsController } from './controllers/alerts.controller';
 
@@ -49,24 +39,12 @@ import { AlertsController } from './controllers/alerts.controller';
   imports: [
     MongooseModule.forFeature([
       { name: Task.name, schema: TaskSchema },
-      { name: MicroTaskMilestone.name, schema: MicroTaskMilestoneSchema },
-      {
-        name: MicroTaskGenerationRun.name,
-        schema: MicroTaskGenerationRunSchema,
-      },
-      {
-        name: MicroTaskSimilarityCache.name,
-        schema: MicroTaskSimilarityCacheSchema,
-      },
       { name: Project.name, schema: ProjectSchema },
       { name: TaskDependency.name, schema: TaskDependencySchema },
       { name: ProjectBuffer.name, schema: ProjectBufferSchema },
       { name: Requirement.name, schema: RequirementSchema },
-      {
-        name: TaskCompletionFeedback.name,
-        schema: TaskCompletionFeedbackSchema,
-      },
-      { name: TaskAlert.name, schema: TaskAlertSchema },
+      { name: 'TaskCompletionFeedback', schema: TaskCompletionFeedbackSchema },
+      { name: 'TaskAlert', schema: TaskAlertSchema },
     ]),
     forwardRef(() => ProjectsModule),
   ],

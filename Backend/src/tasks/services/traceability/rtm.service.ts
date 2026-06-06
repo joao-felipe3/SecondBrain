@@ -11,33 +11,17 @@ import { TaskDocument } from '../../schemas/task.schema';
 import { CreateTaskDto } from '../../dto/create-task.dto';
 import { GeminiService } from '../../../ai/gemini.service';
 import { TasksService } from '../../tasks.service';
+import { RTMValidation, RTMMatrixData } from '../../interfaces/rtm.interface';
+import {
+  normalizeKind,
+  normalizeType,
+  levelForKind,
+  getLinkedActions,
+  parseJsonArray,
+} from './rtm.utils';
 
-export interface RTMValidation {
-  isValid: boolean;
-  unmappedRequirements: string[];
-  risks: string[];
-  coverage: number;
-}
-
-export interface RTMMatrixData {
-  requirements: Array<{
-    id: string;
-    description: string;
-    type: string;
-    status: string;
-    kind: JourneyKind;
-    parentItemId?: string;
-    hierarchyLevel: number;
-  }>;
-  tasks: Array<{
-    id: string;
-    name: string;
-    wbsNodeId?: string;
-    wbsNodeName: string;
-  }>;
-  matrix: Map<string, Set<string>>;
-  validation: RTMValidation;
-}
+// Re-export interfaces for backwards compatibility
+export { RTMValidation, RTMMatrixData } from '../../interfaces/rtm.interface';
 
 type JourneyDraft = {
   ref: string;
@@ -85,8 +69,8 @@ export class RTMService {
       const insertedIds = new Set<string>();
       const prepared = requirementsData
         .map((item, index) => {
-          const kind = this.normalizeKind(item.kind || item.type);
-          const type = this.normalizeType(item.type, kind);
+          const kind = normalizeKind(item.kind || item.type);
+          const type = normalizeType(item.type, kind);
           const ref = String(item.ref || `${kind.slice(0, 1).toUpperCase()}${index + 1}`).trim();
           const parentRef = item.parentRef ? String(item.parentRef).trim() : undefined;
           const description = String(item.description || '').trim();
@@ -96,7 +80,7 @@ export class RTMService {
             description,
             kind,
             type,
-            hierarchyLevel: this.levelForKind(kind),
+            hierarchyLevel: levelForKind(kind),
             source: item.source || 'manual',
           };
         })
@@ -222,7 +206,7 @@ export class RTMService {
         return null;
       }
 
-      if (this.getLinkedActions(requirement).length === 0) {
+      if (getLinkedActions(requirement).length === 0) {
         requirement.status = 'open';
         await requirement.save();
       }
@@ -257,10 +241,10 @@ export class RTMService {
 
     try {
       const prompt = `Você é um planejador de desenvolvimento pessoal.
-
+ 
 Objetivo:
 Gerar uma estrutura rastreável no formato objetivo -> hábito -> etapa -> ação.
-
+ 
 Regras:
 - Foque em projetos pessoais (aprendizado, rotina, hábitos, produtividade).
 - Gere uma árvore prática e rastreável.
@@ -272,7 +256,7 @@ Regras:
 	- description: descrição clara, específica e mensurável
 - Ações devem ser executáveis (o que fazer de fato).
 - Sem markdown.
-
+ 
 Smart Objective:
 - O: ${smartObjective.objective || ''}
 - Específico: ${smartObjective.specific || ''}
@@ -280,7 +264,7 @@ Smart Objective:
 - Alcançável: ${smartObjective.achievable || ''}
 - Relevante: ${smartObjective.relevant || ''}
 - Temporal: ${smartObjective.temporal || ''}
-
+ 
 Retorne SOMENTE um JSON array:
 [
 	{ "ref": "O1", "parentRef": null, "kind": "objective", "description": "..." },
@@ -295,7 +279,7 @@ Retorne SOMENTE um JSON array:
         maxOutputTokens: 3072,
       });
 
-      const parsed = this.parseJsonArray(response);
+      const parsed = parseJsonArray(response);
       if (!parsed) {
         this.logger.warn('Resposta da IA não contém um JSON array válido');
         return [];
@@ -304,7 +288,7 @@ Retorne SOMENTE um JSON array:
       const normalized: JourneyDraft[] = parsed
         .map((item: unknown, index: number) => {
           const anyItem = item as Record<string, unknown>;
-          const kind = this.normalizeKind(anyItem.kind);
+          const kind = normalizeKind(anyItem.kind);
           const defaultRefPrefix =
             kind === 'objective' ? 'O' : kind === 'habit' ? 'H' : kind === 'stage' ? 'E' : 'A';
           const ref = String(anyItem.ref ?? `${defaultRefPrefix}${index + 1}`).trim();
@@ -316,7 +300,7 @@ Retorne SOMENTE um JSON array:
             parentRef,
             kind,
             description,
-            type: this.normalizeType(anyItem.type, kind),
+            type: normalizeType(anyItem.type, kind),
           };
         })
         .filter((item) => item.description.length > 0);
@@ -363,7 +347,7 @@ Retorne SOMENTE um JSON array:
     try {
       const allItems = await this.requirementModel.find({ projectId });
       const actionItems = allItems.filter(
-        (item: RequirementDocument) => this.normalizeKind(item.kind || item.type) === 'action',
+        (item: RequirementDocument) => normalizeKind(item.kind || item.type) === 'action',
       );
 
       if (allItems.length === 0) {
@@ -398,7 +382,7 @@ Retorne SOMENTE um JSON array:
 
       const alreadyMappedTaskIds = new Set<string>();
       for (const item of actionItems) {
-        for (const taskId of this.getLinkedActions(item)) {
+        for (const taskId of getLinkedActions(item)) {
           alreadyMappedTaskIds.add(String(taskId));
         }
       }
@@ -431,22 +415,22 @@ Retorne SOMENTE um JSON array:
         const actionsDesc = actionItems.map((a) => `[ID: ${a._id}] ${a.description}`).join('\n');
 
         const prompt = `Você é um analista de rastreabilidade para desenvolvimento pessoal.
-
+ 
 Vincule cada tarefa à ação da jornada mais aderente.
 - Prefira vincular a ações existentes.
 - Use "ORPHAN" somente quando nenhuma ação fizer sentido.
-
+ 
 ACOES DISPONIVEIS:
 ${actionsDesc}
-
+ 
 TAREFAS:
 ${tasksDesc}
-
+ 
 Retorne JSON array:
 [
 	{ "taskId": "...", "requirementId": "...", "confidence": 0.7 }
 ]
-
+ 
 Sem markdown.`;
 
         try {
@@ -456,7 +440,7 @@ Sem markdown.`;
             maxOutputTokens: 2048,
           });
 
-          const mappingArray = this.parseJsonArray(response);
+          const mappingArray = parseJsonArray(response);
           if (!mappingArray) {
             throw new Error('Resposta JSON inválida no auto-vínculo');
           }
@@ -489,7 +473,7 @@ Sem markdown.`;
       let createdRequirementsCount = 0;
       if (orphanTasks.length > 0) {
         const stageItems = allItems.filter(
-          (item: RequirementDocument) => this.normalizeKind(item.kind || item.type) === 'stage',
+          (item: RequirementDocument) => normalizeKind(item.kind || item.type) === 'stage',
         );
         const fallbackParent = stageItems.length > 0 ? stageItems[0] : allItems[0];
         const fallbackParentId = fallbackParent ? String(fallbackParent._id) : undefined;
@@ -505,7 +489,7 @@ Sem markdown.`;
             title: description,
             type: 'action',
             kind: 'action',
-            hierarchyLevel: this.levelForKind('action'),
+            hierarchyLevel: levelForKind('action'),
             parentItemId: fallbackParentId,
             source: 'auto_mapped_from_orphan_tasks',
             traceableItems: group.map((task) => String(task._id || task.id)),
@@ -596,7 +580,7 @@ Sem markdown.`;
       });
 
       const actionItems = requirements.filter(
-        (item: RequirementDocument) => this.normalizeKind(item.kind || item.type) === 'action',
+        (item: RequirementDocument) => normalizeKind(item.kind || item.type) === 'action',
       );
       if (actionItems.length === 0) {
         return {
@@ -612,10 +596,10 @@ Sem markdown.`;
 
       for (const req of actionItems) {
         const prompt = `Você é um especialista em planejamento pessoal.
-
+ 
 Ação da jornada:
 "${req.description}"
-
+ 
 Gere 1-2 tarefas práticas e executáveis para cumprir essa ação.
 Retorne JSON array:
 [
@@ -630,7 +614,7 @@ Sem markdown.`;
             maxOutputTokens: 512,
           });
 
-          const tasksToCreate = this.parseJsonArray(response);
+          const tasksToCreate = parseJsonArray(response);
           if (!tasksToCreate || tasksToCreate.length === 0) continue;
 
           const taskIds: string[] = [];
@@ -751,14 +735,14 @@ Sem markdown.`;
 
       const hasChildOfKind = (id: string, kind: JourneyKind): boolean => {
         const children = childrenByParent.get(id) || [];
-        return children.some((child) => this.normalizeKind(child.kind || child.type) === kind);
+        return children.some((child) => normalizeKind(child.kind || child.type) === kind);
       };
 
       for (const req of requirements) {
         const id = String(req._id ?? req.id ?? '');
         const description = String(req.description || 'Item');
-        const kind = this.normalizeKind(req.kind || req.type);
-        const linkedActions = this.getLinkedActions(req);
+        const kind = normalizeKind(req.kind || req.type);
+        const linkedActions = getLinkedActions(req);
 
         if (kind === 'objective') {
           if (!hasChildOfKind(id, 'habit')) {
@@ -830,14 +814,14 @@ Sem markdown.`;
       const matrix = new Map<string, Set<string>>();
       for (const req of requirements) {
         const reqId = String(req._id ?? req.id ?? '');
-        const traceable = this.getLinkedActions(req);
+        const traceable = getLinkedActions(req);
         matrix.set(reqId, new Set(traceable));
       }
 
       const validation = await this.validateRTM(projectId);
 
       const requirementsData = requirements.map((req) => {
-        const kind = this.normalizeKind(req.kind || req.type);
+        const kind = normalizeKind(req.kind || req.type);
         return {
           id: String(req._id ?? req.id ?? ''),
           description: req.description,
@@ -845,7 +829,7 @@ Sem markdown.`;
           status: req.status,
           kind,
           parentItemId: req.parentItemId ? String(req.parentItemId) : undefined,
-          hierarchyLevel: Number(req.hierarchyLevel ?? this.levelForKind(kind)),
+          hierarchyLevel: Number(req.hierarchyLevel ?? levelForKind(kind)),
         };
       });
 
@@ -900,78 +884,5 @@ Sem markdown.`;
         },
       };
     }
-  }
-
-  // ===========================================================================
-  // 4. Internal Helpers & Normalization
-  // ===========================================================================
-
-  private normalizeKind(value: unknown): JourneyKind {
-    const raw = String(value ?? '')
-      .trim()
-      .toLowerCase();
-    if (raw === 'objective' || raw === 'objetivo') return 'objective';
-    if (raw === 'habit' || raw === 'habito' || raw === 'hábito') return 'habit';
-    if (raw === 'stage' || raw === 'etapa') return 'stage';
-    return 'action';
-  }
-
-  private normalizeType(value: unknown, fallbackKind?: JourneyKind): RequirementType {
-    const raw = String(value ?? '')
-      .trim()
-      .toLowerCase();
-    if (raw === 'functional') return 'functional';
-    if (raw === 'non_functional' || raw === 'non-functional' || raw === 'nonfunctional') {
-      return 'non_functional';
-    }
-    if (raw === 'constraint') return 'constraint';
-    if (raw === 'objective' || raw === 'objetivo') return 'objective';
-    if (raw === 'habit' || raw === 'habito' || raw === 'hábito') return 'habit';
-    if (raw === 'stage' || raw === 'etapa') return 'stage';
-    if (raw === 'action' || raw === 'acao' || raw === 'ação') return 'action';
-    if (fallbackKind) return fallbackKind;
-    return 'action';
-  }
-
-  private levelForKind(kind: JourneyKind): number {
-    if (kind === 'objective') return 0;
-    if (kind === 'habit') return 1;
-    if (kind === 'stage') return 2;
-    return 3;
-  }
-
-  private getLinkedActions(
-    requirement: Requirement | RequirementDocument | Partial<Requirement>,
-  ): string[] {
-    const modern = Array.isArray(requirement?.traceableActionItems)
-      ? requirement.traceableActionItems.map(String)
-      : [];
-    if (modern.length > 0) return modern;
-    const legacy = Array.isArray(requirement?.traceableItems)
-      ? requirement?.traceableItems.map(String)
-      : [];
-    return legacy;
-  }
-
-  private parseJsonArray(rawResponse: string): unknown[] | null {
-    const cleaned = String(rawResponse || '')
-      .replace(/```json\n?/gi, '')
-      .replace(/```\n?/g, '')
-      .trim();
-    const tryParse = (text: string) => {
-      try {
-        const parsed = JSON.parse(text);
-        return Array.isArray(parsed) ? parsed : null;
-      } catch {
-        return null;
-      }
-    };
-    const direct = tryParse(cleaned);
-    if (direct) return direct;
-    const match = cleaned.match(/\[[\s\S]*\]/);
-    if (match?.[0]) {
-      return tryParse(match[0]);
-    }
-    return null;
   }
 }

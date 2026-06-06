@@ -18,12 +18,12 @@ import { CreateMicroTaskDto } from '../../dto/create-micro-task.dto';
 import { ProjectsService } from '../../../projects/projects.service';
 import { TaskDocument } from '../../schemas/task.schema';
 import {
-  toDateKey,
-  addDays,
-  addMonths,
   normalizeChecklistFromTask,
   computeParentRecurringId,
   assembleOccurrencePayload,
+  normalizeRecurringRule,
+  calculateNextRecurringDate,
+  calculateFirstRecurringDate,
 } from './recurring.utils';
 import { TasksWriteService } from './write.service';
 
@@ -37,10 +37,6 @@ export class TasksRecurringService {
     private readonly tasksWriteService?: TasksWriteService,
   ) {}
 
-  // ===========================================================================
-  // 1. Rule Normalization & Validation
-  // ===========================================================================
-
   public normalizeRecurringRule(
     recurringRule?: RecurringRuleDto,
     options?: {
@@ -48,282 +44,15 @@ export class TasksRecurringService {
       prunePastExceptions?: boolean;
     },
   ): RecurringRuleDto {
-    this.ensureRequiredFields(recurringRule);
-
-    const frequency = this.normalizeFrequency(recurringRule!.frequency);
-    const interval = this.normalizeInterval(recurringRule!.interval);
-
-    const endDate = this.parseAndValidateEndDate(
-      recurringRule!.endDate,
-      Boolean(options?.allowPastEndDate),
-    );
-    const daysOfWeek = this.normalizeDaysOfWeek(recurringRule!.daysOfWeek);
-
-    const exceptions = this.parseExceptions(recurringRule!.exceptions);
-    const cleanedExceptions = exceptions
-      ? this.cleanExceptions(exceptions, endDate, options?.prunePastExceptions)
-      : undefined;
-
-    return {
-      ...recurringRule!,
-      frequency,
-      interval,
-      daysOfWeek,
-      exceptions: cleanedExceptions,
-    };
+    return normalizeRecurringRule(recurringRule, options);
   }
-
-  private ensureRequiredFields(recurringRule?: RecurringRuleDto): void {
-    if (!recurringRule?.frequency || !recurringRule?.interval) {
-      throw new BadRequestException('recurringRule inválida: frequency e interval são obrigatórios.');
-    }
-  }
-
-  private normalizeFrequency(raw: unknown): string {
-    const frequency = String(raw).toLowerCase();
-    const allowedFrequencies = ['daily', 'weekly', 'biweekly', 'monthly', 'custom'];
-    if (!allowedFrequencies.includes(frequency)) {
-      throw new BadRequestException(`recurringRule inválida: frequency "${String(raw)}" não suportada.`);
-    }
-    return frequency;
-  }
-
-  private normalizeInterval(raw: unknown): number {
-    const interval = Number(raw);
-    if (!Number.isFinite(interval) || interval <= 0) {
-      throw new BadRequestException('recurringRule inválida: interval deve ser maior que zero.');
-    }
-    return interval;
-  }
-
-  private parseAndValidateEndDate(raw?: unknown, allowPast = false): Date | undefined {
-    if (raw === undefined || raw === null) return undefined;
-    const endDate = raw instanceof Date ? raw : new Date(String(raw));
-    if (Number.isNaN(endDate.getTime())) {
-      throw new BadRequestException('recurringRule inválida: endDate inválida.');
-    }
-    if (!allowPast && endDate.getTime() < Date.now() - 24 * 60 * 60 * 1000) {
-      throw new BadRequestException('recurringRule inválida: endDate não pode estar no passado.');
-    }
-    return endDate;
-  }
-
-  private normalizeDaysOfWeek(raw?: unknown): number[] | undefined {
-    if (!Array.isArray(raw)) return undefined;
-    const filtered = raw.filter((d) => Number.isInteger(d) && d >= 0 && d <= 6) as number[];
-    return filtered.length > 0 ? filtered : undefined;
-  }
-
-  private parseExceptions(raw?: unknown): RecurringExceptionDto[] | undefined {
-    if (!Array.isArray(raw)) return undefined;
-
-    const out: RecurringExceptionDto[] = [];
-    for (const exception of raw) {
-      const date = this.extractExceptionDate(exception);
-      if (!date) continue;
-
-      const normalizedDate = new Date(date);
-      normalizedDate.setUTCHours(0, 0, 0, 0);
-
-      const reason = this.extractExceptionReason(exception);
-      out.push({ date: normalizedDate, reason });
-    }
-
-    return out.length > 0 ? out : undefined;
-  }
-
-  // ===========================================================================
-  // 2. Exception Parsing Helpers
-  // ===========================================================================
-
-  private extractExceptionDate(rawException: unknown): Date | undefined {
-    if (rawException instanceof Date) return rawException;
-    if (!rawException || typeof rawException !== 'object') return undefined;
-
-    const candidate = (rawException as Record<string, unknown>)['date'];
-    if (candidate instanceof Date) return candidate;
-    if (candidate === undefined || candidate === null) return undefined;
-
-    const parsed = new Date(String(candidate));
-    return Number.isNaN(parsed.getTime()) ? undefined : parsed;
-  }
-
-  private extractExceptionReason(rawException: unknown): string | undefined {
-    if (!rawException || typeof rawException !== 'object') return undefined;
-    const r = (rawException as Record<string, unknown>)['reason'];
-    return typeof r === 'string' ? r : undefined;
-  }
-
-  private cleanExceptions(
-    exceptions: RecurringExceptionDto[],
-    endDateRaw?: string | Date,
-    prunePastExceptions?: boolean,
-  ): RecurringExceptionDto[] {
-    return exceptions.filter((exception) => {
-      if (endDateRaw) {
-        const endDate = this.parseAndValidateEndDate(endDateRaw, true);
-        if (endDate) {
-          endDate.setUTCHours(23, 59, 59, 999);
-          if (exception.date.getTime() > endDate.getTime()) return false;
-        }
-      }
-
-      if (prunePastExceptions === false) return true;
-
-      const yesterday = new Date();
-      yesterday.setHours(0, 0, 0, 0);
-      yesterday.setDate(yesterday.getDate() - 1);
-      return exception.date.getTime() >= yesterday.getTime();
-    });
-  }
-
-  private isRecurringDateExcluded(date: Date, recurringRule: RecurringRuleDto): boolean {
-    const dateKey = toDateKey(date);
-    return Array.isArray(recurringRule.exceptions)
-      ? recurringRule.exceptions.some((exception: unknown) => {
-          let rawDate: unknown;
-          if (exception instanceof Date) rawDate = exception;
-          else if (exception && typeof exception === 'object' && 'date' in exception) {
-            rawDate = (exception as Record<string, unknown>)['date'];
-          } else {
-            rawDate = undefined;
-          }
-
-          const parsed = rawDate instanceof Date ? rawDate : new Date(String(rawDate));
-          if (Number.isNaN(parsed.getTime())) return false;
-          return toDateKey(parsed) === dateKey;
-        })
-      : false;
-  }
-
-  // ===========================================================================
-  // 3. Recurrence Date Calculations
-  // ===========================================================================
 
   public calculateNextRecurringDate(referenceDate: Date, recurringRule: RecurringRuleDto): Date | null {
-    const rule = this.normalizeRecurringRule(recurringRule, {
-      allowPastEndDate: true,
-      prunePastExceptions: false,
-    });
-
-    const base = new Date(referenceDate);
-    base.setSeconds(0, 0);
-
-    const endDate = this.getRecurringEndDate(rule);
-    if (this.isAfterRecurringEnd(base, endDate)) return null;
-
-    if (rule.frequency === 'monthly') {
-      return this.calculateMonthlyRecurringDate(base, rule, endDate);
-    }
-
-    return this.calculateSteppedRecurringDate(base, rule, endDate);
+    return calculateNextRecurringDate(referenceDate, recurringRule);
   }
 
-  private calculateMonthlyRecurringDate(
-    base: Date,
-    rule: RecurringRuleDto,
-    endDate?: Date,
-  ): Date | null {
-    const monthCandidate = addMonths(base, rule.interval);
-    if (this.isAfterRecurringEnd(monthCandidate, endDate)) return null;
-
-    return this.isRecurringDateExcluded(monthCandidate, rule)
-      ? this.calculateNextRecurringDate(monthCandidate, rule)
-      : monthCandidate;
-  }
-
-  private calculateSteppedRecurringDate(
-    base: Date,
-    rule: RecurringRuleDto,
-    endDate?: Date,
-  ): Date | null {
-    const candidate = addDays(base, this.getRecurringStepDays(rule));
-    const allowedDays = this.getAllowedDays(rule);
-
-    for (let offset = 0; offset < 365; offset++) {
-      const probe = addDays(candidate, offset);
-      if (this.isAfterRecurringEnd(probe, endDate)) return null;
-      if (allowedDays && !allowedDays.includes(probe.getUTCDay())) continue;
-      if (this.isRecurringDateExcluded(probe, rule)) continue;
-      return probe;
-    }
-
-    return null;
-  }
-
-  private getRecurringEndDate(rule: RecurringRuleDto): Date | undefined {
-    return rule.endDate instanceof Date ? rule.endDate : undefined;
-  }
-
-  private isAfterRecurringEnd(date: Date, endDate?: Date): boolean {
-    if (!endDate) return false;
-
-    return date.getTime() >= endDate.getTime();
-  }
-
-  private getRecurringStepDays(rule: RecurringRuleDto): number {
-    if (rule.frequency === 'weekly') return rule.interval * 7;
-    if (rule.frequency === 'biweekly') return rule.interval * 14;
-
-    return rule.interval;
-  }
-
-  private getAllowedDays(rule: RecurringRuleDto): number[] | null {
-    return Array.isArray(rule.daysOfWeek) && rule.daysOfWeek.length > 0 ? rule.daysOfWeek : null;
-  }
-
-  private calculateFirstRecurringDate(startDate: Date, recurringRule: RecurringRuleDto): Date | null {
-    const rule = this.normalizeRecurringRule(recurringRule, {
-      allowPastEndDate: true,
-      prunePastExceptions: false,
-    });
-
-    const base = new Date(startDate);
-    base.setSeconds(0, 0);
-
-    const endDate = this.getRecurringEndDate(rule);
-    if (this.isAfterRecurringEnd(base, endDate) && endDate !== undefined) return null;
-
-    if (rule.frequency === 'monthly') {
-      return this.calculateFirstMonthlyRecurringDate(base, rule, endDate);
-    }
-
-    return this.findFirstAllowedRecurringDate(base, rule, endDate);
-  }
-
-  private calculateFirstMonthlyRecurringDate(
-    base: Date,
-    rule: RecurringRuleDto,
-    endDate?: Date,
-  ): Date | null {
-    if (!this.isRecurringDateExcluded(base, rule)) {
-      return base;
-    }
-
-    const nextDate = this.calculateNextRecurringDate(base, rule);
-    return this.isAfterRecurringEnd(nextDate ?? base, endDate) ? null : nextDate;
-  }
-
-  private findFirstAllowedRecurringDate(
-    base: Date,
-    rule: RecurringRuleDto,
-    endDate?: Date,
-  ): Date | null {
-    const allowedDays = this.getAllowedDays(rule);
-
-    for (let offset = 0; offset < 365; offset++) {
-      const probe = addDays(base, offset);
-
-      if (this.isAfterRecurringEnd(probe, endDate)) return null;
-
-      if (allowedDays && !allowedDays.includes(probe.getUTCDay())) continue;
-
-      if (this.isRecurringDateExcluded(probe, rule)) continue;
-
-      return probe;
-    }
-
-    return null;
+  public calculateFirstRecurringDate(startDate: Date, recurringRule: RecurringRuleDto): Date | null {
+    return calculateFirstRecurringDate(startDate, recurringRule);
   }
 
   // ===========================================================================

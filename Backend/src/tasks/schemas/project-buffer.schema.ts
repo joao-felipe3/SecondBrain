@@ -9,22 +9,22 @@ export class ProjectBuffer {
   projectId: string;
 
   @Prop({ required: true, type: Number, min: 0 })
-  projectBuffer: number; // Total buffer en horas
+  projectBuffer: number;
 
   @Prop({ required: true, type: Number, min: 0, default: 0 })
-  consumed: number; // Horas consumidas del buffer
+  consumed: number;
 
   @Prop({ required: true, type: Number, min: 0, max: 100, default: 75 })
-  threshold: number; // Umbral de alerta (%)
+  threshold: number;
 
   @Prop({ type: Number, min: 0 })
-  criticalPathDuration?: number; // Duración total del camino crítico
+  criticalPathDuration?: number;
 
   @Prop({ type: Number, min: 0 })
-  totalVariance?: number; // Varianza total del camino crítico
+  totalVariance?: number;
 
   @Prop({ type: Number, min: 0 })
-  standardDeviation?: number; // Desviación estándar
+  standardDeviation?: number;
 
   @Prop({ type: [{ taskId: String, variance: Number }], default: [] })
   taskVariances: Array<{ taskId: string; variance: number }>;

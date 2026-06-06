@@ -92,8 +92,6 @@ export function createTasksServiceTestProviders(deps: TasksServiceTestDeps) {
             inputService,
             deps.geminiService,
           ),
-          deps.checklistService,
-          completionService,
         );
 
         (recurringService as any).tasksWriteService = writeService;

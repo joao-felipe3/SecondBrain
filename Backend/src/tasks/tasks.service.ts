@@ -108,7 +108,7 @@ export class TasksService {
   }
 
   public async moveTaskStatus(id: string, move: MoveTaskStatusDto): Promise<TaskDocument> {
-    return this.tasksWriteService.moveTaskStatus(id, move);
+    return this.tasksCompletionService.moveTaskStatus(id, move);
   }
 
   // ------------------------------ Checklist / Validation ------------------------------

@@ -1,6 +1,16 @@
 import { RecurringRuleDto, RecurringTaskOccurrenceDto, CreateTaskDto } from '../../dto/create-task.dto';
 import { TaskDocument } from '../../schemas/task.schema';
 
+// ===========================================================================
+// Re-export specific utils for backwards compatibility
+// ===========================================================================
+export * from './recurring-validation.utils';
+export * from './recurring-calculation.utils';
+
+// ===========================================================================
+// Date Helpers
+// ===========================================================================
+
 export function toDateKey(date: Date): string {
   const normalized = new Date(date);
   const year = normalized.getUTCFullYear();
@@ -20,6 +30,10 @@ export function addMonths(date: Date, months: number): Date {
   next.setUTCMonth(next.getUTCMonth() + months);
   return next;
 }
+
+// ===========================================================================
+// Task & Payload Normalization Utils
+// ===========================================================================
 
 export function normalizeChecklistFromTask(task: TaskDocument): CreateTaskDto['checklist'] {
   if (!Array.isArray(task.checklist)) return [];

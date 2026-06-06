@@ -1,11 +1,11 @@
 import { Schema, Document, Types } from 'mongoose';
 
 export interface TaskCompletionFeedbackDocument extends Document {
-  task: Types.ObjectId; // ObjectId ref to Task
-  project?: Types.ObjectId; // ObjectId ref to Project
-  modelName?: string; // e.g., 'gemini-2.0-flash'
-  promptVersion?: string; // e.g., 'v1'
-  inputSnapshot?: any; // snapshot of task details at time of generation
+  task: Types.ObjectId;
+  project?: Types.ObjectId;
+  modelName?: string;
+  promptVersion?: string;
+  inputSnapshot?: any;
   feedback?: string; // LLM-generated feedback
   error?: string; // if generation failed
   createdAt?: Date;

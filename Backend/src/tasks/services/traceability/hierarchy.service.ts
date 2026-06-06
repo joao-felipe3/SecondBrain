@@ -2,26 +2,10 @@ import { Injectable, BadRequestException, NotFoundException } from '@nestjs/comm
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { TaskDocument } from '../../schemas/task.schema';
+import { TaskLineageNode, TaskLineageResult, TaskDescendantNode } from '../../interfaces/hierarchy.interface';
 
-export interface TaskLineageNode {
-  _id: string | Types.ObjectId;
-  name: string;
-  status: string;
-}
-
-export interface TaskLineageResult {
-  ancestors: TaskLineageNode[];
-  children: TaskLineageNode[];
-  warnings: string[];
-}
-
-export interface TaskDescendantNode {
-  _id: string | Types.ObjectId;
-  name: string;
-  status: string;
-  experience: number;
-  isConcluded: boolean;
-}
+// Re-export interfaces for backwards compatibility
+export { TaskLineageNode, TaskLineageResult, TaskDescendantNode } from '../../interfaces/hierarchy.interface';
 
 @Injectable()
 export class TasksHierarchyService {
@@ -195,10 +179,11 @@ export class TasksHierarchyService {
       0,
     );
 
-    const contributionPercent = totalCompletedXP > 0 ? (subtreeCompletedXP / totalCompletedXP) * 100 : 0;
+    const rawPercent = totalCompletedXP > 0 ? (subtreeCompletedXP / totalCompletedXP) * 100 : 0;
+    const contributionPercent = Math.round(rawPercent * 100) / 100;
 
     return {
-      contributionPercent: Math.round(contributionPercent * 100) / 100,
+      contributionPercent,
       subtreeCompletedXP,
       totalCompletedXP,
       breakdown: subtreeNodes,

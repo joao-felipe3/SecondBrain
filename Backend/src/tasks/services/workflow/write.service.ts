@@ -8,10 +8,8 @@ import { ProjectDocument } from '../../../projects/schemas/project.schema';
 import { ProjectsService } from '../../../projects/projects.service';
 import { TasksMetricsService } from '../analysis/metrics.service';
 import { CreateManyTasksOptionsDto } from '../../dto/create-many-tasks-options.dto';
-import { MoveTaskStatusDto } from '../../dto/move-task-status.dto';
 import { TasksInputService } from './input.service';
-import { TasksChecklistService, ChecklistService } from '../intelligence/checklist.service';
-import { TasksCompletionService } from './completion.service';
+import { TasksChecklistService } from '../intelligence/checklist.service';
 import { InsertManyError } from '../../interfaces/db-errors';
 
 @Injectable()
@@ -24,9 +22,7 @@ export class TasksWriteService {
     private readonly metricsService: TasksMetricsService,
     private readonly tasksInputService: TasksInputService,
     private readonly tasksChecklistService: TasksChecklistService,
-    private readonly checklistService: ChecklistService,
-    private readonly tasksCompletionService: TasksCompletionService,
-  ) {}
+  ) { }
 
   // ===========================================================================
   // 1. Creation
@@ -127,42 +123,7 @@ export class TasksWriteService {
     return result !== null;
   }
 
-  // ===========================================================================
-  // 4. Workflow
-  // ===========================================================================
 
-  public async moveTaskStatus(id: string, move: MoveTaskStatusDto): Promise<TaskDocument> {
-    this.assertValidObjectId(id);
-
-    const task = await this.getTaskOrThrow(id);
-
-    const toStatus = move.status;
-
-    if (task.isConcluded && toStatus !== 'done') {
-      throw new BadRequestException('Tarefa concluída não pode ser movida para fora de "done"');
-    }
-
-    if (toStatus === 'done') return this.tasksCompletionService.markAsConcluded(id);
-
-    const projectId = task.project?.toString();
-    const targetOrder = await this.resolveTargetOrder(projectId, toStatus, move);
-
-    const updatedTask = await this.taskModel
-      .findByIdAndUpdate(
-        id,
-        {
-          status: toStatus,
-          statusUpdatedAt: new Date(),
-          kanbanOrder: targetOrder,
-        },
-        { new: true },
-      )
-      .exec();
-
-    if (!updatedTask) throw new NotFoundException(`Task with id ${id} not found`);
-
-    return updatedTask;
-  }
 
   // ===========================================================================
   // 5. Private Helpers
@@ -231,9 +192,8 @@ export class TasksWriteService {
 
   private async getTaskOrThrow(id: string): Promise<TaskDocument> {
     const task = await this.taskModel.findById(id).exec();
-    if (!task) {
-      throw new NotFoundException(`Task com ID ${id} não encontrada`);
-    }
+    if (!task) throw new NotFoundException(`Task com ID ${id} não encontrada`);
+
     return task;
   }
 
@@ -259,7 +219,8 @@ export class TasksWriteService {
     payload: CreateTaskDto,
   ): Promise<void> {
     const shouldGenerateChecklist =
-      dto.autoGenerateChecklist !== false && (!payload.checklist || payload.checklist.length === 0);
+      dto.autoGenerateChecklist !== false &&
+      (!payload.checklist || payload.checklist.length === 0);
 
     if (!shouldGenerateChecklist) return;
 
@@ -281,7 +242,7 @@ export class TasksWriteService {
         : { item: it.item, completed: it.completed },
     );
 
-    const validation = this.checklistService.validateChecklistStructure(shape);
+    const validation = this.tasksChecklistService.validateChecklistStructure(shape);
 
     if (!validation.isValid) {
       throw new BadRequestException(validation.reason);
@@ -297,42 +258,6 @@ export class TasksWriteService {
       checklist: normalizedChecklist,
       isRecurringInstance: Boolean(dto.isRecurringInstance),
     };
-  }
-
-  private async resolveTargetOrder(
-    projectId: string | undefined,
-    status: MoveTaskStatusDto['status'],
-    move: MoveTaskStatusDto,
-  ): Promise<number> {
-    if (typeof move.toOrder === 'number' && Number.isFinite(move.toOrder)) {
-      return move.toOrder;
-    }
-
-    if (typeof move.toIndex === 'number' && projectId) {
-      const destinationTasks = await this.taskModel
-        .find({ project: projectId, status })
-        .sort({ kanbanOrder: 1 })
-        .select('kanbanOrder')
-        .exec();
-
-      const idx = Math.max(0, Math.floor(move.toIndex));
-      const len = destinationTasks.length;
-
-      if (len === 0) return 1;
-      if (idx <= 0) return (destinationTasks[0].kanbanOrder || 0) - 1;
-      if (idx >= len) return (destinationTasks[len - 1].kanbanOrder || 0) + 1;
-
-      const prev = destinationTasks[idx - 1].kanbanOrder || 0;
-      const next = destinationTasks[idx].kanbanOrder || prev + 2;
-      return (prev + next) / 2;
-    }
-
-    const maxOrder = await this.taskModel
-      .findOne({ project: projectId, status })
-      .sort({ kanbanOrder: -1 })
-      .select('kanbanOrder')
-      .exec();
-    return (maxOrder?.kanbanOrder || 0) + 1;
   }
 
   private async prepareTasksForInsert(
