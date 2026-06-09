@@ -11,7 +11,7 @@ import {
   calculateCriticalPath as calculateCP,
   getTaskMetrics as getTM,
   normalizeRelationship,
-} from './cpm-analysis.utils';
+} from './utils/cpm-analysis.utils';
 
 // Re-export interfaces for backwards compatibility
 export {

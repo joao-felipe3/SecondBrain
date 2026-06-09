@@ -24,7 +24,7 @@ import {
   normalizeRecurringRule,
   calculateNextRecurringDate,
   calculateFirstRecurringDate,
-} from './recurring.utils';
+} from './utils/recurring.utils';
 import { TasksWriteService } from './write.service';
 
 @Injectable()

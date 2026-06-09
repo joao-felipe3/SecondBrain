@@ -1,11 +1,11 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { GeminiService } from '../../../ai/gemini.service';
 import { RequirementType, JourneyKind } from '../../schemas/requirement.schema';
-import { parseJsonArray } from './rtm.utils';
+import { parseJsonArray } from './utils/rtm.utils';
 import {
   buildGenerateRequirementsPrompt,
   normalizeGeneratedItems,
-} from './rtm-ai.utils';
+} from './utils/rtm-ai.utils';
 
 @Injectable()
 export class RTMJourneyService {

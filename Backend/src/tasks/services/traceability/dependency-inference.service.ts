@@ -13,7 +13,7 @@ import {
   keepAcyclic,
   truncateText,
   normalizeDependencies,
-} from './dependency-inference.utils';
+} from './utils/dependency-inference.utils';
 
 // Re-export interfaces for backwards compatibility
 export {

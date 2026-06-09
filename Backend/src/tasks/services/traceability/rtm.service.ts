@@ -14,25 +14,14 @@ import { RTMValidationService } from './rtm-validation.service';
 // Re-export interfaces for backwards compatibility
 export { RTMValidation, RTMMatrixData } from '../../interfaces/rtm.interface';
 
-/**
- * RTMService — Facade
- *
- * Ponto de entrada único para o domínio de Rastreabilidade (RTM).
- * Delega para serviços especializados:
- *   - RTMCrudService      → CRUD de requisitos e mapeamentos
- *   - RTMAiService        → Geração e mapeamento com IA (Gemini)
- *   - RTMValidationService → Validação de cobertura e matriz RTM
- *
- * O controller (RTMController) e o TasksModule importam somente esta classe,
- * garantindo que a API pública permaneça estável.
- */
+
 @Injectable()
 export class RTMService {
   constructor(
     private readonly crud: RTMCrudService,
     private readonly ai: RTMAiService,
     private readonly validation: RTMValidationService,
-  ) {}
+  ) { }
 
   // ===========================================================================
   // CRUD — delegações para RTMCrudService

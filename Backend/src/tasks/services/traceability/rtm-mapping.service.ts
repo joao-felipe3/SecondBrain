@@ -8,14 +8,14 @@ import { GeminiService } from '../../../ai/gemini.service';
 import { TasksService } from '../../tasks.service';
 import { RTMValidation } from '../../interfaces/rtm.interface';
 import { RTMValidationService } from './rtm-validation.service';
-import { normalizeKind, levelForKind, getLinkedActions, parseJsonArray } from './rtm.utils';
+import { normalizeKind, levelForKind, getLinkedActions, parseJsonArray } from './utils/rtm.utils';
 import {
   buildAutoMapBatchPrompt,
   buildGenerateTasksPrompt,
   formatTasksForPrompt,
   processMappingResponse,
   applyFallbackMapping,
-} from './rtm-ai.utils';
+} from './utils/rtm-ai.utils';
 
 @Injectable()
 export class RTMMappingService {

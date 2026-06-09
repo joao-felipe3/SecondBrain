@@ -1,5 +1,5 @@
-import { RecurringRuleDto, RecurringTaskOccurrenceDto, CreateTaskDto } from '../../dto/create-task.dto';
-import { TaskDocument } from '../../schemas/task.schema';
+import { RecurringRuleDto, RecurringTaskOccurrenceDto, CreateTaskDto } from '../../../dto/create-task.dto';
+import { TaskDocument } from '../../../schemas/task.schema';
 
 // ===========================================================================
 // Re-export specific utils for backwards compatibility

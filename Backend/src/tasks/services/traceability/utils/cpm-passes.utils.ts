@@ -1,6 +1,6 @@
 import { Logger } from '@nestjs/common';
-import { DependencyType } from '../../schemas/task-dependency.schema';
-import { TaskDependencyEdge, TaskNode } from '../../interfaces/cpm.interface';
+import { DependencyType } from '../../../schemas/task-dependency.schema';
+import { TaskDependencyEdge, TaskNode } from '../../../interfaces/cpm.interface';
 
 const logger = new Logger('CPMPassesUtils');
 

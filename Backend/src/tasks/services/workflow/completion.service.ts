@@ -10,7 +10,7 @@ import { TasksMetricsService } from '../analysis/metrics.service';
 import { DeviationDetectionService, AlertsService } from '../monitoring';
 import { TasksRecurringService } from './recurring.service';
 import { TasksWriteService } from './write.service';
-import { resolveTargetOrder } from './kanban.utils';
+import { resolveTargetOrder } from './utils/kanban.utils';
 
 @Injectable()
 export class TasksCompletionService {

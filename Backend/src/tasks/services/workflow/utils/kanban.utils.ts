@@ -1,6 +1,6 @@
 import { Model } from 'mongoose';
-import { TaskDocument } from '../../schemas/task.schema';
-import { MoveTaskStatusDto } from '../../dto/move-task-status.dto';
+import { TaskDocument } from '../../../schemas/task.schema';
+import { MoveTaskStatusDto } from '../../../dto/move-task-status.dto';
 
 // ===========================================================================
 // Pure Ordering Calculations

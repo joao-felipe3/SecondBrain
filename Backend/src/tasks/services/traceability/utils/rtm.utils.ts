@@ -1,4 +1,4 @@
-import { JourneyKind, RequirementType } from '../../schemas/requirement.schema';
+import { JourneyKind, RequirementType } from '../../../schemas/requirement.schema';
 
 export function normalizeKind(value: unknown): JourneyKind {
   const raw = String(value ?? '')

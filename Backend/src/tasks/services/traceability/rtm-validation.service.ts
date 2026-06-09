@@ -8,7 +8,7 @@ import {
 } from '../../schemas/requirement.schema';
 import { TaskDocument } from '../../schemas/task.schema';
 import { RTMValidation, RTMMatrixData } from '../../interfaces/rtm.interface';
-import { normalizeKind, levelForKind, getLinkedActions } from './rtm.utils';
+import { normalizeKind, levelForKind, getLinkedActions } from './utils/rtm.utils';
 
 // Re-export interfaces for backwards compatibility
 export { RTMValidation, RTMMatrixData } from '../../interfaces/rtm.interface';

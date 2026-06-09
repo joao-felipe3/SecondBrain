@@ -6,7 +6,7 @@ import {
   RequirementDocument,
   JourneyKind,
 } from '../../schemas/requirement.schema';
-import { normalizeKind, normalizeType, levelForKind, getLinkedActions } from './rtm.utils';
+import { normalizeKind, normalizeType, levelForKind, getLinkedActions } from './utils/rtm.utils';
 
 @Injectable()
 export class RTMCrudService {

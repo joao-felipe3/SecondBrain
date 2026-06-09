@@ -1,5 +1,5 @@
-import { RequirementType, JourneyKind } from '../../schemas/requirement.schema';
-import { TaskDocument } from '../../schemas/task.schema';
+import { RequirementType, JourneyKind } from '../../../schemas/requirement.schema';
+import { TaskDocument } from '../../../schemas/task.schema';
 import { normalizeKind, normalizeType } from './rtm.utils';
 
 // ===========================================================================

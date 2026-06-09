@@ -1,11 +1,11 @@
-import { DependencyType } from '../../schemas/task-dependency.schema';
+import { DependencyType } from '../../../schemas/task-dependency.schema';
 import {
   TaskDependencyEdge,
   TaskNode,
   PackageCriticality,
   CPMAnalysis,
   TaskMetrics,
-} from '../../interfaces/cpm.interface';
+} from '../../../interfaces/cpm.interface';
 import { forwardPass, backwardPass, buildEdgeMap } from './cpm-passes.utils';
 
 // ===========================================================================
