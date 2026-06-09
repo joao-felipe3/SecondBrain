@@ -274,6 +274,16 @@ Criar uma camada de consulta semântica para a documentação do repositório (A
 ### Estimativa
 - POC: 10h (indexer + endpoint local + docs). Produção básica: 20h (CI, testes, hardening).
 
+### READMEs de Módulo Indexáveis — Progresso
+
+| Pasta | Status | Arquivo |
+|-------|--------|---------|
+| `tasks/services/workflow/` | ✅ Concluído | `Backend/src/tasks/services/workflow/README.md` |
+| `tasks/services/traceability/` | ✅ Concluído | `Backend/src/tasks/services/traceability/README.md` |
+| `tasks/services/analysis/` | ⏳ Pendente | — |
+| `tasks/services/intelligence/` | ⏳ Pendente | — |
+| `tasks/services/monitoring/` | ⏳ Pendente | — |
+
 ---
 
 **Última Atualização**: Junho 4, 2026  
