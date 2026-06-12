@@ -2,10 +2,10 @@ import { Injectable } from '@nestjs/common';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
-import { PertEstimateDto, PertEstimateResponseDto } from '../../dto/pert-estimate.dto';
+import { PertEstimateDto, PertEstimateResponseDto } from '../../dto/analysis/pert-estimate.dto';
 import { TaskDocument } from '../../schemas/task.schema';
 import { TasksMetricsService } from './metrics.service';
-import { UpdatePertDto } from '../../dto/suggest-pert.dto';
+import { UpdatePertDto } from '../../dto/analysis/suggest-pert.dto';
 
 @Injectable()
 export class PertService {

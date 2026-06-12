@@ -3,20 +3,20 @@ import { InjectModel } from '@nestjs/mongoose';
 import { FilterQuery, Model, Types } from 'mongoose';
 
 // DTOs
-import { CreateTaskDto, ChecklistItemDto, RecurringRuleDto } from './dto/create-task.dto';
-import { GetHabitsDashboardDto } from './dto/get-habits-dashboard.dto';
-import { CreateMicroTaskDto } from './dto/create-micro-task.dto';
+import { CreateTaskDto, ChecklistItemDto, RecurringRuleDto } from './dto/task/create-task.dto';
+import { GetHabitsDashboardDto } from './dto/monitoring/get-habits-dashboard.dto';
+import { CreateMicroTaskDto } from './dto/task/create-micro-task.dto';
 import {
   GenerateAiSuggestionsDto,
   AiSuggestionsResponseDto,
   AiSuggestionsProgressDto,
-} from './dto/generate-ai-suggestions.dto';
-import { PertEstimateDto, PertEstimateResponseDto } from './dto/pert-estimate.dto';
-import { GetHabitsDashboardResponseDto } from './dto/habits-dashboard.dto';
-import { MoveTaskStatusDto } from './dto/move-task-status.dto';
-import { CreateManyTasksOptionsDto } from './dto/create-many-tasks-options.dto';
-import { FindByProjectIdOptionsDto } from './dto/find-by-project-id-options.dto';
-import { UpdatePertDto } from './dto/suggest-pert.dto';
+} from './dto/intelligence/generate-ai-suggestions.dto';
+import { PertEstimateDto, PertEstimateResponseDto } from './dto/analysis/pert-estimate.dto';
+import { GetHabitsDashboardResponseDto } from './dto/monitoring/habits-dashboard.dto';
+import { MoveTaskStatusDto } from './dto/task/move-task-status.dto';
+import { CreateManyTasksOptionsDto } from './dto/task/create-many-tasks-options.dto';
+import { FindByProjectIdOptionsDto } from './dto/query/find-by-project-id-options.dto';
+import { UpdatePertDto } from './dto/analysis/suggest-pert.dto';
 
 // Schema
 import { TaskDocument } from './schemas/task.schema';

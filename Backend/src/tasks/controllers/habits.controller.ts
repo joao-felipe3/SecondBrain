@@ -1,7 +1,7 @@
 import { Controller, Get, Query } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { GetHabitsDashboardDto } from '../dto/get-habits-dashboard.dto';
-import { GetHabitsDashboardResponseDto } from '../dto/habits-dashboard.dto';
+import { GetHabitsDashboardDto } from '../dto/monitoring/get-habits-dashboard.dto';
+import { GetHabitsDashboardResponseDto } from '../dto/monitoring/habits-dashboard.dto';
 import { TasksService } from '../tasks.service';
 
 @ApiTags('habits')

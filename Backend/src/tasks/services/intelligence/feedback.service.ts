@@ -4,7 +4,7 @@ import { Model, Types } from 'mongoose';
 import { GeminiService } from '../../../ai/gemini.service';
 import { TaskDocument } from '../../schemas/task.schema';
 import { TaskCompletionFeedbackDocument } from '../../schemas/task-completion-feedback.schema';
-import { ChecklistItemDto } from '../../dto/create-task.dto';
+import { ChecklistItemDto } from '../../dto/task/create-task.dto';
 
 export interface CompletionFeedbackPayload {
   celebration?: string;

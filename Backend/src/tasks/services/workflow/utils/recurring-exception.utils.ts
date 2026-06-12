@@ -1,4 +1,4 @@
-import { RecurringRuleDto, RecurringExceptionDto } from '../../../dto/create-task.dto';
+import { RecurringRuleDto, RecurringExceptionDto } from '../../../dto/task/create-task.dto';
 import { toDateKey } from './recurring.utils';
 
 // ===========================================================================

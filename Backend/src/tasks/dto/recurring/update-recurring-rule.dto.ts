@@ -1,4 +1,4 @@
-import { RecurringRuleDto } from './create-task.dto';
+import { RecurringRuleDto } from '../task/create-task.dto';
 
 export class UpdateRecurringRuleDto {
   recurringRule!: RecurringRuleDto;

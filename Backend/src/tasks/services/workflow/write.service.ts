@@ -1,13 +1,13 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
-import { CreateTaskDto } from '../../dto/create-task.dto';
-import { CreateMicroTaskDto } from '../../dto/create-micro-task.dto';
+import { CreateTaskDto } from '../../dto/task/create-task.dto';
+import { CreateMicroTaskDto } from '../../dto/task/create-micro-task.dto';
 import { TaskDocument } from '../../schemas/task.schema';
 import { ProjectDocument } from '../../../projects/schemas/project.schema';
 import { ProjectsService } from '../../../projects/projects.service';
 import { TasksMetricsService } from '../analysis/metrics.service';
-import { CreateManyTasksOptionsDto } from '../../dto/create-many-tasks-options.dto';
+import { CreateManyTasksOptionsDto } from '../../dto/task/create-many-tasks-options.dto';
 import { TasksInputService } from './input.service';
 import { TasksChecklistService } from '../intelligence/checklist.service';
 import { InsertManyError } from '../../interfaces/db-errors';

@@ -3,7 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { Requirement, RequirementDocument } from '../../schemas/requirement.schema';
 import { TaskDocument } from '../../schemas/task.schema';
-import { CreateTaskDto } from '../../dto/create-task.dto';
+import { CreateTaskDto } from '../../dto/task/create-task.dto';
 import { GeminiService } from '../../../ai/gemini.service';
 import { TasksService } from '../../tasks.service';
 import { RTMValidation } from '../../interfaces/rtm.interface';

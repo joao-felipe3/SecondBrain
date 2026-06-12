@@ -1,5 +1,5 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
-import { CreateTaskDto, ChecklistItemDto } from '../../dto/create-task.dto';
+import { CreateTaskDto, ChecklistItemDto } from '../../dto/task/create-task.dto';
 
 @Injectable()
 export class TasksInputService {

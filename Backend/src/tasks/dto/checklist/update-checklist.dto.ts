@@ -1,4 +1,4 @@
-import { ChecklistItemDto } from './create-task.dto';
+import { ChecklistItemDto } from '../task/create-task.dto';
 
 export class UpdateChecklistDto {
   checklist!: Array<string | ChecklistItemDto>;

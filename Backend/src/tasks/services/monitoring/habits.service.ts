@@ -2,8 +2,8 @@ import { Injectable, BadRequestException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types, FilterQuery } from 'mongoose';
 import { TaskDocument } from '../../schemas/task.schema';
-import { GetHabitsDashboardDto } from '../../dto/get-habits-dashboard.dto';
-import { GetHabitsDashboardResponseDto } from '../../dto/habits-dashboard.dto';
+import { GetHabitsDashboardDto } from '../../dto/monitoring/get-habits-dashboard.dto';
+import { GetHabitsDashboardResponseDto } from '../../dto/monitoring/habits-dashboard.dto';
 
 @Injectable()
 export class TasksHabitsService {

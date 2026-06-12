@@ -1,4 +1,4 @@
-import { RecurringRuleDto } from '../../../dto/create-task.dto';
+import { RecurringRuleDto } from '../../../dto/task/create-task.dto';
 import { normalizeRecurringRule } from './recurring-validation.utils';
 import { isRecurringDateExcluded } from './recurring-exception.utils';
 import { addDays, addMonths } from './recurring.utils';

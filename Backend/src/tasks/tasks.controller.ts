@@ -15,17 +15,17 @@ import {
 } from '@nestjs/common';
 import { Observable } from 'rxjs';
 import { TasksService } from './tasks.service';
-import { CreateTaskDto } from './dto/create-task.dto';
-import { CreateMicroTaskDto } from './dto/create-micro-task.dto';
-import { CreateBulkTasksDto } from './dto/create-bulk-tasks.dto';
-import { UpdateChecklistDto } from './dto/update-checklist.dto';
-import { UpdateChecklistItemDto } from './dto/update-checklist-item.dto';
-import { UpdateRecurringRuleDto } from './dto/update-recurring-rule.dto';
-import { UpdateTaskDto } from './dto/update-task.dto';
-import { GenerateAiSuggestionsDto } from './dto/generate-ai-suggestions.dto';
-import { PertEstimateDto, PertEstimateResponseDto } from './dto/pert-estimate.dto';
-import { SuggestPertDto, PertSuggestionResponseDto, UpdatePertDto } from './dto/suggest-pert.dto';
-import { MoveTaskStatusDto } from './dto/move-task-status.dto'; // Sprint 4
+import { CreateTaskDto } from './dto/task/create-task.dto';
+import { CreateMicroTaskDto } from './dto/task/create-micro-task.dto';
+import { CreateBulkTasksDto } from './dto/task/create-bulk-tasks.dto';
+import { UpdateChecklistDto } from './dto/checklist/update-checklist.dto';
+import { UpdateChecklistItemDto } from './dto/checklist/update-checklist-item.dto';
+import { UpdateRecurringRuleDto } from './dto/recurring/update-recurring-rule.dto';
+import { UpdateTaskDto } from './dto/task/update-task.dto';
+import { GenerateAiSuggestionsDto } from './dto/intelligence/generate-ai-suggestions.dto';
+import { PertEstimateDto, PertEstimateResponseDto } from './dto/analysis/pert-estimate.dto';
+import { SuggestPertDto, PertSuggestionResponseDto, UpdatePertDto } from './dto/analysis/suggest-pert.dto';
+import { MoveTaskStatusDto } from './dto/task/move-task-status.dto'; // Sprint 4
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { CPMService, DependencyInferenceService } from './services/analysis';
 

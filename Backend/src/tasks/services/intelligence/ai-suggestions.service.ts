@@ -6,7 +6,7 @@ import {
   AiTaskSuggestionDto,
   AiSuggestionsResponseDto,
   AiSuggestionsProgressDto,
-} from '../../dto/generate-ai-suggestions.dto';
+} from '../../dto/intelligence/generate-ai-suggestions.dto';
 import { TaskDocument } from '../../schemas/task.schema';
 import { GeminiService } from '../../../ai/gemini.service';
 

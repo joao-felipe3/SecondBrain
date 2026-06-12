@@ -13,8 +13,8 @@ import {
   RecurringRuleDto,
   CreateTaskDto,
   RecurringTaskOccurrenceDto,
-} from '../../dto/create-task.dto';
-import { CreateMicroTaskDto } from '../../dto/create-micro-task.dto';
+} from '../../dto/task/create-task.dto';
+import { CreateMicroTaskDto } from '../../dto/task/create-micro-task.dto';
 import { ProjectsService } from '../../../projects/projects.service';
 import { TaskDocument } from '../../schemas/task.schema';
 import {

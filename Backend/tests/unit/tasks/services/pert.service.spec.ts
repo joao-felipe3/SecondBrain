@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { PertService } from '../../../../src/tasks/services/analysis/pert.service';
-import { PertEstimateDto } from '../../../../src/tasks/dto/pert-estimate.dto';
+import { PertEstimateDto } from '../../../../src/tasks/dto/analysis/pert-estimate.dto';
 
 describe('PertService', () => {
   let service: PertService;

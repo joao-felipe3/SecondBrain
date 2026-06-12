@@ -2,7 +2,7 @@ import { Injectable, BadRequestException, NotFoundException } from '@nestjs/comm
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { TaskDocument, TaskChecklistItem } from '../../schemas/task.schema';
-import { ChecklistItemDto } from '../../dto/create-task.dto';
+import { ChecklistItemDto } from '../../dto/task/create-task.dto';
 import { TasksInputService } from '../workflow/input.service';
 import { GeminiService } from '../../../ai/gemini.service';
 

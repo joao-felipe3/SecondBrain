@@ -1,5 +1,5 @@
 import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
-import { MoveTaskStatusDto } from '../../dto/move-task-status.dto';
+import { MoveTaskStatusDto } from '../../dto/task/move-task-status.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { TaskDocument } from '../../schemas/task.schema';

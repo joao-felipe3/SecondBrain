@@ -1,5 +1,5 @@
 import { BadRequestException } from '@nestjs/common';
-import { RecurringRuleDto } from '../../../dto/create-task.dto';
+import { RecurringRuleDto } from '../../../dto/task/create-task.dto';
 import { parseExceptions, cleanExceptions } from './recurring-exception.utils';
 
 // ===========================================================================
