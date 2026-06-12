@@ -1,6 +1,11 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getModelToken } from '@nestjs/mongoose';
 import { RTMService } from '../../../../src/tasks/services/traceability/rtm.service';
+import { RTMCrudService } from '../../../../src/tasks/services/traceability/rtm-crud.service';
+import { RTMAiService } from '../../../../src/tasks/services/traceability/rtm-ai.service';
+import { RTMJourneyService } from '../../../../src/tasks/services/traceability/rtm-journey.service';
+import { RTMMappingService } from '../../../../src/tasks/services/traceability/rtm-mapping.service';
+import { RTMValidationService } from '../../../../src/tasks/services/traceability/rtm-validation.service';
 import { Requirement } from '../../../../src/tasks/schemas/requirement.schema';
 import { GeminiService } from '../../../../src/ai/gemini.service';
 import { TasksService } from '../../../../src/tasks/tasks.service';
@@ -32,6 +37,11 @@ describe('RTMService', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         RTMService,
+        RTMCrudService,
+        RTMAiService,
+        RTMJourneyService,
+        RTMMappingService,
+        RTMValidationService,
         {
           provide: getModelToken(Requirement.name),
           useValue: mockModel,

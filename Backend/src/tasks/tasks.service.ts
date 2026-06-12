@@ -33,12 +33,12 @@ import {
   ChecklistHistoryProjectRef,
 } from './services/intelligence';
 import { TasksHabitsService } from './services/monitoring';
+import { TasksPertService } from './services/analysis';
 import {
   TasksHierarchyService,
   TaskDescendantNode,
   TaskLineageResult,
-  TasksPertService,
-} from './services/analysis';
+} from './services/dependencies';
 
 @Injectable()
 export class TasksService {

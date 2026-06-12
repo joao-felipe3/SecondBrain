@@ -1,5 +1,6 @@
 import { Controller, Get, Post, Param, Body, Logger, Inject, forwardRef } from '@nestjs/common';
-import { BufferService, CPMService, TaskNode, CPMAnalysis } from '../services/analysis';
+import { BufferService, TaskNode, CPMAnalysis } from '../services/analysis';
+import { CPMService } from '../services/dependencies';
 import type { TaskMetrics as BufferTaskMetrics } from '../services/analysis/buffer.service';
 import { TasksService } from '../tasks.service';
 

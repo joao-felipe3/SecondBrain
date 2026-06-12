@@ -3,7 +3,7 @@ import { TasksMetricsService } from '../../../src/tasks/services/analysis/metric
 import { TasksRecurringService } from '../../../src/tasks/services/workflow/recurring.service';
 import { TasksAiSuggestionsService } from '../../../src/tasks/services/intelligence/ai-suggestions.service';
 import { TasksHabitsService } from '../../../src/tasks/services/monitoring/habits.service';
-import { TasksHierarchyService } from '../../../src/tasks/services/traceability/hierarchy.service';
+import { TasksHierarchyService } from '../../../src/tasks/services/dependencies/hierarchy.service';
 import { TasksChecklistService } from '../../../src/tasks/services/intelligence/checklist.service';
 import { TasksCompletionService } from '../../../src/tasks/services/workflow/completion.service';
 import { TasksPertService } from '../../../src/tasks/services/analysis/pert.service';

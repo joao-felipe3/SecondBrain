@@ -27,7 +27,7 @@ import { PertEstimateDto, PertEstimateResponseDto } from './dto/analysis/pert-es
 import { SuggestPertDto, PertSuggestionResponseDto, UpdatePertDto } from './dto/analysis/suggest-pert.dto';
 import { MoveTaskStatusDto } from './dto/task/move-task-status.dto'; // Sprint 4
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
-import { CPMService, DependencyInferenceService } from './services/analysis';
+import { CPMService, DependencyInferenceService } from './services/dependencies';
 
 @ApiTags('tasks')
 @Controller('tasks')

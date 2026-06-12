@@ -97,7 +97,9 @@ export function buildForwardPassMaps(
     indegree.set(t.id, 0);
     dependents.set(t.id, []);
     maxConstraintStart.set(t.id, 0);
+  }
 
+  for (const t of tasks) {
     for (const dep of edgeMap.get(t.id) ?? []) {
       if (!taskMap.has(dep.predecessorId)) continue;
       indegree.set(t.id, (indegree.get(t.id) ?? 0) + 1);
