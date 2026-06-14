@@ -10,11 +10,9 @@ export class RTMAiService {
   constructor(
     private readonly journeyService: RTMJourneyService,
     private readonly mappingService: RTMMappingService,
-  ) { }
+  ) {}
 
-  generateRequirements(
-    smartObjective: Record<string, string | undefined>,
-  ): Promise<
+  generateRequirements(smartObjective: Record<string, string | undefined>): Promise<
     Array<{
       description: string;
       type: RequirementType;

@@ -1,11 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
-import {
-  Requirement,
-  RequirementDocument,
-  JourneyKind,
-} from '../../schemas/requirement.schema';
+import { Requirement, RequirementDocument, JourneyKind } from '../../schemas/requirement.schema';
 import { normalizeKind, normalizeType, levelForKind, getLinkedActions } from './utils/rtm.utils';
 
 @Injectable()
@@ -22,9 +18,7 @@ export class RTMCrudService {
   // ===========================================================================
 
   async getRequirements(projectId: string): Promise<RequirementDocument[]> {
-    return this.requirementModel
-      .find({ projectId })
-      .sort({ hierarchyLevel: 1, createdAt: 1, _id: 1 });
+    return this.requirementModel.find({ projectId }).sort({ hierarchyLevel: 1, createdAt: 1, _id: 1 });
   }
 
   // ===========================================================================
@@ -175,10 +169,7 @@ export class RTMCrudService {
     }
   }
 
-  async unmapRequirementFromTask(
-    requirementId: string,
-    taskId: string,
-  ): Promise<Requirement | null> {
+  async unmapRequirementFromTask(requirementId: string, taskId: string): Promise<Requirement | null> {
     this.logger.log(`Removendo mapeamento: item ${requirementId} <- tarefa ${taskId}`);
     try {
       const requirement = await this.requirementModel.findByIdAndUpdate(

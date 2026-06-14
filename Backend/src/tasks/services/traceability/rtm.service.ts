@@ -14,14 +14,13 @@ import { RTMValidationService } from './rtm-validation.service';
 // Re-export interfaces for backwards compatibility
 export { RTMValidation, RTMMatrixData } from '../../interfaces/rtm.interface';
 
-
 @Injectable()
 export class RTMService {
   constructor(
     private readonly crud: RTMCrudService,
     private readonly ai: RTMAiService,
     private readonly validation: RTMValidationService,
-  ) { }
+  ) {}
 
   // ===========================================================================
   // CRUD — delegações para RTMCrudService
@@ -69,9 +68,7 @@ export class RTMService {
   // AI — delegações para RTMAiService
   // ===========================================================================
 
-  generateRequirements(
-    smartObjective: Record<string, string | undefined>,
-  ): Promise<
+  generateRequirements(smartObjective: Record<string, string | undefined>): Promise<
     Array<{
       description: string;
       type: RequirementType;

@@ -70,10 +70,7 @@ export class RTMMappingService {
         };
       }
 
-      const { mappings, orphanTasks } = await this.runBatchMapping(
-        tasksToMap,
-        actionItems,
-      );
+      const { mappings, orphanTasks } = await this.runBatchMapping(tasksToMap, actionItems);
 
       const createdRequirementsCount = await this.handleOrphanTasks(
         orphanTasks,
@@ -142,7 +139,8 @@ export class RTMMappingService {
           createdTasksCount: 0,
           coverage: validation.coverage,
           validation,
-          message: 'Não há ações órfãs; complete primeiro a hierarquia objetivo -> hábito -> etapa -> ação.',
+          message:
+            'Não há ações órfãs; complete primeiro a hierarquia objetivo -> hábito -> etapa -> ação.',
         };
       }
 
@@ -181,10 +179,7 @@ export class RTMMappingService {
   // Private helpers — auto-mapping
   // ===========================================================================
 
-  private checkEarlyExitConditions(
-    allItems: RequirementDocument[],
-    actionItems: RequirementDocument[],
-  ) {
+  private checkEarlyExitConditions(allItems: RequirementDocument[], actionItems: RequirementDocument[]) {
     if (allItems.length === 0) {
       return {
         mappedCount: 0,

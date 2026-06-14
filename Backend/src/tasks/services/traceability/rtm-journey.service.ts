@@ -2,10 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { GeminiService } from '../../../ai/gemini.service';
 import { RequirementType, JourneyKind } from '../../schemas/requirement.schema';
 import { parseJsonArray } from './utils/rtm.utils';
-import {
-  buildGenerateRequirementsPrompt,
-  normalizeGeneratedItems,
-} from './utils/rtm-ai.utils';
+import { buildGenerateRequirementsPrompt, normalizeGeneratedItems } from './utils/rtm-ai.utils';
 
 @Injectable()
 export class RTMJourneyService {
@@ -17,9 +14,7 @@ export class RTMJourneyService {
    * Envia um Smart Objective ao Gemini e retorna a estrutura de jornada
    * (objetivo → hábito → etapa → ação) com 10–24 itens.
    */
-  async generateRequirements(
-    smartObjective: Record<string, string | undefined>,
-  ): Promise<
+  async generateRequirements(smartObjective: Record<string, string | undefined>): Promise<
     Array<{
       description: string;
       type: RequirementType;

@@ -24,7 +24,11 @@ import { UpdateRecurringRuleDto } from './dto/recurring/update-recurring-rule.dt
 import { UpdateTaskDto } from './dto/task/update-task.dto';
 import { GenerateAiSuggestionsDto } from './dto/intelligence/generate-ai-suggestions.dto';
 import { PertEstimateDto, PertEstimateResponseDto } from './dto/analysis/pert-estimate.dto';
-import { SuggestPertDto, PertSuggestionResponseDto, UpdatePertDto } from './dto/analysis/suggest-pert.dto';
+import {
+  SuggestPertDto,
+  PertSuggestionResponseDto,
+  UpdatePertDto,
+} from './dto/analysis/suggest-pert.dto';
 import { MoveTaskStatusDto } from './dto/task/move-task-status.dto'; // Sprint 4
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { CPMService, DependencyInferenceService } from './services/dependencies';

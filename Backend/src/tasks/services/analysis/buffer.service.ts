@@ -2,28 +2,15 @@ import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { ProjectBuffer, ProjectBufferDocument } from '../../schemas/project-buffer.schema';
-
-export interface TaskMetrics {
-  taskId: string;
-  estimatedHours: number;
-  variance?: number;
-  isCritical?: boolean;
-}
-
-export interface BufferStatus {
-  total: number;
-  consumed: number;
-  remaining: number;
-  percentageUsed: number;
-  isAlert: boolean;
-}
-
-export interface BufferAlert {
-  severity: 'warning' | 'critical';
-  message: string;
-  recommendation: string;
-  percentageUsed: number;
-}
+import { BufferTaskMetrics, BufferStatus, BufferAlert } from '../../interfaces';
+import {
+  filterCriticalTasks,
+  calculateMetrics,
+  mapTaskVariances,
+  getDefaultBufferStatus,
+  calculateBufferStatus,
+  generateBufferAlerts,
+} from './utils/buffer-analysis.utils';
 
 @Injectable()
 export class BufferService {
@@ -40,7 +27,7 @@ export class BufferService {
 
   async calculateProjectBuffer(
     projectId: string,
-    tasks: TaskMetrics[],
+    tasks: BufferTaskMetrics[],
     criticalPath: string[],
   ): Promise<ProjectBuffer | null> {
     this.logger.log(
@@ -52,9 +39,9 @@ export class BufferService {
       return this.createDefaultBuffer(projectId);
     }
 
-    const criticalTasks = this.filterCriticalTasks(tasks, criticalPath);
+    const criticalTasks = filterCriticalTasks(tasks, criticalPath);
     const { criticalPathDuration, totalVariance, standardDeviation, projectBuffer } =
-      this.calculateMetrics(criticalTasks);
+      calculateMetrics(criticalTasks);
 
     const bufferDoc = await this.bufferModel.findOneAndUpdate(
       { projectId },
@@ -66,7 +53,7 @@ export class BufferService {
         criticalPathDuration: Math.round(criticalPathDuration * 10) / 10,
         totalVariance: Math.round(totalVariance * 100) / 100,
         standardDeviation: Math.round(standardDeviation * 10) / 10,
-        taskVariances: this.mapTaskVariances(criticalTasks),
+        taskVariances: mapTaskVariances(criticalTasks),
       },
       { upsert: true, new: true },
     );
@@ -83,38 +70,6 @@ export class BufferService {
     return bufferDoc;
   }
 
-  private filterCriticalTasks(tasks: TaskMetrics[], criticalPath: string[]): TaskMetrics[] {
-    return tasks.filter((t) => criticalPath.includes(t.taskId));
-  }
-
-  private calculateMetrics(criticalTasks: TaskMetrics[]): {
-    criticalPathDuration: number;
-    totalVariance: number;
-    standardDeviation: number;
-    projectBuffer: number;
-  } {
-    const criticalPathDuration = criticalTasks.reduce((sum, t) => sum + t.estimatedHours, 0);
-    const totalVariance = criticalTasks.reduce((sum, t) => sum + (t.variance || 0), 0);
-    const standardDeviation = Math.sqrt(totalVariance);
-    const projectBuffer = Math.max(criticalPathDuration * 0.5, standardDeviation * 1.645);
-
-    return {
-      criticalPathDuration,
-      totalVariance,
-      standardDeviation,
-      projectBuffer,
-    };
-  }
-
-  private mapTaskVariances(criticalTasks: TaskMetrics[]): { taskId: string; variance: number }[] {
-    return criticalTasks
-      .filter((t) => t.variance && t.variance > 0)
-      .map((t) => ({
-        taskId: t.taskId,
-        variance: Math.round(t.variance! * 100) / 100,
-      }));
-  }
-
   async consumeBuffer(projectId: string, hoursUsed: number): Promise<BufferStatus> {
     this.logger.log(`Consumiendo ${hoursUsed}h de buffer para proyecto: ${projectId}`);
 
@@ -126,12 +81,12 @@ export class BufferService {
 
     if (!buffer) {
       this.logger.warn(`Buffer no encontrado para proyecto: ${projectId}`);
-      return this.getDefaultBufferStatus();
+      return getDefaultBufferStatus();
     }
 
-    const status = this.getBufferStatusFromDoc(buffer);
+    const status = calculateBufferStatus(buffer.projectBuffer, buffer.consumed, buffer.threshold);
 
-    if (status.percentageUsed >= buffer.threshold) {
+    if (status.isAlert) {
       this.logger.warn(
         `⚠️ Buffer en alerta: ${status.percentageUsed}% consumido (límite: ${buffer.threshold}%)`,
       );
@@ -160,10 +115,10 @@ export class BufferService {
 
     if (!buffer) {
       this.logger.warn(`Buffer no encontrado para proyecto: ${projectId}`);
-      return this.getDefaultBufferStatus();
+      return getDefaultBufferStatus();
     }
 
-    return this.getBufferStatusFromDoc(buffer);
+    return calculateBufferStatus(buffer.projectBuffer, buffer.consumed, buffer.threshold);
   }
 
   async checkBufferHealth(projectId: string): Promise<BufferAlert[]> {
@@ -173,39 +128,8 @@ export class BufferService {
       return [];
     }
 
-    const alerts: BufferAlert[] = [];
-    const status = this.getBufferStatusFromDoc(buffer);
-
-    if (status.percentageUsed >= 50 && status.percentageUsed < 75) {
-      alerts.push({
-        severity: 'warning',
-        message: `Buffer en punto medio: ${status.percentageUsed}% consumido`,
-        recommendation:
-          'Las próximas tarefas deben ejecutarse sin demoras. Considere aumentar recursos o priorizar.',
-        percentageUsed: status.percentageUsed,
-      });
-    }
-
-    if (status.percentageUsed >= 75) {
-      alerts.push({
-        severity: 'critical',
-        message: `⚠️ Buffer crítico: ${status.percentageUsed}% consumido`,
-        recommendation:
-          'ACCIÓN INMEDIATA REQUERIDA. Tarefas restantes deben ser priorizadas. Reduzca el scope o aumente recursos.',
-        percentageUsed: status.percentageUsed,
-      });
-    }
-
-    if (status.percentageUsed >= 100) {
-      alerts.push({
-        severity: 'critical',
-        message: '🚨 Buffer completamente consumido',
-        recommendation: 'El proyecto está en riesgo. Se requiere intervención gerencial inmediata.',
-        percentageUsed: status.percentageUsed,
-      });
-    }
-
-    return alerts;
+    const status = calculateBufferStatus(buffer.projectBuffer, buffer.consumed, buffer.threshold);
+    return generateBufferAlerts(status.percentageUsed);
   }
 
   async getBufferHistory(
@@ -221,7 +145,7 @@ export class BufferService {
       {
         date: buffer.createdAt || new Date(),
         consumed: buffer.consumed,
-        percentageUsed: (buffer.consumed / buffer.projectBuffer) * 100,
+        percentageUsed: buffer.projectBuffer > 0 ? (buffer.consumed / buffer.projectBuffer) * 100 : 0,
       },
     ];
   }
@@ -238,27 +162,5 @@ export class BufferService {
       threshold: 75,
       taskVariances: [],
     } as ProjectBuffer;
-  }
-
-  private getDefaultBufferStatus(): BufferStatus {
-    return {
-      total: 0,
-      consumed: 0,
-      remaining: 0,
-      percentageUsed: 0,
-      isAlert: false,
-    };
-  }
-
-  private getBufferStatusFromDoc(buffer: ProjectBufferDocument): BufferStatus {
-    const percentageUsed = buffer.projectBuffer > 0 ? (buffer.consumed / buffer.projectBuffer) * 100 : 0;
-
-    return {
-      total: Math.round(buffer.projectBuffer * 10) / 10,
-      consumed: Math.round(buffer.consumed * 10) / 10,
-      remaining: Math.max(0, Math.round((buffer.projectBuffer - buffer.consumed) * 10) / 10),
-      percentageUsed: Math.round(percentageUsed * 100) / 100,
-      isAlert: percentageUsed >= buffer.threshold,
-    };
   }
 }

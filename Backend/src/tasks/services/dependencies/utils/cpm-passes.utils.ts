@@ -9,7 +9,9 @@ const logger = new Logger('CPMPassesUtils');
 // ===========================================================================
 
 export function normalizeRelationship(input?: string): DependencyType {
-  const normalized = String(input ?? '').trim().toLowerCase();
+  const normalized = String(input ?? '')
+    .trim()
+    .toLowerCase();
   const validTypes = Object.values(DependencyType) as string[];
 
   if (validTypes.includes(normalized)) {
@@ -19,10 +21,7 @@ export function normalizeRelationship(input?: string): DependencyType {
   return DependencyType.FINISH_TO_START;
 }
 
-export function extractExplicitEdges(
-  dependencyEdges: unknown,
-  seen: Set<string>,
-): TaskDependencyEdge[] {
+export function extractExplicitEdges(dependencyEdges: unknown, seen: Set<string>): TaskDependencyEdge[] {
   const normalized: TaskDependencyEdge[] = [];
   const edges = Array.isArray(dependencyEdges) ? dependencyEdges : [];
 
@@ -40,10 +39,7 @@ export function extractExplicitEdges(
   return normalized;
 }
 
-export function extractFallbackEdges(
-  dependencies: unknown,
-  seen: Set<string>,
-): TaskDependencyEdge[] {
+export function extractFallbackEdges(dependencies: unknown, seen: Set<string>): TaskDependencyEdge[] {
   const normalized: TaskDependencyEdge[] = [];
   const deps = Array.isArray(dependencies) ? dependencies : [];
 
@@ -146,11 +142,7 @@ export function forwardPass(
   const taskMap = new Map<string, TaskNode>();
   for (const t of tasks) taskMap.set(t.id, t);
 
-  const { indegree, dependents, maxConstraintStart } = buildForwardPassMaps(
-    tasks,
-    edgeMap,
-    taskMap,
-  );
+  const { indegree, dependents, maxConstraintStart } = buildForwardPassMaps(tasks, edgeMap, taskMap);
 
   const queue: string[] = [];
   for (const [id, deg] of indegree.entries()) {

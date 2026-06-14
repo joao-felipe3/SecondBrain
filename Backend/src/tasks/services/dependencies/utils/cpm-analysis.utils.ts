@@ -139,11 +139,7 @@ export function calculateCriticalPath(tasks: TaskNode[]): CPMAnalysis {
     missingDependencyRefs,
   });
 
-  const { indegree, outdegree, edgeCount, depSum } = computeGraphDegrees(
-    tasksInHours,
-    edgeMap,
-    taskIds,
-  );
+  const { indegree, outdegree, edgeCount, depSum } = computeGraphDegrees(tasksInHours, edgeMap, taskIds);
 
   const tasksByImpact = [...tasksInHours].sort((a, b) => {
     const slackDiff = (a.slack || 0) - (b.slack || 0);

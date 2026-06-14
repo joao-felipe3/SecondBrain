@@ -1,11 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import {
-  Requirement,
-  RequirementDocument,
-  JourneyKind,
-} from '../../schemas/requirement.schema';
+import { Requirement, RequirementDocument, JourneyKind } from '../../schemas/requirement.schema';
 import { TaskDocument } from '../../schemas/task.schema';
 import { RTMValidation, RTMMatrixData } from '../../interfaces/rtm.interface';
 import { normalizeKind, levelForKind, getLinkedActions } from './utils/rtm.utils';

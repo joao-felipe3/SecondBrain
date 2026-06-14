@@ -34,11 +34,7 @@ import {
 } from './services/intelligence';
 import { TasksHabitsService } from './services/monitoring';
 import { TasksPertService } from './services/analysis';
-import {
-  TasksHierarchyService,
-  TaskDescendantNode,
-  TaskLineageResult,
-} from './services/dependencies';
+import { TasksHierarchyService, TaskDescendantNode, TaskLineageResult } from './services/dependencies';
 
 @Injectable()
 export class TasksService {

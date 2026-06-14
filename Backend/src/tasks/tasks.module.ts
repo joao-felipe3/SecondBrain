@@ -7,7 +7,14 @@ import { CPMService, DependencyInferenceService, TasksHierarchyService } from '.
 import { TasksController } from './tasks.controller';
 import { CPMController } from './controllers/cpm.controller';
 import { BufferController } from './controllers/buffer.controller';
-import { RTMService, RTMCrudService, RTMAiService, RTMJourneyService, RTMMappingService, RTMValidationService } from './services/traceability';
+import {
+  RTMService,
+  RTMCrudService,
+  RTMAiService,
+  RTMJourneyService,
+  RTMMappingService,
+  RTMValidationService,
+} from './services/traceability';
 import { RTMController } from './controllers/rtm.controller';
 import { HabitsController } from './controllers/habits.controller';
 import { MongooseModule } from '@nestjs/mongoose';

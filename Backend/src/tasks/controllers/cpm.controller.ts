@@ -1,10 +1,15 @@
 import { Controller, Post, Get, Delete, Body, Param, Query } from '@nestjs/common';
 import { Logger } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
-import { CPMAnalysis, TaskNode, TaskMetrics as CpmTaskMetrics, BufferService } from '../services/analysis';
+import {
+  CPMAnalysis,
+  TaskNode,
+  TaskMetrics as CpmTaskMetrics,
+  BufferService,
+  BufferTaskMetrics,
+} from '../services/analysis';
 import { CPMService, DependencyInferenceService } from '../services/dependencies';
 import { TasksService } from '../tasks.service';
-import type { TaskMetrics as BufferTaskMetrics } from '../services/analysis/buffer.service';
 import type { TaskDependency } from '../schemas/task-dependency.schema';
 
 class AddDependencyDto {
