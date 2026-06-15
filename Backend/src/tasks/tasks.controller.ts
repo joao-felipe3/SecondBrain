@@ -492,8 +492,6 @@ export class TasksController {
     return feedback;
   }
 
-  // ===== ROTAS GENÉRICAS COM :id DEVEM VIR POR ÚLTIMO =====
-
   @Get(':id')
   findOne(@Param('id') id: string) {
     const task = this.tasksService.findOne(id);

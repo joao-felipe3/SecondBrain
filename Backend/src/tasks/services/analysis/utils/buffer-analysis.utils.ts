@@ -1,8 +1,6 @@
 import { BufferTaskMetrics, BufferStatus, BufferAlert } from '../../../interfaces';
 
-/**
- * Filtra as tarefas críticas baseado na lista do caminho crítico.
- */
+// Filtra as tarefas críticas baseado na lista do caminho crítico.
 export function filterCriticalTasks(
   tasks: BufferTaskMetrics[],
   criticalPath: string[],
@@ -17,9 +15,7 @@ export interface BufferCalculationResult {
   projectBuffer: number;
 }
 
-/**
- * Calcula a duração do caminho crítico, a variância total, o desvio padrão e o tamanho do buffer.
- */
+// Calcula a duração do caminho crítico, a variância total, o desvio padrão e o tamanho do buffer.
 export function calculateMetrics(criticalTasks: BufferTaskMetrics[]): BufferCalculationResult {
   const criticalPathDuration = criticalTasks.reduce((sum, t) => sum + t.estimatedHours, 0);
   const totalVariance = criticalTasks.reduce((sum, t) => sum + (t.variance || 0), 0);
@@ -34,9 +30,7 @@ export function calculateMetrics(criticalTasks: BufferTaskMetrics[]): BufferCalc
   };
 }
 
-/**
- * Mapeia e arredonda as variâncias das tarefas críticas.
- */
+// Mapeia e arredonda as variâncias das tarefas críticas
 export function mapTaskVariances(
   criticalTasks: BufferTaskMetrics[],
 ): { taskId: string; variance: number }[] {
@@ -48,9 +42,7 @@ export function mapTaskVariances(
     }));
 }
 
-/**
- * Retorna o status de buffer padrão (zerado).
- */
+// Retorna o status de buffer padrão (zerado).
 export function getDefaultBufferStatus(): BufferStatus {
   return {
     total: 0,
@@ -61,9 +53,7 @@ export function getDefaultBufferStatus(): BufferStatus {
   };
 }
 
-/**
- * Calcula o status detalhado do buffer baseado nos valores de buffer e consumo.
- */
+// Calcula o status detalhado do buffer baseado nos valores de buffer e consumo.
 export function calculateBufferStatus(
   projectBuffer: number,
   consumed: number,
@@ -80,18 +70,16 @@ export function calculateBufferStatus(
   };
 }
 
-/**
- * Gera os alertas com base no percentual do buffer consumido.
- */
+// Gera os alertas com base no percentual do buffer consumido.
 export function generateBufferAlerts(percentageUsed: number): BufferAlert[] {
   const alerts: BufferAlert[] = [];
 
   if (percentageUsed >= 50 && percentageUsed < 75) {
     alerts.push({
       severity: 'warning',
-      message: `Buffer en punto medio: ${percentageUsed}% consumido`,
+      message: `Buffer no ponto médio: ${percentageUsed}% consumido`,
       recommendation:
-        'Las próximas tarefas deben ejecutarse sin demoras. Considere aumentar recursos o priorizar.',
+        'As próximas tarefas devem ser executadas sem atrasos. Considere aumentar os recursos ou priorizar.',
       percentageUsed,
     });
   }
@@ -101,7 +89,7 @@ export function generateBufferAlerts(percentageUsed: number): BufferAlert[] {
       severity: 'critical',
       message: `⚠️ Buffer crítico: ${percentageUsed}% consumido`,
       recommendation:
-        'ACCIÓN INMEDIATA REQUERIDA. Tarefas restantes deben ser priorizadas. Reduzca el scope o aumente recursos.',
+        'AÇÃO IMEDIATA REQUERIDA. Tarefas restantes devem ser priorizadas. Reduza o escopo ou aumente os recursos.',
       percentageUsed,
     });
   }
@@ -110,7 +98,7 @@ export function generateBufferAlerts(percentageUsed: number): BufferAlert[] {
     alerts.push({
       severity: 'critical',
       message: '🚨 Buffer completamente consumido',
-      recommendation: 'El proyecto está en riesgo. Se requiere intervención gerencial inmediata.',
+      recommendation: 'O projeto está em risco. É necessária intervenção gerencial imediata.',
       percentageUsed,
     });
   }

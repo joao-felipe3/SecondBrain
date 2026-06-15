@@ -19,7 +19,7 @@ export class BufferService {
   constructor(
     @InjectModel(ProjectBuffer.name)
     private readonly bufferModel: Model<ProjectBufferDocument>,
-  ) {}
+  ) { }
 
   // ===========================================================================
   // 1. Buffer Lifecycle Operations
@@ -31,11 +31,11 @@ export class BufferService {
     criticalPath: string[],
   ): Promise<ProjectBuffer | null> {
     this.logger.log(
-      `Calculando buffer para projeto: ${projectId}, tareas críticas: ${criticalPath.length}`,
+      `Calculando buffer para projeto: ${projectId}, tarefas críticas: ${criticalPath.length}`,
     );
 
     if (!criticalPath.length) {
-      this.logger.warn(`Proyecto ${projectId} no tiene tareas críticas`);
+      this.logger.warn(`Projeto ${projectId} não tem tarefas críticas`);
       return this.createDefaultBuffer(projectId);
     }
 
@@ -64,14 +64,14 @@ export class BufferService {
     }
 
     this.logger.log(
-      `Buffer calculado: ${bufferDoc.projectBuffer}h (Varianza Total: ${totalVariance.toFixed(2)})`,
+      `Buffer calculado: ${bufferDoc.projectBuffer}h (Variância Total: ${totalVariance.toFixed(2)})`,
     );
 
     return bufferDoc;
   }
 
   async consumeBuffer(projectId: string, hoursUsed: number): Promise<BufferStatus> {
-    this.logger.log(`Consumiendo ${hoursUsed}h de buffer para proyecto: ${projectId}`);
+    this.logger.log(`Consumindo ${hoursUsed}h de buffer para o projeto: ${projectId}`);
 
     const buffer = await this.bufferModel.findOneAndUpdate(
       { projectId },
@@ -80,7 +80,7 @@ export class BufferService {
     );
 
     if (!buffer) {
-      this.logger.warn(`Buffer no encontrado para proyecto: ${projectId}`);
+      this.logger.warn(`Buffer não encontrado para o projeto: ${projectId}`);
       return getDefaultBufferStatus();
     }
 
@@ -88,7 +88,7 @@ export class BufferService {
 
     if (status.isAlert) {
       this.logger.warn(
-        `⚠️ Buffer en alerta: ${status.percentageUsed}% consumido (límite: ${buffer.threshold}%)`,
+        `⚠️ Buffer em alerta: ${status.percentageUsed}% consumido (limite: ${buffer.threshold}%)`,
       );
     }
 
@@ -102,7 +102,7 @@ export class BufferService {
       { new: true },
     );
 
-    this.logger.log(`Buffer reseteado para proyecto: ${projectId}`);
+    this.logger.log(`Buffer resetado para o projeto: ${projectId}`);
     return buffer || null;
   }
 
@@ -114,7 +114,7 @@ export class BufferService {
     const buffer = await this.bufferModel.findOne({ projectId });
 
     if (!buffer) {
-      this.logger.warn(`Buffer no encontrado para proyecto: ${projectId}`);
+      this.logger.warn(`Buffer não encontrado para o projeto: ${projectId}`);
       return getDefaultBufferStatus();
     }
 
@@ -124,9 +124,7 @@ export class BufferService {
   async checkBufferHealth(projectId: string): Promise<BufferAlert[]> {
     const buffer = await this.bufferModel.findOne({ projectId });
 
-    if (!buffer) {
-      return [];
-    }
+    if (!buffer) return [];
 
     const status = calculateBufferStatus(buffer.projectBuffer, buffer.consumed, buffer.threshold);
     return generateBufferAlerts(status.percentageUsed);
@@ -137,9 +135,7 @@ export class BufferService {
   ): Promise<Array<{ date: Date; consumed: number; percentageUsed: number }>> {
     const buffer = await this.bufferModel.findOne({ projectId });
 
-    if (!buffer) {
-      return [];
-    }
+    if (!buffer) return [];
 
     return [
       {
