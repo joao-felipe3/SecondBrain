@@ -146,7 +146,7 @@ export class TasksWriteService {
       throw new NotFoundException(`Project not found by id or name '${project}'`);
     }
 
-    createTaskDto.project = projectDoc._id;
+    createTaskDto.project = projectDoc._id as any;
   }
 
   private applyDerivedFields(dto: Partial<CreateTaskDto>): void {

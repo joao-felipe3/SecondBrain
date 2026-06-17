@@ -33,55 +33,68 @@ export interface PackageCriticality {
   score: number;
 }
 
+export interface SlackBuckets {
+  negative: number;
+  critical: number;
+  nearCritical: number;
+  lowSlack: number;
+  comfortable: number;
+}
+
+export interface TopUnlocker {
+  taskId: string;
+  taskName: string;
+  outDegree: number;
+}
+
+export interface TopBottleneck {
+  taskId: string;
+  taskName: string;
+  inDegree: number;
+}
+
+export interface MissingDependencySample {
+  taskId: string;
+  dependsOnTaskId: string;
+}
+
+export interface CPMValidation {
+  missingDependencyRefs: number;
+  missingDependencySamples?: MissingDependencySample[];
+  reliability: 'high' | 'medium' | 'low';
+}
+
+export interface CPMDiagnostics {
+  taskCount: number;
+  criticalCount: number;
+  criticalPercent: number;
+  criticalChainTaskCount: number;
+  criticalChainDuration: number;
+  nearCriticalCount: number;
+  totalWork: number;
+  impliedParallelism: number;
+  hasCycle: boolean;
+  unprocessedForward: number;
+  unprocessedBackward: number;
+  edgeCount: number;
+  startNodeCount: number;
+  endNodeCount: number;
+  avgDependenciesPerTask: number;
+  slackBuckets?: SlackBuckets;
+  topUnlockers?: TopUnlocker[];
+  topBottlenecks?: TopBottleneck[];
+  validation?: CPMValidation;
+}
+
 export interface CPMAnalysis {
   criticalPath: string[];
   projectDuration: number;
   tasksByImpact: TaskNode[];
   alerts: string[];
   packageCriticality?: PackageCriticality[];
-  diagnostics?: {
-    taskCount: number;
-    criticalCount: number;
-    criticalPercent: number;
-    criticalChainTaskCount: number;
-    criticalChainDuration: number;
-    nearCriticalCount: number;
-    totalWork: number;
-    impliedParallelism: number;
-    hasCycle: boolean;
-    unprocessedForward: number;
-    unprocessedBackward: number;
-    edgeCount: number;
-    startNodeCount: number;
-    endNodeCount: number;
-    avgDependenciesPerTask: number;
-    slackBuckets?: {
-      negative: number;
-      critical: number;
-      nearCritical: number;
-      lowSlack: number;
-      comfortable: number;
-    };
-    topUnlockers?: Array<{
-      taskId: string;
-      taskName: string;
-      outDegree: number;
-    }>;
-    topBottlenecks?: Array<{
-      taskId: string;
-      taskName: string;
-      inDegree: number;
-    }>;
-    validation?: {
-      missingDependencyRefs: number;
-      missingDependencySamples?: Array<{
-        taskId: string;
-        dependsOnTaskId: string;
-      }>;
-      reliability: 'high' | 'medium' | 'low';
-    };
-  };
+  diagnostics?: CPMDiagnostics;
 }
+
 
 export interface TaskMetrics {
   taskId: string;

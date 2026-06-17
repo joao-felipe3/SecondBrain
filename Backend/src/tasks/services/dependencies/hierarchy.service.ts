@@ -43,7 +43,7 @@ export class TasksHierarchyService {
       if (!parent) break;
 
       ancestors.unshift({
-        _id: parent._id,
+        _id: parent._id as any,
         name: parent.name,
         status: parent.status || 'todo',
       });
@@ -61,7 +61,7 @@ export class TasksHierarchyService {
     return {
       ancestors,
       children: children.map((c) => ({
-        _id: c._id,
+        _id: c._id as any,
         name: c.name,
         status: c.status || 'todo',
       })),
@@ -92,7 +92,7 @@ export class TasksHierarchyService {
         .exec();
       for (const child of children) {
         descendants.push({
-          _id: child._id,
+          _id: child._id as any,
           name: child.name,
           status: child.status || 'todo',
           experience: child.experience || 0,
@@ -142,7 +142,7 @@ export class TasksHierarchyService {
     }> = [];
     if (rootTask) {
       allNodes.push({
-        _id: rootTask._id,
+        _id: rootTask._id as any,
         experience: rootTask.experience || 0,
         isConcluded: rootTask.isConcluded || false,
       });
@@ -169,7 +169,7 @@ export class TasksHierarchyService {
     const taskSel = await this.taskModel.findById(id).select('_id experience isConcluded').exec();
     if (taskSel) {
       subtreeNodes.push({
-        _id: taskSel._id,
+        _id: taskSel._id as any,
         experience: taskSel.experience || 0,
         isConcluded: taskSel.isConcluded || false,
       });

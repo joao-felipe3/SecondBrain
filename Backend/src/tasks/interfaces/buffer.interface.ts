@@ -19,3 +19,11 @@ export interface BufferAlert {
   recommendation: string;
   percentageUsed: number;
 }
+
+export interface BufferCalculationResult {
+  criticalPathDuration: number;
+  totalVariance: number;
+  standardDeviation: number;
+  projectBuffer: number;
+}
+

@@ -1,4 +1,4 @@
-import { BufferTaskMetrics, BufferStatus, BufferAlert } from '../../../interfaces';
+import { BufferTaskMetrics, BufferStatus, BufferAlert, BufferCalculationResult } from '../../../interfaces';
 
 // Filtra as tarefas críticas baseado na lista do caminho crítico.
 export function filterCriticalTasks(
@@ -6,13 +6,6 @@ export function filterCriticalTasks(
   criticalPath: string[],
 ): BufferTaskMetrics[] {
   return tasks.filter((t) => criticalPath.includes(t.taskId));
-}
-
-export interface BufferCalculationResult {
-  criticalPathDuration: number;
-  totalVariance: number;
-  standardDeviation: number;
-  projectBuffer: number;
 }
 
 // Calcula a duração do caminho crítico, a variância total, o desvio padrão e o tamanho do buffer.
