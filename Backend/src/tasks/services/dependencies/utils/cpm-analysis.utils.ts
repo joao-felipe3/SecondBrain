@@ -5,6 +5,14 @@ import {
   PackageCriticality,
   CPMAnalysis,
   TaskMetrics,
+  ValidateDependenciesParams,
+  ComputeGraphDegreesParams,
+  FindEndNodeParams,
+  EvaluateAlignmentParams,
+  FindBestPredecessorParams,
+  BuildCriticalPathParams,
+  GenerateAlertsParams,
+  CreateCPMDiagnosticsParams,
 } from '../../../interfaces/cpm.interface';
 import { forwardPass, backwardPass, buildEdgeMap } from './cpm-passes.utils';
 import { CPMDiagnosticsDto } from '../../../dto/analysis/cpm-diagnostics.dto';
@@ -19,11 +27,11 @@ export { normalizeRelationship } from './cpm-passes.utils';
 // CPM Analysis — Private Helpers
 // ===========================================================================
 
-function validateDependencies(
-  tasksInHours: TaskNode[],
-  edgeMap: Map<string, TaskDependencyEdge[]>,
-  taskIds: Set<string>,
-): {
+function validateDependencies({
+  tasksInHours,
+  edgeMap,
+  taskIds,
+}: ValidateDependenciesParams): {
   missingDependencyRefs: number;
   missingDependencySamples: Array<{ taskId: string; dependsOnTaskId: string }>;
 } {
@@ -44,11 +52,11 @@ function validateDependencies(
   return { missingDependencyRefs, missingDependencySamples };
 }
 
-function computeGraphDegrees(
-  tasksInHours: TaskNode[],
-  edgeMap: Map<string, TaskDependencyEdge[]>,
-  taskIds: Set<string>,
-): {
+function computeGraphDegrees({
+  tasksInHours,
+  edgeMap,
+  taskIds,
+}: ComputeGraphDegreesParams): {
   indegree: Map<string, number>;
   outdegree: Map<string, number>;
   edgeCount: number;
@@ -82,10 +90,7 @@ function initializeTasksInHours(tasks: TaskNode[]): TaskNode[] {
   return tasks.map((t) => ({ ...t, duration: t.duration / 60 }));
 }
 
-function calculateSlacksAndCriticalTasks(
-  tasksInHours: TaskNode[],
-  projectDuration: number,
-): TaskNode[] {
+function calculateSlacksAndCriticalTasks(tasksInHours: TaskNode[], projectDuration: number): TaskNode[] {
   return tasksInHours.filter((t) => {
     if (typeof t.earlyStart !== 'number') t.earlyStart = 0;
     if (typeof t.earlyFinish !== 'number') t.earlyFinish = t.duration;
@@ -122,6 +127,42 @@ function sortTasksByImpact(tasksInHours: TaskNode[], indegree: Map<string, numbe
 // CPM Analysis — Public Functions
 // ===========================================================================
 
+function runCPMPasses(
+  tasksInHours: TaskNode[],
+  edgeMap: Map<string, TaskDependencyEdge[]>,
+): {
+  forward: { hasCycle: boolean; unprocessed: number };
+  projectDuration: number;
+  backward: { hasCycle: boolean; unprocessed: number };
+} {
+  const forward = forwardPass(tasksInHours, edgeMap);
+  const projectDuration = Math.max(...tasksInHours.map((t) => t.earlyFinish || 0));
+  const backward = backwardPass(tasksInHours, projectDuration, edgeMap);
+  return { forward, projectDuration, backward };
+}
+
+function getEffectiveCriticalPath(criticalPathSequence: string[], criticalTasks: TaskNode[]): string[] {
+  return criticalPathSequence.length > 0 ? criticalPathSequence : criticalTasks.map((t) => t.id);
+}
+
+function createCPMDiagnostics(params: CreateCPMDiagnosticsParams): CPMDiagnosticsDto {
+  return new CPMDiagnosticsDto({
+    tasksInHours: params.tasksInHours,
+    criticalTasks: params.criticalTasks,
+    criticalPathSequence: params.criticalPathSequence,
+    projectDuration: params.projectDuration,
+    indegree: params.indegree,
+    outdegree: params.outdegree,
+    edgeCount: params.edgeCount,
+    depSum: params.depSum,
+    hasCycle: Boolean(params.forward.hasCycle || params.backward.hasCycle),
+    unprocessedForward: params.forward.unprocessed,
+    unprocessedBackward: params.backward.unprocessed,
+    missingDependencyRefs: params.missingDependencyRefs,
+    missingDependencySamples: params.missingDependencySamples,
+  });
+}
+
 export function calculateCriticalPath(tasks: TaskNode[]): CPMAnalysis {
   if (tasks.length === 0) {
     return { criticalPath: [], projectDuration: 0, tasksByImpact: [], alerts: [] };
@@ -131,36 +172,45 @@ export function calculateCriticalPath(tasks: TaskNode[]): CPMAnalysis {
   const edgeMap = buildEdgeMap(tasksInHours);
   const taskIds = new Set(tasksInHours.map((t) => t.id));
 
-  const { missingDependencyRefs, missingDependencySamples } = validateDependencies(
+  const { missingDependencyRefs, missingDependencySamples } = validateDependencies({
     tasksInHours,
     edgeMap,
     taskIds,
-  );
+  });
 
-  const forward = forwardPass(tasksInHours, edgeMap);
-  const projectDuration = Math.max(...tasksInHours.map((t) => t.earlyFinish || 0));
-  const backward = backwardPass(tasksInHours, projectDuration, edgeMap);
+  const { forward, projectDuration, backward } = runCPMPasses(tasksInHours, edgeMap);
 
   const criticalTasks = calculateSlacksAndCriticalTasks(tasksInHours, projectDuration);
 
-  const alerts = generateAlerts(tasksInHours, criticalTasks, {
-    cycleDetected: forward.hasCycle || backward.hasCycle,
-    unprocessedForward: forward.unprocessed,
-    unprocessedBackward: backward.unprocessed,
-    missingDependencyRefs,
+  const alerts = generateAlerts({
+    tasks: tasksInHours,
+    criticalTasks,
+    diagnostics: {
+      cycleDetected: forward.hasCycle || backward.hasCycle,
+      unprocessedForward: forward.unprocessed,
+      unprocessedBackward: backward.unprocessed,
+      missingDependencyRefs,
+    },
   });
 
-  const { indegree, outdegree, edgeCount, depSum } = computeGraphDegrees(tasksInHours, edgeMap, taskIds);
+  const { indegree, outdegree, edgeCount, depSum } = computeGraphDegrees({
+    tasksInHours,
+    edgeMap,
+    taskIds,
+  });
 
   const tasksByImpact = sortTasksByImpact(tasksInHours, indegree);
 
-  const criticalPathSequence = buildCriticalPathSequence(tasksInHours, projectDuration, edgeMap);
+  const criticalPathSequence = buildCriticalPathSequence({
+    tasks: tasksInHours,
+    projectDuration,
+    edgeMap,
+  });
 
-  const effectiveCriticalPath =
-    criticalPathSequence.length > 0 ? criticalPathSequence : criticalTasks.map((t) => t.id);
+  const effectiveCriticalPath = getEffectiveCriticalPath(criticalPathSequence, criticalTasks);
   const packageCriticality = computePackageCriticality(tasksInHours, effectiveCriticalPath);
 
-  const diagnostics = new CPMDiagnosticsDto({
+  const diagnostics = createCPMDiagnostics({
     tasksInHours,
     criticalTasks,
     criticalPathSequence,
@@ -169,9 +219,8 @@ export function calculateCriticalPath(tasks: TaskNode[]): CPMAnalysis {
     outdegree,
     edgeCount,
     depSum,
-    hasCycle: Boolean(forward.hasCycle || backward.hasCycle),
-    unprocessedForward: forward.unprocessed,
-    unprocessedBackward: backward.unprocessed,
+    forward,
+    backward,
     missingDependencyRefs,
     missingDependencySamples,
   });
@@ -283,23 +332,15 @@ export function computePackageCriticality(
   return scored;
 }
 
-export function buildCriticalPathSequence(
-  tasks: TaskNode[],
-  projectDuration: number,
-  edgeMap: Map<string, TaskDependencyEdge[]>,
-): string[] {
-  const taskById = new Map<string, TaskNode>();
-  for (const t of tasks) taskById.set(t.id, t);
-
-  const eps = 0.11;
-
+function findEndNode({ tasks, projectDuration, eps }: FindEndNodeParams): TaskNode | undefined {
   let end: TaskNode | undefined;
   for (const t of tasks) {
     if (typeof t.earlyFinish !== 'number') continue;
     if (!end || (t.earlyFinish ?? 0) > (end.earlyFinish ?? 0)) end = t;
   }
 
-  if (!end || typeof end.earlyFinish !== 'number') return [];
+  if (!end || typeof end.earlyFinish !== 'number') return undefined;
+
   if (projectDuration > 0 && Math.abs(end.earlyFinish - projectDuration) > eps) {
     const candidate = tasks.find(
       (t) =>
@@ -307,6 +348,83 @@ export function buildCriticalPathSequence(
     );
     if (candidate) end = candidate;
   }
+
+  return end;
+}
+
+function evaluateDependencyAlignment({
+  pred,
+  cur,
+  dep,
+  eps,
+}: EvaluateAlignmentParams): { aligns: boolean; timelineRef: number } {
+  const es = typeof cur.earlyStart === 'number' ? cur.earlyStart : 0;
+  const ef = typeof cur.earlyFinish === 'number' ? cur.earlyFinish : es + (cur.duration || 0);
+
+  const predES = typeof pred.earlyStart === 'number' ? pred.earlyStart : 0;
+  const predEF =
+    typeof pred.earlyFinish === 'number' ? pred.earlyFinish : predES + (pred.duration || 0);
+
+  let aligns = false;
+  let timelineRef = predEF;
+
+  if (dep.relationship === DependencyType.START_TO_START) {
+    aligns = Math.abs(predES - es) <= eps;
+    timelineRef = predES;
+  } else if (dep.relationship === DependencyType.FINISH_TO_FINISH) {
+    aligns = Math.abs(predEF - ef) <= eps;
+    timelineRef = predEF;
+  } else {
+    aligns = Math.abs(predEF - es) <= eps;
+    timelineRef = predEF;
+  }
+
+  return { aligns, timelineRef };
+}
+
+function findBestPredecessor({
+  cur,
+  deps,
+  taskById,
+  eps,
+}: FindBestPredecessorParams): TaskNode | undefined {
+  let bestPred: TaskNode | undefined;
+  let bestScore = -Infinity;
+
+  for (const dep of deps) {
+    const pred = taskById.get(dep.predecessorId);
+    if (!pred || typeof pred.earlyFinish !== 'number') continue;
+
+    const { aligns, timelineRef } = evaluateDependencyAlignment({ pred, cur, dep, eps });
+
+    const criticalBonus =
+      Math.abs(Number(pred.slack ?? Number.POSITIVE_INFINITY)) < 0.1 ? 1_000_000_000 : 0;
+    const alignmentBonus = aligns ? 1_000_000 : 0;
+    const score = criticalBonus + alignmentBonus + timelineRef;
+
+    if (score > bestScore) {
+      bestScore = score;
+      bestPred = pred;
+    } else if (score === bestScore && bestPred && pred.id.localeCompare(bestPred.id) < 0) {
+      bestPred = pred;
+    }
+  }
+
+  return bestPred;
+}
+
+export function buildCriticalPathSequence({
+  tasks,
+  projectDuration,
+  edgeMap,
+}: BuildCriticalPathParams): string[] {
+  const taskById = new Map<string, TaskNode>();
+  for (const t of tasks) taskById.set(t.id, t);
+
+  const eps = 0.11;
+  const end = findEndNode({ tasks, projectDuration, eps });
+
+  if (!end || typeof end.earlyFinish !== 'number') return [];
 
   const path: string[] = [];
   const visited = new Set<string>();
@@ -319,46 +437,7 @@ export function buildCriticalPathSequence(
     const deps = edgeMap.get(cur.id) || [];
     if (deps.length === 0) break;
 
-    const es = typeof cur.earlyStart === 'number' ? cur.earlyStart : 0;
-    const ef = typeof cur.earlyFinish === 'number' ? cur.earlyFinish : es + (cur.duration || 0);
-    let bestPred: TaskNode | undefined;
-    let bestScore = -Infinity;
-
-    for (const dep of deps) {
-      const pred = taskById.get(dep.predecessorId);
-      if (!pred || typeof pred.earlyFinish !== 'number') continue;
-
-      const predES = typeof pred.earlyStart === 'number' ? pred.earlyStart : 0;
-      const predEF =
-        typeof pred.earlyFinish === 'number' ? pred.earlyFinish : predES + (pred.duration || 0);
-
-      let aligns = false;
-      let timelineRef = predEF;
-
-      if (dep.relationship === DependencyType.START_TO_START) {
-        aligns = Math.abs(predES - es) <= eps;
-        timelineRef = predES;
-      } else if (dep.relationship === DependencyType.FINISH_TO_FINISH) {
-        aligns = Math.abs(predEF - ef) <= eps;
-        timelineRef = predEF;
-      } else {
-        aligns = Math.abs(predEF - es) <= eps;
-        timelineRef = predEF;
-      }
-
-      const criticalBonus =
-        Math.abs(Number(pred.slack ?? Number.POSITIVE_INFINITY)) < 0.1 ? 1_000_000_000 : 0;
-      const alignmentBonus = aligns ? 1_000_000 : 0;
-      const score = criticalBonus + alignmentBonus + timelineRef;
-
-      if (score > bestScore) {
-        bestScore = score;
-        bestPred = pred;
-      } else if (score === bestScore && bestPred && pred.id.localeCompare(bestPred.id) < 0) {
-        bestPred = pred;
-      }
-    }
-
+    const bestPred = findBestPredecessor({ cur, deps, taskById, eps });
     if (!bestPred) break;
     cur = bestPred;
   }
@@ -366,16 +445,11 @@ export function buildCriticalPathSequence(
   return path.reverse();
 }
 
-export function generateAlerts(
-  tasks: TaskNode[],
-  criticalTasks: TaskNode[],
-  diagnostics: {
-    cycleDetected: boolean;
-    unprocessedForward: number;
-    unprocessedBackward: number;
-    missingDependencyRefs: number;
-  },
-): string[] {
+export function generateAlerts({
+  tasks,
+  criticalTasks,
+  diagnostics,
+}: GenerateAlertsParams): string[] {
   const alerts: string[] = [];
 
   if (diagnostics.cycleDetected) {

@@ -106,3 +106,68 @@ export interface TaskMetrics {
   slack: number;
   isCritical: boolean;
 }
+
+export interface ValidateDependenciesParams {
+  tasksInHours: TaskNode[];
+  edgeMap: Map<string, TaskDependencyEdge[]>;
+  taskIds: Set<string>;
+}
+
+export interface ComputeGraphDegreesParams {
+  tasksInHours: TaskNode[];
+  edgeMap: Map<string, TaskDependencyEdge[]>;
+  taskIds: Set<string>;
+}
+
+export interface FindEndNodeParams {
+  tasks: TaskNode[];
+  projectDuration: number;
+  eps: number;
+}
+
+export interface EvaluateAlignmentParams {
+  pred: TaskNode;
+  cur: TaskNode;
+  dep: TaskDependencyEdge;
+  eps: number;
+}
+
+export interface FindBestPredecessorParams {
+  cur: TaskNode;
+  deps: TaskDependencyEdge[];
+  taskById: Map<string, TaskNode>;
+  eps: number;
+}
+
+export interface BuildCriticalPathParams {
+  tasks: TaskNode[];
+  projectDuration: number;
+  edgeMap: Map<string, TaskDependencyEdge[]>;
+}
+
+export interface GenerateAlertsParams {
+  tasks: TaskNode[];
+  criticalTasks: TaskNode[];
+  diagnostics: {
+    cycleDetected: boolean;
+    unprocessedForward: number;
+    unprocessedBackward: number;
+    missingDependencyRefs: number;
+  };
+}
+
+export interface CreateCPMDiagnosticsParams {
+  tasksInHours: TaskNode[];
+  criticalTasks: TaskNode[];
+  criticalPathSequence: string[];
+  projectDuration: number;
+  indegree: Map<string, number>;
+  outdegree: Map<string, number>;
+  edgeCount: number;
+  depSum: number;
+  forward: { hasCycle: boolean; unprocessed: number };
+  backward: { hasCycle: boolean; unprocessed: number };
+  missingDependencyRefs: number;
+  missingDependencySamples: Array<{ taskId: string; dependsOnTaskId: string }>;
+}
+
