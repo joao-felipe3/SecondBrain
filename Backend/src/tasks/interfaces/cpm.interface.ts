@@ -33,6 +33,22 @@ export interface PackageCriticality {
   score: number;
 }
 
+export interface GroupedPackageTasks {
+  path?: string;
+  tasks: TaskNode[];
+}
+
+export interface RawPackageMetrics {
+  packageId: string;
+  packagePath?: string;
+  taskCount: number;
+  criticalTaskCount: number;
+  criticalRatio: number;
+  minSlack: number;
+  criticalDuration: number;
+  criticalPathTaskCount: number;
+}
+
 export interface SlackBuckets {
   negative: number;
   critical: number;

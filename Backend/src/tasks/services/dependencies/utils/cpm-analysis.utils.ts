@@ -13,6 +13,8 @@ import {
   BuildCriticalPathParams,
   GenerateAlertsParams,
   CreateCPMDiagnosticsParams,
+  GroupedPackageTasks,
+  RawPackageMetrics,
 } from '../../../interfaces/cpm.interface';
 import { forwardPass, backwardPass, buildEdgeMap } from './cpm-passes.utils';
 import { CPMDiagnosticsDto } from '../../../dto/analysis/cpm-diagnostics.dto';
@@ -257,7 +259,22 @@ export function computePackageCriticality(
   criticalPath: string[],
 ): PackageCriticality[] {
   const criticalPathSet = new Set(criticalPath);
-  const grouped = new Map<string, { path?: string; tasks: TaskNode[] }>();
+  const grouped = groupTasksByPackage(tasks);
+
+  if (grouped.size === 0) return [];
+
+  const byPackage = [...grouped.entries()].map(([packageId, group]) =>
+    calculateRawPackageMetrics(packageId, group, criticalPathSet),
+  );
+
+  const scored = computeScoresAndFormat(byPackage);
+  sortPackageCriticalityList(scored);
+
+  return scored;
+}
+
+function groupTasksByPackage(tasks: TaskNode[]): Map<string, GroupedPackageTasks> {
+  const grouped = new Map<string, GroupedPackageTasks>();
 
   for (const task of tasks) {
     const packageId = String(task.parentWbsNodeId || task.wbsPath || 'unassigned');
@@ -267,42 +284,49 @@ export function computePackageCriticality(
     grouped.set(packageId, existing);
   }
 
-  if (grouped.size === 0) return [];
+  return grouped;
+}
 
-  const byPackage = [...grouped.entries()].map(([packageId, group]) => {
-    const totalTaskCount = group.tasks.length;
-    const criticalTasks = group.tasks.filter((t) => Boolean(t.isCritical));
-    const criticalTaskCount = criticalTasks.length;
-    const criticalRatio = totalTaskCount > 0 ? criticalTaskCount / totalTaskCount : 0;
+function calculateRawPackageMetrics(
+  packageId: string,
+  group: GroupedPackageTasks,
+  criticalPathSet: Set<string>,
+): RawPackageMetrics {
+  const totalTaskCount = group.tasks.length;
+  const criticalTasks = group.tasks.filter((t) => Boolean(t.isCritical));
+  const criticalTaskCount = criticalTasks.length;
+  const criticalRatio = totalTaskCount > 0 ? criticalTaskCount / totalTaskCount : 0;
 
-    let minSlack = Number.POSITIVE_INFINITY;
-    for (const t of group.tasks) {
-      if (typeof t.slack === 'number') minSlack = Math.min(minSlack, t.slack);
-    }
-    if (!Number.isFinite(minSlack)) minSlack = 0;
+  let minSlack = Number.POSITIVE_INFINITY;
+  for (const t of group.tasks) {
+    if (typeof t.slack === 'number') minSlack = Math.min(minSlack, t.slack);
+  }
+  if (!Number.isFinite(minSlack)) minSlack = 0;
 
-    const criticalDuration = criticalTasks.reduce((sum, t) => sum + (Number(t.duration) || 0), 0);
-    const criticalPathTaskCount = group.tasks.reduce(
-      (count, task) => count + (criticalPathSet.has(task.id) ? 1 : 0),
-      0,
-    );
+  const criticalDuration = criticalTasks.reduce((sum, t) => sum + (Number(t.duration) || 0), 0);
+  const criticalPathTaskCount = group.tasks.reduce(
+    (count, task) => count + (criticalPathSet.has(task.id) ? 1 : 0),
+    0,
+  );
 
-    return {
-      packageId,
-      packagePath: group.path,
-      taskCount: totalTaskCount,
-      criticalTaskCount,
-      criticalRatio,
-      minSlack,
-      criticalDuration,
-      criticalPathTaskCount,
-      score: 0,
-    };
-  });
+  return {
+    packageId,
+    packagePath: group.path,
+    taskCount: totalTaskCount,
+    criticalTaskCount,
+    criticalRatio,
+    minSlack,
+    criticalDuration,
+    criticalPathTaskCount,
+  };
+}
 
-  const maxCriticalDuration = Math.max(...byPackage.map((item) => item.criticalDuration), 0);
+function computeScoresAndFormat(
+  rawMetrics: RawPackageMetrics[],
+): PackageCriticality[] {
+  const maxCriticalDuration = Math.max(...rawMetrics.map((item) => item.criticalDuration), 0);
 
-  const scored = byPackage.map((item) => {
+  return rawMetrics.map((item) => {
     const criticalRatioScore = item.criticalRatio * 100;
     const slackRiskScore = (1 - Math.min(1, Math.max(0, item.minSlack) / 8)) * 100;
     const durationScore =
@@ -321,15 +345,15 @@ export function computePackageCriticality(
       score: Math.round(score * 100) / 100,
     };
   });
+}
 
-  scored.sort((a, b) => {
+function sortPackageCriticalityList(list: PackageCriticality[]): void {
+  list.sort((a, b) => {
     if (b.score !== a.score) return b.score - a.score;
     if (b.criticalRatio !== a.criticalRatio) return b.criticalRatio - a.criticalRatio;
     if (a.minSlack !== b.minSlack) return a.minSlack - b.minSlack;
     return a.packageId.localeCompare(b.packageId);
   });
-
-  return scored;
 }
 
 function findEndNode({ tasks, projectDuration, eps }: FindEndNodeParams): TaskNode | undefined {
