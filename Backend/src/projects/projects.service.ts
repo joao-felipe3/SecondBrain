@@ -10,7 +10,7 @@ import type { GanttDataResponse } from './dto/gantt.dto';
 import type { PertDiagramDataResponse } from './dto/pert-diagram.dto';
 import { ProjectWave, type ProjectWaveDocument } from './schemas/project-wave.schema';
 import type { CreateXMatrixDto, XMatrixResponseDto } from './dto/x-matrix.dto';
-import { ProjectsXMatrixService } from './services/projects-x-matrix.service';
+import { ProjectsXMatrixService } from './services/strategy';
 
 @Injectable()
 export class ProjectsService {

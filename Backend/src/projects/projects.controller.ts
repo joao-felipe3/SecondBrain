@@ -19,12 +19,9 @@ import { ProjectsService } from './projects.service';
 import { CreateProjectDto } from './dto/create-project.dto';
 import { UpdateProjectDto } from './dto/update-project.dto';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
-import { PlanningService } from './planning/planning.service';
+import { PlanningService } from './services/planning';
 import { CatchballRequestDto, RefineObjectiveDto, SuggestAnswerDto } from './dto/smart-objective.dto';
-import { WBSService } from './wbs/wbs.service';
-import { WbsValidationService } from './wbs/services/wbs-validation.service';
-import { TaskConversionService } from './wbs/services/task-conversion.service';
-import { AuditService } from './wbs/services/audit.service';
+import { WBSService, WbsValidationService, TaskConversionService, AuditService } from './services/wbs';
 import {
   GenerateWBSDto,
   SaveWBSDto,
@@ -36,7 +33,8 @@ import {
   ResolveWBSBudgetDto,
 } from './dto/wbs.dto';
 import { TasksService } from '../tasks/tasks.service';
-import { LeafTasksBufferService } from './services/leaf-tasks-buffer.service';
+import { LeafTasksBufferService } from './services/execution';
+
 import { createHash } from 'crypto';
 import { CreateXMatrixDto } from './dto/x-matrix.dto';
 

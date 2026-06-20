@@ -7,8 +7,8 @@ import {
   computeChunkMinutes,
   computePertFromMinutes,
   estimateMicroTaskCount,
-} from '../utils/metrics-calculator.util';
-import { computeLeafHours } from '../utils/wbs-helpers.util';
+} from './utils/metrics-calculator.util';
+import { computeLeafHours } from './utils/wbs-helpers.util';
 
 // Handles conversion of WBS nodes to micro-tasks, including AI enrichment and auto-audit/apply logic
 @Injectable()

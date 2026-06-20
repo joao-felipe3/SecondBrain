@@ -5,7 +5,7 @@ import { BadRequestException } from '@nestjs/common';
 import { GeminiService } from '../../../src/ai/gemini.service';
 import { ChecklistService } from '../../../src/tasks/services/intelligence/checklist.service';
 import { ProjectsService } from '../../../src/projects/projects.service';
-import { EVMService } from '../../../src/projects/services/evm.service';
+import { EVMService } from '../../../src/projects/services/evm';
 import { PertService } from '../../../src/tasks/services/analysis/pert.service';
 import { FeedbackService } from '../../../src/tasks/services/intelligence/feedback.service';
 import { AlertsService } from '../../../src/tasks/services/monitoring/alerts.service';

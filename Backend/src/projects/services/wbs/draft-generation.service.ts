@@ -4,7 +4,7 @@ import { z } from 'zod';
 import { GeminiService } from '../../../ai/gemini.service';
 import { WBSNodeDto } from '../../dto/wbs.dto';
 import { CacheService, PromptBuilderService, ThemeExtractionService } from './index';
-import { extractJsonArray, extractJsonObject } from '../utils/json-parser.util';
+import { extractJsonArray, extractJsonObject } from './utils/json-parser.util';
 import {
   normalizeTitle,
   templateTitle,
@@ -12,7 +12,7 @@ import {
   normalizeCognitiveMode,
   mapMicroTaskTypeToCognitiveMode,
   mapCognitiveModeToContextTag,
-} from '../utils/normalizers.util';
+} from './utils/normalizers.util';
 
 @Injectable()
 export class DraftGenerationService {

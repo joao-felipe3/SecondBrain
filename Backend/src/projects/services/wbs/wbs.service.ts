@@ -1,14 +1,12 @@
-﻿import { Injectable, Inject, forwardRef } from '@nestjs/common';
+import { Injectable, Inject, forwardRef } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { WBSNodeDocument } from '../schemas/wbs-node.schema';
-import { WBSNodeDto } from '../dto/wbs.dto';
-import { GeminiService } from '../../ai/gemini.service';
-import {
-  WbsPersistenceService,
-  WbsGenerationService,
-  WbsConversionOrchestrationService,
-} from './services';
+import { WBSNodeDocument } from '../../schemas/wbs-node.schema';
+import { WBSNodeDto } from '../../dto/wbs.dto';
+import { GeminiService } from '../../../ai/gemini.service';
+import { WbsPersistenceService } from './wbs-persistence.service';
+import { WbsGenerationService } from './wbs-generation.service';
+import { WbsConversionOrchestrationService } from './wbs-conversion-orchestrator.service';
 import { getLeafNodesWithPaths } from './utils/wbs-helpers.util';
 
 export interface ValidationResult {

@@ -1,11 +1,11 @@
 import { InjectModel } from '@nestjs/mongoose';
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { Model, Types } from 'mongoose';
-import { TaskDocument } from '../../tasks/schemas/task.schema';
-import { ProjectDocument } from '../schemas/project.schema';
-import { ProjectWave, type ProjectWaveDocument } from '../schemas/project-wave.schema';
-import { CreateXMatrixDto, type XMatrixResponseDto, type XMatrixStrength } from '../dto/x-matrix.dto';
-import { XMatrixSnapshot, type XMatrixSnapshotDocument } from '../schemas/x-matrix-snapshot.schema';
+import { TaskDocument } from '../../../tasks/schemas/task.schema';
+import { ProjectDocument } from '../../schemas/project.schema';
+import { ProjectWave, type ProjectWaveDocument } from '../../schemas/project-wave.schema';
+import { CreateXMatrixDto, type XMatrixResponseDto, type XMatrixStrength } from '../../dto/x-matrix.dto';
+import { XMatrixSnapshot, type XMatrixSnapshotDocument } from '../../schemas/x-matrix-snapshot.schema';
 
 @Injectable()
 export class ProjectsXMatrixService {
@@ -169,7 +169,7 @@ export class ProjectsXMatrixService {
 
     const includeCompleted = dto?.includeCompleted ?? true;
     const maxTacticalItems = Math.max(20, Math.min(160, Number(dto?.maxTacticalItems || 80)));
-    const wbsLevels = new Set(
+    const wbsLevels = new Set<number>(
       (dto?.wbsLevels || [1, 2]).filter((level) => Number.isFinite(level) && level >= 1),
     );
 

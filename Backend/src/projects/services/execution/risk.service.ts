@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
-import { Risk, RiskDocument } from '../schemas/risk.schema';
+import { Risk, RiskDocument } from '../../schemas/risk.schema';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
 interface GeneratedRisk {

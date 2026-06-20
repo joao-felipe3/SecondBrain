@@ -14,7 +14,7 @@ import {
   extractVerb,
   normalizePreferredPomodoros,
 } from './normalizers.util';
-import { WBSNodeDto } from '../../dto/wbs.dto';
+import { WBSNodeDto } from '../../../dto/wbs.dto';
 
 /**
  * Compute PERT estimates from minutes

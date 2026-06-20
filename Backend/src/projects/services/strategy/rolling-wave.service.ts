@@ -2,9 +2,9 @@ import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { MongoClient, ObjectId as NativeObjectId } from 'mongodb';
-import { ProjectWave, ProjectWaveDocument } from '../schemas/project-wave.schema';
-import { TaskDocument } from '../../tasks/schemas/task.schema';
-import { ProjectsService } from '../projects.service';
+import { ProjectWave, ProjectWaveDocument } from '../../schemas/project-wave.schema';
+import { TaskDocument } from '../../../tasks/schemas/task.schema';
+import { ProjectsService } from '../../projects.service';
 import { WBSService } from '../wbs/wbs.service';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 

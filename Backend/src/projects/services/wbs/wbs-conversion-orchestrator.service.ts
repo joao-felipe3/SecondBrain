@@ -6,7 +6,7 @@ import { TaskConversionService } from './task-conversion.service';
 import { AuditService } from './audit.service';
 import { WBSNodeDto } from '../../dto/wbs.dto';
 import { Task } from '../../../tasks/entities/task.entity';
-import { computeChunkMinutes } from '../utils/metrics-calculator.util';
+import { computeChunkMinutes } from './utils/metrics-calculator.util';
 
 type GenerationStrategy = 'two-phase' | 'legacy';
 

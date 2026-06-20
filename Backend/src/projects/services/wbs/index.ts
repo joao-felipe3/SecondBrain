@@ -2,6 +2,7 @@
  * Barrel exports for WBS services
  */
 
+export { WBSService } from './wbs.service';
 export { MonotonyDetectionService } from './monotony-detection.service';
 export { MonotonyFixService, MicroTaskDraft } from './monotony-fix.service';
 export { PromptBuilderService } from './prompt-builder.service';

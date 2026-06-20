@@ -5,7 +5,7 @@ import { Model, Types } from 'mongoose';
 import { TaskDocument } from '../../schemas/task.schema';
 import { TaskAlertDocument } from '../../schemas/task-alert.schema';
 import { ProjectsService } from '../../../projects/projects.service';
-import { EVMService } from '../../../projects/services/evm.service';
+import { EVMService } from '../../../projects/services/evm';
 import { TasksMetricsService } from '../analysis/metrics.service';
 import { DeviationDetectionService, AlertsService } from '../monitoring';
 import { TasksRecurringService } from './recurring.service';
@@ -23,7 +23,7 @@ export class TasksCompletionService {
     private readonly alertsService: AlertsService,
     private readonly tasksRecurringService: TasksRecurringService,
     private readonly tasksWriteService: TasksWriteService,
-  ) {}
+  ) { }
 
   // ===========================================================================
   // 1. Public API: Lifecycle / Completion
@@ -322,14 +322,10 @@ export class TasksCompletionService {
 
   private async checkDeviationAndCreateAlert(taskId: string): Promise<void> {
     const deviation = await this.deviationDetectionService.generateDeviationAlert(taskId);
-    if (!deviation) {
-      return;
-    }
+    if (!deviation) return;
 
     const task = await this.taskModel.findById(taskId).exec();
-    if (!task) {
-      return;
-    }
+    if (!task) return;
 
     await this.alertsService.createAlert({
       taskId: task._id as any,
@@ -341,20 +337,14 @@ export class TasksCompletionService {
   }
 
   private async scheduleNextRecurringOccurrence(task: TaskDocument): Promise<void> {
-    if (!task.recurringRule) {
-      return;
-    }
+    if (!task.recurringRule) return;
 
     const recurringRule = this.tasksRecurringService.normalizeRecurringRule(task.recurringRule);
-    if (!recurringRule) {
-      return;
-    }
+    if (!recurringRule) return;
 
     const baseDate = task.deadline || task.createdAt || new Date();
     const nextDeadline = this.tasksRecurringService.calculateNextRecurringDate(baseDate, recurringRule);
-    if (!nextDeadline) {
-      return;
-    }
+    if (!nextDeadline) return;
 
     const payload = this.tasksRecurringService.buildOccurrencePayload(task, nextDeadline);
     await this.tasksWriteService.createTaskCore(payload as any);

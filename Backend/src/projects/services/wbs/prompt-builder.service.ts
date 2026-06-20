@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { WBSNodeDto } from '../../dto/wbs.dto';
-import { normalizeWorkflowTypes } from '../utils/normalizers.util';
+import { normalizeWorkflowTypes } from './utils/normalizers.util';
 
 /**
  * Service for building AI prompts for WBS and micro-task generation

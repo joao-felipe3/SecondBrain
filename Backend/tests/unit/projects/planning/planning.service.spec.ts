@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { PlanningService } from '../../../../src/projects/planning/planning.service';
+import { PlanningService } from '../../../../src/projects/services/planning';
 import { GeminiService } from '../../../../src/ai/gemini.service';
 
 describe('PlanningService', () => {

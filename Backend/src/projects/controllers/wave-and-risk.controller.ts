@@ -11,9 +11,9 @@ import {
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { RollingWaveService } from '../services/rolling-wave.service';
-import { RiskService } from '../services/risk.service';
-import { EVMService } from '../services/evm.service';
+import { RollingWaveService } from '../services/strategy';
+import { RiskService } from '../services/execution';
+import { EVMService } from '../services/evm';
 import { TasksService } from '../../tasks/tasks.service';
 import { CPMService, TaskNode, TaskDependencyEdge } from '../../tasks/services/dependencies';
 import { CreateWaveDto, UpdateWaveDto } from '../dto/wave.dto';

@@ -1,9 +1,9 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
-import { ProjectProgress, ProjectProgressDocument } from '../schemas/project-progress.schema';
-import { ProjectWave, ProjectWaveDocument } from '../schemas/project-wave.schema';
-import { ProjectDocument } from '../schemas/project.schema';
+import { ProjectProgress, ProjectProgressDocument } from '../../schemas/project-progress.schema';
+import { ProjectWave, ProjectWaveDocument } from '../../schemas/project-wave.schema';
+import { ProjectDocument } from '../../schemas/project.schema';
 import type {
   EVMCurve,
   EVMForecast,
@@ -13,7 +13,7 @@ import type {
   EVMMetricRelevance,
   EVMPersonalMetrics,
   EVMSummary,
-} from '../dto/evm.dto';
+} from '../../dto/evm.dto';
 
 @Injectable()
 export class EVMService {

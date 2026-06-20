@@ -2,13 +2,13 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { ProjectsController } from '../../../src/projects/projects.controller';
 import { getModelToken } from '@nestjs/mongoose';
 import { ProjectsService } from '../../../src/projects/projects.service';
-import { PlanningService } from '../../../src/projects/planning/planning.service';
-import { WBSService } from '../../../src/projects/wbs/wbs.service';
-import { WbsValidationService } from '../../../src/projects/wbs/services/wbs-validation.service';
-import { TaskConversionService } from '../../../src/projects/wbs/services/task-conversion.service';
-import { AuditService } from '../../../src/projects/wbs/services/audit.service';
+import { PlanningService } from '../../../src/projects/services/planning';
+import { WBSService } from '../../../src/projects/services/wbs/wbs.service';
+import { WbsValidationService } from '../../../src/projects/services/wbs/wbs-validation.service';
+import { TaskConversionService } from '../../../src/projects/services/wbs/task-conversion.service';
+import { AuditService } from '../../../src/projects/services/wbs/audit.service';
 import { TasksService } from '../../../src/tasks/tasks.service';
-import { LeafTasksBufferService } from '../../../src/projects/services/leaf-tasks-buffer.service';
+import { LeafTasksBufferService } from '../../../src/projects/services/execution';
 
 describe('ProjectsController', () => {
   let controller: ProjectsController;

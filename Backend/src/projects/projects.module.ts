@@ -7,20 +7,37 @@ import { Project } from './entities/project.entity';
 import { TaskSchema } from '../tasks/schemas/task.schema';
 import { forwardRef } from '@nestjs/common';
 import { TasksModule } from '../tasks/tasks.module';
-import { PlanningModule } from './planning/planning.module';
-import { WBSModule } from './wbs/wbs.module';
-import { LeafTasksBufferService } from './services/leaf-tasks-buffer.service';
 import { ProjectWaveSchema } from './schemas/project-wave.schema';
 import { ProjectWave } from './schemas/project-wave.schema';
 import { RiskSchema } from './schemas/risk.schema';
 import { Risk } from './schemas/risk.schema';
 import { ProjectProgress, ProjectProgressSchema } from './schemas/project-progress.schema';
-import { RollingWaveService } from './services/rolling-wave.service';
-import { RiskService } from './services/risk.service';
-import { EVMService } from './services/evm.service';
 import { WaveAndRiskController } from './controllers/wave-and-risk.controller';
 import { XMatrixSnapshot, XMatrixSnapshotSchema } from './schemas/x-matrix-snapshot.schema';
-import { ProjectsXMatrixService } from './services/projects-x-matrix.service';
+import { WBSNodeSchema } from './schemas/wbs-node.schema';
+
+// Category Services
+import { PlanningService } from './services/planning';
+import { EVMService } from './services/evm';
+import { ProjectsXMatrixService, RollingWaveService } from './services/strategy';
+import { RiskService, LeafTasksBufferService } from './services/execution';
+import {
+  WBSService,
+  MonotonyDetectionService,
+  MonotonyFixService,
+  PromptBuilderService,
+  ThemeExtractionService,
+  CacheService,
+  WbsValidationService,
+  WbsPersistenceService,
+  WbsGenerationService,
+  AuditService,
+  TaskConversionService,
+  DraftGenerationService,
+  DraftProcessingService,
+  ConfigService,
+  WbsConversionOrchestrationService,
+} from './services/wbs';
 
 @Module({
   imports: [
@@ -31,20 +48,46 @@ import { ProjectsXMatrixService } from './services/projects-x-matrix.service';
       { name: Risk.name, schema: RiskSchema },
       { name: ProjectProgress.name, schema: ProjectProgressSchema },
       { name: XMatrixSnapshot.name, schema: XMatrixSnapshotSchema },
+      { name: 'WBSNode', schema: WBSNodeSchema },
     ]),
     forwardRef(() => TasksModule),
-    PlanningModule,
-    WBSModule,
   ],
   controllers: [ProjectsController, WaveAndRiskController],
   providers: [
     ProjectsService,
+    PlanningService,
+    EVMService,
     ProjectsXMatrixService,
+    RollingWaveService,
+    RiskService,
     LeafTasksBufferService,
+    WBSService,
+    MonotonyDetectionService,
+    MonotonyFixService,
+    PromptBuilderService,
+    ThemeExtractionService,
+    CacheService,
+    WbsValidationService,
+    WbsPersistenceService,
+    WbsGenerationService,
+    AuditService,
+    TaskConversionService,
+    DraftGenerationService,
+    DraftProcessingService,
+    ConfigService,
+    WbsConversionOrchestrationService,
+  ],
+  exports: [
+    ProjectsService,
+    PlanningService,
+    WBSService,
+    WbsValidationService,
+    TaskConversionService,
+    AuditService,
     RollingWaveService,
     RiskService,
     EVMService,
   ],
-  exports: [ProjectsService, RollingWaveService, RiskService, EVMService],
 })
 export class ProjectsModule {}
+

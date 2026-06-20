@@ -2,9 +2,9 @@ import { Injectable, Inject, forwardRef } from '@nestjs/common';
 import { GeminiService } from '../../../ai/gemini.service';
 import { WBSNodeDto } from '../../dto/wbs.dto';
 import { MonotonyDetectionService } from './monotony-detection.service';
-import { extractJsonArray } from '../utils/json-parser.util';
-import { normalizeTitle, templateTitle, extractVerb } from '../utils/normalizers.util';
-import { MAX_MONOTONY_FIX_ROUNDS, MONOTONY_FIX_BATCH_SIZE } from '../constants/wbs.constants';
+import { extractJsonArray } from './utils/json-parser.util';
+import { normalizeTitle, templateTitle, extractVerb } from './utils/normalizers.util';
+import { MAX_MONOTONY_FIX_ROUNDS, MONOTONY_FIX_BATCH_SIZE } from './constants/wbs.constants';
 
 export interface MicroTaskDraft {
   name: string;
