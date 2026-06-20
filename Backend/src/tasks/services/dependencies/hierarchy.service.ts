@@ -24,14 +24,8 @@ export class TasksHierarchyService {
   // ===========================================================================
 
   async getTaskLineage(id: string, maxDepth: number = 50): Promise<TaskLineageResult> {
-    if (!id || !Types.ObjectId.isValid(id)) {
-      throw new BadRequestException(`ID inválido: ${id}`);
-    }
-
-    const task = await this.taskModel.findById(id).exec();
-    if (!task) {
-      throw new NotFoundException(`Task with id ${id} not found`);
-    }
+    this.validateId(id);
+    const task = await this.findTaskOrThrow(id);
 
     const warnings: string[] = [];
     const ancestors: TaskLineageNode[] = [];
@@ -42,12 +36,7 @@ export class TasksHierarchyService {
       const parent = await this.taskModel.findById(current.parentTaskId).exec();
       if (!parent) break;
 
-      ancestors.unshift({
-        _id: parent._id as any,
-        name: parent.name,
-        status: parent.status || 'todo',
-      });
-
+      ancestors.unshift(this.mapToLineageNode(parent));
       current = parent;
       depth++;
     }
@@ -60,24 +49,14 @@ export class TasksHierarchyService {
 
     return {
       ancestors,
-      children: children.map((c) => ({
-        _id: c._id as any,
-        name: c.name,
-        status: c.status || 'todo',
-      })),
+      children: children.map((c) => this.mapToLineageNode(c)),
       warnings,
     };
   }
 
   async getDescendants(id: string, maxDepth: number = 1000): Promise<TaskDescendantNode[]> {
-    if (!id || !Types.ObjectId.isValid(id)) {
-      throw new BadRequestException(`ID inválido: ${id}`);
-    }
-
-    const root = await this.taskModel.findById(id).exec();
-    if (!root) {
-      throw new NotFoundException(`Task with id ${id} not found`);
-    }
+    this.validateId(id);
+    await this.findTaskOrThrow(id);
 
     const descendants: TaskDescendantNode[] = [];
     const stack: Array<{ id: string; depth: number }> = [{ id, depth: 0 }];
@@ -90,14 +69,9 @@ export class TasksHierarchyService {
         .find({ parentTaskId: currentId })
         .select('_id name status experience isConcluded')
         .exec();
+
       for (const child of children) {
-        descendants.push({
-          _id: child._id as any,
-          name: child.name,
-          status: child.status || 'todo',
-          experience: child.experience || 0,
-          isConcluded: child.isConcluded || false,
-        });
+        descendants.push(this.mapToDescendantNode(child));
         stack.push({ id: String(child._id), depth: depth + 1 });
       }
     }
@@ -115,77 +89,14 @@ export class TasksHierarchyService {
     totalCompletedXP: number;
     breakdown: Array<{ _id: string | Types.ObjectId; experience: number; isConcluded: boolean }>;
   }> {
-    if (!id || !Types.ObjectId.isValid(id)) {
-      throw new BadRequestException(`ID inválido: ${id}`);
-    }
+    this.validateId(id);
+    const task = await this.findTaskOrThrow(id);
 
-    const task = await this.taskModel.findById(id).exec();
-    if (!task) {
-      throw new NotFoundException(`Task with id ${id} not found`);
-    }
+    const rootId = await this.findRootTaskId(task);
 
-    let current: TaskDocument | null = task;
-    while (current && current.parentTaskId) {
-      const parent = await this.taskModel.findById(current.parentTaskId).exec();
-      if (!parent) break;
-      current = parent;
-    }
-    const rootId = current ? String(current._id) : id;
-
-    const rootDescendants = await this.getDescendants(rootId, 5000);
-    const rootTask = await this.taskModel.findById(rootId).select('_id experience isConcluded').exec();
-
-    const allNodes: Array<{
-      _id: string | Types.ObjectId;
-      experience: number;
-      isConcluded: boolean;
-    }> = [];
-    if (rootTask) {
-      allNodes.push({
-        _id: rootTask._id as any,
-        experience: rootTask.experience || 0,
-        isConcluded: rootTask.isConcluded || false,
-      });
-    }
-    for (const d of rootDescendants) {
-      allNodes.push({
-        _id: d._id,
-        experience: Number(d.experience) || 0,
-        isConcluded: Boolean(d.isConcluded),
-      });
-    }
-
-    const totalCompletedXP = allNodes.reduce(
-      (s, n) => s + (n.isConcluded ? Number(n.experience || 0) : 0),
-      0,
-    );
-
-    const subtreeDescendants = await this.getDescendants(id, 5000);
-    const subtreeNodes: Array<{
-      _id: string | Types.ObjectId;
-      experience: number;
-      isConcluded: boolean;
-    }> = [];
-    const taskSel = await this.taskModel.findById(id).select('_id experience isConcluded').exec();
-    if (taskSel) {
-      subtreeNodes.push({
-        _id: taskSel._id as any,
-        experience: taskSel.experience || 0,
-        isConcluded: taskSel.isConcluded || false,
-      });
-    }
-    for (const d of subtreeDescendants) {
-      subtreeNodes.push({
-        _id: d._id,
-        experience: Number(d.experience) || 0,
-        isConcluded: Boolean(d.isConcluded),
-      });
-    }
-
-    const subtreeCompletedXP = subtreeNodes.reduce(
-      (s, n) => s + (n.isConcluded ? Number(n.experience || 0) : 0),
-      0,
-    );
+    const { completedXP: totalCompletedXP } = await this.getSubtreeNodesAndCompletedXP(rootId);
+    const { nodes: subtreeNodes, completedXP: subtreeCompletedXP } =
+      await this.getSubtreeNodesAndCompletedXP(id);
 
     const rawPercent = totalCompletedXP > 0 ? (subtreeCompletedXP / totalCompletedXP) * 100 : 0;
     const contributionPercent = Math.round(rawPercent * 100) / 100;
@@ -196,5 +107,91 @@ export class TasksHierarchyService {
       totalCompletedXP,
       breakdown: subtreeNodes,
     };
+  }
+
+  // ===========================================================================
+  // 3. Private Helpers & Mappers
+  // ===========================================================================
+
+  private validateId(id: string): void {
+    if (!id || !Types.ObjectId.isValid(id)) {
+      throw new BadRequestException(`ID inválido: ${id}`);
+    }
+  }
+
+  private async findTaskOrThrow(id: string): Promise<TaskDocument> {
+    const task = await this.taskModel.findById(id).exec();
+    if (!task) {
+      throw new NotFoundException(`Task with id ${id} not found`);
+    }
+    return task;
+  }
+
+  private mapToLineageNode(doc: any): TaskLineageNode {
+    return {
+      _id: doc._id,
+      name: doc.name,
+      status: doc.status || 'todo',
+    };
+  }
+
+  private mapToDescendantNode(doc: any): TaskDescendantNode {
+    return {
+      _id: doc._id,
+      name: doc.name,
+      status: doc.status || 'todo',
+      experience: doc.experience || 0,
+      isConcluded: doc.isConcluded || false,
+    };
+  }
+
+  private async findRootTaskId(task: TaskDocument): Promise<string> {
+    let current: TaskDocument | null = task;
+    while (current && current.parentTaskId) {
+      const parent = await this.taskModel.findById(current.parentTaskId).exec();
+      if (!parent) break;
+      current = parent;
+    }
+    return current ? String(current._id) : String(task._id);
+  }
+
+  private async getSubtreeNodesAndCompletedXP(targetId: string): Promise<{
+    nodes: Array<{ _id: string | Types.ObjectId; experience: number; isConcluded: boolean }>;
+    completedXP: number;
+  }> {
+    const descendants = await this.getDescendants(targetId, 5000);
+    const targetTask = await this.taskModel
+      .findById(targetId)
+      .select('_id experience isConcluded')
+      .exec();
+
+    const nodes: Array<{
+      _id: string | Types.ObjectId;
+      experience: number;
+      isConcluded: boolean;
+    }> = [];
+
+    if (targetTask) {
+      nodes.push({
+        _id: targetTask._id as any,
+        experience: targetTask.experience || 0,
+        isConcluded: targetTask.isConcluded || false,
+      });
+    }
+
+    for (const d of descendants) {
+      nodes.push({
+        _id: d._id,
+        experience: Number(d.experience) || 0,
+        isConcluded: Boolean(d.isConcluded),
+      });
+    }
+
+    const completedXP = nodes.reduce(
+      (sum, node) => sum + (node.isConcluded ? Number(node.experience || 0) : 0),
+      0,
+    );
+
+    return { nodes, completedXP };
   }
 }

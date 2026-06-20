@@ -5,15 +5,9 @@ import { GeminiService } from '../../../ai/gemini.service';
 import { TaskDocument } from '../../schemas/task.schema';
 import { TaskCompletionFeedbackDocument } from '../../schemas/task-completion-feedback.schema';
 import { ChecklistItemDto } from '../../dto/task/create-task.dto';
+import { CompletionFeedbackPayload } from '../../interfaces';
 
-export interface CompletionFeedbackPayload {
-  celebration?: string;
-  validation?: string;
-  question?: string;
-  impediments?: string[];
-  selectedSteps?: string[];
-  action?: string;
-}
+export { CompletionFeedbackPayload };
 
 @Injectable()
 export class FeedbackService {
@@ -25,77 +19,23 @@ export class FeedbackService {
   ) {}
 
   // ===========================================================================
-  // 1. Completion Feedback Generation
+  // 1. Public API Methods
   // ===========================================================================
 
   async generateCompletionFeedback(id: string, payload?: CompletionFeedbackPayload): Promise<string> {
-    if (!id || !Types.ObjectId.isValid(id)) {
-      throw new BadRequestException(`ID inválido: ${id}`);
-    }
+    const task = await this.validateAndGetTask(id);
+    const inputSnapshot = this.createInputSnapshot(task);
 
-    const task = await this.taskModel.findById(id).exec();
-    if (!task) {
-      throw new NotFoundException(`Task with id ${id} not found`);
-    }
-
-    if (!task.isConcluded) {
-      throw new BadRequestException('Task deve estar concluída para gerar feedback');
-    }
-
-    const inputSnapshot = {
-      name: task.name,
-      description: task.description,
-      checklist: task.checklist,
-      pomodoros: task.pomodorosDid,
-      experience: task.experience,
-      difficulty: task.difficult,
-    };
-
-    const isUserFeedbackPayload =
-      payload &&
-      typeof payload === 'object' &&
-      ('celebration' in payload ||
-        'validation' in payload ||
-        'question' in payload ||
-        'impediments' in payload ||
-        'selectedSteps' in payload ||
-        'action' in payload);
-
-    if (isUserFeedbackPayload) {
-      const feedbackText = JSON.stringify(payload);
-
-      await this.feedbackModel.create({
-        task: task._id,
-        project: task.project ? new Types.ObjectId(task.project.toString()) : undefined,
-        modelName: 'user-feedback',
-        promptVersion: 'catchball-user-v1',
-        inputSnapshot: {
-          ...inputSnapshot,
-          userFeedback: payload,
-        },
-        feedback: feedbackText,
-      });
-
-      return feedbackText;
+    if (this.isUserFeedbackPayload(payload)) {
+      return this.saveUserFeedback(task, inputSnapshot, payload!);
     }
 
     try {
-      const structured = await this.generateFeedbackOnCompletion(
-        task,
-        task.checklist,
-        task.pomodorosDid ? task.pomodorosDid * 25 : undefined,
-      );
+      const timeSpentMinutes = task.pomodorosDid ? task.pomodorosDid * 25 : undefined;
+      const structured = await this.generateFeedbackOnCompletion(task, task.checklist, timeSpentMinutes);
       return JSON.stringify(structured);
     } catch (err: unknown) {
-      const errorObj = err as Error;
-      await this.feedbackModel.create({
-        task: task._id,
-        project: task.project ? new Types.ObjectId(task.project.toString()) : undefined,
-        modelName: this.geminiService.getModelName(),
-        promptVersion: 'catchball-v1',
-        inputSnapshot,
-        error: String(errorObj?.message ?? errorObj),
-      });
+      await this.saveErrorFeedback(task, inputSnapshot, err as Error);
       throw err;
     }
   }
@@ -131,27 +71,229 @@ export class FeedbackService {
     question: string;
     suggestion: string;
   }> {
-    if (!task || !task._id) throw new BadRequestException('Task inválida');
+    if (!task || !task._id) {
+      throw new BadRequestException('Task inválida');
+    }
 
-    const checklistSummary = Array.isArray(checklist)
-      ? checklist.map((it) => ({
-          item: typeof it === 'string' ? it : it.item,
-          completed: typeof it === 'string' ? false : !!it.completed,
-        }))
-      : [];
+    const checklistSummary = this.buildChecklistSummary(checklist);
+    const percent = this.calculateChecklistCompletionPercent(checklistSummary);
+    const prompt = this.buildFeedbackPrompt(task, percent, checklistSummary.length, timeSpentMinutes);
 
-    const percent =
-      checklistSummary.length > 0
-        ? Math.round(
-            (checklistSummary.filter((c) => c.completed).length / checklistSummary.length) * 100,
-          )
-        : 100;
+    try {
+      const raw = await this.geminiService.generateContent(prompt, {
+        responseMimeType: this.geminiService.supportsJsonMode() ? 'application/json' : undefined,
+        temperature: 0.3,
+        maxOutputTokens: 400,
+      });
 
-    const prompt = [
+      const parsed = this.safeParseJson(raw) || {};
+      const feedbackObj = this.buildFeedbackObject(parsed, task.name, percent);
+
+      await this.saveSuccessFeedback(task, checklistSummary, timeSpentMinutes, feedbackObj);
+
+      return feedbackObj;
+    } catch (err: unknown) {
+      await this.saveErrorFeedbackOnCompletion(task, checklistSummary, timeSpentMinutes, err as Error);
+      throw err;
+    }
+  }
+
+  async suggestNextSteps(
+    task: TaskDocument,
+    feedback: string | Record<string, unknown>,
+  ): Promise<Array<{ title: string; description: string }>> {
+    if (!task || !task._id) {
+      throw new BadRequestException('Task inválida');
+    }
+
+    const prompt = this.buildNextStepsPrompt(task, feedback);
+
+    try {
+      const raw = await this.geminiService.generateContent(prompt, {
+        responseMimeType: this.geminiService.supportsJsonMode() ? 'application/json' : undefined,
+        temperature: 0.4,
+        maxOutputTokens: 600,
+      });
+
+      const parsed = this.safeParseJson(raw);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        return this.parseNextSteps(parsed);
+      }
+
+      return this.getFallbackNextSteps();
+    } catch {
+      return this.getFallbackNextSteps();
+    }
+  }
+
+  // ===========================================================================
+  // 2. Private Helper Methods: Validation & Snapshotting
+  // ===========================================================================
+
+  private async validateAndGetTask(id: string): Promise<TaskDocument> {
+    if (!id || !Types.ObjectId.isValid(id)) {
+      throw new BadRequestException(`ID inválido: ${id}`);
+    }
+
+    const task = await this.taskModel.findById(id).exec();
+    if (!task) {
+      throw new NotFoundException(`Task with id ${id} not found`);
+    }
+
+    if (!task.isConcluded) {
+      throw new BadRequestException('Task deve estar concluída para gerar feedback');
+    }
+
+    return task;
+  }
+
+  private createInputSnapshot(task: TaskDocument): Record<string, any> {
+    return {
+      name: task.name,
+      description: task.description,
+      checklist: task.checklist,
+      pomodoros: task.pomodorosDid,
+      experience: task.experience,
+      difficulty: task.difficult,
+    };
+  }
+
+  private isUserFeedbackPayload(payload?: CompletionFeedbackPayload): boolean {
+    if (!payload || typeof payload !== 'object') {
+      return false;
+    }
+    return (
+      'celebration' in payload ||
+      'validation' in payload ||
+      'question' in payload ||
+      'impediments' in payload ||
+      'selectedSteps' in payload ||
+      'action' in payload
+    );
+  }
+
+  // ===========================================================================
+  // 3. Private Helper Methods: Persistences
+  // ===========================================================================
+
+  private async saveUserFeedback(
+    task: TaskDocument,
+    inputSnapshot: Record<string, any>,
+    payload: CompletionFeedbackPayload,
+  ): Promise<string> {
+    const feedbackText = JSON.stringify(payload);
+
+    await this.feedbackModel.create({
+      task: task._id,
+      project: task.project ? new Types.ObjectId(task.project.toString()) : undefined,
+      modelName: 'user-feedback',
+      promptVersion: 'catchball-user-v1',
+      inputSnapshot: {
+        ...inputSnapshot,
+        userFeedback: payload,
+      },
+      feedback: feedbackText,
+    });
+
+    return feedbackText;
+  }
+
+  private async saveErrorFeedback(
+    task: TaskDocument,
+    inputSnapshot: Record<string, any>,
+    error: Error,
+  ): Promise<void> {
+    await this.feedbackModel.create({
+      task: task._id,
+      project: task.project ? new Types.ObjectId(task.project.toString()) : undefined,
+      modelName: this.geminiService.getModelName(),
+      promptVersion: 'catchball-v1',
+      inputSnapshot,
+      error: String(error?.message ?? error),
+    });
+  }
+
+  private async saveSuccessFeedback(
+    task: TaskDocument,
+    checklistSummary: any[],
+    timeSpentMinutes: number | undefined,
+    feedbackObj: any,
+  ): Promise<void> {
+    await this.feedbackModel.create({
+      task: task._id,
+      project: task.project ? new Types.ObjectId(task.project.toString()) : undefined,
+      modelName: this.geminiService.getModelName(),
+      promptVersion: 'catchball-v1',
+      inputSnapshot: {
+        name: task.name,
+        checklist: checklistSummary,
+        timeSpentMinutes,
+      },
+      feedback: JSON.stringify(feedbackObj),
+    });
+  }
+
+  private async saveErrorFeedbackOnCompletion(
+    task: TaskDocument,
+    checklistSummary: any[],
+    timeSpentMinutes: number | undefined,
+    error: Error,
+  ): Promise<void> {
+    try {
+      await this.feedbackModel.create({
+        task: task._id,
+        project: task.project ? new Types.ObjectId(task.project.toString()) : undefined,
+        modelName: this.geminiService.getModelName(),
+        promptVersion: 'catchball-v1',
+        inputSnapshot: {
+          name: task.name,
+          checklist: checklistSummary,
+          timeSpentMinutes,
+        },
+        error: String(error?.message ?? error),
+      });
+    } catch {
+      // Ignore database creation errors when tracking errors
+    }
+  }
+
+  // ===========================================================================
+  // 4. Private Helper Methods: Formatting & Prompts
+  // ===========================================================================
+
+  private buildChecklistSummary(
+    checklist?: Array<string | ChecklistItemDto>,
+  ): Array<{ item: string; completed: boolean }> {
+    if (!Array.isArray(checklist)) {
+      return [];
+    }
+    return checklist.map((it) => ({
+      item: typeof it === 'string' ? it : it.item,
+      completed: typeof it === 'string' ? false : !!it.completed,
+    }));
+  }
+
+  private calculateChecklistCompletionPercent(
+    checklistSummary: Array<{ item: string; completed: boolean }>,
+  ): number {
+    if (checklistSummary.length === 0) {
+      return 100;
+    }
+    const completedCount = checklistSummary.filter((c) => c.completed).length;
+    return Math.round((completedCount / checklistSummary.length) * 100);
+  }
+
+  private buildFeedbackPrompt(
+    task: TaskDocument,
+    percent: number,
+    checklistLength: number,
+    timeSpentMinutes?: number,
+  ): string {
+    return [
       'Você é um receptor de bola (catchball) que fornece feedback curto e acionável quando uma tarefa é concluída.',
       `Tarefa: ${String(task.name || '')}`,
       task.description ? `Descrição: ${String(task.description)}` : '',
-      `Checklist completion: ${percent}% (${checklistSummary.length} items)`,
+      `Checklist completion: ${percent}% (${checklistLength} items)`,
       timeSpentMinutes ? `Tempo gasto (minutos): ${timeSpentMinutes}` : '',
       '',
       'Gere um JSON válido com exatamente essas chaves (strings):',
@@ -163,70 +305,29 @@ export class FeedbackService {
     ]
       .filter(Boolean)
       .join('\n');
-
-    try {
-      const raw = await this.geminiService.generateContent(prompt, {
-        responseMimeType: this.geminiService.supportsJsonMode() ? 'application/json' : undefined,
-        temperature: 0.3,
-        maxOutputTokens: 400,
-      });
-
-      const parsed = this.safeParseJson(raw) || {};
-
-      const celebration = String(parsed.celebration ?? parsed.praise ?? parsed.recognition ?? '').trim();
-      const validation = String(parsed.validation ?? parsed.learning ?? '').trim();
-      const question = String(parsed.question ?? parsed.inquiry ?? parsed.nextStep ?? '').trim();
-      const suggestion = String(parsed.suggestion ?? parsed.suggest ?? parsed.nextStep ?? '').trim();
-
-      const feedbackObj = {
-        celebration: celebration || `Parabéns por concluir "${String(task.name || '')}".`,
-        validation: validation || `Checklist: ${percent}% completo.`,
-        question: question || 'Houve algum impedimento durante a execução? (resuma em 1 frase)',
-        suggestion:
-          suggestion || 'Sugestão: revisar os pontos não concluídos e planejar próximo passo (PDCA).',
-      };
-
-      await this.feedbackModel.create({
-        task: task._id,
-        project: task.project ? new Types.ObjectId(task.project.toString()) : undefined,
-        modelName: this.geminiService.getModelName(),
-        promptVersion: 'catchball-v1',
-        inputSnapshot: {
-          name: task.name,
-          checklist: checklistSummary,
-          timeSpentMinutes,
-        },
-        feedback: JSON.stringify(feedbackObj),
-      });
-
-      return feedbackObj;
-    } catch (err: unknown) {
-      const errorObj = err as Error;
-      try {
-        await this.feedbackModel.create({
-          task: task._id,
-          project: task.project ? new Types.ObjectId(task.project.toString()) : undefined,
-          modelName: this.geminiService.getModelName(),
-          promptVersion: 'catchball-v1',
-          inputSnapshot: {
-            name: task.name,
-            checklist: checklistSummary,
-            timeSpentMinutes,
-          },
-          error: String(errorObj?.message ?? errorObj),
-        });
-      } catch {}
-      throw err;
-    }
   }
 
-  async suggestNextSteps(
-    task: TaskDocument,
-    feedback: string | Record<string, unknown>,
-  ): Promise<Array<{ title: string; description: string }>> {
-    if (!task || !task._id) throw new BadRequestException('Task inválida');
+  private buildFeedbackObject(
+    parsed: Record<string, any>,
+    taskName: string,
+    percent: number,
+  ): { celebration: string; validation: string; question: string; suggestion: string } {
+    const celebration = String(parsed.celebration ?? parsed.praise ?? parsed.recognition ?? '').trim();
+    const validation = String(parsed.validation ?? parsed.learning ?? '').trim();
+    const question = String(parsed.question ?? parsed.inquiry ?? parsed.nextStep ?? '').trim();
+    const suggestion = String(parsed.suggestion ?? parsed.suggest ?? parsed.nextStep ?? '').trim();
 
-    const prompt = [
+    return {
+      celebration: celebration || `Parabéns por concluir "${String(taskName || '')}".`,
+      validation: validation || `Checklist: ${percent}% completo.`,
+      question: question || 'Houve algum impedimento durante a execução? (resuma em 1 frase)',
+      suggestion:
+        suggestion || 'Sugestão: revisar os pontos não concluídos e planejar próximo passo (PDCA).',
+    };
+  }
+
+  private buildNextStepsPrompt(task: TaskDocument, feedback: string | Record<string, unknown>): string {
+    return [
       'Baseado no feedback abaixo, gere 3 próximos passos acionáveis e curtos (título + descrição).',
       `Tarefa: ${String(task.name || '')}`,
       feedback ? `Feedback: ${typeof feedback === 'string' ? feedback : JSON.stringify(feedback)}` : '',
@@ -236,56 +337,42 @@ export class FeedbackService {
     ]
       .filter(Boolean)
       .join('\n');
+  }
 
-    try {
-      const raw = await this.geminiService.generateContent(prompt, {
-        responseMimeType: this.geminiService.supportsJsonMode() ? 'application/json' : undefined,
-        temperature: 0.4,
-        maxOutputTokens: 600,
-      });
+  private parseNextSteps(parsed: Array<any>): Array<{ title: string; description: string }> {
+    return parsed.slice(0, 5).map((p) => {
+      const anyP = p as Record<string, unknown>;
+      return {
+        title: String(anyP.title || anyP.name || '').trim(),
+        description: String(anyP.description || anyP.desc || '').trim(),
+      };
+    });
+  }
 
-      const parsed = this.safeParseJson(raw);
-      if (Array.isArray(parsed) && parsed.length > 0) {
-        return parsed.slice(0, 5).map((p) => {
-          const anyP = p as Record<string, unknown>;
-          return {
-            title: String(anyP.title || anyP.name || '').trim(),
-            description: String(anyP.description || anyP.desc || '').trim(),
-          };
-        });
-      }
-
-      const fallback: Array<{ title: string; description: string }> = [];
-      fallback.push({
+  private getFallbackNextSteps(): Array<{ title: string; description: string }> {
+    return [
+      {
         title: 'Revisar checklist',
         description: 'Verificar itens não concluídos e atualizar definição de pronto.',
-      });
-      fallback.push({
+      },
+      {
         title: 'Planejar próximo passo',
         description: 'Criar uma micro-tarefa com o próximo passo sugerido.',
-      });
-      return fallback;
-    } catch {
-      return [
-        {
-          title: 'Revisar checklist',
-          description: 'Verificar itens não concluídos e atualizar definição de pronto.',
-        },
-      ];
-    }
+      },
+    ];
   }
 
   // ===========================================================================
-  // 2. Private Helpers & Parsing
+  // 5. Private Parsing Utils
   // ===========================================================================
 
-  private safeParseJson(raw: string): Record<string, unknown> | null {
+  private safeParseJson(raw: string): any | null {
     if (!raw || typeof raw !== 'string') return null;
     let cleaned = raw.trim();
     if (cleaned.startsWith('```json')) cleaned = cleaned.slice(7);
     if (cleaned.startsWith('```')) cleaned = cleaned.slice(3);
     if (cleaned.endsWith('```')) cleaned = cleaned.slice(0, -3);
-    const arrMatch = cleaned.match(/\{[\s\S]*\}/);
+    const arrMatch = cleaned.match(/\{[\s\S]*\}/) || cleaned.match(/\[[\s\S]*\]/);
     if (arrMatch) cleaned = arrMatch[0];
     try {
       return JSON.parse(cleaned);

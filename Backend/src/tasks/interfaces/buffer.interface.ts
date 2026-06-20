@@ -26,4 +26,3 @@ export interface BufferCalculationResult {
   standardDeviation: number;
   projectBuffer: number;
 }
-

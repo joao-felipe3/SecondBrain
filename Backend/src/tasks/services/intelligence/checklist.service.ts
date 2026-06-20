@@ -5,17 +5,13 @@ import { TaskDocument, TaskChecklistItem } from '../../schemas/task.schema';
 import { ChecklistItemDto } from '../../dto/task/create-task.dto';
 import { TasksInputService } from '../workflow/input.service';
 import { GeminiService } from '../../../ai/gemini.service';
+import {
+  ChecklistValidationResult,
+  TaskHistorySummary,
+  ChecklistHistoryProjectRef,
+} from '../../interfaces';
 
-export interface ChecklistValidationResult {
-  isValid: boolean;
-  reason?: string;
-}
-
-export interface TaskHistorySummary {
-  name: string;
-  description?: string;
-  checklist?: Array<{ item: string }>;
-}
+export { ChecklistValidationResult, TaskHistorySummary, ChecklistHistoryProjectRef };
 
 @Injectable()
 export class ChecklistService {
@@ -176,13 +172,6 @@ export class ChecklistService {
   }
 }
 
-export type ChecklistHistoryProjectRef =
-  | string
-  | Types.ObjectId
-  | {
-      _id: string | Types.ObjectId;
-    };
-
 @Injectable()
 export class TasksChecklistService {
   constructor(
@@ -231,45 +220,53 @@ export class TasksChecklistService {
     itemIndex: string,
     completed: boolean,
   ): Promise<TaskDocument & { completionPercentage: number }> {
-    if (!taskId || !Types.ObjectId.isValid(taskId)) {
-      throw new BadRequestException(`ID inválido: ${taskId}`);
-    }
+    const index = this.parseAndValidateItemIndex(itemIndex);
+    const task = await this.getTaskByIdOrThrow(taskId);
 
-    const index = parseInt(itemIndex, 10);
-    if (!Number.isFinite(index) || index < 0) {
-      throw new BadRequestException(`Item ID inválido: ${itemIndex}`);
-    }
-
-    const task = await this.taskModel.findById(taskId).exec();
-    if (!task) {
-      throw new NotFoundException(`Task with id ${taskId} not found`);
-    }
-
-    if (!Array.isArray(task.checklist) || task.checklist.length === 0) {
+    const checklist = task.checklist;
+    if (!Array.isArray(checklist) || checklist.length === 0) {
       throw new BadRequestException('Tarefa não possui checklist');
     }
 
-    if (index >= task.checklist.length) {
+    if (index >= checklist.length) {
       throw new BadRequestException(
-        `Item index ${index} fora do intervalo (checklist tem ${task.checklist.length} itens)`,
+        `Item index ${index} fora do intervalo (checklist tem ${checklist.length} itens)`,
       );
     }
 
-    const checklistItem = task.checklist[index];
+    const checklistItem = checklist[index];
     if (typeof checklistItem === 'string') {
       throw new BadRequestException(`Item ${index} é uma string, não objeto com completed`);
     }
 
     checklistItem.completed = Boolean(completed);
 
-    const checklistItems = task.checklist.filter(
+    const checklistObjects = checklist.filter(
       (item): item is TaskChecklistItem => typeof item !== 'string',
     );
-    const completionPercentage = this.checklistService.calculateCompletionPercentage(checklistItems);
+    const completionPercentage = this.checklistService.calculateCompletionPercentage(checklistObjects);
 
     const updatedTask = await task.save();
-
     return Object.assign(updatedTask, { completionPercentage });
+  }
+
+  private parseAndValidateItemIndex(itemIndex: string): number {
+    const index = parseInt(itemIndex, 10);
+    if (!Number.isFinite(index) || index < 0) {
+      throw new BadRequestException(`Item ID inválido: ${itemIndex}`);
+    }
+    return index;
+  }
+
+  private async getTaskByIdOrThrow(taskId: string): Promise<TaskDocument> {
+    if (!taskId || !Types.ObjectId.isValid(taskId)) {
+      throw new BadRequestException(`ID inválido: ${taskId}`);
+    }
+    const task = await this.taskModel.findById(taskId).exec();
+    if (!task) {
+      throw new NotFoundException(`Task with id ${taskId} not found`);
+    }
+    return task;
   }
 
   // ===========================================================================
@@ -292,11 +289,12 @@ export class TasksChecklistService {
       };
     }
 
-    if (!Array.isArray(task.checklist) || task.checklist.length === 0) {
+    const checklist = task.checklist;
+    if (!Array.isArray(checklist) || checklist.length === 0) {
       return { isValid: true };
     }
 
-    const checklistItems = task.checklist.map((entry) => {
+    const checklistItems = checklist.map((entry) => {
       if (typeof entry === 'string') return { completed: false };
       return { completed: Boolean(entry.completed) };
     });
@@ -318,8 +316,18 @@ export class TasksChecklistService {
     const isHabit =
       task.microTaskType === 'habit' || Boolean(task.parentRecurringId) || Boolean(task.recurringRule);
 
-    if (!isHabit && Array.isArray(task.checklist) && task.checklist.length > 0) {
-      const checklistItems = task.checklist.map((entry) => {
+    if (!isHabit) {
+      this.checkChecklistErrors(task, errors);
+      this.checkPertErrors(task, errors);
+    }
+
+    return { valid: errors.length === 0, errors };
+  }
+
+  private checkChecklistErrors(task: TaskDocument, errors: string[]): void {
+    const checklist = task.checklist;
+    if (Array.isArray(checklist) && checklist.length > 0) {
+      const checklistItems = checklist.map((entry) => {
         if (typeof entry === 'string') return { completed: false };
         return { completed: Boolean(entry.completed) };
       });
@@ -329,12 +337,12 @@ export class TasksChecklistService {
         errors.push(checklistResult.reason || 'Checklist incomplete');
       }
     }
+  }
 
-    if (!isHabit && task.microTaskType && !Number.isFinite(task.pertExpectedMinutes || 0)) {
+  private checkPertErrors(task: TaskDocument, errors: string[]): void {
+    if (task.microTaskType && !Number.isFinite(task.pertExpectedMinutes || 0)) {
       errors.push('PERT estimate missing');
     }
-
-    return { valid: errors.length === 0, errors };
   }
 
   // ===========================================================================
@@ -355,22 +363,7 @@ export class TasksChecklistService {
     microTaskType?: string,
     projectId?: ChecklistHistoryProjectRef,
   ): Promise<string[]> {
-    let historicalContext = '';
-    if (projectId && typeof projectId === 'string') {
-      const similarTasks = await this.checklistService.findSimilarTasksInProject(
-        projectId,
-        microTaskType,
-        3,
-      );
-      historicalContext = this.checklistService.enrichHistoryContext(similarTasks);
-    } else if (projectId && typeof projectId === 'object' && '_id' in projectId && projectId._id) {
-      const similarTasks = await this.checklistService.findSimilarTasksInProject(
-        projectId._id.toString(),
-        microTaskType,
-        3,
-      );
-      historicalContext = this.checklistService.enrichHistoryContext(similarTasks);
-    }
+    const historicalContext = await this.buildHistoricalContext(projectId, microTaskType);
 
     if (historicalContext) {
       return this.geminiService.generateChecklistWithHistory(
@@ -382,5 +375,32 @@ export class TasksChecklistService {
     }
 
     return this.geminiService.generateChecklistForTask(taskName, description, microTaskType);
+  }
+
+  private async buildHistoricalContext(
+    projectId?: ChecklistHistoryProjectRef,
+    microTaskType?: string,
+  ): Promise<string> {
+    if (!projectId) {
+      return '';
+    }
+
+    let targetProjectId = '';
+    if (typeof projectId === 'string') {
+      targetProjectId = projectId;
+    } else if (typeof projectId === 'object' && '_id' in projectId && projectId._id) {
+      targetProjectId = projectId._id.toString();
+    }
+
+    if (!targetProjectId) {
+      return '';
+    }
+
+    const similarTasks = await this.checklistService.findSimilarTasksInProject(
+      targetProjectId,
+      microTaskType,
+      3,
+    );
+    return this.checklistService.enrichHistoryContext(similarTasks);
   }
 }

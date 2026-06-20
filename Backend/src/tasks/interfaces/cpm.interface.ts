@@ -111,7 +111,6 @@ export interface CPMAnalysis {
   diagnostics?: CPMDiagnostics;
 }
 
-
 export interface TaskMetrics {
   taskId: string;
   taskName: string;
@@ -186,4 +185,3 @@ export interface CreateCPMDiagnosticsParams {
   missingDependencyRefs: number;
   missingDependencySamples: Array<{ taskId: string; dependsOnTaskId: string }>;
 }
-

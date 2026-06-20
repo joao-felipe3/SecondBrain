@@ -12,6 +12,13 @@ import {
   generateBufferAlerts,
 } from './utils/buffer-analysis.utils';
 
+interface BufferCalculationResult {
+  criticalPathDuration: number;
+  totalVariance: number;
+  standardDeviation: number;
+  projectBuffer: number;
+}
+
 @Injectable()
 export class BufferService {
   private readonly logger = new Logger(BufferService.name);
@@ -19,11 +26,7 @@ export class BufferService {
   constructor(
     @InjectModel(ProjectBuffer.name)
     private readonly bufferModel: Model<ProjectBufferDocument>,
-  ) { }
-
-  // ===========================================================================
-  // 1. Buffer Lifecycle Operations
-  // ===========================================================================
+  ) {}
 
   async calculateProjectBuffer(
     projectId: string,
@@ -31,47 +34,31 @@ export class BufferService {
     criticalPath: string[],
   ): Promise<ProjectBuffer | null> {
     this.logger.log(
-      `Calculando buffer para projeto: ${projectId}, tarefas críticas: ${criticalPath.length}`,
+      `Calculating buffer for project: ${projectId}, critical tasks: ${criticalPath.length}`,
     );
 
     if (!criticalPath.length) {
-      this.logger.warn(`Projeto ${projectId} não tem tarefas críticas`);
+      this.logger.warn(`Project ${projectId} has no critical tasks.`);
       return this.createDefaultBuffer(projectId);
     }
 
     const criticalTasks = filterCriticalTasks(tasks, criticalPath);
-    const { criticalPathDuration, totalVariance, standardDeviation, projectBuffer } =
-      calculateMetrics(criticalTasks);
+    const calculationResult = this.performBufferCalculation(criticalTasks);
 
-    const bufferDoc = await this.bufferModel.findOneAndUpdate(
-      { projectId },
-      {
-        projectId,
-        projectBuffer: Math.round(projectBuffer * 10) / 10,
-        consumed: 0,
-        threshold: 75,
-        criticalPathDuration: Math.round(criticalPathDuration * 10) / 10,
-        totalVariance: Math.round(totalVariance * 100) / 100,
-        standardDeviation: Math.round(standardDeviation * 10) / 10,
-        taskVariances: mapTaskVariances(criticalTasks),
-      },
-      { upsert: true, new: true },
-    );
+    const bufferDoc = await this.updateOrCreateBuffer(projectId, calculationResult, criticalTasks);
 
     if (!bufferDoc) {
       this.logger.error(`Failed to create/update buffer for project ${projectId}`);
       return null;
     }
 
-    this.logger.log(
-      `Buffer calculado: ${bufferDoc.projectBuffer}h (Variância Total: ${totalVariance.toFixed(2)})`,
-    );
+    this.logBufferCalculationResult(bufferDoc, calculationResult.totalVariance);
 
     return bufferDoc;
   }
 
   async consumeBuffer(projectId: string, hoursUsed: number): Promise<BufferStatus> {
-    this.logger.log(`Consumindo ${hoursUsed}h de buffer para o projeto: ${projectId}`);
+    this.logger.log(`Consuming ${hoursUsed}h of buffer for project: ${projectId}`);
 
     const buffer = await this.bufferModel.findOneAndUpdate(
       { projectId },
@@ -80,53 +67,46 @@ export class BufferService {
     );
 
     if (!buffer) {
-      this.logger.warn(`Buffer não encontrado para o projeto: ${projectId}`);
+      this.logger.warn(`Buffer not found for project: ${projectId}`);
       return getDefaultBufferStatus();
     }
 
-    const status = calculateBufferStatus(buffer.projectBuffer, buffer.consumed, buffer.threshold);
-
-    if (status.isAlert) {
-      this.logger.warn(
-        `⚠️ Buffer em alerta: ${status.percentageUsed}% consumido (limite: ${buffer.threshold}%)`,
-      );
-    }
+    const status = this.getBufferStatusFromBuffer(buffer);
+    this.logBufferConsumptionStatus(status, buffer.threshold);
 
     return status;
   }
 
   async resetBufferConsumption(projectId: string): Promise<ProjectBuffer | null> {
+    this.logger.log(`Resetting buffer consumption for project: ${projectId}`);
     const buffer = await this.bufferModel.findOneAndUpdate(
       { projectId },
       { consumed: 0 },
       { new: true },
     );
-
-    this.logger.log(`Buffer resetado para o projeto: ${projectId}`);
     return buffer || null;
   }
-
-  // ===========================================================================
-  // 2. Buffer Monitoring & Health
-  // ===========================================================================
 
   async getBufferStatus(projectId: string): Promise<BufferStatus> {
     const buffer = await this.bufferModel.findOne({ projectId });
 
     if (!buffer) {
-      this.logger.warn(`Buffer não encontrado para o projeto: ${projectId}`);
+      this.logger.warn(`Buffer not found for project: ${projectId}`);
       return getDefaultBufferStatus();
     }
 
-    return calculateBufferStatus(buffer.projectBuffer, buffer.consumed, buffer.threshold);
+    return this.getBufferStatusFromBuffer(buffer);
   }
 
   async checkBufferHealth(projectId: string): Promise<BufferAlert[]> {
     const buffer = await this.bufferModel.findOne({ projectId });
 
-    if (!buffer) return [];
+    if (!buffer) {
+      this.logger.warn(`Buffer not found for project: ${projectId}`);
+      return [];
+    }
 
-    const status = calculateBufferStatus(buffer.projectBuffer, buffer.consumed, buffer.threshold);
+    const status = this.getBufferStatusFromBuffer(buffer);
     return generateBufferAlerts(status.percentageUsed);
   }
 
@@ -135,20 +115,73 @@ export class BufferService {
   ): Promise<Array<{ date: Date; consumed: number; percentageUsed: number }>> {
     const buffer = await this.bufferModel.findOne({ projectId });
 
-    if (!buffer) return [];
+    if (!buffer) {
+      this.logger.warn(`Buffer not found for project: ${projectId}`);
+      return [];
+    }
 
     return [
       {
         date: buffer.createdAt || new Date(),
         consumed: buffer.consumed,
-        percentageUsed: buffer.projectBuffer > 0 ? (buffer.consumed / buffer.projectBuffer) * 100 : 0,
+        percentageUsed: this.calculatePercentageUsed(buffer.projectBuffer, buffer.consumed),
       },
     ];
   }
 
-  // ===========================================================================
-  // 3. Private Helpers
-  // ===========================================================================
+  private performBufferCalculation(criticalTasks: BufferTaskMetrics[]): BufferCalculationResult {
+    return calculateMetrics(criticalTasks);
+  }
+
+  private async updateOrCreateBuffer(
+    projectId: string,
+    calculationResult: BufferCalculationResult,
+    criticalTasks: BufferTaskMetrics[],
+  ): Promise<ProjectBufferDocument | null> {
+    const { criticalPathDuration, totalVariance, standardDeviation, projectBuffer } = calculationResult;
+
+    const bufferData = {
+      projectId,
+      projectBuffer: this.roundToOneDecimal(projectBuffer),
+      consumed: 0,
+      threshold: 75,
+      criticalPathDuration: this.roundToOneDecimal(criticalPathDuration),
+      totalVariance: this.roundToTwoDecimals(totalVariance),
+      standardDeviation: this.roundToOneDecimal(standardDeviation),
+      taskVariances: mapTaskVariances(criticalTasks),
+    };
+
+    return this.bufferModel.findOneAndUpdate({ projectId }, bufferData, { upsert: true, new: true });
+  }
+
+  private logBufferCalculationResult(bufferDoc: ProjectBufferDocument, totalVariance: number): void {
+    this.logger.log(
+      `Buffer calculated: ${bufferDoc.projectBuffer}h (Total Variance: ${totalVariance.toFixed(2)})`,
+    );
+  }
+
+  private getBufferStatusFromBuffer(buffer: ProjectBufferDocument): BufferStatus {
+    return calculateBufferStatus(buffer.projectBuffer, buffer.consumed, buffer.threshold);
+  }
+
+  private logBufferConsumptionStatus(status: BufferStatus, threshold: number): void {
+    if (status.isAlert) {
+      this.logger.warn(`⚠️ Buffer alert: ${status.percentageUsed}% consumed (threshold: ${threshold}%)`);
+    }
+  }
+
+  private calculatePercentageUsed(projectBuffer: number, consumed: number): number {
+    if (projectBuffer <= 0) return 0;
+    return (consumed / projectBuffer) * 100;
+  }
+
+  private roundToOneDecimal(value: number): number {
+    return Math.round(value * 10) / 10;
+  }
+
+  private roundToTwoDecimals(value: number): number {
+    return Math.round(value * 100) / 100;
+  }
 
   private createDefaultBuffer(projectId: string): ProjectBuffer {
     return {

@@ -4,3 +4,6 @@ export * from './dependency-inference.interface';
 export * from './hierarchy.interface';
 export * from './rtm.interface';
 export * from './buffer.interface';
+export * from './ai-suggestions.interface';
+export * from './checklist.interface';
+export * from './feedback.interface';

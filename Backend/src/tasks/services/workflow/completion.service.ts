@@ -26,14 +26,16 @@ export class TasksCompletionService {
   ) {}
 
   // ===========================================================================
-  // 1. Core Lifecycle / Completion
+  // 1. Public API: Lifecycle / Completion
   // ===========================================================================
 
   async markAsConcluded(id: string): Promise<TaskDocument> {
     this.validateTaskId(id);
 
     const task = await this.getTaskOrThrow(id);
-    if (task.isConcluded) return task;
+    if (task.isConcluded) {
+      return task;
+    }
 
     const { remainingHours } = this.calculateRemainingPomodorosAndHours(task);
 
@@ -42,7 +44,7 @@ export class TasksCompletionService {
     const updatedTask = await task.save();
 
     if (updatedTask.project && remainingHours > 0) {
-      await this.updateProjectMetricsAfterCompletion(updatedTask.project.toString(), id, remainingHours);
+      await this.updateProjectMetricsAfterCompletion(String(updatedTask.project), id, remainingHours);
     }
 
     await this.checkDeviationAndCreateAlert(id);
@@ -51,7 +53,7 @@ export class TasksCompletionService {
   }
 
   // ===========================================================================
-  // 2. Pomodoro Management
+  // 2. Public API: Pomodoro Management
   // ===========================================================================
 
   async incrementPomodorosDid(id: string): Promise<TaskDocument> {
@@ -68,19 +70,21 @@ export class TasksCompletionService {
     const updatedTask = await task.save();
 
     if (task.project) {
-      await this.updateProjectMetricsAfterPomodoro(task.project.toString(), id);
+      await this.updateProjectMetricsAfterPomodoro(String(task.project), id);
     }
 
     return updatedTask;
   }
 
   // ===========================================================================
-  // 3. Recurring / Deferred Workflows
+  // 3. Public API: Recurring / Deferred Workflows
   // ===========================================================================
 
   async handleTaskCompletion(taskId: string): Promise<TaskDocument | null> {
     const task = await this.taskModel.findById(taskId).exec();
-    if (!task) return null;
+    if (!task) {
+      return null;
+    }
 
     if (task.recurringRule) {
       await this.taskModel
@@ -126,7 +130,8 @@ export class TasksCompletionService {
       throw new BadRequestException('newDeadline inválido');
     }
 
-    const task = await this.getTaskOrThrow(taskId);
+    // Check if task exists first
+    await this.getTaskOrThrow(taskId);
 
     const updatedTask = await this.taskModel
       .findByIdAndUpdate(
@@ -147,7 +152,7 @@ export class TasksCompletionService {
   }
 
   // ===========================================================================
-  // 4. Monitoring & Alerts
+  // 4. Public API: Monitoring & Alerts
   // ===========================================================================
 
   async createDeviationAlertForTask(taskId: string): Promise<{
@@ -164,7 +169,7 @@ export class TasksCompletionService {
       return { alertCreated: false };
     }
 
-    const created: TaskAlertDocument = await this.alertsService.createAlert({
+    const created = await this.alertsService.createAlert({
       taskId: task._id as any,
       projectId: task.project as any,
       type: 'warning',
@@ -176,7 +181,47 @@ export class TasksCompletionService {
   }
 
   // ===========================================================================
-  // 5. Private Helpers
+  // 5. Public API: Kanban Status Movement
+  // ===========================================================================
+
+  public async moveTaskStatus(id: string, move: MoveTaskStatusDto): Promise<TaskDocument> {
+    this.validateTaskId(id);
+
+    const task = await this.getTaskOrThrow(id);
+    const toStatus = move.status;
+
+    if (task.isConcluded && toStatus !== 'done') {
+      throw new BadRequestException('Tarefa concluída não pode ser movida para fora de "done"');
+    }
+
+    if (toStatus === 'done') {
+      return this.markAsConcluded(id);
+    }
+
+    const projectId = task.project?.toString();
+    const targetOrder = await resolveTargetOrder(this.taskModel, projectId, toStatus, move);
+
+    const updatedTask = await this.taskModel
+      .findByIdAndUpdate(
+        id,
+        {
+          status: toStatus,
+          statusUpdatedAt: new Date(),
+          kanbanOrder: targetOrder,
+        },
+        { new: true },
+      )
+      .exec();
+
+    if (!updatedTask) {
+      throw new NotFoundException(`Task with id ${id} not found`);
+    }
+
+    return updatedTask;
+  }
+
+  // ===========================================================================
+  // 6. Private Helpers: Validations & Streaks
   // ===========================================================================
 
   private validateTaskId(id: string): void {
@@ -211,7 +256,9 @@ export class TasksCompletionService {
     const remainingPomodoros = Math.max(0, plannedPomodoros - currentPomodorosDid);
 
     task.isConcluded = true;
-    if (remainingPomodoros > 0) task.pomodorosDid = plannedPomodoros;
+    if (remainingPomodoros > 0) {
+      task.pomodorosDid = plannedPomodoros;
+    }
 
     const projectId = task.project?.toString();
     if (projectId) {
@@ -225,6 +272,10 @@ export class TasksCompletionService {
       task.statusUpdatedAt = new Date();
     }
   }
+
+  // ===========================================================================
+  // 7. Private Helpers: Metrics Integration
+  // ===========================================================================
 
   private async updateProjectMetricsAfterCompletion(
     projectId: string,
@@ -246,7 +297,9 @@ export class TasksCompletionService {
     hoursDelta: number,
     source: 'pomodoro' | 'completion',
   ): Promise<void> {
-    if (!projectId || !taskId || hoursDelta <= 0) return;
+    if (!projectId || !taskId || hoursDelta <= 0) {
+      return;
+    }
 
     try {
       await this.evmService.recordProgress(projectId, hoursDelta, hoursDelta, undefined, {
@@ -263,12 +316,20 @@ export class TasksCompletionService {
     }
   }
 
+  // ===========================================================================
+  // 8. Private Helpers: Monitoring & Scheduling
+  // ===========================================================================
+
   private async checkDeviationAndCreateAlert(taskId: string): Promise<void> {
     const deviation = await this.deviationDetectionService.generateDeviationAlert(taskId);
-    if (!deviation) return;
+    if (!deviation) {
+      return;
+    }
 
     const task = await this.taskModel.findById(taskId).exec();
-    if (!task) return;
+    if (!task) {
+      return;
+    }
 
     await this.alertsService.createAlert({
       taskId: task._id as any,
@@ -280,51 +341,22 @@ export class TasksCompletionService {
   }
 
   private async scheduleNextRecurringOccurrence(task: TaskDocument): Promise<void> {
-    if (!task.recurringRule) return;
+    if (!task.recurringRule) {
+      return;
+    }
 
     const recurringRule = this.tasksRecurringService.normalizeRecurringRule(task.recurringRule);
-    if (!recurringRule) return;
+    if (!recurringRule) {
+      return;
+    }
 
-    const nextDeadline = this.tasksRecurringService.calculateNextRecurringDate(
-      task.deadline || task.createdAt || new Date(),
-      recurringRule,
-    );
-    if (!nextDeadline) return;
+    const baseDate = task.deadline || task.createdAt || new Date();
+    const nextDeadline = this.tasksRecurringService.calculateNextRecurringDate(baseDate, recurringRule);
+    if (!nextDeadline) {
+      return;
+    }
 
     const payload = this.tasksRecurringService.buildOccurrencePayload(task, nextDeadline);
     await this.tasksWriteService.createTaskCore(payload as any);
-  }
-
-  public async moveTaskStatus(id: string, move: MoveTaskStatusDto): Promise<TaskDocument> {
-    this.validateTaskId(id);
-
-    const task = await this.getTaskOrThrow(id);
-
-    const toStatus = move.status;
-
-    if (task.isConcluded && toStatus !== 'done') {
-      throw new BadRequestException('Tarefa concluída não pode ser movida para fora de "done"');
-    }
-
-    if (toStatus === 'done') return this.markAsConcluded(id);
-
-    const projectId = task.project?.toString();
-    const targetOrder = await resolveTargetOrder(this.taskModel, projectId, toStatus, move);
-
-    const updatedTask = await this.taskModel
-      .findByIdAndUpdate(
-        id,
-        {
-          status: toStatus,
-          statusUpdatedAt: new Date(),
-          kanbanOrder: targetOrder,
-        },
-        { new: true },
-      )
-      .exec();
-
-    if (!updatedTask) throw new NotFoundException(`Task with id ${id} not found`);
-
-    return updatedTask;
   }
 }
