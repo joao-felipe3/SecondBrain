@@ -8,36 +8,7 @@ import { WBSNodeDto } from '../../dto/wbs.dto';
 import { Task } from '../../../tasks/entities/task.entity';
 import { computeChunkMinutes } from './utils/metrics-calculator.util';
 
-type GenerationStrategy = 'two-phase' | 'legacy';
-
-interface ConversionOptions {
-  strategy?: GenerationStrategy; // default: two-phase
-  modelOverride?: string;
-  autoAudit?: boolean;
-  autoApplyFixes?: boolean;
-  logVerbose?: boolean;
-  throwOnError?: boolean;
-}
-
-interface ConversionResult {
-  success: boolean;
-  tasks: Task[];
-  auditFindings?: any[];
-  appliedFixes?: string[];
-  metadata: {
-    strategy: GenerationStrategy;
-    durationMs: number;
-    draftCount: number;
-    taskCount: number;
-    auditedAt?: string;
-    model?: string;
-  };
-  error?: {
-    stage: 'draft-generation' | 'draft-processing' | 'task-conversion' | 'audit';
-    message: string;
-    originalError?: any;
-  };
-}
+import { GenerationStrategy, ConversionOptions, ConversionResult } from '../../interfaces';
 
 // Responsible for orchestrating the conversion of WBS nodes to tasks,
 // including error handling, logging, and optional auditing

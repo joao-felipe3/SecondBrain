@@ -3,6 +3,7 @@ import { GeminiService } from '../../../ai/gemini.service';
 import { WBSNodeDto } from '../../dto/wbs.dto';
 import { extractJsonObject } from './utils/json-parser.util';
 import { computeBatchMetrics } from './utils/metrics-calculator.util';
+import { LeafAuditResult } from '../../interfaces';
 
 // Audits discrepancies between WBS estimates and generated micro-tasks
 @Injectable()
@@ -42,12 +43,7 @@ export class AuditService {
         cognitiveMode?: string;
       }>;
     },
-  ): Promise<{
-    diagnosis: 'underestimated' | 'gold_plating' | 'mixed';
-    rationale: string;
-    suggestedAction: 'rebaseline' | 'simplify';
-    suggestedEstimatedHours?: number;
-  }> {
+  ): Promise<LeafAuditResult> {
     const discrepancyMetrics = this.computeDiscrepancyMetrics(dto);
     const duplicateMetrics = this.computeDuplicateMetrics(Array.isArray(dto?.tasks) ? dto.tasks : []);
     const tasksPreview = this.formatTasksPreview(Array.isArray(dto?.tasks) ? dto.tasks : []);

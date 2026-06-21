@@ -4,8 +4,13 @@ import { Model, Types } from 'mongoose';
 import { TaskDocument } from '../../../tasks/schemas/task.schema';
 import { ProjectDocument } from '../../schemas/project.schema';
 import { ProjectWave, type ProjectWaveDocument } from '../../schemas/project-wave.schema';
-import { CreateXMatrixDto, type XMatrixResponseDto, type XMatrixStrength } from '../../dto/x-matrix.dto';
+import { CreateXMatrixDto, type XMatrixResponseDto } from '../../dto/x-matrix.dto';
 import { XMatrixSnapshot, type XMatrixSnapshotDocument } from '../../schemas/x-matrix-snapshot.schema';
+import {
+  splitGoalText,
+  scoreStrength,
+  inferInitiativeFromWbsPath,
+} from './utils/x-matrix-helpers.util';
 
 @Injectable()
 export class ProjectsXMatrixService {
@@ -18,141 +23,6 @@ export class ProjectsXMatrixService {
     @InjectModel(XMatrixSnapshot.name)
     private readonly xMatrixSnapshotModel: Model<XMatrixSnapshotDocument>,
   ) {}
-
-  private splitGoalText(input: string | undefined): string[] {
-    const text = String(input || '').trim();
-    if (!text) return [];
-
-    const parts = text
-      .split(/\n|;|\||•|\u2022|\.|,/g)
-      .map((item) => item.trim())
-      .filter(Boolean);
-
-    if (parts.length <= 1) return [text];
-    return parts;
-  }
-
-  private tokenize(text: string): Set<string> {
-    const normalized = String(text || '')
-      .toLowerCase()
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
-      .replace(/[^a-z0-9\s]/g, ' ');
-
-    const stopwords = new Set([
-      'de',
-      'da',
-      'do',
-      'das',
-      'dos',
-      'e',
-      'a',
-      'o',
-      'as',
-      'os',
-      'um',
-      'uma',
-      'para',
-      'com',
-      'por',
-      'no',
-      'na',
-      'nos',
-      'nas',
-      'em',
-      'the',
-      'and',
-      'to',
-      'of',
-      'for',
-      'in',
-      'on',
-      'at',
-      'is',
-      'are',
-      'be',
-      'ser',
-      'estar',
-      'que',
-    ]);
-
-    const tokens = normalized
-      .split(/\s+/g)
-      .map((token) => token.trim())
-      .filter((token) => token.length >= 3 && !stopwords.has(token));
-
-    return new Set(tokens);
-  }
-
-  private scoreStrength(
-    fromText: string,
-    toText: string,
-  ): { strength: XMatrixStrength; score: number; rationale: string } {
-    const fromTokens = this.tokenize(fromText);
-    const toTokens = this.tokenize(toText);
-
-    if (fromTokens.size === 0 || toTokens.size === 0) {
-      return {
-        strength: 'none',
-        score: 0,
-        rationale: 'Sem termos suficientes para correlacionar.',
-      };
-    }
-
-    let intersection = 0;
-    for (const token of fromTokens) {
-      if (toTokens.has(token)) intersection += 1;
-    }
-
-    const minSize = Math.max(1, Math.min(fromTokens.size, toTokens.size));
-    const score = Number((intersection / minSize).toFixed(2));
-
-    if (score >= 0.5) {
-      return {
-        strength: 'strong',
-        score,
-        rationale: `Alta convergencia de termos (${intersection}).`,
-      };
-    }
-
-    if (score >= 0.25) {
-      return {
-        strength: 'medium',
-        score,
-        rationale: `Convergencia moderada de termos (${intersection}).`,
-      };
-    }
-
-    if (score > 0) {
-      return {
-        strength: 'weak',
-        score,
-        rationale: `Convergencia fraca de termos (${intersection}).`,
-      };
-    }
-
-    return {
-      strength: 'none',
-      score: 0,
-      rationale: 'Nao ha intersecao clara de termos.',
-    };
-  }
-
-  private inferInitiativeFromWbsPath(path: string | undefined, levels: Set<number>): string | null {
-    const raw = String(path || '').trim();
-    if (!raw) return null;
-
-    const segments = raw
-      .split(/\s*(?:>|\/|\||::|->|›|»)\s*/g)
-      .map((segment) => segment.trim())
-      .filter(Boolean);
-
-    if (segments.length === 0) return null;
-
-    const maxLevel = Math.max(...Array.from(levels.values()), 1);
-    const selected = segments.slice(0, Math.min(maxLevel, segments.length));
-    return selected.join(' > ');
-  }
 
   async createXMatrix(projectId: string, dto: CreateXMatrixDto): Promise<XMatrixResponseDto> {
     if (
@@ -193,9 +63,9 @@ export class ProjectsXMatrixService {
       .map((item) => String(item || '').trim())
       .filter(Boolean);
     const strategyFallback = [
-      ...this.splitGoalText(project.longTermGoal),
-      ...this.splitGoalText(project.smartObjective?.relevant),
-      ...this.splitGoalText(project.smartObjective?.summary),
+      ...splitGoalText(project.longTermGoal),
+      ...splitGoalText(project.smartObjective?.relevant),
+      ...splitGoalText(project.smartObjective?.summary),
     ].filter(Boolean);
     const strategyGoalsRaw = strategyFromDto.length ? strategyFromDto : strategyFallback;
 
@@ -203,10 +73,10 @@ export class ProjectsXMatrixService {
       .map((item) => String(item || '').trim())
       .filter(Boolean);
     const annualFallback = [
-      ...this.splitGoalText(project.shortTermGoal),
-      ...this.splitGoalText(project.midTermGoal),
-      ...this.splitGoalText(project.smartObjective?.specific),
-      ...this.splitGoalText(project.smartObjective?.measurable),
+      ...splitGoalText(project.shortTermGoal),
+      ...splitGoalText(project.midTermGoal),
+      ...splitGoalText(project.smartObjective?.specific),
+      ...splitGoalText(project.smartObjective?.measurable),
     ].filter(Boolean);
     const annualGoalsRaw = annualFromDto.length ? annualFromDto : annualFallback;
 
@@ -254,7 +124,7 @@ export class ProjectsXMatrixService {
     const tacticalById = new Map<string, TacticalAgg>();
     for (const task of tasks as any[]) {
       const taskId = String(task?._id || '').trim();
-      const pathLabel = this.inferInitiativeFromWbsPath(task?.wbsPath, wbsLevels);
+      const pathLabel = inferInitiativeFromWbsPath(task?.wbsPath, wbsLevels);
       const parentNodeId = String(task?.parentWbsNodeId || '').trim();
       const fallbackLabel = String(task?.title || task?.name || '').trim() || 'Iniciativa sem nome';
       const initiativeLabel = pathLabel || fallbackLabel;
@@ -311,7 +181,7 @@ export class ProjectsXMatrixService {
 
     const strategyToAnnual = strategyGoals.flatMap((strategy) => {
       return annualGoals.map((annual) => {
-        const scored = this.scoreStrength(strategy.label, annual.label);
+        const scored = scoreStrength(strategy.label, annual.label);
         return {
           fromId: strategy.id,
           toId: annual.id,
@@ -325,7 +195,7 @@ export class ProjectsXMatrixService {
     const annualToTactical = annualGoals.flatMap((annual) => {
       return tacticalItems.map((tactical) => {
         const tacticalContext = tacticalContextById.get(tactical.id) || tactical.label;
-        const scored = this.scoreStrength(annual.label, tacticalContext);
+        const scored = scoreStrength(annual.label, tacticalContext);
         return {
           fromId: annual.id,
           toId: tactical.id,
@@ -359,7 +229,7 @@ export class ProjectsXMatrixService {
       if (durationDays <= 120) {
         warnings.push(
           'Zoom fractal aplicado: trate Norte como fim do semestre e Estrategico como metas mensais.',
-        );
+         );
       }
     }
 
@@ -486,7 +356,7 @@ export class ProjectsXMatrixService {
           { $set: { data: legacySnapshot } },
           { upsert: true },
         )
-        .exec();
+          .exec();
 
       await this.projectModel.updateOne({ _id: projectId }, { $unset: { xMatrixSnapshot: '' } }).exec();
 

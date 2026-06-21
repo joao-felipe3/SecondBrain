@@ -4,23 +4,7 @@ import { Model, Types } from 'mongoose';
 import { Risk, RiskDocument } from '../../schemas/risk.schema';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
-interface GeneratedRisk {
-  description: string;
-  probability: number;
-  impact: number;
-  severity: 'baixa' | 'média' | 'alta';
-  mitigationPlan?: string;
-}
-
-export interface RiskIntervention {
-  riskId: string;
-  description: string;
-  severity: 'baixa' | 'média' | 'alta';
-  status: 'identificado' | 'mitigando' | 'resolvido' | 'aceito';
-  recommendedAction: 'reduzir-escopo' | 'trocar-estrategia' | 'pausa-planejada' | 'monitorar';
-  rationale: string;
-  confidence: number;
-}
+import { GeneratedRisk, RiskIntervention } from '../../interfaces/risk.interface';
 
 @Injectable()
 export class RiskService {

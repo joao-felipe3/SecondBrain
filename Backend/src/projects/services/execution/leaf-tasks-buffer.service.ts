@@ -1,11 +1,5 @@
 import { Injectable } from '@nestjs/common';
-
-type BufferEntry<T> = {
-  value: T;
-  exp: number;
-  projectId: string;
-  createdAt: number;
-};
+import { BufferEntry } from '../../interfaces';
 
 @Injectable()
 export class LeafTasksBufferService {

@@ -2,15 +2,7 @@ import { Injectable, Inject, forwardRef } from '@nestjs/common';
 import { GeminiService } from '../../../ai/gemini.service';
 import { WBSNodeDto, ValidateWBSResponseDto } from '../../dto/wbs.dto';
 
-export interface BudgetValidationSummary {
-  budgetHours: number;
-  totalLeafHours: number;
-  overBudget: boolean;
-  deltaHours: number;
-  utilizationPct: number;
-  weeklyHours?: number;
-  weeksAvailable?: number;
-}
+import { BudgetValidationSummary } from '../../interfaces';
 
 // Handles WBS validation logic (8/80 rule) and decomposition suggestions
 @Injectable()

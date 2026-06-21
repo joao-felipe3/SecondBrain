@@ -9,11 +9,7 @@ import { WbsGenerationService } from './wbs-generation.service';
 import { WbsConversionOrchestrationService } from './wbs-conversion-orchestrator.service';
 import { getLeafNodesWithPaths } from './utils/wbs-helpers.util';
 
-export interface ValidationResult {
-  valid: boolean;
-  reason?: string;
-  suggestion?: string;
-}
+import { ValidationResult } from '../../interfaces';
 
 @Injectable()
 export class WBSService {

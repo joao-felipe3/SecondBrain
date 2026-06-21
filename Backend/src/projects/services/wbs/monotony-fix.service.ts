@@ -6,20 +6,7 @@ import { extractJsonArray } from './utils/json-parser.util';
 import { normalizeTitle, templateTitle, extractVerb } from './utils/normalizers.util';
 import { MAX_MONOTONY_FIX_ROUNDS, MONOTONY_FIX_BATCH_SIZE } from './constants/wbs.constants';
 
-export interface MicroTaskDraft {
-  name: string;
-  description?: string;
-  definitionOfDone?: string;
-  checklist?: string[];
-  pomodorosPlanned?: number;
-  priority?: number;
-  difficult?: number;
-  microTaskType?: string;
-  themeTag?: string;
-  contextTag?: string;
-  cognitiveMode?: string;
-  milestoneIndex?: number;
-}
+import { MicroTaskDraft } from '../../interfaces';
 
 /**
  * Service for auto-fixing monotony issues in micro-task batches using AI

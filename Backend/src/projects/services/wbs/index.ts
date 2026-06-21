@@ -4,7 +4,7 @@
 
 export { WBSService } from './wbs.service';
 export { MonotonyDetectionService } from './monotony-detection.service';
-export { MonotonyFixService, MicroTaskDraft } from './monotony-fix.service';
+export { MonotonyFixService } from './monotony-fix.service';
 export { PromptBuilderService } from './prompt-builder.service';
 export { ThemeExtractionService } from './theme-extraction.service';
 

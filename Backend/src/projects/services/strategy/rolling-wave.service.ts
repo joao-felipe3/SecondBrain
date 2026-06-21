@@ -8,54 +8,28 @@ import { ProjectsService } from '../../projects.service';
 import { WBSService } from '../wbs/wbs.service';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
-type WaveTask = {
-  id: string;
-  hours: number;
-  deadlineTime: number | null;
-  groupKey: string;
-};
+import {
+  WaveTask,
+  WbsNodeFlat,
+  AIPlanWave,
+  AIPlan,
+  AIWaveStructure,
+  ReplanTaskDeadlinesResult,
+} from '../../interfaces/rolling-wave.interface';
 
-type WbsNodeFlat = {
-  id: string;
-  parentId?: string;
-  level: number;
-  name: string;
-};
-
-type AIPlanWave = {
-  waveNumber: number;
-  name: string;
-  description: string;
-  durationDays: number;
-  focus: string;
-  wbsAllocation: Record<string, number>; // { "WBS Name": quantidade de tasks }
-  taskIds: string[]; // Preenchido depois pela aplicação
-};
-
-type AIPlan = {
-  waves: AIPlanWave[];
-  rationale: string;
-};
-
-type AIWaveStructure = {
-  recommendedWaveCount: number;
-  totalDurationDays: number;
-  description: string;
-  reasoning: string;
-};
-
-type ReplanTaskDeadlinesResult = {
-  updatedCount: number;
-  skippedConcludedCount: number;
-  waveCount: number;
-  summaries: Array<{
-    waveNumber: number;
-    updatedTasks: number;
-    skippedConcludedTasks: number;
-    effectiveStartDate: string | null;
-    effectiveEndDate: string | null;
-  }>;
-};
+import {
+  flattenWbsTree,
+  estimateTaskHours,
+  startOfDay,
+  endOfDay,
+  addDays,
+  buildTaskScheduleMetrics,
+  resolveGroupKey,
+  buildBalancedWaveDurations,
+  normalizeWavePlanShape,
+  redistributeTasksAcrossWaves,
+  extractAndValidateJSON,
+} from './utils/rolling-wave-helpers.util';
 
 @Injectable()
 export class RollingWaveService {
@@ -73,327 +47,6 @@ export class RollingWaveService {
     this.genAI = new GoogleGenerativeAI(apiKey);
   }
 
-  private flattenWbsTree(nodes: any[], acc: WbsNodeFlat[] = []): WbsNodeFlat[] {
-    for (const node of nodes || []) {
-      acc.push({
-        id: String(node._id || node.id),
-        parentId: node.parentId ? String(node.parentId) : undefined,
-        level: Number(node.level || 1),
-        name: String(node.name || 'Pacote WBS'),
-      });
-      if (node.children?.length) {
-        this.flattenWbsTree(node.children, acc);
-      }
-    }
-    return acc;
-  }
-
-  private estimateTaskHours(task: any): number {
-    if (typeof task?.pertExpectedMinutes === 'number' && task.pertExpectedMinutes > 0) {
-      return task.pertExpectedMinutes / 60;
-    }
-    if (typeof task?.pomodorosPlanned === 'number' && task.pomodorosPlanned > 0) {
-      return task.pomodorosPlanned * 0.5;
-    }
-    return 1;
-  }
-
-  private startOfDay(date: Date): Date {
-    const normalized = new Date(date);
-    normalized.setHours(0, 0, 0, 0);
-    return normalized;
-  }
-
-  private endOfDay(date: Date): Date {
-    const normalized = new Date(date);
-    normalized.setHours(23, 59, 59, 999);
-    return normalized;
-  }
-
-  private addDays(date: Date, days: number): Date {
-    const next = new Date(date);
-    next.setDate(next.getDate() + days);
-    return next;
-  }
-
-  private buildTaskScheduleMetrics(task: any, deadline: Date) {
-    const expectedMinutes =
-      typeof task?.pertExpectedMinutes === 'number' && task.pertExpectedMinutes > 0
-        ? task.pertExpectedMinutes
-        : typeof task?.pomodorosPlanned === 'number' && task.pomodorosPlanned > 0
-          ? task.pomodorosPlanned * 25
-          : undefined;
-
-    if (!expectedMinutes) {
-      return {};
-    }
-
-    const pomodorosPlanned =
-      typeof task?.pomodorosPlanned === 'number' && task.pomodorosPlanned > 0
-        ? task.pomodorosPlanned
-        : Math.max(1, Math.round(expectedMinutes / 25));
-    const pomodorosDid = typeof task?.pomodorosDid === 'number' ? task.pomodorosDid : 0;
-    const progress = Math.max(0, Math.min(1, pomodorosPlanned ? pomodorosDid / pomodorosPlanned : 0));
-
-    const createdAt = task?.createdAt ? new Date(task.createdAt) : new Date();
-    const totalDurationMs = deadline.getTime() - createdAt.getTime();
-    const elapsedRatio =
-      totalDurationMs <= 0
-        ? 1
-        : Math.max(0, Math.min(1, (Date.now() - createdAt.getTime()) / totalDurationMs));
-
-    const plannedValue = expectedMinutes * elapsedRatio;
-    const earnedValue = expectedMinutes * progress;
-    const spi = plannedValue > 0 ? earnedValue / plannedValue : progress > 0 ? 1 : 0;
-
-    return {
-      evmProgress: Number(progress.toFixed(2)),
-      evmPlannedValueMinutes: Math.round(plannedValue),
-      evmEarnedValueMinutes: Math.round(earnedValue),
-      evmSchedulePerformanceIndex: Number(spi.toFixed(2)),
-      evmAlert: spi > 0 && spi < 0.9 ? 'SPI abaixo de 0.9 (risco de atraso)' : undefined,
-    };
-  }
-
-  private resolveGroupKey(
-    task: any,
-    wbsById: Map<string, WbsNodeFlat>,
-    startTime: number,
-    totalRangeMs: number,
-  ): string {
-    const parentWbsNodeId = task?.parentWbsNodeId ? String(task.parentWbsNodeId) : '';
-    if (parentWbsNodeId && wbsById.has(parentWbsNodeId)) {
-      const visited = new Set<string>();
-      let cursor = wbsById.get(parentWbsNodeId);
-      while (cursor?.parentId && wbsById.has(cursor.parentId) && !visited.has(cursor.parentId)) {
-        visited.add(cursor.parentId);
-        cursor = wbsById.get(cursor.parentId);
-      }
-      if (cursor?.name) {
-        return `wbs:${cursor.name}`;
-      }
-    }
-
-    const deadline = task?.deadline ? new Date(task.deadline) : null;
-    const deadlineTime = deadline?.getTime() || null;
-    if (deadlineTime && totalRangeMs > 0) {
-      const ratio = (deadlineTime - startTime) / totalRangeMs;
-      if (ratio <= 0.33) return 'goal:Curto Prazo';
-      if (ratio <= 0.66) return 'goal:Médio Prazo';
-      return 'goal:Longo Prazo';
-    }
-
-    return 'goal:Execução Geral';
-  }
-
-  private buildBalancedWaveDurations(totalDurationDays: number, waveCount: number): number[] {
-    const safeWaveCount = Math.max(1, waveCount);
-    const safeTotalDurationDays = Math.max(safeWaveCount, totalDurationDays);
-    const baseDuration = Math.floor(safeTotalDurationDays / safeWaveCount);
-    const remainder = safeTotalDurationDays % safeWaveCount;
-
-    return Array.from(
-      { length: safeWaveCount },
-      (_, index) => baseDuration + (index < remainder ? 1 : 0),
-    );
-  }
-
-  private normalizeWavePlanShape(
-    aiPlan: AIPlan,
-    expectedWaveCount: number,
-    totalDurationDays: number,
-  ): AIPlan {
-    const durations = this.buildBalancedWaveDurations(totalDurationDays, expectedWaveCount);
-    const existingWaves = Array.isArray(aiPlan.waves) ? aiPlan.waves : [];
-
-    const normalizedWaves: AIPlanWave[] = Array.from({ length: expectedWaveCount }, (_, index) => {
-      const existingWave = existingWaves[index];
-
-      return {
-        waveNumber: index + 1,
-        name: existingWave?.name?.trim() || `Wave ${index + 1}`,
-        description: existingWave?.description?.trim() || `Execução balanceada da Wave ${index + 1}.`,
-        durationDays: durations[index],
-        focus: existingWave?.focus?.trim() || `Entrega incremental da Wave ${index + 1}`,
-        wbsAllocation: existingWave?.wbsAllocation || {},
-        taskIds: Array.isArray(existingWave?.taskIds) ? [...existingWave.taskIds] : [],
-      };
-    });
-
-    return {
-      ...aiPlan,
-      waves: normalizedWaves,
-    };
-  }
-
-  private takeTaskForTransfer(
-    waves: AIPlanWave[],
-    donorIndex: number,
-    recipientIndex: number,
-  ): string | undefined {
-    if (donorIndex < 0 || donorIndex >= waves.length || donorIndex === recipientIndex) {
-      return undefined;
-    }
-
-    if (donorIndex < recipientIndex) {
-      return waves[donorIndex].taskIds.pop();
-    }
-
-    return waves[donorIndex].taskIds.shift();
-  }
-
-  private findBestDonorIndex(
-    waves: AIPlanWave[],
-    recipientIndex: number,
-    minimumCountToKeep: number,
-  ): number {
-    let bestIndex = -1;
-    let bestDistance = Number.POSITIVE_INFINITY;
-    let bestSurplus = Number.NEGATIVE_INFINITY;
-
-    for (let index = 0; index < waves.length; index++) {
-      if (index === recipientIndex) {
-        continue;
-      }
-
-      const surplus = waves[index].taskIds.length - minimumCountToKeep;
-      if (surplus <= 0) {
-        continue;
-      }
-
-      const distance = Math.abs(index - recipientIndex);
-      if (distance < bestDistance || (distance === bestDistance && surplus > bestSurplus)) {
-        bestIndex = index;
-        bestDistance = distance;
-        bestSurplus = surplus;
-      }
-    }
-
-    return bestIndex;
-  }
-
-  private findBestRecipientIndex(
-    waves: AIPlanWave[],
-    donorIndex: number,
-    maxTasksPerWave: number,
-  ): number {
-    let bestIndex = -1;
-    let bestDistance = Number.POSITIVE_INFINITY;
-    let lowestCount = Number.POSITIVE_INFINITY;
-
-    for (let index = 0; index < waves.length; index++) {
-      if (index === donorIndex || waves[index].taskIds.length >= maxTasksPerWave) {
-        continue;
-      }
-
-      const distance = Math.abs(index - donorIndex);
-      const currentCount = waves[index].taskIds.length;
-      if (currentCount < lowestCount || (currentCount === lowestCount && distance < bestDistance)) {
-        bestIndex = index;
-        bestDistance = distance;
-        lowestCount = currentCount;
-      }
-    }
-
-    return bestIndex;
-  }
-
-  private redistributeTasksAcrossWaves(
-    aiPlan: AIPlan,
-    allTaskIds: string[],
-    expectedWaveCount: number,
-    totalDurationDays: number,
-    minTasksPerWave: number,
-    maxTasksPerWave: number,
-  ): AIPlan {
-    const normalizedPlan = this.normalizeWavePlanShape(aiPlan, expectedWaveCount, totalDurationDays);
-    const validTaskIdSet = new Set(allTaskIds);
-    const seenTaskIds = new Set<string>();
-
-    for (const wave of normalizedPlan.waves) {
-      const sanitizedTaskIds: string[] = [];
-      for (const taskId of wave.taskIds || []) {
-        if (!validTaskIdSet.has(taskId) || seenTaskIds.has(taskId)) {
-          continue;
-        }
-        seenTaskIds.add(taskId);
-        sanitizedTaskIds.push(taskId);
-      }
-      wave.taskIds = sanitizedTaskIds;
-    }
-
-    const missingTaskIds: string[] = [];
-    for (const taskId of allTaskIds) {
-      if (!seenTaskIds.has(taskId)) {
-        missingTaskIds.push(taskId);
-        seenTaskIds.add(taskId);
-      }
-    }
-
-    while (missingTaskIds.length > 0) {
-      let targetIndex = 0;
-      for (let index = 1; index < normalizedPlan.waves.length; index++) {
-        if (
-          normalizedPlan.waves[index].taskIds.length < normalizedPlan.waves[targetIndex].taskIds.length
-        ) {
-          targetIndex = index;
-        }
-      }
-
-      const taskId = missingTaskIds.shift();
-      if (!taskId) {
-        break;
-      }
-      normalizedPlan.waves[targetIndex].taskIds.push(taskId);
-    }
-
-    const recipientIndices = normalizedPlan.waves
-      .map((wave, index) => ({ index, size: wave.taskIds.length }))
-      .sort((left, right) => left.size - right.size || left.index - right.index)
-      .map((item) => item.index);
-
-    for (const recipientIndex of recipientIndices) {
-      while (normalizedPlan.waves[recipientIndex].taskIds.length < minTasksPerWave) {
-        let donorIndex = this.findBestDonorIndex(normalizedPlan.waves, recipientIndex, maxTasksPerWave);
-        if (donorIndex < 0) {
-          donorIndex = this.findBestDonorIndex(normalizedPlan.waves, recipientIndex, minTasksPerWave);
-        }
-        if (donorIndex < 0) {
-          break;
-        }
-
-        const taskId = this.takeTaskForTransfer(normalizedPlan.waves, donorIndex, recipientIndex);
-        if (!taskId) {
-          break;
-        }
-
-        normalizedPlan.waves[recipientIndex].taskIds.push(taskId);
-      }
-    }
-
-    for (let donorIndex = 0; donorIndex < normalizedPlan.waves.length; donorIndex++) {
-      while (normalizedPlan.waves[donorIndex].taskIds.length > maxTasksPerWave) {
-        const recipientIndex = this.findBestRecipientIndex(
-          normalizedPlan.waves,
-          donorIndex,
-          maxTasksPerWave,
-        );
-        if (recipientIndex < 0) {
-          break;
-        }
-
-        const taskId = this.takeTaskForTransfer(normalizedPlan.waves, donorIndex, recipientIndex);
-        if (!taskId) {
-          break;
-        }
-
-        normalizedPlan.waves[recipientIndex].taskIds.push(taskId);
-      }
-    }
-
-    return normalizedPlan;
-  }
-
   /**
    * Primeira chamada Gemini: determinar número ideal de ondas
    */
@@ -409,7 +62,7 @@ export class RollingWaveService {
       const today = new Date();
       const deadline = new Date(project.deadline);
       const availableDays = Math.ceil((deadline.getTime() - today.getTime()) / (24 * 60 * 60 * 1000));
-      const totalTaskHours = tasks.reduce((sum, t) => sum + this.estimateTaskHours(t), 0);
+      const totalTaskHours = tasks.reduce((sum, t) => sum + estimateTaskHours(t), 0);
       const minimumDaysRequired = Math.ceil(totalTaskHours / dailyCapacityHours);
 
       const prompt = `Você é especialista em Rolling Waves. Determine número ideal de ondas.
@@ -431,12 +84,12 @@ RETORNE APENAS JSON (SEM MARKDOWN, STRINGS EM UMA LINHA):
       const responseText = result.response.text();
 
       // Validar e extrair JSON
-      const parsed = this.extractAndValidateJSON<AIWaveStructure>(responseText, [
+      const parsed = extractAndValidateJSON<AIWaveStructure>(responseText, [
         'recommendedWaveCount',
         'totalDurationDays',
         'description',
         'reasoning',
-      ]);
+      ], this.logger);
 
       if (!parsed) {
         this.logger.warn(
@@ -461,130 +114,8 @@ RETORNE APENAS JSON (SEM MARKDOWN, STRINGS EM UMA LINHA):
         `Estrutura de ondas sugerida: ${parsed.recommendedWaveCount} ondas em ${parsed.totalDurationDays} dias`,
       );
       return parsed;
-    } catch (error) {
+    } catch (error: any) {
       this.logger.warn(`Erro ao chamar Gemini para estrutura: ${error.message}`);
-      return null;
-    }
-  }
-
-  /**
-   * Sanitizar JSON malformado do Gemini (limpar quotes não escapadas, newlines, etc)
-   */
-  private sanitizeJSON(jsonString: string): string {
-    try {
-      let result = jsonString;
-
-      // Caso 1: Remover quebras de linha dentro de strings literais
-      // Padrão: "fieldName": "value with\nliteral newline"
-      // Abordagem: processar caractere por caractere para escapar newlines em valores string
-      const chars: string[] = [];
-      let inString = false;
-      let escapeNext = false;
-
-      for (let i = 0; i < result.length; i++) {
-        const char = result[i];
-
-        if (escapeNext) {
-          chars.push(char);
-          escapeNext = false;
-          continue;
-        }
-
-        if (char === '\\') {
-          chars.push(char);
-          escapeNext = true;
-          continue;
-        }
-
-        if (char === '"' && (i === 0 || result[i - 1] !== '\\')) {
-          inString = !inString;
-          chars.push(char);
-          continue;
-        }
-
-        // Se estamos dentro de uma string e encontramos newline, substituir por espaço
-        if (inString && (char === '\n' || char === '\r')) {
-          chars.push(' ');
-          continue;
-        }
-
-        chars.push(char);
-      }
-
-      result = chars.join('');
-
-      // Caso 2: Trailing commas antes de }
-      result = result.replace(/,\s*}/g, '}');
-      result = result.replace(/,\s*]/g, ']');
-
-      // Caso 3: Escapar aspas duplas não escapadas dentro de strings
-      result = result.replace(/"([^"]*?)(['"])([^"]*?)"/g, (match, prefix, quote, suffix) => {
-        if (quote === "'") {
-          // Apóstrofo dentro de string - É seguro deixar
-          return match;
-        }
-        return match;
-      });
-
-      return result;
-    } catch (e) {
-      this.logger.warn(`[JSON_SANITIZE] Erro ao sanitizar: ${e.message}`);
-      return jsonString;
-    }
-  }
-
-  /**
-   * Validar e extrair JSON de resposta Gemini
-   */
-  private extractAndValidateJSON<T extends Record<string, any>>(
-    responseText: string,
-    requiredFields: string[],
-  ): T | null {
-    try {
-      // Limpar markdown code blocks
-      const cleaned = responseText
-        .replace(/```json\n?/g, '')
-        .replace(/```\n?/g, '')
-        .replace(/^[\s\n]*```/gm, '')
-        .replace(/```[\s\n]*$/gm, '')
-        .trim();
-
-      // Extrair JSON
-      const jsonStart = cleaned.indexOf('{');
-      const jsonEnd = cleaned.lastIndexOf('}');
-
-      if (jsonStart < 0 || jsonEnd <= jsonStart) {
-        this.logger.warn(`[JSON_EXTRACT] Nenhum JSON encontrado na resposta`);
-        return null;
-      }
-
-      let jsonString = cleaned.substring(jsonStart, jsonEnd + 1);
-
-      // Validar que JSON é completo (termina com })
-      if (!jsonString.endsWith('}')) {
-        this.logger.warn(
-          `[JSON_INCOMPLETE] JSON não termina com "}" - truncado?\nEnd: ...${jsonString.substring(Math.max(0, jsonString.length - 100))}`,
-        );
-        return null;
-      }
-
-      // Sanitizar JSON malformado
-      jsonString = this.sanitizeJSON(jsonString);
-
-      // Tentar parsear para any e validar campos antes de coagir ao tipo T
-      const parsedAny: any = JSON.parse(jsonString);
-
-      // Validar campos obrigatórios
-      for (const field of requiredFields) {
-        if (!(field in parsedAny)) {
-          this.logger.warn(`[JSON_MISSING_FIELD] Campo obrigatório ausente: ${field}`);
-          return null;
-        }
-      }
-
-      return parsedAny as T;
-    } catch (e) {
-      this.logger.warn(`[JSON_PARSE_ERROR] ${e.message}\nResponse: ${responseText.substring(0, 400)}`);
       return null;
     }
   }
@@ -764,7 +295,7 @@ RETORNE APENAS JSON (SEM MARKDOWN, STRINGS EM UMA LINHA):
       const totalAvailableDays = Math.ceil(
         (deadline.getTime() - today.getTime()) / (24 * 60 * 60 * 1000),
       );
-      const waveDurations = this.buildBalancedWaveDurations(totalAvailableDays, waveCount);
+      const waveDurations = buildBalancedWaveDurations(totalAvailableDays, waveCount);
 
       // Calcular distribuição equilibrada de tasks
       const totalTasks = tasks.length;
@@ -856,7 +387,7 @@ REQUISITOS CRÍTICOS:
 - Sem caracteres especiais em descriptions (acentos OK)
 - JSON deve ser válido: JSON.parse() sem erros
 - Sem markdown, sem truncação, JSON completo
-      `;
+`;
 
       const result = await this.generateContentWithRetry(model, prompt);
       if (!result) {
@@ -865,7 +396,7 @@ REQUISITOS CRÍTICOS:
       }
       const responseText = result.response.text();
 
-      const parsed = this.extractAndValidateJSON<AIPlan>(responseText, ['waves', 'rationale']);
+      const parsed = extractAndValidateJSON<AIPlan>(responseText, ['waves', 'rationale'], this.logger);
 
       if (!parsed || !parsed.waves || parsed.waves.length === 0) {
         this.logger.warn(
@@ -880,9 +411,8 @@ REQUISITOS CRÍTICOS:
         );
       }
 
-      const normalizedPlan = this.normalizeWavePlanShape(parsed, waveCount, totalAvailableDays);
+      const normalizedPlan = normalizeWavePlanShape(parsed, waveCount, totalAvailableDays);
       const taskCursorByWbs = new Map<string, number>();
-      const allTaskIds = tasks.map((t) => String(t._id || t.id));
 
       // CONVERTER ALOCAÇÃO DE WBS EM TASK IDs REAIS
       for (const wave of normalizedPlan.waves) {
@@ -928,6 +458,7 @@ REQUISITOS CRÍTICOS:
       }
 
       // VALIDAR DISTRIBUIÇÃO
+      const allTaskIds = tasks.map((t) => String(t._id || t.id));
       const taskCountByWave = normalizedPlan.waves.map((w) => w.taskIds.length);
       const allocatedUniqueTaskIds = new Set(normalizedPlan.waves.flatMap((w) => w.taskIds));
       const missingTaskCount = allTaskIds.length - allocatedUniqueTaskIds.size;
@@ -969,7 +500,7 @@ REQUISITOS CRÍTICOS:
   ): AIPlan {
     this.logger.debug(`[REBALANCE] Iniciando rebalanceamento de distribuição...`);
 
-    const normalizedPlan = this.normalizeWavePlanShape(aiPlan, expectedWaveCount, totalDurationDays);
+    const normalizedPlan = normalizeWavePlanShape(aiPlan, expectedWaveCount, totalDurationDays);
 
     // Coletar todas as tarefas alocadas do plano
     const allocatedTasks = new Set<string>();
@@ -994,7 +525,7 @@ REQUISITOS CRÍTICOS:
       `[REBALANCE] Redistribuindo ${allTaskIds.length} tarefas em ${expectedWaveCount} ondas.`,
     );
 
-    const redistributedPlan = this.redistributeTasksAcrossWaves(
+    const redistributedPlan = redistributeTasksAcrossWaves(
       normalizedPlan,
       allTaskIds,
       expectedWaveCount,
@@ -1004,12 +535,12 @@ REQUISITOS CRÍTICOS:
     );
 
     // Log Final
-    const finalCounts = redistributedPlan.waves.map((w) => w.taskIds.length);
     this.logger.debug(`[REBALANCE] Distribuição final:`);
     for (const wave of redistributedPlan.waves) {
       this.logger.debug(`  Wave ${wave.waveNumber}: ${wave.taskIds.length} tasks`);
     }
 
+    const finalCounts = redistributedPlan.waves.map((w) => w.taskIds.length);
     const finalOutOfRangeCount = finalCounts.filter(
       (cnt) => cnt < minTasksPerWave || cnt > maxTasksPerWave,
     ).length;
@@ -1037,7 +568,7 @@ REQUISITOS CRÍTICOS:
     const dayMs = 24 * 60 * 60 * 1000;
 
     // Validar o plano
-    const validPlan = this.normalizeWavePlanShape(
+    const validPlan = normalizeWavePlanShape(
       this.rebalanceEmptyWaves(
         aiPlan,
         tasks.map((t) => String(t._id || t.id)),
@@ -1301,7 +832,7 @@ REQUISITOS CRÍTICOS:
     const plannedTotalMs = deadline.getTime() - today.getTime();
     const plannedDurationDays = Math.max(1, Math.ceil(plannedTotalMs / dayMs));
 
-    const totalTaskHours = tasks.reduce((sum, task) => sum + this.estimateTaskHours(task), 0);
+    const totalTaskHours = tasks.reduce((sum, task) => sum + estimateTaskHours(task), 0);
     const requiredDaysByCapacity = Math.max(1, Math.ceil(totalTaskHours / dailyCapacityHours));
 
     const effectiveDurationDays = Math.max(plannedDurationDays, requiredDaysByCapacity);
@@ -1327,15 +858,15 @@ REQUISITOS CRÍTICOS:
     const waveTaskIds = new Map<number, Types.ObjectId[]>();
     const waveUsedHours = new Array<number>(waveCount).fill(0);
 
-    const wbsFlat = this.flattenWbsTree(wbsTree);
+    const wbsFlat = flattenWbsTree(wbsTree);
     const wbsById = new Map(wbsFlat.map((node) => [node.id, node]));
 
     const timelineRangeMs = Math.max(1, effectiveDurationDays * dayMs);
     const normalizedTasks: WaveTask[] = tasks.map((task: any) => {
       const id = String(task._id || task.id);
-      const hours = this.estimateTaskHours(task);
+      const hours = estimateTaskHours(task);
       const deadlineTime = task?.deadline ? new Date(task.deadline).getTime() : null;
-      const groupKey = this.resolveGroupKey(task, wbsById, today.getTime(), timelineRangeMs);
+      const groupKey = resolveGroupKey(task, wbsById, today.getTime(), timelineRangeMs);
       return { id, hours, deadlineTime, groupKey };
     });
 
@@ -1625,7 +1156,7 @@ REQUISITOS CRÍTICOS:
       activeWaveIndex >= 0 ? activeWaveIndex : firstPlannedWaveIndex >= 0 ? firstPlannedWaveIndex : 0;
     const dayMs = 24 * 60 * 60 * 1000;
 
-    let cursor = this.startOfDay(new Date());
+    let cursor = startOfDay(new Date());
     let updatedCount = 0;
     let skippedConcludedCount = 0;
     const bulkOps: any[] = [];
@@ -1653,8 +1184,8 @@ REQUISITOS CRÍTICOS:
             return leftDeadline - rightDeadline;
           }
 
-          const rightHours = this.estimateTaskHours(right);
-          const leftHours = this.estimateTaskHours(left);
+          const rightHours = estimateTaskHours(right);
+          const leftHours = estimateTaskHours(left);
           if (rightHours !== leftHours) {
             return rightHours - leftHours;
           }
@@ -1675,31 +1206,31 @@ REQUISITOS CRÍTICOS:
         continue;
       }
 
-      const originalStart = this.startOfDay(new Date(wave.startDate));
-      const originalEnd = this.endOfDay(new Date(wave.endDate));
+      const originalStart = startOfDay(new Date(wave.startDate));
+      const originalEnd = endOfDay(new Date(wave.endDate));
       const originalDurationDays = Math.max(
         1,
-        Math.ceil((this.startOfDay(originalEnd).getTime() - originalStart.getTime()) / dayMs) + 1,
+        Math.ceil((startOfDay(originalEnd).getTime() - originalStart.getTime()) / dayMs) + 1,
       );
 
       const effectiveStart =
         index <= anchorWaveIndex
-          ? this.startOfDay(cursor)
-          : this.startOfDay(new Date(Math.max(cursor.getTime(), originalStart.getTime())));
+          ? startOfDay(cursor)
+          : startOfDay(new Date(Math.max(cursor.getTime(), originalStart.getTime())));
 
       const effectiveEnd =
         originalEnd.getTime() >= effectiveStart.getTime()
           ? originalEnd
-          : this.endOfDay(this.addDays(effectiveStart, Math.max(0, originalDurationDays - 1)));
+          : endOfDay(addDays(effectiveStart, Math.max(0, originalDurationDays - 1)));
 
       const availableDays = Math.max(
         1,
         Math.ceil(
-          (this.startOfDay(effectiveEnd).getTime() - this.startOfDay(effectiveStart).getTime()) / dayMs,
+          (startOfDay(effectiveEnd).getTime() - startOfDay(effectiveStart).getTime()) / dayMs,
         ) + 1,
       );
       const totalHours = pendingTasks.reduce(
-        (sum, task) => sum + Math.max(0.25, this.estimateTaskHours(task)),
+        (sum, task) => sum + Math.max(0.25, estimateTaskHours(task)),
         0,
       );
 
@@ -1707,13 +1238,13 @@ REQUISITOS CRÍTICOS:
       let waveUpdatedCount = 0;
 
       for (const task of pendingTasks) {
-        cumulativeHours += Math.max(0.25, this.estimateTaskHours(task));
+        cumulativeHours += Math.max(0.25, estimateTaskHours(task));
 
         const dayOffset = Math.min(
           availableDays - 1,
           Math.max(0, Math.ceil((cumulativeHours / totalHours) * availableDays) - 1),
         );
-        const nextDeadline = this.endOfDay(this.addDays(effectiveStart, dayOffset));
+        const nextDeadline = endOfDay(addDays(effectiveStart, dayOffset));
         const currentDeadlineTime = task?.deadline ? new Date(task.deadline).getTime() : null;
 
         if (currentDeadlineTime === nextDeadline.getTime()) {
@@ -1727,7 +1258,7 @@ REQUISITOS CRÍTICOS:
               $set: {
                 deadline: nextDeadline,
                 late: !task?.isConcluded && nextDeadline.getTime() < Date.now(),
-                ...this.buildTaskScheduleMetrics(task, nextDeadline),
+                ...buildTaskScheduleMetrics(task, nextDeadline),
               },
             },
           },
@@ -1744,7 +1275,7 @@ REQUISITOS CRÍTICOS:
         effectiveEndDate: effectiveEnd.toISOString(),
       });
 
-      cursor = this.startOfDay(this.addDays(effectiveEnd, 1));
+      cursor = startOfDay(addDays(effectiveEnd, 1));
     }
 
     if (bulkOps.length > 0) {
