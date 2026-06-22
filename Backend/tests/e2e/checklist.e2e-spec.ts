@@ -1,14 +1,14 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication, BadRequestException } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
-import { request } from 'supertest';
-import { TasksController } from './tasks.controller';
-import { TasksService } from './tasks.service';
+import request from 'supertest';
+import { TasksController } from '../../src/tasks/tasks.controller';
+import { TasksService } from '../../src/tasks/tasks.service';
 import { GeminiService } from '../../src/ai/gemini.service';
-import { ChecklistService } from './checklist.service';
-import { ProjectsService } from '../projects/projects.service';
-import { PertService } from './services/pert.service';
-import { EVMService } from '../projects/services/evm.service';
+import { ChecklistService } from '../../src/tasks/services/intelligence/checklist.service';
+import { ProjectsService } from '../../src/projects/projects.service';
+import { PertService } from '../../src/tasks/services/analysis/pert.service';
+import { EVMService, EVMProgressService } from '../../src/projects/services/evm';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import { Types } from 'mongoose';
 
@@ -48,6 +48,7 @@ describe('Sprint 2: Checklist Validation & Historical Context (E2E)', () => {
         ProjectsService,
         PertService,
         EVMService,
+        EVMProgressService,
         // ... other providers
       ],
     }).compile();
@@ -335,7 +336,7 @@ describe('Sprint 2: Checklist Validation & Historical Context (E2E)', () => {
   describe('Performance: Bulk checklist operations', () => {
     it('should handle 50+ tasks with checklists without lag', async () => {
       const startTime = Date.now();
-      const tasks = [];
+      const tasks: string[] = [];
 
       for (let i = 0; i < 50; i++) {
         const payload = {

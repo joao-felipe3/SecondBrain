@@ -13,7 +13,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { RollingWaveService } from '../services/strategy';
 import { RiskService } from '../services/execution';
-import { EVMService } from '../services/evm';
+import { EVMService, EVMProgressService } from '../services/evm';
 import { TasksService } from '../../tasks/tasks.service';
 import { CPMService, TaskNode, TaskDependencyEdge } from '../../tasks/services/dependencies';
 import { CreateWaveDto, UpdateWaveDto } from '../dto/wave.dto';
@@ -29,6 +29,7 @@ export class WaveAndRiskController {
     private readonly waveService: RollingWaveService,
     private readonly riskService: RiskService,
     private readonly evmService: EVMService,
+    private readonly evmProgressService: EVMProgressService,
     private readonly tasksService: TasksService,
     private readonly cpmService: CPMService,
     @InjectModel(Project.name) private projectModel: Model<any>,
@@ -363,7 +364,7 @@ export class WaveAndRiskController {
   @Post('evm/progress')
   async recordProgress(@Param('projectId') projectId: string, @Body() body: RecordProjectProgressDto) {
     try {
-      return await this.evmService.recordProgress(
+      return await this.evmProgressService.recordProgress(
         projectId,
         body.completedHours,
         body.plannedValue,
@@ -380,7 +381,7 @@ export class WaveAndRiskController {
   @Get('evm/progress')
   async getProgressEntries(@Param('projectId') projectId: string) {
     try {
-      return await this.evmService.getProgressEntries(projectId);
+      return await this.evmProgressService.getProgressEntries(projectId);
     } catch (error) {
       throw new HttpException(
         `Erro ao buscar progresso EVM: ${this.getErrorMessage(error)}`,
@@ -392,7 +393,7 @@ export class WaveAndRiskController {
   @Delete('evm/progress/:entryId')
   async deleteProgressEntry(@Param('projectId') projectId: string, @Param('entryId') entryId: string) {
     try {
-      const deleted = await this.evmService.deleteProgressEntry(projectId, entryId);
+      const deleted = await this.evmProgressService.deleteProgressEntry(projectId, entryId);
       return { deleted };
     } catch (error) {
       throw new HttpException(
@@ -466,7 +467,7 @@ export class WaveAndRiskController {
   @Get('evm/metric-preferences')
   async getMetricPreferences(@Param('projectId') projectId: string) {
     try {
-      return await this.evmService.getDashboardPreferences(projectId);
+      return await this.evmProgressService.getDashboardPreferences(projectId);
     } catch (error) {
       throw new HttpException(
         `Erro ao buscar preferencias de metricas EVM: ${this.getErrorMessage(error)}`,
@@ -494,7 +495,7 @@ export class WaveAndRiskController {
     },
   ) {
     try {
-      return await this.evmService.saveDashboardPreferences(projectId, body);
+      return await this.evmProgressService.saveDashboardPreferences(projectId, body);
     } catch (error) {
       throw new HttpException(
         `Erro ao atualizar preferencias de metricas EVM: ${this.getErrorMessage(error)}`,

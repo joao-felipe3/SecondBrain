@@ -5,7 +5,7 @@ import { Model, Types } from 'mongoose';
 import { TaskDocument } from '../../schemas/task.schema';
 import { TaskAlertDocument } from '../../schemas/task-alert.schema';
 import { ProjectsService } from '../../../projects/projects.service';
-import { EVMService } from '../../../projects/services/evm';
+import { EVMProgressService } from '../../../projects/services/evm';
 import { TasksMetricsService } from '../analysis/metrics.service';
 import { DeviationDetectionService, AlertsService } from '../monitoring';
 import { TasksRecurringService } from './recurring.service';
@@ -17,7 +17,7 @@ export class TasksCompletionService {
   constructor(
     @InjectModel('Task') private readonly taskModel: Model<TaskDocument>,
     private readonly projectsService: ProjectsService,
-    private readonly evmService: EVMService,
+    private readonly evmProgressService: EVMProgressService,
     private readonly metricsService: TasksMetricsService,
     private readonly deviationDetectionService: DeviationDetectionService,
     private readonly alertsService: AlertsService,
@@ -302,7 +302,7 @@ export class TasksCompletionService {
     }
 
     try {
-      await this.evmService.recordProgress(projectId, hoursDelta, hoursDelta, undefined, {
+      await this.evmProgressService.recordProgress(projectId, hoursDelta, hoursDelta, undefined, {
         source,
         taskId,
       });

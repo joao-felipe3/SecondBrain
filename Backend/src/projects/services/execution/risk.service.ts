@@ -16,9 +16,6 @@ export class RiskService {
     this.genAI = new GoogleGenerativeAI(apiKey);
   }
 
-  /**
-   * Gerar riscos automaticamente usando LLM
-   */
   async assessRisks(projectId: string, projectDescription: string): Promise<Risk[]> {
     try {
       const modelName = process.env.GEMINI_STRONG_MODEL || 'gemini-2.5-flash-lite';
@@ -102,9 +99,6 @@ Retorne APENAS o JSON, sem markdown ou formatação extra.
     }
   }
 
-  /**
-   * Calcular severidade baseado em probability * impact
-   */
   private calculateSeverity(probability: number, impact: number): 'baixa' | 'média' | 'alta' {
     const score = (probability / 100) * impact;
     if (score <= 1.5) return 'baixa';
@@ -112,9 +106,6 @@ Retorne APENAS o JSON, sem markdown ou formatação extra.
     return 'alta';
   }
 
-  /**
-   * Obter todos os riscos de um projeto
-   */
   async getRisksByProject(projectId: string): Promise<Risk[]> {
     return this.riskModel
       .find({ projectId: new Types.ObjectId(projectId) })
@@ -122,9 +113,6 @@ Retorne APENAS o JSON, sem markdown ou formatação extra.
       .exec();
   }
 
-  /**
-   * Obter riscos por severidade
-   */
   async getRisksBySeverity(projectId: string, severity: string): Promise<Risk[]> {
     return this.riskModel
       .find({
@@ -134,16 +122,10 @@ Retorne APENAS o JSON, sem markdown ou formatação extra.
       .exec();
   }
 
-  /**
-   * Atualizar plano de mitigação
-   */
   async updateMitigationPlan(riskId: string, mitigationPlan: string): Promise<Risk | null> {
     return this.riskModel.findByIdAndUpdate(riskId, { mitigationPlan }, { new: true }).exec();
   }
 
-  /**
-   * Atualizar status de risco
-   */
   async updateRiskStatus(
     riskId: string,
     status: 'identificado' | 'mitigando' | 'resolvido' | 'aceito',
@@ -151,16 +133,10 @@ Retorne APENAS o JSON, sem markdown ou formatação extra.
     return this.riskModel.findByIdAndUpdate(riskId, { status }, { new: true }).exec();
   }
 
-  /**
-   * Deletar um risco
-   */
   async deleteRisk(riskId: string): Promise<Risk | null> {
     return this.riskModel.findByIdAndDelete(riskId).exec();
   }
 
-  /**
-   * Obter estatísticas de riscos
-   */
   async getRiskStatistics(projectId: string): Promise<{
     total: number;
     byStatus: Record<string, number>;

@@ -16,7 +16,7 @@ type TasksServiceTestDeps = {
   geminiService: any;
   checklistService: any;
   pertService: any;
-  evmService: any;
+  evmProgressService: any;
   alertsService: any;
   deviationDetectionService: any;
 };
@@ -62,7 +62,7 @@ export function createTasksServiceTestProviders(deps: TasksServiceTestDeps) {
         completionService = new TasksCompletionService(
           deps.taskModel,
           deps.projectsService,
-          deps.evmService,
+          deps.evmProgressService,
           metricsService,
           deps.deviationDetectionService,
           deps.alertsService,

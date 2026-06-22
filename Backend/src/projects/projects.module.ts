@@ -18,7 +18,7 @@ import { WBSNodeSchema } from './schemas/wbs-node.schema';
 
 // Category Services
 import { PlanningService } from './services/planning';
-import { EVMService } from './services/evm';
+import { EVMService, EVMProgressService } from './services/evm';
 import { ProjectsXMatrixService, RollingWaveService } from './services/strategy';
 import { RiskService, LeafTasksBufferService } from './services/execution';
 import {
@@ -57,6 +57,7 @@ import {
     ProjectsService,
     PlanningService,
     EVMService,
+    EVMProgressService,
     ProjectsXMatrixService,
     RollingWaveService,
     RiskService,
@@ -87,6 +88,7 @@ import {
     RollingWaveService,
     RiskService,
     EVMService,
+    EVMProgressService,
   ],
 })
 export class ProjectsModule {}

@@ -104,9 +104,7 @@ export class LeafTasksBufferService {
     return this.entries.has(key);
   }
 
-  /**
-   * Consume the buffered value (removes from buffer). If it's currently being prefetched, waits for it.
-   */
+  // Consume the buffered value (removes from buffer). If it's currently being prefetched, waits for it.
   async consume<T = any>(key: string): Promise<T | null> {
     this.cleanupKey(key);
     const entry = this.entries.get(key);
@@ -145,9 +143,7 @@ export class LeafTasksBufferService {
     return null;
   }
 
-  /**
-   * Prefetch a value into the buffer (non-blocking). Dedupes in-flight tasks per key.
-   */
+  // Prefetch a value into the buffer (non-blocking). Dedupes in-flight tasks per key.
   prefetch(key: string, projectId: string, producer: () => Promise<any>): void {
     this.cleanupKey(key);
     if (this.entries.has(key)) return;

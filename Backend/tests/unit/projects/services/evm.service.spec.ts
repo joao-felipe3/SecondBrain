@@ -3,9 +3,14 @@ import { Types } from 'mongoose';
 
 describe('EVMService', () => {
   let service: EVMService;
+  let mockProgressService: any;
 
   beforeEach(() => {
-    service = new EVMService({} as any, {} as any, {} as any);
+    mockProgressService = {
+      getProgressEntries: jest.fn().mockResolvedValue([]),
+      getDashboardPreferences: jest.fn(),
+    };
+    service = new EVMService(mockProgressService as any, {} as any, {} as any);
   });
 
   afterEach(() => {
@@ -67,8 +72,8 @@ describe('EVMService', () => {
       actualValue: [18, 35, 48, 55],
       dates: ['2026-03-01', '2026-03-08', '2026-03-15', '2026-03-22'],
     });
-    jest.spyOn(service, 'getProgressEntries').mockResolvedValue(entries as any);
-    jest.spyOn(service as any, 'getDashboardPreferences').mockResolvedValue({
+    jest.spyOn(mockProgressService, 'getProgressEntries').mockResolvedValue(entries as any);
+    jest.spyOn(mockProgressService, 'getDashboardPreferences').mockResolvedValue({
       mode: 'auto',
       manualVisibility: {
         spi: true,

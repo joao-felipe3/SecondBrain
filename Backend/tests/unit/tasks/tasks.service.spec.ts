@@ -5,7 +5,7 @@ import { Types } from 'mongoose';
 import { TasksService } from '../../../src/tasks/tasks.service';
 import { ProjectsService } from '../../../src/projects/projects.service';
 import { GeminiService } from '../../../src/ai/gemini.service';
-import { EVMService } from '../../../src/projects/services/evm';
+import { EVMProgressService } from '../../../src/projects/services/evm';
 import { PertService } from '../../../src/tasks/services/analysis/pert.service';
 import { ChecklistService } from '../../../src/tasks/services/intelligence/checklist.service';
 import { FeedbackService } from '../../../src/tasks/services/intelligence/feedback.service';
@@ -94,7 +94,7 @@ describe('TasksService', () => {
         },
         { provide: ProjectsService, useValue: projectsServiceMock },
         { provide: GeminiService, useValue: geminiServiceMock },
-        { provide: EVMService, useValue: { recordProgress: jest.fn() } },
+        { provide: EVMProgressService, useValue: { recordProgress: jest.fn() } },
         { provide: ChecklistService, useValue: checklistServiceMock },
         { provide: PertService, useValue: { calculatePertMetrics: jest.fn() } },
         { provide: FeedbackService, useValue: { generateFeedback: jest.fn() } },
@@ -110,7 +110,7 @@ describe('TasksService', () => {
           geminiService: geminiServiceMock,
           checklistService: checklistServiceMock,
           pertService: { calculatePertMetrics: jest.fn() },
-          evmService: { recordProgress: jest.fn() },
+          evmProgressService: { recordProgress: jest.fn() },
           alertsService: { createAlert: jest.fn() },
           deviationDetectionService: { generateDeviationAlert: jest.fn() },
         }),

@@ -5,7 +5,7 @@ import { BadRequestException } from '@nestjs/common';
 import { GeminiService } from '../../../src/ai/gemini.service';
 import { ChecklistService } from '../../../src/tasks/services/intelligence/checklist.service';
 import { ProjectsService } from '../../../src/projects/projects.service';
-import { EVMService } from '../../../src/projects/services/evm';
+import { EVMProgressService } from '../../../src/projects/services/evm';
 import { PertService } from '../../../src/tasks/services/analysis/pert.service';
 import { FeedbackService } from '../../../src/tasks/services/intelligence/feedback.service';
 import { AlertsService } from '../../../src/tasks/services/monitoring/alerts.service';
@@ -91,7 +91,7 @@ describe('TasksService - Sprint 4: Kanban + Rastreabilidade', () => {
             incrementHoursWorked: jest.fn(),
           },
         },
-        { provide: EVMService, useValue: { recordProgress: jest.fn() } },
+        { provide: EVMProgressService, useValue: { recordProgress: jest.fn() } },
         { provide: PertService, useValue: { calculatePertMetrics: jest.fn() } },
         { provide: FeedbackService, useValue: feedbackService },
         { provide: AlertsService, useValue: { createAlert: jest.fn() } },
@@ -109,7 +109,7 @@ describe('TasksService - Sprint 4: Kanban + Rastreabilidade', () => {
           geminiService,
           checklistService,
           pertService: { calculatePertMetrics: jest.fn() },
-          evmService: { recordProgress: jest.fn() },
+          evmProgressService: { recordProgress: jest.fn() },
           alertsService: { createAlert: jest.fn() },
           deviationDetectionService: { generateDeviationAlert: jest.fn() },
         }),

@@ -5,6 +5,7 @@ import type {
   EVMMetricRelevance,
   EVMDashboardManualVisibility,
   EVMDashboardPreferences,
+  EVMCurve,
 } from '../../../dto/evm.dto';
 
 export function toFiniteNumber(value: unknown, fallback = 0): number {
@@ -62,7 +63,6 @@ export function scopeEntriesByWindow(
 }
 
 export function estimateCompletionDate(
-  entries: ProjectProgress[],
   project: any,
   metrics: { completedHours: number; plannedHours: number },
   scopeStartDate: Date | null,
@@ -214,9 +214,9 @@ export function buildPersonalMetrics(
 
   const perceivedValueScore = toBoundedScore(
     completionRatio * 100 * 0.35 +
-      consistencyScore * 0.25 +
-      planAdherence * 0.25 +
-      effortBalanceScore * 0.15,
+    consistencyScore * 0.25 +
+    planAdherence * 0.25 +
+    effortBalanceScore * 0.15,
   );
 
   const actionHint = buildActionHint({
@@ -245,82 +245,174 @@ export function resolveMetricRelevance(
     personalMetrics: EVMPersonalMetrics;
     dashboardPreferences: EVMDashboardPreferences;
   },
-  defaultManualVisibility: EVMDashboardManualVisibility,
 ): EVMMetricRelevance {
-  const useManual = false;
-  const manual = input.dashboardPreferences.manualVisibility;
+  const useManual = input.dashboardPreferences?.mode === 'manual';
+  const manual = input.dashboardPreferences?.manualVisibility;
 
-  const fromManual = (
+  const resolve = (
     key: keyof EVMDashboardManualVisibility,
-    fallbackVisible: boolean,
-    fallbackReason: string,
+    autoResolution: { visible: boolean; reason: string },
   ) => {
-    if (!useManual) {
+    if (useManual && manual) {
       return {
-        visible: fallbackVisible,
-        reason: fallbackReason,
+        visible: Boolean(manual[key]),
+        reason: 'Visibilidade definida manualmente pelo usuario.',
       };
     }
-
-    return {
-      visible: Boolean(manual[key]),
-      reason: 'Visibilidade definida manualmente pelo usuario.',
-    };
+    return autoResolution;
   };
 
-  const spiDelay = input.spi < 1;
-  const needsScheduleAttention = spiDelay || input.personalMetrics.planAdherence < 95;
+  const { entriesCount, spi, forecast, personalMetrics } = input;
 
   return {
-    spi: fromManual('spi', true, 'SPI e a metrica principal de ritmo da entrega.'),
-    plannedVsEarned: fromManual(
+    spi: resolve('spi', getAutoSpiVisibility()),
+    plannedVsEarned: resolve(
       'plannedVsEarned',
-      input.entriesCount > 0 && needsScheduleAttention,
-      needsScheduleAttention
-        ? 'PV x EV ajuda a decidir ajuste de plano na semana atual.'
-        : 'Projeto em ritmo saudavel; PV x EV tem baixa prioridade agora.',
+      getAutoPlannedVsEarnedVisibility(entriesCount, spi, personalMetrics.planAdherence),
     ),
-    completedHours: fromManual(
-      'completedHours',
-      input.entriesCount > 0,
-      input.entriesCount > 0
-        ? 'Horas concluidas mostram esforco real applied.'
-        : 'Sem registros de progresso suficientes para horas concluidas.',
-    ),
-    consistency: fromManual(
-      'consistency',
-      input.entriesCount >= 2,
-      input.entriesCount >= 2
-        ? 'Consistencia semanal ajuda a prever estabilidade de execucao.'
-        : 'Consistencia requer pelo menos 2 registros de progresso.',
-    ),
-    planAdherence: fromManual(
-      'planAdherence',
-      input.entriesCount > 0,
-      input.entriesCount > 0
-        ? 'Aderencia mostra alinhamento com o plano atual.'
-        : 'Aderencia requer registros com PV/EV.',
-    ),
-    trend: fromManual(
-      'trend',
-      input.entriesCount >= 4,
-      input.entriesCount >= 4
-        ? 'Tendencia de evolucao orienta decisao de manter ou ajustar escopo.'
-        : 'Tendencia precisa de ao menos 4 registros para comparacao confiavel.',
-    ),
-    perceivedProgress: fromManual(
-      'perceivedProgress',
-      input.entriesCount >= 2,
-      input.entriesCount >= 2
-        ? 'Progresso percebido combina cadencia, aderencia e esforco efetivo.'
-        : 'Progresso percebido fica mais util apos multiplos registros.',
-    ),
-    remainingHours: fromManual(
-      'remainingHours',
-      input.forecast.remainingHours > 0,
-      input.forecast.remainingHours > 0
-        ? 'Horas restantes mostram carga de trabalho pendente.'
-        : 'Nao ha carga pendente estimada para este ciclo.',
-    ),
+    completedHours: resolve('completedHours', getAutoCompletedHoursVisibility(entriesCount)),
+    consistency: resolve('consistency', getAutoConsistencyVisibility(entriesCount)),
+    planAdherence: resolve('planAdherence', getAutoPlanAdherenceVisibility(entriesCount)),
+    trend: resolve('trend', getAutoTrendVisibility(entriesCount)),
+    perceivedProgress: resolve('perceivedProgress', getAutoPerceivedProgressVisibility(entriesCount)),
+    remainingHours: resolve('remainingHours', getAutoRemainingHoursVisibility(forecast.remainingHours)),
   };
 }
+
+function getAutoSpiVisibility(): { visible: boolean; reason: string } {
+  return {
+    visible: true,
+    reason: 'SPI e a metrica principal de ritmo da entrega.',
+  };
+}
+
+function getAutoPlannedVsEarnedVisibility(
+  entriesCount: number,
+  spi: number,
+  planAdherence: number,
+): { visible: boolean; reason: string } {
+  const needsScheduleAttention = spi < 1 || planAdherence < 95;
+  return {
+    visible: entriesCount > 0 && needsScheduleAttention,
+    reason: needsScheduleAttention
+      ? 'PV x EV ajuda a decidir ajuste de plano na semana atual.'
+      : 'Projeto em ritmo saudavel; PV x EV tem baixa prioridade agora.',
+  };
+}
+
+function getAutoCompletedHoursVisibility(entriesCount: number): { visible: boolean; reason: string } {
+  return {
+    visible: entriesCount > 0,
+    reason: entriesCount > 0
+      ? 'Horas concluidas mostram esforco real aplicado.'
+      : 'Sem registros de progresso suficientes para horas concluidas.',
+  };
+}
+
+function getAutoConsistencyVisibility(entriesCount: number): { visible: boolean; reason: string } {
+  return {
+    visible: entriesCount >= 2,
+    reason: entriesCount >= 2
+      ? 'Consistencia semanal ajuda a prever estabilidade de execucao.'
+      : 'Consistencia requer pelo menos 2 registros de progresso.',
+  };
+}
+
+function getAutoPlanAdherenceVisibility(entriesCount: number): { visible: boolean; reason: string } {
+  return {
+    visible: entriesCount > 0,
+    reason: entriesCount > 0
+      ? 'Aderencia mostra alinhamento com o plano atual.'
+      : 'Aderencia requer registros com PV/EV.',
+  };
+}
+
+function getAutoTrendVisibility(entriesCount: number): { visible: boolean; reason: string } {
+  return {
+    visible: entriesCount >= 4,
+    reason: entriesCount >= 4
+      ? 'Tendencia de evolucao orienta decisao de manter ou ajustar escopo.'
+      : 'Tendencia precisa de ao menos 4 registros para comparacao confiavel.',
+  };
+}
+
+function getAutoPerceivedProgressVisibility(entriesCount: number): { visible: boolean; reason: string } {
+  return {
+    visible: entriesCount >= 2,
+    reason: entriesCount >= 2
+      ? 'Progresso percebido combina cadencia, aderencia e esforco efetivo.'
+      : 'Progresso percebido fica mais util apos multiplos registros.',
+  };
+}
+
+function getAutoRemainingHoursVisibility(remainingHours: number): { visible: boolean; reason: string } {
+  return {
+    visible: remainingHours > 0,
+    reason: remainingHours > 0
+      ? 'Horas restantes mostram carga de trabalho pendente.'
+      : 'Nao ha carga pendente estimada para este ciclo.',
+  };
+}
+
+export function buildEVMCurvePoints(
+  scopedEntries: ProjectProgress[],
+  plannedHours: number,
+  startDate: Date | null,
+  endDate: Date | null,
+): EVMCurve {
+  const totalPV = scopedEntries.reduce((sum, entry) => sum + (entry.plannedValue || 0), 0);
+  const safePlannedHours = Math.max(1, plannedHours);
+  const bac = Math.max(1, totalPV, safePlannedHours);
+
+  let cumulativeHours = 0;
+  const plannedValue: number[] = [];
+  const actualValue: number[] = [];
+  const dates: string[] = [];
+
+  for (const entry of scopedEntries) {
+    cumulativeHours += entry.completedHours || 0;
+
+    const progressRatio = Math.max(0, Math.min(1, cumulativeHours / safePlannedHours));
+    const cumulativeEV = bac * progressRatio;
+    const scheduleRatio = getScheduleRatioByDates(startDate, endDate, new Date(entry.date));
+    const cumulativePV =
+      scheduleRatio !== null
+        ? bac * scheduleRatio
+        : plannedValue.length > 0
+          ? plannedValue[plannedValue.length - 1] + (entry.plannedValue || 0)
+          : entry.plannedValue || 0;
+
+    plannedValue.push(Number(cumulativePV.toFixed(2)));
+    actualValue.push(Number(cumulativeEV.toFixed(2)));
+    dates.push(new Date(entry.date).toISOString().slice(0, 10));
+  }
+
+  return {
+    plannedValue,
+    actualValue,
+    dates,
+  };
+}
+
+export function calculateActiveWavePlannedHours(
+  fallbackPlannedHours: number,
+  waves: any[],
+  activeWave: any,
+): number {
+  const totalWaveDurationMs = waves.reduce((sum, wave) => {
+    const duration = new Date(wave.endDate).getTime() - new Date(wave.startDate).getTime();
+    return sum + Math.max(0, toFiniteNumber(duration, 0));
+  }, 0);
+
+  const activeDurationRaw =
+    new Date(activeWave.endDate).getTime() - new Date(activeWave.startDate).getTime();
+  const activeWaveDurationMs = Math.max(0, toFiniteNumber(activeDurationRaw, 0));
+
+  const plannedHours =
+    totalWaveDurationMs > 0
+      ? fallbackPlannedHours * (activeWaveDurationMs / totalWaveDurationMs)
+      : fallbackPlannedHours / Math.max(1, waves.length);
+
+  return Math.max(1, plannedHours);
+}
+
