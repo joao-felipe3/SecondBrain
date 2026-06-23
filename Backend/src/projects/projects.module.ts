@@ -19,7 +19,7 @@ import { WBSNodeSchema } from './schemas/wbs-node.schema';
 // Category Services
 import { PlanningService } from './services/planning';
 import { EVMService, EVMProgressService } from './services/evm';
-import { ProjectsXMatrixService, RollingWaveService } from './services/strategy';
+import { ProjectsXMatrixService, RollingWaveService, RollingWaveAIService } from './services/strategy';
 import { RiskService, LeafTasksBufferService } from './services/execution';
 import {
   WBSService,
@@ -60,6 +60,7 @@ import {
     EVMProgressService,
     ProjectsXMatrixService,
     RollingWaveService,
+    RollingWaveAIService,
     RiskService,
     LeafTasksBufferService,
     WBSService,
