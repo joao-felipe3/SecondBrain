@@ -33,58 +33,6 @@ export class RollingWaveService {
     private readonly rollingWaveAIService: RollingWaveAIService,
   ) {}
 
-  /**
-   * Rebalancear ondas vazias se necessário
-   */
-  private rebalanceEmptyWaves(aiPlan: AIPlan, allTaskIds: string[]): AIPlan {
-    const emptyWaveCount = aiPlan.waves.filter((w) => w.taskIds.length === 0).length;
-
-    if (emptyWaveCount === 0) {
-      return aiPlan;
-    }
-
-    this.logger.warn(`Detectadas ${emptyWaveCount} ondas vazias — rebalanceando...`);
-
-    const allocatedTaskIds = new Set<string>();
-    for (const wave of aiPlan.waves) {
-      for (const tid of wave.taskIds) {
-        allocatedTaskIds.add(tid);
-      }
-    }
-
-    const unallocatedTasks = allTaskIds.filter((tid) => !allocatedTaskIds.has(tid));
-
-    if (unallocatedTasks.length === 0) {
-      const allTasks = aiPlan.waves.flatMap((w) => w.taskIds);
-      const tasksPerWave = Math.max(1, Math.ceil(allTasks.length / aiPlan.waves.length));
-
-      const rebalanced = aiPlan.waves.map((wave, idx) => ({
-        ...wave,
-        taskIds: allTasks.slice(idx * tasksPerWave, (idx + 1) * tasksPerWave),
-      }));
-
-      return { ...aiPlan, waves: rebalanced };
-    }
-
-    const wavesToFill = aiPlan.waves.filter((w) => w.taskIds.length === 0);
-    let taskIdx = 0;
-
-    for (const wave of wavesToFill) {
-      if (taskIdx < unallocatedTasks.length) {
-        wave.taskIds.push(unallocatedTasks[taskIdx]);
-        taskIdx++;
-      }
-    }
-
-    while (taskIdx < unallocatedTasks.length) {
-      for (let i = 0; i < aiPlan.waves.length && taskIdx < unallocatedTasks.length; i++) {
-        aiPlan.waves[i].taskIds.push(unallocatedTasks[taskIdx]);
-        taskIdx++;
-      }
-    }
-
-    return aiPlan;
-  }
 
   /**
    * Fallback determinístico
@@ -158,50 +106,14 @@ export class RollingWaveService {
     const dayMs = 24 * 60 * 60 * 1000;
 
     const validPlan = normalizeWavePlanShape(
-      this.rebalanceEmptyWaves(
-        aiPlan,
-        tasks.map((t) => String(t._id || t.id)),
-      ),
+      aiPlan,
       expectedWaveCount,
       totalDurationDays,
     );
 
     const taskMap = new Map(tasks.map((t: any) => [String(t._id || t.id), t]));
-    const allTaskIds = tasks.map((t) => String(t._id || t.id));
 
-    const allocatedTaskIds = new Set<string>();
-    let invalidIdCount = 0;
-    for (const wave of validPlan.waves) {
-      for (const taskId of wave.taskIds) {
-        if (taskMap.has(taskId)) {
-          allocatedTaskIds.add(taskId);
-        } else {
-          invalidIdCount++;
-        }
-      }
-    }
-
-    if (invalidIdCount > 0) {
-      this.logger.warn(
-        `[FALLBACK] ${invalidIdCount} IDs inválidos detectados. Redistribuindo tarefas reais equilibradamente...`,
-      );
-
-      for (const wave of validPlan.waves) {
-        wave.taskIds = [];
-      }
-
-      const targetPerWave = Math.ceil(allTaskIds.length / validPlan.waves.length);
-      for (let i = 0; i < allTaskIds.length; i++) {
-        const waveIndex = Math.floor(i / targetPerWave) % validPlan.waves.length;
-        validPlan.waves[waveIndex].taskIds.push(allTaskIds[i]);
-      }
-
-      this.logger.debug(
-        `[FALLBACK] Redistribuídas ${allTaskIds.length} tarefas em ${validPlan.waves.length} ondas (~${targetPerWave} tasks/onda)`,
-      );
-    }
-
-    this.logger.debug(`[DEBUG] Plano após rebalance (${validPlan.waves.length} ondas):`);
+    this.logger.debug(`[DEBUG] Plano após normalização (${validPlan.waves.length} ondas):`);
     for (const wave of validPlan.waves) {
       this.logger.debug(
         `  Wave ${wave.waveNumber}: ${wave.taskIds.length} taskIds = [${wave.taskIds.slice(0, 3).join(', ')}${wave.taskIds.length > 3 ? '...' : ''}]`,
