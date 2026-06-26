@@ -1,34 +1,23 @@
 import { Types } from 'mongoose';
-import { WaveTask } from '../../../interfaces/rolling-wave.interface';
+import {
+  WaveTask,
+  DeterministicPartitionResult,
+  TimelineMetrics,
+} from '../../../interfaces/rolling-wave.interface';
 import {
   estimateTaskHours,
   flattenWbsTree,
   resolveGroupKey,
 } from './rolling-wave-helpers.util';
 
-export interface DeterministicPartitionResult {
-  adjustedDeadline: Date | null;
-  waves: Array<{
-    waveNumber: number;
-    startDate: Date;
-    endDate: Date;
-    status: 'planned';
-    taskIds: Types.ObjectId[];
-    description: string;
-  }>;
-}
 
-/**
- * Particiona tarefas deterministicamente com base em prazos e capacidade diária
- */
-export function partitionTasksDeterministically(
+function calculateTimelineMetrics(
   project: any,
   tasks: any[],
-  wbsTree: any[],
   dailyCapacityHours: number,
   waveLengthDays: number,
   today: Date,
-): DeterministicPartitionResult {
+): TimelineMetrics {
   const safeWaveLengthDays = Math.max(7, waveLengthDays);
   const dayMs = 24 * 60 * 60 * 1000;
 
@@ -48,42 +37,102 @@ export function partitionTasksDeterministically(
 
   const waveLengthMs = safeWaveLengthDays * dayMs;
   const waveCount = Math.max(1, Math.ceil(effectiveDurationDays / safeWaveLengthDays));
+  const waveCapacityHours = safeWaveLengthDays * dailyCapacityHours;
 
-  const waveTaskIds = new Map<number, Types.ObjectId[]>();
-  const waveUsedHours = new Array<number>(waveCount).fill(0);
+  return {
+    safeWaveLengthDays,
+    dayMs,
+    deadline,
+    plannedDurationDays,
+    effectiveDurationDays,
+    adjustedDeadline,
+    waveLengthMs,
+    waveCount,
+    waveCapacityHours,
+  };
+}
 
+function normalizeTasks(
+  tasks: any[],
+  wbsTree: any[],
+  today: Date,
+  effectiveDurationDays: number,
+  dayMs: number,
+): WaveTask[] {
   const wbsFlat = flattenWbsTree(wbsTree);
   const wbsById = new Map(wbsFlat.map((node) => [node.id, node]));
-
   const timelineRangeMs = Math.max(1, effectiveDurationDays * dayMs);
-  const normalizedTasks: WaveTask[] = tasks.map((task: any) => {
+
+  return tasks.map((task: any) => {
     const id = String(task._id || task.id);
     const hours = estimateTaskHours(task);
     const deadlineTime = task?.deadline ? new Date(task.deadline).getTime() : null;
     const groupKey = resolveGroupKey(task, wbsById, today.getTime(), timelineRangeMs);
     return { id, hours, deadlineTime, groupKey };
   });
+}
 
-  const waveCapacityHours = safeWaveLengthDays * dailyCapacityHours;
+class WaveAssigner {
+  private waveTaskIds = new Map<number, Types.ObjectId[]>();
+  private waveUsedHours: number[];
 
-  const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
+  constructor(
+    private readonly waveCount: number,
+    private readonly waveCapacityHours: number,
+  ) {
+    this.waveUsedHours = new Array<number>(waveCount).fill(0);
+  }
 
-  const findWaveIndexWithCapacity = (preferredIndex: number, taskHours: number): number => {
-    for (let idx = preferredIndex; idx >= 0; idx--) {
-      if (waveUsedHours[idx] + taskHours <= waveCapacityHours) return idx;
-    }
-    for (let idx = preferredIndex + 1; idx < waveCount; idx++) {
-      if (waveUsedHours[idx] + taskHours <= waveCapacityHours) return idx;
-    }
-    return waveCount - 1;
-  };
+  public getTaskIdsForWave(waveIndex: number): Types.ObjectId[] {
+    return this.waveTaskIds.get(waveIndex) || [];
+  }
 
-  const pushToWave = (waveIndex: number, task: WaveTask) => {
-    waveUsedHours[waveIndex] += task.hours;
-    const bucket = waveTaskIds.get(waveIndex) || [];
+  public getUsedHours(): number[] {
+    return this.waveUsedHours;
+  }
+
+  public pushToWave(waveIndex: number, task: WaveTask) {
+    this.waveUsedHours[waveIndex] += task.hours;
+    const bucket = this.waveTaskIds.get(waveIndex) || [];
     bucket.push(new Types.ObjectId(task.id));
-    waveTaskIds.set(waveIndex, bucket);
-  };
+    this.waveTaskIds.set(waveIndex, bucket);
+  }
+
+  public findWaveIndexWithCapacity(preferredIndex: number, taskHours: number): number {
+    for (let idx = preferredIndex; idx >= 0; idx--) {
+      if (this.waveUsedHours[idx] + taskHours <= this.waveCapacityHours) return idx;
+    }
+    for (let idx = preferredIndex + 1; idx < this.waveCount; idx++) {
+      if (this.waveUsedHours[idx] + taskHours <= this.waveCapacityHours) return idx;
+    }
+    return this.waveCount - 1;
+  }
+
+  public findLeastLoadedWave(): number {
+    let bestIdx = 0;
+    let bestUsed = Number.POSITIVE_INFINITY;
+    for (let idx = 0; idx < this.waveCount; idx++) {
+      const score = this.waveUsedHours[idx];
+      if (score < bestUsed) {
+        bestUsed = score;
+        bestIdx = idx;
+      }
+    }
+    return bestIdx;
+  }
+}
+
+/**
+ * Aloca tarefas com data de vencimento nas ondas correspondentes baseando-se no prazo
+ */
+function allocateTasksWithDeadline(
+  assigner: WaveAssigner,
+  normalizedTasks: WaveTask[],
+  today: Date,
+  waveLengthMs: number,
+  waveCount: number,
+): void {
+  const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
 
   const tasksWithDeadline = normalizedTasks
     .filter((t) => t.deadlineTime != null)
@@ -100,42 +149,46 @@ export function partitionTasksDeterministically(
       0,
       waveCount - 1,
     );
-    const targetIndex = findWaveIndexWithCapacity(desiredIndex, task.hours);
-    pushToWave(targetIndex, task);
+    const targetIndex = assigner.findWaveIndexWithCapacity(desiredIndex, task.hours);
+    assigner.pushToWave(targetIndex, task);
   }
+}
 
+/**
+ * Aloca tarefas sem prazo definido priorizando as ondas menos carregadas
+ */
+function allocateTasksWithoutDeadline(
+  assigner: WaveAssigner,
+  normalizedTasks: WaveTask[],
+): void {
   const tasksWithoutDeadline = normalizedTasks
     .filter((t) => t.deadlineTime == null)
     .sort((a, b) => b.hours - a.hours);
 
-  const findLeastLoadedWave = (taskHours: number): number => {
-    let bestIdx = 0;
-    let bestUsed = Number.POSITIVE_INFINITY;
-    for (let idx = 0; idx < waveCount; idx++) {
-      const score = waveUsedHours[idx];
-      if (score < bestUsed) {
-        bestUsed = score;
-        bestIdx = idx;
-      }
-    }
-    return bestIdx;
-  };
-
   for (const task of tasksWithoutDeadline) {
-    const preferredIndex = findLeastLoadedWave(task.hours);
-    const targetIndex = findWaveIndexWithCapacity(preferredIndex, task.hours);
-    pushToWave(targetIndex, task);
+    const preferredIndex = assigner.findLeastLoadedWave();
+    const targetIndex = assigner.findWaveIndexWithCapacity(preferredIndex, task.hours);
+    assigner.pushToWave(targetIndex, task);
   }
+}
 
+/**
+ * Constrói a estrutura final das ondas particionadas
+ */
+function buildWaves(
+  assigner: WaveAssigner,
+  waveCount: number,
+  waveLengthMs: number,
+  today: Date,
+  currentDeadline: Date,
+): any[] {
   const waves: any[] = [];
-  const currentDeadline = adjustedDeadline || deadline;
-
   for (let i = 1; i <= waveCount; i++) {
     const waveStartDate = new Date(today.getTime() + (i - 1) * waveLengthMs);
     const nominalEnd = new Date(waveStartDate.getTime() + waveLengthMs);
     const hardEnd = currentDeadline;
     const waveEndDate = nominalEnd > hardEnd ? hardEnd : nominalEnd;
-    const taskIds = waveTaskIds.get(i - 1) || [];
+    const taskIds = assigner.getTaskIdsForWave(i - 1);
 
     waves.push({
       waveNumber: i,
@@ -146,9 +199,62 @@ export function partitionTasksDeterministically(
       description: `Wave ${i}`,
     });
   }
+  return waves;
+}
+
+/**
+ * Particiona tarefas deterministicamente com base em prazos e capacidade diária
+ */
+export function partitionTasksDeterministically(
+  project: any,
+  tasks: any[],
+  wbsTree: any[],
+  dailyCapacityHours: number,
+  waveLengthDays: number,
+  today: Date,
+): DeterministicPartitionResult {
+  const metrics = calculateTimelineMetrics(
+    project,
+    tasks,
+    dailyCapacityHours,
+    waveLengthDays,
+    today,
+  );
+
+  const normalizedTasks = normalizeTasks(
+    tasks,
+    wbsTree,
+    today,
+    metrics.effectiveDurationDays,
+    metrics.dayMs,
+  );
+
+  const assigner = new WaveAssigner(metrics.waveCount, metrics.waveCapacityHours);
+
+  // 1. Alocar tarefas com data de vencimento (deadline) definida
+  allocateTasksWithDeadline(
+    assigner,
+    normalizedTasks,
+    today,
+    metrics.waveLengthMs,
+    metrics.waveCount,
+  );
+
+  // 2. Alocar tarefas sem data de vencimento
+  allocateTasksWithoutDeadline(assigner, normalizedTasks);
+
+  // 3. Estruturar o resultado com as informações das waves
+  const currentDeadline = metrics.adjustedDeadline || metrics.deadline;
+  const waves = buildWaves(
+    assigner,
+    metrics.waveCount,
+    metrics.waveLengthMs,
+    today,
+    currentDeadline,
+  );
 
   return {
-    adjustedDeadline,
+    adjustedDeadline: metrics.adjustedDeadline,
     waves,
   };
 }

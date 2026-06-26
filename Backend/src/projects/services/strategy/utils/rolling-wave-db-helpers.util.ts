@@ -2,9 +2,7 @@ import { Logger } from '@nestjs/common';
 import { MongoClient, ObjectId as NativeObjectId } from 'mongodb';
 import { Model, Types } from 'mongoose';
 
-/**
- * Executa operacoes criticas em um cliente Mongo dedicado para evitar sockets stale do pool.
- */
+
 export async function executeWithFreshMongoClient<T>(
   waveModel: Model<any>,
   operation: (collection: any) => Promise<T>,
@@ -61,9 +59,6 @@ export async function executeWithFreshMongoClient<T>(
   return null;
 }
 
-/**
- * Persistencia em chunks pequenos para evitar resets em payload grande.
- */
 export async function persistWaveIncrementalChunked(
   waveModel: Model<any>,
   projectId: string,

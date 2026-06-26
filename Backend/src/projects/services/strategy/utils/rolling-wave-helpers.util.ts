@@ -225,19 +225,12 @@ export function findBestRecipientIndex(
   return bestIndex;
 }
 
-export function redistributeTasksAcrossWaves(
-  aiPlan: AIPlan,
-  allTaskIds: string[],
-  expectedWaveCount: number,
-  totalDurationDays: number,
-  minTasksPerWave: number,
-  maxTasksPerWave: number,
-): AIPlan {
-  const normalizedPlan = normalizeWavePlanShape(aiPlan, expectedWaveCount, totalDurationDays);
-  const validTaskIdSet = new Set(allTaskIds);
+function sanitizeAndDeduplicateWaveTasks(
+  waves: AIPlanWave[],
+  validTaskIdSet: Set<string>,
+): Set<string> {
   const seenTaskIds = new Set<string>();
-
-  for (const wave of normalizedPlan.waves) {
+  for (const wave of waves) {
     const sanitizedTaskIds: string[] = [];
     for (const taskId of wave.taskIds || []) {
       if (!validTaskIdSet.has(taskId) || seenTaskIds.has(taskId)) {
@@ -248,7 +241,14 @@ export function redistributeTasksAcrossWaves(
     }
     wave.taskIds = sanitizedTaskIds;
   }
+  return seenTaskIds;
+}
 
+function distributeMissingTasks(
+  waves: AIPlanWave[],
+  allTaskIds: string[],
+  seenTaskIds: Set<string>,
+): void {
   const missingTaskIds: string[] = [];
   for (const taskId of allTaskIds) {
     if (!seenTaskIds.has(taskId)) {
@@ -259,10 +259,8 @@ export function redistributeTasksAcrossWaves(
 
   while (missingTaskIds.length > 0) {
     let targetIndex = 0;
-    for (let index = 1; index < normalizedPlan.waves.length; index++) {
-      if (
-        normalizedPlan.waves[index].taskIds.length < normalizedPlan.waves[targetIndex].taskIds.length
-      ) {
+    for (let index = 1; index < waves.length; index++) {
+      if (waves[index].taskIds.length < waves[targetIndex].taskIds.length) {
         targetIndex = index;
       }
     }
@@ -271,37 +269,48 @@ export function redistributeTasksAcrossWaves(
     if (!taskId) {
       break;
     }
-    normalizedPlan.waves[targetIndex].taskIds.push(taskId);
+    waves[targetIndex].taskIds.push(taskId);
   }
+}
 
-  const recipientIndices = normalizedPlan.waves
+function balanceWaveTasksUnderflow(
+  waves: AIPlanWave[],
+  minTasksPerWave: number,
+  maxTasksPerWave: number,
+): void {
+  const recipientIndices = waves
     .map((wave, index) => ({ index, size: wave.taskIds.length }))
     .sort((left, right) => left.size - right.size || left.index - right.index)
     .map((item) => item.index);
 
   for (const recipientIndex of recipientIndices) {
-    while (normalizedPlan.waves[recipientIndex].taskIds.length < minTasksPerWave) {
-      let donorIndex = findBestDonorIndex(normalizedPlan.waves, recipientIndex, maxTasksPerWave);
+    while (waves[recipientIndex].taskIds.length < minTasksPerWave) {
+      let donorIndex = findBestDonorIndex(waves, recipientIndex, maxTasksPerWave);
       if (donorIndex < 0) {
-        donorIndex = findBestDonorIndex(normalizedPlan.waves, recipientIndex, minTasksPerWave);
+        donorIndex = findBestDonorIndex(waves, recipientIndex, minTasksPerWave);
       }
       if (donorIndex < 0) {
         break;
       }
 
-      const taskId = takeTaskForTransfer(normalizedPlan.waves, donorIndex, recipientIndex);
+      const taskId = takeTaskForTransfer(waves, donorIndex, recipientIndex);
       if (!taskId) {
         break;
       }
 
-      normalizedPlan.waves[recipientIndex].taskIds.push(taskId);
+      waves[recipientIndex].taskIds.push(taskId);
     }
   }
+}
 
-  for (let donorIndex = 0; donorIndex < normalizedPlan.waves.length; donorIndex++) {
-    while (normalizedPlan.waves[donorIndex].taskIds.length > maxTasksPerWave) {
+function balanceWaveTasksOverflow(
+  waves: AIPlanWave[],
+  maxTasksPerWave: number,
+): void {
+  for (let donorIndex = 0; donorIndex < waves.length; donorIndex++) {
+    while (waves[donorIndex].taskIds.length > maxTasksPerWave) {
       const recipientIndex = findBestRecipientIndex(
-        normalizedPlan.waves,
+        waves,
         donorIndex,
         maxTasksPerWave,
       );
@@ -309,14 +318,34 @@ export function redistributeTasksAcrossWaves(
         break;
       }
 
-      const taskId = takeTaskForTransfer(normalizedPlan.waves, donorIndex, recipientIndex);
+      const taskId = takeTaskForTransfer(waves, donorIndex, recipientIndex);
       if (!taskId) {
         break;
       }
 
-      normalizedPlan.waves[recipientIndex].taskIds.push(taskId);
+      waves[recipientIndex].taskIds.push(taskId);
     }
   }
+}
+
+export function redistributeTasksAcrossWaves(
+  aiPlan: AIPlan,
+  allTaskIds: string[],
+  expectedWaveCount: number,
+  totalDurationDays: number,
+  minTasksPerWave: number,
+  maxTasksPerWave: number,
+): AIPlan {
+  const normalizedPlan = normalizeWavePlanShape(aiPlan, expectedWaveCount, totalDurationDays);
+  const validTaskIdSet = new Set(allTaskIds);
+
+  const seenTaskIds = sanitizeAndDeduplicateWaveTasks(normalizedPlan.waves, validTaskIdSet);
+
+  distributeMissingTasks(normalizedPlan.waves, allTaskIds, seenTaskIds);
+
+  balanceWaveTasksUnderflow(normalizedPlan.waves, minTasksPerWave, maxTasksPerWave);
+
+  balanceWaveTasksOverflow(normalizedPlan.waves, maxTasksPerWave);
 
   return normalizedPlan;
 }

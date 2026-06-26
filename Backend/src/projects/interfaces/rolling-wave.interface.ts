@@ -1,3 +1,5 @@
+import { Types } from 'mongoose';
+
 export interface WaveTask {
   id: string;
   hours: number;
@@ -45,4 +47,45 @@ export interface ReplanTaskDeadlinesResult {
     effectiveStartDate: string | null;
     effectiveEndDate: string | null;
   }>;
+}
+
+export interface DeterministicPartitionResult {
+  adjustedDeadline: Date | null;
+  waves: Array<{
+    waveNumber: number;
+    startDate: Date;
+    endDate: Date;
+    status: 'planned';
+    taskIds: Types.ObjectId[];
+    description: string;
+  }>;
+}
+
+export interface TimelineMetrics {
+  safeWaveLengthDays: number;
+  dayMs: number;
+  deadline: Date;
+  plannedDurationDays: number;
+  effectiveDurationDays: number;
+  adjustedDeadline: Date | null;
+  waveLengthMs: number;
+  waveCount: number;
+  waveCapacityHours: number;
+}
+
+export interface ReplanCalculationResult {
+  updatedCount: number;
+  skippedConcludedCount: number;
+  bulkOps: any[];
+  summaries: ReplanTaskDeadlinesResult['summaries'];
+}
+
+export interface WaveDates {
+  effectiveStart: Date;
+  effectiveEnd: Date;
+}
+
+export interface PendingTasksResult {
+  waveUpdatedCount: number;
+  bulkOps: any[];
 }
