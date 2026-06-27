@@ -1,8 +1,8 @@
 import { Injectable, Inject, forwardRef } from '@nestjs/common';
-import { GeminiService } from '../../../ai/gemini.service';
-import { WBSNodeDto, ValidateWBSResponseDto } from '../../dto/wbs.dto';
+import { GeminiService } from '../../../../ai/gemini.service';
+import { WBSNodeDto, ValidateWBSResponseDto } from '../../../dto/wbs.dto';
 
-import { BudgetValidationSummary } from '../../interfaces';
+import { BudgetValidationSummary } from '../../../interfaces';
 
 // Handles WBS validation logic (8/80 rule) and decomposition suggestions
 @Injectable()

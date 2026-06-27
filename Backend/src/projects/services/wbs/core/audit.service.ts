@@ -1,9 +1,9 @@
 import { Injectable, Inject, forwardRef } from '@nestjs/common';
-import { GeminiService } from '../../../ai/gemini.service';
-import { WBSNodeDto } from '../../dto/wbs.dto';
-import { extractJsonObject } from './utils/json-parser.util';
-import { computeBatchMetrics } from './utils/metrics-calculator.util';
-import { LeafAuditResult } from '../../interfaces';
+import { GeminiService } from '../../../../ai/gemini.service';
+import { WBSNodeDto } from '../../../dto/wbs.dto';
+import { extractJsonObject } from '../utils/json-parser.util';
+import { computeBatchMetrics } from '../utils/metrics-calculator.util';
+import { LeafAuditResult } from '../../../interfaces';
 
 // Audits discrepancies between WBS estimates and generated micro-tasks
 @Injectable()

@@ -19,8 +19,9 @@ import { WBSNodeSchema } from './schemas/wbs-node.schema';
 // Category Services
 import { PlanningService } from './services/planning';
 import { EVMService, EVMProgressService } from './services/evm';
-import { ProjectsXMatrixService, RollingWaveService, RollingWaveAIService } from './services/strategy';
-import { RiskService, LeafTasksBufferService } from './services/execution';
+import { ProjectsXMatrixService, RollingWaveService, RollingWaveAIService, RollingWavePlanningService } from './services/strategy';
+import { RiskService, LeafTasksBufferService, ProjectStatsService } from './services/execution';
+import { GanttService, PertDiagramService } from './services/visualization';
 import {
   WBSService,
   MonotonyDetectionService,
@@ -33,11 +34,18 @@ import {
   WbsGenerationService,
   AuditService,
   TaskConversionService,
-  DraftGenerationService,
-  DraftProcessingService,
+  TaskConversionHelperService,
   ConfigService,
   WbsConversionOrchestrationService,
 } from './services/wbs';
+import {
+  DraftGenerationService,
+  DraftPlanGenerationService,
+  DraftSinglePassGenerationService,
+  DraftWithPlanGenerationService,
+  DraftProcessingService,
+  DraftDetailsEnrichmentService,
+} from './services/drafts';
 
 @Module({
   imports: [
@@ -61,8 +69,10 @@ import {
     ProjectsXMatrixService,
     RollingWaveService,
     RollingWaveAIService,
+    RollingWavePlanningService,
     RiskService,
     LeafTasksBufferService,
+    ProjectStatsService,
     WBSService,
     MonotonyDetectionService,
     MonotonyFixService,
@@ -74,10 +84,17 @@ import {
     WbsGenerationService,
     AuditService,
     TaskConversionService,
+    TaskConversionHelperService,
     DraftGenerationService,
+    DraftPlanGenerationService,
+    DraftSinglePassGenerationService,
+    DraftWithPlanGenerationService,
     DraftProcessingService,
+    DraftDetailsEnrichmentService,
     ConfigService,
     WbsConversionOrchestrationService,
+    GanttService,
+    PertDiagramService,
   ],
   exports: [
     ProjectsService,
@@ -85,11 +102,16 @@ import {
     WBSService,
     WbsValidationService,
     TaskConversionService,
+    TaskConversionHelperService,
     AuditService,
     RollingWaveService,
+    RollingWavePlanningService,
     RiskService,
+    ProjectStatsService,
     EVMService,
     EVMProgressService,
+    GanttService,
+    PertDiagramService,
   ],
 })
 export class ProjectsModule {}

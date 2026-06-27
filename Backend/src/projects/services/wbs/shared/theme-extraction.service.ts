@@ -1,12 +1,12 @@
 import { Injectable, Inject, forwardRef } from '@nestjs/common';
-import { GeminiService } from '../../../ai/gemini.service';
-import { WBSNodeDto } from '../../dto/wbs.dto';
+import { GeminiService } from '../../../../ai/gemini.service';
+import { WBSNodeDto } from '../../../dto/wbs.dto';
 import {
   MIN_EMBEDDING_TEXT_LENGTH,
   MIN_EMBEDDING_SEGMENTS,
   MAX_EMBEDDING_CLUSTERS,
-} from './constants/wbs.constants';
-import { normalizeVector, kMeansClusters, cosineSimilarity } from './utils/metrics-calculator.util';
+} from '../constants/wbs.constants';
+import { normalizeVector, kMeansClusters, cosineSimilarity } from '../utils/metrics-calculator.util';
 
 /**
  * Service for extracting themes from project/node descriptions

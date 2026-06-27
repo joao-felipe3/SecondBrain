@@ -1,14 +1,13 @@
 import { Injectable } from '@nestjs/common';
-import { ConfigService } from './config.service';
-import { DraftGenerationService } from './draft-generation.service';
-import { DraftProcessingService } from './draft-processing.service';
+import { ConfigService } from '../shared/config.service';
+import { DraftGenerationService, DraftProcessingService } from '../../drafts';
 import { TaskConversionService } from './task-conversion.service';
-import { AuditService } from './audit.service';
-import { WBSNodeDto } from '../../dto/wbs.dto';
-import { Task } from '../../../tasks/entities/task.entity';
-import { computeChunkMinutes } from './utils/metrics-calculator.util';
+import { AuditService } from '../core/audit.service';
+import { WBSNodeDto } from '../../../dto/wbs.dto';
+import { Task } from '../../../../tasks/entities/task.entity';
+import { computeChunkMinutes } from '../utils/metrics-calculator.util';
 
-import { GenerationStrategy, ConversionOptions, ConversionResult } from '../../interfaces';
+import { GenerationStrategy, ConversionOptions, ConversionResult } from '../../../interfaces';
 
 // Responsible for orchestrating the conversion of WBS nodes to tasks,
 // including error handling, logging, and optional auditing
@@ -61,43 +60,12 @@ export class WbsConversionOrchestrationService {
     };
 
     try {
+      const chunkMinutes = computeChunkMinutes((node.estimatedHours || 0) * 60);
+
       // ========== STAGE 1: Draft Generation ==========
       let drafts: any[];
       try {
-        // Choose strategy and generate drafts accordingly
-        const chunkMinutes = computeChunkMinutes((node.estimatedHours || 0) * 60);
-        if (opts.strategy === 'two-phase') {
-          const plan = await this.draftGeneration.generateMicroTasksPlanForLeaf({
-            project,
-            node,
-            currentPath: path,
-            level: 0,
-            chunkMinutes,
-            modelOverride: opts.modelOverride,
-          });
-          drafts = await this.draftGeneration.generateMicroTasksDraftsForLeafWithPlan(
-            {
-              project,
-              node,
-              currentPath: path,
-              level: 0,
-              plan,
-              modelOverride: opts.modelOverride,
-            },
-            chunkMinutes,
-          );
-        } else {
-          drafts = await this.draftGeneration.generateMicroTasksDraftsForLeaf(
-            {
-              project,
-              node,
-              currentPath: path,
-              level: 0,
-            },
-            chunkMinutes,
-            opts.modelOverride,
-          );
-        }
+        drafts = await this.generateDrafts(node, project, path, opts, chunkMinutes);
         result.metadata.draftCount = drafts.length;
         this.logIfVerbose(`[convertWbsToTasks] Drafts gerados`, {
           path,
@@ -118,10 +86,7 @@ export class WbsConversionOrchestrationService {
 
       // ========== STAGE 2: Draft Processing ==========
       try {
-        const chunkMinutes = computeChunkMinutes((node.estimatedHours || 0) * 60);
-        // Apply processing pipeline
-        drafts = this.draftProcessing.applyThemeWorkflowAndProgression(drafts, chunkMinutes);
-        drafts = this.draftProcessing.applyGoldilocksAndMilestones(drafts, chunkMinutes);
+        drafts = this.processDrafts(drafts, chunkMinutes);
         this.logIfVerbose(`[convertWbsToTasks] Drafts processados`, {
           path,
           appliedThemes: true,
@@ -193,6 +158,53 @@ export class WbsConversionOrchestrationService {
       }
       return result;
     }
+  }
+
+  private async generateDrafts(
+    node: WBSNodeDto,
+    project: any,
+    path: string,
+    opts: Required<ConversionOptions>,
+    chunkMinutes: number[],
+  ): Promise<any[]> {
+    if (opts.strategy === 'two-phase') {
+      const plan = await this.draftGeneration.generateMicroTasksPlanForLeaf({
+        project,
+        node,
+        currentPath: path,
+        level: 0,
+        chunkMinutes,
+        modelOverride: opts.modelOverride,
+      });
+      return this.draftGeneration.generateMicroTasksDraftsForLeafWithPlan(
+        {
+          project,
+          node,
+          currentPath: path,
+          level: 0,
+          plan,
+          modelOverride: opts.modelOverride,
+        },
+        chunkMinutes,
+      );
+    } else {
+      return this.draftGeneration.generateMicroTasksDraftsForLeaf(
+        {
+          project,
+          node,
+          currentPath: path,
+          level: 0,
+        },
+        chunkMinutes,
+        opts.modelOverride,
+      );
+    }
+  }
+
+  private processDrafts(drafts: any[], chunkMinutes: number[]): any[] {
+    let processed = this.draftProcessing.applyThemeWorkflowAndProgression(drafts, chunkMinutes);
+    processed = this.draftProcessing.applyGoldilocksAndMilestones(processed, chunkMinutes);
+    return processed;
   }
 
   // ============ Private Helpers ============

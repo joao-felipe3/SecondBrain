@@ -3,10 +3,12 @@ import { ProjectsController } from '../../../src/projects/projects.controller';
 import { getModelToken } from '@nestjs/mongoose';
 import { ProjectsService } from '../../../src/projects/projects.service';
 import { PlanningService } from '../../../src/projects/services/planning';
-import { WBSService } from '../../../src/projects/services/wbs/wbs.service';
-import { WbsValidationService } from '../../../src/projects/services/wbs/wbs-validation.service';
-import { TaskConversionService } from '../../../src/projects/services/wbs/task-conversion.service';
-import { AuditService } from '../../../src/projects/services/wbs/audit.service';
+import {
+  WBSService,
+  WbsValidationService,
+  TaskConversionService,
+  AuditService,
+} from '../../../src/projects/services/wbs';
 import { TasksService } from '../../../src/tasks/tasks.service';
 import { LeafTasksBufferService } from '../../../src/projects/services/execution';
 

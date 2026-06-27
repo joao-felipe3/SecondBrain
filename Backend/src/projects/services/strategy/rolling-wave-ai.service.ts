@@ -370,9 +370,6 @@ REQUISITOS CRÍTICOS:
     return redistributedPlan;
   }
 
-  /**
-   * Wrapper para chamadas ao modelo com retry/backoff para erros de rede transitórios
-   */
   private async generateContentWithRetry(
     model: any,
     prompt: string,

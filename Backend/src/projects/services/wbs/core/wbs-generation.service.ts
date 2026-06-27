@@ -1,6 +1,6 @@
 import { Injectable, Inject, forwardRef } from '@nestjs/common';
-import { GeminiService } from '../../../ai/gemini.service';
-import { WBSNodeDto } from '../../dto/wbs.dto';
+import { GeminiService } from '../../../../ai/gemini.service';
+import { WBSNodeDto } from '../../../dto/wbs.dto';
 
 /**
  * Handles WBS generation from SMART objectives using Gemini AI

@@ -1,8 +1,5 @@
 import { Injectable } from '@nestjs/common';
 
-/**
- * Manages caching for WBS drafts using Redis (preferred) or in-memory fallback
- */
 @Injectable()
 export class CacheService {
   private draftsCache = new Map<string, { value: any; exp: number }>();

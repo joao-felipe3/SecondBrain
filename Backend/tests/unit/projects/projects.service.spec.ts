@@ -1,9 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getModelToken } from '@nestjs/mongoose';
 import { ProjectsService } from '../../../src/projects/projects.service';
-import { ProjectWave } from '../../../src/projects/schemas/project-wave.schema';
-import { CPMService } from '../../../src/tasks/services/analysis';
 import { ProjectsXMatrixService } from '../../../src/projects/services/strategy';
+import { GanttService, PertDiagramService } from '../../../src/projects/services/visualization';
+import { ProjectStatsService } from '../../../src/projects/services/execution';
 
 describe('ProjectsService', () => {
   let service: ProjectsService;
@@ -14,18 +14,21 @@ describe('ProjectsService', () => {
         ProjectsService,
         { provide: getModelToken('Project'), useValue: {} },
         { provide: getModelToken('Task'), useValue: {} },
-        { provide: getModelToken(ProjectWave.name), useValue: {} },
-        {
-          provide: CPMService,
-          useValue: {
-            getDependencies: jest.fn(),
-            calculateCriticalPath: jest.fn(),
-            normalizeRelationship: jest.fn(),
-          },
-        },
         {
           provide: ProjectsXMatrixService,
           useValue: { createXMatrix: jest.fn(), getSavedXMatrix: jest.fn() },
+        },
+        {
+          provide: GanttService,
+          useValue: { getGanttData: jest.fn() },
+        },
+        {
+          provide: PertDiagramService,
+          useValue: { getPertDiagramData: jest.fn() },
+        },
+        {
+          provide: ProjectStatsService,
+          useValue: { recalculateProjectStats: jest.fn() },
         },
       ],
     }).compile();

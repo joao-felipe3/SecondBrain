@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { WBSNodeDocument } from '../../schemas/wbs-node.schema';
-import { WBSNodeDto } from '../../dto/wbs.dto';
-import { CacheService } from './cache.service';
+import { WBSNodeDocument } from '../../../schemas/wbs-node.schema';
+import { WBSNodeDto } from '../../../dto/wbs.dto';
+import { CacheService } from '../shared/cache.service';
 
 @Injectable()
 export class WbsPersistenceService {

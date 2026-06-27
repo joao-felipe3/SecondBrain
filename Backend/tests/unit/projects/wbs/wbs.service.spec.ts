@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getModelToken } from '@nestjs/mongoose';
-import { WBSService } from '../../../../src/projects/services/wbs/wbs.service';
+import { WBSService } from '../../../../src/projects/services/wbs';
 import { GeminiService } from '../../../../src/ai/gemini.service';
 import { WBSNodeDto } from '../../../../src/projects/dto/wbs.dto';
 import {

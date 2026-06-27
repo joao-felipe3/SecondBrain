@@ -5,8 +5,8 @@ import {
   mapCognitiveModeToContextTag,
   normalizeCognitiveMode,
   normalizeMicroTaskType,
-} from './utils/normalizers.util';
-import { extractDefinitionOfDone, extractChecklistSteps } from './utils/wbs-helpers.util';
+} from '../wbs/utils/normalizers.util';
+import { extractDefinitionOfDone, extractChecklistSteps } from '../wbs/utils/wbs-helpers.util';
 
 @Injectable()
 export class DraftProcessingService {
