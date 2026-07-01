@@ -2,63 +2,28 @@ import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { Risk, RiskDocument } from '../../schemas/risk.schema';
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import { GeminiService } from '../../../ai/gemini.service';
+import { buildRiskAssessmentPrompt } from '../../../ai/prompts/risk.prompts';
 
 import { GeneratedRisk, RiskIntervention } from '../../interfaces/risk.interface';
 
 @Injectable()
 export class RiskService {
   private readonly logger = new Logger(RiskService.name);
-  private genAI: GoogleGenerativeAI;
 
-  constructor(@InjectModel(Risk.name) private riskModel: Model<RiskDocument>) {
-    const apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_GENERATIVE_AI_API_KEY || '';
-    this.genAI = new GoogleGenerativeAI(apiKey);
-  }
+  constructor(
+    @InjectModel(Risk.name) private riskModel: Model<RiskDocument>,
+    private readonly geminiService: GeminiService,
+  ) {}
 
   async assessRisks(projectId: string, projectDescription: string): Promise<Risk[]> {
     try {
       const modelName = process.env.GEMINI_STRONG_MODEL || 'gemini-2.5-flash-lite';
-      const model = this.genAI.getGenerativeModel({ model: modelName });
+      const prompt = buildRiskAssessmentPrompt(projectDescription);
 
-      const prompt = `
-Você é um especialista em gerenciamento de projetos. 
-Analise a descrição do projeto e identifique os principais riscos.
-
-Descrição do Projeto:
-${projectDescription}
-
-Retorne um JSON com um array de riscos. Cada risco deve ter:
-- description (string): descrição clara do risco
-- probability (number): probabilidade de 0-100 (%)
-- impact (number): impacto de 1-5
-- severity (string): 'baixa', 'média' ou 'alta' (baseado em probability * impact / 5)
-- mitigationPlan (string): plano inicial de mitigação
-
-Exemplo de resposta:
-{
-  "risks": [
-    {
-      "description": "Falta de recursos técnicos especializados",
-      "probability": 40,
-      "impact": 4,
-      "severity": "média",
-      "mitigationPlan": "Contratar consultoria externa ou treinar equipe com antecedência"
-    }
-  ]
-}
-
-Retorne APENAS o JSON, sem markdown ou formatação extra.
-      `;
-
-      const result = await model.generateContent(prompt);
-      let responseText = result.response.text();
-
-      // Clean up markdown formatting (remove triple backticks)
-      responseText = responseText
-        .replace(/```json\n?/g, '')
-        .replace(/```\n?/g, '')
-        .trim();
+      const responseText = await this.geminiService.generateContent(prompt, {
+        model: modelName,
+      });
 
       // Parse JSON response
       let parsedResponse;

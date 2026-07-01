@@ -66,7 +66,6 @@ import { AlertsController } from './controllers/alerts.controller';
   ],
   providers: [
     TasksService,
-    GeminiService,
     ChecklistService,
     TasksInputService,
     TasksAiSuggestionsService,
@@ -94,7 +93,6 @@ import { AlertsController } from './controllers/alerts.controller';
   ],
   exports: [
     TasksService,
-    GeminiService,
     ChecklistService,
     TasksInputService,
     TasksAiSuggestionsService,

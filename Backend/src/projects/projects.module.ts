@@ -76,7 +76,6 @@ import {
     WBSService,
     MonotonyDetectionService,
     MonotonyFixService,
-    PromptBuilderService,
     ThemeExtractionService,
     CacheService,
     WbsValidationService,

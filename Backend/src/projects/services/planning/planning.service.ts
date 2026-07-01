@@ -1,6 +1,11 @@
 import { Injectable, Inject, forwardRef } from '@nestjs/common';
 import { GeminiService } from '../../../ai/gemini.service';
 import { SmartObjectiveDto } from '../../dto/smart-objective.dto';
+import {
+  buildCatchballQuestionsPrompt,
+  buildSuggestAnswerPrompt,
+  buildSmartObjectivePrompt,
+} from '../../../ai/prompts/planning.prompts';
 
 @Injectable()
 export class PlanningService {
@@ -25,24 +30,7 @@ export class PlanningService {
     if (projectData.midTermGoal) goalsContext.push(`Médio prazo: ${projectData.midTermGoal}`);
     if (projectData.longTermGoal) goalsContext.push(`Longo prazo: ${projectData.longTermGoal}`);
 
-    const prompt = `Você é um consultor de gestão de projetos especializado em metodologias PMBOK e PRINCE2.
-
-Um usuário tem um projeto com as seguintes informações:
-
-Nome do Projeto: "${projectData.projectName}"
-Descrição: "${projectData.projectDescription}"
-${goalsContext.length > 0 ? `\nObjetivos existentes:\n${goalsContext.join('\n')}` : ''}
-
-Sua tarefa é fazer perguntas estratégicas para refinar esse objetivo em um objetivo SMART, usando a técnica Catchball (Hoshin Kanri).
-Faça 4-5 perguntas que ajudem a esclarecer:
-1. Público-alvo e usuários específicos
-2. Escopo e funcionalidades principais
-3. Restrições de tempo e recursos
-4. Integrações e dependências técnicas
-5. Critérios de sucesso mensuráveis
-
-Retorne APENAS um array JSON com as perguntas, sem texto adicional:
-["pergunta 1", "pergunta 2", "pergunta 3", "pergunta 4", "pergunta 5"]`;
+    const prompt = buildCatchballQuestionsPrompt(projectData);
 
     try {
       const response = await this.geminiService.generateContent(prompt);
@@ -68,22 +56,12 @@ Retorne APENAS um array JSON com as perguntas, sem texto adicional:
     const history = this.conversationHistory.get(conversationId) || [];
     const projectContext = history[0] || '';
 
-    const previousContext =
-      previousAnswers.length > 0
-        ? `\n\nRespostas anteriores:\n${previousAnswers.map((ans, i) => `Pergunta ${i + 1}: ${ans}`).join('\n')}`
-        : '';
-
-    const prompt = `Você é um consultor de gestão de projetos especializado em metodologias PMBOK e PRINCE2.
-
-Contexto do projeto:
-${projectContext}${previousContext}
-
-Pergunta atual (${questionIndex + 1}):
-"${question}"
-
-Com base nas informações do projeto e nas respostas anteriores (se houver), sugira uma resposta objetiva e concreta para esta pergunta. A resposta deve ser prática e específica para este projeto.
-
-Retorne APENAS a resposta sugerida, sem explicações adicionais ou formatação JSON.`;
+    const prompt = buildSuggestAnswerPrompt({
+      questionIndex,
+      question,
+      projectContext,
+      previousAnswers,
+    });
 
     try {
       const response = await this.geminiService.generateContent(prompt);
@@ -103,28 +81,7 @@ Retorne APENAS a resposta sugerida, sem explicações adicionais ou formatação
     const history = this.conversationHistory.get(conversationId) || [];
     const projectContext = history[0] || '';
 
-    const prompt = `Você é um consultor de gestão de projetos especializado em metodologias PMBOK e PRINCE2.
-
-Contexto do projeto:
-${projectContext}
-
-Respostas do usuário às perguntas estratégicas:
-${answers.map((answer, i) => `${i + 1}. ${answer}`).join('\n')}
-
-Agora, crie um objetivo SMART (Specific, Measurable, Achievable, Relevant, Temporal) para este projeto.
-IMPORTANTE: inclua explicitamente a capacidade semanal de execução em horas (weeklyHours), baseada nas respostas do usuário.
-
-Retorne APENAS um objeto JSON no seguinte formato, sem texto adicional:
-{
-  "specific": "Descrição clara e específica do que será feito",
-  "measurable": "Métricas quantificáveis (ex: 500 produtos, 100k visitantes/mês)",
-  "achievable": "Análise de viabilidade com recursos disponíveis",
-  "relevant": "Por que este projeto é importante para o negócio",
-  "temporal": "Prazo específico com data de conclusão",
-  "weeklyHours": 12,
-  "summary": "Resumo executivo em 1-2 frases",
-  "risks": ["risco 1", "risco 2", "risco 3"]
-}`;
+    const prompt = buildSmartObjectivePrompt({ projectContext, answers });
 
     let response: string;
     try {

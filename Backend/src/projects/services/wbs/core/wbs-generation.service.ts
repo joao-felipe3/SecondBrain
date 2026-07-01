@@ -1,6 +1,7 @@
 import { Injectable, Inject, forwardRef } from '@nestjs/common';
 import { GeminiService } from '../../../../ai/gemini.service';
 import { WBSNodeDto } from '../../../dto/wbs.dto';
+import { buildWbsGenerationPrompt } from '../../../../ai/prompts/wbs.prompts';
 
 /**
  * Handles WBS generation from SMART objectives using Gemini AI
@@ -31,61 +32,7 @@ export class WbsGenerationService {
     const weeklyHours = Number(smartObjective.weeklyHours);
     const weeksAvailable = Number(smartObjective.weeksAvailable);
 
-    const prompt = `Você é um consultor de gestão de projetos especializado em WBS (Work Breakdown Structure) segundo PMBOK.
-
-Baseado no objetivo SMART abaixo, gere uma WBS hierárquica CONCISA para o projeto.
-
-Objetivo SMART:
-- Específico: ${smartObjective.specific}
-- Mensurável: ${smartObjective.measurable}
-- Atingível: ${smartObjective.achievable}
-- Relevante: ${smartObjective.relevant}
-- Temporal: ${smartObjective.temporal}
-${Number.isFinite(weeklyHours) && weeklyHours > 0 ? `- Capacidade semanal: ${weeklyHours}h/semana` : ''}
-${hasBudgetContext ? `- Budget global alvo da WBS: ${Number(smartObjective.budgetHours).toFixed(1)}h` : ''}
-${Number.isFinite(weeksAvailable) && weeksAvailable > 0 ? `- Janela temporal estimada: ${Math.round(weeksAvailable)} semanas` : ''}
-${smartObjective.summary ? `- Resumo: ${smartObjective.summary}` : ''}
-
-REGRAS IMPORTANTES:
-1. A WBS deve ter MÁXIMO 3 níveis de profundidade
-2. Inclua APENAS 3-4 entregas principais (nível 1)
-3. Cada entrega deve ter 2-4 pacotes de trabalho (nível 2)
-4. Evite nível 3 sempre que possível
-5. Cada pacote de trabalho (nó folha) deve ter entre 8 e 80 horas estimadas (regra 8/80)
-6. Nós intermediários: estimatedHours = soma dos filhos
-7. Use nomes claros e descritivos mas CURTOS
-8. Descrições BREVES (máximo 1 linha)
-${hasBudgetContext ? `9. A soma total dos nós folha deve ficar o mais próximo possível de ${Number(smartObjective.budgetHours).toFixed(1)}h sem ultrapassar significativamente o budget` : ''}
-
-Retorne APENAS um array JSON válido e completo, sem texto adicional:
-[
-  {
-    "name": "Nome da Entrega Principal",
-    "description": "Descrição breve",
-    "level": 1,
-    "estimatedHours": 120,
-    "order": 1,
-    "children": [
-      {
-        "name": "Pacote de Trabalho",
-        "description": "Descrição",
-        "level": 2,
-        "estimatedHours": 40,
-        "order": 1,
-        "children": [
-          {
-            "name": "Sub-pacote",
-            "description": "Descrição",
-            "level": 3,
-            "estimatedHours": 20,
-            "order": 1,
-            "children": []
-          }
-        ]
-      }
-    ]
-  }
-]`;
+    const prompt = buildWbsGenerationPrompt(smartObjective);
 
     try {
       const response = await this.geminiService.generateContent(prompt);

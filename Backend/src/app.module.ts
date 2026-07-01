@@ -3,6 +3,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TasksModule } from './tasks/tasks.module';
 import { ProjectsModule } from './projects/projects.module';
 import { SettingsModule } from './settings/settings.module';
+import { AIModule } from './ai/ai.module';
 import { MongooseModule } from '@nestjs/mongoose';
 import * as Joi from 'joi';
 
@@ -43,6 +44,7 @@ import * as Joi from 'joi';
     TasksModule,
     ProjectsModule,
     SettingsModule,
+    AIModule,
   ],
 })
 export class AppModule {}

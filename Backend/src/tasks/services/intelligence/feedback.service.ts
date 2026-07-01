@@ -6,6 +6,7 @@ import { TaskDocument } from '../../schemas/task.schema';
 import { TaskCompletionFeedbackDocument } from '../../schemas/task-completion-feedback.schema';
 import { ChecklistItemDto } from '../../dto/task/create-task.dto';
 import { CompletionFeedbackPayload } from '../../interfaces';
+import { buildFeedbackPrompt, buildNextStepsPrompt } from '../../../ai/prompts/feedback.prompts';
 
 export { CompletionFeedbackPayload };
 
@@ -77,7 +78,13 @@ export class FeedbackService {
 
     const checklistSummary = this.buildChecklistSummary(checklist);
     const percent = this.calculateChecklistCompletionPercent(checklistSummary);
-    const prompt = this.buildFeedbackPrompt(task, percent, checklistSummary.length, timeSpentMinutes);
+    const prompt = buildFeedbackPrompt({
+      taskName: String(task.name || ''),
+      taskDescription: task.description ? String(task.description) : undefined,
+      percent,
+      checklistLength: checklistSummary.length,
+      timeSpentMinutes,
+    });
 
     try {
       const raw = await this.geminiService.generateContent(prompt, {
@@ -106,7 +113,7 @@ export class FeedbackService {
       throw new BadRequestException('Task inválida');
     }
 
-    const prompt = this.buildNextStepsPrompt(task, feedback);
+    const prompt = buildNextStepsPrompt({ taskName: String(task.name || ''), feedback });
 
     try {
       const raw = await this.geminiService.generateContent(prompt, {
@@ -281,30 +288,6 @@ export class FeedbackService {
     }
     const completedCount = checklistSummary.filter((c) => c.completed).length;
     return Math.round((completedCount / checklistSummary.length) * 100);
-  }
-
-  private buildFeedbackPrompt(
-    task: TaskDocument,
-    percent: number,
-    checklistLength: number,
-    timeSpentMinutes?: number,
-  ): string {
-    return [
-      'Você é um receptor de bola (catchball) que fornece feedback curto e acionável quando uma tarefa é concluída.',
-      `Tarefa: ${String(task.name || '')}`,
-      task.description ? `Descrição: ${String(task.description)}` : '',
-      `Checklist completion: ${percent}% (${checklistLength} items)`,
-      timeSpentMinutes ? `Tempo gasto (minutos): ${timeSpentMinutes}` : '',
-      '',
-      'Gere um JSON válido com exatamente essas chaves (strings):',
-      '- celebration: uma frase curta parabenizando e reconhecendo o esforço',
-      '- validation: resumo objetivo sobre o checklist e se a entrega atende critérios de aceitação (1 frase)',
-      '- question: uma pergunta aberta sobre impedimentos ou riscos (1 frase)',
-      '- suggestion: uma sugestão PDCA/next step (1 frase)',
-      'Responda APENAS com o JSON, sem texto adicional, sem markdown.',
-    ]
-      .filter(Boolean)
-      .join('\n');
   }
 
   private buildFeedbackObject(

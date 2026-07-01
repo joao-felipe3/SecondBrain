@@ -1,5 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import { GeminiService } from '../../../ai/gemini.service';
+import { buildPlanWaveStructurePrompt, buildPlanWaveGroupingPrompt } from '../../../ai/prompts/rolling-wave.prompts';
 import { AIPlan, AIWaveStructure } from '../../interfaces/rolling-wave.interface';
 import {
   estimateTaskHours,
@@ -12,12 +13,8 @@ import {
 @Injectable()
 export class RollingWaveAIService {
   private readonly logger = new Logger(RollingWaveAIService.name);
-  private genAI: GoogleGenerativeAI;
 
-  constructor() {
-    const apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_GENERATIVE_AI_API_KEY || '';
-    this.genAI = new GoogleGenerativeAI(apiKey);
-  }
+  constructor(private readonly geminiService: GeminiService) {}
 
   /**
    * Primeira chamada Gemini: determinar número ideal de ondas
@@ -29,30 +26,23 @@ export class RollingWaveAIService {
   ): Promise<AIWaveStructure | null> {
     try {
       const modelName = process.env.GEMINI_MODEL || 'gemma-3-27b-it';
-      const model = this.genAI.getGenerativeModel({ model: modelName });
 
       const today = new Date();
       const deadline = new Date(project.deadline);
       const availableDays = Math.ceil((deadline.getTime() - today.getTime()) / (24 * 60 * 60 * 1000));
       const totalTaskHours = tasks.reduce((sum, t) => sum + estimateTaskHours(t), 0);
 
-      const prompt = `Você é especialista em Rolling Waves. Determine número ideal de ondas.
+      const prompt = buildPlanWaveStructurePrompt({
+        projectName: project.name || 'Sem nome',
+        todayIso: today.toISOString().split('T')[0],
+        deadlineIso: deadline.toISOString().split('T')[0],
+        availableDays,
+        taskCount: tasks.length,
+        totalTaskHours,
+        dailyCapacityHours,
+      });
 
-PROJETO: ${project.name || 'Sem nome'}
-Data: ${today.toISOString().split('T')[0]} até ${deadline.toISOString().split('T')[0]}
-Dias: ${availableDays} | Tarefas: ${tasks.length} | Trabalho: ${totalTaskHours.toFixed(1)}h | Capacidade: ${dailyCapacityHours}h/dia
-
-Recomende ondas que cubram EXATAMENTE ${availableDays} dias (cada onda: 14-45 dias, total: 3-15 ondas).
-
-RETORNE APENAS JSON (SEM MARKDOWN, STRINGS EM UMA LINHA):
-{"recommendedWaveCount":NUMERO,"totalDurationDays":${availableDays},"description":"Descrição breve em uma linha","reasoning":"Explicação em uma linha sem quebras"}`;
-
-      const result = await this.generateContentWithRetry(model, prompt);
-      if (!result) {
-        this.logger.warn(`[GENAI] planWaveStructure: Falha ao obter resposta do modelo após retries`);
-        return null;
-      }
-      const responseText = result.response.text();
+      const responseText = await this.geminiService.generateContent(prompt, { model: modelName });
 
       // Validar e extrair JSON
       const parsed = extractAndValidateJSON<AIWaveStructure>(responseText, [
@@ -105,7 +95,6 @@ RETORNE APENAS JSON (SEM MARKDOWN, STRINGS EM UMA LINHA):
   ): Promise<AIPlan | null> {
     try {
       const modelName = process.env.GEMINI_STRONG_MODEL || 'gemini-2.5-flash-lite';
-      const model = this.genAI.getGenerativeModel({ model: modelName });
 
       const today = new Date();
       const deadline = new Date(project.deadline);
@@ -158,60 +147,19 @@ RETORNE APENAS JSON (SEM MARKDOWN, STRINGS EM UMA LINHA):
         examples: (taskExamplesByWbs.get(item.wbs) || []).slice(0, 3),
       }));
 
-      const prompt = `
-Você é um especialista em Rolling Waves. Aloque pacotes WBS às ondas com alocação equilibrada.
+      const prompt = buildPlanWaveGroupingPrompt({
+        projectName: project.name || 'Sem nome',
+        totalAvailableDays,
+        waveCount,
+        totalTasks,
+        tasksPerWave,
+        minTasksPerWave,
+        maxTasksPerWave,
+        waveDurations,
+        wbsWithExamples,
+      });
 
-PROJETO: ${project.name || 'Sem nome'}
-Período: ${totalAvailableDays} dias, ${waveCount} ondas, ${totalTasks} tarefas
-Meta por onda: ${tasksPerWave} tarefas (${minTasksPerWave}-${maxTasksPerWave} aceitável)
-Duracões exatas por onda: ${waveDurations.join(', ')} dias
-
-PACOTES WBS:
-${JSON.stringify(wbsWithExamples, null, 2)}
-
-REGRAS CRÍTICAS:
-0. RETORNE EXATAMENTE ${waveCount} ondas, numeradas de 1 até ${waveCount}
-1. CADA WBS ALOCADO A EXATAMENTE UMA ONDA (sem duplicação)
-2. NENHUMA QUANTIDADE 0 (se aloca WBS, quantidade maior que 0)
-3. SOMA TOTAL = ${totalTasks} tarefas
-4. CADA ONDA: ${minTasksPerWave}-${maxTasksPerWave} tarefas
-5. JSON VÁLIDO, SEM MARKDOWN, SEM TRUNCAÇÃO
-
-ESTRUTURA JSON OBRIGATÓRIA:
-{
-  "waves": [
-    {
-      "waveNumber": 1,
-      "name": "Nome da Onda",
-      "description": "Descrição clara do que será feito nesta onda, resumindo os principais WBS blocos alocados",
-      "durationDays": DURACAO_EXATA_DA_ONDA,
-      "focus": "Foco principal desta onda",
-      "wbsAllocation": {
-        "WBS_NAME": NUMERO,
-        "WBS_NAME2": NUMERO
-      }
-    }
-  ],
-  "rationale": "Soma total tarefas = ${totalTasks}"
-}
-
-REQUISITOS CRÍTICOS:
-- Use NÚMEROS para quantidades (não strings entre aspas)
-- SEM ASPAS no início/fim de strings (use aspas simples se necessário)
-- DESCRIPTION obrigatória: resumir em 1-2 linhas os principais WBS blocos (ex: "Vocabulário HSK N2 parte 1, Gramática básica e Compreensão auditiva")
-- As ${waveCount} ondas devem existir mesmo que algumas tenham poucos WBS; nunca retorne menos de ${waveCount} ondas
-- Use estas durações exatamente nesta ordem: ${waveDurations.join(', ')}
-- Sem caracteres especiais em descriptions (acentos OK)
-- JSON deve ser válido: JSON.parse() sem erros
-- Sem markdown, sem truncação, JSON completo
-`;
-
-      const result = await this.generateContentWithRetry(model, prompt);
-      if (!result) {
-        this.logger.warn(`[GENAI] planWaveGrouping: Falha ao obter resposta do modelo após retries`);
-        return null;
-      }
-      const responseText = result.response.text();
+      const responseText = await this.geminiService.generateContent(prompt, { model: modelName });
 
       const parsed = extractAndValidateJSON<AIPlan>(responseText, ['waves', 'rationale'], this.logger);
 
@@ -368,30 +316,5 @@ REQUISITOS CRÍTICOS:
     }
 
     return redistributedPlan;
-  }
-
-  private async generateContentWithRetry(
-    model: any,
-    prompt: string,
-    maxAttempts = 3,
-  ): Promise<any | null> {
-    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-      try {
-        const result = await model.generateContent(prompt);
-        return result;
-      } catch (err: any) {
-        this.logger.warn(
-          `[GENAI_RETRY] Tentativa ${attempt}/${maxAttempts} falhou: ${err?.message || err}`,
-        );
-        if (attempt < maxAttempts) {
-          const delay = 500 * Math.pow(2, attempt - 1); // 500ms, 1s, 2s
-          await new Promise((resolve) => setTimeout(resolve, delay));
-          continue;
-        }
-        this.logger.warn('[GENAI_RETRY] Todas as tentativas falharam');
-        return null;
-      }
-    }
-    return null;
   }
 }

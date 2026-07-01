@@ -1,5 +1,6 @@
 import { Injectable, Inject, forwardRef } from '@nestjs/common';
 import { GeminiService } from '../../../../ai/gemini.service';
+import { buildAuditPrompt } from '../../../../ai/prompts/audit.prompts';
 import { WBSNodeDto } from '../../../dto/wbs.dto';
 import { extractJsonObject } from '../utils/json-parser.util';
 import { computeBatchMetrics } from '../utils/metrics-calculator.util';
@@ -48,13 +49,20 @@ export class AuditService {
     const duplicateMetrics = this.computeDuplicateMetrics(Array.isArray(dto?.tasks) ? dto.tasks : []);
     const tasksPreview = this.formatTasksPreview(Array.isArray(dto?.tasks) ? dto.tasks : []);
 
-    const prompt = this.buildAuditPrompt(
-      project,
-      dto,
-      discrepancyMetrics,
-      duplicateMetrics,
+    const prompt = buildAuditPrompt({
+      projectName: String(project?.name || 'Projeto').trim(),
+      leafNodeName: String(dto.leafNode?.name || '').trim(),
+      nodePath: String(dto.nodePath || '').trim(),
+      budgetHours: discrepancyMetrics.budgetHours,
+      generatedHours: discrepancyMetrics.generatedHours,
+      diffPct: discrepancyMetrics.diffPct,
+      taskCount: dto.tasks?.length || 0,
+      duplicateRatio: duplicateMetrics.duplicateRatio,
+      topDuplicateKeys: duplicateMetrics.topDuplicateKeys,
+      dupScore: Number(duplicateMetrics.repetitionMetrics?.dupScore ?? 0),
+      similarScore: Number(duplicateMetrics.repetitionMetrics?.similarScore ?? 0),
       tasksPreview,
-    );
+    });
 
     const geminiResponse = await this.callGeminiWithRetry(prompt);
     const parsedResponse = this.parseAuditResponse(geminiResponse);
@@ -246,62 +254,6 @@ export class AuditService {
     const typeStr = type ? ` (${type})` : '';
 
     return `${index + 1}. [P${priority}] ${pomodoros}🍅${typeStr}${tagsStr} — ${name}`;
-  }
-
-  // Build prompt to Gemini do the audit
-  private buildAuditPrompt(
-    project: any,
-    dto: any,
-    discrepancyMetrics: any,
-    duplicateMetrics: any,
-    tasksPreview: string,
-  ): string {
-    const budgetHours = discrepancyMetrics.budgetHours;
-    const generatedHours = discrepancyMetrics.generatedHours;
-    const diffPct = discrepancyMetrics.diffPct;
-    const duplicateRatio = duplicateMetrics.duplicateRatio;
-    const topDuplicateKeys = duplicateMetrics.topDuplicateKeys;
-    const repetitionMetrics = duplicateMetrics.repetitionMetrics;
-    const dupScore = Number(repetitionMetrics?.dupScore ?? 0);
-    const similarScore = Number(repetitionMetrics?.similarScore ?? 0);
-    return (
-      `Você é um auditor de escopo e estimativas (WBS/PERT/EVM).\n\n` +
-      `Contexto do projeto: ${String(project?.name || 'Projeto').trim()}\n` +
-      `Pacote (WBS leaf): "${String(dto.leafNode?.name || '').trim()}"\n` +
-      `Caminho: ${String(dto.nodePath || '').trim()}\n` +
-      `Estimativa top-down do pacote: ${budgetHours.toFixed(1)}h\n` +
-      `Estimativa bottom-up (micro-tarefas): ${generatedHours.toFixed(1)}h\n` +
-      `Diferença: ${diffPct.toFixed(0)}%\n\n` +
-      `Sinais automáticos (anti-gold-plating):\n` +
-      `- totalTasks: ${dto.tasks?.length || 0}\n` +
-      `- duplicateRatio(aprox): ${(duplicateRatio * 100).toFixed(0)}%\n` +
-      `- dupScore: ${dupScore.toFixed(2)}\n` +
-      `- similarScore: ${similarScore.toFixed(2)}\n` +
-      `${topDuplicateKeys ? `- topRepeated: ${topDuplicateKeys}\n` : ''}` +
-      `\n` +
-      `Micro-tarefas (amostra):\n${tasksPreview || '(sem tarefas)'}\n\n` +
-      `Tarefa: classifique a discrepância como UMA destas opções:\n` +
-      `- underestimated = o pacote foi subestimado (tarefas são majoritariamente distintas/necessárias)\n` +
-      `- gold_plating = há escopo desnecessário OU repetição excessiva (tarefas redundantes, opcionalidade clara, ou expansão de escopo fora do pacote)\n` +
-      `- mixed = há evidência forte de ambos (use SOMENTE quando realmente houver sinais fortes dos dois lados)\n\n` +
-      `Regras para evitar "sempre mixed" e para reduzir falso-positivo de gold_plating:\n` +
-      `- Se duplicateRatio >= 40% OU dupScore >= 0.40, trate como forte sinal de redundância e prefira gold_plating ou mixed com suggestedAction=simplify.\n` +
-      `- Se duplicateRatio < 25% E dupScore < 0.25 E similarScore < 0.35, prefira underestimated. Só use mixed se você identificar escopo opcional/fora do pacote.\n` +
-      `- Com redundância baixa (regras acima), NÃO use gold_plating apenas por "granularidade"; micro-tarefas detalhadas são esperadas neste sistema.\n` +
-      `- Se diffPct >= 120% e houver repetição alta, suggestedAction deve ser simplify (não rebaseline).\n\n` +
-      `Importante: tarefas podem parecer "parecidas" (ex: prática/análise), mas se tiverem themeTag/contextTag diferentes, considere que podem cobrir CONTEÚDO diferente e NÃO são redundância automaticamente.\n\n` +
-      `Então sugira UMA ação: \n` +
-      `- "rebaseline" = atualizar a estimativa do pacote para refletir o detalhamento real, ou\n` +
-      `- "simplify" = simplificar o escopo para caber na estimativa original (cortar opcional, reduzir qualidade, etc).\n\n` +
-      `Retorne APENAS JSON válido no formato (pode incluir campos extras opcionais):\n` +
-      `{\n` +
-      `  "diagnosis": "underestimated" | "gold_plating" | "mixed",\n` +
-      `  "rationale": "...",\n` +
-      `  "suggestedAction": "rebaseline" | "simplify",\n` +
-      `  "suggestedEstimatedHours": 32,\n` +
-      `  "simplifyNotes": ["...", "..."]\n` +
-      `}`
-    );
   }
 
   private applyGuardrails(
