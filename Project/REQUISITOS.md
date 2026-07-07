@@ -1,6 +1,6 @@
 # 📋 Acompanhamento de Requisitos - Second Brain
 
-> **Última atualização:** 18/05/2026  
+> **Última atualização:** 06/07/2026  
 > **Status do Projeto:** MVP + Fase 1 + Fase 2 100% Completas
 
 ---
@@ -23,6 +23,8 @@
 | Fase 10 - IA Autônoma e Guardião do OS | 36 | 0/36 | 0/36 | 0/36 | 0/36 | ⬜ 0% |
 | Fase 11 - Espelho Metacognitivo e Energia Biológica | 44 | 0/44 | 0/44 | 0/44 | 0/44 | ⬜ 0% |
 | Fase 12 - Polimento e Segurança | 10 | 0/10 | 0/10 | 0/10 | 0/10 | ⬜ 0% |
+| Fase 13 - Agentes Tutores e Aprendizado Acelerado | 15 | 0/15 | 0/15 | 0/15 | 0/15 | ⬜ 0% |
+
 
 
 ---
@@ -916,10 +918,38 @@
 
 ---
 
+## 📚 Fase 13 - Agentes Tutores e Aprendizado Acelerado (Estudos Sem Fricção)
+
+> **Objetivo:** Facilitar a aprendizagem autônoma e acelerada por meio de agentes tutores inteligentes baseados em IA. A IA atua pesquisando profundamente sobre o tema de estudo na web (Deep Research), gerando roteiros de estudo (roadmaps) personalizados e calibrados, disponibilizando curadoria de conteúdos sem fricção (artigos, vídeos, resumos), gerando exercícios ativos (Active Recall, Flashcards, SRS) e oferecendo suporte contínuo via chat para tirar dúvidas, além de detectar e intervir ativamente em bloqueios cognitivos.
+
+### Agentes de Tutoria e Aprendizado
+
+| # | Requisito | Tipo | Protótipo | Frontend | Backend | QA |
+|---|-----------|------|:---------:|:--------:|:-------:|:--:|
+| 1 | **Inicialização de Tutores de Estudo**: Criar e configurar agentes tutores especializados para projetos ou tarefas do tipo "Estudo" (definindo tom do tutor, complexidade e objetivos) | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 2 | **Pesquisa Profunda Autônoma (Deep Research)**: O agente tutor pesquisa de forma autônoma na web (Wikipedia, documentações oficiais, comunidades de especialistas) para trazer bases de conhecimento atualizadas sobre o tema | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 3 | **Geração de Roadmap de Aprendizagem**: Gerar roteiros de estudo sequenciais divididos em módulos lógicos, estimando o tempo necessário para cada etapa de aprendizado de forma personalizada | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 4 | **Mapeamento e Validação de Pré-requisitos**: Analisar se o usuário tem a base necessária para o tópico proposto e sugerir pequenos "módulos de aquecimento" quando necessário para reduzir a frustração | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 5 | **Curadoria de Conteúdo Sem Fricção**: Buscar e agregar links diretos para materiais gratuitos de qualidade (artigos, documentações, vídeos curtos relevantes) para cada etapa do roadmap de estudos | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 6 | **Resumos Executivos e Analogias por IA**: Gerar explicações simplificadas e analogias sob demanda para conceitos complexos, com opção de múltiplos níveis de profundidade (ex: "explique como se eu tivesse 10 anos") | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 7 | **Geração de Flashcards Automáticos**: Converter trechos teóricos lidos ou resumos em flashcards com pergunta e resposta para revisão ativa | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 8 | **Sistema de Repetição Espaçada (SRS)**: Algoritmo interno (estilo SuperMemo/SM2) que programa revisões periódicas de flashcards para consolidar a memória de longo prazo | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 9 | **Quizzes e Drills Dinâmicos**: Gerar mini-testes objetivos ou de código para validar o conhecimento prático da etapa atual de estudos, com correção comentada imediata por IA | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 10 | **Chat Integrado com o Tutor**: Canal de comunicação contínuo associado ao projeto de estudos para tirar dúvidas de sintaxe, teoria ou conceitos específicos | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 11 | **Detecção de Bloqueios e Fadiga de Estudo**: Identificar anomalias cognitivas (ex: tempo excessivo na mesma lição, desvio de estimativa, RPE subjetivo alto) e propor uma intervenção leve | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 12 | **Intervenção Tutorada Antiprocrastinação**: Oferecer alternativas personalizadas de coping ao travar, como "iniciar micro-exercício de 2 min", "analisar código de exemplo pronto" ou "fazer uma pausa ativa" | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 13 | **Painel de Progresso do Aprendizado (Skill Trees)**: Visualizar os tópicos aprendidos, proficiência estimada pela IA e progresso do aprendizado de forma gamificada, conectada às skill trees da Fase 7 | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+| 14 | **Modo de Estudo Minimalista (Foco Livre de Distrações)**: Interface dedicada de leitura/estudo que oculta o resto do sistema e exibe apenas o texto de estudo, o cronômetro (Pomodoro) e a caixa de notas rápidas | Usabilidade | ⬜ | ⬜ | ⬜ | ⬜ |
+| 15 | **Privacidade e Funcionamento Local**: Permitir ao usuário exportar seu histórico de estudos e logs de tutoria em Markdown e escolher quais dados de pesquisa e biografia de estudos enviar para a IA | Não Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
+
+
+---
+
 ## 📅 Histórico de Atualizações
 
 | Data | Descrição |
 |------|-----------|
+| 06/07/2026 | Adicionada Fase 13 - Agentes Tutores e Aprendizado Acelerado (Estudos Sem Fricção) contendo 15 requisitos detalhados para tutoria inteligente baseada em IA e redução de fricção. |
 | 18/05/2026 | Requisitos do relatório analítico convertidos e inseridos nas fases 4 (Octalysis/anti-gaming), 7 (skill trees/meta-progressão) e 10 (state-driven generation/knowledge graph/agendamento procedural) + atualização dos totais no resumo. |
 | 13/05/2026 | Adicionados requisitos de Periodização da Produtividade/Autorregulação (readiness, DAPRE, CTL/ATL/TSB) na Fase 11 e de RL/Nivelamento Dinâmico (Flow) na Fase 10. |
 | 13/05/2026 | Fase 2 (Micro-Tarefas) sincronizada para 100% (requisitos + resumo). Ideias de Mestre/PTI, Rotina de Elite, Playbook/Zettelkasten e Arcos Narrativos foram encaixadas como novos requisitos nas fases 6, 7, 10 e 11. |
