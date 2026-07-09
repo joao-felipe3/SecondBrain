@@ -64,36 +64,7 @@ export class TasksAiSuggestionsService {
     }
   }
 
-  private safeParseGeminiJson(response: string): unknown[] {
-    if (!response || typeof response !== 'string') {
-      console.warn('Resposta do Gemini e nula ou nao e string');
-      return [];
-    }
 
-    const trimmed = response.trim();
-    if (!trimmed) return [];
-
-    try {
-      const parsed = JSON.parse(trimmed);
-      if (Array.isArray(parsed)) return parsed;
-      if (parsed && typeof parsed === 'object') {
-        const anyParsed = parsed as Record<string, unknown>;
-        if (Array.isArray(anyParsed.suggestions)) return anyParsed.suggestions;
-        if (Array.isArray(anyParsed.tasks)) return anyParsed.tasks;
-      }
-      return [];
-    } catch {
-      const match = trimmed.match(/\[[\s\S]*\]/);
-      if (!match) return [];
-
-      try {
-        const parsed = JSON.parse(match[0]);
-        return Array.isArray(parsed) ? parsed : [];
-      } catch {
-        return [];
-      }
-    }
-  }
 
   // ===========================================================================
   // 3. Private Helpers & Mappers
@@ -333,18 +304,15 @@ export class TasksAiSuggestionsService {
     chunkHours?: number;
   }): Promise<AiTaskSuggestionDto[]> {
     const { dto, existingTaskNames, chunkHours } = params;
-    const aiResponse = await this.geminiService.generateTaskSuggestions(
-      dto.projectName,
-      dto.shortTermGoal,
-      dto.midTermGoal,
-      dto.longTermGoal,
-      dto.userPrompt,
+    return this.geminiService.getTaskSuggestions({
+      projectName: dto.projectName,
+      shortTermGoal: dto.shortTermGoal,
+      midTermGoal: dto.midTermGoal,
+      longTermGoal: dto.longTermGoal,
+      userPrompt: dto.userPrompt,
       existingTaskNames,
       chunkHours,
-    );
-
-    const parsed = this.safeParseGeminiJson(aiResponse);
-    return parsed.map((item) => this.mapToSuggestionDto(item));
+    });
   }
 
   private async generateSingleBatch(
@@ -370,18 +338,6 @@ export class TasksAiSuggestionsService {
       return consecutiveRateLimits + 1;
     }
     throw err;
-  }
-
-  private mapToSuggestionDto(item: unknown): AiTaskSuggestionDto {
-    const anyItem = item as Record<string, unknown>;
-    return {
-      name: String(anyItem.name || ''),
-      deadline: anyItem.deadline ? String(anyItem.deadline) : undefined,
-      pomodoros: Number.isFinite(anyItem.pomodoros) ? Number(anyItem.pomodoros) : 0,
-      priority: Number.isFinite(anyItem.priority) ? Number(anyItem.priority) : 0,
-      difficulty: Number.isFinite(anyItem.difficulty) ? Number(anyItem.difficulty) : 0,
-      selected: Boolean(anyItem.selected),
-    } as AiTaskSuggestionDto;
   }
 
   private generateMockSuggestions(dto: GenerateAiSuggestionsDto): AiTaskSuggestionDto[] {

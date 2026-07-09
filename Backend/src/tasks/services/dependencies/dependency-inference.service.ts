@@ -1,23 +1,22 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { z } from 'zod';
 import { GeminiService } from '../../../ai/gemini.service';
-import { extractJsonObject } from '../../../projects/services/wbs/utils/json-parser.util';
-import {
-  InferenceTask,
-  InferredDependency,
-  InferenceLeafGates,
-} from '../../interfaces/dependency-inference.interface';
 import {
   inferHeuristicPhases as runHeuristics,
   filterInvalidAndSelfEdges,
   keepAcyclic,
-  normalizeDependencies,
 } from './utils/dependency-inference.utils';
 import {
   buildInferWithAiPrompt,
   buildRetryPrompt,
   buildInferInterLeafPrompt,
 } from '../../../ai/prompts/dependency.prompts';
+import {
+  InferWithAiDto,
+  InferInterLeafWithAiDto,
+  InferenceTaskDto,
+  InferenceLeafGatesDto,
+  InferredDependencyDto,
+} from '../../dto/analysis';
 
 // Re-export interfaces for backwards compatibility
 export {
@@ -30,126 +29,111 @@ export {
 export class DependencyInferenceService {
   private readonly logger = new Logger(DependencyInferenceService.name);
 
-  private readonly dependencyObjectSchema = z.object({
-    taskId: z.string().min(1),
-    dependsOnTaskId: z.string().min(1),
-    relationship: z.string().optional(),
-    reason: z.string().optional(),
-    confidence: z.number().min(0).max(1).optional(),
-  });
-
-  private readonly dependencyTupleSchema = z.tuple([
-    z.string().min(1),
-    z.string().min(1),
-    z.string().min(1).optional(),
-  ]);
-
-  private readonly schema = z
-    .object({
-      dependencies: z
-        .array(z.union([this.dependencyObjectSchema, this.dependencyTupleSchema]))
-        .default([]),
-    })
-    .passthrough();
-
   constructor(private readonly geminiService: GeminiService) { }
 
   // ===========================================================================
-  // 1. Heuristic & Local Inference
+  // 1. Public AI & Heuristic Methods
   // ===========================================================================
 
-  public inferHeuristicPhases(tasks: InferenceTask[]): InferredDependency[] {
+  public inferHeuristicPhases(tasks: InferenceTaskDto[]): InferredDependencyDto[] {
     return runHeuristics(tasks);
   }
 
-  // ===========================================================================
-  // 2. AI-based Inference
-  // ===========================================================================
-
-  public async inferWithAi(params: {
-    requestId?: string;
-    leafName?: string;
-    wbsPath?: string;
-    tasks: InferenceTask[];
-    maxEdges?: number;
-  }): Promise<InferredDependency[]> {
-    const requestId = String(params.requestId || '').trim();
-    const tasks = (params.tasks || []).filter((t) => t?.id && t?.name);
+  public async inferWithAi(params: InferWithAiDto): Promise<InferredDependencyDto[]> {
+    const { requestId, tasks, ...dtoRest } = this.sanitizeInput(params);
     if (tasks.length < 2) return [];
 
-    const maxEdges = Math.max(
-      0,
-      Math.min(this.getNumericEnv('CPM_DEP_INFER_MAX_EDGES', params.maxEdges ?? 60), 250),
-    );
-    const model = this.getModelOverride();
-    const hardMaxEdges = Math.min(maxEdges, Math.max(5, tasks.length * 2));
+    const config = this.getInferenceConfig(tasks.length, params.maxEdges);
+    const prompt = buildInferWithAiPrompt({ ...dtoRest, tasks, hardMaxEdges: config.edges });
 
-    const prompt = buildInferWithAiPrompt({
-      hardMaxEdges,
-      wbsPath: params.wbsPath,
-      leafName: params.leafName,
-      tasks,
-    });
-
-    const maxOutputTokens = this.getNumericEnv('CPM_DEP_INFER_MAX_TOKENS', 2400);
-
-    const executeAttempt = async (
-      p: string,
-      edges: number,
-      tokens: number,
-    ): Promise<InferredDependency[]> => {
-      const startedAt = Date.now();
-      const rawDeps = await this.getRawInferredDependencies({
-        prompt: p,
-        maxOutputTokens: tokens,
-        model,
-      });
-      const validIds = new Set(tasks.map((t) => t.id));
-      let deps = filterInvalidAndSelfEdges(rawDeps, validIds);
-
-      deps = deps.slice(0, edges);
-      const acyclic = keepAcyclic([...validIds], deps);
-
-      if (this.isVerbose()) {
-        this.logger.log(
-          `[dep-infer] done requestId=${requestId || '-'} raw=${rawDeps.length} ` +
-          `filtered=${deps.length} acyclic=${acyclic.length} durationMs=${Date.now() - startedAt}`,
-        );
-      }
-      return acyclic;
-    };
+    const attemptParams = { ...config, prompt, tasks, requestId };
 
     try {
-      return await executeAttempt(prompt, hardMaxEdges, maxOutputTokens);
-    } catch (err: any) {
-      const retryEdges = Math.max(5, Math.floor(hardMaxEdges / 2));
-      const retryPrompt = buildRetryPrompt(prompt, retryEdges);
-
-      return await executeAttempt(
-        retryPrompt,
-        retryEdges,
-        Math.max(800, Math.floor(maxOutputTokens * 0.8)),
-      );
+      return await this.executeInferenceAttempt(attemptParams);
+    } catch (err) {
+      this.logger.warn(`AI Inference failed for request ${requestId}. Retrying with fallback limits...`);
+      return await this.executeRetryAttempt(attemptParams);
     }
   }
 
-  public async inferInterLeafWithAi(params: {
-    requestId?: string;
-    projectId?: string;
-    leaves: InferenceLeafGates[];
-    maxEdges?: number;
-  }): Promise<InferredDependency[]> {
-    const requestId = String(params.requestId || '').trim();
-    const projectId = String(params.projectId || '').trim();
-    const leaves = (params.leaves || []).filter((l) => l?.leafId && l?.startGateId && l?.endGateId);
-    if (leaves.length < 2) return [];
+  public async inferInterLeafWithAi(params: InferInterLeafWithAiDto): Promise<InferredDependencyDto[]> {
+    const sanitized = this.sanitizeInterLeafInput(params);
+    if (sanitized.leaves.length < 2) return [];
+
+    const boundaries = this.calculateInterLeafBoundaries(sanitized.leaves, params.maxEdges);
+    if (boundaries.validIds.size < 2) return [];
 
     const model = this.getModelOverride();
+    const leafData = this.processLeavesData(sanitized.leaves);
+
+    const prompt = buildInferInterLeafPrompt({
+      projectId: sanitized.projectId,
+      leaves: sanitized.leaves,
+      hardMaxEdges: boundaries.hardMaxEdges,
+      leafTable: leafData.leafTable,
+    });
+
+    const attemptParams = {
+      ...boundaries,
+      ...leafData,
+      prompt,
+      model,
+      requestId: sanitized.requestId,
+      edges: boundaries.hardMaxEdges,
+    };
+
+    try {
+      return await this.executeInterLeafAttempt(attemptParams);
+    } catch (err) {
+      this.logger.warn(`Inter-leaf AI inference failed for request ${sanitized.requestId}. Retrying...`);
+      return await this.executeInterLeafRetry(attemptParams);
+    }
+  }
+
+  // ===========================================================================
+  // 2. Private Helpers & Utilities
+  // ===========================================================================
+
+  private async executeInferenceAttempt(params: {
+    prompt: string;
+    maxOutputTokens: number;
+    model?: string;
+    tasks: InferenceTaskDto[];
+    edges: number;
+    requestId: string;
+  }): Promise<InferredDependencyDto[]> {
+    const { prompt, maxOutputTokens, model, tasks, edges, requestId } = params;
+    const startedAt = Date.now();
+    const rawDeps = await this.getRawInferredDependencies({
+      prompt,
+      maxOutputTokens,
+      model,
+    });
+    const validIds = new Set(tasks.map((t) => t.id));
+    let deps = filterInvalidAndSelfEdges(rawDeps, validIds);
+
+    deps = deps.slice(0, edges);
+    const acyclic = keepAcyclic([...validIds], deps);
+
+    if (this.isVerbose()) {
+      this.logger.log(
+        `[dep-infer] done requestId=${requestId || '-'} raw=${rawDeps.length} ` +
+        `filtered=${deps.length} acyclic=${acyclic.length} durationMs=${Date.now() - startedAt}`,
+      );
+    }
+    return acyclic;
+  }
+
+  private calculateInterLeafBoundaries(leaves: InferenceLeafGatesDto[], maxEdgesParam?: number): {
+    hardMaxEdges: number;
+    maxOutputTokens: number;
+    validIds: Set<string>;
+  } {
     const fallbackMax = Math.max(4, Math.min(40, Math.floor(leaves.length * 1.5)));
     const maxEdges = Math.max(
       0,
       Math.min(
-        this.getNumericEnv('CPM_DEP_INFER_INTERLEAF_MAX_EDGES', params.maxEdges ?? fallbackMax),
+        this.getNumericEnv('CPM_DEP_INFER_INTERLEAF_MAX_EDGES', maxEdgesParam ?? fallbackMax),
         80,
       ),
     );
@@ -157,73 +141,51 @@ export class DependencyInferenceService {
     const startGateIds = new Set(leaves.map((l) => String(l.startGateId).trim()).filter(Boolean));
     const endGateIds = new Set(leaves.map((l) => String(l.endGateId).trim()).filter(Boolean));
     const validIds = new Set<string>([...startGateIds, ...endGateIds]);
-    if (validIds.size < 2) return [];
-
-    const { leafById, gateToLeafId, leafTable } = this.processLeavesData(leaves);
 
     const hardMaxEdges = Math.min(maxEdges, Math.max(1, leaves.length + 2));
     const maxOutputTokens = this.getNumericEnv('CPM_DEP_INFER_INTERLEAF_MAX_TOKENS', 1600);
 
-    const prompt = buildInferInterLeafPrompt({
-      hardMaxEdges,
-      projectId,
-      leaves,
-      leafTable,
+    return { hardMaxEdges, maxOutputTokens, validIds };
+  }
+
+  private async executeInterLeafAttempt(params: {
+    prompt: string;
+    maxOutputTokens: number;
+    model?: string;
+    validIds: Set<string>;
+    gateToLeafId: Map<string, string>;
+    leafById: Map<string, InferenceLeafGatesDto>;
+    edges: number;
+  }): Promise<InferredDependencyDto[]> {
+    const { prompt, maxOutputTokens, model, validIds, gateToLeafId, leafById, edges } = params;
+    const rawDeps = await this.getRawInferredDependencies({
+      prompt,
+      maxOutputTokens,
+      model,
+    });
+    const filtered = filterInvalidAndSelfEdges(rawDeps, validIds);
+
+    const crossLeafDeps = this.mapGatesToCrossLeafDependencies({
+      deps: filtered,
+      gateToLeafId,
+      leafById,
+      validIds,
     });
 
-    const executeAttempt = async (p: string, edges: number, tokens: number) => {
-      const rawDeps = await this.getRawInferredDependencies({
-        prompt: p,
-        maxOutputTokens: tokens,
-        model,
-      });
-      const filtered = filterInvalidAndSelfEdges(rawDeps, validIds);
-
-      const crossLeafDeps = this.mapGatesToCrossLeafDependencies({
-        deps: filtered,
-        gateToLeafId,
-        leafById,
-        validIds,
-      });
-
-      const sliced = crossLeafDeps.slice(0, edges);
-      return keepAcyclic([...validIds], sliced);
-    };
-
-    try {
-      return await executeAttempt(prompt, hardMaxEdges, maxOutputTokens);
-    } catch (err: any) {
-      const retryEdges = Math.max(2, Math.floor(hardMaxEdges / 2));
-      const retryPrompt = buildRetryPrompt(prompt, retryEdges);
-
-      return await executeAttempt(
-        retryPrompt,
-        retryEdges,
-        Math.max(800, Math.floor(maxOutputTokens * 0.85)),
-      );
-    }
+    const sliced = crossLeafDeps.slice(0, edges);
+    return keepAcyclic([...validIds], sliced);
   }
 
   private async getRawInferredDependencies(params: {
     prompt: string;
     maxOutputTokens: number;
     model?: string;
-  }): Promise<InferredDependency[]> {
-    const { prompt, maxOutputTokens, model } = params;
-    const response = await this.geminiService.generateContent(prompt, {
-      model,
-      responseMimeType: 'application/json',
-      maxOutputTokens,
-      temperature: 0.2,
-    });
-
-    const parsed = extractJsonObject<Record<string, unknown>>(response);
-    const validated = this.schema.parse(parsed);
-    return normalizeDependencies(validated.dependencies || []);
+  }): Promise<InferredDependencyDto[]> {
+    return this.geminiService.inferDependencies(params);
   }
 
-  private processLeavesData(leaves: InferenceLeafGates[]) {
-    const leafById = new Map<string, InferenceLeafGates>();
+  private processLeavesData(leaves: InferenceLeafGatesDto[]) {
+    const leafById = new Map<string, InferenceLeafGatesDto>();
     const gateToLeafId = new Map<string, string>();
 
     for (const l of leaves) {
@@ -247,13 +209,13 @@ export class DependencyInferenceService {
   }
 
   private mapGatesToCrossLeafDependencies(params: {
-    deps: InferredDependency[];
+    deps: InferredDependencyDto[];
     gateToLeafId: Map<string, string>;
-    leafById: Map<string, InferenceLeafGates>;
+    leafById: Map<string, InferenceLeafGatesDto>;
     validIds: Set<string>;
-  }): InferredDependency[] {
+  }): InferredDependencyDto[] {
     const { deps, gateToLeafId, leafById, validIds } = params;
-    const normalizedCrossLeaf: InferredDependency[] = [];
+    const normalizedCrossLeaf: InferredDependencyDto[] = [];
     const seen = new Set<string>();
 
     for (const d of deps) {
@@ -287,10 +249,6 @@ export class DependencyInferenceService {
     return normalizedCrossLeaf;
   }
 
-  // ===========================================================================
-  // 3. Private Helpers & Utilities
-  // ===========================================================================
-
   private safeEnv(name: string): string {
     return String(process.env[name] ?? '').trim();
   }
@@ -310,5 +268,60 @@ export class DependencyInferenceService {
 
   private getModelOverride(): string | undefined {
     return this.safeEnv('CPM_DEP_INFER_MODEL') || this.safeEnv('WBS_GEMINI_MODEL') || undefined;
+  }
+
+  private sanitizeInput(params: InferWithAiDto) {
+    return {
+      requestId: String(params.requestId || '').trim(),
+      tasks: (params.tasks || []).filter((t) => t?.id && t?.name),
+      wbsPath: params.wbsPath,
+      leafName: params.leafName,
+    };
+  }
+
+  private getInferenceConfig(taskCount: number, customMaxEdges?: number) {
+    const envMaxEdges = this.getNumericEnv('CPM_DEP_INFER_MAX_EDGES', customMaxEdges ?? 60);
+    const maxEdges = Math.max(0, Math.min(envMaxEdges, 250));
+    const hardMaxEdges = Math.min(maxEdges, Math.max(5, taskCount * 2));
+
+    return {
+      edges: hardMaxEdges,
+      maxOutputTokens: this.getNumericEnv('CPM_DEP_INFER_MAX_TOKENS', 2400),
+      model: this.getModelOverride(),
+    };
+  }
+
+  private async executeRetryAttempt(originalParams: any): Promise<InferredDependencyDto[]> {
+    const retryEdges = Math.max(5, Math.floor(originalParams.edges / 2));
+    const retryPrompt = buildRetryPrompt(originalParams.prompt, retryEdges);
+    const retryTokens = Math.max(800, Math.floor(originalParams.maxOutputTokens * 0.8));
+
+    return this.executeInferenceAttempt({
+      ...originalParams,
+      prompt: retryPrompt,
+      edges: retryEdges,
+      maxOutputTokens: retryTokens,
+    });
+  }
+
+  private sanitizeInterLeafInput(params: InferInterLeafWithAiDto) {
+    return {
+      requestId: String(params.requestId || '').trim(),
+      projectId: String(params.projectId || '').trim(),
+      leaves: (params.leaves || []).filter((l) => l?.leafId && l?.startGateId && l?.endGateId),
+    };
+  }
+
+  private async executeInterLeafRetry(originalParams: any): Promise<InferredDependencyDto[]> {
+    const retryEdges = Math.max(2, Math.floor(originalParams.edges / 2));
+    const retryPrompt = buildRetryPrompt(originalParams.prompt, retryEdges);
+    const retryTokens = Math.max(800, Math.floor(originalParams.maxOutputTokens * 0.85));
+
+    return this.executeInterLeafAttempt({
+      ...originalParams,
+      prompt: retryPrompt,
+      edges: retryEdges,
+      maxOutputTokens: retryTokens,
+    });
   }
 }

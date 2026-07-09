@@ -7,6 +7,7 @@ import {
   TaskLineageResult,
   TaskDescendantNode,
 } from '../../interfaces/hierarchy.interface';
+import { TaskLineageQueryDto, TaskDescendantQueryDto, ValueContributionResponseDto } from '../../dto';
 
 // Re-export interfaces for backwards compatibility
 export {
@@ -23,7 +24,8 @@ export class TasksHierarchyService {
   // 1. Lineage & Hierarchy Retrieval
   // ===========================================================================
 
-  async getTaskLineage(id: string, maxDepth: number = 50): Promise<TaskLineageResult> {
+  async getTaskLineage(id: string, query?: TaskLineageQueryDto): Promise<TaskLineageResult> {
+    const maxDepth = query?.maxDepth ?? 50;
     this.validateId(id);
     const task = await this.findTaskOrThrow(id);
 
@@ -54,7 +56,8 @@ export class TasksHierarchyService {
     };
   }
 
-  async getDescendants(id: string, maxDepth: number = 1000): Promise<TaskDescendantNode[]> {
+  async getDescendants(id: string, query?: TaskDescendantQueryDto): Promise<TaskDescendantNode[]> {
+    const maxDepth = query?.maxDepth ?? 1000;
     this.validateId(id);
     await this.findTaskOrThrow(id);
 
@@ -83,12 +86,7 @@ export class TasksHierarchyService {
   // 2. Value Contribution Calculations
   // ===========================================================================
 
-  async calculateValueContribution(id: string): Promise<{
-    contributionPercent: number;
-    subtreeCompletedXP: number;
-    totalCompletedXP: number;
-    breakdown: Array<{ _id: string | Types.ObjectId; experience: number; isConcluded: boolean }>;
-  }> {
+  async calculateValueContribution(id: string): Promise<ValueContributionResponseDto> {
     this.validateId(id);
     const task = await this.findTaskOrThrow(id);
 
@@ -159,7 +157,7 @@ export class TasksHierarchyService {
     nodes: Array<{ _id: string | Types.ObjectId; experience: number; isConcluded: boolean }>;
     completedXP: number;
   }> {
-    const descendants = await this.getDescendants(targetId, 5000);
+    const descendants = await this.getDescendants(targetId, { maxDepth: 5000 });
     const targetTask = await this.taskModel
       .findById(targetId)
       .select('_id experience isConcluded')

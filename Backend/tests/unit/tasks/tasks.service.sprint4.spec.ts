@@ -238,7 +238,7 @@ describe('TasksService - Sprint 4: Kanban + Rastreabilidade', () => {
         }),
       });
 
-      const lineage = await service.getTaskLineage(taskId, 1); // maxDepth=1
+      const lineage = await service.getTaskLineage(taskId, { maxDepth: 1 }); // maxDepth=1
 
       expect(lineage.warnings).toBeDefined();
       expect(Array.isArray(lineage.warnings)).toBe(true);

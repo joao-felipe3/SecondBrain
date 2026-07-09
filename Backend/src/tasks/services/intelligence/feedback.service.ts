@@ -88,14 +88,12 @@ export class FeedbackService {
     });
 
     try {
-      const raw = await this.geminiService.generateContent(prompt, {
-        responseMimeType: this.geminiService.supportsJsonMode() ? 'application/json' : undefined,
-        temperature: 0.3,
-        maxOutputTokens: 400,
-      });
+      const feedbackObj = await this.geminiService.generateCompletionFeedbackStructured(prompt);
 
-      const parsed = this.safeParseJson(raw) || {};
-      const feedbackObj = this.buildFeedbackObject({ parsed, taskName: task.name, percent });
+      if (!feedbackObj.celebration) feedbackObj.celebration = `Parabéns por concluir "${String(task.name || '')}".`;
+      if (!feedbackObj.validation) feedbackObj.validation = `Checklist: ${percent}% completo.`;
+      if (!feedbackObj.question) feedbackObj.question = 'Houve algum impedimento durante a execução? (resuma em 1 frase)';
+      if (!feedbackObj.suggestion) feedbackObj.suggestion = 'Sugestão: revisar os pontos não concluídos e planejar próximo passo (PDCA).';
 
       await this.saveSuccessFeedback({ task, checklistSummary, timeSpentMinutes, feedbackObj });
 
@@ -114,24 +112,7 @@ export class FeedbackService {
       throw new BadRequestException('Task inválida');
     }
 
-    const prompt = buildNextStepsPrompt({ taskName: String(task.name || ''), feedback });
-
-    try {
-      const raw = await this.geminiService.generateContent(prompt, {
-        responseMimeType: this.geminiService.supportsJsonMode() ? 'application/json' : undefined,
-        temperature: 0.4,
-        maxOutputTokens: 600,
-      });
-
-      const parsed = this.safeParseJson(raw);
-      if (Array.isArray(parsed) && parsed.length > 0) {
-        return this.parseNextSteps(parsed);
-      }
-
-      return this.getFallbackNextSteps();
-    } catch {
-      return this.getFallbackNextSteps();
-    }
+    return this.geminiService.generateNextSteps(task.name, feedback);
   }
 
   // ===========================================================================
@@ -293,83 +274,4 @@ export class FeedbackService {
     return Math.round((completedCount / checklistSummary.length) * 100);
   }
 
-  private buildFeedbackObject(params: {
-    parsed: Record<string, any>;
-    taskName: string;
-    percent: number;
-  }): { celebration: string; validation: string; question: string; suggestion: string } {
-    const { parsed, taskName, percent } = params;
-    const celebration = String(parsed.celebration ?? parsed.praise ?? parsed.recognition ?? '').trim();
-    const validation = String(parsed.validation ?? parsed.learning ?? '').trim();
-    const question = String(parsed.question ?? parsed.inquiry ?? parsed.nextStep ?? '').trim();
-    const suggestion = String(parsed.suggestion ?? parsed.suggest ?? parsed.nextStep ?? '').trim();
-
-    return {
-      celebration: celebration || `Parabéns por concluir "${String(taskName || '')}".`,
-      validation: validation || `Checklist: ${percent}% completo.`,
-      question: question || 'Houve algum impedimento durante a execução? (resuma em 1 frase)',
-      suggestion:
-        suggestion || 'Sugestão: revisar os pontos não concluídos e planejar próximo passo (PDCA).',
-    };
-  }
-
-  private buildNextStepsPrompt(task: TaskDocument, feedback: string | Record<string, unknown>): string {
-    return [
-      'Baseado no feedback abaixo, gere 3 próximos passos acionáveis e curtos (título + descrição).',
-      `Tarefa: ${String(task.name || '')}`,
-      feedback ? `Feedback: ${typeof feedback === 'string' ? feedback : JSON.stringify(feedback)}` : '',
-      '',
-      'Retorne APENAS um array JSON de objetos com chaves: title (string), description (string).',
-      'Exemplo: [{"title":"Revisar checklist","description":"Corrigir item X e atualizar definição de pronto"}]',
-    ]
-      .filter(Boolean)
-      .join('\n');
-  }
-
-  private parseNextSteps(parsed: Array<any>): Array<{ title: string; description: string }> {
-    return parsed.slice(0, 5).map((p) => {
-      const anyP = p as Record<string, unknown>;
-      return {
-        title: String(anyP.title || anyP.name || '').trim(),
-        description: String(anyP.description || anyP.desc || '').trim(),
-      };
-    });
-  }
-
-  private getFallbackNextSteps(): Array<{ title: string; description: string }> {
-    return [
-      {
-        title: 'Revisar checklist',
-        description: 'Verificar itens não concluídos e atualizar definição de pronto.',
-      },
-      {
-        title: 'Planejar próximo passo',
-        description: 'Criar uma micro-tarefa com o próximo passo sugerido.',
-      },
-    ];
-  }
-
-  // ===========================================================================
-  // 5. Private Parsing Utils
-  // ===========================================================================
-
-  private safeParseJson(raw: string): any | null {
-    if (!raw || typeof raw !== 'string') return null;
-    let cleaned = raw.trim();
-    if (cleaned.startsWith('```json')) cleaned = cleaned.slice(7);
-    if (cleaned.startsWith('```')) cleaned = cleaned.slice(3);
-    if (cleaned.endsWith('```')) cleaned = cleaned.slice(0, -3);
-    const arrMatch = cleaned.match(/\{[\s\S]*\}/) || cleaned.match(/\[[\s\S]*\]/);
-    if (arrMatch) cleaned = arrMatch[0];
-    try {
-      return JSON.parse(cleaned);
-    } catch {
-      try {
-        const safer = cleaned.replace(/,\s*([}\]])/g, '$1').replace(/[\x00-\x1F\x7F]/g, ' ');
-        return JSON.parse(safer);
-      } catch {
-        return null;
-      }
-    }
-  }
 }

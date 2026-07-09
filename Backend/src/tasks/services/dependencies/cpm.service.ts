@@ -12,7 +12,7 @@ import {
   getTaskMetrics as getTM,
   normalizeRelationship,
 } from './utils/cpm-analysis.utils';
-import { CreateDependencyDto } from '../../dto';
+import { CreateDependencyDto, UpsertDependencyDto } from '../../dto';
 
 // Re-export interfaces for backwards compatibility
 export {
@@ -23,17 +23,6 @@ export {
   TaskMetrics,
 } from '../../interfaces/cpm.interface';
 
-/**
- * Data Transfer Object for upserting a single dependency.
- */
-type UpsertDependencyDto = {
-  taskId: string;
-  dependsOnTaskId: string;
-  projectId: string;
-  relationship?: string;
-  reason?: string;
-  isAutoIdentified?: boolean;
-};
 
 @Injectable()
 export class CPMService {
@@ -42,31 +31,19 @@ export class CPMService {
   constructor(
     @InjectModel(TaskDependency.name)
     private readonly dependencyModel: Model<TaskDependencyDocument>,
-  ) {}
+  ) { }
 
   // #region Public Dependency Database CRUD Operations
 
   async addDependency(dto: CreateDependencyDto): Promise<TaskDependency> {
-    const {
-      taskId,
-      dependsOnTaskId,
-      projectId,
-      reason,
-      relationship = DependencyType.FINISH_TO_START,
-      isAutoIdentified = false,
-    } = dto;
+    const { taskId, dependsOnTaskId, projectId, relationship } = dto;
     try {
       const normalizedRelationship = this.normalizeRelationship(relationship);
-      const dependency = new this.dependencyModel({
-        taskId,
-        dependsOnTaskId,
-        projectId,
-        reason,
+      return await this.dependencyModel.create({
+        ...dto,
         relationship: normalizedRelationship,
-        isAutoIdentified,
       });
-      return await dependency.save();
-    } catch (error) {
+    } catch (error: any) {
       this.logger.error(
         `Failed to add dependency between task ${taskId} and ${dependsOnTaskId} for project ${projectId}.`,
         error.stack,
@@ -78,15 +55,10 @@ export class CPMService {
   }
 
   async upsertDependencies(deps: UpsertDependencyDto[]): Promise<number> {
-    if (!Array.isArray(deps) || deps.length === 0) {
-      return 0;
-    }
+    if (!Array.isArray(deps) || deps.length === 0) return 0;
 
     const bulkOps = this._createBulkWriteOperations(deps);
-
-    if (bulkOps.length === 0) {
-      return 0;
-    }
+    if (bulkOps.length === 0) return 0;
 
     try {
       const result: mongo.BulkWriteResult = await this.dependencyModel.bulkWrite(bulkOps, {
@@ -125,13 +97,10 @@ export class CPMService {
   }
 
   async removeDependenciesByIds(ids: string[]): Promise<number> {
-    if (!Array.isArray(ids) || ids.length === 0) {
-      return 0;
-    }
+    if (!Array.isArray(ids) || ids.length === 0) return 0;
+
     const validIds = ids.filter(Boolean).map(String);
-    if (validIds.length === 0) {
-      return 0;
-    }
+    if (validIds.length === 0) return 0;
 
     try {
       const result = await this.dependencyModel.deleteMany({ _id: { $in: validIds } }).exec();
@@ -141,10 +110,6 @@ export class CPMService {
       throw new InternalServerErrorException('Failed to remove dependencies by IDs.', { cause: error });
     }
   }
-
-  // #endregion
-
-  // #region Public CPM & Critical Path Calculations
 
   normalizeRelationship(input?: string): DependencyType {
     return normalizeRelationship(input);
@@ -158,15 +123,6 @@ export class CPMService {
     return getTM(task);
   }
 
-  // #endregion
-
-  // #region Private Helper Methods
-
-  /**
-   * Creates an array of MongoDB bulk write operations from a list of dependency DTOs.
-   * @param deps - An array of dependency data transfer objects.
-   * @returns An array of `updateOne` operations for `bulkWrite`.
-   */
   private _createBulkWriteOperations(deps: UpsertDependencyDto[]) {
     return deps
       .filter((d) => d?.taskId && d?.dependsOnTaskId && d?.projectId)
@@ -191,6 +147,4 @@ export class CPMService {
         };
       });
   }
-
-  // #endregion
 }

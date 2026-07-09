@@ -21,6 +21,9 @@ import {
   UpdateChecklistTaskItemDto,
   GenerateChecklistDto,
   GenerateChecklistWithHistoryDto,
+  TaskLineageQueryDto,
+  TaskDescendantQueryDto,
+  ValueContributionResponseDto,
 } from './dto';
 
 // Schema
@@ -319,20 +322,15 @@ export class TasksService {
   }
 
   // ------------------------------ Hierarchy / Value ------------------------------
-  public async getTaskLineage(id: string, maxDepth: number = 50): Promise<TaskLineageResult> {
-    return this.tasksHierarchyService.getTaskLineage(id, maxDepth);
+  public async getTaskLineage(id: string, query?: TaskLineageQueryDto): Promise<TaskLineageResult> {
+    return this.tasksHierarchyService.getTaskLineage(id, query);
   }
 
-  public async getDescendants(id: string, maxDepth: number = 1000): Promise<TaskDescendantNode[]> {
-    return this.tasksHierarchyService.getDescendants(id, maxDepth);
+  public async getDescendants(id: string, query?: TaskDescendantQueryDto): Promise<TaskDescendantNode[]> {
+    return this.tasksHierarchyService.getDescendants(id, query);
   }
 
-  public async calculateValueContribution(id: string): Promise<{
-    contributionPercent: number;
-    subtreeCompletedXP: number;
-    totalCompletedXP: number;
-    breakdown: Array<{ _id: Types.ObjectId | string; experience: number; isConcluded: boolean }>;
-  }> {
+  public async calculateValueContribution(id: string): Promise<ValueContributionResponseDto> {
     return this.tasksHierarchyService.calculateValueContribution(id);
   }
 }

@@ -2,7 +2,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { IsString, IsNotEmpty, IsOptional, IsBoolean } from 'class-validator';
 import { DependencyType } from '../../schemas/task-dependency.schema';
 
-export class CreateDependencyDto {
+export class UpsertDependencyDto {
   @ApiProperty({
     description: 'ID da tarefa dependente (sucessora)',
     example: 'task-123',

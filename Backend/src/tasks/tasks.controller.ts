@@ -32,6 +32,7 @@ import {
 import { MoveTaskStatusDto } from './dto/task/move-task-status.dto'; // Sprint 4
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { CPMService, DependencyInferenceService } from './services/dependencies';
+import { TaskLineageQueryDto } from './dto';
 
 @ApiTags('tasks')
 @Controller('tasks')
@@ -443,8 +444,11 @@ export class TasksController {
   })
   @ApiResponse({ status: 200, description: 'Lineage retornada com sucesso.' })
   @ApiResponse({ status: 404, description: 'Task não encontrada.' })
-  async getTaskLineage(@Param('id') id: string) {
-    return this.tasksService.getTaskLineage(id);
+  async getTaskLineage(
+    @Param('id') id: string,
+    @Query() query?: TaskLineageQueryDto,
+  ) {
+    return this.tasksService.getTaskLineage(id, query);
   }
 
   @Get(':id/value-contribution')

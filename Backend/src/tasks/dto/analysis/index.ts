@@ -4,5 +4,10 @@ export * from './cpm-diagnostics.dto';
 export * from './buffer.dto';
 export * from './metrics-calculation.dto';
 export * from './create-dependency.dto';
+export * from './upsert-dependency.dto';
+export * from './hierarchy.dto';
+export * from './inference.dto';
+
+
 
 

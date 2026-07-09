@@ -1,6 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { GoogleGenerativeAI, HarmBlockThreshold, HarmCategory } from '@google/generative-ai';
+import { z } from 'zod';
+import { extractJsonObject } from '../projects/services/wbs/utils/json-parser.util';
 
 @Injectable()
 export class GeminiService {
@@ -837,5 +839,187 @@ export class GeminiService {
     }
 
     throw new Error('Falha ao gerar conteúdo com a IA do Gemini');
+  }
+
+  // ===========================================================================
+  // Domain Specific Structured AI methods (Task suggestions, dependencies, etc.)
+  // ===========================================================================
+
+  async inferDependencies(params: {
+    prompt: string;
+    maxOutputTokens: number;
+    model?: string;
+  }): Promise<any[]> {
+    const { prompt, maxOutputTokens, model } = params;
+    const response = await this.generateContent(prompt, {
+      model,
+      responseMimeType: 'application/json',
+      maxOutputTokens,
+      temperature: 0.2,
+    });
+
+    const dependencyObjectSchema = z.object({
+      taskId: z.string().min(1),
+      dependsOnTaskId: z.string().min(1),
+      relationship: z.string().optional(),
+      reason: z.string().optional(),
+      confidence: z.number().min(0).max(1).optional(),
+    });
+
+    const dependencyTupleSchema = z.tuple([
+      z.string().min(1),
+      z.string().min(1),
+      z.string().min(1).optional(),
+    ]);
+
+    const schema = z
+      .object({
+        dependencies: z
+          .array(z.union([dependencyObjectSchema, dependencyTupleSchema]))
+          .default([]),
+      })
+      .passthrough();
+
+    const parsed = extractJsonObject<Record<string, unknown>>(response);
+    const validated = schema.parse(parsed);
+    
+    // Normalize logic
+    const rawDeps = validated.dependencies || [];
+    return rawDeps.map((dep) => {
+      if (Array.isArray(dep)) {
+        return {
+          taskId: String(dep[0] || '').trim(),
+          dependsOnTaskId: String(dep[1] || '').trim(),
+          relationship: String(dep[2] || 'FINISH_TO_START').trim(),
+        };
+      }
+      return {
+        taskId: String(dep.taskId || '').trim(),
+        dependsOnTaskId: String(dep.dependsOnTaskId || '').trim(),
+        relationship: String(dep.relationship || 'FINISH_TO_START').trim(),
+        reason: dep.reason ? String(dep.reason).trim() : undefined,
+        confidence: typeof dep.confidence === 'number' ? dep.confidence : undefined,
+      };
+    });
+  }
+
+  async getTaskSuggestions(params: {
+    projectName: string;
+    shortTermGoal?: string;
+    midTermGoal?: string;
+    longTermGoal?: string;
+    userPrompt?: string;
+    existingTaskNames?: string[];
+    chunkHours?: number;
+  }): Promise<any[]> {
+    const { projectName, shortTermGoal, midTermGoal, longTermGoal, userPrompt, existingTaskNames, chunkHours } = params;
+    const aiResponse = await this.generateTaskSuggestions(
+      projectName,
+      shortTermGoal,
+      midTermGoal,
+      longTermGoal,
+      userPrompt,
+      existingTaskNames,
+      chunkHours,
+    );
+
+    const parsed = this.safeParseJson(aiResponse);
+    if (!Array.isArray(parsed)) return [];
+
+    return parsed.map((item: any) => {
+      const anyItem = item as Record<string, unknown>;
+      return {
+        name: String(anyItem.name || ''),
+        deadline: anyItem.deadline ? String(anyItem.deadline) : undefined,
+        pomodoros: Number.isFinite(anyItem.pomodoros) ? Number(anyItem.pomodoros) : 0,
+        priority: Number.isFinite(anyItem.priority) ? Number(anyItem.priority) : 0,
+        difficulty: Number.isFinite(anyItem.difficulty) ? Number(anyItem.difficulty) : 0,
+        selected: Boolean(anyItem.selected),
+      };
+    });
+  }
+
+  async generateCompletionFeedbackStructured(prompt: string): Promise<{
+    celebration: string;
+    validation: string;
+    question: string;
+    suggestion: string;
+  }> {
+    const raw = await this.generateContent(prompt, {
+      responseMimeType: this.supportsJsonMode() ? 'application/json' : undefined,
+      temperature: 0.3,
+      maxOutputTokens: 400,
+    });
+
+    const parsed = this.safeParseJson(raw) || {};
+    return {
+      celebration: String(parsed.celebration || parsed.praise || '').trim(),
+      validation: String(parsed.validation || parsed.learning || '').trim(),
+      question: String(parsed.question || parsed.nextStep || '').trim(),
+      suggestion: String(parsed.suggestion || parsed.finalText || '').trim(),
+    };
+  }
+
+  async generateNextSteps(taskName: string, feedback: any): Promise<Array<{ title: string; description: string }>> {
+    // Next steps prompt builder:
+    const prompt = [
+      'Você é um assistente de produtividade e mentor de execução.',
+      'Com base na tarefa recém-concluída e no feedback do usuário, sugira de 2 a 3 ações futuras ou próximas tarefas lógicas.',
+      '',
+      `Tarefa Concluída: "${taskName}"`,
+      `Feedback/Reflexão: "${typeof feedback === 'string' ? feedback : JSON.stringify(feedback)}"`,
+      '',
+      'FORMATO DE RETORNO:',
+      'Responda APENAS com um array JSON válido de objetos.',
+      'Sem markdown, sem explicações.',
+      '',
+      'Estrutura do JSON:',
+      '[',
+      '  { "title": "Nome da ação sugerida", "description": "Explicação breve de por que fazer isso e como começar" }',
+      ']',
+    ].join('\n');
+
+    try {
+      const raw = await this.generateContent(prompt, {
+        responseMimeType: this.supportsJsonMode() ? 'application/json' : undefined,
+        temperature: 0.4,
+        maxOutputTokens: 600,
+      });
+
+      const parsed = this.safeParseJson(raw);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        return parsed.map((item: any) => ({
+          title: String(item.title || '').trim(),
+          description: String(item.description || '').trim(),
+        })).filter(it => it.title);
+      }
+    } catch {
+      // Ignored: fallback handled below
+    }
+
+    return [
+      {
+        title: `Próximo passo para: ${taskName}`,
+        description: 'Dar continuidade ao trabalho avaliando os resultados obtidos.',
+      },
+    ];
+  }
+
+  private safeParseJson(str: string): any {
+    if (!str) return null;
+    try {
+      return JSON.parse(str);
+    } catch {
+      const extracted = extractJsonObject<any>(str);
+      if (extracted) return extracted;
+      // Last resort: regex match for array/object
+      try {
+        const match = str.match(/\[[\s\S]*\]|\{[\s\S]*\}/);
+        if (match) return JSON.parse(match[0]);
+      } catch {
+        // Fallback
+      }
+      return null;
+    }
   }
 }

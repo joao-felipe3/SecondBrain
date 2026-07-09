@@ -94,13 +94,10 @@ export class TasksPertService {
   // ===========================================================================
 
   async updatePert(taskId: string, updatePertDto: UpdatePertDto): Promise<TaskDocument> {
-    const { optimistic, mostLikely, pessimistic } = this.validateInputs(taskId, updatePertDto);
+    const pertEstimate = this.validateInputs(taskId, updatePertDto);
+    const { optimistic, mostLikely, pessimistic } = pertEstimate;
 
-    const pertMetrics = this.pertService.calculatePertMetrics({
-      optimistic,
-      mostLikely,
-      pessimistic,
-    });
+    const pertMetrics = this.pertService.calculatePertMetrics(pertEstimate);
 
     const task = await this.taskModel.findById(taskId).exec();
     if (!task) {
@@ -135,7 +132,7 @@ export class TasksPertService {
   private validateInputs(
     taskId: string,
     updatePertDto: UpdatePertDto,
-  ): { optimistic: number; mostLikely: number; pessimistic: number } {
+  ): PertEstimateDto {
     if (!taskId || !Types.ObjectId.isValid(taskId)) {
       throw new BadRequestException(`ID inválido: ${taskId}`);
     }
