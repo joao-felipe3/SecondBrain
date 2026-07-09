@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { CreateTaskDto } from '../../dto/task/create-task.dto';
 import { TaskDocument } from '../../schemas/task.schema';
+import { PertEstimateDto, CalculateProgressDto } from '../../dto';
 
 @Injectable()
 export class TasksMetricsService {
@@ -14,16 +15,12 @@ export class TasksMetricsService {
     }
 
     const baseMinutes = this.resolveBaseMinutes(dto, fallbackTask) ?? 0;
-    const { optimistic, mostLikely, pessimistic } = this.calculatePertBounds(dto, baseMinutes);
-    const { expected, variance } = this.calculateExpectedAndVariance(
-      optimistic,
-      mostLikely,
-      pessimistic,
-    );
+    const bounds = this.calculatePertBounds(dto, baseMinutes);
+    const { expected, variance } = this.calculateExpectedAndVariance(bounds);
 
-    dto.pertOptimisticMinutes = optimistic;
-    dto.pertMostLikelyMinutes = mostLikely;
-    dto.pertPessimisticMinutes = pessimistic;
+    dto.pertOptimisticMinutes = bounds.optimistic;
+    dto.pertMostLikelyMinutes = bounds.mostLikely;
+    dto.pertPessimisticMinutes = bounds.pessimistic;
     dto.pertExpectedMinutes = Math.round(expected);
     dto.pertVariance = Number(variance.toFixed(2));
   }
@@ -51,7 +48,7 @@ export class TasksMetricsService {
   private calculatePertBounds(
     dto: Partial<CreateTaskDto>,
     baseMinutes: number,
-  ): { optimistic: number; mostLikely: number; pessimistic: number } {
+  ): PertEstimateDto {
     const optimistic = Math.max(5, Math.round(dto.pertOptimisticMinutes ?? baseMinutes * 0.75));
     const mostLikely = Math.max(
       optimistic,
@@ -66,10 +63,9 @@ export class TasksMetricsService {
   }
 
   private calculateExpectedAndVariance(
-    optimistic: number,
-    mostLikely: number,
-    pessimistic: number,
+    estimate: PertEstimateDto,
   ): { expected: number; variance: number } {
+    const { optimistic, mostLikely, pessimistic } = estimate;
     const expected = (optimistic + 4 * mostLikely + pessimistic) / 6;
     const variance = Math.pow((pessimistic - optimistic) / 6, 2);
     return { expected, variance };
@@ -112,7 +108,11 @@ export class TasksMetricsService {
     const expectedMinutes = this.resolveExpectedMinutes(dto, fallbackTask);
     if (!expectedMinutes) return;
 
-    const progress = this.calculateProgress(dto, fallbackTask, expectedMinutes);
+    const progress = this.calculateProgress({
+      dto,
+      fallbackTask,
+      expectedMinutes,
+    });
     const elapsedRatio = this.calculateElapsedRatio(dto, fallbackTask);
 
     const plannedValue = expectedMinutes * elapsedRatio;
@@ -139,10 +139,9 @@ export class TasksMetricsService {
   }
 
   private calculateProgress(
-    dto: Partial<CreateTaskDto>,
-    fallbackTask: TaskDocument | null | undefined,
-    expectedMinutes: number,
+    params: CalculateProgressDto,
   ): number {
+    const { dto, fallbackTask, expectedMinutes } = params;
     const pomodorosPlanned =
       dto.pomodorosPlanned ??
       fallbackTask?.pomodorosPlanned ??

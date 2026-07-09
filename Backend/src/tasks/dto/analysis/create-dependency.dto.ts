@@ -1,0 +1,55 @@
+import { ApiProperty } from '@nestjs/swagger';
+import { IsString, IsNotEmpty, IsOptional, IsBoolean } from 'class-validator';
+
+export class CreateDependencyDto {
+  @ApiProperty({
+    description: 'ID da tarefa dependente (sucessora)',
+    example: 'task-123',
+  })
+  @IsString()
+  @IsNotEmpty()
+  taskId: string;
+
+  @ApiProperty({
+    description: 'ID da tarefa predecessora',
+    example: 'task-456',
+  })
+  @IsString()
+  @IsNotEmpty()
+  dependsOnTaskId: string;
+
+  @ApiProperty({
+    description: 'ID do projeto associado',
+    example: 'project-123',
+  })
+  @IsString()
+  @IsNotEmpty()
+  projectId: string;
+
+  @ApiProperty({
+    description: 'Motivo / explicação da dependência',
+    example: 'Dependência técnica devido ao fluxo de dados',
+    required: false,
+  })
+  @IsString()
+  @IsOptional()
+  reason?: string;
+
+  @ApiProperty({
+    description: 'Tipo de relacionamento da dependência',
+    example: 'finish_to_start',
+    required: false,
+  })
+  @IsString()
+  @IsOptional()
+  relationship?: string;
+
+  @ApiProperty({
+    description: 'Indica se a dependência foi identificada de forma automática',
+    example: false,
+    required: false,
+  })
+  @IsBoolean()
+  @IsOptional()
+  isAutoIdentified?: boolean;
+}

@@ -295,7 +295,11 @@ describe('TasksService', () => {
 
     it('deve rejeitar item index inválido', async () => {
       await expect(
-        service.updateChecklistItem(new Types.ObjectId().toString(), 'invalid', true),
+        service.updateChecklistItem({
+          taskId: new Types.ObjectId().toString(),
+          itemIndex: 'invalid',
+          completed: true,
+        }),
       ).rejects.toThrow(BadRequestException);
     });
 

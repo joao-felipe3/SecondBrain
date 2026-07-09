@@ -12,6 +12,7 @@ import {
   getTaskMetrics as getTM,
   normalizeRelationship,
 } from './utils/cpm-analysis.utils';
+import { CreateDependencyDto } from '../../dto';
 
 // Re-export interfaces for backwards compatibility
 export {
@@ -45,14 +46,15 @@ export class CPMService {
 
   // #region Public Dependency Database CRUD Operations
 
-  async addDependency(
-    taskId: string,
-    dependsOnTaskId: string,
-    projectId: string,
-    reason?: string,
-    relationship: string = DependencyType.FINISH_TO_START,
-    isAutoIdentified = false,
-  ): Promise<TaskDependency> {
+  async addDependency(dto: CreateDependencyDto): Promise<TaskDependency> {
+    const {
+      taskId,
+      dependsOnTaskId,
+      projectId,
+      reason,
+      relationship = DependencyType.FINISH_TO_START,
+      isAutoIdentified = false,
+    } = dto;
     try {
       const normalizedRelationship = this.normalizeRelationship(relationship);
       const dependency = new this.dependencyModel({

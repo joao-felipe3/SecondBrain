@@ -216,13 +216,13 @@ describe('ChecklistService', () => {
 
   describe('findSimilarTasksInProject', () => {
     it('should return empty array for invalid projectId', async () => {
-      const result = await service.findSimilarTasksInProject('invalid-id', 'habit');
+      const result = await service.findSimilarTasksInProject({ projectId: 'invalid-id', microTaskType: 'habit' });
       expect(result).toEqual([]);
     });
 
     it('should return empty array for invalid microTaskType', async () => {
       const projectId = new Types.ObjectId().toString();
-      const result = await service.findSimilarTasksInProject(projectId, 'invalid-type');
+      const result = await service.findSimilarTasksInProject({ projectId, microTaskType: 'invalid-type' });
       expect(result).toEqual([]);
     });
 
@@ -239,7 +239,7 @@ describe('ChecklistService', () => {
       const mockSelect = jest.fn().mockReturnValue({ limit: mockLimit });
       mockTaskModel.find.mockReturnValue({ select: mockSelect });
 
-      const result = await service.findSimilarTasksInProject(projectId.toString(), 'habit', 1);
+      const result = await service.findSimilarTasksInProject({ projectId: projectId.toString(), microTaskType: 'habit', limit: 1 });
 
       expect(mockTaskModel.find).toHaveBeenCalled();
       expect(mockSelect).toHaveBeenCalledWith('name description checklist');
@@ -256,7 +256,7 @@ describe('ChecklistService', () => {
         select: jest.fn().mockReturnValue({ limit: mockLimit }),
       });
 
-      await service.findSimilarTasksInProject(projectId.toString(), 'habit', 5);
+      await service.findSimilarTasksInProject({ projectId: projectId.toString(), microTaskType: 'habit', limit: 5 });
 
       expect(mockLimit).toHaveBeenCalledWith(5);
     });
@@ -267,7 +267,7 @@ describe('ChecklistService', () => {
         throw new Error('DB error');
       });
 
-      const result = await service.findSimilarTasksInProject(projectId.toString(), 'habit');
+      const result = await service.findSimilarTasksInProject({ projectId: projectId.toString(), microTaskType: 'habit' });
 
       expect(result).toEqual([]);
     });

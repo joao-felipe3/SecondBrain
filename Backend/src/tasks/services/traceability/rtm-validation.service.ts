@@ -71,7 +71,7 @@ export class RTMValidationService {
       const maps = this.buildRequirementMaps(requirements);
       const { unmappedRequirements, risks } = this.findValidationIssues(requirements, maps);
 
-      return this.calculateValidationResult(total, unmappedRequirements, risks);
+      return this.calculateValidationResult({ total, unmappedRequirements, risks });
     } catch (error: unknown) {
       const err = error as Error;
       this.logger.error(`Error validating journey: ${err.message}`);
@@ -221,11 +221,12 @@ export class RTMValidationService {
     return { risk: null, isUnmapped: false };
   }
 
-  private calculateValidationResult(
-    total: number,
-    unmappedRequirements: string[],
-    risks: string[],
-  ): RTMValidation {
+  private calculateValidationResult(params: {
+    total: number;
+    unmappedRequirements: string[];
+    risks: string[];
+  }): RTMValidation {
+    const { total, unmappedRequirements, risks } = params;
     const mapped = total - unmappedRequirements.length;
     const coverage = total > 0 ? (mapped / total) * 100 : 0;
     const isValid = unmappedRequirements.length === 0;

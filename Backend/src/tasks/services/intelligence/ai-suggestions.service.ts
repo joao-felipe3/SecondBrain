@@ -22,12 +22,13 @@ export class TasksAiSuggestionsService {
   // 1. AI Task Generation & Progress Streaming
   // ===========================================================================
 
-  async generateAiSuggestionsWithProgress(
-    dto: GenerateAiSuggestionsDto,
-    onProgress: (progress: AiSuggestionsProgressDto) => void,
-    onComplete: (result: AiSuggestionsResponseDto) => void,
-    onError: (error: Error) => void,
-  ): Promise<void> {
+  async generateAiSuggestionsWithProgress(params: {
+    dto: GenerateAiSuggestionsDto;
+    onProgress: (progress: AiSuggestionsProgressDto) => void;
+    onComplete: (result: AiSuggestionsResponseDto) => void;
+    onError: (error: Error) => void;
+  }): Promise<void> {
+    const { dto, onProgress, onComplete, onError } = params;
     try {
       const result = await this.generateAiSuggestionsInternal(dto, onProgress);
       onComplete(result);
@@ -51,15 +52,15 @@ export class TasksAiSuggestionsService {
     const state = await this.initializeState(dto);
 
     try {
-      this.emitProgress(state, 'loading', 'Iniciando analise do projeto...', onProgress);
+      this.emitProgress({ state, status: 'loading', message: 'Iniciando analise do projeto...', onProgress });
 
       if (state.targetHours <= 0) {
-        return await this.generateZeroHoursSuggestions(dto, state, onProgress);
+        return await this.generateZeroHoursSuggestions({ dto, state, onProgress });
       }
 
-      return await this.generateTargetHoursSuggestions(dto, state, onProgress);
+      return await this.generateTargetHoursSuggestions({ dto, state, onProgress });
     } catch (error: unknown) {
-      return this.handleSuggestionsError(error, dto, state);
+      return this.handleSuggestionsError({ error, dto, state });
     }
   }
 
@@ -117,12 +118,13 @@ export class TasksAiSuggestionsService {
     return state;
   }
 
-  private emitProgress(
-    state: SuggestionState,
-    status: 'loading' | 'success' | 'error' | 'partial',
-    message: string,
-    onProgress?: ((progress: AiSuggestionsProgressDto) => void) | null,
-  ): void {
+  private emitProgress(params: {
+    state: SuggestionState;
+    status: 'loading' | 'success' | 'error' | 'partial';
+    message: string;
+    onProgress?: ((progress: AiSuggestionsProgressDto) => void) | null;
+  }): void {
+    const { state, status, message, onProgress } = params;
     if (onProgress) {
       onProgress({
         currentIteration: state.currentIteration,
@@ -136,11 +138,12 @@ export class TasksAiSuggestionsService {
     }
   }
 
-  private buildResponse(
-    state: SuggestionState,
-    status: 'loading' | 'success' | 'error' | 'partial',
-    message: string,
-  ): AiSuggestionsResponseDto {
+  private buildResponse(params: {
+    state: SuggestionState;
+    status: 'loading' | 'success' | 'error' | 'partial';
+    message: string;
+  }): AiSuggestionsResponseDto {
+    const { state, status, message } = params;
     return {
       suggestions: state.allSuggestions,
       progress: {
@@ -155,81 +158,84 @@ export class TasksAiSuggestionsService {
     };
   }
 
-  private async generateZeroHoursSuggestions(
-    dto: GenerateAiSuggestionsDto,
-    state: SuggestionState,
-    onProgress?: ((progress: AiSuggestionsProgressDto) => void) | null,
-  ): Promise<AiSuggestionsResponseDto> {
-    this.emitProgress(state, 'loading', 'Gerando sugestoes...', onProgress);
+  private async generateZeroHoursSuggestions(params: {
+    dto: GenerateAiSuggestionsDto;
+    state: SuggestionState;
+    onProgress?: ((progress: AiSuggestionsProgressDto) => void) | null;
+  }): Promise<AiSuggestionsResponseDto> {
+    const { dto, state, onProgress } = params;
+    this.emitProgress({ state, status: 'loading', message: 'Gerando sugestoes...', onProgress });
     const { suggestions, isFallback } = await this.generateSingleBatch(dto, state.existingTaskNames);
     state.allSuggestions.push(...suggestions);
     state.currentHours = state.allSuggestions.reduce((sum, t) => sum + (t.pomodoros || 0) * 0.5, 0);
 
-    return this.buildResponse(
+    return this.buildResponse({
       state,
-      isFallback ? 'partial' : 'success',
-      isFallback
+      status: isFallback ? 'partial' : 'success',
+      message: isFallback
         ? 'Usando sugestoes de fallback devido a resposta invalida da IA'
         : 'Sugestoes geradas com sucesso',
-    );
+    });
   }
 
-  private async generateTargetHoursSuggestions(
-    dto: GenerateAiSuggestionsDto,
-    state: SuggestionState,
-    onProgress?: ((progress: AiSuggestionsProgressDto) => void) | null,
-  ): Promise<AiSuggestionsResponseDto> {
+  private async generateTargetHoursSuggestions(params: {
+    dto: GenerateAiSuggestionsDto;
+    state: SuggestionState;
+    onProgress?: ((progress: AiSuggestionsProgressDto) => void) | null;
+  }): Promise<AiSuggestionsResponseDto> {
+    const { dto, state, onProgress } = params;
     const remainingHours = Math.max(0, state.targetHours - state.alreadyPlannedHours);
     if (remainingHours <= 0) {
       console.log(
         `Projeto ja atingiu o target (${state.alreadyPlannedHours.toFixed(1)}h >= ${state.targetHours}h). Nao gerando novas tarefas.`,
       );
-      return this.buildResponse(state, 'success', 'Projeto ja atingiu o total de horas planejadas');
+      return this.buildResponse({ state, status: 'success', message: 'Projeto ja atingiu o total de horas planejadas' });
     }
 
     console.log(
       `Gerando tarefas para completar ${remainingHours.toFixed(1)}h (de ${state.targetHours}h total)`,
     );
-    await this.runMultiBatchGenerationLoop(dto, state, remainingHours, onProgress);
+    await this.runMultiBatchGenerationLoop({ dto, state, remainingHours, onProgress });
 
     if (state.currentIteration >= state.maxIterations) {
       console.warn(
         `Limite de ${state.maxIterations} iteracoes atingido. Retornando ${state.allSuggestions.length} tarefas.`,
       );
-      return this.buildResponse(
+      return this.buildResponse({
         state,
-        'partial',
-        `Limite de iteracoes atingido. ${state.allSuggestions.length} tarefas geradas.`,
-      );
+        status: 'partial',
+        message: `Limite de iteracoes atingido. ${state.allSuggestions.length} tarefas geradas.`,
+      });
     }
 
     console.log(
       `Geradas ${state.allSuggestions.length} novas tarefas totalizando ${state.currentHours.toFixed(1)}h (total do projeto: ${(state.alreadyPlannedHours + state.currentHours).toFixed(1)}h)`,
     );
-    return this.buildResponse(
+    return this.buildResponse({
       state,
-      'success',
-      `${state.allSuggestions.length} tarefas geradas com sucesso (${state.currentHours.toFixed(1)}h)`,
-    );
+      status: 'success',
+      message: `${state.allSuggestions.length} tarefas geradas com sucesso (${state.currentHours.toFixed(1)}h)`,
+    });
   }
 
-  private async runMultiBatchGenerationLoop(
-    dto: GenerateAiSuggestionsDto,
-    state: SuggestionState,
-    remainingHours: number,
-    onProgress?: ((progress: AiSuggestionsProgressDto) => void) | null,
-  ): Promise<void> {
+  private async runMultiBatchGenerationLoop(params: {
+    dto: GenerateAiSuggestionsDto;
+    state: SuggestionState;
+    remainingHours: number;
+    onProgress?: ((progress: AiSuggestionsProgressDto) => void) | null;
+  }): Promise<void> {
+    const { dto, state, remainingHours, onProgress } = params;
     let consecutiveRateLimits = 0;
     const interIterationDelayMs = 3000;
 
     while (state.currentHours < remainingHours && state.currentIteration < state.maxIterations) {
       state.currentIteration++;
-      this.emitProgress(
+      this.emitProgress({
         state,
-        'loading',
-        `Gerando lote ${state.currentIteration}/${state.maxIterations}...`,
+        status: 'loading',
+        message: `Gerando lote ${state.currentIteration}/${state.maxIterations}...`,
         onProgress,
-      );
+      });
 
       console.log(
         `Iteracao ${state.currentIteration}: ${state.currentHours.toFixed(1)}h de ${remainingHours.toFixed(1)}h geradas`,
@@ -243,7 +249,7 @@ export class TasksAiSuggestionsService {
       const chunkHours = Math.min(remainingHours - state.currentHours, 8);
       let taskSuggestions: AiTaskSuggestionDto[];
       try {
-        taskSuggestions = await this.fetchSuggestionsFromAi(dto, state.existingTaskNames, chunkHours);
+        taskSuggestions = await this.fetchSuggestionsFromAi({ dto, existingTaskNames: state.existingTaskNames, chunkHours });
         consecutiveRateLimits = 0;
       } catch (err: unknown) {
         consecutiveRateLimits = await this.handleRateLimitRetry(err, consecutiveRateLimits);
@@ -273,37 +279,38 @@ export class TasksAiSuggestionsService {
         state.currentHours += (task.pomodoros || 0) * 0.5;
       }
 
-      this.emitProgress(
+      this.emitProgress({
         state,
-        'loading',
-        `${state.allSuggestions.length} tarefas geradas (${state.currentHours.toFixed(1)}h/${remainingHours.toFixed(1)}h)...`,
+        status: 'loading',
+        message: `${state.allSuggestions.length} tarefas geradas (${state.currentHours.toFixed(1)}h/${remainingHours.toFixed(1)}h)...`,
         onProgress,
-      );
+      });
     }
   }
 
-  private handleSuggestionsError(
-    error: unknown,
-    dto: GenerateAiSuggestionsDto,
-    state: SuggestionState,
-  ): AiSuggestionsResponseDto {
+  private handleSuggestionsError(params: {
+    error: unknown;
+    dto: GenerateAiSuggestionsDto;
+    state: SuggestionState;
+  }): AiSuggestionsResponseDto {
+    const { error, dto, state } = params;
     const err = error as Error;
     console.error('Erro ao usar a API do Gemini:', err.message ?? err);
 
     if (state.allSuggestions.length > 0) {
       console.warn('Retornando sugestoes parciais acumuladas devido a erro.');
-      return this.buildResponse(
+      return this.buildResponse({
         state,
-        'partial',
-        `Erro parcial: ${state.allSuggestions.length} tarefas geradas antes do erro`,
-      );
+        status: 'partial',
+        message: `Erro parcial: ${state.allSuggestions.length} tarefas geradas antes do erro`,
+      });
     }
 
     console.warn('Usando fallback de mock por ausencia de sugestoes acumuladas.');
     const mockSuggestions = this.generateMockSuggestions(dto);
     state.allSuggestions.push(...mockSuggestions);
     state.currentHours = state.allSuggestions.reduce((sum, t) => sum + (t.pomodoros || 0) * 0.5, 0);
-    return this.buildResponse(state, 'error', 'Falha na IA. Usando sugestoes de fallback.');
+    return this.buildResponse({ state, status: 'error', message: 'Falha na IA. Usando sugestoes de fallback.' });
   }
 
   private async getExistingTasksHoursAndNames(
@@ -320,11 +327,12 @@ export class TasksAiSuggestionsService {
     return { hours, names };
   }
 
-  private async fetchSuggestionsFromAi(
-    dto: GenerateAiSuggestionsDto,
-    existingTaskNames: string[],
-    chunkHours?: number,
-  ): Promise<AiTaskSuggestionDto[]> {
+  private async fetchSuggestionsFromAi(params: {
+    dto: GenerateAiSuggestionsDto;
+    existingTaskNames: string[];
+    chunkHours?: number;
+  }): Promise<AiTaskSuggestionDto[]> {
+    const { dto, existingTaskNames, chunkHours } = params;
     const aiResponse = await this.geminiService.generateTaskSuggestions(
       dto.projectName,
       dto.shortTermGoal,
@@ -343,7 +351,7 @@ export class TasksAiSuggestionsService {
     dto: GenerateAiSuggestionsDto,
     existingTaskNames: string[],
   ): Promise<{ suggestions: AiTaskSuggestionDto[]; isFallback: boolean }> {
-    const taskSuggestions = await this.fetchSuggestionsFromAi(dto, existingTaskNames);
+    const taskSuggestions = await this.fetchSuggestionsFromAi({ dto, existingTaskNames });
     if (taskSuggestions.length === 0) {
       console.warn('A resposta da IA esta vazia ou malformada, retornando fallback.');
       return { suggestions: this.generateMockSuggestions(dto), isFallback: true };

@@ -95,7 +95,15 @@ export function filterInvalidAndSelfEdges(
   return out;
 }
 
-function wouldCreateCycle(from: string, to: string, adj: Map<string, Set<string>>): boolean {
+function wouldCreateCycle({
+  from,
+  to,
+  adj,
+}: {
+  from: string;
+  to: string;
+  adj: Map<string, Set<string>>;
+}): boolean {
   const stack = [from];
   const visited = new Set<string>();
 
@@ -123,7 +131,7 @@ export function keepAcyclic(taskIds: string[], deps: InferredDependency[]): Infe
     const { taskId, dependsOnTaskId: depId } = d;
     if (!nodes.has(taskId) || !nodes.has(depId)) continue;
 
-    if (wouldCreateCycle(taskId, depId, adj)) continue;
+    if (wouldCreateCycle({ from: taskId, to: depId, adj })) continue;
 
     adj.get(depId)!.add(taskId);
     accepted.push(d);

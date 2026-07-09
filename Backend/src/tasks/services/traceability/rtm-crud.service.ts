@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { Requirement, RequirementDocument, JourneyKind } from '../../schemas/requirement.schema';
+import { MapRequirementToTaskDto } from '../../dto';
 import { normalizeKind, normalizeType, levelForKind, getLinkedActions } from './utils/rtm.utils';
 
 interface SaveRequirementInput {
@@ -70,12 +71,12 @@ export class RTMCrudService {
       const insertedRequirements: RequirementDocument[] = [];
 
       for (const item of orderedItems) {
-        const createdRequirement = await this._processAndCreateSingleRequirement(
+        const createdRequirement = await this._processAndCreateSingleRequirement({
           projectId,
           item,
           refToId,
           insertedDedupKeys,
-        );
+        });
         if (createdRequirement) {
           insertedRequirements.push(createdRequirement);
         }
@@ -124,12 +125,13 @@ export class RTMCrudService {
     return preparedItems.sort((a, b) => a.hierarchyLevel - b.hierarchyLevel);
   }
 
-  private async _processAndCreateSingleRequirement(
-    projectId: string,
-    item: PreparedRequirementData,
-    refToId: Map<string, string>,
-    insertedDedupKeys: Set<string>,
-  ): Promise<RequirementDocument | null> {
+  private async _processAndCreateSingleRequirement(params: {
+    projectId: string;
+    item: PreparedRequirementData;
+    refToId: Map<string, string>;
+    insertedDedupKeys: Set<string>;
+  }): Promise<RequirementDocument | null> {
+    const { projectId, item, refToId, insertedDedupKeys } = params;
     const dedupKey = `${item.kind}::${item.description.toLowerCase()}`;
     if (insertedDedupKeys.has(dedupKey)) {
       this.logger.warn(`Item duplicado detectado e ignorado: ${item.description}`);
@@ -209,10 +211,9 @@ export class RTMCrudService {
   // ===========================================================================
 
   async mapRequirementToTask(
-    projectId: string,
-    requirementId: string,
-    taskId: string,
+    dto: MapRequirementToTaskDto,
   ): Promise<Requirement | null> {
+    const { projectId, requirementId, taskId } = dto;
     this.logger.log(`Iniciando mapeamento: item ${requirementId} -> tarefa ${taskId}`);
     try {
       const requirement = await this.requirementModel.findOneAndUpdate(

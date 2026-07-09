@@ -179,13 +179,13 @@ export class TasksRecurringService {
     const normalizedChecklist = normalizeChecklistFromTask(task);
     const parentRecurringId = computeParentRecurringId(task);
 
-    return assembleOccurrencePayload(
+    return assembleOccurrencePayload({
       task,
       nextDeadline,
       recurringRule,
       normalizedChecklist,
       parentRecurringId,
-    );
+    });
   }
 
   public async updateRecurringRule(id: string, recurringRule: RecurringRuleDto): Promise<TaskDocument> {

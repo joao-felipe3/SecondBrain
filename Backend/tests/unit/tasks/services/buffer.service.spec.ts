@@ -64,7 +64,11 @@ describe('BufferService', () => {
       mockModel.findOneAndUpdate.mockResolvedValue(mockBuffer);
 
       // Act
-      const result = await service.calculateProjectBuffer(mockProjectId, tasks, criticalPath);
+      const result = await service.calculateProjectBuffer({
+        projectId: mockProjectId,
+        tasks,
+        criticalPath,
+      });
 
       // Assert
       expect(result).not.toBeNull();
@@ -86,7 +90,11 @@ describe('BufferService', () => {
       const criticalPath: string[] = [];
 
       // Act
-      const result = await service.calculateProjectBuffer(mockProjectId, tasks, criticalPath);
+      const result = await service.calculateProjectBuffer({
+        projectId: mockProjectId,
+        tasks,
+        criticalPath,
+      });
 
       // Assert
       expect(result).not.toBeNull();
@@ -110,7 +118,11 @@ describe('BufferService', () => {
       mockModel.findOneAndUpdate.mockResolvedValue(mockBuffer);
 
       // Act
-      const result = await service.calculateProjectBuffer(mockProjectId, tasks, criticalPath);
+      const result = await service.calculateProjectBuffer({
+        projectId: mockProjectId,
+        tasks,
+        criticalPath,
+      });
 
       // Assert
       expect(result).not.toBeNull();
@@ -319,7 +331,11 @@ describe('BufferService', () => {
       mockModel.findOneAndUpdate.mockResolvedValue(mockBuffer);
 
       // Act
-      const result = await service.calculateProjectBuffer(mockProjectId, tasks, criticalPath);
+      const result = await service.calculateProjectBuffer({
+        projectId: mockProjectId,
+        tasks,
+        criticalPath,
+      });
 
       // Assert
       expect(result).not.toBeNull();

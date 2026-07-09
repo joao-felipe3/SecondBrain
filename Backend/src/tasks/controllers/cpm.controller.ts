@@ -1002,14 +1002,13 @@ export class CPMController {
       throw new Error('Uma ou ambas as tarefas não foram encontradas');
     }
 
-    // Adicionar dependência
-    const dependency = await this.cpmService.addDependency(
-      addDependencyDto.taskId,
-      addDependencyDto.dependsOnTaskId,
+    const dependency = await this.cpmService.addDependency({
+      taskId: addDependencyDto.taskId,
+      dependsOnTaskId: addDependencyDto.dependsOnTaskId,
       projectId,
-      addDependencyDto.reason,
-      addDependencyDto.relationship || 'FINISH_TO_START',
-    );
+      reason: addDependencyDto.reason,
+      relationship: addDependencyDto.relationship || 'FINISH_TO_START',
+    });
 
     const doc = dependency as any;
     return {
@@ -1152,7 +1151,11 @@ export class CPMController {
         `[Buffer Calc] ${tasksWithVariance}/${taskMetrics.length} tarefas com variança, variança total: ${totalVariance.toFixed(2)}`,
       );
 
-      await this.bufferService.calculateProjectBuffer(projectId, taskMetrics, analysis.criticalPath);
+      await this.bufferService.calculateProjectBuffer({
+        projectId,
+        tasks: taskMetrics,
+        criticalPath: analysis.criticalPath,
+      });
       this.logger.log(`Buffer recalculado para projeto ${projectId}`);
     } catch (error: any) {
       this.logger.warn(`Erro ao calcular buffer: ${error?.message ?? String(error)}`);

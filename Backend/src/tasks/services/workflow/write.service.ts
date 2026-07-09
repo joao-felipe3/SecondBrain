@@ -221,12 +221,12 @@ export class TasksWriteService {
 
     if (!shouldGenerateChecklist) return;
 
-    const generated = await this.tasksChecklistService.generateChecklistWithHistory(
-      payload.name,
-      payload.description,
-      payload.microTaskType,
-      payload.project,
-    );
+    const generated = await this.tasksChecklistService.generateChecklistWithHistory({
+      taskName: payload.name,
+      description: payload.description,
+      microTaskType: payload.microTaskType,
+      projectId: payload.project,
+    });
     payload.checklist = this.tasksInputService.normalizeChecklist(generated);
   }
 

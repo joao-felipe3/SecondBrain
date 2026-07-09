@@ -11,7 +11,6 @@ import {
   inferHeuristicPhases as runHeuristics,
   filterInvalidAndSelfEdges,
   keepAcyclic,
-  truncateText,
   normalizeDependencies,
 } from './utils/dependency-inference.utils';
 import {
@@ -53,7 +52,7 @@ export class DependencyInferenceService {
     })
     .passthrough();
 
-  constructor(private readonly geminiService: GeminiService) {}
+  constructor(private readonly geminiService: GeminiService) { }
 
   // ===========================================================================
   // 1. Heuristic & Local Inference
@@ -100,7 +99,11 @@ export class DependencyInferenceService {
       tokens: number,
     ): Promise<InferredDependency[]> => {
       const startedAt = Date.now();
-      const rawDeps = await this.getRawInferredDependencies(p, tokens, model);
+      const rawDeps = await this.getRawInferredDependencies({
+        prompt: p,
+        maxOutputTokens: tokens,
+        model,
+      });
       const validIds = new Set(tasks.map((t) => t.id));
       let deps = filterInvalidAndSelfEdges(rawDeps, validIds);
 
@@ -110,7 +113,7 @@ export class DependencyInferenceService {
       if (this.isVerbose()) {
         this.logger.log(
           `[dep-infer] done requestId=${requestId || '-'} raw=${rawDeps.length} ` +
-            `filtered=${deps.length} acyclic=${acyclic.length} durationMs=${Date.now() - startedAt}`,
+          `filtered=${deps.length} acyclic=${acyclic.length} durationMs=${Date.now() - startedAt}`,
         );
       }
       return acyclic;
@@ -169,15 +172,19 @@ export class DependencyInferenceService {
     });
 
     const executeAttempt = async (p: string, edges: number, tokens: number) => {
-      const rawDeps = await this.getRawInferredDependencies(p, tokens, model);
+      const rawDeps = await this.getRawInferredDependencies({
+        prompt: p,
+        maxOutputTokens: tokens,
+        model,
+      });
       const filtered = filterInvalidAndSelfEdges(rawDeps, validIds);
 
-      const crossLeafDeps = this.mapGatesToCrossLeafDependencies(
-        filtered,
+      const crossLeafDeps = this.mapGatesToCrossLeafDependencies({
+        deps: filtered,
         gateToLeafId,
         leafById,
         validIds,
-      );
+      });
 
       const sliced = crossLeafDeps.slice(0, edges);
       return keepAcyclic([...validIds], sliced);
@@ -197,11 +204,12 @@ export class DependencyInferenceService {
     }
   }
 
-  private async getRawInferredDependencies(
-    prompt: string,
-    maxOutputTokens: number,
-    model?: string,
-  ): Promise<InferredDependency[]> {
+  private async getRawInferredDependencies(params: {
+    prompt: string;
+    maxOutputTokens: number;
+    model?: string;
+  }): Promise<InferredDependency[]> {
+    const { prompt, maxOutputTokens, model } = params;
     const response = await this.geminiService.generateContent(prompt, {
       model,
       responseMimeType: 'application/json',
@@ -238,12 +246,13 @@ export class DependencyInferenceService {
     return { leafById, gateToLeafId, leafTable };
   }
 
-  private mapGatesToCrossLeafDependencies(
-    deps: InferredDependency[],
-    gateToLeafId: Map<string, string>,
-    leafById: Map<string, InferenceLeafGates>,
-    validIds: Set<string>,
-  ): InferredDependency[] {
+  private mapGatesToCrossLeafDependencies(params: {
+    deps: InferredDependency[];
+    gateToLeafId: Map<string, string>;
+    leafById: Map<string, InferenceLeafGates>;
+    validIds: Set<string>;
+  }): InferredDependency[] {
+    const { deps, gateToLeafId, leafById, validIds } = params;
     const normalizedCrossLeaf: InferredDependency[] = [];
     const seen = new Set<string>();
 

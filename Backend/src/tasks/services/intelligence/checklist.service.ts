@@ -10,6 +10,12 @@ import {
   TaskHistorySummary,
   ChecklistHistoryProjectRef,
 } from '../../interfaces';
+import {
+  FindSimilarTasksDto,
+  UpdateChecklistTaskItemDto,
+  GenerateChecklistDto,
+  GenerateChecklistWithHistoryDto,
+} from '../../dto';
 
 export { ChecklistValidationResult, TaskHistorySummary, ChecklistHistoryProjectRef };
 
@@ -22,10 +28,9 @@ export class ChecklistService {
   // ===========================================================================
 
   async findSimilarTasksInProject(
-    projectId: string,
-    microTaskType?: string,
-    limit: number = 3,
+    dto: FindSimilarTasksDto,
   ): Promise<TaskHistorySummary[]> {
+    const { projectId, microTaskType, limit = 3 } = dto;
     if (!projectId || !Types.ObjectId.isValid(projectId)) {
       return [];
     }
@@ -216,10 +221,9 @@ export class TasksChecklistService {
   }
 
   async updateChecklistItem(
-    taskId: string,
-    itemIndex: string,
-    completed: boolean,
+    dto: UpdateChecklistTaskItemDto,
   ): Promise<TaskDocument & { completionPercentage: number }> {
+    const { taskId, itemIndex, completed } = dto;
     const index = this.parseAndValidateItemIndex(itemIndex);
     const task = await this.getTaskByIdOrThrow(taskId);
 
@@ -350,20 +354,17 @@ export class TasksChecklistService {
   // ===========================================================================
 
   async generateChecklistForTask(
-    taskName: string,
-    description?: string,
-    microTaskType?: string,
+    dto: GenerateChecklistDto,
   ): Promise<string[]> {
+    const { taskName, description, microTaskType } = dto;
     return this.geminiService.generateChecklistForTask(taskName, description, microTaskType);
   }
 
   async generateChecklistWithHistory(
-    taskName: string,
-    description?: string,
-    microTaskType?: string,
-    projectId?: ChecklistHistoryProjectRef,
+    dto: GenerateChecklistWithHistoryDto,
   ): Promise<string[]> {
-    const historicalContext = await this.buildHistoricalContext(projectId, microTaskType);
+    const { taskName, description, microTaskType, projectId } = dto;
+    const historicalContext = await this.buildHistoricalContext({ projectId, microTaskType });
 
     if (historicalContext) {
       return this.geminiService.generateChecklistWithHistory(
@@ -377,10 +378,11 @@ export class TasksChecklistService {
     return this.geminiService.generateChecklistForTask(taskName, description, microTaskType);
   }
 
-  private async buildHistoricalContext(
-    projectId?: ChecklistHistoryProjectRef,
-    microTaskType?: string,
-  ): Promise<string> {
+  private async buildHistoricalContext(params: {
+    projectId?: ChecklistHistoryProjectRef;
+    microTaskType?: string;
+  }): Promise<string> {
+    const { projectId, microTaskType } = params;
     if (!projectId) {
       return '';
     }
@@ -396,11 +398,11 @@ export class TasksChecklistService {
       return '';
     }
 
-    const similarTasks = await this.checklistService.findSimilarTasksInProject(
-      targetProjectId,
+    const similarTasks = await this.checklistService.findSimilarTasksInProject({
+      projectId: targetProjectId,
       microTaskType,
-      3,
-    );
+      limit: 3,
+    });
     return this.checklistService.enrichHistoryContext(similarTasks);
   }
 }

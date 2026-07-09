@@ -65,13 +65,14 @@ export function computeParentRecurringId(task: TaskDocument): string {
   return String(task.parentRecurringId || task._id);
 }
 
-export function assembleOccurrencePayload(
-  task: TaskDocument,
-  nextDeadline: Date,
-  recurringRule: RecurringRuleDto | undefined,
-  normalizedChecklist: CreateTaskDto['checklist'],
-  parentRecurringId: string,
-): RecurringTaskOccurrenceDto {
+export function assembleOccurrencePayload(params: {
+  task: TaskDocument;
+  nextDeadline: Date;
+  recurringRule: RecurringRuleDto | undefined;
+  normalizedChecklist: CreateTaskDto['checklist'];
+  parentRecurringId: string;
+}): RecurringTaskOccurrenceDto {
+  const { task, nextDeadline, recurringRule, normalizedChecklist, parentRecurringId } = params;
   const payload: RecurringTaskOccurrenceDto = {
     ...task,
     checklist: normalizedChecklist,

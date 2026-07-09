@@ -44,7 +44,11 @@ export class TasksCompletionService {
     const updatedTask = await task.save();
 
     if (updatedTask.project && remainingHours > 0) {
-      await this.updateProjectMetricsAfterCompletion(String(updatedTask.project), id, remainingHours);
+      await this.updateProjectMetricsAfterCompletion({
+        projectId: String(updatedTask.project),
+        taskId: id,
+        remainingHours,
+      });
     }
 
     await this.checkDeviationAndCreateAlert(id);
@@ -277,26 +281,38 @@ export class TasksCompletionService {
   // 7. Private Helpers: Metrics Integration
   // ===========================================================================
 
-  private async updateProjectMetricsAfterCompletion(
-    projectId: string,
-    taskId: string,
-    remainingHours: number,
-  ): Promise<void> {
+  private async updateProjectMetricsAfterCompletion(params: {
+    projectId: string;
+    taskId: string;
+    remainingHours: number;
+  }): Promise<void> {
+    const { projectId, taskId, remainingHours } = params;
     await this.projectsService.incrementHoursWorked(projectId, remainingHours);
-    await this.registerAutoEvmProgress(projectId, taskId, remainingHours, 'completion');
+    await this.registerAutoEvmProgress({
+      projectId,
+      taskId,
+      hoursDelta: remainingHours,
+      source: 'completion',
+    });
   }
 
   private async updateProjectMetricsAfterPomodoro(projectId: string, taskId: string): Promise<void> {
     await this.projectsService.incrementHoursWorked(projectId, 0.5);
-    await this.registerAutoEvmProgress(projectId, taskId, 0.5, 'pomodoro');
+    await this.registerAutoEvmProgress({
+      projectId,
+      taskId,
+      hoursDelta: 0.5,
+      source: 'pomodoro',
+    });
   }
 
-  private async registerAutoEvmProgress(
-    projectId: string,
-    taskId: string,
-    hoursDelta: number,
-    source: 'pomodoro' | 'completion',
-  ): Promise<void> {
+  private async registerAutoEvmProgress(params: {
+    projectId: string;
+    taskId: string;
+    hoursDelta: number;
+    source: 'pomodoro' | 'completion';
+  }): Promise<void> {
+    const { projectId, taskId, hoursDelta, source } = params;
     if (!projectId || !taskId || hoursDelta <= 0) {
       return;
     }

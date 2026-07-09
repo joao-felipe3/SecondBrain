@@ -17,6 +17,11 @@ import { MoveTaskStatusDto } from './dto/task/move-task-status.dto';
 import { CreateManyTasksOptionsDto } from './dto/task/create-many-tasks-options.dto';
 import { FindByProjectIdOptionsDto } from './dto/query/find-by-project-id-options.dto';
 import { UpdatePertDto } from './dto/analysis/suggest-pert.dto';
+import {
+  UpdateChecklistTaskItemDto,
+  GenerateChecklistDto,
+  GenerateChecklistWithHistoryDto,
+} from './dto';
 
 // Schema
 import { TaskDocument } from './schemas/task.schema';
@@ -109,33 +114,21 @@ export class TasksService {
 
   // ------------------------------ Checklist / Validation ------------------------------
   public async generateChecklistViaCopilot(
-    taskName: string,
-    description?: string,
-    microTaskType?: string,
+    dto: GenerateChecklistDto,
   ): Promise<string[]> {
-    return this.tasksChecklistService.generateChecklistForTask(taskName, description, microTaskType);
+    return this.tasksChecklistService.generateChecklistForTask(dto);
   }
 
   public async generateChecklistViaCopilotWithHistory(
-    taskName: string,
-    description?: string,
-    microTaskType?: string,
-    projectId?: ChecklistHistoryProjectRef,
+    dto: GenerateChecklistWithHistoryDto,
   ): Promise<string[]> {
-    return this.tasksChecklistService.generateChecklistWithHistory(
-      taskName,
-      description,
-      microTaskType,
-      projectId,
-    );
+    return this.tasksChecklistService.generateChecklistWithHistory(dto);
   }
 
   public async updateChecklistItem(
-    taskId: string,
-    itemIndex: string,
-    completed: boolean,
+    dto: UpdateChecklistTaskItemDto,
   ): Promise<TaskDocument> {
-    return this.tasksChecklistService.updateChecklistItem(taskId, itemIndex, completed);
+    return this.tasksChecklistService.updateChecklistItem(dto);
   }
 
   public async updateMicroTaskChecklist(
@@ -237,18 +230,13 @@ export class TasksService {
   }
 
   // ------------------------------ AI / PERT ------------------------------
-  public async generateAiSuggestionsWithProgress(
-    dto: GenerateAiSuggestionsDto,
-    onProgress: (progress: AiSuggestionsProgressDto) => void,
-    onComplete: (result: AiSuggestionsResponseDto) => void,
-    onError: (error: Error) => void,
-  ): Promise<void> {
-    await this.tasksAiSuggestionsService.generateAiSuggestionsWithProgress(
-      dto,
-      onProgress,
-      onComplete,
-      onError,
-    );
+  public async generateAiSuggestionsWithProgress(params: {
+    dto: GenerateAiSuggestionsDto;
+    onProgress: (progress: AiSuggestionsProgressDto) => void;
+    onComplete: (result: AiSuggestionsResponseDto) => void;
+    onError: (error: Error) => void;
+  }): Promise<void> {
+    await this.tasksAiSuggestionsService.generateAiSuggestionsWithProgress(params);
   }
 
   public async generateAiSuggestions(dto: GenerateAiSuggestionsDto): Promise<AiSuggestionsResponseDto> {

@@ -3,6 +3,7 @@ import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagg
 import { RTMService } from '../services/traceability';
 import { TasksService } from '../tasks.service';
 import { RequirementDocument } from '../schemas/requirement.schema';
+import { MapRequirementToTaskDto } from '../dto';
 
 @ApiTags('RTM - Rastreabilidade da Jornada Pessoal')
 @ApiBearerAuth()
@@ -183,11 +184,11 @@ export class RTMController {
     this.logger.log(`[map-req] projectId=${projectId} req=${body.requirementId} task=${body.taskId}`);
 
     try {
-      const result = await this.rtmService.mapRequirementToTask(
+      const result = await this.rtmService.mapRequirementToTask({
         projectId,
-        body.requirementId,
-        body.taskId,
-      );
+        requirementId: body.requirementId,
+        taskId: body.taskId,
+      });
 
       if (!result) {
         return { success: false, message: 'Item da jornada não encontrado' };

@@ -58,11 +58,11 @@ export class BufferController {
       }));
 
       // Calcular buffer
-      const buffer = await this.bufferService.calculateProjectBuffer(
+      const buffer = await this.bufferService.calculateProjectBuffer({
         projectId,
-        taskMetrics,
-        analysis.criticalPath,
-      );
+        tasks: taskMetrics,
+        criticalPath: analysis.criticalPath,
+      });
 
       if (!buffer) {
         return {

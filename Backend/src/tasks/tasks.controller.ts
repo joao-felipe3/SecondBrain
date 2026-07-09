@@ -268,7 +268,7 @@ export class TasksController {
     @Param('itemId') itemId: string,
     @Body() body: UpdateChecklistItemDto,
   ) {
-    return this.tasksService.updateChecklistItem(taskId, itemId, body.completed);
+    return this.tasksService.updateChecklistItem({ taskId, itemIndex: itemId, completed: body.completed });
   }
 
   @Patch(':id/recurring-rule')
@@ -380,24 +380,24 @@ export class TasksController {
       // Chama o método assíncrono e captura erros
       (async () => {
         try {
-          await this.tasksService.generateAiSuggestionsWithProgress(
-            generateDto,
-            (progress) => {
+          await this.tasksService.generateAiSuggestionsWithProgress({
+            dto: generateDto,
+            onProgress: (progress) => {
               observer.next({ data: progress } as MessageEvent);
             },
-            (result) => {
+            onComplete: (result) => {
               observer.next({
                 data: { type: 'complete', result },
               } as MessageEvent);
               observer.complete();
             },
-            (error) => {
+            onError: (error) => {
               observer.next({
                 data: { type: 'error', error: error.message },
               } as MessageEvent);
               observer.error(error);
             },
-          );
+          });
         } catch (error) {
           observer.error(error);
         }

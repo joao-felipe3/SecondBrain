@@ -2,7 +2,8 @@ import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { ProjectBuffer, ProjectBufferDocument } from '../../schemas/project-buffer.schema';
-import { BufferTaskMetrics, BufferStatus, BufferAlert } from '../../interfaces';
+import { BufferTaskMetrics, BufferStatus, BufferAlert, BufferCalculationResult } from '../../interfaces';
+import { CalculateBufferDto, UpdateOrCreateBufferDto } from '../../dto';
 import {
   filterCriticalTasks,
   calculateMetrics,
@@ -11,13 +12,6 @@ import {
   calculateBufferStatus,
   generateBufferAlerts,
 } from './utils/buffer-analysis.utils';
-
-interface BufferCalculationResult {
-  criticalPathDuration: number;
-  totalVariance: number;
-  standardDeviation: number;
-  projectBuffer: number;
-}
 
 @Injectable()
 export class BufferService {
@@ -28,11 +22,8 @@ export class BufferService {
     private readonly bufferModel: Model<ProjectBufferDocument>,
   ) {}
 
-  async calculateProjectBuffer(
-    projectId: string,
-    tasks: BufferTaskMetrics[],
-    criticalPath: string[],
-  ): Promise<ProjectBuffer | null> {
+  async calculateProjectBuffer(dto: CalculateBufferDto): Promise<ProjectBuffer | null> {
+    const { projectId, tasks, criticalPath } = dto;
     this.logger.log(
       `Calculating buffer for project: ${projectId}, critical tasks: ${criticalPath.length}`,
     );
@@ -45,7 +36,11 @@ export class BufferService {
     const criticalTasks = filterCriticalTasks(tasks, criticalPath);
     const calculationResult = this.performBufferCalculation(criticalTasks);
 
-    const bufferDoc = await this.updateOrCreateBuffer(projectId, calculationResult, criticalTasks);
+    const bufferDoc = await this.updateOrCreateBuffer({
+      projectId,
+      calculationResult,
+      criticalTasks,
+    });
 
     if (!bufferDoc) {
       this.logger.error(`Failed to create/update buffer for project ${projectId}`);
@@ -134,10 +129,9 @@ export class BufferService {
   }
 
   private async updateOrCreateBuffer(
-    projectId: string,
-    calculationResult: BufferCalculationResult,
-    criticalTasks: BufferTaskMetrics[],
+    dto: UpdateOrCreateBufferDto,
   ): Promise<ProjectBufferDocument | null> {
+    const { projectId, calculationResult, criticalTasks } = dto;
     const { criticalPathDuration, totalVariance, standardDeviation, projectBuffer } = calculationResult;
 
     const bufferData = {

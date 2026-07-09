@@ -33,7 +33,7 @@ export class FeedbackService {
 
     try {
       const timeSpentMinutes = task.pomodorosDid ? task.pomodorosDid * 25 : undefined;
-      const structured = await this.generateFeedbackOnCompletion(task, task.checklist, timeSpentMinutes);
+      const structured = await this.generateFeedbackOnCompletion({ task, checklist: task.checklist, timeSpentMinutes });
       return JSON.stringify(structured);
     } catch (err: unknown) {
       await this.saveErrorFeedback(task, inputSnapshot, err as Error);
@@ -62,16 +62,17 @@ export class FeedbackService {
     };
   }
 
-  async generateFeedbackOnCompletion(
-    task: TaskDocument,
-    checklist?: Array<string | ChecklistItemDto>,
-    timeSpentMinutes?: number,
-  ): Promise<{
+  async generateFeedbackOnCompletion(params: {
+    task: TaskDocument;
+    checklist?: Array<string | ChecklistItemDto>;
+    timeSpentMinutes?: number;
+  }): Promise<{
     celebration: string;
     validation: string;
     question: string;
     suggestion: string;
   }> {
+    const { task, checklist, timeSpentMinutes } = params;
     if (!task || !task._id) {
       throw new BadRequestException('Task inválida');
     }
@@ -94,13 +95,13 @@ export class FeedbackService {
       });
 
       const parsed = this.safeParseJson(raw) || {};
-      const feedbackObj = this.buildFeedbackObject(parsed, task.name, percent);
+      const feedbackObj = this.buildFeedbackObject({ parsed, taskName: task.name, percent });
 
-      await this.saveSuccessFeedback(task, checklistSummary, timeSpentMinutes, feedbackObj);
+      await this.saveSuccessFeedback({ task, checklistSummary, timeSpentMinutes, feedbackObj });
 
       return feedbackObj;
     } catch (err: unknown) {
-      await this.saveErrorFeedbackOnCompletion(task, checklistSummary, timeSpentMinutes, err as Error);
+      await this.saveErrorFeedbackOnCompletion({ task, checklistSummary, timeSpentMinutes, error: err as Error });
       throw err;
     }
   }
@@ -220,12 +221,13 @@ export class FeedbackService {
     });
   }
 
-  private async saveSuccessFeedback(
-    task: TaskDocument,
-    checklistSummary: any[],
-    timeSpentMinutes: number | undefined,
-    feedbackObj: any,
-  ): Promise<void> {
+  private async saveSuccessFeedback(params: {
+    task: TaskDocument;
+    checklistSummary: any[];
+    timeSpentMinutes?: number;
+    feedbackObj: any;
+  }): Promise<void> {
+    const { task, checklistSummary, timeSpentMinutes, feedbackObj } = params;
     await this.feedbackModel.create({
       task: task._id,
       project: task.project ? new Types.ObjectId(task.project.toString()) : undefined,
@@ -240,12 +242,13 @@ export class FeedbackService {
     });
   }
 
-  private async saveErrorFeedbackOnCompletion(
-    task: TaskDocument,
-    checklistSummary: any[],
-    timeSpentMinutes: number | undefined,
-    error: Error,
-  ): Promise<void> {
+  private async saveErrorFeedbackOnCompletion(params: {
+    task: TaskDocument;
+    checklistSummary: any[];
+    timeSpentMinutes?: number;
+    error: Error;
+  }): Promise<void> {
+    const { task, checklistSummary, timeSpentMinutes, error } = params;
     try {
       await this.feedbackModel.create({
         task: task._id,
@@ -290,11 +293,12 @@ export class FeedbackService {
     return Math.round((completedCount / checklistSummary.length) * 100);
   }
 
-  private buildFeedbackObject(
-    parsed: Record<string, any>,
-    taskName: string,
-    percent: number,
-  ): { celebration: string; validation: string; question: string; suggestion: string } {
+  private buildFeedbackObject(params: {
+    parsed: Record<string, any>;
+    taskName: string;
+    percent: number;
+  }): { celebration: string; validation: string; question: string; suggestion: string } {
+    const { parsed, taskName, percent } = params;
     const celebration = String(parsed.celebration ?? parsed.praise ?? parsed.recognition ?? '').trim();
     const validation = String(parsed.validation ?? parsed.learning ?? '').trim();
     const question = String(parsed.question ?? parsed.inquiry ?? parsed.nextStep ?? '').trim();

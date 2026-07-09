@@ -136,7 +136,11 @@ describe('RTMService', () => {
       mockModel.findOneAndUpdate.mockResolvedValue(mockRequirement);
 
       // Act
-      const result = await service.mapRequirementToTask(mockProjectId, mockRequirementId, mockTaskId);
+      const result = await service.mapRequirementToTask({
+        projectId: mockProjectId,
+        requirementId: mockRequirementId,
+        taskId: mockTaskId,
+      });
 
       // Assert
       expect(result).not.toBeNull();
@@ -162,7 +166,11 @@ describe('RTMService', () => {
       mockModel.findOneAndUpdate.mockResolvedValue(null);
 
       // Act
-      const result = await service.mapRequirementToTask(mockProjectId, mockRequirementId, mockTaskId);
+      const result = await service.mapRequirementToTask({
+        projectId: mockProjectId,
+        requirementId: mockRequirementId,
+        taskId: mockTaskId,
+      });
 
       // Assert
       expect(result).toBeNull();

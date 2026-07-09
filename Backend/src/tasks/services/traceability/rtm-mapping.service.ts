@@ -72,12 +72,12 @@ export class RTMMappingService {
 
       const { mappings, orphanTasks } = await this.runBatchMapping(tasksToMap, actionItems);
 
-      const createdRequirementsCount = await this.handleOrphanTasks(
+      const createdRequirementsCount = await this.handleOrphanTasks({
         orphanTasks,
         allItems,
         projectId,
         mappings,
-      );
+      });
 
       const mappedCount = await this.applyMappings(mappings);
 
@@ -257,12 +257,13 @@ export class RTMMappingService {
     return { mappings, orphanTasks };
   }
 
-  private async handleOrphanTasks(
-    orphanTasks: TaskDocument[],
-    allItems: RequirementDocument[],
-    projectId: string,
-    mappings: Record<string, string[]>,
-  ): Promise<number> {
+  private async handleOrphanTasks(params: {
+    orphanTasks: TaskDocument[];
+    allItems: RequirementDocument[];
+    projectId: string;
+    mappings: Record<string, string[]>;
+  }): Promise<number> {
+    const { orphanTasks, allItems, projectId, mappings } = params;
     if (orphanTasks.length === 0) return 0;
 
     const stageItems = allItems.filter(
@@ -360,7 +361,7 @@ export class RTMMappingService {
         const tasksToCreate = parseJsonArray(response);
         if (!tasksToCreate || tasksToCreate.length === 0) continue;
 
-        const taskIds = await this.persistGeneratedTasks(tasksToCreate, projectId, req);
+        const taskIds = await this.persistGeneratedTasks({ tasksToCreate, projectId, req });
         createdTasksCount += taskIds.length;
 
         if (taskIds.length > 0) {
@@ -384,11 +385,12 @@ export class RTMMappingService {
     return createdTasksCount;
   }
 
-  private async persistGeneratedTasks(
-    tasksToCreate: unknown[],
-    projectId: string,
-    req: RequirementDocument,
-  ): Promise<string[]> {
+  private async persistGeneratedTasks(params: {
+    tasksToCreate: unknown[];
+    projectId: string;
+    req: RequirementDocument;
+  }): Promise<string[]> {
+    const { tasksToCreate, projectId, req } = params;
     const taskIds: string[] = [];
 
     for (const taskData of tasksToCreate) {

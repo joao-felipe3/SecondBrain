@@ -10,6 +10,7 @@ import { RTMValidation, RTMMatrixData } from '../../interfaces/rtm.interface';
 import { RTMCrudService } from './rtm-crud.service';
 import { RTMAiService } from './rtm-ai.service';
 import { RTMValidationService } from './rtm-validation.service';
+import { MapRequirementToTaskDto } from '../../dto';
 
 // Re-export interfaces for backwards compatibility
 export { RTMValidation, RTMMatrixData } from '../../interfaces/rtm.interface';
@@ -53,11 +54,9 @@ export class RTMService {
   }
 
   mapRequirementToTask(
-    projectId: string,
-    requirementId: string,
-    taskId: string,
+    dto: MapRequirementToTaskDto,
   ): Promise<Requirement | null> {
-    return this.crud.mapRequirementToTask(projectId, requirementId, taskId);
+    return this.crud.mapRequirementToTask(dto);
   }
 
   unmapRequirementFromTask(requirementId: string, taskId: string): Promise<Requirement | null> {
