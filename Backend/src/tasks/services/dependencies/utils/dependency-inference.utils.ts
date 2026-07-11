@@ -1,4 +1,4 @@
-import { InferredDependencyDto, InferenceTaskDto } from '../../../dto/analysis/inference.dto';
+import { InferredDependencyDto, InferenceTaskDto } from '../../../dto/dependencies/inference.dto';
 
 const PHASE_ORDER = ['prepare', 'produce', 'test', 'consolidate', 'practice'];
 

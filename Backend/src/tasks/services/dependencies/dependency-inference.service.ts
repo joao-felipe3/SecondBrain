@@ -16,7 +16,7 @@ import {
   InferenceTaskDto,
   InferenceLeafGatesDto,
   InferredDependencyDto,
-} from '../../dto/analysis';
+} from '../../dto/dependencies';
 
 // Re-export interfaces for backwards compatibility
 export {

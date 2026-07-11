@@ -3,6 +3,7 @@ export * from './task';
 export * from './recurring';
 export * from './checklist';
 export * from './analysis';
+export * from './dependencies';
 export * from './intelligence';
 export * from './monitoring';
 export * from './query';

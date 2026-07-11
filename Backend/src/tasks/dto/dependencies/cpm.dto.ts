@@ -406,3 +406,162 @@ export class AutoInferDependenciesResponseDto {
   timestamp: string;
 }
 
+export class ValidateDependenciesDto {
+  @ApiProperty({ type: [TaskNodeResponseDto] })
+  tasksInHours: TaskNodeResponseDto[];
+
+  @ApiProperty({ description: 'Mapeamento de arestas por ID de tarefa' })
+  edgeMap: Map<string, TaskDependencyEdgeDto[]>;
+
+  @ApiProperty({ description: 'Conjunto de IDs de tarefas do projeto' })
+  taskIds: Set<string>;
+}
+
+export class ComputeGraphDegreesDto {
+  @ApiProperty({ type: [TaskNodeResponseDto] })
+  tasksInHours: TaskNodeResponseDto[];
+
+  @ApiProperty({ description: 'Mapeamento de arestas por ID de tarefa' })
+  edgeMap: Map<string, TaskDependencyEdgeDto[]>;
+
+  @ApiProperty({ description: 'Conjunto de IDs de tarefas do projeto' })
+  taskIds: Set<string>;
+}
+
+export class FindEndNodeDto {
+  @ApiProperty({ type: [TaskNodeResponseDto] })
+  tasks: TaskNodeResponseDto[];
+
+  @ApiProperty({ description: 'Duração total do projeto' })
+  projectDuration: number;
+
+  @ApiProperty({ description: 'Margem de tolerância (epsilon)' })
+  eps: number;
+}
+
+export class EvaluateDependencyAlignmentDto {
+  @ApiProperty({ type: TaskNodeResponseDto })
+  pred: TaskNodeResponseDto;
+
+  @ApiProperty({ type: TaskNodeResponseDto })
+  cur: TaskNodeResponseDto;
+
+  @ApiProperty({ type: TaskDependencyEdgeDto })
+  dep: TaskDependencyEdgeDto;
+
+  @ApiProperty({ description: 'Margem de tolerância (epsilon)' })
+  eps: number;
+}
+
+export class FindBestPredecessorDto {
+  @ApiProperty({ type: TaskNodeResponseDto })
+  cur: TaskNodeResponseDto;
+
+  @ApiProperty({ type: [TaskDependencyEdgeDto] })
+  deps: TaskDependencyEdgeDto[];
+
+  @ApiProperty({ description: 'Mapeamento de tarefas por ID' })
+  taskById: Map<string, TaskNodeResponseDto>;
+
+  @ApiProperty({ description: 'Margem de tolerância (epsilon)' })
+  eps: number;
+}
+
+export class BuildCriticalPathSequenceDto {
+  @ApiProperty({ type: [TaskNodeResponseDto] })
+  tasks: TaskNodeResponseDto[];
+
+  @ApiProperty({ description: 'Duração total do projeto' })
+  projectDuration: number;
+
+  @ApiProperty({ description: 'Mapeamento de arestas por ID de tarefa' })
+  edgeMap: Map<string, TaskDependencyEdgeDto[]>;
+}
+
+export class GenerateAlertsDiagnosticsDto {
+  @ApiProperty({ description: 'Indica se foi detectado algum ciclo (loop) de dependência' })
+  cycleDetected: boolean;
+
+  @ApiProperty({ description: 'Quantidade de nós não processados no forward pass' })
+  unprocessedForward: number;
+
+  @ApiProperty({ description: 'Quantidade de nós não processados no backward pass' })
+  unprocessedBackward: number;
+
+  @ApiProperty({ description: 'Quantidade de dependências com referências ausentes no projeto' })
+  missingDependencyRefs: number;
+}
+
+export class GenerateAlertsDto {
+  @ApiProperty({ type: [TaskNodeResponseDto] })
+  tasks: TaskNodeResponseDto[];
+
+  @ApiProperty({ type: [TaskNodeResponseDto] })
+  criticalTasks: TaskNodeResponseDto[];
+
+  @ApiProperty({ type: GenerateAlertsDiagnosticsDto })
+  diagnostics: GenerateAlertsDiagnosticsDto;
+}
+
+export class CreateCPMDiagnosticsParamsDto {
+  @ApiProperty({ type: [TaskNodeResponseDto] })
+  tasksInHours: TaskNodeResponseDto[];
+
+  @ApiProperty({ type: [TaskNodeResponseDto] })
+  criticalTasks: TaskNodeResponseDto[];
+
+  @ApiProperty({ description: 'Sequência de IDs no caminho crítico' })
+  criticalPathSequence: string[];
+
+  @ApiProperty({ description: 'Duração total do projeto' })
+  projectDuration: number;
+
+  @ApiProperty({ description: 'Grau de entrada (in-degree) por tarefa' })
+  indegree: Map<string, number>;
+
+  @ApiProperty({ description: 'Grau de saída (out-degree) por tarefa' })
+  outdegree: Map<string, number>;
+
+  @ApiProperty({ description: 'Quantidade de conexões (arestas) no grafo' })
+  edgeCount: number;
+
+  @ApiProperty({ description: 'Quantidade de dependências por tarefa' })
+  depSum: number;
+
+  @ApiProperty({ description: 'Status de processamento do forward pass' })
+  forward: { hasCycle: boolean; unprocessed: number };
+
+  @ApiProperty({ description: 'Status de processamento do backward pass' })
+  backward: { hasCycle: boolean; unprocessed: number };
+
+  @ApiProperty({ description: 'Quantidade de referências de dependência ausentes' })
+  missingDependencyRefs: number;
+
+  @ApiProperty({ description: 'Amostras de dependências ausentes' })
+  missingDependencySamples: Array<{ taskId: string; dependsOnTaskId: string }>;
+}
+
+export class GraphDegreesDto {
+  @ApiProperty({ description: 'Grau de entrada (in-degree) por tarefa' })
+  indegree: Map<string, number>;
+
+  @ApiProperty({ description: 'Grau de saída (out-degree) por tarefa' })
+  outdegree: Map<string, number>;
+
+  @ApiProperty({ description: 'Quantidade de conexões (arestas) no grafo' })
+  edgeCount: number;
+
+  @ApiProperty({ description: 'Soma total de dependências' })
+  depSum: number;
+}
+
+export class ValidateDependenciesResponseDto {
+  @ApiProperty({ description: 'Quantidade de dependências com referências ausentes' })
+  missingDependencyRefs: number;
+
+  @ApiProperty({ description: 'Amostras de dependências com referências ausentes' })
+  missingDependencySamples: Array<{ taskId: string; dependsOnTaskId: string }>;
+}
+
+
+

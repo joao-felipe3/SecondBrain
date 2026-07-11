@@ -5,9 +5,19 @@ import {
   PackageCriticalityResponseDto,
   CPMAnalysisResponseDto,
   TaskMetricsResponseDto,
-} from '../../../dto/analysis/cpm.dto';
+  ValidateDependenciesDto,
+  ComputeGraphDegreesDto,
+  FindEndNodeDto,
+  EvaluateDependencyAlignmentDto,
+  FindBestPredecessorDto,
+  BuildCriticalPathSequenceDto,
+  GenerateAlertsDto,
+  CreateCPMDiagnosticsParamsDto,
+  GraphDegreesDto,
+  ValidateDependenciesResponseDto,
+} from '../../../dto/dependencies/cpm.dto';
 import { forwardPass, backwardPass, buildEdgeMap } from './cpm-passes.utils';
-import { CPMDiagnosticsDto } from '../../../dto/analysis/cpm-diagnostics.dto';
+import { CPMDiagnosticsDto } from '../../../dto/dependencies/cpm-diagnostics.dto';
 
 interface GroupedPackageTasks {
   path?: string;
@@ -39,14 +49,7 @@ function validateDependencies({
   tasksInHours,
   edgeMap,
   taskIds,
-}: {
-  tasksInHours: TaskNodeResponseDto[];
-  edgeMap: Map<string, TaskDependencyEdgeDto[]>;
-  taskIds: Set<string>;
-}): {
-  missingDependencyRefs: number;
-  missingDependencySamples: Array<{ taskId: string; dependsOnTaskId: string }>;
-} {
+}: ValidateDependenciesDto): ValidateDependenciesResponseDto {
   let missingDependencyRefs = 0;
   const missingDependencySamples: Array<{ taskId: string; dependsOnTaskId: string }> = [];
 
@@ -68,16 +71,7 @@ function computeGraphDegrees({
   tasksInHours,
   edgeMap,
   taskIds,
-}: {
-  tasksInHours: TaskNodeResponseDto[];
-  edgeMap: Map<string, TaskDependencyEdgeDto[]>;
-  taskIds: Set<string>;
-}): {
-  indegree: Map<string, number>;
-  outdegree: Map<string, number>;
-  edgeCount: number;
-  depSum: number;
-} {
+}: ComputeGraphDegreesDto): GraphDegreesDto {
   const indegree = new Map<string, number>();
   const outdegree = new Map<string, number>();
   let edgeCount = 0;
@@ -161,34 +155,14 @@ function getEffectiveCriticalPath(criticalPathSequence: string[], criticalTasks:
   return criticalPathSequence.length > 0 ? criticalPathSequence : criticalTasks.map((t) => t.id);
 }
 
-function createCPMDiagnostics(params: {
-  tasksInHours: TaskNodeResponseDto[];
-  criticalTasks: TaskNodeResponseDto[];
-  criticalPathSequence: string[];
-  projectDuration: number;
-  indegree: Map<string, number>;
-  outdegree: Map<string, number>;
-  edgeCount: number;
-  depSum: number;
-  forward: { hasCycle: boolean; unprocessed: number };
-  backward: { hasCycle: boolean; unprocessed: number };
-  missingDependencyRefs: number;
-  missingDependencySamples: Array<{ taskId: string; dependsOnTaskId: string }>;
-}): CPMDiagnosticsDto {
+function createCPMDiagnostics(params: CreateCPMDiagnosticsParamsDto): CPMDiagnosticsDto {
+  const { forward, backward, ...rest } = params;
+
   return new CPMDiagnosticsDto({
-    tasksInHours: params.tasksInHours,
-    criticalTasks: params.criticalTasks,
-    criticalPathSequence: params.criticalPathSequence,
-    projectDuration: params.projectDuration,
-    indegree: params.indegree,
-    outdegree: params.outdegree,
-    edgeCount: params.edgeCount,
-    depSum: params.depSum,
-    hasCycle: Boolean(params.forward.hasCycle || params.backward.hasCycle),
-    unprocessedForward: params.forward.unprocessed,
-    unprocessedBackward: params.backward.unprocessed,
-    missingDependencyRefs: params.missingDependencyRefs,
-    missingDependencySamples: params.missingDependencySamples,
+    ...rest,
+    hasCycle: Boolean(forward.hasCycle || backward.hasCycle),
+    unprocessedForward: forward.unprocessed,
+    unprocessedBackward: backward.unprocessed,
   });
 }
 
@@ -387,11 +361,7 @@ function findEndNode({
   tasks,
   projectDuration,
   eps,
-}: {
-  tasks: TaskNodeResponseDto[];
-  projectDuration: number;
-  eps: number;
-}): TaskNodeResponseDto | undefined {
+}: FindEndNodeDto): TaskNodeResponseDto | undefined {
   let end: TaskNodeResponseDto | undefined;
   for (const t of tasks) {
     if (typeof t.earlyFinish !== 'number') continue;
@@ -416,12 +386,7 @@ function evaluateDependencyAlignment({
   cur,
   dep,
   eps,
-}: {
-  pred: TaskNodeResponseDto;
-  cur: TaskNodeResponseDto;
-  dep: TaskDependencyEdgeDto;
-  eps: number;
-}): { aligns: boolean; timelineRef: number } {
+}: EvaluateDependencyAlignmentDto): { aligns: boolean; timelineRef: number } {
   const es = typeof cur.earlyStart === 'number' ? cur.earlyStart : 0;
   const ef = typeof cur.earlyFinish === 'number' ? cur.earlyFinish : es + (cur.duration || 0);
 
@@ -451,12 +416,7 @@ function findBestPredecessor({
   deps,
   taskById,
   eps,
-}: {
-  cur: TaskNodeResponseDto;
-  deps: TaskDependencyEdgeDto[];
-  taskById: Map<string, TaskNodeResponseDto>;
-  eps: number;
-}): TaskNodeResponseDto | undefined {
+}: FindBestPredecessorDto): TaskNodeResponseDto | undefined {
   let bestPred: TaskNodeResponseDto | undefined;
   let bestScore = -Infinity;
 
@@ -486,11 +446,7 @@ export function buildCriticalPathSequence({
   tasks,
   projectDuration,
   edgeMap,
-}: {
-  tasks: TaskNodeResponseDto[];
-  projectDuration: number;
-  edgeMap: Map<string, TaskDependencyEdgeDto[]>;
-}): string[] {
+}: BuildCriticalPathSequenceDto): string[] {
   const taskById = new Map<string, TaskNodeResponseDto>();
   for (const t of tasks) taskById.set(t.id, t);
 
@@ -522,16 +478,7 @@ export function generateAlerts({
   tasks,
   criticalTasks,
   diagnostics,
-}: {
-  tasks: TaskNodeResponseDto[];
-  criticalTasks: TaskNodeResponseDto[];
-  diagnostics: {
-    cycleDetected: boolean;
-    unprocessedForward: number;
-    unprocessedBackward: number;
-    missingDependencyRefs: number;
-  };
-}): string[] {
+}: GenerateAlertsDto): string[] {
   const alerts: string[] = [];
 
   if (diagnostics.cycleDetected) {
