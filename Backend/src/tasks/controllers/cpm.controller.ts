@@ -11,22 +11,18 @@ import {
 import { CPMService, DependencyInferenceService } from '../services/dependencies';
 import { TasksService } from '../tasks.service';
 import type { TaskDependency } from '../schemas/task-dependency.schema';
+import {
+  AddDependencyDto,
+  DependencyResponseDto,
+  AutoInferDependenciesDto,
+  ClearDependencyCycleDto,
+  CPMAnalysisResponseDto,
+  CalculateCriticalPathResponseDto,
+  GetDependenciesResponseDto,
+  AutoInferDependenciesResponseDto,
+  TaskMetricsResponseDto,
+} from '../dto';
 
-class AddDependencyDto {
-  taskId: string;
-  dependsOnTaskId: string;
-  relationship?: 'FINISH_TO_START' | 'START_TO_START' | 'FINISH_TO_FINISH';
-  reason?: string;
-}
-
-class DependencyResponseDto {
-  id: string;
-  taskId: string;
-  dependsOnTaskId: string;
-  relationship: string;
-  reason?: string;
-  createdAt: Date;
-}
 
 @ApiTags('CPM - Critical Path Method')
 @ApiBearerAuth()
@@ -47,19 +43,14 @@ export class CPMController {
     description:
       'Gera dependências sugeridas para tarefas do projeto (por leaf/WBS). Pode retornar preview ou persistir (apply=true).',
   })
+  @ApiResponse({
+    status: 200,
+    description: 'Dependências inferidas com sucesso',
+    type: AutoInferDependenciesResponseDto,
+  })
   async autoInferDependencies(
     @Param('projectId') projectId: string,
-    @Body()
-    body: {
-      taskIds?: string[];
-      parentWbsNodeId?: string;
-      strategy?: 'heuristic-phases' | 'ai-per-leaf';
-      apply?: boolean;
-      maxEdgesPerLeaf?: number;
-      includeInterLeafGates?: boolean;
-      interLeafStrategy?: 'none' | 'heuristic' | 'ai';
-      maxInterLeafEdges?: number;
-    },
+    @Body() body: AutoInferDependenciesDto,
   ) {
     const startedAt = Date.now();
     const requestId = `depinf_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 7)}`;
@@ -857,7 +848,7 @@ export class CPMController {
   })
   async clearDependencyCycle(
     @Param('projectId') projectId: string,
-    @Body() body: { mode?: 'auto-only' | 'all'; maxRemovals?: number } = {},
+    @Body() body: ClearDependencyCycleDto,
   ) {
     const startedAt = Date.now();
     const mode = body?.mode ?? 'auto-only';
@@ -1062,27 +1053,7 @@ export class CPMController {
   @ApiResponse({
     status: 200,
     description: 'Análise CPM realizada com sucesso',
-    schema: {
-      example: {
-        criticalPath: ['t1', 't2', 't4', 't8'],
-        projectDuration: 25.5,
-        tasksByImpact: [
-          {
-            id: 't4',
-            name: 'Backend Development',
-            slack: 0,
-            isCritical: true,
-          },
-          {
-            id: 't3',
-            name: 'Frontend Development',
-            slack: 5.5,
-            isCritical: false,
-          },
-        ],
-        alerts: ['⚠️ 50% das tarefas são críticas', '⚠️ Pouca margem de erro no projeto'],
-      },
-    },
+    type: CalculateCriticalPathResponseDto,
   })
   @ApiResponse({
     status: 404,
@@ -1125,7 +1096,7 @@ export class CPMController {
     }
 
     // Calcular CPM
-    const analysis: CPMAnalysis = this.cpmService.calculateCriticalPath(taskNodes);
+    const analysis = this.cpmService.calculateCriticalPath(taskNodes);
 
     // NOVO: Calcular buffer consolidado também quando CPM é calculado
     try {
@@ -1183,18 +1154,7 @@ export class CPMController {
   @ApiResponse({
     status: 200,
     description: 'Métricas retornadas com sucesso',
-    schema: {
-      example: {
-        taskId: 't1',
-        taskName: 'Design',
-        earlyStart: 0,
-        earlyFinish: 2,
-        lateStart: 0,
-        lateFinish: 2,
-        slack: 0,
-        isCritical: true,
-      },
-    },
+    type: TaskMetricsResponseDto,
   })
   @ApiResponse({
     status: 404,
@@ -1203,7 +1163,7 @@ export class CPMController {
   async getTaskMetrics(
     @Param('taskId') taskId: string,
     @Query('projectId') projectId: string,
-  ): Promise<CpmTaskMetrics & { taskName: string }> {
+  ): Promise<TaskMetricsResponseDto> {
     // Buscar tarefa
     const task = await this.tasksService.findOne(taskId);
 
@@ -1293,6 +1253,7 @@ export class CPMController {
   @ApiResponse({
     status: 200,
     description: 'Lista de dependências',
+    type: GetDependenciesResponseDto,
   })
   async getDependencies(@Param('projectId') projectId: string) {
     const dependencies = await this.cpmService.getDependencies(projectId);

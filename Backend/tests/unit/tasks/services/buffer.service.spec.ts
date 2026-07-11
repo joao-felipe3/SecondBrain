@@ -307,6 +307,43 @@ describe('BufferService', () => {
     });
   });
 
+  describe('getBufferHistory', () => {
+    it('deve retornar o histórico do buffer se ele existir', async () => {
+      // Arrange
+      const date = new Date('2026-07-11T00:00:00.000Z');
+      const mockBuffer = {
+        projectId: mockProjectId,
+        projectBuffer: 20,
+        consumed: 5,
+        createdAt: date,
+      };
+      mockModel.findOne.mockResolvedValue(mockBuffer);
+
+      // Act
+      const result = await service.getBufferHistory(mockProjectId);
+
+      // Assert
+      expect(result).toHaveLength(1);
+      expect(result[0]).toEqual({
+        date,
+        consumed: 5,
+        percentageUsed: 25,
+      });
+      expect(mockModel.findOne).toHaveBeenCalledWith({ projectId: mockProjectId });
+    });
+
+    it('deve retornar array vazio se o buffer não for encontrado', async () => {
+      // Arrange
+      mockModel.findOne.mockResolvedValue(null);
+
+      // Act
+      const result = await service.getBufferHistory(mockProjectId);
+
+      // Assert
+      expect(result).toEqual([]);
+    });
+  });
+
   // Edge Cases
   describe('Edge Cases', () => {
     it('deve arredondar buffer a 1 decimal', async () => {

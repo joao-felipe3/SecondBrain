@@ -12,7 +12,13 @@ import {
   getTaskMetrics as getTM,
   normalizeRelationship,
 } from './utils/cpm-analysis.utils';
-import { CreateDependencyDto, UpsertDependencyDto } from '../../dto';
+import {
+  CreateDependencyDto,
+  UpsertDependencyDto,
+  TaskNodeResponseDto,
+  CPMAnalysisResponseDto,
+  TaskMetricsResponseDto,
+} from '../../dto';
 
 // Re-export interfaces for backwards compatibility
 export {
@@ -115,11 +121,11 @@ export class CPMService {
     return normalizeRelationship(input);
   }
 
-  calculateCriticalPath(tasks: TaskNode[]): CPMAnalysis {
+  calculateCriticalPath(tasks: TaskNodeResponseDto[]): CPMAnalysisResponseDto {
     return calculateCP(tasks);
   }
 
-  getTaskMetrics(task: TaskNode): TaskMetrics {
+  getTaskMetrics(task: TaskNodeResponseDto): TaskMetricsResponseDto {
     return getTM(task);
   }
 

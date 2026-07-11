@@ -3,7 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { ProjectBuffer, ProjectBufferDocument } from '../../schemas/project-buffer.schema';
 import { BufferTaskMetrics, BufferStatus, BufferAlert, BufferCalculationResult } from '../../interfaces';
-import { CalculateBufferDto, UpdateOrCreateBufferDto } from '../../dto';
+import { CalculateBufferDto, UpdateOrCreateBufferDto, BufferHistoryDto } from '../../dto';
 import {
   filterCriticalTasks,
   calculateMetrics,
@@ -105,9 +105,7 @@ export class BufferService {
     return generateBufferAlerts(status.percentageUsed);
   }
 
-  async getBufferHistory(
-    projectId: string,
-  ): Promise<Array<{ date: Date; consumed: number; percentageUsed: number }>> {
+  async getBufferHistory(projectId: string): Promise<BufferHistoryDto[]> {
     const buffer = await this.bufferModel.findOne({ projectId });
 
     if (!buffer) {

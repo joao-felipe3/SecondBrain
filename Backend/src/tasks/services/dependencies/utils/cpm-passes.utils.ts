@@ -1,6 +1,6 @@
 import { Logger } from '@nestjs/common';
 import { DependencyType } from '../../../schemas/task-dependency.schema';
-import { TaskDependencyEdge, TaskNode } from '../../../interfaces/cpm.interface';
+import { TaskNodeResponseDto, TaskDependencyEdgeDto } from '../../../dto/analysis/cpm.dto';
 
 const logger = new Logger('CPMPassesUtils');
 
@@ -21,8 +21,8 @@ export function normalizeRelationship(input?: string): DependencyType {
   return DependencyType.FINISH_TO_START;
 }
 
-export function extractExplicitEdges(dependencyEdges: unknown, seen: Set<string>): TaskDependencyEdge[] {
-  const normalized: TaskDependencyEdge[] = [];
+export function extractExplicitEdges(dependencyEdges: unknown, seen: Set<string>): TaskDependencyEdgeDto[] {
+  const normalized: TaskDependencyEdgeDto[] = [];
   const edges = Array.isArray(dependencyEdges) ? dependencyEdges : [];
 
   for (const edge of edges) {
@@ -39,8 +39,8 @@ export function extractExplicitEdges(dependencyEdges: unknown, seen: Set<string>
   return normalized;
 }
 
-export function extractFallbackEdges(dependencies: unknown, seen: Set<string>): TaskDependencyEdge[] {
-  const normalized: TaskDependencyEdge[] = [];
+export function extractFallbackEdges(dependencies: unknown, seen: Set<string>): TaskDependencyEdgeDto[] {
+  const normalized: TaskDependencyEdgeDto[] = [];
   const deps = Array.isArray(dependencies) ? dependencies : [];
 
   for (const depId of deps) {
@@ -57,15 +57,15 @@ export function extractFallbackEdges(dependencies: unknown, seen: Set<string>): 
   return normalized;
 }
 
-export function getDependencyEdges(task: TaskNode): TaskDependencyEdge[] {
+export function getDependencyEdges(task: TaskNodeResponseDto): TaskDependencyEdgeDto[] {
   const seen = new Set<string>();
   const explicit = extractExplicitEdges(task.dependencyEdges, seen);
   const fallback = extractFallbackEdges(task.dependencies, seen);
   return [...explicit, ...fallback];
 }
 
-export function buildEdgeMap(tasks: TaskNode[]): Map<string, TaskDependencyEdge[]> {
-  const edgeMap = new Map<string, TaskDependencyEdge[]>();
+export function buildEdgeMap(tasks: TaskNodeResponseDto[]): Map<string, TaskDependencyEdgeDto[]> {
+  const edgeMap = new Map<string, TaskDependencyEdgeDto[]>();
   for (const task of tasks) {
     edgeMap.set(task.id, getDependencyEdges(task));
   }
@@ -77,9 +77,9 @@ export function buildEdgeMap(tasks: TaskNode[]): Map<string, TaskDependencyEdge[
 // ===========================================================================
 
 export function buildForwardPassMaps(
-  tasks: TaskNode[],
-  edgeMap: Map<string, TaskDependencyEdge[]>,
-  taskMap: Map<string, TaskNode>,
+  tasks: TaskNodeResponseDto[],
+  edgeMap: Map<string, TaskDependencyEdgeDto[]>,
+  taskMap: Map<string, TaskNodeResponseDto>,
 ): {
   indegree: Map<string, number>;
   dependents: Map<string, Array<{ successorId: string; relationship: DependencyType }>>;
@@ -110,9 +110,9 @@ export function buildForwardPassMaps(
 }
 
 export function updateForwardSuccessor(
-  predecessor: TaskNode,
+  predecessor: TaskNodeResponseDto,
   dep: { successorId: string; relationship: DependencyType },
-  taskMap: Map<string, TaskNode>,
+  taskMap: Map<string, TaskNodeResponseDto>,
   indegree: Map<string, number>,
   maxConstraintStart: Map<string, number>,
   queue: string[],
@@ -136,10 +136,10 @@ export function updateForwardSuccessor(
 }
 
 export function forwardPass(
-  tasks: TaskNode[],
-  edgeMap: Map<string, TaskDependencyEdge[]>,
+  tasks: TaskNodeResponseDto[],
+  edgeMap: Map<string, TaskDependencyEdgeDto[]>,
 ): { hasCycle: boolean; unprocessed: number } {
-  const taskMap = new Map<string, TaskNode>();
+  const taskMap = new Map<string, TaskNodeResponseDto>();
   for (const t of tasks) taskMap.set(t.id, t);
 
   const { indegree, dependents, maxConstraintStart } = buildForwardPassMaps(tasks, edgeMap, taskMap);
@@ -180,8 +180,8 @@ export function forwardPass(
 // ===========================================================================
 
 function computeCandidateBounds(
-  dep: TaskDependencyEdge,
-  pred: TaskNode,
+  dep: TaskDependencyEdgeDto,
+  pred: TaskNodeResponseDto,
   lateStart: number,
   lateFinish: number,
 ): { candidateLateFinish: number; candidateLateStart: number } {
@@ -205,10 +205,10 @@ function computeCandidateBounds(
 }
 
 export function buildBackwardPassMaps(
-  tasks: TaskNode[],
+  tasks: TaskNodeResponseDto[],
   projectDuration: number,
-  edgeMap: Map<string, TaskDependencyEdge[]>,
-  taskMap: Map<string, TaskNode>,
+  edgeMap: Map<string, TaskDependencyEdgeDto[]>,
+  taskMap: Map<string, TaskNodeResponseDto>,
 ): {
   outdegree: Map<string, number>;
   predecessorBounds: Map<string, { maxLateFinish: number; maxLateStart: number }>;
@@ -233,9 +233,9 @@ export function buildBackwardPassMaps(
 }
 
 export function updateBackwardPredecessor(
-  successor: TaskNode,
-  dep: TaskDependencyEdge,
-  taskMap: Map<string, TaskNode>,
+  successor: TaskNodeResponseDto,
+  dep: TaskDependencyEdgeDto,
+  taskMap: Map<string, TaskNodeResponseDto>,
   outdegree: Map<string, number>,
   predecessorBounds: Map<string, { maxLateFinish: number; maxLateStart: number }>,
   projectDuration: number,
@@ -268,11 +268,11 @@ export function updateBackwardPredecessor(
 }
 
 export function backwardPass(
-  tasks: TaskNode[],
+  tasks: TaskNodeResponseDto[],
   projectDuration: number,
-  edgeMap: Map<string, TaskDependencyEdge[]>,
+  edgeMap: Map<string, TaskDependencyEdgeDto[]>,
 ): { hasCycle: boolean; unprocessed: number } {
-  const taskMap = new Map<string, TaskNode>();
+  const taskMap = new Map<string, TaskNodeResponseDto>();
   for (const t of tasks) taskMap.set(t.id, t);
 
   const { outdegree, predecessorBounds } = buildBackwardPassMaps(

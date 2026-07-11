@@ -1,16 +1,16 @@
-import { InferredDependency, InferenceTask } from '../../../interfaces/dependency-inference.interface';
+import { InferredDependencyDto, InferenceTaskDto } from '../../../dto/analysis/inference.dto';
 
 const PHASE_ORDER = ['prepare', 'produce', 'test', 'consolidate', 'practice'];
 
-function getTaskPhase(task: InferenceTask): string {
+function getTaskPhase(task: InferenceTaskDto): string {
   const raw = String(task.microTaskType ?? '')
     .trim()
     .toLowerCase();
   return PHASE_ORDER.includes(raw) ? raw : 'produce';
 }
 
-function buildPhaseGates(tasks: InferenceTask[]): Map<string, InferenceTask> {
-  const gateByPhase = new Map<string, InferenceTask>();
+function buildPhaseGates(tasks: InferenceTaskDto[]): Map<string, InferenceTaskDto> {
+  const gateByPhase = new Map<string, InferenceTaskDto>();
   for (const t of tasks) {
     const p = getTaskPhase(t);
     if (!gateByPhase.has(p)) gateByPhase.set(p, t);
@@ -20,9 +20,9 @@ function buildPhaseGates(tasks: InferenceTask[]): Map<string, InferenceTask> {
 
 function buildInterPhaseDependencies(
   phasesPresent: string[],
-  gateByPhase: Map<string, InferenceTask>,
-): InferredDependency[] {
-  const deps: InferredDependency[] = [];
+  gateByPhase: Map<string, InferenceTaskDto>,
+): InferredDependencyDto[] {
+  const deps: InferredDependencyDto[] = [];
   for (let i = 1; i < phasesPresent.length; i++) {
     const prevGate = gateByPhase.get(phasesPresent[i - 1])!;
     const gate = gateByPhase.get(phasesPresent[i])!;
@@ -40,10 +40,10 @@ function buildInterPhaseDependencies(
 }
 
 function buildIntraPhaseDependencies(
-  tasks: InferenceTask[],
-  gateByPhase: Map<string, InferenceTask>,
-): InferredDependency[] {
-  const deps: InferredDependency[] = [];
+  tasks: InferenceTaskDto[],
+  gateByPhase: Map<string, InferenceTaskDto>,
+): InferredDependencyDto[] {
+  const deps: InferredDependencyDto[] = [];
   for (const t of tasks) {
     const p = getTaskPhase(t);
     const gate = gateByPhase.get(p);
@@ -59,7 +59,7 @@ function buildIntraPhaseDependencies(
   return deps;
 }
 
-export function inferHeuristicPhases(tasks: InferenceTask[]): InferredDependency[] {
+export function inferHeuristicPhases(tasks: InferenceTaskDto[]): InferredDependencyDto[] {
   const normalized = (tasks || []).filter((t) => t?.id && t?.name);
   if (normalized.length < 2) return [];
 
@@ -75,11 +75,11 @@ export function inferHeuristicPhases(tasks: InferenceTask[]): InferredDependency
 }
 
 export function filterInvalidAndSelfEdges(
-  deps: InferredDependency[],
+  deps: InferredDependencyDto[],
   validIds: Set<string>,
-): InferredDependency[] {
+): InferredDependencyDto[] {
   const seen = new Set<string>();
-  const out: InferredDependency[] = [];
+  const out: InferredDependencyDto[] = [];
   for (const d of deps || []) {
     const taskId = String(d?.taskId || '').trim();
     const depId = String(d?.dependsOnTaskId || '').trim();
@@ -121,12 +121,12 @@ function wouldCreateCycle({
   return false;
 }
 
-export function keepAcyclic(taskIds: string[], deps: InferredDependency[]): InferredDependency[] {
+export function keepAcyclic(taskIds: string[], deps: InferredDependencyDto[]): InferredDependencyDto[] {
   const nodes = new Set(taskIds);
   const adj = new Map<string, Set<string>>();
   for (const id of nodes) adj.set(id, new Set());
 
-  const accepted: InferredDependency[] = [];
+  const accepted: InferredDependencyDto[] = [];
   for (const d of deps) {
     const { taskId, dependsOnTaskId: depId } = d;
     if (!nodes.has(taskId) || !nodes.has(depId)) continue;
@@ -153,8 +153,8 @@ export function previewText(input: unknown, maxLen: number): string {
   return s.length <= maxLen ? s : s.slice(0, maxLen) + '…';
 }
 
-export function normalizeDependencies(raw: Array<unknown>): InferredDependency[] {
-  const out: InferredDependency[] = [];
+export function normalizeDependencies(raw: Array<unknown>): InferredDependencyDto[] {
+  const out: InferredDependencyDto[] = [];
   for (const item of raw || []) {
     if (Array.isArray(item)) {
       const taskId = String(item[0] ?? '').trim();

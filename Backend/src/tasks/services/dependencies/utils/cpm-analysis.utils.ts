@@ -1,23 +1,29 @@
 import { DependencyType } from '../../../schemas/task-dependency.schema';
 import {
-  TaskDependencyEdge,
-  TaskNode,
-  PackageCriticality,
-  CPMAnalysis,
-  TaskMetrics,
-  ValidateDependenciesParams,
-  ComputeGraphDegreesParams,
-  FindEndNodeParams,
-  EvaluateAlignmentParams,
-  FindBestPredecessorParams,
-  BuildCriticalPathParams,
-  GenerateAlertsParams,
-  CreateCPMDiagnosticsParams,
-  GroupedPackageTasks,
-  RawPackageMetrics,
-} from '../../../interfaces/cpm.interface';
+  TaskNodeResponseDto,
+  TaskDependencyEdgeDto,
+  PackageCriticalityResponseDto,
+  CPMAnalysisResponseDto,
+  TaskMetricsResponseDto,
+} from '../../../dto/analysis/cpm.dto';
 import { forwardPass, backwardPass, buildEdgeMap } from './cpm-passes.utils';
 import { CPMDiagnosticsDto } from '../../../dto/analysis/cpm-diagnostics.dto';
+
+interface GroupedPackageTasks {
+  path?: string;
+  tasks: TaskNodeResponseDto[];
+}
+
+interface RawPackageMetrics {
+  packageId: string;
+  packagePath?: string;
+  taskCount: number;
+  criticalTaskCount: number;
+  criticalRatio: number;
+  minSlack: number;
+  criticalDuration: number;
+  criticalPathTaskCount: number;
+}
 
 // ===========================================================================
 // Re-exports
@@ -33,7 +39,11 @@ function validateDependencies({
   tasksInHours,
   edgeMap,
   taskIds,
-}: ValidateDependenciesParams): {
+}: {
+  tasksInHours: TaskNodeResponseDto[];
+  edgeMap: Map<string, TaskDependencyEdgeDto[]>;
+  taskIds: Set<string>;
+}): {
   missingDependencyRefs: number;
   missingDependencySamples: Array<{ taskId: string; dependsOnTaskId: string }>;
 } {
@@ -58,7 +68,11 @@ function computeGraphDegrees({
   tasksInHours,
   edgeMap,
   taskIds,
-}: ComputeGraphDegreesParams): {
+}: {
+  tasksInHours: TaskNodeResponseDto[];
+  edgeMap: Map<string, TaskDependencyEdgeDto[]>;
+  taskIds: Set<string>;
+}): {
   indegree: Map<string, number>;
   outdegree: Map<string, number>;
   edgeCount: number;
@@ -88,11 +102,11 @@ function computeGraphDegrees({
   return { indegree, outdegree, edgeCount, depSum };
 }
 
-function initializeTasksInHours(tasks: TaskNode[]): TaskNode[] {
+function initializeTasksInHours(tasks: TaskNodeResponseDto[]): TaskNodeResponseDto[] {
   return tasks.map((t) => ({ ...t, duration: t.duration / 60 }));
 }
 
-function calculateSlacksAndCriticalTasks(tasksInHours: TaskNode[], projectDuration: number): TaskNode[] {
+function calculateSlacksAndCriticalTasks(tasksInHours: TaskNodeResponseDto[], projectDuration: number): TaskNodeResponseDto[] {
   return tasksInHours.filter((t) => {
     if (typeof t.earlyStart !== 'number') t.earlyStart = 0;
     if (typeof t.earlyFinish !== 'number') t.earlyFinish = t.duration;
@@ -107,7 +121,7 @@ function calculateSlacksAndCriticalTasks(tasksInHours: TaskNode[], projectDurati
   });
 }
 
-function sortTasksByImpact(tasksInHours: TaskNode[], indegree: Map<string, number>): TaskNode[] {
+function sortTasksByImpact(tasksInHours: TaskNodeResponseDto[], indegree: Map<string, number>): TaskNodeResponseDto[] {
   return [...tasksInHours].sort((a, b) => {
     const slackDiff = (a.slack || 0) - (b.slack || 0);
     if (Math.abs(slackDiff) > 0.01) return slackDiff;
@@ -130,8 +144,8 @@ function sortTasksByImpact(tasksInHours: TaskNode[], indegree: Map<string, numbe
 // ===========================================================================
 
 function runCPMPasses(
-  tasksInHours: TaskNode[],
-  edgeMap: Map<string, TaskDependencyEdge[]>,
+  tasksInHours: TaskNodeResponseDto[],
+  edgeMap: Map<string, TaskDependencyEdgeDto[]>,
 ): {
   forward: { hasCycle: boolean; unprocessed: number };
   projectDuration: number;
@@ -143,11 +157,24 @@ function runCPMPasses(
   return { forward, projectDuration, backward };
 }
 
-function getEffectiveCriticalPath(criticalPathSequence: string[], criticalTasks: TaskNode[]): string[] {
+function getEffectiveCriticalPath(criticalPathSequence: string[], criticalTasks: TaskNodeResponseDto[]): string[] {
   return criticalPathSequence.length > 0 ? criticalPathSequence : criticalTasks.map((t) => t.id);
 }
 
-function createCPMDiagnostics(params: CreateCPMDiagnosticsParams): CPMDiagnosticsDto {
+function createCPMDiagnostics(params: {
+  tasksInHours: TaskNodeResponseDto[];
+  criticalTasks: TaskNodeResponseDto[];
+  criticalPathSequence: string[];
+  projectDuration: number;
+  indegree: Map<string, number>;
+  outdegree: Map<string, number>;
+  edgeCount: number;
+  depSum: number;
+  forward: { hasCycle: boolean; unprocessed: number };
+  backward: { hasCycle: boolean; unprocessed: number };
+  missingDependencyRefs: number;
+  missingDependencySamples: Array<{ taskId: string; dependsOnTaskId: string }>;
+}): CPMDiagnosticsDto {
   return new CPMDiagnosticsDto({
     tasksInHours: params.tasksInHours,
     criticalTasks: params.criticalTasks,
@@ -165,7 +192,7 @@ function createCPMDiagnostics(params: CreateCPMDiagnosticsParams): CPMDiagnostic
   });
 }
 
-export function calculateCriticalPath(tasks: TaskNode[]): CPMAnalysis {
+export function calculateCriticalPath(tasks: TaskNodeResponseDto[]): CPMAnalysisResponseDto {
   if (tasks.length === 0) {
     return { criticalPath: [], projectDuration: 0, tasksByImpact: [], alerts: [] };
   }
@@ -237,7 +264,7 @@ export function calculateCriticalPath(tasks: TaskNode[]): CPMAnalysis {
   };
 }
 
-export function getTaskMetrics(task: TaskNode): TaskMetrics {
+export function getTaskMetrics(task: TaskNodeResponseDto): TaskMetricsResponseDto {
   return {
     taskId: task.id,
     taskName: task.name,
@@ -255,9 +282,9 @@ export function getTaskMetrics(task: TaskNode): TaskMetrics {
 // ===========================================================================
 
 export function computePackageCriticality(
-  tasks: TaskNode[],
+  tasks: TaskNodeResponseDto[],
   criticalPath: string[],
-): PackageCriticality[] {
+): PackageCriticalityResponseDto[] {
   const criticalPathSet = new Set(criticalPath);
   const grouped = groupTasksByPackage(tasks);
 
@@ -273,7 +300,7 @@ export function computePackageCriticality(
   return scored;
 }
 
-function groupTasksByPackage(tasks: TaskNode[]): Map<string, GroupedPackageTasks> {
+function groupTasksByPackage(tasks: TaskNodeResponseDto[]): Map<string, GroupedPackageTasks> {
   const grouped = new Map<string, GroupedPackageTasks>();
 
   for (const task of tasks) {
@@ -323,7 +350,7 @@ function calculateRawPackageMetrics(
 
 function computeScoresAndFormat(
   rawMetrics: RawPackageMetrics[],
-): PackageCriticality[] {
+): PackageCriticalityResponseDto[] {
   const maxCriticalDuration = Math.max(...rawMetrics.map((item) => item.criticalDuration), 0);
 
   return rawMetrics.map((item) => {
@@ -347,7 +374,7 @@ function computeScoresAndFormat(
   });
 }
 
-function sortPackageCriticalityList(list: PackageCriticality[]): void {
+function sortPackageCriticalityList(list: PackageCriticalityResponseDto[]): void {
   list.sort((a, b) => {
     if (b.score !== a.score) return b.score - a.score;
     if (b.criticalRatio !== a.criticalRatio) return b.criticalRatio - a.criticalRatio;
@@ -356,8 +383,16 @@ function sortPackageCriticalityList(list: PackageCriticality[]): void {
   });
 }
 
-function findEndNode({ tasks, projectDuration, eps }: FindEndNodeParams): TaskNode | undefined {
-  let end: TaskNode | undefined;
+function findEndNode({
+  tasks,
+  projectDuration,
+  eps,
+}: {
+  tasks: TaskNodeResponseDto[];
+  projectDuration: number;
+  eps: number;
+}): TaskNodeResponseDto | undefined {
+  let end: TaskNodeResponseDto | undefined;
   for (const t of tasks) {
     if (typeof t.earlyFinish !== 'number') continue;
     if (!end || (t.earlyFinish ?? 0) > (end.earlyFinish ?? 0)) end = t;
@@ -381,7 +416,12 @@ function evaluateDependencyAlignment({
   cur,
   dep,
   eps,
-}: EvaluateAlignmentParams): { aligns: boolean; timelineRef: number } {
+}: {
+  pred: TaskNodeResponseDto;
+  cur: TaskNodeResponseDto;
+  dep: TaskDependencyEdgeDto;
+  eps: number;
+}): { aligns: boolean; timelineRef: number } {
   const es = typeof cur.earlyStart === 'number' ? cur.earlyStart : 0;
   const ef = typeof cur.earlyFinish === 'number' ? cur.earlyFinish : es + (cur.duration || 0);
 
@@ -411,8 +451,13 @@ function findBestPredecessor({
   deps,
   taskById,
   eps,
-}: FindBestPredecessorParams): TaskNode | undefined {
-  let bestPred: TaskNode | undefined;
+}: {
+  cur: TaskNodeResponseDto;
+  deps: TaskDependencyEdgeDto[];
+  taskById: Map<string, TaskNodeResponseDto>;
+  eps: number;
+}): TaskNodeResponseDto | undefined {
+  let bestPred: TaskNodeResponseDto | undefined;
   let bestScore = -Infinity;
 
   for (const dep of deps) {
@@ -441,8 +486,12 @@ export function buildCriticalPathSequence({
   tasks,
   projectDuration,
   edgeMap,
-}: BuildCriticalPathParams): string[] {
-  const taskById = new Map<string, TaskNode>();
+}: {
+  tasks: TaskNodeResponseDto[];
+  projectDuration: number;
+  edgeMap: Map<string, TaskDependencyEdgeDto[]>;
+}): string[] {
+  const taskById = new Map<string, TaskNodeResponseDto>();
   for (const t of tasks) taskById.set(t.id, t);
 
   const eps = 0.11;
@@ -452,7 +501,7 @@ export function buildCriticalPathSequence({
 
   const path: string[] = [];
   const visited = new Set<string>();
-  let cur: TaskNode | undefined = end;
+  let cur: TaskNodeResponseDto | undefined = end;
 
   while (cur && !visited.has(cur.id)) {
     visited.add(cur.id);
@@ -473,7 +522,16 @@ export function generateAlerts({
   tasks,
   criticalTasks,
   diagnostics,
-}: GenerateAlertsParams): string[] {
+}: {
+  tasks: TaskNodeResponseDto[];
+  criticalTasks: TaskNodeResponseDto[];
+  diagnostics: {
+    cycleDetected: boolean;
+    unprocessedForward: number;
+    unprocessedBackward: number;
+    missingDependencyRefs: number;
+  };
+}): string[] {
   const alerts: string[] = [];
 
   if (diagnostics.cycleDetected) {

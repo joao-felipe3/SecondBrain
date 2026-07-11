@@ -1,8 +1,11 @@
 import { Controller, Get, Post, Param, Body, Logger, Inject, forwardRef } from '@nestjs/common';
-import { BufferService, TaskNode, CPMAnalysis, BufferTaskMetrics } from '../services/analysis';
+import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { BufferService, TaskNode, BufferTaskMetrics } from '../services/analysis';
 import { CPMService } from '../services/dependencies';
 import { TasksService } from '../tasks.service';
+import { BufferHistoryDto } from '../dto';
 
+@ApiTags('Buffers')
 @Controller('buffers')
 export class BufferController {
   private readonly logger = new Logger(BufferController.name);
@@ -47,7 +50,7 @@ export class BufferController {
       }
 
       // Calcular CPM
-      const analysis: CPMAnalysis = this.cpmService.calculateCriticalPath(taskNodes);
+      const analysis = this.cpmService.calculateCriticalPath(taskNodes);
 
       // Convertir a TaskMetrics para BufferService
       const taskMetrics: BufferTaskMetrics[] = (analysis.tasksByImpact || []).map((task: any) => ({
@@ -193,6 +196,13 @@ export class BufferController {
    * Obtiene el histórico de consumo del buffer
    */
   @Get('projects/:projectId/history')
+  @ApiOperation({ summary: 'Obtener el histórico de consumo del buffer del proyecto' })
+  @ApiResponse({
+    status: 200,
+    description: 'Histórico obtenido exitosamente',
+    type: BufferHistoryDto,
+    isArray: true,
+  })
   async getBufferHistory(@Param('projectId') projectId: string) {
     try {
       const history = await this.bufferService.getBufferHistory(projectId);
