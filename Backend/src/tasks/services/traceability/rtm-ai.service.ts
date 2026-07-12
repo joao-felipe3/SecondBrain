@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { RequirementType, JourneyKind } from '../../schemas/requirement.schema';
-import { TaskDocument } from '../../schemas/task.schema';
+import { Task } from '../../entities/task.entity';
 import { RTMValidation } from '../../interfaces/rtm.interface';
 import { RTMJourneyService } from './rtm-journey.service';
 import { RTMMappingService } from './rtm-mapping.service';
@@ -26,7 +26,7 @@ export class RTMAiService {
 
   autoMapRequirementsToTasks(
     projectId: string,
-    tasks: TaskDocument[],
+    tasks: Task[],
   ): Promise<{
     mappedCount: number;
     createdRequirementsCount: number;

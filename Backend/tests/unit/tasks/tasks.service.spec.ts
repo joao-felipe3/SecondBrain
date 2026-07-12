@@ -83,9 +83,36 @@ describe('TasksService', () => {
 
     feedbackModelMock = {};
 
+    const taskRepositoryMock = {
+      findAll: jest.fn().mockImplementation(async () => []),
+      findById: jest.fn().mockImplementation(async (id: string) => {
+        if (taskModelMock.findById) {
+          const queryObj = taskModelMock.findById(id);
+          if (queryObj && typeof queryObj.exec === 'function') {
+            return await queryObj.exec();
+          }
+          return queryObj;
+        }
+        return null;
+      }),
+      findByProjectId: jest.fn().mockImplementation(async (projectId: string, opts?: any) => {
+        if (taskModelMock.find) {
+          const queryObj = taskModelMock.find({ project: projectId });
+          if (queryObj && typeof queryObj.exec === 'function') {
+            return await queryObj.exec();
+          }
+          return queryObj;
+        }
+        return [];
+      }),
+      save: jest.fn().mockImplementation(async (task: any) => task),
+      delete: jest.fn().mockImplementation(async () => {}),
+    };
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         TasksService,
+        { provide: 'TaskRepository', useValue: taskRepositoryMock },
         { provide: getModelToken('Task'), useValue: taskModelMock },
         { provide: getModelToken('Project'), useValue: {} },
         {

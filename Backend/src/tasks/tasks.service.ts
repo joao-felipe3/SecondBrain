@@ -29,6 +29,8 @@ import {
 // Schema
 import { TaskDocument } from './schemas/task.schema';
 import { TaskAlertDocument } from './schemas/task-alert.schema';
+import { TaskRepository } from './interfaces/task-repository.interface';
+import { Task } from './entities/task.entity';
 
 // Services
 import { ProjectsService } from '../projects/projects.service';
@@ -47,7 +49,7 @@ import { TasksHierarchyService, TaskDescendantNode, TaskLineageResult } from './
 @Injectable()
 export class TasksService {
   constructor(
-    @InjectModel('Task') private readonly taskModel: Model<TaskDocument>,
+    @Inject('TaskRepository') private readonly taskRepository: TaskRepository,
     @Inject(forwardRef(() => ProjectsService))
     private readonly projectsService: ProjectsService,
     @Inject(forwardRef(() => GeminiService))
@@ -273,47 +275,25 @@ export class TasksService {
   }
 
   // ------------------------------ Read / Find operations ------------------------------
-  public async findAll(): Promise<TaskDocument[]> {
-    return await this.taskModel.find().exec();
+  public async findAll(): Promise<Task[]> {
+    return await this.taskRepository.findAll();
   }
 
   public async findByProjectId(
     projectId: string,
     opts?: FindByProjectIdOptionsDto,
-  ): Promise<TaskDocument[]> {
-    if (!projectId || projectId === 'null' || projectId === 'undefined') {
-      throw new BadRequestException(`Project ID inválido: ${projectId}`);
-    }
-
-    const query: FilterQuery<TaskDocument> & { parentWbsNodeId?: string } = {};
-    if (Types.ObjectId.isValid(projectId)) {
-      query.project = new Types.ObjectId(projectId);
-    }
-
-    const taskIds = Array.isArray(opts?.taskIds) ? opts.taskIds : [];
-    if (taskIds.length > 0) {
-      const validIds = taskIds.filter((id) => Types.ObjectId.isValid(id));
-      if (validIds.length > 0) {
-        const validObjectIds = validIds.map((id) => new Types.ObjectId(id));
-        query._id = { $in: validObjectIds } as FilterQuery<TaskDocument>['_id'];
-      }
-    }
-
-    if (opts?.parentWbsNodeId) {
-      query.parentWbsNodeId = String(opts.parentWbsNodeId);
-    }
-
-    return await this.taskModel.find(query).exec();
+  ): Promise<Task[]> {
+    return await this.taskRepository.findByProjectId(projectId, opts);
   }
 
-  public async findOne(id: string): Promise<TaskDocument | null> {
-    if (!id || id === 'null' || id === 'undefined' || !Types.ObjectId.isValid(id)) {
+  public async findOne(id: string): Promise<Task | null> {
+    if (!id || id === 'null' || id === 'undefined') {
       throw new BadRequestException(`ID inválido: ${id}`);
     }
-    return await this.taskModel.findById(id).exec();
+    return await this.taskRepository.findById(id);
   }
 
-  public async findMicroTask(id: string): Promise<TaskDocument> {
+  public async findMicroTask(id: string): Promise<Task> {
     const task = await this.findOne(id);
     if (!task) {
       throw new NotFoundException(`Task with id ${id} not found`);

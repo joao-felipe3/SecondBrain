@@ -20,6 +20,7 @@ import { HabitsController } from './controllers/habits.controller';
 import { MongooseModule } from '@nestjs/mongoose';
 import { TaskSchema } from './schemas/task.schema';
 import { Task } from './entities/task.entity';
+import { MongooseTaskRepository } from './repositories/mongoose-task.repository';
 import { ProjectSchema } from '../projects/schemas/project.schema';
 import { Project } from '../projects/entities/project.entity';
 import { TaskDependencySchema } from './schemas/task-dependency.schema';
@@ -90,6 +91,10 @@ import { AlertsController } from './controllers/alerts.controller';
     AlertsService,
     DeviationDetectionService,
     TasksRecurringService,
+    {
+      provide: 'TaskRepository',
+      useClass: MongooseTaskRepository,
+    },
   ],
   exports: [
     TasksService,
@@ -117,6 +122,7 @@ import { AlertsController } from './controllers/alerts.controller';
     AlertsService,
     DeviationDetectionService,
     TasksRecurringService,
+    'TaskRepository',
   ],
 })
 export class TasksModule {}

@@ -10,7 +10,7 @@ import {
 } from '../services/analysis';
 import { CPMService, DependencyInferenceService } from '../services/dependencies';
 import { TasksService } from '../tasks.service';
-import type { TaskDependency } from '../schemas/task-dependency.schema';
+import { TaskDependency } from '../entities/task-dependency.entity';
 import {
   AddDependencyDto,
   DependencyResponseDto,
@@ -1001,9 +1001,8 @@ export class CPMController {
       relationship: addDependencyDto.relationship || 'FINISH_TO_START',
     });
 
-    const doc = dependency as any;
     return {
-      id: doc._id?.toString() || '',
+      id: dependency.id,
       taskId: dependency.taskId,
       dependsOnTaskId: dependency.dependsOnTaskId,
       relationship: dependency.relationship,
@@ -1262,9 +1261,8 @@ export class CPMController {
       projectId,
       count: dependencies.length,
       dependencies: dependencies.map((d) => {
-        const doc = d as any;
         return {
-          id: doc._id?.toString() || '',
+          id: d.id,
           taskId: d.taskId,
           dependsOnTaskId: d.dependsOnTaskId,
           relationship: d.relationship,

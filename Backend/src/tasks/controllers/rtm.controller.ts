@@ -2,7 +2,7 @@ import { Controller, Post, Get, Delete, Param, Body, Logger } from '@nestjs/comm
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { RTMService } from '../services/traceability';
 import { TasksService } from '../tasks.service';
-import { RequirementDocument } from '../schemas/requirement.schema';
+import { Requirement } from '../entities/requirement.entity';
 import { MapRequirementToTaskDto } from '../dto';
 
 @ApiTags('RTM - Rastreabilidade da Jornada Pessoal')
@@ -201,12 +201,12 @@ export class RTMController {
         success: true,
         message: 'Mapeamento realizado com sucesso',
         requirement: {
-          id: (result as RequirementDocument)._id?.toString(),
+          id: result.id,
           description: result.description,
           traceableItems: result.traceableItems,
-          traceableActionItems: (result as any).traceableActionItems,
-          kind: (result as any).kind,
-          hierarchyLevel: (result as any).hierarchyLevel,
+          traceableActionItems: result.traceableActionItems,
+          kind: result.kind,
+          hierarchyLevel: result.hierarchyLevel,
           status: result.status,
         },
         validation,
@@ -249,12 +249,12 @@ export class RTMController {
         success: true,
         message: 'Mapeamento removido com sucesso',
         requirement: {
-          id: (result as RequirementDocument)._id?.toString(),
+          id: result.id,
           description: result.description,
           traceableItems: result.traceableItems,
-          traceableActionItems: (result as any).traceableActionItems,
-          kind: (result as any).kind,
-          hierarchyLevel: (result as any).hierarchyLevel,
+          traceableActionItems: result.traceableActionItems,
+          kind: result.kind,
+          hierarchyLevel: result.hierarchyLevel,
           status: result.status,
         },
         validation,

@@ -1,7 +1,9 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
-import { Requirement, RequirementDocument, JourneyKind } from '../../schemas/requirement.schema';
+import { Requirement as RequirementSchema, RequirementDocument, JourneyKind } from '../../schemas/requirement.schema';
+import { Requirement } from '../../entities/requirement.entity';
+import { RequirementMapper } from '../../mappers/requirement.mapper';
 import { MapRequirementToTaskDto } from '../../dto';
 import { normalizeKind, normalizeType, levelForKind, getLinkedActions } from './utils/rtm.utils';
 
@@ -29,7 +31,7 @@ export class RTMCrudService {
   private readonly logger = new Logger(RTMCrudService.name);
 
   constructor(
-    @InjectModel(Requirement.name)
+    @InjectModel(RequirementSchema.name)
     private readonly requirementModel: Model<RequirementDocument>,
   ) {}
 
@@ -37,11 +39,12 @@ export class RTMCrudService {
   // 1. Requirements Retrieval
   // ===========================================================================
 
-  async getRequirements(projectId: string): Promise<RequirementDocument[]> {
+  async getRequirements(projectId: string): Promise<Requirement[]> {
     try {
-      return await this.requirementModel
+      const docs = await this.requirementModel
         .find({ projectId })
         .sort({ hierarchyLevel: 1, createdAt: 1, _id: 1 });
+      return docs.map(RequirementMapper.toDomain);
     } catch (error: unknown) {
       this.logger.error(
         `Erro ao buscar requisitos para o projeto ${projectId}: ${(error as Error).message}`,
@@ -57,7 +60,7 @@ export class RTMCrudService {
   async saveRequirements(
     projectId: string,
     requirementsData: SaveRequirementInput[],
-  ): Promise<RequirementDocument[]> {
+  ): Promise<Requirement[]> {
     this.logger.log(
       `Iniciando salvamento de ${requirementsData.length} itens de jornada para projeto ${projectId}`,
     );
@@ -68,7 +71,7 @@ export class RTMCrudService {
 
       const refToId = new Map<string, string>();
       const insertedDedupKeys = new Set<string>();
-      const insertedRequirements: RequirementDocument[] = [];
+      const insertedRequirements: Requirement[] = [];
 
       for (const item of orderedItems) {
         const createdRequirement = await this._processAndCreateSingleRequirement({
@@ -130,7 +133,7 @@ export class RTMCrudService {
     item: PreparedRequirementData;
     refToId: Map<string, string>;
     insertedDedupKeys: Set<string>;
-  }): Promise<RequirementDocument | null> {
+  }): Promise<Requirement | null> {
     const { projectId, item, refToId, insertedDedupKeys } = params;
     const dedupKey = `${item.kind}::${item.description.toLowerCase()}`;
     if (insertedDedupKeys.has(dedupKey)) {
@@ -165,7 +168,7 @@ export class RTMCrudService {
 
       refToId.set(item.ref, String(created._id));
       insertedDedupKeys.add(dedupKey);
-      return created as RequirementDocument;
+      return RequirementMapper.toDomain(created);
     } catch (error: unknown) {
       this.logger.error(`Erro ao criar requisito ${item.ref}: ${(error as Error).message}`);
       return null;
@@ -237,7 +240,7 @@ export class RTMCrudService {
       }
 
       this.logger.log(`Item ${requirementId} mapeado para tarefa ${taskId} com sucesso.`);
-      return requirement;
+      return RequirementMapper.toDomain(requirement);
     } catch (error: unknown) {
       this.logger.error(
         `Erro ao mapear item ${requirementId} para tarefa ${taskId}: ${(error as Error).message}`,
@@ -268,7 +271,7 @@ export class RTMCrudService {
       await this._updateRequirementStatusIfNoLinkedActions(requirement);
 
       this.logger.log(`Mapeamento removido do item ${requirementId} com sucesso.`);
-      return requirement;
+      return RequirementMapper.toDomain(requirement);
     } catch (error: unknown) {
       this.logger.error(
         `Erro ao remover mapeamento do item ${requirementId} da tarefa ${taskId}: ${(error as Error).message}`,

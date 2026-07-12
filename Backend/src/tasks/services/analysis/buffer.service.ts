@@ -22,6 +22,10 @@ export class BufferService {
     private readonly bufferModel: Model<ProjectBufferDocument>,
   ) {}
 
+  // ===========================================================================
+  // 1. Buffer Operations
+  // ===========================================================================
+
   async calculateProjectBuffer(dto: CalculateBufferDto): Promise<ProjectBuffer | null> {
     const { projectId, tasks, criticalPath } = dto;
     this.logger.log(
@@ -121,6 +125,10 @@ export class BufferService {
       },
     ];
   }
+
+  // ===========================================================================
+  // 2. Private Helpers
+  // ===========================================================================
 
   private performBufferCalculation(criticalTasks: BufferTaskMetrics[]): BufferCalculationResult {
     return calculateMetrics(criticalTasks);

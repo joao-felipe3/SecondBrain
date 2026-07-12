@@ -1,11 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import {
-  Requirement,
   RequirementDocument,
   RequirementType,
   JourneyKind,
 } from '../../schemas/requirement.schema';
-import { TaskDocument } from '../../schemas/task.schema';
+import { Task } from '../../entities/task.entity';
+import { Requirement } from '../../entities/requirement.entity';
 import { RTMValidation, RTMMatrixData } from '../../interfaces/rtm.interface';
 import { RTMCrudService } from './rtm-crud.service';
 import { RTMAiService } from './rtm-ai.service';
@@ -27,7 +27,7 @@ export class RTMService {
   // CRUD — delegações para RTMCrudService
   // ===========================================================================
 
-  getRequirements(projectId: string): Promise<RequirementDocument[]> {
+  getRequirements(projectId: string): Promise<Requirement[]> {
     return this.crud.getRequirements(projectId);
   }
 
@@ -41,7 +41,7 @@ export class RTMService {
       ref?: string;
       parentRef?: string;
     }>,
-  ): Promise<RequirementDocument[]> {
+  ): Promise<Requirement[]> {
     return this.crud.saveRequirements(projectId, requirementsData);
   }
 
@@ -81,7 +81,7 @@ export class RTMService {
 
   autoMapRequirementsToTasks(
     projectId: string,
-    tasks: TaskDocument[],
+    tasks: Task[],
   ): Promise<{
     mappedCount: number;
     createdRequirementsCount: number;
@@ -109,7 +109,7 @@ export class RTMService {
     return this.validation.validateRTM(projectId);
   }
 
-  getRTMMatrix(projectId: string, tasks: TaskDocument[]): Promise<RTMMatrixData> {
+  getRTMMatrix(projectId: string, tasks: Task[]): Promise<RTMMatrixData> {
     return this.validation.getRTMMatrix(projectId, tasks);
   }
 }

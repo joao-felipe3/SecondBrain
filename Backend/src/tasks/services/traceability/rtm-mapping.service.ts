@@ -1,8 +1,10 @@
 import { Injectable, Logger, Inject, forwardRef } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
-import { Requirement, RequirementDocument } from '../../schemas/requirement.schema';
-import { TaskDocument } from '../../schemas/task.schema';
+import { Requirement as RequirementSchema, RequirementDocument } from '../../schemas/requirement.schema';
+import { Requirement } from '../../entities/requirement.entity';
+import { RequirementMapper } from '../../mappers/requirement.mapper';
+import { Task } from '../../entities/task.entity';
 import { CreateTaskDto } from '../../dto/task/create-task.dto';
 import { GeminiService } from '../../../ai/gemini.service';
 import { TasksService } from '../../tasks.service';
@@ -22,7 +24,7 @@ export class RTMMappingService {
   private readonly logger = new Logger(RTMMappingService.name);
 
   constructor(
-    @InjectModel(Requirement.name)
+    @InjectModel(RequirementSchema.name)
     private readonly requirementModel: Model<RequirementDocument>,
     private readonly geminiService: GeminiService,
     @Inject(forwardRef(() => TasksService))
@@ -36,7 +38,7 @@ export class RTMMappingService {
 
   async autoMapRequirementsToTasks(
     projectId: string,
-    tasks: TaskDocument[],
+    tasks: Task[],
   ): Promise<{
     mappedCount: number;
     createdRequirementsCount: number;
@@ -50,9 +52,10 @@ export class RTMMappingService {
     );
 
     try {
-      const allItems = await this.requirementModel.find({ projectId });
+      const allItemsDocs = await this.requirementModel.find({ projectId });
+      const allItems = allItemsDocs.map(RequirementMapper.toDomain);
       const actionItems = allItems.filter(
-        (item: RequirementDocument) => normalizeKind(item.kind || item.type) === 'action',
+        (item: Requirement) => normalizeKind(item.kind || item.type) === 'action',
       );
 
       const earlyExit = this.checkEarlyExitConditions(allItems, actionItems);
@@ -126,12 +129,13 @@ export class RTMMappingService {
         };
       }
 
-      const requirements = await this.requirementModel.find({
+      const requirementsDocs = await this.requirementModel.find({
         _id: { $in: validation.unmappedRequirements },
       });
+      const requirements = requirementsDocs.map(RequirementMapper.toDomain);
 
       const actionItems = requirements.filter(
-        (item: RequirementDocument) => normalizeKind(item.kind || item.type) === 'action',
+        (item: Requirement) => normalizeKind(item.kind || item.type) === 'action',
       );
 
       if (actionItems.length === 0) {
@@ -179,7 +183,7 @@ export class RTMMappingService {
   // Private helpers — auto-mapping
   // ===========================================================================
 
-  private checkEarlyExitConditions(allItems: RequirementDocument[], actionItems: RequirementDocument[]) {
+  private checkEarlyExitConditions(allItems: Requirement[], actionItems: Requirement[]) {
     if (allItems.length === 0) {
       return {
         mappedCount: 0,
@@ -212,26 +216,26 @@ export class RTMMappingService {
   }
 
   private filterUnmappedTasks(
-    tasks: TaskDocument[],
-    actionItems: RequirementDocument[],
-  ): TaskDocument[] {
+    tasks: Task[],
+    actionItems: Requirement[],
+  ): Task[] {
     const alreadyMappedIds = new Set<string>();
     for (const item of actionItems) {
       for (const taskId of getLinkedActions(item)) {
         alreadyMappedIds.add(String(taskId));
       }
     }
-    return tasks.filter((task) => !alreadyMappedIds.has(String(task._id || task.id)));
+    return tasks.filter((task) => !alreadyMappedIds.has(String(task.id)));
   }
 
   private async runBatchMapping(
-    tasksToMap: TaskDocument[],
-    actionItems: RequirementDocument[],
-  ): Promise<{ mappings: Record<string, string[]>; orphanTasks: TaskDocument[] }> {
+    tasksToMap: Task[],
+    actionItems: Requirement[],
+  ): Promise<{ mappings: Record<string, string[]>; orphanTasks: Task[] }> {
     const batchSize = 10;
     const mappings: Record<string, string[]> = {};
-    const orphanTasks: TaskDocument[] = [];
-    const actionsDesc = actionItems.map((a) => `[ID: ${a._id}] ${a.description}`).join('\n');
+    const orphanTasks: Task[] = [];
+    const actionsDesc = actionItems.map((a) => `[ID: ${a.id}] ${a.description}`).join('\n');
 
     for (let i = 0; i < tasksToMap.length; i += batchSize) {
       const batch = tasksToMap.slice(i, i + batchSize);
@@ -250,7 +254,7 @@ export class RTMMappingService {
 
         processMappingResponse(mappingArray, batch, mappings, orphanTasks);
       } catch {
-        applyFallbackMapping(batch, String(actionItems[0]._id), mappings);
+        applyFallbackMapping(batch, String(actionItems[0].id), mappings);
       }
     }
 
@@ -258,8 +262,8 @@ export class RTMMappingService {
   }
 
   private async handleOrphanTasks(params: {
-    orphanTasks: TaskDocument[];
-    allItems: RequirementDocument[];
+    orphanTasks: Task[];
+    allItems: Requirement[];
     projectId: string;
     mappings: Record<string, string[]>;
   }): Promise<number> {
@@ -267,10 +271,10 @@ export class RTMMappingService {
     if (orphanTasks.length === 0) return 0;
 
     const stageItems = allItems.filter(
-      (item: RequirementDocument) => normalizeKind(item.kind || item.type) === 'stage',
+      (item: Requirement) => normalizeKind(item.kind || item.type) === 'stage',
     );
     const fallbackParent = stageItems.length > 0 ? stageItems[0] : allItems[0];
-    const fallbackParentId = fallbackParent ? String(fallbackParent._id) : undefined;
+    const fallbackParentId = fallbackParent ? String(fallbackParent.id) : undefined;
 
     let createdCount = 0;
     const groupSize = Math.max(1, Math.ceil(orphanTasks.length / 3));
@@ -288,12 +292,12 @@ export class RTMMappingService {
         hierarchyLevel: levelForKind('action'),
         parentItemId: fallbackParentId,
         source: 'auto_mapped_from_orphan_tasks',
-        traceableItems: group.map((task) => String(task._id || task.id)),
-        traceableActionItems: group.map((task) => String(task._id || task.id)),
+        traceableItems: group.map((task) => String(task.id)),
+        traceableActionItems: group.map((task) => String(task.id)),
         status: 'satisfied',
       });
 
-      mappings[String(newAction._id)] = group.map((task) => String(task._id || task.id));
+      mappings[String(newAction._id)] = group.map((task) => String(task.id));
       createdCount += 1;
     }
 
@@ -344,7 +348,7 @@ export class RTMMappingService {
   // ===========================================================================
 
   private async generateAndLinkTasks(
-    actionItems: RequirementDocument[],
+    actionItems: Requirement[],
     projectId: string,
   ): Promise<number> {
     let createdTasksCount = 0;
@@ -366,7 +370,7 @@ export class RTMMappingService {
 
         if (taskIds.length > 0) {
           await this.requirementModel.updateOne(
-            { _id: new Types.ObjectId(String(req._id)) },
+            { _id: new Types.ObjectId(String(req.id)) },
             {
               $addToSet: {
                 traceableItems: { $each: taskIds },
@@ -378,7 +382,7 @@ export class RTMMappingService {
         }
       } catch (genError: unknown) {
         const err = genError as Error;
-        this.logger.warn(`[gen-tasks] erro ao gerar tarefas para ação ${req._id}: ${err.message}`);
+        this.logger.warn(`[gen-tasks] erro ao gerar tarefas para ação ${req.id}: ${err.message}`);
       }
     }
 
@@ -388,7 +392,7 @@ export class RTMMappingService {
   private async persistGeneratedTasks(params: {
     tasksToCreate: unknown[];
     projectId: string;
-    req: RequirementDocument;
+    req: Requirement;
   }): Promise<string[]> {
     const { tasksToCreate, projectId, req } = params;
     const taskIds: string[] = [];
@@ -406,8 +410,8 @@ export class RTMMappingService {
           late: false,
           recurrency: 'none',
           notification: new Date(),
-          requirementIds: [String(req._id)],
-          journeyItemIds: [String(req._id)],
+          requirementIds: [String(req.id)],
+          journeyItemIds: [String(req.id)],
         };
 
         const newTask = await this.tasksService.create(createDto);

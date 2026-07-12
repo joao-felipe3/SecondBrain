@@ -1,5 +1,5 @@
 import { RequirementType, JourneyKind } from '../../../schemas/requirement.schema';
-import { TaskDocument } from '../../../schemas/task.schema';
+import { Task } from '../../../entities/task.entity';
 import { normalizeKind, normalizeType } from './rtm.utils';
 
 // ===========================================================================
@@ -62,8 +62,8 @@ export function normalizeGeneratedItems(parsed: unknown[]): JourneyDraft[] {
 /**
  * Formata a lista de tarefas de um batch para inserção no prompt.
  */
-export function formatTasksForPrompt(batch: TaskDocument[]): string {
-  return batch.map((t) => `- "${t.name}" (ID: ${t._id || t.id})`).join('\n');
+export function formatTasksForPrompt(batch: Task[]): string {
+  return batch.map((t) => `- "${t.name}" (ID: ${t.id})`).join('\n');
 }
 
 /**
@@ -72,9 +72,9 @@ export function formatTasksForPrompt(batch: TaskDocument[]): string {
  */
 export function processMappingResponse(
   mappingArray: unknown[],
-  batch: TaskDocument[],
+  batch: Task[],
   mappings: Record<string, string[]>,
-  orphanTasks: TaskDocument[],
+  orphanTasks: Task[],
 ): void {
   for (const mapping of mappingArray) {
     const anyMapping = mapping as RawMappingEntry;
@@ -82,7 +82,7 @@ export function processMappingResponse(
     if (!taskId) continue;
 
     if (String(anyMapping.requirementId || '').toUpperCase() === 'ORPHAN') {
-      const orphan = batch.find((t) => String(t._id || t.id) === taskId);
+      const orphan = batch.find((t) => String(t.id) === taskId);
       if (orphan) orphanTasks.push(orphan);
       continue;
     }
@@ -98,12 +98,12 @@ export function processMappingResponse(
  * todas as tarefas do batch vão para a primeira ação disponível.
  */
 export function applyFallbackMapping(
-  batch: TaskDocument[],
+  batch: Task[],
   fallbackActionId: string,
   mappings: Record<string, string[]>,
 ): void {
   if (!mappings[fallbackActionId]) mappings[fallbackActionId] = [];
   for (const task of batch) {
-    mappings[fallbackActionId].push(String(task._id || task.id));
+    mappings[fallbackActionId].push(String(task.id));
   }
 }

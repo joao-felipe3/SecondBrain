@@ -3,9 +3,11 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model, mongo } from 'mongoose';
 import {
   DependencyType,
-  TaskDependency,
+  TaskDependency as TaskDependencySchema,
   TaskDependencyDocument,
 } from '../../schemas/task-dependency.schema';
+import { TaskDependency } from '../../entities/task-dependency.entity';
+import { TaskDependencyMapper } from '../../mappers/task-dependency.mapper';
 import { TaskNode, CPMAnalysis, TaskMetrics } from '../../interfaces/cpm.interface';
 import {
   calculateCriticalPath as calculateCP,
@@ -35,7 +37,7 @@ export class CPMService {
   private readonly logger = new Logger(CPMService.name);
 
   constructor(
-    @InjectModel(TaskDependency.name)
+    @InjectModel(TaskDependencySchema.name)
     private readonly dependencyModel: Model<TaskDependencyDocument>,
   ) { }
 
@@ -45,10 +47,11 @@ export class CPMService {
     const { taskId, dependsOnTaskId, projectId, relationship } = dto;
     try {
       const normalizedRelationship = this.normalizeRelationship(relationship);
-      return await this.dependencyModel.create({
+      const created = await this.dependencyModel.create({
         ...dto,
         relationship: normalizedRelationship,
       });
+      return TaskDependencyMapper.toDomain(created);
     } catch (error: any) {
       this.logger.error(
         `Failed to add dependency between task ${taskId} and ${dependsOnTaskId} for project ${projectId}.`,
@@ -95,7 +98,8 @@ export class CPMService {
 
   async getDependencies(projectId: string): Promise<TaskDependency[]> {
     try {
-      return await this.dependencyModel.find({ projectId }).exec();
+      const docs = await this.dependencyModel.find({ projectId }).exec();
+      return docs.map(TaskDependencyMapper.toDomain);
     } catch (error) {
       this.logger.error(`Failed to get dependencies for project ${projectId}.`, error.stack);
       throw new InternalServerErrorException('Failed to retrieve dependencies.', { cause: error });

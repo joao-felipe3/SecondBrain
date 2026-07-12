@@ -1,8 +1,10 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { Requirement, RequirementDocument, JourneyKind } from '../../schemas/requirement.schema';
-import { TaskDocument } from '../../schemas/task.schema';
+import { Requirement as RequirementSchema, RequirementDocument, JourneyKind } from '../../schemas/requirement.schema';
+import { Requirement } from '../../entities/requirement.entity';
+import { RequirementMapper } from '../../mappers/requirement.mapper';
+import { Task } from '../../entities/task.entity';
 import { RTMValidation, RTMMatrixData } from '../../interfaces/rtm.interface';
 import { normalizeKind, levelForKind, getLinkedActions } from './utils/rtm.utils';
 
@@ -31,8 +33,8 @@ type RTMTaskData = {
 };
 
 type RequirementMaps = {
-  byId: Map<string, RequirementDocument>;
-  childrenByParent: Map<string, RequirementDocument[]>;
+  byId: Map<string, Requirement>;
+  childrenByParent: Map<string, Requirement[]>;
 };
 
 type ValidationIssues = {
@@ -45,7 +47,7 @@ export class RTMValidationService {
   private readonly logger = new Logger(RTMValidationService.name);
 
   constructor(
-    @InjectModel(Requirement.name)
+    @InjectModel(RequirementSchema.name)
     private readonly requirementModel: Model<RequirementDocument>,
   ) {}
 
@@ -88,7 +90,7 @@ export class RTMValidationService {
   // Public: RTM Matrix Generation
   // ===========================================================================
 
-  public async getRTMMatrix(projectId: string, tasks: TaskDocument[]): Promise<RTMMatrixData> {
+  public async getRTMMatrix(projectId: string, tasks: Task[]): Promise<RTMMatrixData> {
     this.logger.log(`Generating journey matrix for project ${projectId}`);
     try {
       const requirements = await this.fetchSortedRequirements(projectId);
@@ -124,20 +126,22 @@ export class RTMValidationService {
   // Private Helpers for RTM Validation
   // ===========================================================================
 
-  private async fetchRequirements(projectId: string): Promise<RequirementDocument[]> {
-    return this.requirementModel.find({ projectId });
+  private async fetchRequirements(projectId: string): Promise<Requirement[]> {
+    const docs = await this.requirementModel.find({ projectId });
+    return docs.map(RequirementMapper.toDomain);
   }
 
-  private async fetchSortedRequirements(projectId: string): Promise<RequirementDocument[]> {
-    return this.requirementModel.find({ projectId }).sort({ hierarchyLevel: 1, createdAt: 1, _id: 1 });
+  private async fetchSortedRequirements(projectId: string): Promise<Requirement[]> {
+    const docs = await this.requirementModel.find({ projectId }).sort({ hierarchyLevel: 1, createdAt: 1, _id: 1 });
+    return docs.map(RequirementMapper.toDomain);
   }
 
-  private buildRequirementMaps(requirements: RequirementDocument[]): RequirementMaps {
-    const byId = new Map<string, RequirementDocument>();
-    const childrenByParent = new Map<string, RequirementDocument[]>();
+  private buildRequirementMaps(requirements: Requirement[]): RequirementMaps {
+    const byId = new Map<string, Requirement>();
+    const childrenByParent = new Map<string, Requirement[]>();
 
     for (const req of requirements) {
-      const id = String(req._id ?? req.id ?? '');
+      const id = String(req.id ?? '');
       byId.set(id, req);
     }
 
@@ -154,14 +158,14 @@ export class RTMValidationService {
   }
 
   private findValidationIssues(
-    requirements: RequirementDocument[],
+    requirements: Requirement[],
     maps: RequirementMaps,
   ): ValidationIssues {
     const unmappedRequirements: string[] = [];
     const risks: string[] = [];
 
     for (const req of requirements) {
-      const id = String(req._id ?? req.id ?? '');
+      const id = String(req.id ?? '');
       const parentId = req.parentItemId ? String(req.parentItemId) : undefined;
 
       if (parentId && !maps.byId.has(parentId)) {
@@ -177,10 +181,10 @@ export class RTMValidationService {
   }
 
   private checkRequirementRules(
-    req: RequirementDocument,
-    childrenByParent: Map<string, RequirementDocument[]>,
+    req: Requirement,
+    childrenByParent: Map<string, Requirement[]>,
   ): { risk: string | null; isUnmapped: boolean } {
-    const id = String(req._id ?? req.id ?? '');
+    const id = String(req.id ?? '');
     const description = String(req.description || 'Item');
     const kind = normalizeKind(req.kind || req.type);
     const linkedActions = getLinkedActions(req);
@@ -247,21 +251,21 @@ export class RTMValidationService {
   // Private Helpers for RTM Matrix Generation
   // ===========================================================================
 
-  private buildTraceabilityMatrix(requirements: RequirementDocument[]): Map<string, Set<string>> {
+  private buildTraceabilityMatrix(requirements: Requirement[]): Map<string, Set<string>> {
     const matrix = new Map<string, Set<string>>();
     for (const req of requirements) {
-      const reqId = String(req._id ?? req.id ?? '');
+      const reqId = String(req.id ?? '');
       const traceable = getLinkedActions(req);
       matrix.set(reqId, new Set(traceable));
     }
     return matrix;
   }
 
-  private mapRequirementsToDTO(requirements: RequirementDocument[]): RTMRequirementData[] {
+  private mapRequirementsToDTO(requirements: Requirement[]): RTMRequirementData[] {
     return requirements.map((req) => {
       const kind = normalizeKind(req.kind || req.type);
       return {
-        id: String(req._id ?? req.id ?? ''),
+        id: String(req.id ?? ''),
         description: req.description,
         type: req.type || kind,
         status: req.status,
@@ -272,17 +276,17 @@ export class RTMValidationService {
     });
   }
 
-  private mapTasksToDTO(tasks: TaskDocument[]): RTMTaskData[] {
+  private mapTasksToDTO(tasks: Task[]): RTMTaskData[] {
     const wbsNameMap = new Map<string, string>();
     return tasks.map((task) => ({
-      id: String(task._id ?? task.id ?? ''),
+      id: String(task.id ?? ''),
       name: task.name || 'Task',
       wbsNodeId: task.parentWbsNodeId ? String(task.parentWbsNodeId) : undefined,
       wbsNodeName: this.getWbsNodeName(task, wbsNameMap),
     }));
   }
 
-  private getWbsNodeName(task: TaskDocument, wbsNameMap: Map<string, string>): string {
+  private getWbsNodeName(task: Task, wbsNameMap: Map<string, string>): string {
     const wbsNodeId = task.parentWbsNodeId ? String(task.parentWbsNodeId) : undefined;
     if (!wbsNodeId) {
       return 'Sem WBS';
