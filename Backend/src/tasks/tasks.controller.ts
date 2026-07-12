@@ -269,7 +269,11 @@ export class TasksController {
     @Param('itemId') itemId: string,
     @Body() body: UpdateChecklistItemDto,
   ) {
-    return this.tasksService.updateChecklistItem({ taskId, itemIndex: itemId, completed: body.completed });
+    return this.tasksService.updateChecklistItem({
+      taskId,
+      itemIndex: itemId,
+      completed: body.completed,
+    });
   }
 
   @Patch(':id/recurring-rule')
@@ -444,10 +448,7 @@ export class TasksController {
   })
   @ApiResponse({ status: 200, description: 'Lineage retornada com sucesso.' })
   @ApiResponse({ status: 404, description: 'Task não encontrada.' })
-  async getTaskLineage(
-    @Param('id') id: string,
-    @Query() query?: TaskLineageQueryDto,
-  ) {
+  async getTaskLineage(@Param('id') id: string, @Query() query?: TaskLineageQueryDto) {
     return this.tasksService.getTaskLineage(id, query);
   }
 

@@ -119,10 +119,7 @@ export function buildBalancedWaveDurations(totalDurationDays: number, waveCount:
   const baseDuration = Math.floor(safeTotalDurationDays / safeWaveCount);
   const remainder = safeTotalDurationDays % safeWaveCount;
 
-  return Array.from(
-    { length: safeWaveCount },
-    (_, index) => baseDuration + (index < remainder ? 1 : 0),
-  );
+  return Array.from({ length: safeWaveCount }, (_, index) => baseDuration + (index < remainder ? 1 : 0));
 }
 
 export function normalizeWavePlanShape(
@@ -225,10 +222,7 @@ export function findBestRecipientIndex(
   return bestIndex;
 }
 
-function sanitizeAndDeduplicateWaveTasks(
-  waves: AIPlanWave[],
-  validTaskIdSet: Set<string>,
-): Set<string> {
+function sanitizeAndDeduplicateWaveTasks(waves: AIPlanWave[], validTaskIdSet: Set<string>): Set<string> {
   const seenTaskIds = new Set<string>();
   for (const wave of waves) {
     const sanitizedTaskIds: string[] = [];
@@ -303,17 +297,10 @@ function balanceWaveTasksUnderflow(
   }
 }
 
-function balanceWaveTasksOverflow(
-  waves: AIPlanWave[],
-  maxTasksPerWave: number,
-): void {
+function balanceWaveTasksOverflow(waves: AIPlanWave[], maxTasksPerWave: number): void {
   for (let donorIndex = 0; donorIndex < waves.length; donorIndex++) {
     while (waves[donorIndex].taskIds.length > maxTasksPerWave) {
-      const recipientIndex = findBestRecipientIndex(
-        waves,
-        donorIndex,
-        maxTasksPerWave,
-      );
+      const recipientIndex = findBestRecipientIndex(waves, donorIndex, maxTasksPerWave);
       if (recipientIndex < 0) {
         break;
       }

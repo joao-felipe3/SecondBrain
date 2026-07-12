@@ -45,10 +45,7 @@ export class TasksMetricsService {
     );
   }
 
-  private calculatePertBounds(
-    dto: Partial<CreateTaskDto>,
-    baseMinutes: number,
-  ): PertEstimateDto {
+  private calculatePertBounds(dto: Partial<CreateTaskDto>, baseMinutes: number): PertEstimateDto {
     const optimistic = Math.max(5, Math.round(dto.pertOptimisticMinutes ?? baseMinutes * 0.75));
     const mostLikely = Math.max(
       optimistic,
@@ -62,9 +59,10 @@ export class TasksMetricsService {
     return { optimistic, mostLikely, pessimistic };
   }
 
-  private calculateExpectedAndVariance(
-    estimate: PertEstimateDto,
-  ): { expected: number; variance: number } {
+  private calculateExpectedAndVariance(estimate: PertEstimateDto): {
+    expected: number;
+    variance: number;
+  } {
     const { optimistic, mostLikely, pessimistic } = estimate;
     const expected = (optimistic + 4 * mostLikely + pessimistic) / 6;
     const variance = Math.pow((pessimistic - optimistic) / 6, 2);
@@ -138,9 +136,7 @@ export class TasksMetricsService {
     );
   }
 
-  private calculateProgress(
-    params: CalculateProgressDto,
-  ): number {
+  private calculateProgress(params: CalculateProgressDto): number {
     const { dto, fallbackTask, expectedMinutes } = params;
     const pomodorosPlanned =
       dto.pomodorosPlanned ??

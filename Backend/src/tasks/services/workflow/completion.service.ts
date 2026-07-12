@@ -23,7 +23,7 @@ export class TasksCompletionService {
     private readonly alertsService: AlertsService,
     private readonly tasksRecurringService: TasksRecurringService,
     private readonly tasksWriteService: TasksWriteService,
-  ) { }
+  ) {}
 
   // ===========================================================================
   // 1. Public API: Lifecycle / Completion

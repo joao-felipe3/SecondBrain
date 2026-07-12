@@ -27,9 +27,7 @@ export class ChecklistService {
   // 1. Historical Similarity Analysis
   // ===========================================================================
 
-  async findSimilarTasksInProject(
-    dto: FindSimilarTasksDto,
-  ): Promise<TaskHistorySummary[]> {
+  async findSimilarTasksInProject(dto: FindSimilarTasksDto): Promise<TaskHistorySummary[]> {
     const { projectId, microTaskType, limit = 3 } = dto;
     if (!projectId || !Types.ObjectId.isValid(projectId)) {
       return [];
@@ -353,16 +351,12 @@ export class TasksChecklistService {
   // 3. AI Generation
   // ===========================================================================
 
-  async generateChecklistForTask(
-    dto: GenerateChecklistDto,
-  ): Promise<string[]> {
+  async generateChecklistForTask(dto: GenerateChecklistDto): Promise<string[]> {
     const { taskName, description, microTaskType } = dto;
     return this.geminiService.generateChecklistForTask(taskName, description, microTaskType);
   }
 
-  async generateChecklistWithHistory(
-    dto: GenerateChecklistWithHistoryDto,
-  ): Promise<string[]> {
+  async generateChecklistWithHistory(dto: GenerateChecklistWithHistoryDto): Promise<string[]> {
     const { taskName, description, microTaskType, projectId } = dto;
     const historicalContext = await this.buildHistoricalContext({ projectId, microTaskType });
 

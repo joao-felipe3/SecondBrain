@@ -1,4 +1,9 @@
-import { BufferTaskMetrics, BufferStatus, BufferAlert, BufferCalculationResult } from '../../../interfaces';
+import {
+  BufferTaskMetrics,
+  BufferStatus,
+  BufferAlert,
+  BufferCalculationResult,
+} from '../../../interfaces';
 
 // Filtra as tarefas críticas baseado na lista do caminho crítico.
 export function filterCriticalTasks(

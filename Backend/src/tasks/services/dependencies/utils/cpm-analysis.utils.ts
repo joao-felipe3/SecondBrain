@@ -14,6 +14,7 @@ import { CPMDiagnosticsDto } from '../../../dto/dependencies/cpm-diagnostics.dto
 import { generateAlerts } from './cpm-alerts.utils';
 import { computePackageCriticality } from './cpm-package.utils';
 import { buildCriticalPathSequence } from './cpm-sequence.utils';
+import { CPMContext, CPMPassResult, CPMPassSummary } from '../../../interfaces/cpm.interface';
 
 export { normalizeRelationship } from './cpm-passes.utils';
 
@@ -76,7 +77,10 @@ function initializeTasksInHours(tasks: TaskNodeResponseDto[]): TaskNodeResponseD
   return tasks.map((t) => ({ ...t, duration: t.duration / 60 }));
 }
 
-function calculateSlacksAndCriticalTasks(tasksInHours: TaskNodeResponseDto[], projectDuration: number): TaskNodeResponseDto[] {
+function calculateSlacksAndCriticalTasks(
+  tasksInHours: TaskNodeResponseDto[],
+  projectDuration: number,
+): TaskNodeResponseDto[] {
   return tasksInHours.filter((t) => {
     if (typeof t.earlyStart !== 'number') t.earlyStart = 0;
     if (typeof t.earlyFinish !== 'number') t.earlyFinish = t.duration;
@@ -91,7 +95,10 @@ function calculateSlacksAndCriticalTasks(tasksInHours: TaskNodeResponseDto[], pr
   });
 }
 
-function sortTasksByImpact(tasksInHours: TaskNodeResponseDto[], indegree: Map<string, number>): TaskNodeResponseDto[] {
+function sortTasksByImpact(
+  tasksInHours: TaskNodeResponseDto[],
+  indegree: Map<string, number>,
+): TaskNodeResponseDto[] {
   return [...tasksInHours].sort((a, b) => {
     const slackDiff = (a.slack || 0) - (b.slack || 0);
     if (Math.abs(slackDiff) > 0.01) return slackDiff;
@@ -117,17 +124,20 @@ function runCPMPasses(
   tasksInHours: TaskNodeResponseDto[],
   edgeMap: Map<string, TaskDependencyEdgeDto[]>,
 ): {
-  forward: { hasCycle: boolean; unprocessed: number };
+  forward: CPMPassSummary;
   projectDuration: number;
-  backward: { hasCycle: boolean; unprocessed: number };
+  backward: CPMPassSummary;
 } {
-  const forward = forwardPass(tasksInHours, edgeMap);
+  const forward = forwardPass({ tasks: tasksInHours, edgeMap });
   const projectDuration = Math.max(...tasksInHours.map((t) => t.earlyFinish || 0));
-  const backward = backwardPass(tasksInHours, projectDuration, edgeMap);
+  const backward = backwardPass({ tasks: tasksInHours, projectDuration, edgeMap });
   return { forward, projectDuration, backward };
 }
 
-function getEffectiveCriticalPath(criticalPathSequence: string[], criticalTasks: TaskNodeResponseDto[]): string[] {
+function getEffectiveCriticalPath(
+  criticalPathSequence: string[],
+  criticalTasks: TaskNodeResponseDto[],
+): string[] {
   return criticalPathSequence.length > 0 ? criticalPathSequence : criticalTasks.map((t) => t.id);
 }
 
@@ -142,11 +152,7 @@ function createCPMDiagnostics(params: CreateCPMDiagnosticsParamsDto): CPMDiagnos
   });
 }
 
-export function calculateCriticalPath(tasks: TaskNodeResponseDto[]): CPMAnalysisResponseDto {
-  if (tasks.length === 0) {
-    return { criticalPath: [], projectDuration: 0, tasksByImpact: [], alerts: [] };
-  }
-
+function prepareCPMContext(tasks: TaskNodeResponseDto[]): CPMContext {
   const tasksInHours = initializeTasksInHours(tasks);
   const edgeMap = buildEdgeMap(tasksInHours);
   const taskIds = new Set(tasksInHours.map((t) => t.id));
@@ -157,9 +163,45 @@ export function calculateCriticalPath(tasks: TaskNodeResponseDto[]): CPMAnalysis
     taskIds,
   });
 
-  const { forward, projectDuration, backward } = runCPMPasses(tasksInHours, edgeMap);
+  return {
+    tasksInHours,
+    edgeMap,
+    taskIds,
+    missingDependencyRefs,
+    missingDependencySamples,
+  };
+}
 
+function executeCPMPasses(
+  tasksInHours: TaskNodeResponseDto[],
+  edgeMap: Map<string, TaskDependencyEdgeDto[]>,
+): CPMPassResult {
+  const { forward, projectDuration, backward } = runCPMPasses(tasksInHours, edgeMap);
   const criticalTasks = calculateSlacksAndCriticalTasks(tasksInHours, projectDuration);
+
+  return {
+    forward,
+    backward,
+    projectDuration,
+    criticalTasks,
+  };
+}
+
+function generateCPMAnalytics(context: CPMContext, passes: CPMPassResult) {
+  const { tasksInHours, edgeMap, taskIds, missingDependencyRefs } = context;
+  const { forward, backward, projectDuration, criticalTasks } = passes;
+
+  const degrees = computeGraphDegrees({ tasksInHours, edgeMap, taskIds });
+  const tasksByImpact = sortTasksByImpact(tasksInHours, degrees.indegree);
+
+  const criticalPathSequence = buildCriticalPathSequence({
+    tasks: tasksInHours,
+    projectDuration,
+    edgeMap,
+  });
+
+  const effectiveCriticalPath = getEffectiveCriticalPath(criticalPathSequence, criticalTasks);
+  const packageCriticality = computePackageCriticality(tasksInHours, effectiveCriticalPath);
 
   const alerts = generateAlerts({
     tasks: tasksInHours,
@@ -172,44 +214,37 @@ export function calculateCriticalPath(tasks: TaskNodeResponseDto[]): CPMAnalysis
     },
   });
 
-  const { indegree, outdegree, edgeCount, depSum } = computeGraphDegrees({
-    tasksInHours,
-    edgeMap,
-    taskIds,
-  });
+  return {
+    ...degrees,
+    tasksByImpact,
+    criticalPathSequence,
+    effectiveCriticalPath,
+    packageCriticality,
+    alerts,
+  };
+}
 
-  const tasksByImpact = sortTasksByImpact(tasksInHours, indegree);
+export function calculateCriticalPath(tasks: TaskNodeResponseDto[]): CPMAnalysisResponseDto {
+  if (tasks.length === 0) {
+    return { criticalPath: [], projectDuration: 0, tasksByImpact: [], alerts: [] };
+  }
 
-  const criticalPathSequence = buildCriticalPathSequence({
-    tasks: tasksInHours,
-    projectDuration,
-    edgeMap,
-  });
-
-  const effectiveCriticalPath = getEffectiveCriticalPath(criticalPathSequence, criticalTasks);
-  const packageCriticality = computePackageCriticality(tasksInHours, effectiveCriticalPath);
+  const context = prepareCPMContext(tasks);
+  const passes = executeCPMPasses(context.tasksInHours, context.edgeMap);
+  const analytics = generateCPMAnalytics(context, passes);
 
   const diagnostics = createCPMDiagnostics({
-    tasksInHours,
-    criticalTasks,
-    criticalPathSequence,
-    projectDuration,
-    indegree,
-    outdegree,
-    edgeCount,
-    depSum,
-    forward,
-    backward,
-    missingDependencyRefs,
-    missingDependencySamples,
+    ...context,
+    ...passes,
+    ...analytics,
   });
 
   return {
-    criticalPath: effectiveCriticalPath,
-    projectDuration: Math.round(projectDuration * 100) / 100,
-    tasksByImpact,
-    alerts,
-    packageCriticality,
+    criticalPath: analytics.effectiveCriticalPath,
+    projectDuration: Math.round(passes.projectDuration * 100) / 100,
+    tasksByImpact: analytics.tasksByImpact,
+    alerts: analytics.alerts,
+    packageCriticality: analytics.packageCriticality,
     diagnostics,
   };
 }

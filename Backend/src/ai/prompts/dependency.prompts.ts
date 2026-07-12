@@ -4,7 +4,10 @@
  * No NestJS decorators, no side effects — only string construction.
  */
 
-import { InferenceTask, InferenceLeafGates } from '../../tasks/interfaces/dependency-inference.interface';
+import {
+  InferenceTask,
+  InferenceLeafGates,
+} from '../../tasks/interfaces/dependency-inference.interface';
 import { truncateText } from '../../tasks/services/dependencies/utils/dependency-inference.utils';
 
 export function buildInferWithAiPrompt(params: {

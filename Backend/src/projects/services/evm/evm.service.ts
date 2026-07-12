@@ -3,12 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { ProjectWave, ProjectWaveDocument } from '../../schemas/project-wave.schema';
 import { ProjectDocument } from '../../schemas/project.schema';
-import type {
-  EVMCurve,
-  EVMForecast,
-  EVMPersonalMetrics,
-  EVMSummary,
-} from '../../dto/evm.dto';
+import type { EVMCurve, EVMForecast, EVMPersonalMetrics, EVMSummary } from '../../dto/evm.dto';
 import {
   toFiniteNumber,
   toBoundedScore,
@@ -30,7 +25,7 @@ export class EVMService {
     private readonly projectWaveModel: Model<ProjectWaveDocument>,
     @InjectModel('Project')
     private readonly projectModel: Model<ProjectDocument>,
-  ) { }
+  ) {}
 
   private assertValidObjectId(value: string, fieldName: string): void {
     if (!Types.ObjectId.isValid(value)) {
@@ -120,15 +115,13 @@ export class EVMService {
 
     const completedHours = coreMetrics.completedHours;
     const personalMetrics = buildPersonalMetrics(entries, spi, coreMetrics);
-    const metricRelevance = resolveMetricRelevance(
-      {
-        entriesCount: entries.length,
-        spi,
-        forecast,
-        personalMetrics,
-        dashboardPreferences,
-      },
-    );
+    const metricRelevance = resolveMetricRelevance({
+      entriesCount: entries.length,
+      spi,
+      forecast,
+      personalMetrics,
+      dashboardPreferences,
+    });
 
     return {
       spi,

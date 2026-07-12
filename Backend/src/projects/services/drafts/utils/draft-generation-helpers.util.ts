@@ -34,10 +34,7 @@ export const draftSchema = z
   .object({
     name: z.string().min(1),
     description: z
-      .preprocess(
-        (v) => (v === undefined || v === null ? undefined : String(v)),
-        z.string().optional(),
-      )
+      .preprocess((v) => (v === undefined || v === null ? undefined : String(v)), z.string().optional())
       .optional(),
     checklist: z
       .array(z.preprocess((v) => String(v ?? '').trim(), z.string().min(1)))
@@ -109,10 +106,7 @@ export const draftDetailsSchema = z
       .max(8),
     definitionOfDone: z.preprocess((v) => String(v ?? '').trim(), z.string().min(1)),
     description: z
-      .preprocess(
-        (v) => (v === undefined || v === null ? undefined : String(v)),
-        z.string().optional(),
-      )
+      .preprocess((v) => (v === undefined || v === null ? undefined : String(v)), z.string().optional())
       .optional(),
   })
   .passthrough();
@@ -228,10 +222,7 @@ export function buildDraftsCacheKey(params: {
 }
 
 export function getWbsGenerationModelOverride(): string | undefined {
-  const m =
-    safeEnv('WBS_GEMINI_MODEL') ||
-    safeEnv('WBS_FAST_MODEL') ||
-    safeEnv('WBS_MODEL_OVERRIDE');
+  const m = safeEnv('WBS_GEMINI_MODEL') || safeEnv('WBS_FAST_MODEL') || safeEnv('WBS_MODEL_OVERRIDE');
   return m || undefined;
 }
 

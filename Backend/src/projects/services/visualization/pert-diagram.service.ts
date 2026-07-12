@@ -59,7 +59,11 @@ export class PertDiagramService {
 
     const taskLevels = this.computeTaskLevels(tasks, dependencies);
     const nodes = this.mapNodes(tasks, metricsById, taskLevels);
-    const edges = this.mapEdges(dependencies, taskNodesById, analysis.criticalPath) as PertDiagramDataResponse['edges'];
+    const edges = this.mapEdges(
+      dependencies,
+      taskNodesById,
+      analysis.criticalPath,
+    ) as PertDiagramDataResponse['edges'];
 
     const round2 = (value: number) => Number((Number.isFinite(value) ? value : 0).toFixed(2));
     const totalTasks = nodes.length;
@@ -111,7 +115,7 @@ export class PertDiagramService {
       nodeById.set(node.id, node);
     }
 
-    for (const dep of dependencies as any[]) {
+    for (const dep of dependencies) {
       const taskId = String(dep?.taskId || '').trim();
       const dependsOnTaskId = String(dep?.dependsOnTaskId || '').trim();
       if (!taskId || !dependsOnTaskId) continue;
@@ -130,12 +134,12 @@ export class PertDiagramService {
 
   private computeTaskLevels(tasks: any[], dependencies: any[]): Map<string, number> {
     const predecessorMap = new Map<string, Set<string>>();
-    for (const task of tasks as any[]) {
+    for (const task of tasks) {
       const id = task?._id?.toString?.() || String(task?.id || '');
       predecessorMap.set(id, new Set<string>());
     }
 
-    for (const dep of dependencies as any[]) {
+    for (const dep of dependencies) {
       const target = String(dep?.taskId || '').trim();
       const source = String(dep?.dependsOnTaskId || '').trim();
       if (!predecessorMap.has(target) || !predecessorMap.has(source)) continue;
@@ -205,7 +209,7 @@ export class PertDiagramService {
 
   private mapEdges(dependencies: any[], taskNodesById: Map<string, any>, criticalPath: string[]) {
     const criticalSet = new Set(criticalPath || []);
-    return (dependencies as any[])
+    return dependencies
       .map((dep: any) => {
         const source = String(dep?.dependsOnTaskId || '').trim();
         const target = String(dep?.taskId || '').trim();

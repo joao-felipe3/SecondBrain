@@ -215,10 +215,7 @@ export class RTMMappingService {
     return null;
   }
 
-  private filterUnmappedTasks(
-    tasks: Task[],
-    actionItems: Requirement[],
-  ): Task[] {
+  private filterUnmappedTasks(tasks: Task[], actionItems: Requirement[]): Task[] {
     const alreadyMappedIds = new Set<string>();
     for (const item of actionItems) {
       for (const taskId of getLinkedActions(item)) {
@@ -347,10 +344,7 @@ export class RTMMappingService {
   // Private helpers — task generation
   // ===========================================================================
 
-  private async generateAndLinkTasks(
-    actionItems: Requirement[],
-    projectId: string,
-  ): Promise<number> {
+  private async generateAndLinkTasks(actionItems: Requirement[], projectId: string): Promise<number> {
     let createdTasksCount = 0;
 
     for (const req of actionItems) {

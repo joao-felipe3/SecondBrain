@@ -52,7 +52,12 @@ export class TasksAiSuggestionsService {
     const state = await this.initializeState(dto);
 
     try {
-      this.emitProgress({ state, status: 'loading', message: 'Iniciando analise do projeto...', onProgress });
+      this.emitProgress({
+        state,
+        status: 'loading',
+        message: 'Iniciando analise do projeto...',
+        onProgress,
+      });
 
       if (state.targetHours <= 0) {
         return await this.generateZeroHoursSuggestions({ dto, state, onProgress });
@@ -63,8 +68,6 @@ export class TasksAiSuggestionsService {
       return this.handleSuggestionsError({ error, dto, state });
     }
   }
-
-
 
   // ===========================================================================
   // 3. Private Helpers & Mappers
@@ -160,7 +163,11 @@ export class TasksAiSuggestionsService {
       console.log(
         `Projeto ja atingiu o target (${state.alreadyPlannedHours.toFixed(1)}h >= ${state.targetHours}h). Nao gerando novas tarefas.`,
       );
-      return this.buildResponse({ state, status: 'success', message: 'Projeto ja atingiu o total de horas planejadas' });
+      return this.buildResponse({
+        state,
+        status: 'success',
+        message: 'Projeto ja atingiu o total de horas planejadas',
+      });
     }
 
     console.log(
@@ -200,63 +207,123 @@ export class TasksAiSuggestionsService {
     const interIterationDelayMs = 3000;
 
     while (state.currentHours < remainingHours && state.currentIteration < state.maxIterations) {
-      state.currentIteration++;
-      this.emitProgress({
+      await this.prepareNextIteration({
         state,
-        status: 'loading',
-        message: `Gerando lote ${state.currentIteration}/${state.maxIterations}...`,
+        remainingHours,
+        interIterationDelayMs,
         onProgress,
       });
 
-      console.log(
-        `Iteracao ${state.currentIteration}: ${state.currentHours.toFixed(1)}h de ${remainingHours.toFixed(1)}h geradas`,
-      );
-
-      if (state.currentIteration > 1) {
-        console.log(`Aguardando ${interIterationDelayMs}ms antes da proxima requisicao...`);
-        await new Promise((resolve) => setTimeout(resolve, interIterationDelayMs));
-      }
-
       const chunkHours = Math.min(remainingHours - state.currentHours, 8);
-      let taskSuggestions: AiTaskSuggestionDto[];
-      try {
-        taskSuggestions = await this.fetchSuggestionsFromAi({ dto, existingTaskNames: state.existingTaskNames, chunkHours });
-        consecutiveRateLimits = 0;
-      } catch (err: unknown) {
-        consecutiveRateLimits = await this.handleRateLimitRetry(err, consecutiveRateLimits);
+      const fetchResult = await this.fetchSuggestionsWithRetry({
+        dto,
+        state,
+        chunkHours,
+        consecutiveRateLimits,
+      });
+
+      consecutiveRateLimits = fetchResult.nextRateLimits;
+      if (fetchResult.suggestions === null) {
         continue;
       }
 
+      const taskSuggestions = fetchResult.suggestions;
       if (taskSuggestions.length === 0) {
         console.warn('A resposta da IA esta vazia ou malformada nesta iteracao.');
         continue;
       }
 
-      const newSuggestions = taskSuggestions.filter((newTask) => {
-        const normalizedName = newTask.name.toLowerCase().trim();
-        return !state.existingTaskNames.some(
-          (existingName) => existingName.toLowerCase().trim() === normalizedName,
-        );
-      });
-
+      const newSuggestions = this.filterDuplicateSuggestions(taskSuggestions, state.existingTaskNames);
       if (newSuggestions.length === 0) {
         console.warn('Nenhuma nova tarefa foi gerada (todas sao duplicatas).');
         break;
       }
 
-      for (const task of newSuggestions) {
-        state.allSuggestions.push(task);
-        state.existingTaskNames.push(task.name);
-        state.currentHours += (task.pomodoros || 0) * 0.5;
-      }
-
-      this.emitProgress({
+      this.applyNewSuggestions({
+        newSuggestions,
         state,
-        status: 'loading',
-        message: `${state.allSuggestions.length} tarefas geradas (${state.currentHours.toFixed(1)}h/${remainingHours.toFixed(1)}h)...`,
+        remainingHours,
         onProgress,
       });
     }
+  }
+
+  private async prepareNextIteration(params: {
+    state: SuggestionState;
+    remainingHours: number;
+    interIterationDelayMs: number;
+    onProgress?: ((progress: AiSuggestionsProgressDto) => void) | null;
+  }): Promise<void> {
+    const { state, remainingHours, interIterationDelayMs, onProgress } = params;
+    state.currentIteration++;
+    this.emitProgress({
+      state,
+      status: 'loading',
+      message: `Gerando lote ${state.currentIteration}/${state.maxIterations}...`,
+      onProgress,
+    });
+
+    console.log(
+      `Iteracao ${state.currentIteration}: ${state.currentHours.toFixed(1)}h de ${remainingHours.toFixed(1)}h geradas`,
+    );
+
+    if (state.currentIteration > 1) {
+      console.log(`Aguardando ${interIterationDelayMs}ms antes da proxima requisicao...`);
+      await new Promise((resolve) => setTimeout(resolve, interIterationDelayMs));
+    }
+  }
+
+  private async fetchSuggestionsWithRetry(params: {
+    dto: GenerateAiSuggestionsDto;
+    state: SuggestionState;
+    chunkHours: number;
+    consecutiveRateLimits: number;
+  }): Promise<{ suggestions: AiTaskSuggestionDto[] | null; nextRateLimits: number }> {
+    const { dto, state, chunkHours, consecutiveRateLimits } = params;
+    try {
+      const suggestions = await this.fetchSuggestionsFromAi({
+        dto,
+        existingTaskNames: state.existingTaskNames,
+        chunkHours,
+      });
+      return { suggestions, nextRateLimits: 0 };
+    } catch (err: unknown) {
+      const nextRateLimits = await this.handleRateLimitRetry(err, consecutiveRateLimits);
+      return { suggestions: null, nextRateLimits };
+    }
+  }
+
+  private filterDuplicateSuggestions(
+    taskSuggestions: AiTaskSuggestionDto[],
+    existingTaskNames: string[],
+  ): AiTaskSuggestionDto[] {
+    return taskSuggestions.filter((newTask) => {
+      const normalizedName = newTask.name.toLowerCase().trim();
+      return !existingTaskNames.some(
+        (existingName) => existingName.toLowerCase().trim() === normalizedName,
+      );
+    });
+  }
+
+  private applyNewSuggestions(params: {
+    newSuggestions: AiTaskSuggestionDto[];
+    state: SuggestionState;
+    remainingHours: number;
+    onProgress?: ((progress: AiSuggestionsProgressDto) => void) | null;
+  }): void {
+    const { newSuggestions, state, remainingHours, onProgress } = params;
+    for (const task of newSuggestions) {
+      state.allSuggestions.push(task);
+      state.existingTaskNames.push(task.name);
+      state.currentHours += (task.pomodoros || 0) * 0.5;
+    }
+
+    this.emitProgress({
+      state,
+      status: 'loading',
+      message: `${state.allSuggestions.length} tarefas geradas (${state.currentHours.toFixed(1)}h/${remainingHours.toFixed(1)}h)...`,
+      onProgress,
+    });
   }
 
   private handleSuggestionsError(params: {
@@ -281,7 +348,11 @@ export class TasksAiSuggestionsService {
     const mockSuggestions = this.generateMockSuggestions(dto);
     state.allSuggestions.push(...mockSuggestions);
     state.currentHours = state.allSuggestions.reduce((sum, t) => sum + (t.pomodoros || 0) * 0.5, 0);
-    return this.buildResponse({ state, status: 'error', message: 'Falha na IA. Usando sugestoes de fallback.' });
+    return this.buildResponse({
+      state,
+      status: 'error',
+      message: 'Falha na IA. Usando sugestoes de fallback.',
+    });
   }
 
   private async getExistingTasksHoursAndNames(
@@ -304,7 +375,7 @@ export class TasksAiSuggestionsService {
     chunkHours?: number;
   }): Promise<AiTaskSuggestionDto[]> {
     const { dto, existingTaskNames, chunkHours } = params;
-    return this.geminiService.getTaskSuggestions({
+    const result = await this.geminiService.getTaskSuggestions({
       projectName: dto.projectName,
       shortTermGoal: dto.shortTermGoal,
       midTermGoal: dto.midTermGoal,
@@ -313,6 +384,7 @@ export class TasksAiSuggestionsService {
       existingTaskNames,
       chunkHours,
     });
+    return result as AiTaskSuggestionDto[];
   }
 
   private async generateSingleBatch(

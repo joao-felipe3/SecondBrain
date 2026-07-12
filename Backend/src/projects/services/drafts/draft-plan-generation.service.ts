@@ -19,7 +19,7 @@ export class DraftPlanGenerationService {
     private readonly promptBuilder: PromptBuilderService,
     private readonly themeExtraction: ThemeExtractionService,
     private readonly cacheService: CacheService,
-  ) { }
+  ) {}
 
   private hashKey(input: any): string {
     return hashKey(input);
@@ -111,7 +111,11 @@ export class DraftPlanGenerationService {
     return null;
   }
 
-  private async savePlanToCache(projectId: string | undefined, planCacheKey: string, plan: any): Promise<void> {
+  private async savePlanToCache(
+    projectId: string | undefined,
+    planCacheKey: string,
+    plan: any,
+  ): Promise<void> {
     if (!projectId || !planCacheKey) {
       return;
     }

@@ -126,8 +126,7 @@ export function calculateConsistencyScore(entries: ProjectProgress[]): number {
   const avg = weeklyHours.reduce((sum, value) => sum + value, 0) / weeklyHours.length;
   if (avg <= 0) return 0;
 
-  const variance =
-    weeklyHours.reduce((sum, value) => sum + (value - avg) ** 2, 0) / weeklyHours.length;
+  const variance = weeklyHours.reduce((sum, value) => sum + (value - avg) ** 2, 0) / weeklyHours.length;
   const stdDev = Math.sqrt(variance);
   const coefficient = stdDev / avg;
 
@@ -214,9 +213,9 @@ export function buildPersonalMetrics(
 
   const perceivedValueScore = toBoundedScore(
     completionRatio * 100 * 0.35 +
-    consistencyScore * 0.25 +
-    planAdherence * 0.25 +
-    effortBalanceScore * 0.15,
+      consistencyScore * 0.25 +
+      planAdherence * 0.25 +
+      effortBalanceScore * 0.15,
   );
 
   const actionHint = buildActionHint({
@@ -237,15 +236,13 @@ export function buildPersonalMetrics(
   };
 }
 
-export function resolveMetricRelevance(
-  input: {
-    entriesCount: number;
-    spi: number;
-    forecast: EVMForecast;
-    personalMetrics: EVMPersonalMetrics;
-    dashboardPreferences: EVMDashboardPreferences;
-  },
-): EVMMetricRelevance {
+export function resolveMetricRelevance(input: {
+  entriesCount: number;
+  spi: number;
+  forecast: EVMForecast;
+  personalMetrics: EVMPersonalMetrics;
+  dashboardPreferences: EVMDashboardPreferences;
+}): EVMMetricRelevance {
   const useManual = input.dashboardPreferences?.mode === 'manual';
   const manual = input.dashboardPreferences?.manualVisibility;
 
@@ -303,54 +300,60 @@ function getAutoPlannedVsEarnedVisibility(
 function getAutoCompletedHoursVisibility(entriesCount: number): { visible: boolean; reason: string } {
   return {
     visible: entriesCount > 0,
-    reason: entriesCount > 0
-      ? 'Horas concluidas mostram esforco real aplicado.'
-      : 'Sem registros de progresso suficientes para horas concluidas.',
+    reason:
+      entriesCount > 0
+        ? 'Horas concluidas mostram esforco real aplicado.'
+        : 'Sem registros de progresso suficientes para horas concluidas.',
   };
 }
 
 function getAutoConsistencyVisibility(entriesCount: number): { visible: boolean; reason: string } {
   return {
     visible: entriesCount >= 2,
-    reason: entriesCount >= 2
-      ? 'Consistencia semanal ajuda a prever estabilidade de execucao.'
-      : 'Consistencia requer pelo menos 2 registros de progresso.',
+    reason:
+      entriesCount >= 2
+        ? 'Consistencia semanal ajuda a prever estabilidade de execucao.'
+        : 'Consistencia requer pelo menos 2 registros de progresso.',
   };
 }
 
 function getAutoPlanAdherenceVisibility(entriesCount: number): { visible: boolean; reason: string } {
   return {
     visible: entriesCount > 0,
-    reason: entriesCount > 0
-      ? 'Aderencia mostra alinhamento com o plano atual.'
-      : 'Aderencia requer registros com PV/EV.',
+    reason:
+      entriesCount > 0
+        ? 'Aderencia mostra alinhamento com o plano atual.'
+        : 'Aderencia requer registros com PV/EV.',
   };
 }
 
 function getAutoTrendVisibility(entriesCount: number): { visible: boolean; reason: string } {
   return {
     visible: entriesCount >= 4,
-    reason: entriesCount >= 4
-      ? 'Tendencia de evolucao orienta decisao de manter ou ajustar escopo.'
-      : 'Tendencia precisa de ao menos 4 registros para comparacao confiavel.',
+    reason:
+      entriesCount >= 4
+        ? 'Tendencia de evolucao orienta decisao de manter ou ajustar escopo.'
+        : 'Tendencia precisa de ao menos 4 registros para comparacao confiavel.',
   };
 }
 
 function getAutoPerceivedProgressVisibility(entriesCount: number): { visible: boolean; reason: string } {
   return {
     visible: entriesCount >= 2,
-    reason: entriesCount >= 2
-      ? 'Progresso percebido combina cadencia, aderencia e esforco efetivo.'
-      : 'Progresso percebido fica mais util apos multiplos registros.',
+    reason:
+      entriesCount >= 2
+        ? 'Progresso percebido combina cadencia, aderencia e esforco efetivo.'
+        : 'Progresso percebido fica mais util apos multiplos registros.',
   };
 }
 
 function getAutoRemainingHoursVisibility(remainingHours: number): { visible: boolean; reason: string } {
   return {
     visible: remainingHours > 0,
-    reason: remainingHours > 0
-      ? 'Horas restantes mostram carga de trabalho pendente.'
-      : 'Nao ha carga pendente estimada para este ciclo.',
+    reason:
+      remainingHours > 0
+        ? 'Horas restantes mostram carga de trabalho pendente.'
+        : 'Nao ha carga pendente estimada para este ciclo.',
   };
 }
 
@@ -415,4 +418,3 @@ export function calculateActiveWavePlannedHours(
 
   return Math.max(1, plannedHours);
 }
-

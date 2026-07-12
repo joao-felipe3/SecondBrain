@@ -4,12 +4,7 @@ import {
   DeterministicPartitionResult,
   TimelineMetrics,
 } from '../../../interfaces/rolling-wave.interface';
-import {
-  estimateTaskHours,
-  flattenWbsTree,
-  resolveGroupKey,
-} from './rolling-wave-helpers.util';
-
+import { estimateTaskHours, flattenWbsTree, resolveGroupKey } from './rolling-wave-helpers.util';
 
 function calculateTimelineMetrics(
   project: any,
@@ -157,10 +152,7 @@ function allocateTasksWithDeadline(
 /**
  * Aloca tarefas sem prazo definido priorizando as ondas menos carregadas
  */
-function allocateTasksWithoutDeadline(
-  assigner: WaveAssigner,
-  normalizedTasks: WaveTask[],
-): void {
+function allocateTasksWithoutDeadline(assigner: WaveAssigner, normalizedTasks: WaveTask[]): void {
   const tasksWithoutDeadline = normalizedTasks
     .filter((t) => t.deadlineTime == null)
     .sort((a, b) => b.hours - a.hours);
@@ -213,13 +205,7 @@ export function partitionTasksDeterministically(
   waveLengthDays: number,
   today: Date,
 ): DeterministicPartitionResult {
-  const metrics = calculateTimelineMetrics(
-    project,
-    tasks,
-    dailyCapacityHours,
-    waveLengthDays,
-    today,
-  );
+  const metrics = calculateTimelineMetrics(project, tasks, dailyCapacityHours, waveLengthDays, today);
 
   const normalizedTasks = normalizeTasks(
     tasks,
@@ -232,26 +218,14 @@ export function partitionTasksDeterministically(
   const assigner = new WaveAssigner(metrics.waveCount, metrics.waveCapacityHours);
 
   // 1. Alocar tarefas com data de vencimento (deadline) definida
-  allocateTasksWithDeadline(
-    assigner,
-    normalizedTasks,
-    today,
-    metrics.waveLengthMs,
-    metrics.waveCount,
-  );
+  allocateTasksWithDeadline(assigner, normalizedTasks, today, metrics.waveLengthMs, metrics.waveCount);
 
   // 2. Alocar tarefas sem data de vencimento
   allocateTasksWithoutDeadline(assigner, normalizedTasks);
 
   // 3. Estruturar o resultado com as informações das waves
   const currentDeadline = metrics.adjustedDeadline || metrics.deadline;
-  const waves = buildWaves(
-    assigner,
-    metrics.waveCount,
-    metrics.waveLengthMs,
-    today,
-    currentDeadline,
-  );
+  const waves = buildWaves(assigner, metrics.waveCount, metrics.waveLengthMs, today, currentDeadline);
 
   return {
     adjustedDeadline: metrics.adjustedDeadline,

@@ -185,3 +185,113 @@ export interface CreateCPMDiagnosticsParams {
   missingDependencyRefs: number;
   missingDependencySamples: Array<{ taskId: string; dependsOnTaskId: string }>;
 }
+
+export interface CPMContext {
+  tasksInHours: TaskNode[];
+  edgeMap: Map<string, TaskDependencyEdge[]>;
+  taskIds: Set<string>;
+  missingDependencyRefs: number;
+  missingDependencySamples: Array<{ taskId: string; dependsOnTaskId: string }>;
+}
+
+export interface CPMPassSummary {
+  hasCycle: boolean;
+  unprocessed: number;
+}
+
+export interface CPMPassResult {
+  forward: CPMPassSummary;
+  backward: CPMPassSummary;
+  projectDuration: number;
+  criticalTasks: TaskNode[];
+}
+
+export interface CPMAnalyticsResult {
+  indegree: Map<string, number>;
+  outdegree: Map<string, number>;
+  edgeCount: number;
+  depSum: number;
+  tasksByImpact: TaskNode[];
+  criticalPathSequence: string[];
+  effectiveCriticalPath: string[];
+  packageCriticality: PackageCriticality[];
+  alerts: string[];
+}
+
+export interface AlertDiagnosticsInput {
+  cycleDetected: boolean;
+  unprocessedForward: number;
+  unprocessedBackward: number;
+  missingDependencyRefs: number;
+}
+
+export interface ForwardPassMaps {
+  indegree: Map<string, number>;
+  dependents: Map<string, Array<{ successorId: string; relationship: DependencyType }>>;
+  maxConstraintStart: Map<string, number>;
+}
+
+export interface BackwardPassMaps {
+  outdegree: Map<string, number>;
+  predecessorBounds: Map<string, { maxLateFinish: number; maxLateStart: number }>;
+}
+
+export interface BuildForwardPassMapsParams {
+  tasks: TaskNode[];
+  edgeMap: Map<string, TaskDependencyEdge[]>;
+  taskMap: Map<string, TaskNode>;
+}
+
+export interface UpdateForwardSuccessorParams {
+  predecessor: TaskNode;
+  dep: { successorId: string; relationship: DependencyType };
+  taskMap: Map<string, TaskNode>;
+  indegree: Map<string, number>;
+  maxConstraintStart: Map<string, number>;
+  queue: string[];
+}
+
+export interface ForwardPassParams {
+  tasks: TaskNode[];
+  edgeMap: Map<string, TaskDependencyEdge[]>;
+}
+
+export interface BuildBackwardPassMapsParams {
+  tasks: TaskNode[];
+  projectDuration: number;
+  edgeMap: Map<string, TaskDependencyEdge[]>;
+  taskMap: Map<string, TaskNode>;
+}
+
+export interface UpdateBackwardPredecessorParams {
+  successor: TaskNode;
+  dep: TaskDependencyEdge;
+  taskMap: Map<string, TaskNode>;
+  outdegree: Map<string, number>;
+  predecessorBounds: Map<string, { maxLateFinish: number; maxLateStart: number }>;
+  projectDuration: number;
+  queue: string[];
+}
+
+export interface BackwardPassParams {
+  tasks: TaskNode[];
+  projectDuration: number;
+  edgeMap: Map<string, TaskDependencyEdge[]>;
+}
+
+export interface ProcessForwardPassQueueParams {
+  taskMap: Map<string, TaskNode>;
+  queue: string[];
+  maxConstraintStart: Map<string, number>;
+  dependents: Map<string, Array<{ successorId: string; relationship: DependencyType }>>;
+  indegree: Map<string, number>;
+}
+
+export interface ProcessBackwardPassQueueParams {
+  taskMap: Map<string, TaskNode>;
+  queue: string[];
+  predecessorBounds: Map<string, { maxLateFinish: number; maxLateStart: number }>;
+  projectDuration: number;
+  edgeMap: Map<string, TaskDependencyEdge[]>;
+  outdegree: Map<string, number>;
+}

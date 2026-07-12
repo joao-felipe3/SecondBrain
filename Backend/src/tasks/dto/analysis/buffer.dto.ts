@@ -52,5 +52,3 @@ export class BufferHistoryDto {
   })
   percentageUsed: number;
 }
-
-

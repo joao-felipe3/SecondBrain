@@ -118,9 +118,7 @@ export class TasksService {
   }
 
   // ------------------------------ Checklist / Validation ------------------------------
-  public async generateChecklistViaCopilot(
-    dto: GenerateChecklistDto,
-  ): Promise<string[]> {
+  public async generateChecklistViaCopilot(dto: GenerateChecklistDto): Promise<string[]> {
     return this.tasksChecklistService.generateChecklistForTask(dto);
   }
 
@@ -130,9 +128,7 @@ export class TasksService {
     return this.tasksChecklistService.generateChecklistWithHistory(dto);
   }
 
-  public async updateChecklistItem(
-    dto: UpdateChecklistTaskItemDto,
-  ): Promise<TaskDocument> {
+  public async updateChecklistItem(dto: UpdateChecklistTaskItemDto): Promise<TaskDocument> {
     return this.tasksChecklistService.updateChecklistItem(dto);
   }
 
@@ -279,10 +275,7 @@ export class TasksService {
     return await this.taskRepository.findAll();
   }
 
-  public async findByProjectId(
-    projectId: string,
-    opts?: FindByProjectIdOptionsDto,
-  ): Promise<Task[]> {
+  public async findByProjectId(projectId: string, opts?: FindByProjectIdOptionsDto): Promise<Task[]> {
     return await this.taskRepository.findByProjectId(projectId, opts);
   }
 
@@ -306,7 +299,10 @@ export class TasksService {
     return this.tasksHierarchyService.getTaskLineage(id, query);
   }
 
-  public async getDescendants(id: string, query?: TaskDescendantQueryDto): Promise<TaskDescendantNode[]> {
+  public async getDescendants(
+    id: string,
+    query?: TaskDescendantQueryDto,
+  ): Promise<TaskDescendantNode[]> {
     return this.tasksHierarchyService.getDescendants(id, query);
   }
 

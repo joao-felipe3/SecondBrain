@@ -19,7 +19,12 @@ import { WBSNodeSchema } from './schemas/wbs-node.schema';
 // Category Services
 import { PlanningService } from './services/planning';
 import { EVMService, EVMProgressService } from './services/evm';
-import { ProjectsXMatrixService, RollingWaveService, RollingWaveAIService, RollingWavePlanningService } from './services/strategy';
+import {
+  ProjectsXMatrixService,
+  RollingWaveService,
+  RollingWaveAIService,
+  RollingWavePlanningService,
+} from './services/strategy';
 import { RiskService, LeafTasksBufferService, ProjectStatsService } from './services/execution';
 import { GanttService, PertDiagramService } from './services/visualization';
 import {
@@ -114,4 +119,3 @@ import {
   ],
 })
 export class ProjectsModule {}
-

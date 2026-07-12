@@ -173,15 +173,16 @@ export class CPMDiagnosticsDto implements CPMDiagnostics {
 
     const rawImpliedParallelism = projectDuration > 0 ? rawTotalWork / projectDuration : 0;
 
-    const reliability: 'high' | 'medium' | 'low' =
-      hasCycle ? 'low' : missingDependencyRefs > 0 ? 'medium' : 'high';
+    const reliability: 'high' | 'medium' | 'low' = hasCycle
+      ? 'low'
+      : missingDependencyRefs > 0
+        ? 'medium'
+        : 'high';
 
     this.taskCount = tasksInHours.length;
     this.criticalCount = criticalTasks.length;
     this.criticalPercent =
-      tasksInHours.length > 0
-        ? Math.round((criticalTasks.length / tasksInHours.length) * 1000) / 10
-        : 0;
+      tasksInHours.length > 0 ? Math.round((criticalTasks.length / tasksInHours.length) * 1000) / 10 : 0;
     this.criticalChainTaskCount = criticalPathSequence.length;
     this.criticalChainDuration = Math.round(rawCriticalChainDuration * 100) / 100;
     this.nearCriticalCount = tasksInHours.filter((t) => {
@@ -197,13 +198,13 @@ export class CPMDiagnosticsDto implements CPMDiagnostics {
     this.startNodeCount = [...indegree.values()].filter((v) => v === 0).length;
     this.endNodeCount = [...outdegree.values()].filter((v) => v === 0).length;
     this.avgDependenciesPerTask =
-      tasksInHours.length > 0
-        ? Math.round((depSum / tasksInHours.length) * 100) / 100
-        : 0;
+      tasksInHours.length > 0 ? Math.round((depSum / tasksInHours.length) * 100) / 100 : 0;
 
     // Slack Buckets calculation
     const negative = tasksInHours.filter((t) => (t.slack ?? 0) < 0).length;
-    const critical = tasksInHours.filter((t) => Math.abs(t.slack ?? 0) < 0.1 && (t.slack ?? 0) >= 0).length;
+    const critical = tasksInHours.filter(
+      (t) => Math.abs(t.slack ?? 0) < 0.1 && (t.slack ?? 0) >= 0,
+    ).length;
     const nearCritical = tasksInHours.filter((t) => (t.slack ?? 0) >= 0.1 && (t.slack ?? 0) < 2).length;
     const lowSlack = tasksInHours.filter((t) => (t.slack ?? 0) >= 2 && (t.slack ?? 0) < 8).length;
     const comfortable = tasksInHours.filter((t) => (t.slack ?? 0) >= 8).length;

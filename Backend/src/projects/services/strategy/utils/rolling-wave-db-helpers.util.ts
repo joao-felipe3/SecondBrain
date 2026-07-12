@@ -2,7 +2,6 @@ import { Logger } from '@nestjs/common';
 import { MongoClient, ObjectId as NativeObjectId } from 'mongodb';
 import { Model, Types } from 'mongoose';
 
-
 export async function executeWithFreshMongoClient<T>(
   waveModel: Model<any>,
   operation: (collection: any) => Promise<T>,

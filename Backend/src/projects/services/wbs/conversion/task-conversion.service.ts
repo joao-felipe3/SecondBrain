@@ -1,20 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { WBSNodeDto } from '../../../dto/wbs.dto';
 import { TaskConversionHelperService } from './task-conversion-helper.service';
-import {
-  computeChunkMinutes,
-  estimateMicroTaskCount,
-} from '../utils/metrics-calculator.util';
-import {
-  collectLeafNodesInOrder,
-  mapWithConcurrency,
-} from '../utils/task-conversion-helpers.util';
+import { computeChunkMinutes, estimateMicroTaskCount } from '../utils/metrics-calculator.util';
+import { collectLeafNodesInOrder, mapWithConcurrency } from '../utils/task-conversion-helpers.util';
 
 @Injectable()
 export class TaskConversionService {
-  constructor(
-    private readonly taskConversionHelper: TaskConversionHelperService,
-  ) { }
+  constructor(private readonly taskConversionHelper: TaskConversionHelperService) {}
 
   private safeEnv(name: string): string {
     const v = process.env[name];
@@ -125,7 +117,7 @@ export class TaskConversionService {
     if (estimatedTotalTasks > maxTasksToCreate) {
       throw new Error(
         `Conversão abortada: a WBS geraria ~${estimatedTotalTasks} micro-tarefas (limite ${maxTasksToCreate}). ` +
-        `Reduza a granularidade da WBS ou converta por partes.`,
+          `Reduza a granularidade da WBS ou converta por partes.`,
       );
     }
 
@@ -204,7 +196,7 @@ export class TaskConversionService {
     const autoResolveEnabled = !!options?.autoResolveDiscrepancies;
     const autoAuditThresholdPct =
       typeof options?.autoAuditThresholdPct === 'number' &&
-        Number.isFinite(options.autoAuditThresholdPct)
+      Number.isFinite(options.autoAuditThresholdPct)
         ? options.autoAuditThresholdPct
         : 60;
 
@@ -222,7 +214,8 @@ export class TaskConversionService {
 
     if (autoResolveEnabled && leafTaskDtos.length > 0) {
       const budgetHours = Number(node.estimatedHours || 0);
-      const generatedHoursBefore = (leafTaskDtos.reduce((acc, t) => acc + (t.estimatedMinutes || 0), 0)) / 60;
+      const generatedHoursBefore =
+        leafTaskDtos.reduce((acc, t) => acc + (t.estimatedMinutes || 0), 0) / 60;
       const diffPct = budgetHours > 0 ? ((generatedHoursBefore - budgetHours) / budgetHours) * 100 : 0;
       console.log(
         `[WBS-Conversion] Audit check: budget=${budgetHours}h, generated=${generatedHoursBefore}h, diff=${diffPct.toFixed(1)}%`,
@@ -247,7 +240,12 @@ export class TaskConversionService {
     // Create tasks if any were generated
     if (leafTaskDtos.length > 0) {
       console.log(`[WBS-Conversion] Creating ${leafTaskDtos.length} task(s) for "${nodePath}"`);
-      await this.taskConversionHelper.createAndSaveLeaveTasks(leafTaskDtos, tasksService, nodePath, result);
+      await this.taskConversionHelper.createAndSaveLeaveTasks(
+        leafTaskDtos,
+        tasksService,
+        nodePath,
+        result,
+      );
     } else {
       console.warn(
         `[WBS-Conversion] ⚠️ No tasks generated for "${nodePath}" (might be invalid leaf or zero hours)`,

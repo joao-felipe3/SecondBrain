@@ -129,10 +129,7 @@ export class TasksPertService {
     return updatedTask;
   }
 
-  private validateInputs(
-    taskId: string,
-    updatePertDto: UpdatePertDto,
-  ): PertEstimateDto {
+  private validateInputs(taskId: string, updatePertDto: UpdatePertDto): PertEstimateDto {
     if (!taskId || !Types.ObjectId.isValid(taskId)) {
       throw new BadRequestException(`ID inválido: ${taskId}`);
     }

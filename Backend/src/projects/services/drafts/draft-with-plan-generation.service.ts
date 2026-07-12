@@ -26,7 +26,7 @@ export class DraftWithPlanGenerationService {
     private readonly promptBuilder: PromptBuilderService,
     private readonly cacheService: CacheService,
     private readonly detailsEnrichment: DraftDetailsEnrichmentService,
-  ) { }
+  ) {}
 
   async generateMicroTasksDraftsForLeafWithPlan(
     params: {
@@ -77,7 +77,13 @@ export class DraftWithPlanGenerationService {
 
     // 2. Partition into slices and generate drafts
     const slices = this.partitionMinutesIntoSlices(chunkMinutes, maxPerCall);
-    const allDrafts = await this.generateAllSlices(slices, params, resolvedModelOverride, twoPassEnabled, avoidTaskTitles);
+    const allDrafts = await this.generateAllSlices(
+      slices,
+      params,
+      resolvedModelOverride,
+      twoPassEnabled,
+      avoidTaskTitles,
+    );
 
     const overallElapsed = Date.now() - overallStart;
     logWithTimestamp(
@@ -208,9 +214,19 @@ export class DraftWithPlanGenerationService {
 
     try {
       if (!twoPassEnabled) {
-        return await this.executeSinglePassSlice(sliceMinutes, params, resolvedModelOverride, avoidTaskTitles);
+        return await this.executeSinglePassSlice(
+          sliceMinutes,
+          params,
+          resolvedModelOverride,
+          avoidTaskTitles,
+        );
       } else {
-        return await this.executeTwoPassSlice(sliceMinutes, params, resolvedModelOverride, avoidTaskTitles);
+        return await this.executeTwoPassSlice(
+          sliceMinutes,
+          params,
+          resolvedModelOverride,
+          avoidTaskTitles,
+        );
       }
     } finally {
       const elapsed = Date.now() - sliceStart;
@@ -268,8 +284,18 @@ export class DraftWithPlanGenerationService {
     } catch (err: any) {
       if (sliceMinutes.length > 1 && this.isJsonishError(err)) {
         const mid = Math.ceil(sliceMinutes.length / 2);
-        const left = await this.executeSinglePassSlice(sliceMinutes.slice(0, mid), params, resolvedModelOverride, avoidTaskTitles);
-        const right = await this.executeSinglePassSlice(sliceMinutes.slice(mid), params, resolvedModelOverride, avoidTaskTitles);
+        const left = await this.executeSinglePassSlice(
+          sliceMinutes.slice(0, mid),
+          params,
+          resolvedModelOverride,
+          avoidTaskTitles,
+        );
+        const right = await this.executeSinglePassSlice(
+          sliceMinutes.slice(mid),
+          params,
+          resolvedModelOverride,
+          avoidTaskTitles,
+        );
         return [...left, ...right];
       }
 
@@ -322,8 +348,18 @@ export class DraftWithPlanGenerationService {
     } catch (err: any) {
       if (sliceMinutes.length > 1 && this.isJsonishError(err)) {
         const mid = Math.ceil(sliceMinutes.length / 2);
-        const left = await this.executeTwoPassSlice(sliceMinutes.slice(0, mid), params, resolvedModelOverride, avoidTaskTitles);
-        const right = await this.executeTwoPassSlice(sliceMinutes.slice(mid), params, resolvedModelOverride, avoidTaskTitles);
+        const left = await this.executeTwoPassSlice(
+          sliceMinutes.slice(0, mid),
+          params,
+          resolvedModelOverride,
+          avoidTaskTitles,
+        );
+        const right = await this.executeTwoPassSlice(
+          sliceMinutes.slice(mid),
+          params,
+          resolvedModelOverride,
+          avoidTaskTitles,
+        );
         return [...left, ...right];
       }
       if (this.isJsonishError(err)) {
@@ -337,6 +373,11 @@ export class DraftWithPlanGenerationService {
     }
 
     const detailsModelOverride = getDetailsModelOverride(resolvedModelOverride);
-    return await this.detailsEnrichment.enrichOutlinesWithDetails(outlines, sliceMinutes, params, detailsModelOverride);
+    return await this.detailsEnrichment.enrichOutlinesWithDetails(
+      outlines,
+      sliceMinutes,
+      params,
+      detailsModelOverride,
+    );
   }
 }

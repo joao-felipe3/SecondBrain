@@ -9,9 +9,7 @@ import { FindByProjectIdOptionsDto } from '../dto/query/find-by-project-id-optio
 
 @Injectable()
 export class MongooseTaskRepository implements TaskRepository {
-  constructor(
-    @InjectModel('Task') private readonly taskModel: Model<TaskDocument>,
-  ) {}
+  constructor(@InjectModel('Task') private readonly taskModel: Model<TaskDocument>) {}
 
   async findAll(): Promise<Task[]> {
     const docs = await this.taskModel.find().exec();

@@ -874,15 +874,13 @@ export class GeminiService {
 
     const schema = z
       .object({
-        dependencies: z
-          .array(z.union([dependencyObjectSchema, dependencyTupleSchema]))
-          .default([]),
+        dependencies: z.array(z.union([dependencyObjectSchema, dependencyTupleSchema])).default([]),
       })
       .passthrough();
 
     const parsed = extractJsonObject<Record<string, unknown>>(response);
     const validated = schema.parse(parsed);
-    
+
     // Normalize logic
     const rawDeps = validated.dependencies || [];
     return rawDeps.map((dep) => {
@@ -912,7 +910,15 @@ export class GeminiService {
     existingTaskNames?: string[];
     chunkHours?: number;
   }): Promise<any[]> {
-    const { projectName, shortTermGoal, midTermGoal, longTermGoal, userPrompt, existingTaskNames, chunkHours } = params;
+    const {
+      projectName,
+      shortTermGoal,
+      midTermGoal,
+      longTermGoal,
+      userPrompt,
+      existingTaskNames,
+      chunkHours,
+    } = params;
     const aiResponse = await this.generateTaskSuggestions(
       projectName,
       shortTermGoal,
@@ -960,7 +966,10 @@ export class GeminiService {
     };
   }
 
-  async generateNextSteps(taskName: string, feedback: any): Promise<Array<{ title: string; description: string }>> {
+  async generateNextSteps(
+    taskName: string,
+    feedback: any,
+  ): Promise<Array<{ title: string; description: string }>> {
     // Next steps prompt builder:
     const prompt = [
       'Você é um assistente de produtividade e mentor de execução.',
@@ -988,10 +997,12 @@ export class GeminiService {
 
       const parsed = this.safeParseJson(raw);
       if (Array.isArray(parsed) && parsed.length > 0) {
-        return parsed.map((item: any) => ({
-          title: String(item.title || '').trim(),
-          description: String(item.description || '').trim(),
-        })).filter(it => it.title);
+        return parsed
+          .map((item: any) => ({
+            title: String(item.title || '').trim(),
+            description: String(item.description || '').trim(),
+          }))
+          .filter((it) => it.title);
       }
     } catch {
       // Ignored: fallback handled below

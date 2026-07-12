@@ -119,7 +119,10 @@ export function scoreStrength(
   };
 }
 
-export function inferInitiativeFromWbsPath(path: string | undefined, levels: Set<number>): string | null {
+export function inferInitiativeFromWbsPath(
+  path: string | undefined,
+  levels: Set<number>,
+): string | null {
   const raw = String(path || '').trim();
   if (!raw) return null;
 

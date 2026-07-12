@@ -45,7 +45,9 @@ export class TaskMapper {
     entity.recurrency = document.recurrency;
     entity.notification = document.notification;
     entity.microTaskType = document.microTaskType;
-    entity.parentRecurringId = document.parentRecurringId ? document.parentRecurringId.toString() : undefined;
+    entity.parentRecurringId = document.parentRecurringId
+      ? document.parentRecurringId.toString()
+      : undefined;
     entity.isRecurringInstance = document.isRecurringInstance;
     entity.recurringState = document.recurringState;
     entity.recurringRule = document.recurringRule;
@@ -70,19 +72,26 @@ export class TaskMapper {
     if (entity.checklist !== undefined) document.checklist = entity.checklist;
     if (entity.pomodorosDid !== undefined) document.pomodorosDid = entity.pomodorosDid;
     if (entity.pomodorosPlanned !== undefined) document.pomodorosPlanned = entity.pomodorosPlanned;
-    if (entity.pertOptimisticMinutes !== undefined) document.pertOptimisticMinutes = entity.pertOptimisticMinutes;
-    if (entity.pertMostLikelyMinutes !== undefined) document.pertMostLikelyMinutes = entity.pertMostLikelyMinutes;
-    if (entity.pertPessimisticMinutes !== undefined) document.pertPessimisticMinutes = entity.pertPessimisticMinutes;
-    if (entity.pertExpectedMinutes !== undefined) document.pertExpectedMinutes = entity.pertExpectedMinutes;
+    if (entity.pertOptimisticMinutes !== undefined)
+      document.pertOptimisticMinutes = entity.pertOptimisticMinutes;
+    if (entity.pertMostLikelyMinutes !== undefined)
+      document.pertMostLikelyMinutes = entity.pertMostLikelyMinutes;
+    if (entity.pertPessimisticMinutes !== undefined)
+      document.pertPessimisticMinutes = entity.pertPessimisticMinutes;
+    if (entity.pertExpectedMinutes !== undefined)
+      document.pertExpectedMinutes = entity.pertExpectedMinutes;
     if (entity.pertVariance !== undefined) document.pertVariance = entity.pertVariance;
     if (entity.requirementIds !== undefined) document.requirementIds = entity.requirementIds;
     if (entity.journeyItemIds !== undefined) document.journeyItemIds = entity.journeyItemIds;
     if (entity.rtmRisk !== undefined) document.rtmRisk = entity.rtmRisk;
     if (entity.rtmRiskReason !== undefined) document.rtmRiskReason = entity.rtmRiskReason;
     if (entity.evmProgress !== undefined) document.evmProgress = entity.evmProgress;
-    if (entity.evmPlannedValueMinutes !== undefined) document.evmPlannedValueMinutes = entity.evmPlannedValueMinutes;
-    if (entity.evmEarnedValueMinutes !== undefined) document.evmEarnedValueMinutes = entity.evmEarnedValueMinutes;
-    if (entity.evmSchedulePerformanceIndex !== undefined) document.evmSchedulePerformanceIndex = entity.evmSchedulePerformanceIndex;
+    if (entity.evmPlannedValueMinutes !== undefined)
+      document.evmPlannedValueMinutes = entity.evmPlannedValueMinutes;
+    if (entity.evmEarnedValueMinutes !== undefined)
+      document.evmEarnedValueMinutes = entity.evmEarnedValueMinutes;
+    if (entity.evmSchedulePerformanceIndex !== undefined)
+      document.evmSchedulePerformanceIndex = entity.evmSchedulePerformanceIndex;
     if (entity.evmAlert !== undefined) document.evmAlert = entity.evmAlert;
     if (entity.deadline !== undefined) document.deadline = entity.deadline;
     if (entity.priority !== undefined) document.priority = entity.priority;
@@ -101,7 +110,8 @@ export class TaskMapper {
     if (entity.notification !== undefined) document.notification = entity.notification;
     if (entity.microTaskType !== undefined) document.microTaskType = entity.microTaskType;
     if (entity.parentRecurringId !== undefined) document.parentRecurringId = entity.parentRecurringId;
-    if (entity.isRecurringInstance !== undefined) document.isRecurringInstance = entity.isRecurringInstance;
+    if (entity.isRecurringInstance !== undefined)
+      document.isRecurringInstance = entity.isRecurringInstance;
     if (entity.recurringState !== undefined) document.recurringState = entity.recurringState;
     if (entity.recurringRule !== undefined) document.recurringRule = entity.recurringRule;
     if (entity.cognitiveMode !== undefined) document.cognitiveMode = entity.cognitiveMode;

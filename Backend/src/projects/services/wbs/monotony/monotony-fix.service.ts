@@ -189,5 +189,4 @@ export class MonotonyFixService {
 
     return { drafts, aiCallsUsed };
   }
-
 }

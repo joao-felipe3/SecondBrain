@@ -23,7 +23,6 @@ import {
   TaskMetricsResponseDto,
 } from '../dto';
 
-
 @ApiTags('CPM - Critical Path Method')
 @ApiBearerAuth()
 @Controller('tasks')

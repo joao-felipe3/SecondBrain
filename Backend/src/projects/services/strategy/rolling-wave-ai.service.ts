@@ -1,6 +1,9 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { GeminiService } from '../../../ai/gemini.service';
-import { buildPlanWaveStructurePrompt, buildPlanWaveGroupingPrompt } from '../../../ai/prompts/rolling-wave.prompts';
+import {
+  buildPlanWaveStructurePrompt,
+  buildPlanWaveGroupingPrompt,
+} from '../../../ai/prompts/rolling-wave.prompts';
 import { AIPlan, AIWaveStructure } from '../../interfaces/rolling-wave.interface';
 import {
   estimateTaskHours,
@@ -45,12 +48,11 @@ export class RollingWaveAIService {
       const responseText = await this.geminiService.generateContent(prompt, { model: modelName });
 
       // Validar e extrair JSON
-      const parsed = extractAndValidateJSON<AIWaveStructure>(responseText, [
-        'recommendedWaveCount',
-        'totalDurationDays',
-        'description',
-        'reasoning',
-      ], this.logger);
+      const parsed = extractAndValidateJSON<AIWaveStructure>(
+        responseText,
+        ['recommendedWaveCount', 'totalDurationDays', 'description', 'reasoning'],
+        this.logger,
+      );
 
       if (!parsed) {
         this.logger.warn(

@@ -1,10 +1,6 @@
 import { GenerateAlertsDto } from '../../../dto/dependencies/cpm.dto';
 
-export function generateAlerts({
-  tasks,
-  criticalTasks,
-  diagnostics,
-}: GenerateAlertsDto): string[] {
+export function generateAlerts({ tasks, criticalTasks, diagnostics }: GenerateAlertsDto): string[] {
   const alerts: string[] = [];
 
   if (diagnostics.cycleDetected) {

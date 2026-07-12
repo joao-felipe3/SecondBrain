@@ -231,8 +231,7 @@ export class RollingWavePlanningService {
 
     const wavesResult = await executeWithFreshMongoClient(
       this.waveModel,
-      (collection) =>
-        collection.find({ projectId: projectObjectId }).sort({ waveNumber: 1 }).toArray(),
+      (collection) => collection.find({ projectId: projectObjectId }).sort({ waveNumber: 1 }).toArray(),
       `fetch saved waves for project ${projectId}`,
       this.logger,
       5,
@@ -267,11 +266,7 @@ export class RollingWavePlanningService {
     today.setHours(0, 0, 0, 0);
     const dayMs = 24 * 60 * 60 * 1000;
 
-    const validPlan = normalizeWavePlanShape(
-      aiPlan,
-      expectedWaveCount,
-      totalDurationDays,
-    );
+    const validPlan = normalizeWavePlanShape(aiPlan, expectedWaveCount, totalDurationDays);
 
     const taskMap = new Map(tasks.map((t: any) => [String(t._id || t.id), t]));
 

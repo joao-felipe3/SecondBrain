@@ -1,9 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import {
-  RequirementDocument,
-  RequirementType,
-  JourneyKind,
-} from '../../schemas/requirement.schema';
+import { RequirementDocument, RequirementType, JourneyKind } from '../../schemas/requirement.schema';
 import { Task } from '../../entities/task.entity';
 import { Requirement } from '../../entities/requirement.entity';
 import { RTMValidation, RTMMatrixData } from '../../interfaces/rtm.interface';
@@ -53,9 +49,7 @@ export class RTMService {
     return this.crud.deleteAllRequirements(projectId);
   }
 
-  mapRequirementToTask(
-    dto: MapRequirementToTaskDto,
-  ): Promise<Requirement | null> {
+  mapRequirementToTask(dto: MapRequirementToTaskDto): Promise<Requirement | null> {
     return this.crud.mapRequirementToTask(dto);
   }
 

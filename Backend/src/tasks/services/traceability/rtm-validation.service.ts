@@ -1,7 +1,11 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { Requirement as RequirementSchema, RequirementDocument, JourneyKind } from '../../schemas/requirement.schema';
+import {
+  Requirement as RequirementSchema,
+  RequirementDocument,
+  JourneyKind,
+} from '../../schemas/requirement.schema';
 import { Requirement } from '../../entities/requirement.entity';
 import { RequirementMapper } from '../../mappers/requirement.mapper';
 import { Task } from '../../entities/task.entity';
@@ -132,7 +136,9 @@ export class RTMValidationService {
   }
 
   private async fetchSortedRequirements(projectId: string): Promise<Requirement[]> {
-    const docs = await this.requirementModel.find({ projectId }).sort({ hierarchyLevel: 1, createdAt: 1, _id: 1 });
+    const docs = await this.requirementModel
+      .find({ projectId })
+      .sort({ hierarchyLevel: 1, createdAt: 1, _id: 1 });
     return docs.map(RequirementMapper.toDomain);
   }
 
@@ -157,10 +163,7 @@ export class RTMValidationService {
     return { byId, childrenByParent };
   }
 
-  private findValidationIssues(
-    requirements: Requirement[],
-    maps: RequirementMaps,
-  ): ValidationIssues {
+  private findValidationIssues(requirements: Requirement[], maps: RequirementMaps): ValidationIssues {
     const unmappedRequirements: string[] = [];
     const risks: string[] = [];
 

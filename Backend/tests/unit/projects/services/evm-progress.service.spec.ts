@@ -16,7 +16,7 @@ describe('EVMProgressService', () => {
       findById: jest.fn(),
       findByIdAndUpdate: jest.fn(),
     };
-    service = new EVMProgressService(mockProgressModel as any, mockProjectModel as any);
+    service = new EVMProgressService(mockProgressModel, mockProjectModel);
   });
 
   afterEach(() => {
@@ -41,9 +41,7 @@ describe('EVMProgressService', () => {
     });
 
     it('should throw BadRequestException if projectId is invalid', async () => {
-      await expect(service.recordProgress('invalid', 10, 20)).rejects.toThrow(
-        /projectId invalido/,
-      );
+      await expect(service.recordProgress('invalid', 10, 20)).rejects.toThrow(/projectId invalido/);
     });
   });
 

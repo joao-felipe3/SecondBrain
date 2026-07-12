@@ -33,7 +33,11 @@ export class FeedbackService {
 
     try {
       const timeSpentMinutes = task.pomodorosDid ? task.pomodorosDid * 25 : undefined;
-      const structured = await this.generateFeedbackOnCompletion({ task, checklist: task.checklist, timeSpentMinutes });
+      const structured = await this.generateFeedbackOnCompletion({
+        task,
+        checklist: task.checklist,
+        timeSpentMinutes,
+      });
       return JSON.stringify(structured);
     } catch (err: unknown) {
       await this.saveErrorFeedback(task, inputSnapshot, err as Error);
@@ -90,16 +94,25 @@ export class FeedbackService {
     try {
       const feedbackObj = await this.geminiService.generateCompletionFeedbackStructured(prompt);
 
-      if (!feedbackObj.celebration) feedbackObj.celebration = `Parabéns por concluir "${String(task.name || '')}".`;
+      if (!feedbackObj.celebration)
+        feedbackObj.celebration = `Parabéns por concluir "${String(task.name || '')}".`;
       if (!feedbackObj.validation) feedbackObj.validation = `Checklist: ${percent}% completo.`;
-      if (!feedbackObj.question) feedbackObj.question = 'Houve algum impedimento durante a execução? (resuma em 1 frase)';
-      if (!feedbackObj.suggestion) feedbackObj.suggestion = 'Sugestão: revisar os pontos não concluídos e planejar próximo passo (PDCA).';
+      if (!feedbackObj.question)
+        feedbackObj.question = 'Houve algum impedimento durante a execução? (resuma em 1 frase)';
+      if (!feedbackObj.suggestion)
+        feedbackObj.suggestion =
+          'Sugestão: revisar os pontos não concluídos e planejar próximo passo (PDCA).';
 
       await this.saveSuccessFeedback({ task, checklistSummary, timeSpentMinutes, feedbackObj });
 
       return feedbackObj;
     } catch (err: unknown) {
-      await this.saveErrorFeedbackOnCompletion({ task, checklistSummary, timeSpentMinutes, error: err as Error });
+      await this.saveErrorFeedbackOnCompletion({
+        task,
+        checklistSummary,
+        timeSpentMinutes,
+        error: err as Error,
+      });
       throw err;
     }
   }
@@ -273,5 +286,4 @@ export class FeedbackService {
     const completedCount = checklistSummary.filter((c) => c.completed).length;
     return Math.round((completedCount / checklistSummary.length) * 100);
   }
-
 }

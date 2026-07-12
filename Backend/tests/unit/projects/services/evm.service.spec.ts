@@ -10,7 +10,7 @@ describe('EVMService', () => {
       getProgressEntries: jest.fn().mockResolvedValue([]),
       getDashboardPreferences: jest.fn(),
     };
-    service = new EVMService(mockProgressService as any, {} as any, {} as any);
+    service = new EVMService(mockProgressService, {} as any, {} as any);
   });
 
   afterEach(() => {

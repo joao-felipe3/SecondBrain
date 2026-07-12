@@ -29,7 +29,7 @@ export {
 export class DependencyInferenceService {
   private readonly logger = new Logger(DependencyInferenceService.name);
 
-  constructor(private readonly geminiService: GeminiService) { }
+  constructor(private readonly geminiService: GeminiService) {}
 
   // ===========================================================================
   // 1. Public AI & Heuristic Methods
@@ -118,13 +118,16 @@ export class DependencyInferenceService {
     if (this.isVerbose()) {
       this.logger.log(
         `[dep-infer] done requestId=${requestId || '-'} raw=${rawDeps.length} ` +
-        `filtered=${deps.length} acyclic=${acyclic.length} durationMs=${Date.now() - startedAt}`,
+          `filtered=${deps.length} acyclic=${acyclic.length} durationMs=${Date.now() - startedAt}`,
       );
     }
     return acyclic;
   }
 
-  private calculateInterLeafBoundaries(leaves: InferenceLeafGatesDto[], maxEdgesParam?: number): {
+  private calculateInterLeafBoundaries(
+    leaves: InferenceLeafGatesDto[],
+    maxEdgesParam?: number,
+  ): {
     hardMaxEdges: number;
     maxOutputTokens: number;
     validIds: Set<string>;

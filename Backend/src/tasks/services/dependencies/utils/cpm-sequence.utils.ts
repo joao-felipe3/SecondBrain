@@ -1,18 +1,13 @@
 import { DependencyType } from '../../../schemas/task-dependency.schema';
 import {
   TaskNodeResponseDto,
-  TaskDependencyEdgeDto,
   FindEndNodeDto,
   EvaluateDependencyAlignmentDto,
   FindBestPredecessorDto,
   BuildCriticalPathSequenceDto,
 } from '../../../dto/dependencies/cpm.dto';
 
-function findEndNode({
-  tasks,
-  projectDuration,
-  eps,
-}: FindEndNodeDto): TaskNodeResponseDto | undefined {
+function findEndNode({ tasks, projectDuration, eps }: FindEndNodeDto): TaskNodeResponseDto | undefined {
   let end: TaskNodeResponseDto | undefined;
   for (const t of tasks) {
     if (typeof t.earlyFinish !== 'number') continue;
@@ -32,18 +27,15 @@ function findEndNode({
   return end;
 }
 
-function evaluateDependencyAlignment({
-  pred,
-  cur,
-  dep,
-  eps,
-}: EvaluateDependencyAlignmentDto): { aligns: boolean; timelineRef: number } {
+function evaluateDependencyAlignment({ pred, cur, dep, eps }: EvaluateDependencyAlignmentDto): {
+  aligns: boolean;
+  timelineRef: number;
+} {
   const es = typeof cur.earlyStart === 'number' ? cur.earlyStart : 0;
   const ef = typeof cur.earlyFinish === 'number' ? cur.earlyFinish : es + (cur.duration || 0);
 
   const predES = typeof pred.earlyStart === 'number' ? pred.earlyStart : 0;
-  const predEF =
-    typeof pred.earlyFinish === 'number' ? pred.earlyFinish : predES + (pred.duration || 0);
+  const predEF = typeof pred.earlyFinish === 'number' ? pred.earlyFinish : predES + (pred.duration || 0);
 
   let aligns = false;
   let timelineRef = predEF;

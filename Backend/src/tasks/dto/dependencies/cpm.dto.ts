@@ -12,6 +12,13 @@ import {
 } from 'class-validator';
 import { DependencyType } from '../../schemas/task-dependency.schema';
 import { CPMDiagnosticsDto } from './cpm-diagnostics.dto';
+import {
+  TaskDependencyEdge,
+  TaskNode,
+  PackageCriticality,
+  CPMAnalysis,
+  TaskMetrics,
+} from '../../interfaces/cpm.interface';
 
 export class AddDependencyDto {
   @ApiProperty({
@@ -61,10 +68,18 @@ export class DependencyResponseDto {
   @ApiProperty({ description: 'ID da tarefa predecessora', example: 'task-456' })
   dependsOnTaskId: string;
 
-  @ApiProperty({ description: 'Tipo de relacionamento da dependência', enum: DependencyType, example: 'FINISH_TO_START' })
+  @ApiProperty({
+    description: 'Tipo de relacionamento da dependência',
+    enum: DependencyType,
+    example: 'FINISH_TO_START',
+  })
   relationship: string;
 
-  @ApiProperty({ description: 'Motivo ou justificativa', example: 'Configuração manual', required: false })
+  @ApiProperty({
+    description: 'Motivo ou justificativa',
+    example: 'Configuração manual',
+    required: false,
+  })
   reason?: string;
 
   @ApiProperty({ description: 'Indica se foi auto-identificada', example: false, required: false })
@@ -163,7 +178,8 @@ export class AutoInferDependenciesDto {
 
 export class ClearDependencyCycleDto {
   @ApiProperty({
-    description: 'Modo de quebra de ciclo (auto-only remove apenas geradas por IA, all remove qualquer uma)',
+    description:
+      'Modo de quebra de ciclo (auto-only remove apenas geradas por IA, all remove qualquer uma)',
     enum: ['auto-only', 'all'],
     example: 'auto-only',
     required: false,
@@ -186,28 +202,43 @@ export class ClearDependencyCycleDto {
   maxRemovals?: number = 25;
 }
 
-export class TaskDependencyEdgeDto {
+export class TaskDependencyEdgeDto implements TaskDependencyEdge {
   @ApiProperty({ description: 'ID da tarefa predecessora', example: 'task-456' })
   predecessorId: string;
 
-  @ApiProperty({ description: 'Tipo de relacionamento', enum: DependencyType, example: 'FINISH_TO_START' })
+  @ApiProperty({
+    description: 'Tipo de relacionamento',
+    enum: DependencyType,
+    example: 'FINISH_TO_START',
+  })
   relationship: DependencyType;
 }
 
-export class TaskNodeResponseDto {
+export class TaskNodeResponseDto implements TaskNode {
   @ApiProperty({ description: 'ID da tarefa', example: 'task-123' })
   id: string;
 
   @ApiProperty({ description: 'Nome ou título da tarefa', example: 'Configurar Servidor' })
   name: string;
 
-  @ApiProperty({ description: 'Duração estimada em horas/minutos conforme unidade do CPM', example: 120 })
+  @ApiProperty({
+    description: 'Duração estimada em horas/minutos conforme unidade do CPM',
+    example: 120,
+  })
   duration: number;
 
-  @ApiProperty({ description: 'Lista de IDs das tarefas de que esta depende', type: [String], example: ['task-456'] })
+  @ApiProperty({
+    description: 'Lista de IDs das tarefas de que esta depende',
+    type: [String],
+    example: ['task-456'],
+  })
   dependencies: string[];
 
-  @ApiProperty({ description: 'Lista estruturada das arestas de dependência', type: [TaskDependencyEdgeDto], required: false })
+  @ApiProperty({
+    description: 'Lista estruturada das arestas de dependência',
+    type: [TaskDependencyEdgeDto],
+    required: false,
+  })
   dependencyEdges?: TaskDependencyEdgeDto[];
 
   @ApiProperty({ description: 'ID do nó WBS pai', example: 'wbs-node-1', required: false })
@@ -231,11 +262,15 @@ export class TaskNodeResponseDto {
   @ApiProperty({ description: 'Folga da tarefa (slack)', example: 10, required: false })
   slack?: number;
 
-  @ApiProperty({ description: 'Indica se a tarefa está no caminho crítico', example: false, required: false })
+  @ApiProperty({
+    description: 'Indica se a tarefa está no caminho crítico',
+    example: false,
+    required: false,
+  })
   isCritical?: boolean;
 }
 
-export class TaskMetricsResponseDto {
+export class TaskMetricsResponseDto implements TaskMetrics {
   @ApiProperty({ description: 'ID da tarefa', example: 'task-123' })
   taskId: string;
 
@@ -261,8 +296,7 @@ export class TaskMetricsResponseDto {
   isCritical: boolean;
 }
 
-
-export class PackageCriticalityResponseDto {
+export class PackageCriticalityResponseDto implements PackageCriticality {
   @ApiProperty({ description: 'ID do pacote WBS ou leaf', example: 'wbs-node-1' })
   packageId: string;
 
@@ -291,20 +325,35 @@ export class PackageCriticalityResponseDto {
   score: number;
 }
 
-export class CPMAnalysisResponseDto {
-  @ApiProperty({ description: 'Lista de IDs das tarefas no caminho crítico do projeto', type: [String], example: ['task-1', 'task-2'] })
+export class CPMAnalysisResponseDto implements CPMAnalysis {
+  @ApiProperty({
+    description: 'Lista de IDs das tarefas no caminho crítico do projeto',
+    type: [String],
+    example: ['task-1', 'task-2'],
+  })
   criticalPath: string[];
 
   @ApiProperty({ description: 'Duração total estimada do projeto', example: 34.5 })
   projectDuration: number;
 
-  @ApiProperty({ description: 'Lista de tarefas ordenadas por impacto no prazo final', type: [TaskNodeResponseDto] })
+  @ApiProperty({
+    description: 'Lista de tarefas ordenadas por impacto no prazo final',
+    type: [TaskNodeResponseDto],
+  })
   tasksByImpact: TaskNodeResponseDto[];
 
-  @ApiProperty({ description: 'Mensagens e alertas gerados na análise', type: [String], example: ['⚠️ Caminho crítico possui folga zero'] })
+  @ApiProperty({
+    description: 'Mensagens e alertas gerados na análise',
+    type: [String],
+    example: ['⚠️ Caminho crítico possui folga zero'],
+  })
   alerts: string[];
 
-  @ApiProperty({ description: 'Métricas de criticidade por pacotes/nós WBS', type: [PackageCriticalityResponseDto], required: false })
+  @ApiProperty({
+    description: 'Métricas de criticidade por pacotes/nós WBS',
+    type: [PackageCriticalityResponseDto],
+    required: false,
+  })
   packageCriticality?: PackageCriticalityResponseDto[];
 
   @ApiProperty({ type: CPMDiagnosticsDto, required: false })
@@ -562,6 +611,3 @@ export class ValidateDependenciesResponseDto {
   @ApiProperty({ description: 'Amostras de dependências com referências ausentes' })
   missingDependencySamples: Array<{ taskId: string; dependsOnTaskId: string }>;
 }
-
-
-

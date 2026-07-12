@@ -22,7 +22,7 @@ export class ProjectsService {
     private readonly ganttService: GanttService,
     private readonly pertDiagramService: PertDiagramService,
     private readonly projectStatsService: ProjectStatsService,
-  ) { }
+  ) {}
 
   async createXMatrix(projectId: string, dto: CreateXMatrixDto): Promise<XMatrixResponseDto> {
     return this.xMatrixService.createXMatrix(projectId, dto);
@@ -88,7 +88,6 @@ export class ProjectsService {
     const result = await this.projectModel.findByIdAndDelete(id).exec();
     return result !== null;
   }
-
 
   async removeWithOptions(
     id: string,

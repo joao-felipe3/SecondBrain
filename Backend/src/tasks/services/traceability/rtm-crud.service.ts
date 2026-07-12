@@ -1,7 +1,11 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
-import { Requirement as RequirementSchema, RequirementDocument, JourneyKind } from '../../schemas/requirement.schema';
+import {
+  Requirement as RequirementSchema,
+  RequirementDocument,
+  JourneyKind,
+} from '../../schemas/requirement.schema';
 import { Requirement } from '../../entities/requirement.entity';
 import { RequirementMapper } from '../../mappers/requirement.mapper';
 import { MapRequirementToTaskDto } from '../../dto';
@@ -213,9 +217,7 @@ export class RTMCrudService {
   // 4. Task Mapping
   // ===========================================================================
 
-  async mapRequirementToTask(
-    dto: MapRequirementToTaskDto,
-  ): Promise<Requirement | null> {
+  async mapRequirementToTask(dto: MapRequirementToTaskDto): Promise<Requirement | null> {
     const { projectId, requirementId, taskId } = dto;
     this.logger.log(`Iniciando mapeamento: item ${requirementId} -> tarefa ${taskId}`);
     try {

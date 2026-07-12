@@ -116,7 +116,7 @@ export class GanttService {
     const nodeById = new Map<string, TaskNode>();
     for (const node of taskNodes) nodeById.set(node.id, node);
 
-    for (const dep of dependencies as any[]) {
+    for (const dep of dependencies) {
       const taskId = String(dep?.taskId || '').trim();
       const dependsOnTaskId = String(dep?.dependsOnTaskId || '').trim();
       if (!taskId || !dependsOnTaskId) continue;

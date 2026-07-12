@@ -16,8 +16,12 @@ export class RequirementMapper {
     entity.parentItemId = document.parentItemId ? document.parentItemId.toString() : undefined;
     entity.hierarchyLevel = document.hierarchyLevel;
     entity.title = document.title;
-    entity.traceableItems = document.traceableItems ? document.traceableItems.map(id => id.toString()) : [];
-    entity.traceableActionItems = document.traceableActionItems ? document.traceableActionItems.map(id => id.toString()) : [];
+    entity.traceableItems = document.traceableItems
+      ? document.traceableItems.map((id) => id.toString())
+      : [];
+    entity.traceableActionItems = document.traceableActionItems
+      ? document.traceableActionItems.map((id) => id.toString())
+      : [];
     entity.source = document.source;
     entity.status = document.status;
     entity.createdAt = document.createdAt;
@@ -41,7 +45,8 @@ export class RequirementMapper {
     if (entity.hierarchyLevel !== undefined) document.hierarchyLevel = entity.hierarchyLevel;
     if (entity.title !== undefined) document.title = entity.title;
     if (entity.traceableItems !== undefined) document.traceableItems = entity.traceableItems;
-    if (entity.traceableActionItems !== undefined) document.traceableActionItems = entity.traceableActionItems;
+    if (entity.traceableActionItems !== undefined)
+      document.traceableActionItems = entity.traceableActionItems;
     if (entity.source !== undefined) document.source = entity.source;
     if (entity.status !== undefined) document.status = entity.status;
 

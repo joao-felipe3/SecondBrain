@@ -12,12 +12,9 @@ import {
   buildTaskScheduleMetrics,
 } from './rolling-wave-helpers.util';
 
-
 function sortPendingTasks(tasks: any[]): any[] {
   return [...tasks].sort((left, right) => {
-    const leftDeadline = left?.deadline
-      ? new Date(left.deadline).getTime()
-      : Number.POSITIVE_INFINITY;
+    const leftDeadline = left?.deadline ? new Date(left.deadline).getTime() : Number.POSITIVE_INFINITY;
     const rightDeadline = right?.deadline
       ? new Date(right.deadline).getTime()
       : Number.POSITIVE_INFINITY;
@@ -72,9 +69,7 @@ function generateBulkOpsForPendingTasks(
 ): PendingTasksResult {
   const availableDays = Math.max(
     1,
-    Math.ceil(
-      (startOfDay(effectiveEnd).getTime() - startOfDay(effectiveStart).getTime()) / dayMs,
-    ) + 1,
+    Math.ceil((startOfDay(effectiveEnd).getTime() - startOfDay(effectiveStart).getTime()) / dayMs) + 1,
   );
   const totalHours = pendingTasks.reduce(
     (sum, task) => sum + Math.max(0.25, estimateTaskHours(task)),
@@ -144,9 +139,7 @@ export function calculateReplannedDeadlines(
     const skippedConcludedTasks = waveTasks.filter((task) => Boolean(task?.isConcluded)).length;
     skippedConcludedCount += skippedConcludedTasks;
 
-    const pendingTasks = sortPendingTasks(
-      waveTasks.filter((task) => !task?.isConcluded),
-    );
+    const pendingTasks = sortPendingTasks(waveTasks.filter((task) => !task?.isConcluded));
 
     if (pendingTasks.length === 0) {
       summaries.push({

@@ -53,7 +53,11 @@ export class DraftGenerationService {
       cognitiveMode?: string;
     }>
   > {
-    return this.singlePassGeneration.generateMicroTasksDraftsForLeaf(params, chunkMinutes, modelOverride);
+    return this.singlePassGeneration.generateMicroTasksDraftsForLeaf(
+      params,
+      chunkMinutes,
+      modelOverride,
+    );
   }
 
   async generateMicroTasksDraftsForLeafWithPlan(

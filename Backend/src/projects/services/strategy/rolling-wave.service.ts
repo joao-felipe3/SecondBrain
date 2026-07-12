@@ -6,9 +6,7 @@ import { TaskDocument } from '../../../tasks/schemas/task.schema';
 import { ProjectsService } from '../../projects.service';
 import { RollingWavePlanningService } from './rolling-wave-planning.service';
 
-import {
-  ReplanTaskDeadlinesResult,
-} from '../../interfaces/rolling-wave.interface';
+import { ReplanTaskDeadlinesResult } from '../../interfaces/rolling-wave.interface';
 
 import { calculateReplannedDeadlines } from './utils/rolling-wave-replan-helpers.util';
 
@@ -22,7 +20,7 @@ export class RollingWaveService {
     @InjectModel('Task') private readonly taskModel: Model<TaskDocument>,
     private readonly projectsService: ProjectsService,
     private readonly rollingWavePlanningService: RollingWavePlanningService,
-  ) { }
+  ) {}
 
   async createInitialWaves(
     projectId: string,

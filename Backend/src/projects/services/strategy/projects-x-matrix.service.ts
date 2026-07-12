@@ -6,11 +6,7 @@ import { ProjectDocument } from '../../schemas/project.schema';
 import { ProjectWave, type ProjectWaveDocument } from '../../schemas/project-wave.schema';
 import { CreateXMatrixDto, type XMatrixResponseDto } from '../../dto/x-matrix.dto';
 import { XMatrixSnapshot, type XMatrixSnapshotDocument } from '../../schemas/x-matrix-snapshot.schema';
-import {
-  splitGoalText,
-  scoreStrength,
-  inferInitiativeFromWbsPath,
-} from './utils/x-matrix-helpers.util';
+import { splitGoalText, scoreStrength, inferInitiativeFromWbsPath } from './utils/x-matrix-helpers.util';
 
 @Injectable()
 export class ProjectsXMatrixService {
@@ -229,7 +225,7 @@ export class ProjectsXMatrixService {
       if (durationDays <= 120) {
         warnings.push(
           'Zoom fractal aplicado: trate Norte como fim do semestre e Estrategico como metas mensais.',
-         );
+        );
       }
     }
 
@@ -356,7 +352,7 @@ export class ProjectsXMatrixService {
           { $set: { data: legacySnapshot } },
           { upsert: true },
         )
-          .exec();
+        .exec();
 
       await this.projectModel.updateOne({ _id: projectId }, { $unset: { xMatrixSnapshot: '' } }).exec();
 

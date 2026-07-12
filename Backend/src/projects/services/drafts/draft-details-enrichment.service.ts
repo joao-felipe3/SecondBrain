@@ -16,7 +16,7 @@ export class DraftDetailsEnrichmentService {
     @Inject(forwardRef(() => GeminiService))
     private readonly geminiService: GeminiService,
     private readonly promptBuilder: PromptBuilderService,
-  ) { }
+  ) {}
 
   async enrichOutlinesWithDetails(
     outlines: any[],
@@ -24,11 +24,26 @@ export class DraftDetailsEnrichmentService {
     params: any,
     detailsModelOverride: string | undefined,
   ): Promise<any[]> {
-    const { detailsConcurrency, detailsBatchSize, detailsBatchConcurrency } = this.getConcurrencyParams();
+    const { detailsConcurrency, detailsBatchSize, detailsBatchConcurrency } =
+      this.getConcurrencyParams();
 
-    const enriched = detailsBatchSize <= 1
-      ? await this.enrichWithoutBatching(outlines, sliceMinutes, params, detailsModelOverride, detailsConcurrency)
-      : await this.enrichWithBatching(outlines, sliceMinutes, params, detailsModelOverride, detailsBatchSize, detailsBatchConcurrency);
+    const enriched =
+      detailsBatchSize <= 1
+        ? await this.enrichWithoutBatching(
+            outlines,
+            sliceMinutes,
+            params,
+            detailsModelOverride,
+            detailsConcurrency,
+          )
+        : await this.enrichWithBatching(
+            outlines,
+            sliceMinutes,
+            params,
+            detailsModelOverride,
+            detailsBatchSize,
+            detailsBatchConcurrency,
+          );
 
     return validateDrafts(enriched);
   }
@@ -43,9 +58,9 @@ export class DraftDetailsEnrichmentService {
     const detailsBatchConcurrency =
       detailsBatchSize > 1
         ? getNumericEnv(
-          'WBS_DETAILS_BATCH_CONCURRENCY',
-          Math.max(1, Math.floor(detailsConcurrency / Math.max(1, detailsBatchSize))),
-        )
+            'WBS_DETAILS_BATCH_CONCURRENCY',
+            Math.max(1, Math.floor(detailsConcurrency / Math.max(1, detailsBatchSize))),
+          )
         : detailsConcurrency;
 
     if (detailsBatchSize > 1) {
@@ -64,19 +79,15 @@ export class DraftDetailsEnrichmentService {
     detailsModelOverride: string | undefined,
     concurrency: number,
   ): Promise<any[]> {
-    return mapWithConcurrency(
-      outlines,
-      concurrency,
-      async (outline, index) => {
-        const details = await this.generateDetailsForBatch(
-          [outline],
-          [sliceMinutes[index]],
-          params,
-          detailsModelOverride,
-        );
-        return { ...outline, ...details[0] };
-      },
-    );
+    return mapWithConcurrency(outlines, concurrency, async (outline, index) => {
+      const details = await this.generateDetailsForBatch(
+        [outline],
+        [sliceMinutes[index]],
+        params,
+        detailsModelOverride,
+      );
+      return { ...outline, ...details[0] };
+    });
   }
 
   private async enrichWithBatching(
@@ -89,19 +100,15 @@ export class DraftDetailsEnrichmentService {
   ): Promise<any[]> {
     const batches = this.createBatches(outlines, sliceMinutes, batchSize);
 
-    const batchResults = await mapWithConcurrency(
-      batches,
-      batchConcurrency,
-      async (b) => {
-        const detailsList = await this.generateDetailsForBatch(
-          b.outlines,
-          b.minutes,
-          params,
-          detailsModelOverride,
-        );
-        return { start: b.start, detailsList };
-      },
-    );
+    const batchResults = await mapWithConcurrency(batches, batchConcurrency, async (b) => {
+      const detailsList = await this.generateDetailsForBatch(
+        b.outlines,
+        b.minutes,
+        params,
+        detailsModelOverride,
+      );
+      return { start: b.start, detailsList };
+    });
 
     return this.assembleEnrichedBatches(outlines, batchResults);
   }
@@ -281,9 +288,7 @@ export class DraftDetailsEnrichmentService {
         throw new Error('Details batch inválido: não retornou array JSON');
       }
       if (detailsList.length < batchOutlines.length) {
-        throw new Error(
-          `IA retornou ${detailsList.length} details; esperado ${batchOutlines.length}`,
-        );
+        throw new Error(`IA retornou ${detailsList.length} details; esperado ${batchOutlines.length}`);
       }
       return detailsList.slice(0, batchOutlines.length).map((d) => validateDraftDetails(d));
     };

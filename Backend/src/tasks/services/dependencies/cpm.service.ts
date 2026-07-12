@@ -31,7 +31,6 @@ export {
   TaskMetrics,
 } from '../../interfaces/cpm.interface';
 
-
 @Injectable()
 export class CPMService {
   private readonly logger = new Logger(CPMService.name);
@@ -39,7 +38,7 @@ export class CPMService {
   constructor(
     @InjectModel(TaskDependencySchema.name)
     private readonly dependencyModel: Model<TaskDependencyDocument>,
-  ) { }
+  ) {}
 
   // #region Public Dependency Database CRUD Operations
 
