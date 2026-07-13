@@ -6,6 +6,7 @@ import { RTMAiService } from '../../../../src/tasks/services/traceability/rtm-ai
 import { RTMJourneyService } from '../../../../src/tasks/services/traceability/rtm-journey.service';
 import { RTMMappingService } from '../../../../src/tasks/services/traceability/rtm-mapping.service';
 import { RTMValidationService } from '../../../../src/tasks/services/traceability/rtm-validation.service';
+import { RTMTaskGeneratorService } from '../../../../src/tasks/services/traceability/rtm-task-generator.service';
 import { Requirement } from '../../../../src/tasks/schemas/requirement.schema';
 import { GeminiService } from '../../../../src/ai/gemini.service';
 import { TasksService } from '../../../../src/tasks/tasks.service';
@@ -42,6 +43,7 @@ describe('RTMService', () => {
         RTMJourneyService,
         RTMMappingService,
         RTMValidationService,
+        RTMTaskGeneratorService,
         {
           provide: getModelToken(Requirement.name),
           useValue: mockModel,

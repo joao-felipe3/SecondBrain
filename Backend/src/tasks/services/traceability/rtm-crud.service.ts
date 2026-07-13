@@ -8,27 +8,13 @@ import {
 } from '../../schemas/requirement.schema';
 import { Requirement } from '../../entities/requirement.entity';
 import { RequirementMapper } from '../../mappers/requirement.mapper';
-import { MapRequirementToTaskDto } from '../../dto';
+import {
+  MapRequirementToTaskDto,
+  SaveRequirementDto,
+  PreparedRequirementDataDto,
+  ProcessSingleRequirementDto,
+} from '../../dto';
 import { normalizeKind, normalizeType, levelForKind, getLinkedActions } from './utils/rtm.utils';
-
-interface SaveRequirementInput {
-  description: string;
-  type?: string;
-  source?: string;
-  kind?: string;
-  ref?: string;
-  parentRef?: string;
-}
-
-interface PreparedRequirementData {
-  ref: string;
-  parentRef?: string;
-  description: string;
-  kind: JourneyKind;
-  type: string;
-  hierarchyLevel: number;
-  source: string;
-}
 
 @Injectable()
 export class RTMCrudService {
@@ -63,7 +49,7 @@ export class RTMCrudService {
 
   async saveRequirements(
     projectId: string,
-    requirementsData: SaveRequirementInput[],
+    requirementsData: SaveRequirementDto[],
   ): Promise<Requirement[]> {
     this.logger.log(
       `Iniciando salvamento de ${requirementsData.length} itens de jornada para projeto ${projectId}`,
@@ -98,17 +84,17 @@ export class RTMCrudService {
   }
 
   private _prepareAndFilterRequirements(
-    requirementsData: SaveRequirementInput[],
-  ): PreparedRequirementData[] {
+    requirementsData: SaveRequirementDto[],
+  ): PreparedRequirementDataDto[] {
     return requirementsData
       .map((item, index) => this._prepareSingleRequirementItem(item, index))
       .filter((item) => item.description.length > 0);
   }
 
   private _prepareSingleRequirementItem(
-    item: SaveRequirementInput,
+    item: SaveRequirementDto,
     index: number,
-  ): PreparedRequirementData {
+  ): PreparedRequirementDataDto {
     const kind = normalizeKind(item.kind || item.type);
     const type = normalizeType(item.type, kind);
     const ref = String(item.ref || `${kind.slice(0, 1).toUpperCase()}${index + 1}`).trim();
@@ -127,18 +113,16 @@ export class RTMCrudService {
   }
 
   private _sortRequirementsByHierarchy(
-    preparedItems: PreparedRequirementData[],
-  ): PreparedRequirementData[] {
+    preparedItems: PreparedRequirementDataDto[],
+  ): PreparedRequirementDataDto[] {
     return preparedItems.sort((a, b) => a.hierarchyLevel - b.hierarchyLevel);
   }
 
-  private async _processAndCreateSingleRequirement(params: {
-    projectId: string;
-    item: PreparedRequirementData;
-    refToId: Map<string, string>;
-    insertedDedupKeys: Set<string>;
-  }): Promise<Requirement | null> {
+  private async _processAndCreateSingleRequirement(
+    params: ProcessSingleRequirementDto,
+  ): Promise<Requirement | null> {
     const { projectId, item, refToId, insertedDedupKeys } = params;
+    const { ref, parentRef, ...restOfItem } = item;
     const dedupKey = `${item.kind}::${item.description.toLowerCase()}`;
     if (insertedDedupKeys.has(dedupKey)) {
       this.logger.warn(`Item duplicado detectado e ignorado: ${item.description}`);
@@ -146,11 +130,11 @@ export class RTMCrudService {
     }
 
     let parentItemId: string | undefined;
-    if (item.parentRef) {
-      parentItemId = refToId.get(item.parentRef);
+    if (parentRef) {
+      parentItemId = refToId.get(parentRef);
       if (!parentItemId) {
         this.logger.warn(
-          `ParentRef ${item.parentRef} para item ${item.ref} não encontrado. Item será criado sem pai.`,
+          `ParentRef ${parentRef} para item ${ref} não encontrado. Item será criado sem pai.`,
         );
       }
     }
@@ -158,23 +142,19 @@ export class RTMCrudService {
     try {
       const created = await this.requirementModel.create({
         projectId,
-        description: item.description,
+        ...restOfItem,
         title: item.description,
-        type: item.type,
-        kind: item.kind,
-        hierarchyLevel: item.hierarchyLevel,
         parentItemId,
-        source: item.source,
         traceableItems: [],
         traceableActionItems: [],
         status: 'open',
       });
 
-      refToId.set(item.ref, String(created._id));
+      refToId.set(ref, String(created._id));
       insertedDedupKeys.add(dedupKey);
       return RequirementMapper.toDomain(created);
     } catch (error: unknown) {
-      this.logger.error(`Erro ao criar requisito ${item.ref}: ${(error as Error).message}`);
+      this.logger.error(`Erro ao criar requisito ${ref}: ${(error as Error).message}`);
       return null;
     }
   }

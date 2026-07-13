@@ -21,7 +21,7 @@ interface HabitSummary extends StreakData {
 
 @Injectable()
 export class TasksHabitsService {
-  constructor(@InjectModel('Task') private readonly taskModel: Model<TaskDocument>) {}
+  constructor(@InjectModel('Task') private readonly taskModel: Model<TaskDocument>) { }
 
   // ===========================================================================
   // 1. Habit Tracking & Streak Metrics
@@ -50,8 +50,6 @@ export class TasksHabitsService {
       const summaries = await this._createHabitSummaries(habits);
       return this._calculateDashboardMetrics(summaries, filter.projectId);
     } catch (error) {
-      // Log the error if a logger is available
-      // this.logger.error('Failed to get habits dashboard', error.stack);
       throw new BadRequestException('Could not retrieve habits dashboard data.');
     }
   }

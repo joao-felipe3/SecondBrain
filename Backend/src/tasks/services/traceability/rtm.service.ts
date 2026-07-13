@@ -6,7 +6,12 @@ import { RTMValidation, RTMMatrixData } from '../../interfaces/rtm.interface';
 import { RTMCrudService } from './rtm-crud.service';
 import { RTMAiService } from './rtm-ai.service';
 import { RTMValidationService } from './rtm-validation.service';
-import { MapRequirementToTaskDto } from '../../dto';
+import {
+  MapRequirementToTaskDto,
+  SaveRequirementDto,
+  AutoMapRequirementsResponseDto,
+  GenerateTasksResponseDto,
+} from '../../dto';
 
 // Re-export interfaces for backwards compatibility
 export { RTMValidation, RTMMatrixData } from '../../interfaces/rtm.interface';
@@ -29,14 +34,7 @@ export class RTMService {
 
   saveRequirements(
     projectId: string,
-    requirementsData: Array<{
-      description: string;
-      type?: string;
-      source?: string;
-      kind?: string;
-      ref?: string;
-      parentRef?: string;
-    }>,
+    requirementsData: SaveRequirementDto[],
   ): Promise<Requirement[]> {
     return this.crud.saveRequirements(projectId, requirementsData);
   }
@@ -76,22 +74,11 @@ export class RTMService {
   autoMapRequirementsToTasks(
     projectId: string,
     tasks: Task[],
-  ): Promise<{
-    mappedCount: number;
-    createdRequirementsCount: number;
-    coverage: number;
-    validation: RTMValidation;
-    message: string;
-  }> {
+  ): Promise<AutoMapRequirementsResponseDto> {
     return this.ai.autoMapRequirementsToTasks(projectId, tasks);
   }
 
-  generateTasksForUnmappedRequirements(projectId: string): Promise<{
-    createdTasksCount: number;
-    coverage: number;
-    validation: RTMValidation;
-    message: string;
-  }> {
+  generateTasksForUnmappedRequirements(projectId: string): Promise<GenerateTasksResponseDto> {
     return this.ai.generateTasksForUnmappedRequirements(projectId);
   }
 

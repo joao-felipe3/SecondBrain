@@ -1,4 +1,4 @@
-import { AiTaskSuggestionDto } from '../dto/intelligence/generate-ai-suggestions.dto';
+import { AiTaskSuggestionDto, GenerateAiSuggestionsDto } from '../dto/intelligence/generate-ai-suggestions.dto';
 
 export interface SuggestionState {
   targetHours: number;
@@ -8,4 +8,10 @@ export interface SuggestionState {
   maxIterations: number;
   allSuggestions: AiTaskSuggestionDto[];
   existingTaskNames: string[];
+}
+
+export interface FetchSuggestionsParams {
+  dto: GenerateAiSuggestionsDto;
+  existingTaskNames: string[];
+  chunkHours?: number;
 }

@@ -2,9 +2,10 @@ import { TasksInputService } from '../../../src/tasks/services/workflow/input.se
 import { TasksMetricsService } from '../../../src/tasks/services/analysis/metrics.service';
 import { TasksRecurringService } from '../../../src/tasks/services/workflow/recurring.service';
 import { TasksAiSuggestionsService } from '../../../src/tasks/services/intelligence/ai-suggestions.service';
+import { TasksAiSuggestionsLoopRunner } from '../../../src/tasks/services/intelligence/ai-suggestions-runner.service';
 import { TasksHabitsService } from '../../../src/tasks/services/monitoring/habits.service';
 import { TasksHierarchyService } from '../../../src/tasks/services/dependencies/hierarchy.service';
-import { TasksChecklistService } from '../../../src/tasks/services/intelligence/checklist.service';
+import { ChecklistOperationsService } from '../../../src/tasks/services/intelligence/checklist-operations.service';
 import { TasksCompletionService } from '../../../src/tasks/services/workflow/completion.service';
 import { TasksPertService } from '../../../src/tasks/services/analysis/pert.service';
 import { TasksWriteService } from '../../../src/tasks/services/workflow/write.service';
@@ -28,7 +29,34 @@ export function createTasksServiceTestProviders(deps: TasksServiceTestDeps) {
   let completionService!: TasksCompletionService;
   let writeService!: TasksWriteService;
 
+  const taskRepositoryMock = {
+    findAll: jest.fn().mockImplementation(async () => []),
+    findById: jest.fn().mockImplementation(async (id: string) => {
+      if (deps.taskModel && typeof deps.taskModel.findById === 'function') {
+        const queryObj = deps.taskModel.findById(id);
+        if (queryObj && typeof queryObj.exec === 'function') {
+          return await queryObj.exec();
+        }
+        return queryObj;
+      }
+      return null;
+    }),
+    findByProjectId: jest.fn().mockImplementation(async (projectId: string, opts?: any) => {
+      if (deps.taskModel && typeof deps.taskModel.find === 'function') {
+        const queryObj = deps.taskModel.find({ project: projectId });
+        if (queryObj && typeof queryObj.exec === 'function') {
+          return await queryObj.exec();
+        }
+        return queryObj;
+      }
+      return [];
+    }),
+    save: jest.fn().mockImplementation(async (task: any) => task),
+    delete: jest.fn().mockImplementation(async () => {}),
+  };
+
   return [
+    { provide: 'TaskRepository', useValue: taskRepositoryMock },
     { provide: TasksInputService, useValue: inputService },
     { provide: TasksMetricsService, useValue: metricsService },
     {
@@ -36,8 +64,16 @@ export function createTasksServiceTestProviders(deps: TasksServiceTestDeps) {
       useValue: recurringService,
     },
     {
+      provide: TasksAiSuggestionsLoopRunner,
+      useValue: new TasksAiSuggestionsLoopRunner(deps.taskModel, deps.geminiService),
+    },
+    {
       provide: TasksAiSuggestionsService,
-      useValue: new TasksAiSuggestionsService(deps.taskModel, deps.geminiService),
+      useValue: new TasksAiSuggestionsService(
+        deps.taskModel,
+        deps.geminiService,
+        new TasksAiSuggestionsLoopRunner(deps.taskModel, deps.geminiService),
+      ),
     },
     {
       provide: TasksHabitsService,
@@ -48,8 +84,8 @@ export function createTasksServiceTestProviders(deps: TasksServiceTestDeps) {
       useValue: new TasksHierarchyService(deps.taskModel),
     },
     {
-      provide: TasksChecklistService,
-      useValue: new TasksChecklistService(
+      provide: ChecklistOperationsService,
+      useValue: new ChecklistOperationsService(
         deps.taskModel,
         deps.checklistService,
         inputService,
@@ -86,7 +122,7 @@ export function createTasksServiceTestProviders(deps: TasksServiceTestDeps) {
           deps.projectsService,
           metricsService,
           inputService,
-          new TasksChecklistService(
+          new ChecklistOperationsService(
             deps.taskModel,
             deps.checklistService,
             inputService,

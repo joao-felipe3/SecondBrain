@@ -9,7 +9,7 @@ import { ProjectsService } from '../../../projects/projects.service';
 import { TasksMetricsService } from '../analysis/metrics.service';
 import { CreateManyTasksOptionsDto } from '../../dto/task/create-many-tasks-options.dto';
 import { TasksInputService } from './input.service';
-import { TasksChecklistService } from '../intelligence/checklist.service';
+import { ChecklistOperationsService } from '../intelligence/checklist-operations.service';
 import { InsertManyError } from '../../interfaces/db-errors';
 
 @Injectable()
@@ -21,7 +21,7 @@ export class TasksWriteService {
     private readonly projectsService: ProjectsService,
     private readonly metricsService: TasksMetricsService,
     private readonly tasksInputService: TasksInputService,
-    private readonly tasksChecklistService: TasksChecklistService,
+    private readonly checklistOperationsService: ChecklistOperationsService,
   ) {}
 
   // ===========================================================================
@@ -221,7 +221,7 @@ export class TasksWriteService {
 
     if (!shouldGenerateChecklist) return;
 
-    const generated = await this.tasksChecklistService.generateChecklistWithHistory({
+    const generated = await this.checklistOperationsService.generateChecklistWithHistory({
       taskName: payload.name,
       description: payload.description,
       microTaskType: payload.microTaskType,
@@ -239,7 +239,7 @@ export class TasksWriteService {
         : { item: it.item, completed: it.completed },
     );
 
-    const validation = this.tasksChecklistService.validateChecklistStructure(shape);
+    const validation = this.checklistOperationsService.validateChecklistStructure(shape);
 
     if (!validation.isValid) {
       throw new BadRequestException(validation.reason);

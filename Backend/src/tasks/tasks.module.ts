@@ -14,6 +14,7 @@ import {
   RTMJourneyService,
   RTMMappingService,
   RTMValidationService,
+  RTMTaskGeneratorService,
 } from './services/traceability';
 import { RTMController } from './controllers/rtm.controller';
 import { HabitsController } from './controllers/habits.controller';
@@ -35,7 +36,7 @@ import {
   TasksCompletionService,
   TasksWriteService,
 } from './services/workflow';
-import { TasksAiSuggestionsService, TasksChecklistService } from './services/intelligence';
+import { TasksAiSuggestionsService, ChecklistOperationsService, TasksAiSuggestionsLoopRunner } from './services/intelligence';
 import { TasksHabitsService } from './services/monitoring';
 import { TasksMetricsService, TasksPertService } from './services/analysis';
 import { forwardRef } from '@nestjs/common';
@@ -70,10 +71,11 @@ import { AlertsController } from './controllers/alerts.controller';
     ChecklistService,
     TasksInputService,
     TasksAiSuggestionsService,
+    TasksAiSuggestionsLoopRunner,
     TasksHabitsService,
     TasksMetricsService,
     TasksHierarchyService,
-    TasksChecklistService,
+    ChecklistOperationsService,
     TasksPertService,
     TasksWriteService,
     PertService,
@@ -87,6 +89,7 @@ import { AlertsController } from './controllers/alerts.controller';
     RTMJourneyService,
     RTMMappingService,
     RTMValidationService,
+    RTMTaskGeneratorService,
     FeedbackService,
     AlertsService,
     DeviationDetectionService,
@@ -104,7 +107,7 @@ import { AlertsController } from './controllers/alerts.controller';
     TasksHabitsService,
     TasksMetricsService,
     TasksHierarchyService,
-    TasksChecklistService,
+    ChecklistOperationsService,
     TasksPertService,
     TasksWriteService,
     PertService,
@@ -118,6 +121,7 @@ import { AlertsController } from './controllers/alerts.controller';
     RTMJourneyService,
     RTMMappingService,
     RTMValidationService,
+    RTMTaskGeneratorService,
     FeedbackService,
     AlertsService,
     DeviationDetectionService,

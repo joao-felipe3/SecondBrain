@@ -909,7 +909,7 @@ export class GeminiService {
     userPrompt?: string;
     existingTaskNames?: string[];
     chunkHours?: number;
-  }): Promise<any[]> {
+  }): Promise<{ suggestions: any[]; isFallback: boolean }> {
     const {
       projectName,
       shortTermGoal,
@@ -919,30 +919,77 @@ export class GeminiService {
       existingTaskNames,
       chunkHours,
     } = params;
-    const aiResponse = await this.generateTaskSuggestions(
-      projectName,
-      shortTermGoal,
-      midTermGoal,
-      longTermGoal,
-      userPrompt,
-      existingTaskNames,
-      chunkHours,
-    );
 
-    const parsed = this.safeParseJson(aiResponse);
-    if (!Array.isArray(parsed)) return [];
+    try {
+      const aiResponse = await this.generateTaskSuggestions(
+        projectName,
+        shortTermGoal,
+        midTermGoal,
+        longTermGoal,
+        userPrompt,
+        existingTaskNames,
+        chunkHours,
+      );
 
-    return parsed.map((item: any) => {
-      const anyItem = item as Record<string, unknown>;
+      const parsed = this.safeParseJson(aiResponse);
+      if (!Array.isArray(parsed) || parsed.length === 0) {
+        return {
+          suggestions: this.generateMockSuggestions(projectName),
+          isFallback: true,
+        };
+      }
+
+      const suggestions = parsed.map((item: any) => {
+        const anyItem = item as Record<string, unknown>;
+        return {
+          name: String(anyItem.name || ''),
+          deadline: anyItem.deadline ? String(anyItem.deadline) : undefined,
+          pomodoros: Number.isFinite(anyItem.pomodoros) ? Number(anyItem.pomodoros) : 0,
+          priority: Number.isFinite(anyItem.priority) ? Number(anyItem.priority) : 0,
+          difficulty: Number.isFinite(anyItem.difficulty) ? Number(anyItem.difficulty) : 0,
+          selected: Boolean(anyItem.selected),
+        };
+      });
+
+      return { suggestions, isFallback: false };
+    } catch {
       return {
-        name: String(anyItem.name || ''),
-        deadline: anyItem.deadline ? String(anyItem.deadline) : undefined,
-        pomodoros: Number.isFinite(anyItem.pomodoros) ? Number(anyItem.pomodoros) : 0,
-        priority: Number.isFinite(anyItem.priority) ? Number(anyItem.priority) : 0,
-        difficulty: Number.isFinite(anyItem.difficulty) ? Number(anyItem.difficulty) : 0,
-        selected: Boolean(anyItem.selected),
+        suggestions: this.generateMockSuggestions(projectName),
+        isFallback: true,
       };
-    });
+    }
+  }
+
+  generateMockSuggestions(projectName: string): any[] {
+    const baseName = String(projectName || 'Projeto').trim();
+    const today = new Date();
+
+    return [
+      {
+        name: `${baseName} - Planejar próximos passos`,
+        deadline: new Date(today.getTime() + 24 * 60 * 60 * 1000).toISOString(),
+        pomodoros: 2,
+        priority: 3,
+        difficulty: 2,
+        selected: false,
+      },
+      {
+        name: `${baseName} - Executar tarefa principal`,
+        deadline: new Date(today.getTime() + 2 * 24 * 60 * 60 * 1000).toISOString(),
+        pomodoros: 4,
+        priority: 2,
+        difficulty: 3,
+        selected: false,
+      },
+      {
+        name: `${baseName} - Revisar e ajustar`,
+        deadline: new Date(today.getTime() + 3 * 24 * 60 * 60 * 1000).toISOString(),
+        pomodoros: 1,
+        priority: 2,
+        difficulty: 1,
+        selected: false,
+      },
+    ];
   }
 
   async generateCompletionFeedbackStructured(prompt: string): Promise<{

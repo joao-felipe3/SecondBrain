@@ -35,11 +35,11 @@ import { Task } from './entities/task.entity';
 // Services
 import { ProjectsService } from '../projects/projects.service';
 import { GeminiService } from '../ai/gemini.service';
-import { CompletionFeedbackPayload, FeedbackService } from './services/intelligence';
+import { CompletionFeedbackPayload, CompletionFeedbackResponse, FeedbackService } from './services/intelligence';
 import { TasksRecurringService, TasksCompletionService, TasksWriteService } from './services/workflow';
 import {
   TasksAiSuggestionsService,
-  TasksChecklistService,
+  ChecklistOperationsService,
   ChecklistHistoryProjectRef,
 } from './services/intelligence';
 import { TasksHabitsService } from './services/monitoring';
@@ -61,7 +61,7 @@ export class TasksService {
     private readonly tasksAiSuggestionsService: TasksAiSuggestionsService,
     private readonly tasksHabitsService: TasksHabitsService,
     private readonly tasksHierarchyService: TasksHierarchyService,
-    private readonly tasksChecklistService: TasksChecklistService,
+    private readonly checklistOperationsService: ChecklistOperationsService,
     private readonly tasksCompletionService: TasksCompletionService,
   ) {}
 
@@ -119,34 +119,34 @@ export class TasksService {
 
   // ------------------------------ Checklist / Validation ------------------------------
   public async generateChecklistViaCopilot(dto: GenerateChecklistDto): Promise<string[]> {
-    return this.tasksChecklistService.generateChecklistForTask(dto);
+    return this.checklistOperationsService.generateChecklistForTask(dto);
   }
 
   public async generateChecklistViaCopilotWithHistory(
     dto: GenerateChecklistWithHistoryDto,
   ): Promise<string[]> {
-    return this.tasksChecklistService.generateChecklistWithHistory(dto);
+    return this.checklistOperationsService.generateChecklistWithHistory(dto);
   }
 
   public async updateChecklistItem(dto: UpdateChecklistTaskItemDto): Promise<TaskDocument> {
-    return this.tasksChecklistService.updateChecklistItem(dto);
+    return this.checklistOperationsService.updateChecklistItem(dto);
   }
 
   public async updateMicroTaskChecklist(
     id: string,
     checklist: Array<string | ChecklistItemDto>,
   ): Promise<TaskDocument> {
-    return this.tasksChecklistService.updateMicroTaskChecklist(id, checklist);
+    return this.checklistOperationsService.updateMicroTaskChecklist(id, checklist);
   }
 
   public async validateCompletionRequirements(
     taskId: string,
   ): Promise<{ isValid: boolean; reason?: string }> {
-    return this.tasksChecklistService.validateCompletionRequirements(taskId);
+    return this.checklistOperationsService.validateCompletionRequirements(taskId);
   }
 
   public async getValidationErrors(taskId: string): Promise<{ valid: boolean; errors: string[] }> {
-    return this.tasksChecklistService.getValidationErrors(taskId);
+    return this.checklistOperationsService.getValidationErrors(taskId);
   }
 
   // ------------------------------ Completion / Feedback ------------------------------
@@ -194,7 +194,7 @@ export class TasksService {
     return this.feedbackService.generateCompletionFeedback(id, payload);
   }
 
-  public async getCompletionFeedback(id: string): Promise<{ feedback: string; createdAt: Date } | null> {
+  public async getCompletionFeedback(id: string): Promise<CompletionFeedbackResponse | null> {
     return this.feedbackService.getCompletionFeedback(id);
   }
 

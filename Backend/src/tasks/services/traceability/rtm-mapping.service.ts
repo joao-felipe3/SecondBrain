@@ -5,15 +5,14 @@ import { Requirement as RequirementSchema, RequirementDocument } from '../../sch
 import { Requirement } from '../../entities/requirement.entity';
 import { RequirementMapper } from '../../mappers/requirement.mapper';
 import { Task } from '../../entities/task.entity';
-import { CreateTaskDto } from '../../dto/task/create-task.dto';
 import { GeminiService } from '../../../ai/gemini.service';
 import { TasksService } from '../../tasks.service';
 import { RTMValidation } from '../../interfaces/rtm.interface';
 import { RTMValidationService } from './rtm-validation.service';
-import { normalizeKind, levelForKind, getLinkedActions, parseJsonArray } from './utils/rtm.utils';
+import { AutoMapRequirementsResponseDto } from '../../dto';
+import { normalizeKind, getLinkedActions, parseJsonArray, levelForKind } from './utils/rtm.utils';
 import {
   buildAutoMapBatchPrompt,
-  buildGenerateTasksPrompt,
   formatTasksForPrompt,
   processMappingResponse,
   applyFallbackMapping,
@@ -39,13 +38,7 @@ export class RTMMappingService {
   async autoMapRequirementsToTasks(
     projectId: string,
     tasks: Task[],
-  ): Promise<{
-    mappedCount: number;
-    createdRequirementsCount: number;
-    coverage: number;
-    validation: RTMValidation;
-    message: string;
-  }> {
+  ): Promise<AutoMapRequirementsResponseDto> {
     const startedAt = Date.now();
     this.logger.log(
       `[auto-map] projectId=${projectId} iniciando auto-vinculo de ${tasks.length} tarefas`,
@@ -65,11 +58,13 @@ export class RTMMappingService {
       if (tasksToMap.length === 0) {
         const validation = await this.validationService.validateRTM(projectId);
         return {
+          success: true,
           mappedCount: 0,
           createdRequirementsCount: 0,
           coverage: validation.coverage,
           validation,
           message: 'Todas as tarefas já estão vinculadas às ações da jornada.',
+          timestamp: new Date().toISOString(),
         };
       }
 
@@ -91,11 +86,13 @@ export class RTMMappingService {
       );
 
       return {
+        success: true,
         mappedCount,
         createdRequirementsCount,
         coverage: validation.coverage,
         validation,
         message: `Auto-vínculo concluído: ${mappedCount} tarefa(s) vinculada(s) + ${createdRequirementsCount} ação(ões) criada(s). Cobertura: ${validation.coverage}%`,
+        timestamp: new Date().toISOString(),
       };
     } catch (error: unknown) {
       const err = error as Error;
@@ -105,87 +102,16 @@ export class RTMMappingService {
   }
 
   // ===========================================================================
-  // 2. Task Generation for Unmapped Actions
-  // ===========================================================================
-
-  async generateTasksForUnmappedRequirements(projectId: string): Promise<{
-    createdTasksCount: number;
-    coverage: number;
-    validation: RTMValidation;
-    message: string;
-  }> {
-    const startedAt = Date.now();
-    this.logger.log(`[gen-tasks] projectId=${projectId} gerando tarefas para ações órfãs`);
-
-    try {
-      const validation = await this.validationService.validateRTM(projectId);
-
-      if (validation.unmappedRequirements.length === 0) {
-        return {
-          createdTasksCount: 0,
-          coverage: validation.coverage,
-          validation,
-          message: 'Todos os itens da jornada já possuem rastreabilidade.',
-        };
-      }
-
-      const requirementsDocs = await this.requirementModel.find({
-        _id: { $in: validation.unmappedRequirements },
-      });
-      const requirements = requirementsDocs.map(RequirementMapper.toDomain);
-
-      const actionItems = requirements.filter(
-        (item: Requirement) => normalizeKind(item.kind || item.type) === 'action',
-      );
-
-      if (actionItems.length === 0) {
-        return {
-          createdTasksCount: 0,
-          coverage: validation.coverage,
-          validation,
-          message:
-            'Não há ações órfãs; complete primeiro a hierarquia objetivo -> hábito -> etapa -> ação.',
-        };
-      }
-
-      const createdTasksCount = await this.generateAndLinkTasks(actionItems, projectId);
-
-      const finalValidation = await this.validationService.validateRTM(projectId);
-      const elapsed = Date.now() - startedAt;
-      this.logger.log(
-        `[gen-tasks] projectId=${projectId} concluído: ${createdTasksCount} tarefas criadas, ${finalValidation.coverage}% cobertura - ${elapsed}ms`,
-      );
-
-      return {
-        createdTasksCount,
-        coverage: finalValidation.coverage,
-        validation: finalValidation,
-        message: `${createdTasksCount} tarefa(s) gerada(s) para ações órfãs. Cobertura final: ${finalValidation.coverage}%`,
-      };
-    } catch (error: unknown) {
-      const err = error as Error;
-      this.logger.error(`[gen-tasks] projectId=${projectId} erro: ${err.message}`);
-      return {
-        createdTasksCount: 0,
-        coverage: 0,
-        validation: {
-          isValid: false,
-          coverage: 0,
-          unmappedRequirements: [],
-          risks: [`Erro ao gerar tarefas: ${err.message}`],
-        },
-        message: `Erro: ${err.message}`,
-      };
-    }
-  }
-
-  // ===========================================================================
   // Private helpers — auto-mapping
   // ===========================================================================
 
-  private checkEarlyExitConditions(allItems: Requirement[], actionItems: Requirement[]) {
+  private checkEarlyExitConditions(
+    allItems: Requirement[],
+    actionItems: Requirement[],
+  ): AutoMapRequirementsResponseDto | null {
     if (allItems.length === 0) {
       return {
+        success: false,
         mappedCount: 0,
         createdRequirementsCount: 0,
         coverage: 0,
@@ -196,10 +122,12 @@ export class RTMMappingService {
           risks: ['Nenhum item de jornada encontrado. Gere a estrutura primeiro.'],
         },
         message: 'Falha: nenhum item de jornada disponível para mapear.',
+        timestamp: new Date().toISOString(),
       };
     }
     if (actionItems.length === 0) {
       return {
+        success: false,
         mappedCount: 0,
         createdRequirementsCount: 0,
         coverage: 0,
@@ -210,6 +138,7 @@ export class RTMMappingService {
           risks: ['Nenhuma ação disponível para receber tarefas.'],
         },
         message: 'Falha: não há ações na jornada para vincular tarefas.',
+        timestamp: new Date().toISOString(),
       };
     }
     return null;
@@ -325,8 +254,9 @@ export class RTMMappingService {
     return mappedCount;
   }
 
-  private buildErrorResult(message: string) {
+  private buildErrorResult(message: string): AutoMapRequirementsResponseDto {
     return {
+      success: false,
       mappedCount: 0,
       createdRequirementsCount: 0,
       coverage: 0,
@@ -337,85 +267,7 @@ export class RTMMappingService {
         risks: [message],
       },
       message: `Erro: ${message}`,
+      timestamp: new Date().toISOString(),
     };
-  }
-
-  // ===========================================================================
-  // Private helpers — task generation
-  // ===========================================================================
-
-  private async generateAndLinkTasks(actionItems: Requirement[], projectId: string): Promise<number> {
-    let createdTasksCount = 0;
-
-    for (const req of actionItems) {
-      try {
-        const prompt = buildGenerateTasksPrompt(req.description);
-        const response = await this.geminiService.generateContent(prompt, {
-          responseMimeType: 'application/json',
-          temperature: 0.35,
-          maxOutputTokens: 512,
-        });
-
-        const tasksToCreate = parseJsonArray(response);
-        if (!tasksToCreate || tasksToCreate.length === 0) continue;
-
-        const taskIds = await this.persistGeneratedTasks({ tasksToCreate, projectId, req });
-        createdTasksCount += taskIds.length;
-
-        if (taskIds.length > 0) {
-          await this.requirementModel.updateOne(
-            { _id: new Types.ObjectId(String(req.id)) },
-            {
-              $addToSet: {
-                traceableItems: { $each: taskIds },
-                traceableActionItems: { $each: taskIds },
-              },
-              $set: { status: 'satisfied' },
-            },
-          );
-        }
-      } catch (genError: unknown) {
-        const err = genError as Error;
-        this.logger.warn(`[gen-tasks] erro ao gerar tarefas para ação ${req.id}: ${err.message}`);
-      }
-    }
-
-    return createdTasksCount;
-  }
-
-  private async persistGeneratedTasks(params: {
-    tasksToCreate: unknown[];
-    projectId: string;
-    req: Requirement;
-  }): Promise<string[]> {
-    const { tasksToCreate, projectId, req } = params;
-    const taskIds: string[] = [];
-
-    for (const taskData of tasksToCreate) {
-      try {
-        const anyTaskData = taskData as Record<string, unknown>;
-        const createDto: CreateTaskDto = {
-          name: String(anyTaskData.title || 'Nova Tarefa'),
-          description: String(anyTaskData.description || ''),
-          project: projectId,
-          pomodorosPlanned: 3,
-          deadline: new Date(),
-          isConcluded: false,
-          late: false,
-          recurrency: 'none',
-          notification: new Date(),
-          requirementIds: [String(req.id)],
-          journeyItemIds: [String(req.id)],
-        };
-
-        const newTask = await this.tasksService.create(createDto);
-        taskIds.push(String(newTask._id));
-      } catch (taskError: unknown) {
-        const err = taskError as Error;
-        this.logger.warn(`[gen-tasks] erro ao criar tarefa: ${err.message}`);
-      }
-    }
-
-    return taskIds;
   }
 }

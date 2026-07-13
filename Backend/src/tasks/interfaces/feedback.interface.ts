@@ -1,8 +1,4 @@
-export interface CompletionFeedbackPayload {
-  celebration?: string;
-  validation?: string;
-  question?: string;
-  impediments?: string[];
-  selectedSteps?: string[];
-  action?: string;
-}
+import { CompletionFeedbackPayloadDto } from '../dto/intelligence/feedback.dto';
+
+export type CompletionFeedbackPayload = CompletionFeedbackPayloadDto;
+export { CompletionFeedbackPayloadDto };

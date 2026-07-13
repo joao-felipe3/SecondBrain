@@ -1,15 +1,17 @@
 import { Injectable } from '@nestjs/common';
 import { RequirementType, JourneyKind } from '../../schemas/requirement.schema';
 import { Task } from '../../entities/task.entity';
-import { RTMValidation } from '../../interfaces/rtm.interface';
 import { RTMJourneyService } from './rtm-journey.service';
 import { RTMMappingService } from './rtm-mapping.service';
+import { RTMTaskGeneratorService } from './rtm-task-generator.service';
+import { AutoMapRequirementsResponseDto, GenerateTasksResponseDto } from '../../dto';
 
 @Injectable()
 export class RTMAiService {
   constructor(
     private readonly journeyService: RTMJourneyService,
     private readonly mappingService: RTMMappingService,
+    private readonly taskGeneratorService: RTMTaskGeneratorService,
   ) {}
 
   generateRequirements(smartObjective: Record<string, string | undefined>): Promise<
@@ -27,22 +29,11 @@ export class RTMAiService {
   autoMapRequirementsToTasks(
     projectId: string,
     tasks: Task[],
-  ): Promise<{
-    mappedCount: number;
-    createdRequirementsCount: number;
-    coverage: number;
-    validation: RTMValidation;
-    message: string;
-  }> {
+  ): Promise<AutoMapRequirementsResponseDto> {
     return this.mappingService.autoMapRequirementsToTasks(projectId, tasks);
   }
 
-  generateTasksForUnmappedRequirements(projectId: string): Promise<{
-    createdTasksCount: number;
-    coverage: number;
-    validation: RTMValidation;
-    message: string;
-  }> {
-    return this.mappingService.generateTasksForUnmappedRequirements(projectId);
+  generateTasksForUnmappedRequirements(projectId: string): Promise<GenerateTasksResponseDto> {
+    return this.taskGeneratorService.generateTasksForUnmappedRequirements(projectId);
   }
 }

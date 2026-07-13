@@ -32,7 +32,7 @@ import {
 import { MoveTaskStatusDto } from './dto/task/move-task-status.dto'; // Sprint 4
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { CPMService, DependencyInferenceService } from './services/dependencies';
-import { TaskLineageQueryDto } from './dto';
+import { TaskLineageQueryDto, CompletionFeedbackPayloadDto, CompletionFeedbackResponse } from './dto';
 
 @ApiTags('tasks')
 @Controller('tasks')
@@ -474,7 +474,10 @@ export class TasksController {
   @ApiResponse({ status: 200, description: 'Feedback gerado com sucesso.' })
   @ApiResponse({ status: 400, description: 'Task não está concluída.' })
   @ApiResponse({ status: 404, description: 'Task não encontrada.' })
-  async generateCompletionFeedback(@Param('id') id: string, @Body() body: any) {
+  async generateCompletionFeedback(
+    @Param('id') id: string,
+    @Body() body: CompletionFeedbackPayloadDto,
+  ) {
     const feedback = await this.tasksService.generateCompletionFeedback(id, body);
     return { feedback };
   }
@@ -487,6 +490,7 @@ export class TasksController {
   @ApiResponse({
     status: 200,
     description: 'Feedback retornado (pode ser null se não existir).',
+    type: CompletionFeedbackResponse,
   })
   @ApiResponse({ status: 404, description: 'Task não encontrada.' })
   async getCompletionFeedback(@Param('id') id: string) {

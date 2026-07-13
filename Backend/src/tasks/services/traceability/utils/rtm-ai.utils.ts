@@ -30,9 +30,7 @@ export {
 // Response Normalizers
 // ===========================================================================
 
-/**
- * Normaliza e deduplica itens brutos retornados pelo Gemini para geração de jornada.
- */
+// Normaliza e deduplica itens brutos retornados pelo Gemini para geração de jornada.
 export function normalizeGeneratedItems(parsed: unknown[]): JourneyDraft[] {
   const normalized: JourneyDraft[] = parsed
     .map((item: unknown, index: number) => {
@@ -59,17 +57,13 @@ export function normalizeGeneratedItems(parsed: unknown[]): JourneyDraft[] {
   return deduped;
 }
 
-/**
- * Formata a lista de tarefas de um batch para inserção no prompt.
- */
+// Formata a lista de tarefas de um batch para inserção no prompt.
 export function formatTasksForPrompt(batch: Task[]): string {
   return batch.map((t) => `- "${t.name}" (ID: ${t.id})`).join('\n');
 }
 
-/**
- * Processa a resposta do Gemini para um batch de auto-mapeamento.
- * Distribui cada entrada entre `mappings` (reqId → taskIds[]) ou `orphanTasks`.
- */
+// Processa a resposta do Gemini para um batch de auto-mapeamento.
+// Distribui cada entrada entre `mappings` (reqId → taskIds[]) ou `orphanTasks`.
 export function processMappingResponse(
   mappingArray: unknown[],
   batch: Task[],
@@ -93,10 +87,7 @@ export function processMappingResponse(
   }
 }
 
-/**
- * Aplica o fallback de mapeamento quando a resposta da IA falha:
- * todas as tarefas do batch vão para a primeira ação disponível.
- */
+// Aplica o fallback de mapeamento quando a resposta da IA falha:
 export function applyFallbackMapping(
   batch: Task[],
   fallbackActionId: string,

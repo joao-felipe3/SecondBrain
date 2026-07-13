@@ -4,11 +4,19 @@ import { Model, Types } from 'mongoose';
 import { GeminiService } from '../../../ai/gemini.service';
 import { TaskDocument } from '../../schemas/task.schema';
 import { TaskCompletionFeedbackDocument } from '../../schemas/task-completion-feedback.schema';
-import { ChecklistItemDto } from '../../dto/task/create-task.dto';
-import { CompletionFeedbackPayload } from '../../interfaces';
-import { buildFeedbackPrompt, buildNextStepsPrompt } from '../../../ai/prompts/feedback.prompts';
+import {
+  CompletionFeedbackPayloadDto,
+  GenerateFeedbackOnCompletionDto,
+  CompletionFeedbackResult,
+  CompletionFeedbackResponse,
+  NextStepSuggestion,
+  SaveSuccessFeedbackDto,
+  SaveErrorFeedbackOnCompletionDto,
+  ChecklistItemDto,
+} from '../../dto';
+import { buildFeedbackPrompt } from '../../../ai/prompts/feedback.prompts';
 
-export { CompletionFeedbackPayload };
+export { CompletionFeedbackPayloadDto as CompletionFeedbackPayload, CompletionFeedbackResponse };
 
 @Injectable()
 export class FeedbackService {
@@ -17,13 +25,13 @@ export class FeedbackService {
     @InjectModel('Task') private readonly taskModel: Model<TaskDocument>,
     @InjectModel('TaskCompletionFeedback')
     private readonly feedbackModel: Model<TaskCompletionFeedbackDocument>,
-  ) {}
+  ) { }
 
   // ===========================================================================
   // 1. Public API Methods
   // ===========================================================================
 
-  async generateCompletionFeedback(id: string, payload?: CompletionFeedbackPayload): Promise<string> {
+  async generateCompletionFeedback(id: string, payload?: CompletionFeedbackPayloadDto): Promise<string> {
     const task = await this.validateAndGetTask(id);
     const inputSnapshot = this.createInputSnapshot(task);
 
@@ -45,7 +53,7 @@ export class FeedbackService {
     }
   }
 
-  async getCompletionFeedback(id: string): Promise<{ feedback: string; createdAt: Date } | null> {
+  async getCompletionFeedback(id: string): Promise<CompletionFeedbackResponse | null> {
     if (!id || !Types.ObjectId.isValid(id)) {
       throw new BadRequestException(`ID inválido: ${id}`);
     }
@@ -56,9 +64,7 @@ export class FeedbackService {
       .select('feedback createdAt')
       .exec();
 
-    if (!feedback) {
-      return null;
-    }
+    if (!feedback) return null;
 
     return {
       feedback: feedback.feedback || '',
@@ -66,16 +72,9 @@ export class FeedbackService {
     };
   }
 
-  async generateFeedbackOnCompletion(params: {
-    task: TaskDocument;
-    checklist?: Array<string | ChecklistItemDto>;
-    timeSpentMinutes?: number;
-  }): Promise<{
-    celebration: string;
-    validation: string;
-    question: string;
-    suggestion: string;
-  }> {
+  async generateFeedbackOnCompletion(
+    params: GenerateFeedbackOnCompletionDto,
+  ): Promise<CompletionFeedbackResult> {
     const { task, checklist, timeSpentMinutes } = params;
     if (!task || !task._id) {
       throw new BadRequestException('Task inválida');
@@ -120,7 +119,7 @@ export class FeedbackService {
   async suggestNextSteps(
     task: TaskDocument,
     feedback: string | Record<string, unknown>,
-  ): Promise<Array<{ title: string; description: string }>> {
+  ): Promise<NextStepSuggestion[]> {
     if (!task || !task._id) {
       throw new BadRequestException('Task inválida');
     }
@@ -138,9 +137,7 @@ export class FeedbackService {
     }
 
     const task = await this.taskModel.findById(id).exec();
-    if (!task) {
-      throw new NotFoundException(`Task with id ${id} not found`);
-    }
+    if (!task) throw new NotFoundException(`Task with id ${id} not found`);
 
     if (!task.isConcluded) {
       throw new BadRequestException('Task deve estar concluída para gerar feedback');
@@ -160,7 +157,7 @@ export class FeedbackService {
     };
   }
 
-  private isUserFeedbackPayload(payload?: CompletionFeedbackPayload): boolean {
+  private isUserFeedbackPayload(payload?: CompletionFeedbackPayloadDto): boolean {
     if (!payload || typeof payload !== 'object') {
       return false;
     }
@@ -181,7 +178,7 @@ export class FeedbackService {
   private async saveUserFeedback(
     task: TaskDocument,
     inputSnapshot: Record<string, any>,
-    payload: CompletionFeedbackPayload,
+    payload: CompletionFeedbackPayloadDto,
   ): Promise<string> {
     const feedbackText = JSON.stringify(payload);
 
@@ -215,12 +212,7 @@ export class FeedbackService {
     });
   }
 
-  private async saveSuccessFeedback(params: {
-    task: TaskDocument;
-    checklistSummary: any[];
-    timeSpentMinutes?: number;
-    feedbackObj: any;
-  }): Promise<void> {
+  private async saveSuccessFeedback(params: SaveSuccessFeedbackDto): Promise<void> {
     const { task, checklistSummary, timeSpentMinutes, feedbackObj } = params;
     await this.feedbackModel.create({
       task: task._id,
@@ -236,12 +228,7 @@ export class FeedbackService {
     });
   }
 
-  private async saveErrorFeedbackOnCompletion(params: {
-    task: TaskDocument;
-    checklistSummary: any[];
-    timeSpentMinutes?: number;
-    error: Error;
-  }): Promise<void> {
+  private async saveErrorFeedbackOnCompletion(params: SaveErrorFeedbackOnCompletionDto): Promise<void> {
     const { task, checklistSummary, timeSpentMinutes, error } = params;
     try {
       await this.feedbackModel.create({
