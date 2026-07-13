@@ -6,6 +6,41 @@ A pasta `intelligence/` concentra os serviços responsáveis pela **camada de IA
 
 Cada serviço orquestra chamadas ao `GeminiService` com lógica de retry, fallback e parsing seguro de JSON.
 
+### Fluxos da Camada de Inteligência e IA
+
+```mermaid
+graph TD
+    subgraph SugestoesLoop [Loop de Sugestões de Tarefas por Horas-Meta]
+        A["Requisição: targetHours"] --> B["Carregar Tarefas Existentes"]
+        B --> C["Calcular remainingHours"]
+        C --> D{"currentHours < remainingHours?"}
+        D -- Sim --> E["Gemini: generateTaskSuggestions chunkHours=8"]
+        E --> F["Parsing Seguro JSON + Deduplicação por Nome"]
+        F --> G["Acumular Sugestões & Emitir Progresso"]
+        G --> D
+        D -- Não / Limite Atingido --> H["Retornar AiSuggestionsResponseDto"]
+    end
+
+    subgraph ChecklistHistorico [Geração de Checklist com Contexto Histórico]
+        I["Solicitar Checklist"] --> J["ChecklistService: findSimilarTasksInProject"]
+        J --> K{"Encontrou tarefas similares nos últimos 30 dias?"}
+        K -- Sim --> L["Enrich historicalContext"]
+        L --> M["Gemini: generateChecklistWithHistory"]
+        K -- Não --> N["Gemini: generateChecklistForTask"]
+        M & N --> O["Validar Checklist: Mínimo 3, Máximo 10 itens"]
+        O --> P["Retornar Checklist Estruturado"]
+    end
+
+    subgraph FeedbackConclusao [Fluxo de Catchball e Completion Feedback]
+        Q["Conclusão de Tarefa"] --> R["FeedbackService: generateCompletionFeedback"]
+        R --> S{"Possui payload do usuário?"}
+        S -- Sim --> T["Persistir feedback diretamente"]
+        S -- Não --> U["Gemini: generateFeedbackOnCompletion"]
+        U --> V["Construir JSON: celebration, validation, question, suggestion"]
+        V --> W["Persistir no banco e sugerir 3 Próximos Passos"]
+    end
+```
+
 ---
 
 ## Estrutura de Arquivos

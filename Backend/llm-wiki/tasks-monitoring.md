@@ -6,6 +6,31 @@ A pasta `monitoring/` concentra os serviços responsáveis pela **observabilidad
 
 Cada serviço tem responsabilidade única. `AlertsService` e `DeviationDetectionService` são consumidos pelo `TasksCompletionService` (workflow/) no fluxo de conclusão de tarefas.
 
+### Fluxo de Observabilidade, Alertas e Streak de Hábitos
+
+```mermaid
+graph TD
+    subgraph DeteccaoDesvio [Fluxo de Detecção de Desvio de Tempo]
+        A["Tarefa Concluída / Pomodoro Incrementado"] --> B[DeviationDetectionService]
+        B --> C["Minutos Reais = pomodorosDid * 30"]
+        B --> D["Minutos Esperados = pertExpectedMinutes"]
+        C & D --> E["percentOver = ((Reais - Esperados) / Esperados) * 100"]
+        E --> F{"percentOver >= 25 por cento?"}
+        F -- Sim --> G["AlertsService: createAlert warning"]
+        F -- Não --> H["Sem Alerta de Desvio"]
+    end
+
+    subgraph DashboardHabitos [Dashboard de Streaks e Aderência]
+        I["Requisição: getHabitsDashboard"] --> J["Buscar Tarefas de Tipo habit ou com recorrencia"]
+        J --> K["Para cada hábito: getStreakData"]
+        K --> L["Aderência Percentual = (completed + skipped) / total"]
+        K --> M["currentStreak: conta do fim para início, quebra no primeiro ≠ completed/skipped"]
+        K --> N["longestStreak: janela consecutiva máxima de completed/skipped"]
+        L & M & N --> O["Calcular Métricas Globais: média aderência, streaks > 7 dias, hoje"]
+        O --> P["Retornar GetHabitsDashboardResponseDto"]
+    end
+```
+
 ---
 
 ## Estrutura de Arquivos

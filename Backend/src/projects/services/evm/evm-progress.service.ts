@@ -7,6 +7,7 @@ import type {
   EVMDashboardManualVisibility,
   EVMDashboardPreferences,
   EVMDashboardPreferencesInput,
+  RecordProgressParamsDto,
 } from '../../dto/evm.dto';
 
 @Injectable()
@@ -71,19 +72,11 @@ export class EVMProgressService {
     return merged;
   }
 
-  async recordProgress(
-    projectId: string,
-    completedHours: number,
-    plannedValue: number,
-    date?: string,
-    metadata?: {
-      source?: 'manual' | 'pomodoro' | 'completion';
-      taskId?: string;
-    },
-  ): Promise<ProjectProgress> {
+  async recordProgress(dto: RecordProgressParamsDto): Promise<ProjectProgress> {
+    const { projectId, completedHours, plannedValue, date, source, taskId } = dto;
     this.assertValidObjectId(projectId, 'projectId');
-    if (metadata?.taskId) {
-      this.assertValidObjectId(metadata.taskId, 'taskId');
+    if (taskId) {
+      this.assertValidObjectId(taskId, 'taskId');
     }
 
     return this.projectProgressModel.create({
@@ -91,8 +84,8 @@ export class EVMProgressService {
       date: date ? new Date(date) : new Date(),
       completedHours,
       plannedValue,
-      source: metadata?.source || 'manual',
-      taskId: metadata?.taskId ? new Types.ObjectId(metadata.taskId) : undefined,
+      source: source || 'manual',
+      taskId: taskId ? new Types.ObjectId(taskId) : undefined,
     });
   }
 

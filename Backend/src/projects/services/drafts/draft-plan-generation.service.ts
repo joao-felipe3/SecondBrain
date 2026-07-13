@@ -1,22 +1,18 @@
-import { Injectable, Inject, forwardRef } from '@nestjs/common';
-import { GeminiService } from '../../../ai/gemini.service';
-import { WBSNodeDto } from '../../dto/wbs.dto';
-import { CacheService, PromptBuilderService, ThemeExtractionService } from '../wbs';
-import { extractJsonObject } from '../wbs/utils/json-parser.util';
+import { Injectable } from '@nestjs/common';
+import { CacheService, ThemeExtractionService } from '../wbs';
 import {
-  validatePlannerPlan,
   isCacheDebugEnabled,
   getProjectId,
   getWbsGenerationModelOverride,
   hashKey,
 } from './utils/draft-generation-helpers.util';
+import { WBSLeafPlanParamsDto, WBSLeafPlanResultDto } from '../../interfaces/drafts.interface';
+import { DraftsAiService } from '../../../ai/drafts-ai.service';
 
 @Injectable()
 export class DraftPlanGenerationService {
   constructor(
-    @Inject(forwardRef(() => GeminiService))
-    private readonly geminiService: GeminiService,
-    private readonly promptBuilder: PromptBuilderService,
+    private readonly draftsAi: DraftsAiService,
     private readonly themeExtraction: ThemeExtractionService,
     private readonly cacheService: CacheService,
   ) {}
@@ -25,20 +21,9 @@ export class DraftPlanGenerationService {
     return hashKey(input);
   }
 
-  async generateMicroTasksPlanForLeaf(params: {
-    project: any;
-    node: WBSNodeDto;
-    currentPath: string;
-    level: number;
-    chunkMinutes: number[];
-    workflowMix?: Record<string, number>;
-    modelOverride?: string;
-  }): Promise<{
-    themes: Array<{ name: string; criteria?: string }>;
-    workflow: string[];
-    milestones?: Array<{ name?: string; goal?: string; atMinutes?: number }>;
-    constraints?: any;
-  }> {
+  async generateMicroTasksPlanForLeaf(
+    params: WBSLeafPlanParamsDto,
+  ): Promise<WBSLeafPlanResultDto> {
     const resolvedModelOverride = params.modelOverride || getWbsGenerationModelOverride();
     const projectId = getProjectId(params.project);
 
@@ -54,110 +39,56 @@ export class DraftPlanGenerationService {
       node: params.node,
     });
 
-    const prompt = this.promptBuilder.buildMicroTasksPrompt({
-      ...params,
-      chunkMinutes: params.chunkMinutes,
-      avoidTaskTitles: [],
-    });
+    const validated = await this.draftsAi.generatePlan(
+      params,
+      themeHints?.themes || [],
+      resolvedModelOverride,
+    );
 
-    return this.attemptPlanGeneration(prompt, resolvedModelOverride, projectId, planCacheKey);
+    if (projectId && planCacheKey) {
+      await this.cacheService.set(planCacheKey, validated);
+    }
+
+    return validated;
   }
 
   private getCacheKey(
-    params: {
-      node: WBSNodeDto;
-      currentPath: string;
-      level: number;
-      chunkMinutes: number[];
-      workflowMix?: Record<string, number>;
-    },
+    params: WBSLeafPlanParamsDto,
     resolvedModelOverride: string | undefined,
     projectId: string | undefined,
   ): string {
     if (!projectId) {
       return '';
     }
+    const { project, node, ...rest } = params;
     const planFingerprint = {
       v: 1,
       kind: 'plan',
-      nodeId: (params.node as any)?._id ? String((params.node as any)._id) : undefined,
-      nodeName: params.node?.name,
-      nodeDesc: params.node?.description,
-      currentPath: params.currentPath,
-      level: params.level,
-      estimatedHours: params.node?.estimatedHours,
-      chunkMinutes: params.chunkMinutes,
-      workflowMix: params.workflowMix,
+      nodeId: node?._id ? String(node._id) : undefined,
+      nodeName: node?.name,
+      nodeDesc: node?.description,
+      estimatedHours: node?.estimatedHours,
+      ...rest,
       model: resolvedModelOverride,
     };
     return `drafts_with_plan:${projectId}:plan:${this.hashKey(planFingerprint)}`;
   }
 
-  private async getCachedPlan(projectId: string | undefined, planCacheKey: string): Promise<any | null> {
+  private async getCachedPlan(projectId: string | undefined, planCacheKey: string): Promise<WBSLeafPlanResultDto | null> {
     if (!projectId || !planCacheKey) {
       return null;
     }
-    const cachedPlan = await this.cacheService.get<any>(planCacheKey);
+    const cachedPlan = await this.cacheService.get<WBSLeafPlanResultDto>(planCacheKey);
     if (cachedPlan) {
       if (isCacheDebugEnabled()) {
         console.log('[draft-generation][cache] hit', {
-          prefix: 'drafts_with_plan:plan',
+          prefix: 'plan',
           projectId,
-          keyPrefix: planCacheKey.split(':').slice(0, 4).join(':'),
+          keyPrefix: planCacheKey.split(':').slice(0, 3).join(':'),
         });
       }
-      return validatePlannerPlan(cachedPlan);
+      return cachedPlan;
     }
     return null;
-  }
-
-  private async savePlanToCache(
-    projectId: string | undefined,
-    planCacheKey: string,
-    plan: any,
-  ): Promise<void> {
-    if (!projectId || !planCacheKey) {
-      return;
-    }
-    await this.cacheService.set(planCacheKey, plan);
-    if (isCacheDebugEnabled()) {
-      console.log('[draft-generation][cache] set', {
-        prefix: 'drafts_with_plan:plan',
-        projectId,
-        keyPrefix: planCacheKey.split(':').slice(0, 4).join(':'),
-      });
-    }
-  }
-
-  private async attemptPlanGeneration(
-    prompt: string,
-    resolvedModelOverride: string | undefined,
-    projectId: string | undefined,
-    planCacheKey: string,
-  ): Promise<any> {
-    const attempt = async (opts: { maxOutputTokens: number; temperature: number }) => {
-      const response = await this.geminiService.generateContent(prompt, {
-        model: resolvedModelOverride,
-        responseMimeType: 'application/json',
-        maxOutputTokens: opts.maxOutputTokens,
-        temperature: opts.temperature,
-      });
-      const plan = extractJsonObject<any>(response);
-      return validatePlannerPlan(plan);
-    };
-
-    try {
-      const plan = await attempt({ maxOutputTokens: 1200, temperature: 0.6 });
-      await this.savePlanToCache(projectId, planCacheKey, plan);
-      return plan;
-    } catch (err: any) {
-      const msg = String(err?.message || err || '');
-      if (/json/i.test(msg) || /truncad|incomplet|parse/i.test(msg)) {
-        const plan = await attempt({ maxOutputTokens: 2200, temperature: 0.2 });
-        await this.savePlanToCache(projectId, planCacheKey, plan);
-        return plan;
-      }
-      throw err;
-    }
   }
 }

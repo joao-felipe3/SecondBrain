@@ -1,115 +1,20 @@
-import { z } from 'zod';
 import { createHash } from 'crypto';
-import { WBSNodeDto } from '../../../dto/wbs.dto';
-
-export const plannerSchema = z
-  .object({
-    themes: z
-      .array(
-        z
-          .object({
-            name: z.string().min(1),
-            criteria: z.string().optional(),
-          })
-          .passthrough(),
-      )
-      .min(1),
-    workflow: z.array(z.string().min(1)).min(1),
-    milestones: z
-      .array(
-        z
-          .object({
-            name: z.string().optional(),
-            goal: z.string().optional(),
-            atMinutes: z.number().optional(),
-          })
-          .passthrough(),
-      )
-      .optional(),
-    constraints: z.record(z.string(), z.any()).optional(),
-  })
-  .passthrough();
-
-export const draftSchema = z
-  .object({
-    name: z.string().min(1),
-    description: z
-      .preprocess((v) => (v === undefined || v === null ? undefined : String(v)), z.string().optional())
-      .optional(),
-    checklist: z
-      .array(z.preprocess((v) => String(v ?? '').trim(), z.string().min(1)))
-      .min(2)
-      .max(8),
-    definitionOfDone: z.preprocess((v) => String(v ?? '').trim(), z.string().min(1)),
-    pomodorosPlanned: z.preprocess(
-      (v) => (v === undefined || v === null || v === '' ? v : Number(v)),
-      z.number().int().min(1).max(6),
-    ),
-    priority: z.preprocess(
-      (v) => (v === undefined || v === null || v === '' ? v : Number(v)),
-      z.number().int().min(1).max(4),
-    ),
-    difficult: z.preprocess(
-      (v) => (v === undefined || v === null || v === '' ? v : Number(v)),
-      z.number().int().min(1).max(4),
-    ),
-    microTaskType: z.string().min(1),
-    themeTag: z.string().min(1),
-    contextTag: z.string().min(1),
-    cognitiveMode: z.string().min(1),
-    milestoneIndex: z
-      .preprocess(
-        (v) => (v === undefined || v === null || v === '' ? v : Number(v)),
-        z.number().int().min(1),
-      )
-      .optional(),
-  })
-  .passthrough();
-
-export const draftsSchema = z.array(draftSchema).min(1);
-
-export const draftOutlineSchema = z
-  .object({
-    name: z.string().min(1),
-    pomodorosPlanned: z.preprocess(
-      (v) => (v === undefined || v === null || v === '' ? v : Number(v)),
-      z.number().int().min(1).max(6),
-    ),
-    priority: z.preprocess(
-      (v) => (v === undefined || v === null || v === '' ? v : Number(v)),
-      z.number().int().min(1).max(4),
-    ),
-    difficult: z.preprocess(
-      (v) => (v === undefined || v === null || v === '' ? v : Number(v)),
-      z.number().int().min(1).max(4),
-    ),
-    microTaskType: z.string().min(1),
-    themeTag: z.string().min(1),
-    contextTag: z.string().min(1),
-    cognitiveMode: z.string().min(1),
-    milestoneIndex: z
-      .preprocess(
-        (v) => (v === undefined || v === null || v === '' ? v : Number(v)),
-        z.number().int().min(1),
-      )
-      .optional(),
-  })
-  .passthrough();
-
-export const draftOutlinesSchema = z.array(draftOutlineSchema).min(1);
-
-export const draftDetailsSchema = z
-  .object({
-    checklist: z
-      .array(z.preprocess((v) => String(v ?? '').trim(), z.string().min(1)))
-      .min(2)
-      .max(8),
-    definitionOfDone: z.preprocess((v) => String(v ?? '').trim(), z.string().min(1)),
-    description: z
-      .preprocess((v) => (v === undefined || v === null ? undefined : String(v)), z.string().optional())
-      .optional(),
-  })
-  .passthrough();
+import {
+  MicroTaskOutline,
+  MicroTaskDetails,
+  MicroTaskDraft,
+  DraftBatchItem,
+  DraftBatchResult,
+  ConcurrencyParams,
+} from '../../../interfaces/drafts.interface';
+import {
+  plannerSchema,
+  draftSchema,
+  draftsSchema,
+  draftOutlineSchema,
+  draftOutlinesSchema,
+  draftDetailsSchema,
+} from '../../../schemas/drafts-validation.schema';
 
 export function validateDraftOutlines(outlines: any[]): any[] {
   const parsed = draftOutlinesSchema.safeParse(outlines);
@@ -254,4 +159,66 @@ export async function mapWithConcurrency<T, R>(
   }
   await Promise.all(workers);
   return results;
+}
+
+export function createBatches(
+  outlines: MicroTaskOutline[],
+  sliceMinutes: number[],
+  batchSize: number,
+): DraftBatchItem[] {
+  const batches: DraftBatchItem[] = [];
+  for (let i = 0; i < outlines.length; i += batchSize) {
+    batches.push({
+      start: i,
+      outlines: outlines.slice(i, i + batchSize),
+      minutes: sliceMinutes.slice(i, i + batchSize),
+    });
+  }
+  return batches;
+}
+
+export function assembleEnrichedBatches(
+  outlines: MicroTaskOutline[],
+  batchResults: DraftBatchResult[],
+): MicroTaskDraft[] {
+  const enriched = new Array<MicroTaskDraft>(outlines.length);
+  for (const r of batchResults) {
+    for (let j = 0; j < r.detailsList.length; j++) {
+      const idx = r.start + j;
+      enriched[idx] = { ...outlines[idx], ...r.detailsList[j] } as MicroTaskDraft;
+    }
+  }
+  return enriched;
+}
+
+export function isJsonishError(err: any): boolean {
+  const msg = String(err?.message || err || '').toLowerCase();
+  return (
+    msg.includes('json') ||
+    msg.includes('truncad') ||
+    msg.includes('incomplet') ||
+    msg.includes('parse') ||
+    msg.includes('array') ||
+    msg.includes('object')
+  );
+}
+
+export function getConcurrencyParams(): ConcurrencyParams {
+  const detailsConcurrency = getNumericEnv('WBS_DETAILS_CONCURRENCY', 6);
+  const detailsBatchSize = getNumericEnv('WBS_DETAILS_BATCH_SIZE', 1);
+  const detailsBatchConcurrency =
+    detailsBatchSize > 1
+      ? getNumericEnv(
+          'WBS_DETAILS_BATCH_CONCURRENCY',
+          Math.max(1, Math.floor(detailsConcurrency / Math.max(1, detailsBatchSize))),
+        )
+      : detailsConcurrency;
+
+  if (detailsBatchSize > 1) {
+    logWithTimestamp(
+      `details batching enabled batchSize=${detailsBatchSize} batchConcurrency=${detailsBatchConcurrency}`,
+    );
+  }
+
+  return { detailsConcurrency, detailsBatchSize, detailsBatchConcurrency };
 }

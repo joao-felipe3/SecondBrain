@@ -1,8 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import * as request from 'supertest';
-import { AppModule } from '../../app.module';
-import { SettingsService } from '../../settings/settings.service';
+import { AppModule } from '../../src/app.module';
+import { SettingsService } from '../../src/settings/settings.service';
 
 describe('Settings E2E Tests (e2e)', () => {
   let app: INestApplication;

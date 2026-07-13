@@ -123,6 +123,12 @@ export class RTMValidationDto {
 
 export class AutoMapRequirementsResponseDto {
   @ApiProperty({
+    description: 'Indica se a operação foi realizada com sucesso',
+    example: true,
+  })
+  success: boolean;
+
+  @ApiProperty({
     description: 'Quantidade de tarefas que foram vinculadas a ações existentes',
     example: 5,
   })
@@ -151,9 +157,21 @@ export class AutoMapRequirementsResponseDto {
     example: 'Auto-vínculo concluído: 5 tarefa(s) vinculada(s) + 1 ação(ões) criada(s).',
   })
   message: string;
+
+  @ApiProperty({
+    description: 'Data e hora da resposta',
+    example: '2026-07-12T19:59:00.000Z',
+  })
+  timestamp?: string;
 }
 
 export class GenerateTasksResponseDto {
+  @ApiProperty({
+    description: 'Indica se a operação foi realizada com sucesso',
+    example: true,
+  })
+  success: boolean;
+
   @ApiProperty({
     description: 'Quantidade de tarefas criadas automaticamente para preencher as lacunas',
     example: 3,
@@ -177,5 +195,11 @@ export class GenerateTasksResponseDto {
     example: '3 tarefa(s) gerada(s) para ações órfãs.',
   })
   message: string;
+
+  @ApiProperty({
+    description: 'Data e hora da resposta',
+    example: '2026-07-12T19:59:00.000Z',
+  })
+  timestamp?: string;
 }
 

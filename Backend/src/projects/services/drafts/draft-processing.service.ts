@@ -1,5 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import { z } from 'zod';
 import {
   mapMicroTaskTypeToCognitiveMode,
   mapCognitiveModeToContextTag,
@@ -7,87 +6,20 @@ import {
   normalizeMicroTaskType,
 } from '../wbs/utils/normalizers.util';
 import { extractDefinitionOfDone, extractChecklistSteps } from '../wbs/utils/wbs-helpers.util';
+import {
+  MicroTaskOutline,
+  MicroTaskDraft,
+  WBSLeafPlanResultDto,
+  AssignMilestonesParamsDto,
+} from '../../interfaces/drafts.interface';
+import { plannerSchema, draftsSchema } from '../../schemas/drafts-validation.schema';
 
 @Injectable()
 export class DraftProcessingService {
-  private readonly plannerSchema: z.ZodType<{
-    themes: Array<{ name: string; criteria?: string }>;
-    workflow: string[];
-    milestones?: Array<{ name?: string; goal?: string; atMinutes?: number }>;
-    constraints?: any;
-  }> = z.object({
-    themes: z
-      .array(
-        z.object({
-          name: z.string().min(1),
-          criteria: z.string().optional(),
-        }),
-      )
-      .min(0),
-    workflow: z.array(z.string()).min(1),
-    milestones: z
-      .array(
-        z.object({
-          name: z.string().optional(),
-          goal: z.string().optional(),
-          atMinutes: z.number().optional(),
-        }),
-      )
-      .optional(),
-    constraints: z.any().optional(),
-  });
+  constructor() { }
 
-  private readonly draftSchema: z.ZodType<
-    Array<{
-      name: string;
-      description?: string;
-      checklist: string[];
-      definitionOfDone: string;
-      pomodorosPlanned: number;
-      priority: number;
-      difficult: number;
-      microTaskType: string;
-      themeTag: string;
-      contextTag: string;
-      cognitiveMode: string;
-    }>
-  > = z.array(
-    z.object({
-      name: z.string().min(1),
-      description: z.string().optional(),
-      checklist: z.array(z.string().min(1)).min(1),
-      definitionOfDone: z.string().min(1),
-      pomodorosPlanned: z.number().int().min(1).max(6),
-      priority: z.number().int().min(1).max(4),
-      difficult: z.number().int().min(1).max(4),
-      microTaskType: z.string().min(1),
-      themeTag: z.string().min(1),
-      contextTag: z.string().min(1),
-      cognitiveMode: z.string().min(1),
-    }),
-  );
-
-  constructor() {}
-
-  getPlannerSchema() {
-    return this.plannerSchema;
-  }
-
-  getDraftSchema() {
-    return this.draftSchema;
-  }
-
-  getDraftsSchema() {
-    return z.array(this.draftSchema).min(1);
-  }
-
-  validatePlannerPlan(plan: any): {
-    themes: Array<{ name: string; criteria?: string }>;
-    workflow: string[];
-    milestones?: Array<{ name?: string; goal?: string; atMinutes?: number }>;
-    constraints?: any;
-  } {
-    const parsed = this.plannerSchema.safeParse(plan);
+  validatePlannerPlan(plan: any): WBSLeafPlanResultDto {
+    const parsed = plannerSchema.safeParse(plan);
     if (!parsed.success) {
       const issues = parsed.error.issues
         .map((i) => `${i.path.join('.') || 'root'}: ${i.message}`)
@@ -97,133 +29,89 @@ export class DraftProcessingService {
     return parsed.data;
   }
 
-  validateDrafts(drafts: any[]): Array<{
-    name: string;
-    description?: string;
-    checklist: string[];
-    definitionOfDone: string;
-    pomodorosPlanned: number;
-    priority: number;
-    difficult: number;
-    microTaskType: string;
-    themeTag: string;
-    contextTag: string;
-    cognitiveMode: string;
-  }> {
-    const parsed = this.draftSchema.safeParse(drafts);
+  validateDrafts(drafts: any[]): MicroTaskDraft[] {
+    const parsed = draftsSchema.safeParse(drafts);
     if (!parsed.success) {
       const issues = parsed.error.issues
         .map((i) => `${i.path.join('.') || 'root'}: ${i.message}`)
         .join('; ');
       throw new Error(`Drafts inválidos: ${issues}`);
     }
-    return parsed.data as any;
+    return parsed.data as MicroTaskDraft[];
   }
 
-  applyThemeWorkflowAndProgression(
-    drafts: Array<{
-      name: string;
-      description?: string;
-      pomodorosPlanned?: number;
-      priority?: number;
-      difficult?: number;
-      microTaskType?: string;
-      themeTag?: string;
-      contextTag?: string;
-      cognitiveMode?: string;
-      milestoneIndex?: number;
-    }>,
-    chunkMinutes?: number[],
-  ): Array<{
-    name: string;
-    description?: string;
-    pomodorosPlanned?: number;
-    priority?: number;
-    difficult?: number;
-    microTaskType?: string;
-    themeTag?: string;
-    contextTag?: string;
-    cognitiveMode?: string;
-    milestoneIndex?: number;
-  }> {
+  applyThemeWorkflowAndProgression(drafts: MicroTaskOutline[]): MicroTaskOutline[] {
     if (!drafts.length) return drafts;
 
-    // Group drafts by theme
-    const byTheme = new Map<string, number[]>();
-    drafts.forEach((d, idx) => {
-      const theme = String(d.themeTag || '').trim() || '__no_theme__';
-      if (!byTheme.has(theme)) byTheme.set(theme, []);
-      byTheme.get(theme)!.push(idx);
-    });
+    const byTheme = this.groupDraftIndicesByTheme(drafts);
 
-    // Build theme workflow: prepare → practice → produce → test (+ extras)
-    const buildThemeWorkflow = (total: number): string[] => {
-      if (total <= 1) return ['practice'];
-      if (total === 2) return ['prepare', 'produce'];
-      if (total === 3) return ['prepare', 'practice', 'produce'];
-      const base = ['prepare', 'practice', 'produce', 'test'];
-      while (base.length < total) base.splice(base.length - 1, 0, 'practice');
-      return base.slice(0, total);
-    };
-
-    // Progressive cognitive mode: first=low, middle=medium, last=high
-    const progressiveMode = (index: number, total: number): string => {
-      if (total <= 1) return 'medium';
-      if (index === 0) return 'low';
-      if (index === total - 1) return 'high';
-      return 'medium';
-    };
-
-    // Apply workflow and cognitive progression per theme
     for (const [theme, indices] of byTheme.entries()) {
-      if (theme === '__no_theme__') continue; // Skip unthemed tasks
-      const total = indices.length;
-      if (total <= 1) continue; // Solo tasks don't need workflow
-      const workflow = buildThemeWorkflow(total);
-
-      indices.forEach((idx, localIdx) => {
-        const microTaskType = normalizeMicroTaskType(workflow[localIdx]);
-        const cognitiveMode = normalizeCognitiveMode(progressiveMode(localIdx, total));
-        drafts[idx] = {
-          ...drafts[idx],
-          microTaskType,
-          cognitiveMode,
-          contextTag:
-            String(drafts[idx].contextTag || mapCognitiveModeToContextTag(cognitiveMode)).trim() ||
-            undefined,
-        };
-      });
+      if (theme === '__no_theme__' || indices.length <= 1) {
+        continue;
+      }
+      this.applyWorkflowToTheme(drafts, indices);
     }
 
     return drafts;
   }
 
+  private groupDraftIndicesByTheme(drafts: MicroTaskOutline[]): Map<string, number[]> {
+    const byTheme = new Map<string, number[]>();
+    drafts.forEach((d, idx) => {
+      const theme = String(d.themeTag || '').trim() || '__no_theme__';
+      if (!byTheme.has(theme)) {
+        byTheme.set(theme, []);
+      }
+      byTheme.get(theme)!.push(idx);
+    });
+    return byTheme;
+  }
+
+  private buildThemeWorkflow(total: number): string[] {
+    if (total <= 1) return ['practice'];
+    if (total === 2) return ['prepare', 'produce'];
+    if (total === 3) return ['prepare', 'practice', 'produce'];
+    const base = ['prepare', 'practice', 'produce', 'test'];
+    while (base.length < total) {
+      base.splice(base.length - 1, 0, 'practice');
+    }
+    return base.slice(0, total);
+  }
+
+  private getProgressiveCognitiveMode(index: number, total: number): string {
+    if (total <= 1) return 'medium';
+    if (index === 0) return 'low';
+    if (index === total - 1) return 'high';
+    return 'medium';
+  }
+
+  private applyWorkflowToTheme(
+    drafts: MicroTaskOutline[],
+    indices: number[],
+  ): void {
+    const total = indices.length;
+    const workflow = this.buildThemeWorkflow(total);
+
+    indices.forEach((idx, localIdx) => {
+      const microTaskType = normalizeMicroTaskType(workflow[localIdx]);
+      const cognitiveMode = normalizeCognitiveMode(
+        this.getProgressiveCognitiveMode(localIdx, total),
+      );
+      drafts[idx] = {
+        ...drafts[idx],
+        microTaskType,
+        cognitiveMode,
+        contextTag:
+          String(drafts[idx].contextTag || mapCognitiveModeToContextTag(cognitiveMode)).trim() ||
+          undefined,
+      } as MicroTaskOutline;
+    });
+  }
+
   applyGoldilocksAndMilestones(
-    drafts: Array<{
-      name: string;
-      description?: string;
-      pomodorosPlanned?: number;
-      priority?: number;
-      difficult?: number;
-      microTaskType?: string;
-      themeTag?: string;
-      contextTag?: string;
-      cognitiveMode?: string;
-      milestoneIndex?: number;
-    }>,
+    drafts: MicroTaskOutline[],
     chunkMinutes: number[],
-  ): Array<{
-    name: string;
-    description?: string;
-    pomodorosPlanned?: number;
-    priority?: number;
-    difficult?: number;
-    microTaskType?: string;
-    themeTag?: string;
-    contextTag?: string;
-    cognitiveMode?: string;
-    milestoneIndex?: number;
-  }> {
+  ): MicroTaskOutline[] {
     const totalMinutes = chunkMinutes.reduce((sum, m) => sum + m, 0);
     const chunks = chunkMinutes.length;
 
@@ -237,23 +125,54 @@ export class DraftProcessingService {
 
     if (!milestoneRequired) return normalized;
 
-    // Mark the chunk that crosses each milestone boundary as a checkpoint.
-    const checkpointIndices = new Set<number>();
-    if (milestoneRequired) {
-      let cumulative = 0;
-      let nextBoundary = milestoneEveryMinutes;
-      for (let i = 0; i < chunks; i++) {
-        cumulative += chunkMinutes[i];
-        while (cumulative >= nextBoundary) {
-          checkpointIndices.add(i);
-          nextBoundary += milestoneEveryMinutes;
-        }
-      }
-      // Ensure closure.
-      checkpointIndices.add(chunks - 1);
-    }
+    const checkpointIndices = this.getCheckpointIndices(
+      chunkMinutes,
+      milestoneEveryMinutes,
+      milestoneRequired,
+    );
 
-    // Assign milestoneIndex per task based on cumulative minutes.
+    return this.assignMilestonesAndCheckpoints({
+      normalized,
+      chunkMinutes,
+      milestoneEveryMinutes,
+      milestoneRequired,
+      checkpointIndices,
+    });
+  }
+
+  private getCheckpointIndices(
+    chunkMinutes: number[],
+    milestoneEveryMinutes: number,
+    milestoneRequired: boolean,
+  ): Set<number> {
+    const checkpointIndices = new Set<number>();
+    if (!milestoneRequired) return checkpointIndices;
+
+    const chunks = chunkMinutes.length;
+    let cumulative = 0;
+    let nextBoundary = milestoneEveryMinutes;
+
+    for (let i = 0; i < chunks; i++) {
+      cumulative += chunkMinutes[i];
+      while (cumulative >= nextBoundary) {
+        checkpointIndices.add(i);
+        nextBoundary += milestoneEveryMinutes;
+      }
+    }
+    checkpointIndices.add(chunks - 1);
+    return checkpointIndices;
+  }
+
+  private assignMilestonesAndCheckpoints(
+    params: AssignMilestonesParamsDto,
+  ): MicroTaskOutline[] {
+    const {
+      normalized,
+      chunkMinutes,
+      milestoneEveryMinutes,
+      milestoneRequired,
+      checkpointIndices,
+    } = params;
     let cumulative = 0;
     return normalized.map((d, idx) => {
       cumulative += chunkMinutes[idx];
@@ -271,34 +190,21 @@ export class DraftProcessingService {
           cognitiveMode,
           contextTag:
             String(d.contextTag || mapCognitiveModeToContextTag(cognitiveMode)).trim() || undefined,
-        };
+        } as MicroTaskOutline;
       }
 
       return {
         ...d,
         milestoneIndex,
-      };
+      } as MicroTaskOutline;
     });
   }
 
   private normalizeDraft(
-    d: {
-      name: string;
-      description?: string;
-      checklist?: string[];
-      definitionOfDone?: string;
-      pomodorosPlanned?: number;
-      priority?: number;
-      difficult?: number;
-      microTaskType?: string;
-      themeTag?: string;
-      contextTag?: string;
-      cognitiveMode?: string;
-      milestoneIndex?: number;
-    },
+    d: Partial<MicroTaskDraft>,
     idx: number,
     total: number,
-  ) {
+  ): MicroTaskOutline {
     const normalizedDescription = String(d.description || '').trim();
     const normalizedChecklist = Array.isArray(d.checklist)
       ? d.checklist.map((s) => String(s || '').trim()).filter(Boolean)
@@ -322,6 +228,6 @@ export class DraftProcessingService {
       cognitiveMode,
       contextTag:
         String(d.contextTag || mapCognitiveModeToContextTag(cognitiveMode)).trim() || undefined,
-    };
+    } as MicroTaskOutline;
   }
 }

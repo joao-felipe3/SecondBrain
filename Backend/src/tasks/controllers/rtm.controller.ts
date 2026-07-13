@@ -3,7 +3,7 @@ import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagg
 import { RTMService } from '../services/traceability';
 import { TasksService } from '../tasks.service';
 import { Requirement } from '../entities/requirement.entity';
-import { MapRequirementToTaskDto } from '../dto';
+import { MapRequirementToTaskDto, AutoMapRequirementsResponseDto, GenerateTasksResponseDto } from '../dto';
 
 @ApiTags('RTM - Rastreabilidade da Jornada Pessoal')
 @ApiBearerAuth()
@@ -374,8 +374,11 @@ export class RTMController {
   @ApiResponse({
     status: 200,
     description: 'Mapeamento automático concluído com sucesso',
+    type: AutoMapRequirementsResponseDto,
   })
-  async autoMapRequirementsToTasks(@Param('projectId') projectId: string) {
+  async autoMapRequirementsToTasks(
+    @Param('projectId') projectId: string,
+  ): Promise<AutoMapRequirementsResponseDto> {
     const startedAt = Date.now();
 
     this.logger.log(`[auto-map] projectId=${projectId} iniciando mapeamento automático`);
@@ -391,6 +394,13 @@ export class RTMController {
           mappedCount: 0,
           createdRequirementsCount: 0,
           coverage: 0,
+          validation: {
+            isValid: false,
+            coverage: 0,
+            unmappedRequirements: [],
+            risks: ['Nenhuma tarefa encontrada no projeto.'],
+          },
+          timestamp: new Date().toISOString(),
         };
       }
 
@@ -403,23 +413,22 @@ export class RTMController {
         }ms`,
       );
 
-      return {
-        success: true,
-        message: result.message,
-        mappedCount: result.mappedCount,
-        createdRequirementsCount: result.createdRequirementsCount,
-        coverage: result.coverage,
-        validation: result.validation,
-        timestamp: new Date().toISOString(),
-      };
+      return result;
     } catch (error: any) {
       this.logger.error(`[auto-map] projectId=${projectId} erro: ${error?.message}`);
       return {
         success: false,
-        error: error?.message,
+        message: error?.message || 'Erro interno no auto-mapeamento',
         mappedCount: 0,
         createdRequirementsCount: 0,
         coverage: 0,
+        validation: {
+          isValid: false,
+          coverage: 0,
+          unmappedRequirements: [],
+          risks: [error?.message || 'Erro interno no auto-mapeamento'],
+        },
+        timestamp: new Date().toISOString(),
       };
     }
   }
@@ -435,8 +444,11 @@ export class RTMController {
   @ApiResponse({
     status: 200,
     description: 'Tarefas geradas e mapeadas com sucesso',
+    type: GenerateTasksResponseDto,
   })
-  async generateTasksForUnmappedRequirements(@Param('projectId') projectId: string) {
+  async generateTasksForUnmappedRequirements(
+    @Param('projectId') projectId: string,
+  ): Promise<GenerateTasksResponseDto> {
     const startedAt = Date.now();
 
     this.logger.log(`[gen-tasks] projectId=${projectId} gerando tarefas para requisitos órfãos`);
@@ -450,21 +462,21 @@ export class RTMController {
         }ms`,
       );
 
-      return {
-        success: true,
-        message: result.message,
-        createdTasksCount: result.createdTasksCount,
-        coverage: result.coverage,
-        validation: result.validation,
-        timestamp: new Date().toISOString(),
-      };
+      return result;
     } catch (error: any) {
       this.logger.error(`[gen-tasks] projectId=${projectId} erro: ${error?.message}`);
       return {
         success: false,
-        error: error?.message,
+        message: error?.message || 'Erro interno na geração de tarefas',
         createdTasksCount: 0,
         coverage: 0,
+        validation: {
+          isValid: false,
+          coverage: 0,
+          unmappedRequirements: [],
+          risks: [error?.message || 'Erro interno na geração de tarefas'],
+        },
+        timestamp: new Date().toISOString(),
       };
     }
   }

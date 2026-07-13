@@ -29,7 +29,7 @@ describe('EVMProgressService', () => {
       const mockResult = { _id: 'progress1', projectId };
       mockProgressModel.create.mockResolvedValue(mockResult);
 
-      const result = await service.recordProgress(projectId, 10, 20);
+      const result = await service.recordProgress({ projectId, completedHours: 10, plannedValue: 20 });
 
       expect(mockProgressModel.create).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -41,7 +41,7 @@ describe('EVMProgressService', () => {
     });
 
     it('should throw BadRequestException if projectId is invalid', async () => {
-      await expect(service.recordProgress('invalid', 10, 20)).rejects.toThrow(/projectId invalido/);
+      await expect(service.recordProgress({ projectId: 'invalid', completedHours: 10, plannedValue: 20 })).rejects.toThrow(/projectId invalido/);
     });
   });
 

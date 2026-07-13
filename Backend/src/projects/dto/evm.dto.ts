@@ -1,4 +1,7 @@
 import { IsDateString, IsNumber, IsOptional } from 'class-validator';
+import { ProjectDocument } from '../schemas/project.schema';
+import { ProjectProgress } from '../schemas/project-progress.schema';
+import { ProjectWave } from '../schemas/project-wave.schema';
 
 export class RecordProjectProgressDto {
   @IsOptional()
@@ -93,4 +96,63 @@ export interface EVMSummary {
   milestoneProgress: EVMMilestoneProgress;
   dashboardPreferences: EVMDashboardPreferences;
   metricRelevance: EVMMetricRelevance;
+}
+
+export interface EstimateCompletionDateParamsDto {
+  project: ProjectDocument | null;
+  metrics: { completedHours: number; plannedHours: number };
+  scopeStartDate: Date | null;
+  scopeEndDate: Date | null;
+}
+
+export interface BuildPersonalMetricsParamsDto {
+  entries: ProjectProgress[];
+  spi: number;
+  coreMetrics: {
+    pv: number;
+    ev: number;
+    completedHours: number;
+    plannedHours: number;
+  };
+}
+
+export interface BuildEVMCurvePointsParamsDto {
+  scopedEntries: ProjectProgress[];
+  plannedHours: number;
+  startDate: Date | null;
+  endDate: Date | null;
+}
+
+export interface RecordProgressParamsDto {
+  projectId: string;
+  completedHours: number;
+  plannedValue: number;
+  date?: string;
+  source?: 'manual' | 'pomodoro' | 'completion';
+  taskId?: string;
+}
+
+export interface EVMPersonalSummaryDto {
+  consistencyScore: number;
+  effortBalanceScore: number;
+  planAdherence: number;
+  completionTrend: EVMPersonalMetrics['completionTrend'];
+  perceivedValueScore: number;
+  actionHint: string;
+  paceStatus: 'saudavel' | 'atencao' | 'critico';
+  focusMessage: string;
+}
+
+export interface EVMCoreMetricsDto {
+  pv: number;
+  ev: number;
+  bac: number;
+  completedHours: number;
+  plannedHours: number;
+}
+
+export interface EVMActiveWaveContextDto {
+  startDate: Date | null;
+  endDate: Date | null;
+  plannedHours: number;
 }

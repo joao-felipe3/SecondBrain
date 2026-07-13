@@ -96,8 +96,8 @@ export class TaskConversionHelperService {
         );
         drafts = cached;
       } else {
-        drafts = await this.draftGenerationService.generateMicroTasksDraftsForLeafWithPlan(
-          {
+        drafts = await this.draftGenerationService.generateMicroTasksDraftsForLeafWithPlan({
+          context: {
             project: { _id: projectId },
             node,
             currentPath: nodePath,
@@ -105,7 +105,7 @@ export class TaskConversionHelperService {
             plan,
           },
           chunkMinutes,
-        );
+        });
 
         await this.cacheService.set(cacheKey, drafts);
       }

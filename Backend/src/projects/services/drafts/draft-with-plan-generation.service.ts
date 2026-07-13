@@ -1,12 +1,8 @@
-import { Injectable, Inject, forwardRef } from '@nestjs/common';
-import { GeminiService } from '../../../ai/gemini.service';
-import { WBSNodeDto } from '../../dto/wbs.dto';
-import { CacheService, PromptBuilderService } from '../wbs';
-import { extractJsonArray } from '../wbs/utils/json-parser.util';
+import { Injectable } from '@nestjs/common';
+import { CacheService } from '../wbs';
+import { WBSLeafWithPlanGenerationContext, MicroTaskDraft, GenerateLeafDraftsWithPlanDto } from '../../interfaces/drafts.interface';
 import { DraftDetailsEnrichmentService } from './draft-details-enrichment.service';
 import {
-  validateDraftOutlines,
-  validateDrafts,
   buildDraftsCacheKey,
   getNumericEnv,
   safeEnv,
@@ -17,51 +13,25 @@ import {
   getWbsGenerationModelOverride,
   getDetailsModelOverride,
 } from './utils/draft-generation-helpers.util';
+import { DraftsAiService } from '../../../ai/drafts-ai.service';
 
 @Injectable()
 export class DraftWithPlanGenerationService {
   constructor(
-    @Inject(forwardRef(() => GeminiService))
-    private readonly geminiService: GeminiService,
-    private readonly promptBuilder: PromptBuilderService,
+    private readonly draftsAi: DraftsAiService,
     private readonly cacheService: CacheService,
     private readonly detailsEnrichment: DraftDetailsEnrichmentService,
-  ) {}
+  ) { }
 
   async generateMicroTasksDraftsForLeafWithPlan(
-    params: {
-      project: any;
-      node: WBSNodeDto;
-      currentPath: string;
-      level: number;
-      plan: {
-        themes?: Array<{ name: string; criteria?: string }>;
-        workflow?: string[];
-        milestones?: Array<{ name?: string; goal?: string; atMinutes?: number }>;
-      };
-      modelOverride?: string;
-    },
-    chunkMinutes: number[],
-  ): Promise<
-    Array<{
-      name: string;
-      description?: string;
-      checklist: string[];
-      definitionOfDone: string;
-      pomodorosPlanned: number;
-      priority: number;
-      difficult: number;
-      microTaskType?: string;
-      themeTag?: string;
-      contextTag?: string;
-      cognitiveMode?: string;
-    }>
-  > {
-    const projectId = getProjectId(params.project);
-    const resolvedModelOverride = params.modelOverride || getWbsGenerationModelOverride();
+    dto: GenerateLeafDraftsWithPlanDto,
+  ): Promise<MicroTaskDraft[]> {
+    const { context, chunkMinutes } = dto;
+    const projectId = getProjectId(context.project);
+    const resolvedModelOverride = context.modelOverride || getWbsGenerationModelOverride();
 
-    // 1. Resolve and check cache
-    const cacheKey = this.checkCacheKey(projectId, params, chunkMinutes, resolvedModelOverride);
+    // 1. Check cache
+    const cacheKey = this.checkCacheKey(projectId, context, chunkMinutes, resolvedModelOverride);
     const cached = await this.tryLoadFromCache(cacheKey, chunkMinutes.length, projectId);
     if (cached) return cached;
 
@@ -75,15 +45,39 @@ export class DraftWithPlanGenerationService {
       `generateMicroTasksDraftsForLeafWithPlan start mode=${modeLabel} chunks=${chunkMinutes.length}`,
     );
 
-    // 2. Partition into slices and generate drafts
+    // 2. Partition into slices and generate drafts via draftsAi
     const slices = this.partitionMinutesIntoSlices(chunkMinutes, maxPerCall);
-    const allDrafts = await this.generateAllSlices(
-      slices,
-      params,
-      resolvedModelOverride,
-      twoPassEnabled,
-      avoidTaskTitles,
-    );
+    const allDrafts: MicroTaskDraft[] = [];
+
+    for (const slice of slices) {
+      let sliceDrafts: MicroTaskDraft[];
+      if (!twoPassEnabled) {
+        sliceDrafts = await this.draftsAi.generateSinglePassWithPlan(
+          context,
+          slice,
+          avoidTaskTitles,
+          resolvedModelOverride,
+        );
+      } else {
+        const outlines = await this.draftsAi.generateOutlineWithPlan(
+          context,
+          slice,
+          avoidTaskTitles,
+          resolvedModelOverride,
+        );
+        const detailsModelOverride = getDetailsModelOverride(resolvedModelOverride);
+        sliceDrafts = await this.detailsEnrichment.enrichOutlinesWithDetails({
+          outlines,
+          sliceMinutes: slice,
+          params: context,
+          detailsModelOverride,
+        });
+      }
+      allDrafts.push(...sliceDrafts);
+      for (const d of sliceDrafts) {
+        if (d.name) avoidTaskTitles.push(d.name.trim());
+      }
+    }
 
     const overallElapsed = Date.now() - overallStart;
     logWithTimestamp(
@@ -101,22 +95,21 @@ export class DraftWithPlanGenerationService {
 
   private checkCacheKey(
     projectId: string,
-    params: any,
+    params: WBSLeafWithPlanGenerationContext,
     chunkMinutes: number[],
     resolvedModelOverride: string | undefined,
   ): string {
     if (!projectId) return '';
+    const { project, node, ...rest } = params;
     const fingerprint = {
       v: 2,
       kind: 'drafts_with_plan',
-      nodeId: params.node?._id ? String(params.node._id) : undefined,
-      nodeName: params.node?.name,
-      nodeDesc: params.node?.description,
-      currentPath: params.currentPath,
-      level: params.level,
-      estimatedHours: params.node?.estimatedHours,
+      nodeId: node?._id ? String(node._id) : undefined,
+      nodeName: node?.name,
+      nodeDesc: node?.description,
+      estimatedHours: node?.estimatedHours,
+      ...rest,
       chunkMinutes,
-      plan: params.plan,
       model: resolvedModelOverride,
       twoPass: safeEnv('WBS_TWO_PASS_DETAILS'),
       detailsModel: safeEnv('WBS_DETAILS_MODEL'),
@@ -132,9 +125,9 @@ export class DraftWithPlanGenerationService {
     cacheKey: string,
     expectedCount: number,
     projectId: string,
-  ): Promise<any[] | null> {
+  ): Promise<MicroTaskDraft[] | null> {
     if (!cacheKey || !projectId) return null;
-    const cached = await this.cacheService.get<any[]>(cacheKey);
+    const cached = await this.cacheService.get<MicroTaskDraft[]>(cacheKey);
     if (cached && Array.isArray(cached) && cached.length >= expectedCount) {
       if (isCacheDebugEnabled()) {
         console.log('[draft-generation][cache] hit', {
@@ -157,33 +150,7 @@ export class DraftWithPlanGenerationService {
     return slices;
   }
 
-  private async generateAllSlices(
-    slices: number[][],
-    params: any,
-    resolvedModelOverride: string | undefined,
-    twoPassEnabled: boolean,
-    avoidTaskTitles: string[],
-  ): Promise<any[]> {
-    const allDrafts: any[] = [];
-    for (let sliceIdx = 0; sliceIdx < slices.length; sliceIdx++) {
-      const sliceDrafts = await this.generateDraftsForSlice(
-        slices[sliceIdx],
-        params,
-        resolvedModelOverride,
-        twoPassEnabled,
-        avoidTaskTitles,
-      );
-      allDrafts.push(...sliceDrafts);
-
-      for (const draft of sliceDrafts) {
-        const title = String(draft?.name || '').trim();
-        if (title) avoidTaskTitles.push(title);
-      }
-    }
-    return allDrafts;
-  }
-
-  private normalizeGeneratedDrafts(allDrafts: any[], expectedCount: number): any[] {
+  private normalizeGeneratedDrafts(allDrafts: any[], expectedCount: number): MicroTaskDraft[] {
     return allDrafts.map((d, idx) => ({
       name: String(d.name || `Micro-tarefa (${idx + 1}/${expectedCount})`).trim(),
       description: String(d?.description || '').trim() || undefined,
@@ -194,190 +161,10 @@ export class DraftWithPlanGenerationService {
       pomodorosPlanned: Math.max(1, Math.min(6, Number(d?.pomodorosPlanned) || 1)),
       priority: Math.max(1, Math.min(4, Number(d?.priority) || 2)),
       difficult: Math.max(1, Math.min(4, Number(d?.difficult) || 2)),
-      microTaskType: d?.microTaskType || undefined,
-      themeTag: d?.themeTag || undefined,
-      contextTag: d?.contextTag || undefined,
-      cognitiveMode: d?.cognitiveMode || undefined,
+      microTaskType: d?.microTaskType || '',
+      themeTag: d?.themeTag || '',
+      contextTag: d?.contextTag || '',
+      cognitiveMode: d?.cognitiveMode || '',
     }));
-  }
-
-  private async generateDraftsForSlice(
-    sliceMinutes: number[],
-    params: any,
-    resolvedModelOverride: string | undefined,
-    twoPassEnabled: boolean,
-    avoidTaskTitles: string[],
-  ): Promise<any[]> {
-    const sliceStart = Date.now();
-    const sliceMode = twoPassEnabled ? 'two-pass' : 'single-pass';
-    logWithTimestamp(`slice(${sliceMinutes.length}) start [${sliceMode}]`);
-
-    try {
-      if (!twoPassEnabled) {
-        return await this.executeSinglePassSlice(
-          sliceMinutes,
-          params,
-          resolvedModelOverride,
-          avoidTaskTitles,
-        );
-      } else {
-        return await this.executeTwoPassSlice(
-          sliceMinutes,
-          params,
-          resolvedModelOverride,
-          avoidTaskTitles,
-        );
-      }
-    } finally {
-      const elapsed = Date.now() - sliceStart;
-      logWithTimestamp(`slice(${sliceMinutes.length}) end [${sliceMode}] ${elapsed}ms`);
-    }
-  }
-
-  private isJsonishError(err: any): boolean {
-    const msg = String(err?.message || err || '').toLowerCase();
-    return (
-      msg.includes('json') ||
-      msg.includes('truncad') ||
-      msg.includes('incomplet') ||
-      msg.includes('parse') ||
-      msg.includes('array') ||
-      msg.includes('object')
-    );
-  }
-
-  private async executeSinglePassSlice(
-    sliceMinutes: number[],
-    params: any,
-    resolvedModelOverride: string | undefined,
-    avoidTaskTitles: string[],
-  ): Promise<any[]> {
-    const baseMaxTokens = getNumericEnv('WBS_MAX_OUTPUT_TOKENS', 2200);
-    const retryMaxTokens = getNumericEnv('WBS_MAX_OUTPUT_TOKENS_RETRY', 3500);
-
-    const prompt = this.promptBuilder.buildMicroTasksGeneratorPrompt({
-      ...params,
-      chunkMinutes: sliceMinutes,
-      avoidTaskTitles,
-    });
-
-    const attempt = async (opts: { maxOutputTokens: number; temperature: number }) => {
-      const response = await this.geminiService.generateContent(prompt, {
-        model: resolvedModelOverride,
-        responseMimeType: 'application/json',
-        maxOutputTokens: opts.maxOutputTokens,
-        temperature: opts.temperature,
-      });
-      const drafts = extractJsonArray<any>(response);
-      const validated = validateDrafts(drafts);
-      if (validated.length !== sliceMinutes.length) {
-        throw new Error(`IA retornou ${validated.length} itens; esperado ${sliceMinutes.length}`);
-      }
-      return validated;
-    };
-
-    try {
-      return await attempt({
-        maxOutputTokens: baseMaxTokens,
-        temperature: 0.2,
-      });
-    } catch (err: any) {
-      if (sliceMinutes.length > 1 && this.isJsonishError(err)) {
-        const mid = Math.ceil(sliceMinutes.length / 2);
-        const left = await this.executeSinglePassSlice(
-          sliceMinutes.slice(0, mid),
-          params,
-          resolvedModelOverride,
-          avoidTaskTitles,
-        );
-        const right = await this.executeSinglePassSlice(
-          sliceMinutes.slice(mid),
-          params,
-          resolvedModelOverride,
-          avoidTaskTitles,
-        );
-        return [...left, ...right];
-      }
-
-      if (this.isJsonishError(err)) {
-        return await attempt({
-          maxOutputTokens: retryMaxTokens,
-          temperature: 0.15,
-        });
-      }
-      throw err;
-    }
-  }
-
-  private async executeTwoPassSlice(
-    sliceMinutes: number[],
-    params: any,
-    resolvedModelOverride: string | undefined,
-    avoidTaskTitles: string[],
-  ): Promise<any[]> {
-    const baseMaxTokens = getNumericEnv('WBS_MAX_OUTPUT_TOKENS', 2200);
-    const retryMaxTokens = getNumericEnv('WBS_MAX_OUTPUT_TOKENS_RETRY', 3500);
-
-    const outlinePrompt = this.promptBuilder.buildMicroTasksOutlineWithPlanPrompt({
-      ...params,
-      chunkMinutes: sliceMinutes,
-      avoidTaskTitles,
-    });
-
-    const attemptOutline = async (opts: { maxOutputTokens: number; temperature: number }) => {
-      const response = await this.geminiService.generateContent(outlinePrompt, {
-        model: resolvedModelOverride,
-        responseMimeType: 'application/json',
-        maxOutputTokens: opts.maxOutputTokens,
-        temperature: opts.temperature,
-      });
-      const outlines = extractJsonArray<any>(response);
-      const validated = validateDraftOutlines(outlines);
-      if (validated.length !== sliceMinutes.length) {
-        throw new Error(`IA retornou ${validated.length} outlines; esperado ${sliceMinutes.length}`);
-      }
-      return validated;
-    };
-
-    let outlines: any[];
-    try {
-      outlines = await attemptOutline({
-        maxOutputTokens: Math.min(baseMaxTokens, 1400),
-        temperature: 0.2,
-      });
-    } catch (err: any) {
-      if (sliceMinutes.length > 1 && this.isJsonishError(err)) {
-        const mid = Math.ceil(sliceMinutes.length / 2);
-        const left = await this.executeTwoPassSlice(
-          sliceMinutes.slice(0, mid),
-          params,
-          resolvedModelOverride,
-          avoidTaskTitles,
-        );
-        const right = await this.executeTwoPassSlice(
-          sliceMinutes.slice(mid),
-          params,
-          resolvedModelOverride,
-          avoidTaskTitles,
-        );
-        return [...left, ...right];
-      }
-      if (this.isJsonishError(err)) {
-        outlines = await attemptOutline({
-          maxOutputTokens: Math.min(retryMaxTokens, 2000),
-          temperature: 0.15,
-        });
-      } else {
-        throw err;
-      }
-    }
-
-    const detailsModelOverride = getDetailsModelOverride(resolvedModelOverride);
-    return await this.detailsEnrichment.enrichOutlinesWithDetails(
-      outlines,
-      sliceMinutes,
-      params,
-      detailsModelOverride,
-    );
   }
 }

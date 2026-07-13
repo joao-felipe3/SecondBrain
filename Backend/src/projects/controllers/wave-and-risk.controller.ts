@@ -364,12 +364,12 @@ export class WaveAndRiskController {
   @Post('evm/progress')
   async recordProgress(@Param('projectId') projectId: string, @Body() body: RecordProjectProgressDto) {
     try {
-      return await this.evmProgressService.recordProgress(
+      return await this.evmProgressService.recordProgress({
         projectId,
-        body.completedHours,
-        body.plannedValue,
-        body.date,
-      );
+        completedHours: body.completedHours,
+        plannedValue: body.plannedValue,
+        date: body.date,
+      });
     } catch (error) {
       throw new HttpException(
         `Erro ao registrar progresso EVM: ${this.getErrorMessage(error)}`,

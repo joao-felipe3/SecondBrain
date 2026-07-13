@@ -8,12 +8,7 @@ import {
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
-import {
-  RecurringExceptionDto,
-  RecurringRuleDto,
-  CreateTaskDto,
-  RecurringTaskOccurrenceDto,
-} from '../../dto/task/create-task.dto';
+import { RecurringRuleDto, RecurringTaskOccurrenceDto } from '../../dto/task/create-task.dto';
 import { CreateMicroTaskDto } from '../../dto/task/create-micro-task.dto';
 import { ProjectsService } from '../../../projects/projects.service';
 import { TaskDocument } from '../../schemas/task.schema';
@@ -35,7 +30,7 @@ export class TasksRecurringService {
     @Optional()
     private readonly projectsService?: ProjectsService,
     private readonly tasksWriteService?: TasksWriteService,
-  ) {}
+  ) { }
 
   public normalizeRecurringRule(
     recurringRule?: RecurringRuleDto,

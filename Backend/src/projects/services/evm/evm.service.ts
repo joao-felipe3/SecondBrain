@@ -3,7 +3,15 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { ProjectWave, ProjectWaveDocument } from '../../schemas/project-wave.schema';
 import { ProjectDocument } from '../../schemas/project.schema';
-import type { EVMCurve, EVMForecast, EVMPersonalMetrics, EVMSummary } from '../../dto/evm.dto';
+import type {
+  EVMCurve,
+  EVMForecast,
+  EVMSummary,
+  EVMPersonalSummaryDto,
+  EVMCoreMetricsDto,
+  EVMMilestoneProgress,
+  EVMActiveWaveContextDto,
+} from '../../dto/evm.dto';
 import {
   toFiniteNumber,
   toBoundedScore,
@@ -11,27 +19,34 @@ import {
   scopeEntriesByWindow,
   estimateCompletionDate,
   buildPersonalMetrics,
-  resolveMetricRelevance,
-  buildEVMCurvePoints,
-  calculateActiveWavePlannedHours,
 } from './utils/evm-calculations.util';
+import { resolveMetricRelevance } from './utils/evm-relevance.util';
+import { buildEVMCurvePoints, calculateActiveWavePlannedHours } from './utils/evm-curve.util';
 import { EVMProgressService } from './evm-progress.service';
 
 @Injectable()
 export class EVMService {
+  // ===========================================================================
+  // 1. Setup & Validation
+  // ===========================================================================
+
   constructor(
     private readonly evmProgressService: EVMProgressService,
     @InjectModel(ProjectWave.name)
     private readonly projectWaveModel: Model<ProjectWaveDocument>,
     @InjectModel('Project')
     private readonly projectModel: Model<ProjectDocument>,
-  ) {}
+  ) { }
 
   private assertValidObjectId(value: string, fieldName: string): void {
     if (!Types.ObjectId.isValid(value)) {
       throw new BadRequestException(`${fieldName} invalido`);
     }
   }
+
+  // ===========================================================================
+  // 2. Public EVM Metrics & Forecasts
+  // ===========================================================================
 
   async calculateSPI(projectId: string): Promise<number> {
     this.assertValidObjectId(projectId, 'projectId');
@@ -54,12 +69,12 @@ export class EVMService {
     const remainingHours = Math.max(0, metrics.plannedHours - metrics.completedHours);
     const variance = metrics.ev - metrics.pv;
 
-    const estimatedDate = estimateCompletionDate(
+    const estimatedDate = estimateCompletionDate({
       project,
       metrics,
-      activeWaveContext.startDate,
-      activeWaveContext.endDate,
-    );
+      scopeStartDate: activeWaveContext.startDate,
+      scopeEndDate: activeWaveContext.endDate,
+    });
 
     return {
       estimatedDate,
@@ -91,12 +106,12 @@ export class EVMService {
       return { plannedValue: [], actualValue: [], dates: [] };
     }
 
-    return buildEVMCurvePoints(
+    return buildEVMCurvePoints({
       scopedEntries,
-      activeWaveContext.plannedHours,
-      activeWaveContext.startDate,
-      activeWaveContext.endDate,
-    );
+      plannedHours: activeWaveContext.plannedHours,
+      startDate: activeWaveContext.startDate,
+      endDate: activeWaveContext.endDate,
+    });
   }
 
   async getEVMSummary(projectId: string): Promise<EVMSummary> {
@@ -114,7 +129,11 @@ export class EVMService {
       ]);
 
     const completedHours = coreMetrics.completedHours;
-    const personalMetrics = buildPersonalMetrics(entries, spi, coreMetrics);
+    const personalMetrics = buildPersonalMetrics({
+      entries,
+      spi,
+      coreMetrics,
+    });
     const metricRelevance = resolveMetricRelevance({
       entriesCount: entries.length,
       spi,
@@ -138,16 +157,7 @@ export class EVMService {
     };
   }
 
-  async getPersonalSummary(projectId: string): Promise<{
-    consistencyScore: number;
-    effortBalanceScore: number;
-    planAdherence: number;
-    completionTrend: EVMPersonalMetrics['completionTrend'];
-    perceivedValueScore: number;
-    actionHint: string;
-    paceStatus: 'saudavel' | 'atencao' | 'critico';
-    focusMessage: string;
-  }> {
+  async getPersonalSummary(projectId: string): Promise<EVMPersonalSummaryDto> {
     this.assertValidObjectId(projectId, 'projectId');
 
     const summary = await this.getEVMSummary(projectId);
@@ -174,13 +184,11 @@ export class EVMService {
     };
   }
 
-  private async getCoreMetrics(projectId: string): Promise<{
-    pv: number;
-    ev: number;
-    bac: number;
-    completedHours: number;
-    plannedHours: number;
-  }> {
+  // ===========================================================================
+  // 3. Private Helpers: Core Calculations & Contexts
+  // ===========================================================================
+
+  private async getCoreMetrics(projectId: string): Promise<EVMCoreMetricsDto> {
     const [entries, activeWaveContext] = await Promise.all([
       this.evmProgressService.getProgressEntries(projectId),
       this.getActiveWaveContext(projectId),
@@ -214,12 +222,7 @@ export class EVMService {
     };
   }
 
-  private async getMilestoneProgress(projectId: string): Promise<{
-    totalMilestones: number;
-    completedMilestones: number;
-    completionRate: number;
-    activeMilestoneLabel: string | null;
-  }> {
+  private async getMilestoneProgress(projectId: string): Promise<EVMMilestoneProgress> {
     const waves = await this.projectWaveModel
       .find({ projectId: new Types.ObjectId(projectId) })
       .sort({ waveNumber: 1 })
@@ -245,11 +248,7 @@ export class EVMService {
     };
   }
 
-  private async getActiveWaveContext(projectId: string): Promise<{
-    startDate: Date | null;
-    endDate: Date | null;
-    plannedHours: number;
-  }> {
+  private async getActiveWaveContext(projectId: string): Promise<EVMActiveWaveContextDto> {
     const [project, waves] = await Promise.all([
       this.projectModel.findById(projectId).exec(),
       this.projectWaveModel

@@ -176,8 +176,8 @@ export class WbsConversionOrchestrationService {
         chunkMinutes,
         modelOverride: opts.modelOverride,
       });
-      return this.draftGeneration.generateMicroTasksDraftsForLeafWithPlan(
-        {
+      return this.draftGeneration.generateMicroTasksDraftsForLeafWithPlan({
+        context: {
           project,
           node,
           currentPath: path,
@@ -186,23 +186,23 @@ export class WbsConversionOrchestrationService {
           modelOverride: opts.modelOverride,
         },
         chunkMinutes,
-      );
+      });
     } else {
-      return this.draftGeneration.generateMicroTasksDraftsForLeaf(
-        {
+      return this.draftGeneration.generateMicroTasksDraftsForLeaf({
+        context: {
           project,
           node,
           currentPath: path,
           level: 0,
         },
         chunkMinutes,
-        opts.modelOverride,
-      );
+        modelOverride: opts.modelOverride,
+      });
     }
   }
 
   private processDrafts(drafts: any[], chunkMinutes: number[]): any[] {
-    let processed = this.draftProcessing.applyThemeWorkflowAndProgression(drafts, chunkMinutes);
+    let processed = this.draftProcessing.applyThemeWorkflowAndProgression(drafts);
     processed = this.draftProcessing.applyGoldilocksAndMilestones(processed, chunkMinutes);
     return processed;
   }

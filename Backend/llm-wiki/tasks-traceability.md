@@ -4,6 +4,31 @@
 
 A pasta `traceability/` reúne os serviços e utilitários responsáveis por **rastreabilidade e mapeamento de requisitos/jornada ao trabalho real (tarefas)**, implementando a Requirements Traceability Matrix (RTM).
 
+### Fluxo de Mapeamento e Rastreabilidade da Jornada (RTM)
+
+```mermaid
+graph TD
+    A["Projeto / Smart Objective"] --> B[RTMJourneyService]
+    B --> B1["Gemini: Gerar estrutura de itens de jornada"]
+    B1 --> B2["Deduplicação & Resolução parentRef -> parentItemId"]
+    B2 --> B3[("MongoDB: Requirements")]
+
+    C["AutoMap: autoMapRequirementsToTasks"] --> D[RTMMappingService]
+    D --> E["Filtrar tarefas não mapeadas e buscar itens de tipo action"]
+    E --> F["checkEarlyExitConditions - Valida existência de itens/ações"]
+    F --> G["runBatchMapping - Batches de 10 tarefas para IA no Gemini"]
+    G --> H["Identificar Ações Alvo & Tarefas Órfãs"]
+    H --> I["handleOrphanTasks - Criar auto ações de jornada para órfãs"]
+    I --> J["applyMappings - Persiste vínculos no banco com updateOne"]
+    
+    K["Gerar Tarefas: generateTasksForUnmappedRequirements"] --> L["Buscar ações sem nenhuma tarefa mapeada"]
+    L --> M["Gemini: Gerar 1 a 2 tarefas práticas por ação"]
+    M --> N["TasksService: createMany e vincular no banco"]
+    
+    J & N --> O[RTMValidationService: validateRTM]
+    O --> O1["Calcular Cobertura Percentual e Identificar Riscos"]
+```
+
 ---
 
 ## Estrutura de Arquivos

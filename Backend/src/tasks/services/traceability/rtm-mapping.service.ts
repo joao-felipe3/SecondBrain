@@ -7,7 +7,6 @@ import { RequirementMapper } from '../../mappers/requirement.mapper';
 import { Task } from '../../entities/task.entity';
 import { GeminiService } from '../../../ai/gemini.service';
 import { TasksService } from '../../tasks.service';
-import { RTMValidation } from '../../interfaces/rtm.interface';
 import { RTMValidationService } from './rtm-validation.service';
 import { AutoMapRequirementsResponseDto } from '../../dto';
 import { normalizeKind, getLinkedActions, parseJsonArray, levelForKind } from './utils/rtm.utils';
@@ -26,10 +25,8 @@ export class RTMMappingService {
     @InjectModel(RequirementSchema.name)
     private readonly requirementModel: Model<RequirementDocument>,
     private readonly geminiService: GeminiService,
-    @Inject(forwardRef(() => TasksService))
-    private readonly tasksService: TasksService,
     private readonly validationService: RTMValidationService,
-  ) {}
+  ) { }
 
   // ===========================================================================
   // 1. Auto-mapping: Tasks → Journey Actions
@@ -45,60 +42,106 @@ export class RTMMappingService {
     );
 
     try {
-      const allItemsDocs = await this.requirementModel.find({ projectId });
-      const allItems = allItemsDocs.map(RequirementMapper.toDomain);
-      const actionItems = allItems.filter(
-        (item: Requirement) => normalizeKind(item.kind || item.type) === 'action',
-      );
+      const { allItems, actionItems } = await this.fetchJourneyItems(projectId);
 
       const earlyExit = this.checkEarlyExitConditions(allItems, actionItems);
       if (earlyExit) return earlyExit;
 
       const tasksToMap = this.filterUnmappedTasks(tasks, actionItems);
       if (tasksToMap.length === 0) {
-        const validation = await this.validationService.validateRTM(projectId);
-        return {
-          success: true,
-          mappedCount: 0,
-          createdRequirementsCount: 0,
-          coverage: validation.coverage,
-          validation,
-          message: 'Todas as tarefas já estão vinculadas às ações da jornada.',
-          timestamp: new Date().toISOString(),
-        };
+        return this.handleNoTasksToMap(projectId);
       }
 
-      const { mappings, orphanTasks } = await this.runBatchMapping(tasksToMap, actionItems);
-
-      const createdRequirementsCount = await this.handleOrphanTasks({
-        orphanTasks,
-        allItems,
+      const { mappedCount, createdRequirementsCount } = await this.executeMappingFlow({
         projectId,
-        mappings,
+        tasksToMap,
+        actionItems,
+        allItems,
       });
 
-      const mappedCount = await this.applyMappings(mappings);
-
-      const validation = await this.validationService.validateRTM(projectId);
-      const elapsed = Date.now() - startedAt;
-      this.logger.log(
-        `[auto-map] projectId=${projectId} completo: ${mappedCount} tarefas vinculadas, ${createdRequirementsCount} ações criadas, ${validation.coverage}% cobertura - ${elapsed}ms`,
-      );
-
-      return {
-        success: true,
+      return this.buildSuccessResult({
+        projectId,
         mappedCount,
         createdRequirementsCount,
-        coverage: validation.coverage,
-        validation,
-        message: `Auto-vínculo concluído: ${mappedCount} tarefa(s) vinculada(s) + ${createdRequirementsCount} ação(ões) criada(s). Cobertura: ${validation.coverage}%`,
-        timestamp: new Date().toISOString(),
-      };
+        startedAt,
+      });
     } catch (error: unknown) {
       const err = error as Error;
       this.logger.error(`[auto-map] projectId=${projectId} erro: ${err.message}`);
       return this.buildErrorResult(`Erro ao mapear: ${err.message}`);
     }
+  }
+
+  private async fetchJourneyItems(projectId: string): Promise<{
+    allItems: Requirement[];
+    actionItems: Requirement[];
+  }> {
+    const allItemsDocs = await this.requirementModel.find({ projectId });
+    const allItems = allItemsDocs.map(RequirementMapper.toDomain);
+    const actionItems = allItems.filter(
+      (item: Requirement) => normalizeKind(item.kind || item.type) === 'action',
+    );
+    return { allItems, actionItems };
+  }
+
+  private async handleNoTasksToMap(projectId: string): Promise<AutoMapRequirementsResponseDto> {
+    const validation = await this.validationService.validateRTM(projectId);
+    return {
+      success: true,
+      mappedCount: 0,
+      createdRequirementsCount: 0,
+      coverage: validation.coverage,
+      validation,
+      message: 'Todas as tarefas já estão vinculadas às ações da jornada.',
+      timestamp: new Date().toISOString(),
+    };
+  }
+
+  private async executeMappingFlow(params: {
+    projectId: string;
+    tasksToMap: Task[];
+    actionItems: Requirement[];
+    allItems: Requirement[];
+  }): Promise<{ mappedCount: number; createdRequirementsCount: number }> {
+    const { projectId, tasksToMap, actionItems, allItems } = params;
+
+    const { mappings, orphanTasks } = await this.runBatchMapping(tasksToMap, actionItems);
+
+    const createdRequirementsCount = await this.handleOrphanTasks({
+      orphanTasks,
+      allItems,
+      projectId,
+      mappings,
+    });
+
+    const mappedCount = await this.applyMappings(mappings);
+
+    return { mappedCount, createdRequirementsCount };
+  }
+
+  private async buildSuccessResult(params: {
+    projectId: string;
+    mappedCount: number;
+    createdRequirementsCount: number;
+    startedAt: number;
+  }): Promise<AutoMapRequirementsResponseDto> {
+    const { projectId, mappedCount, createdRequirementsCount, startedAt } = params;
+    const validation = await this.validationService.validateRTM(projectId);
+    const elapsed = Date.now() - startedAt;
+
+    this.logger.log(
+      `[auto-map] projectId=${projectId} completo: ${mappedCount} tarefas vinculadas, ${createdRequirementsCount} ações criadas, ${validation.coverage}% cobertura - ${elapsed}ms`,
+    );
+
+    return {
+      success: true,
+      mappedCount,
+      createdRequirementsCount,
+      coverage: validation.coverage,
+      validation,
+      message: `Auto-vínculo concluído: ${mappedCount} tarefa(s) vinculada(s) + ${createdRequirementsCount} ação(ões) criada(s). Cobertura: ${validation.coverage}%`,
+      timestamp: new Date().toISOString(),
+    };
   }
 
   // ===========================================================================

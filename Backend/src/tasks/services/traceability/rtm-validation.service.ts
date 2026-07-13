@@ -9,42 +9,18 @@ import {
 import { Requirement } from '../../entities/requirement.entity';
 import { RequirementMapper } from '../../mappers/requirement.mapper';
 import { Task } from '../../entities/task.entity';
-import { RTMValidation, RTMMatrixData } from '../../interfaces/rtm.interface';
+import {
+  RTMValidation,
+  RTMMatrixData,
+  RTMRequirementData,
+  RTMTaskData,
+  RequirementMaps,
+  ValidationIssues,
+} from '../../interfaces/rtm.interface';
 import { normalizeKind, levelForKind, getLinkedActions } from './utils/rtm.utils';
 
 // Re-export interfaces for backwards compatibility
 export { RTMValidation, RTMMatrixData } from '../../interfaces/rtm.interface';
-
-// ===========================================================================
-// Helper Types
-// ===========================================================================
-
-type RTMRequirementData = {
-  id: string;
-  description: string;
-  type: string;
-  status: string;
-  kind: JourneyKind;
-  parentItemId?: string;
-  hierarchyLevel: number;
-};
-
-type RTMTaskData = {
-  id: string;
-  name: string;
-  wbsNodeId?: string;
-  wbsNodeName: string;
-};
-
-type RequirementMaps = {
-  byId: Map<string, Requirement>;
-  childrenByParent: Map<string, Requirement[]>;
-};
-
-type ValidationIssues = {
-  unmappedRequirements: string[];
-  risks: string[];
-};
 
 @Injectable()
 export class RTMValidationService {

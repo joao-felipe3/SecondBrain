@@ -39,10 +39,12 @@ export class RTMTaskGeneratorService {
 
       if (validation.unmappedRequirements.length === 0) {
         return {
+          success: true,
           createdTasksCount: 0,
           coverage: validation.coverage,
           validation,
           message: 'Todos os itens da jornada já possuem rastreabilidade.',
+          timestamp: new Date().toISOString(),
         };
       }
 
@@ -57,11 +59,13 @@ export class RTMTaskGeneratorService {
 
       if (actionItems.length === 0) {
         return {
+          success: true,
           createdTasksCount: 0,
           coverage: validation.coverage,
           validation,
           message:
             'Não há ações órfãs; complete primeiro a hierarquia objetivo -> hábito -> etapa -> ação.',
+          timestamp: new Date().toISOString(),
         };
       }
 
@@ -74,15 +78,18 @@ export class RTMTaskGeneratorService {
       );
 
       return {
+        success: true,
         createdTasksCount,
         coverage: finalValidation.coverage,
         validation: finalValidation,
         message: `${createdTasksCount} tarefa(s) gerada(s) para ações órfãs. Cobertura final: ${finalValidation.coverage}%`,
+        timestamp: new Date().toISOString(),
       };
     } catch (error: unknown) {
       const err = error as Error;
       this.logger.error(`[gen-tasks] projectId=${projectId} erro: ${err.message}`);
       return {
+        success: false,
         createdTasksCount: 0,
         coverage: 0,
         validation: {
@@ -92,6 +99,7 @@ export class RTMTaskGeneratorService {
           risks: [`Erro ao gerar tarefas: ${err.message}`],
         },
         message: `Erro: ${err.message}`,
+        timestamp: new Date().toISOString(),
       };
     }
   }

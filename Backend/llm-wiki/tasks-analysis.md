@@ -6,6 +6,40 @@ A pasta `analysis/` concentra os serviços responsáveis pelas **métricas quant
 
 Cada serviço tem uma responsabilidade única e bem definida. A comunicação entre eles é feita por injeção de dependência padrão do NestJS.
 
+### Fluxo de Dados e Cálculos (Métricas & Buffer)
+
+```mermaid
+graph TD
+    A["Requisição de Escrita/Update de Tarefa"] --> B[TasksMetricsService]
+    subgraph TasksMetricsService [TasksMetricsService]
+        B --> C[applyPertEstimates]
+        B --> D[applyRtmRisk]
+        B --> E[applyEvmMetrics]
+        
+        C --> C1["Fórmula: (O + 4M + P) / 6"]
+        C --> C2["Variância: ((P - O) / 6)²"]
+        D --> D1{"Possui vínculo RTM/WBS?"}
+        D1 -- Não --> D2["rtmRisk = true + Alerta"]
+        E --> E1["Planned Value (PV) = Expected * Ratio Decorrido"]
+        E --> E2["Earned Value (EV) = Expected * Progresso"]
+        E --> E3["SPI = EV / PV (Alerta se < 0.9)"]
+    end
+    
+    B --> F[(MongoDB - Task Document)]
+    
+    F --> G[BufferService]
+    subgraph BufferService [BufferService CCPM]
+        G --> H[calculateProjectBuffer]
+        H --> H1["Duração Caminho Crítico = Σ estimatedHours"]
+        H --> H2["Variância Total = Σ variance"]
+        H --> H3["projectBuffer = max(Duração * 0.5, Desvio Padrão * 1.645)"]
+        G --> I[consumeBuffer]
+        I --> J{"Percentual Consumido?"}
+        J -- "50% a 74%" --> K[Warning Alert]
+        J -- ">= 75%" --> L[Critical Alert]
+    end
+```
+
 > **Nota:** `index.ts` também re-exporta `CpmService`, `DependencyInferenceService` e `HierarchyService` de `../traceability/` por compatibilidade retroativa — esses serviços não residem nesta pasta.
 
 ---

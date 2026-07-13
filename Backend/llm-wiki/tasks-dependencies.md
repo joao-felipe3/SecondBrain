@@ -10,6 +10,42 @@ A pasta `dependencies/` reúne os serviços e utilitários responsáveis por **a
 | Dependency Inference | **DI** | Infere dependências entre tarefas via heurísticas e IA (Gemini) |
 | Hierarchy | **H** | Navega e calcula linhagem, descendentes e contribuição de XP por subárvore |
 
+### Pipeline de Processamento CPM e Inferência
+
+```mermaid
+graph TD
+    A["Lista de Tarefas do Projeto"] --> B["CPM Engine: calculateCriticalPath"]
+    
+    subgraph CPMEngine [Engine CPM - Análise de Rede]
+        B --> C["Passo 1: Conversão min -> horas"]
+        C --> D["Passo 2: Construção do Mapa de Arestas"]
+        D --> E["Passo 3: Ordenação Topológica Kahn BFS"]
+        E --> F["Passo 4: Repasse de Ida - Forward Pass"]
+        F --> F1["EF = ES + Duração"]
+        F --> F2["ES(sucessor) = max(EF(predecessores))"]
+        E --> G["Passo 5: Repasse de Volta - Backward Pass"]
+        G --> G1["LS = LF - Duração"]
+        G --> G2["LF(predecessor) = min(LS(sucessores))"]
+        
+        F & G --> H["Passo 6: Cálculo de Folga - Slack"]
+        H --> H1["Folga = LF - EF"]
+        H --> I["Passo 7: Classificação em Baldes de Folgas & Alertas"]
+        I --> J["Passo 8: Reconstrução da Sequência Crítica por Backtracking"]
+    end
+    
+    J --> K["Resultado: Caminho Crítico, Folgas, Alertas e Diagnósticos"]
+    
+    L["Gemini / Heurísticas"] --> M[DependencyInferenceService]
+    subgraph DepInference [Serviço de Inferência de Dependências]
+        M --> N["inferHeuristicPhases - Sequencial por Fases"]
+        M --> O["inferWithAi - IA no Gemini por Leaf"]
+        O --> O1["Remoção de Loops e Arestas Inválidas"]
+        M --> P["inferInterLeafWithAi - Macro dependências entre Leafs"]
+    end
+    
+    P & N --> Q["Persistência via CPMService: upsertDependencies"]
+```
+
 ---
 
 ## Estrutura de Arquivos

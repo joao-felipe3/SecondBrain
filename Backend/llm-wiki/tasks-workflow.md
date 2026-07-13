@@ -6,6 +6,37 @@ A pasta `workflow/` concentra os serviços responsáveis pelo **ciclo de vida op
 
 Cada serviço tem uma responsabilidade única e bem definida. A comunicação entre eles é feita por injeção de dependência padrão do NestJS, com exceção de casos que exigem `forwardRef` para evitar ciclos.
 
+### Ciclo de Vida Operacional das Tarefas
+
+```mermaid
+graph TD
+    subgraph Escrita [Fluxo de Escrita - TasksWriteService]
+        A["Solicitar Criar/Atualizar Tarefa"] --> B["TasksInputService: Validar Entrada"]
+        B --> C["TasksMetricsService: Injetar Campos Derivados"]
+        C --> C1["applyPertEstimates - Estimativas PERT"]
+        C --> C2["applyRtmRisk - Score de Risco RTM"]
+        C --> C3["applyEvmMetrics - EVM SPI e alertas"]
+        C --> C4["Calcular prize e experience"]
+        C --> D[("MongoDB: Salvar/Atualizar Task")]
+        D --> E["Recalcular Estatísticas do Projeto"]
+    end
+
+    subgraph Conclusao [Fluxo de Conclusão - TasksCompletionService]
+        F["Ação: Concluir Tarefa / Incrementar Pomodoro"] --> G["Obter Tarefa do Banco"]
+        G --> H["Atualizar Status para done & recalcular kanbanOrder"]
+        H --> I["Recalcular Métricas EVM do Projeto"]
+        I --> J["Verificar Desvios de Tempo e Gerar Alertas se > 25%"]
+        J --> K{"É tarefa recorrente?"}
+        K -- Sim --> L["Disparar Geração de Próxima Ocorrência"]
+    end
+
+    subgraph Recorrencia [Recorrência - TasksRecurringService]
+        L --> M["Calcular próxima data de execução baseado na regra"]
+        M --> N["Construir payload de ocorrência a partir do template"]
+        N --> O["tasksWriteService.createTaskCore com isRecurringInstance=true"]
+    end
+```
+
 ---
 
 ## Estrutura de Arquivos

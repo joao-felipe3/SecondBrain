@@ -318,7 +318,10 @@ export class TasksCompletionService {
     }
 
     try {
-      await this.evmProgressService.recordProgress(projectId, hoursDelta, hoursDelta, undefined, {
+      await this.evmProgressService.recordProgress({
+        projectId,
+        completedHours: hoursDelta,
+        plannedValue: hoursDelta,
         source,
         taskId,
       });
