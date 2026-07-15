@@ -22,6 +22,7 @@ import { RecordProjectProgressDto } from '../dto/evm.dto';
 import { ProjectWave } from '../schemas/project-wave.schema';
 import { Risk } from '../schemas/risk.schema';
 import { Project } from '../entities/project.entity';
+import { RiskSeverity } from '../interfaces';
 
 @Controller('projects/:projectId')
 export class WaveAndRiskController {
@@ -260,7 +261,7 @@ export class WaveAndRiskController {
   @Get('risks/severity/:severity')
   async getRisksBySeverity(
     @Param('projectId') projectId: string,
-    @Param('severity') severity: string,
+    @Param('severity') severity: RiskSeverity,
   ): Promise<Risk[]> {
     try {
       return await this.riskService.getRisksBySeverity(projectId, severity);
@@ -278,10 +279,7 @@ export class WaveAndRiskController {
     @Body() createRiskDto: CreateRiskDto,
   ): Promise<Risk> {
     try {
-      const risk = await this.riskService['riskModel'].create({
-        projectId,
-        ...createRiskDto,
-      });
+      const risk = await this.riskService.createRisk(projectId, createRiskDto);
       return risk;
     } catch (error) {
       throw new HttpException(
@@ -298,12 +296,7 @@ export class WaveAndRiskController {
     @Body() updateRiskDto: UpdateRiskDto,
   ): Promise<Risk | null> {
     try {
-      const updates = {
-        ...updateRiskDto,
-      };
-      const risk = await this.riskService['riskModel']
-        .findByIdAndUpdate(riskId, updates, { new: true })
-        .exec();
+      const risk = await this.riskService.updateRisk(riskId, updateRiskDto);
       return risk;
     } catch (error) {
       throw new HttpException(

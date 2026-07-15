@@ -30,7 +30,7 @@ export class TasksRecurringService {
     @Optional()
     private readonly projectsService?: ProjectsService,
     private readonly tasksWriteService?: TasksWriteService,
-  ) { }
+  ) {}
 
   public normalizeRecurringRule(
     recurringRule?: RecurringRuleDto,

@@ -36,7 +36,11 @@ import {
   TasksCompletionService,
   TasksWriteService,
 } from './services/workflow';
-import { TasksAiSuggestionsService, ChecklistOperationsService, TasksAiSuggestionsLoopRunner } from './services/intelligence';
+import {
+  TasksAiSuggestionsService,
+  ChecklistOperationsService,
+  TasksAiSuggestionsLoopRunner,
+} from './services/intelligence';
 import { TasksHabitsService } from './services/monitoring';
 import { TasksMetricsService, TasksPertService } from './services/analysis';
 import { forwardRef } from '@nestjs/common';

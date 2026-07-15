@@ -18,15 +18,11 @@ export class DraftGenerationService {
     private readonly singlePassGeneration: DraftSinglePassGenerationService,
   ) {}
 
-  async generateMicroTasksPlanForLeaf(
-    params: WBSLeafPlanParamsDto,
-  ): Promise<WBSLeafPlanResultDto> {
+  async generateMicroTasksPlanForLeaf(params: WBSLeafPlanParamsDto): Promise<WBSLeafPlanResultDto> {
     return this.planGeneration.generateMicroTasksPlanForLeaf(params);
   }
 
-  async generateMicroTasksDraftsForLeaf(
-    dto: GenerateLeafDraftsDto,
-  ): Promise<MicroTaskDraft[]> {
+  async generateMicroTasksDraftsForLeaf(dto: GenerateLeafDraftsDto): Promise<MicroTaskDraft[]> {
     return this.singlePassGeneration.generateMicroTasksDraftsForLeaf(dto);
   }
 

@@ -21,25 +21,16 @@ import { DraftsAiService } from '../../../ai/drafts-ai.service';
 
 @Injectable()
 export class DraftDetailsEnrichmentService {
-  constructor(
-    private readonly draftsAi: DraftsAiService,
-  ) { }
+  constructor(private readonly draftsAi: DraftsAiService) {}
 
-  async enrichOutlinesWithDetails(
-    dto: EnrichOutlinesParamsDto,
-  ): Promise<MicroTaskDraft[]> {
+  async enrichOutlinesWithDetails(dto: EnrichOutlinesParamsDto): Promise<MicroTaskDraft[]> {
     const { outlines, sliceMinutes } = dto;
-    const { detailsConcurrency, detailsBatchSize, detailsBatchConcurrency } =
-      getConcurrencyParams();
+    const { detailsConcurrency, detailsBatchSize, detailsBatchConcurrency } = getConcurrencyParams();
 
     const enriched =
       detailsBatchSize <= 1
         ? await this.enrichWithoutBatching(dto, detailsConcurrency)
-        : await this.enrichWithBatching(
-          dto,
-          detailsBatchSize,
-          detailsBatchConcurrency,
-        );
+        : await this.enrichWithBatching(dto, detailsBatchSize, detailsBatchConcurrency);
 
     return validateDrafts(enriched) as MicroTaskDraft[];
   }
@@ -50,14 +41,12 @@ export class DraftDetailsEnrichmentService {
   ): Promise<MicroTaskDraft[]> {
     const { outlines, sliceMinutes, params, detailsModelOverride } = dto;
     return mapWithConcurrency(outlines, concurrency, async (outline, index) => {
-      const details = await this.generateDetailsForBatch(
-        {
-          outlines: [outline],
-          sliceMinutes: [sliceMinutes[index]],
-          params,
-          detailsModelOverride,
-        },
-      );
+      const details = await this.generateDetailsForBatch({
+        outlines: [outline],
+        sliceMinutes: [sliceMinutes[index]],
+        params,
+        detailsModelOverride,
+      });
       return { ...outline, ...details[0] } as MicroTaskDraft;
     });
   }
@@ -71,14 +60,12 @@ export class DraftDetailsEnrichmentService {
     const batches = createBatches(outlines, sliceMinutes, batchSize);
 
     const batchResults = await mapWithConcurrency(batches, batchConcurrency, async (b) => {
-      const detailsList = await this.generateDetailsForBatch(
-        {
-          outlines: b.outlines,
-          sliceMinutes: b.minutes,
-          params,
-          detailsModelOverride,
-        },
-      );
+      const detailsList = await this.generateDetailsForBatch({
+        outlines: b.outlines,
+        sliceMinutes: b.minutes,
+        params,
+        detailsModelOverride,
+      });
       return { start: b.start, detailsList } as DraftBatchResult;
     });
 
@@ -116,9 +103,7 @@ export class DraftDetailsEnrichmentService {
     });
   }
 
-  private async generateSingleDetails(
-    paramsDto: SingleDetailsParamsDto,
-  ): Promise<MicroTaskDetails[]> {
+  private async generateSingleDetails(paramsDto: SingleDetailsParamsDto): Promise<MicroTaskDetails[]> {
     const attemptDetails = async (opts: { maxOutputTokens: number; temperature: number }) => {
       return this.draftsAi.generateDetails(paramsDto, opts.maxOutputTokens, opts.temperature);
     };
@@ -166,10 +151,7 @@ export class DraftDetailsEnrichmentService {
     } catch (err: any) {
       if (isJsonishError(err)) {
         if (depth < 3) {
-          return this.splitAndGenerateDetails(
-            enrichParams,
-            depth,
-          );
+          return this.splitAndGenerateDetails(enrichParams, depth);
         }
         return await attemptBatch({
           maxOutputTokens: detailsBatchRetryMaxTokens,

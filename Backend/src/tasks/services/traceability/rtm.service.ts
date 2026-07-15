@@ -32,10 +32,7 @@ export class RTMService {
     return this.crud.getRequirements(projectId);
   }
 
-  saveRequirements(
-    projectId: string,
-    requirementsData: SaveRequirementDto[],
-  ): Promise<Requirement[]> {
+  saveRequirements(projectId: string, requirementsData: SaveRequirementDto[]): Promise<Requirement[]> {
     return this.crud.saveRequirements(projectId, requirementsData);
   }
 
@@ -71,10 +68,7 @@ export class RTMService {
     return this.ai.generateRequirements(smartObjective);
   }
 
-  autoMapRequirementsToTasks(
-    projectId: string,
-    tasks: Task[],
-  ): Promise<AutoMapRequirementsResponseDto> {
+  autoMapRequirementsToTasks(projectId: string, tasks: Task[]): Promise<AutoMapRequirementsResponseDto> {
     return this.ai.autoMapRequirementsToTasks(projectId, tasks);
   }
 

@@ -19,7 +19,10 @@ import {
   draftOutlinesSchema,
   draftDetailsSchema,
 } from '../projects/schemas/drafts-validation.schema';
-import { getNumericEnv, isJsonishError } from '../projects/services/drafts/utils/draft-generation-helpers.util';
+import {
+  getNumericEnv,
+  isJsonishError,
+} from '../projects/services/drafts/utils/draft-generation-helpers.util';
 
 @Injectable()
 export class DraftsAiService {

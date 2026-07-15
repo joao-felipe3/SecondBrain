@@ -25,7 +25,7 @@ export class FeedbackService {
     @InjectModel('Task') private readonly taskModel: Model<TaskDocument>,
     @InjectModel('TaskCompletionFeedback')
     private readonly feedbackModel: Model<TaskCompletionFeedbackDocument>,
-  ) { }
+  ) {}
 
   // ===========================================================================
   // 1. Public API Methods

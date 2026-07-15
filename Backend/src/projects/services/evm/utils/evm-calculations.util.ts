@@ -28,7 +28,7 @@ export function getScheduleRatioByDates(
   startDate: Date | null,
   endDate: Date | null,
   atDate: Date = new Date(),
- ): number | null {
+): number | null {
   if (!startDate || !endDate) return null;
 
   const start = new Date(startDate);
@@ -59,9 +59,7 @@ export function scopeEntriesByWindow(
   });
 }
 
-export function estimateCompletionDate(
-  dto: EstimateCompletionDateParamsDto,
-): string | null {
+export function estimateCompletionDate(dto: EstimateCompletionDateParamsDto): string | null {
   const { project, metrics, scopeStartDate, scopeEndDate } = dto;
   const baselineStart = scopeStartDate || (project?.startDate ? new Date(project.startDate) : null);
   const baselineEnd = scopeEndDate || (project?.deadline ? new Date(project.deadline) : null);
@@ -185,9 +183,7 @@ export function buildActionHint(input: {
   return 'Bom progresso: mantenha a cadencia atual e reavalie o plano no fechamento da semana.';
 }
 
-export function buildPersonalMetrics(
-  dto: BuildPersonalMetricsParamsDto,
-): EVMPersonalMetrics {
+export function buildPersonalMetrics(dto: BuildPersonalMetricsParamsDto): EVMPersonalMetrics {
   const { entries, spi, coreMetrics } = dto;
   const consistencyScore = calculateConsistencyScore(entries);
   const planAdherence =

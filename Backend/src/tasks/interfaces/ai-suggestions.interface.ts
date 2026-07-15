@@ -1,4 +1,7 @@
-import { AiTaskSuggestionDto, GenerateAiSuggestionsDto } from '../dto/intelligence/generate-ai-suggestions.dto';
+import {
+  AiTaskSuggestionDto,
+  GenerateAiSuggestionsDto,
+} from '../dto/intelligence/generate-ai-suggestions.dto';
 
 export interface SuggestionState {
   targetHours: number;

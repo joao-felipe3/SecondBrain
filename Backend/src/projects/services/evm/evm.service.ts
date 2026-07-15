@@ -36,7 +36,7 @@ export class EVMService {
     private readonly projectWaveModel: Model<ProjectWaveDocument>,
     @InjectModel('Project')
     private readonly projectModel: Model<ProjectDocument>,
-  ) { }
+  ) {}
 
   private assertValidObjectId(value: string, fieldName: string): void {
     if (!Types.ObjectId.isValid(value)) {

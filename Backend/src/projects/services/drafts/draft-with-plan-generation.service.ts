@@ -1,6 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { CacheService } from '../wbs';
-import { WBSLeafWithPlanGenerationContext, MicroTaskDraft, GenerateLeafDraftsWithPlanDto } from '../../interfaces/drafts.interface';
+import {
+  WBSLeafWithPlanGenerationContext,
+  MicroTaskDraft,
+  GenerateLeafDraftsWithPlanDto,
+} from '../../interfaces/drafts.interface';
 import { DraftDetailsEnrichmentService } from './draft-details-enrichment.service';
 import {
   buildDraftsCacheKey,
@@ -21,7 +25,7 @@ export class DraftWithPlanGenerationService {
     private readonly draftsAi: DraftsAiService,
     private readonly cacheService: CacheService,
     private readonly detailsEnrichment: DraftDetailsEnrichmentService,
-  ) { }
+  ) {}
 
   async generateMicroTasksDraftsForLeafWithPlan(
     dto: GenerateLeafDraftsWithPlanDto,

@@ -1,6 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { CacheService } from '../wbs';
-import { WBSLeafGenerationContext, MicroTaskDraft, MicroTaskOutline, GenerateLeafDraftsDto } from '../../interfaces/drafts.interface';
+import {
+  WBSLeafGenerationContext,
+  MicroTaskDraft,
+  MicroTaskOutline,
+  GenerateLeafDraftsDto,
+} from '../../interfaces/drafts.interface';
 import { DraftDetailsEnrichmentService } from './draft-details-enrichment.service';
 import {
   buildDraftsCacheKey,
@@ -21,14 +26,13 @@ export class DraftSinglePassGenerationService {
     private readonly draftsAi: DraftsAiService,
     private readonly cacheService: CacheService,
     private readonly detailsEnrichment: DraftDetailsEnrichmentService,
-  ) { }
+  ) {}
 
-  async generateMicroTasksDraftsForLeaf(
-    dto: GenerateLeafDraftsDto,
-  ): Promise<MicroTaskDraft[]> {
+  async generateMicroTasksDraftsForLeaf(dto: GenerateLeafDraftsDto): Promise<MicroTaskDraft[]> {
     const { context, chunkMinutes, modelOverride } = dto;
     const projectId = getProjectId(context.project);
-    const resolvedModelOverride = modelOverride || context.modelOverride || getWbsGenerationModelOverride();
+    const resolvedModelOverride =
+      modelOverride || context.modelOverride || getWbsGenerationModelOverride();
 
     // 1. Check cache
     const cacheKey = this.checkCacheKey(projectId, context, chunkMinutes, resolvedModelOverride);

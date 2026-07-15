@@ -21,7 +21,7 @@ interface HabitSummary extends StreakData {
 
 @Injectable()
 export class TasksHabitsService {
-  constructor(@InjectModel('Task') private readonly taskModel: Model<TaskDocument>) { }
+  constructor(@InjectModel('Task') private readonly taskModel: Model<TaskDocument>) {}
 
   // ===========================================================================
   // 1. Habit Tracking & Streak Metrics

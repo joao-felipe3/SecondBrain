@@ -21,9 +21,7 @@ export class DraftPlanGenerationService {
     return hashKey(input);
   }
 
-  async generateMicroTasksPlanForLeaf(
-    params: WBSLeafPlanParamsDto,
-  ): Promise<WBSLeafPlanResultDto> {
+  async generateMicroTasksPlanForLeaf(params: WBSLeafPlanParamsDto): Promise<WBSLeafPlanResultDto> {
     const resolvedModelOverride = params.modelOverride || getWbsGenerationModelOverride();
     const projectId = getProjectId(params.project);
 
@@ -74,7 +72,10 @@ export class DraftPlanGenerationService {
     return `drafts_with_plan:${projectId}:plan:${this.hashKey(planFingerprint)}`;
   }
 
-  private async getCachedPlan(projectId: string | undefined, planCacheKey: string): Promise<WBSLeafPlanResultDto | null> {
+  private async getCachedPlan(
+    projectId: string | undefined,
+    planCacheKey: string,
+  ): Promise<WBSLeafPlanResultDto | null> {
     if (!projectId || !planCacheKey) {
       return null;
     }

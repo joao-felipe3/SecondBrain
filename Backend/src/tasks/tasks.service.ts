@@ -35,7 +35,11 @@ import { Task } from './entities/task.entity';
 // Services
 import { ProjectsService } from '../projects/projects.service';
 import { GeminiService } from '../ai/gemini.service';
-import { CompletionFeedbackPayload, CompletionFeedbackResponse, FeedbackService } from './services/intelligence';
+import {
+  CompletionFeedbackPayload,
+  CompletionFeedbackResponse,
+  FeedbackService,
+} from './services/intelligence';
 import { TasksRecurringService, TasksCompletionService, TasksWriteService } from './services/workflow';
 import {
   TasksAiSuggestionsService,

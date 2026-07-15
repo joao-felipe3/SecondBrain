@@ -3,9 +3,7 @@ import { ProjectWave } from '../../../schemas/project-wave.schema';
 import type { EVMCurve, BuildEVMCurvePointsParamsDto } from '../../../dto/evm.dto';
 import { getScheduleRatioByDates, toFiniteNumber } from './evm-calculations.util';
 
-export function buildEVMCurvePoints(
-  dto: BuildEVMCurvePointsParamsDto,
-): EVMCurve {
+export function buildEVMCurvePoints(dto: BuildEVMCurvePointsParamsDto): EVMCurve {
   const { scopedEntries, plannedHours, startDate, endDate } = dto;
   const totalPV = scopedEntries.reduce((sum, entry) => sum + (entry.plannedValue || 0), 0);
   const safePlannedHours = Math.max(1, plannedHours);

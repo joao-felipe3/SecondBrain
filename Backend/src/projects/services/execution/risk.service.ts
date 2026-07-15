@@ -4,8 +4,16 @@ import { Model, Types } from 'mongoose';
 import { Risk, RiskDocument } from '../../schemas/risk.schema';
 import { GeminiService } from '../../../ai/gemini.service';
 import { buildRiskAssessmentPrompt } from '../../../ai/prompts/risk.prompts';
-
-import { GeneratedRisk, RiskIntervention } from '../../interfaces/risk.interface';
+import { CreateRiskDto, UpdateRiskDto } from '../../dto/risk.dto';
+import {
+  RiskSeverity,
+  LLMRiskAssessmentResponse,
+  RiskStatus,
+  RiskRecommendedAction,
+  RiskIntervention,
+  RiskStatistics,
+  RiskInterventionsResponse,
+} from '../../interfaces/risk.interface';
 
 @Injectable()
 export class RiskService {
@@ -26,9 +34,9 @@ export class RiskService {
       });
 
       // Parse JSON response
-      let parsedResponse;
+      let parsedResponse: LLMRiskAssessmentResponse;
       try {
-        parsedResponse = JSON.parse(responseText);
+        parsedResponse = JSON.parse(responseText) as LLMRiskAssessmentResponse;
       } catch (parseError) {
         this.logger.warn(`Erro ao parsear resposta do LLM: ${responseText}`);
         return [];
@@ -39,12 +47,11 @@ export class RiskService {
       // Salvar riscos no banco
       const savedRisks: Risk[] = [];
       for (const risk of generatedRisks) {
-        const savedRisk = await this.riskModel.create({
-          projectId: new Types.ObjectId(projectId),
+        const savedRisk = await this.createRisk(projectId, {
           description: risk.description,
-          probability: Math.min(100, Math.max(0, risk.probability)),
-          impact: Math.min(5, Math.max(1, risk.impact)),
-          severity: risk.severity || this.calculateSeverity(risk.probability, risk.impact),
+          probability: risk.probability,
+          impact: risk.impact,
+          severity: risk.severity,
           mitigationPlan: risk.mitigationPlan,
           status: 'identificado',
         });
@@ -64,11 +71,60 @@ export class RiskService {
     }
   }
 
-  private calculateSeverity(probability: number, impact: number): 'baixa' | 'média' | 'alta' {
+  private calculateSeverity(probability: number, impact: number): RiskSeverity {
     const score = (probability / 100) * impact;
     if (score <= 1.5) return 'baixa';
     if (score <= 3) return 'média';
     return 'alta';
+  }
+
+  async createRisk(projectId: string, createRiskDto: CreateRiskDto): Promise<Risk> {
+    const probability = Math.min(100, Math.max(0, createRiskDto.probability));
+    const impact = Math.min(5, Math.max(1, createRiskDto.impact));
+    const severity = createRiskDto.severity || this.calculateSeverity(probability, impact);
+
+    const { targetResolutionDate, ...rest } = createRiskDto;
+    const dateParsed = targetResolutionDate ? new Date(targetResolutionDate) : undefined;
+
+    return this.riskModel.create({
+      ...rest,
+      projectId: new Types.ObjectId(projectId),
+      probability,
+      impact,
+      severity,
+      targetResolutionDate: dateParsed,
+      status: createRiskDto.status || 'identificado',
+    });
+  }
+
+  async updateRisk(riskId: string, updateRiskDto: UpdateRiskDto): Promise<Risk | null> {
+    const existing = await this.riskModel.findById(riskId).exec();
+    if (!existing) {
+      return null;
+    }
+
+    const { targetResolutionDate, ...rest } = updateRiskDto;
+    const updates: Partial<Risk> = { ...rest } as any;
+
+    if (targetResolutionDate !== undefined) {
+      updates.targetResolutionDate = targetResolutionDate ? new Date(targetResolutionDate) : undefined;
+    }
+
+    // Se probabilidade ou impacto mudarem e a severidade não for fornecida explicitamente, recalculamos
+    const probability =
+      updateRiskDto.probability !== undefined ? updateRiskDto.probability : existing.probability;
+    const impact = updateRiskDto.impact !== undefined ? updateRiskDto.impact : existing.impact;
+
+    if (updateRiskDto.probability !== undefined || updateRiskDto.impact !== undefined) {
+      updates.probability = Math.min(100, Math.max(0, probability));
+      updates.impact = Math.min(5, Math.max(1, impact));
+
+      if (!updateRiskDto.severity) {
+        updates.severity = this.calculateSeverity(updates.probability, updates.impact);
+      }
+    }
+
+    return this.riskModel.findByIdAndUpdate(riskId, updates, { new: true }).exec();
   }
 
   async getRisksByProject(projectId: string): Promise<Risk[]> {
@@ -78,7 +134,7 @@ export class RiskService {
       .exec();
   }
 
-  async getRisksBySeverity(projectId: string, severity: string): Promise<Risk[]> {
+  async getRisksBySeverity(projectId: string, severity: RiskSeverity): Promise<Risk[]> {
     return this.riskModel
       .find({
         projectId: new Types.ObjectId(projectId),
@@ -91,10 +147,7 @@ export class RiskService {
     return this.riskModel.findByIdAndUpdate(riskId, { mitigationPlan }, { new: true }).exec();
   }
 
-  async updateRiskStatus(
-    riskId: string,
-    status: 'identificado' | 'mitigando' | 'resolvido' | 'aceito',
-  ): Promise<Risk | null> {
+  async updateRiskStatus(riskId: string, status: RiskStatus): Promise<Risk | null> {
     return this.riskModel.findByIdAndUpdate(riskId, { status }, { new: true }).exec();
   }
 
@@ -102,21 +155,17 @@ export class RiskService {
     return this.riskModel.findByIdAndDelete(riskId).exec();
   }
 
-  async getRiskStatistics(projectId: string): Promise<{
-    total: number;
-    byStatus: Record<string, number>;
-    bySeverity: Record<string, number>;
-  }> {
+  async getRiskStatistics(projectId: string): Promise<RiskStatistics> {
     const risks = await this.getRisksByProject(projectId);
 
-    const byStatus = {
+    const byStatus: Record<RiskStatus, number> = {
       identificado: 0,
       mitigando: 0,
       resolvido: 0,
       aceito: 0,
     };
 
-    const bySeverity = {
+    const bySeverity: Record<RiskSeverity, number> = {
       baixa: 0,
       média: 0,
       alta: 0,
@@ -134,21 +183,14 @@ export class RiskService {
     };
   }
 
-  async getRiskInterventions(projectId: string): Promise<{
-    summary: {
-      total: number;
-      criticos: number;
-      recomendacoesPrioritarias: number;
-    };
-    interventions: RiskIntervention[];
-  }> {
+  async getRiskInterventions(projectId: string): Promise<RiskInterventionsResponse> {
     const risks = await this.getRisksByProject(projectId);
 
     const interventions: RiskIntervention[] = risks
       .map((risk) => {
         const score = (Number(risk.probability || 0) / 100) * Number(risk.impact || 0);
 
-        let recommendedAction: RiskIntervention['recommendedAction'] = 'monitorar';
+        let recommendedAction: RiskRecommendedAction = 'monitorar';
         let rationale = 'Risco controlado; manter monitoramento ativo.';
         let confidence = 0.55;
 

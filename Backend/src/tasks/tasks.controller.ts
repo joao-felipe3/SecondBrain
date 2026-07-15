@@ -474,10 +474,7 @@ export class TasksController {
   @ApiResponse({ status: 200, description: 'Feedback gerado com sucesso.' })
   @ApiResponse({ status: 400, description: 'Task não está concluída.' })
   @ApiResponse({ status: 404, description: 'Task não encontrada.' })
-  async generateCompletionFeedback(
-    @Param('id') id: string,
-    @Body() body: CompletionFeedbackPayloadDto,
-  ) {
+  async generateCompletionFeedback(@Param('id') id: string, @Body() body: CompletionFeedbackPayloadDto) {
     const feedback = await this.tasksService.generateCompletionFeedback(id, body);
     return { feedback };
   }

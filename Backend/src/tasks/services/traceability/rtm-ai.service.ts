@@ -26,10 +26,7 @@ export class RTMAiService {
     return this.journeyService.generateRequirements(smartObjective);
   }
 
-  autoMapRequirementsToTasks(
-    projectId: string,
-    tasks: Task[],
-  ): Promise<AutoMapRequirementsResponseDto> {
+  autoMapRequirementsToTasks(projectId: string, tasks: Task[]): Promise<AutoMapRequirementsResponseDto> {
     return this.mappingService.autoMapRequirementsToTasks(projectId, tasks);
   }
 

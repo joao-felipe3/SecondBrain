@@ -202,4 +202,3 @@ export class GenerateTasksResponseDto {
   })
   timestamp?: string;
 }
-

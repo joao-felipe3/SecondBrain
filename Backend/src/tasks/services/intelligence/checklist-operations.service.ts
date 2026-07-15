@@ -6,10 +6,7 @@ import { ChecklistItemDto } from '../../dto/task/create-task.dto';
 import { TasksInputService } from '../workflow/input.service';
 import { GeminiService } from '../../../ai/gemini.service';
 import { ChecklistService } from './checklist.service';
-import {
-  ChecklistValidationResult,
-  ChecklistHistoryProjectRef,
-} from '../../interfaces';
+import { ChecklistValidationResult, ChecklistHistoryProjectRef } from '../../interfaces';
 import {
   UpdateChecklistTaskItemDto,
   GenerateChecklistDto,

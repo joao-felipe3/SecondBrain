@@ -8,7 +8,7 @@ import { buildGenerateRequirementsPrompt, normalizeGeneratedItems } from './util
 export class RTMJourneyService {
   private readonly logger = new Logger(RTMJourneyService.name);
 
-  constructor(private readonly geminiService: GeminiService) { }
+  constructor(private readonly geminiService: GeminiService) {}
 
   // Envia um Smart Objective ao Gemini e retorna a estrutura de jornada
   // (objetivo → hábito → etapa → ação) com 10–24 itens.

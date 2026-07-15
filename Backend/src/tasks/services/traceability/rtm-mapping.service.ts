@@ -26,7 +26,7 @@ export class RTMMappingService {
     private readonly requirementModel: Model<RequirementDocument>,
     private readonly geminiService: GeminiService,
     private readonly validationService: RTMValidationService,
-  ) { }
+  ) {}
 
   // ===========================================================================
   // 1. Auto-mapping: Tasks → Journey Actions

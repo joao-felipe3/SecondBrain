@@ -16,7 +16,7 @@ import { plannerSchema, draftsSchema } from '../../schemas/drafts-validation.sch
 
 @Injectable()
 export class DraftProcessingService {
-  constructor() { }
+  constructor() {}
 
   validatePlannerPlan(plan: any): WBSLeafPlanResultDto {
     const parsed = plannerSchema.safeParse(plan);
@@ -37,7 +37,7 @@ export class DraftProcessingService {
         .join('; ');
       throw new Error(`Drafts inválidos: ${issues}`);
     }
-    return parsed.data as MicroTaskDraft[];
+    return parsed.data;
   }
 
   applyThemeWorkflowAndProgression(drafts: MicroTaskOutline[]): MicroTaskOutline[] {
@@ -85,18 +85,13 @@ export class DraftProcessingService {
     return 'medium';
   }
 
-  private applyWorkflowToTheme(
-    drafts: MicroTaskOutline[],
-    indices: number[],
-  ): void {
+  private applyWorkflowToTheme(drafts: MicroTaskOutline[], indices: number[]): void {
     const total = indices.length;
     const workflow = this.buildThemeWorkflow(total);
 
     indices.forEach((idx, localIdx) => {
       const microTaskType = normalizeMicroTaskType(workflow[localIdx]);
-      const cognitiveMode = normalizeCognitiveMode(
-        this.getProgressiveCognitiveMode(localIdx, total),
-      );
+      const cognitiveMode = normalizeCognitiveMode(this.getProgressiveCognitiveMode(localIdx, total));
       drafts[idx] = {
         ...drafts[idx],
         microTaskType,
@@ -108,10 +103,7 @@ export class DraftProcessingService {
     });
   }
 
-  applyGoldilocksAndMilestones(
-    drafts: MicroTaskOutline[],
-    chunkMinutes: number[],
-  ): MicroTaskOutline[] {
+  applyGoldilocksAndMilestones(drafts: MicroTaskOutline[], chunkMinutes: number[]): MicroTaskOutline[] {
     const totalMinutes = chunkMinutes.reduce((sum, m) => sum + m, 0);
     const chunks = chunkMinutes.length;
 
@@ -163,16 +155,9 @@ export class DraftProcessingService {
     return checkpointIndices;
   }
 
-  private assignMilestonesAndCheckpoints(
-    params: AssignMilestonesParamsDto,
-  ): MicroTaskOutline[] {
-    const {
-      normalized,
-      chunkMinutes,
-      milestoneEveryMinutes,
-      milestoneRequired,
-      checkpointIndices,
-    } = params;
+  private assignMilestonesAndCheckpoints(params: AssignMilestonesParamsDto): MicroTaskOutline[] {
+    const { normalized, chunkMinutes, milestoneEveryMinutes, milestoneRequired, checkpointIndices } =
+      params;
     let cumulative = 0;
     return normalized.map((d, idx) => {
       cumulative += chunkMinutes[idx];
@@ -200,11 +185,7 @@ export class DraftProcessingService {
     });
   }
 
-  private normalizeDraft(
-    d: Partial<MicroTaskDraft>,
-    idx: number,
-    total: number,
-  ): MicroTaskOutline {
+  private normalizeDraft(d: Partial<MicroTaskDraft>, idx: number, total: number): MicroTaskOutline {
     const normalizedDescription = String(d.description || '').trim();
     const normalizedChecklist = Array.isArray(d.checklist)
       ? d.checklist.map((s) => String(s || '').trim()).filter(Boolean)

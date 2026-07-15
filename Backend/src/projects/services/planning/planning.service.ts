@@ -1,28 +1,33 @@
-import { Injectable, Inject, forwardRef } from '@nestjs/common';
+import { Injectable, Inject, forwardRef, Logger } from '@nestjs/common';
 import { GeminiService } from '../../../ai/gemini.service';
-import { SmartObjectiveDto } from '../../dto/smart-objective.dto';
+import {
+  SmartObjectiveDto,
+  CatchballRequestDto,
+  CatchballResponseDto,
+  SuggestAnswerDto,
+  RefineObjectiveDto,
+} from '../../dto/smart-objective.dto';
 import {
   buildCatchballQuestionsPrompt,
   buildSuggestAnswerPrompt,
   buildSmartObjectivePrompt,
 } from '../../../ai/prompts/planning.prompts';
 
+interface ConversationContext {
+  projectContext: string;
+}
+
 @Injectable()
 export class PlanningService {
-  private conversationHistory = new Map<string, string[]>();
+  private readonly logger = new Logger(PlanningService.name);
+  private conversationHistory = new Map<string, ConversationContext>();
 
   constructor(
     @Inject(forwardRef(() => GeminiService))
     private readonly geminiService: GeminiService,
-  ) {}
+  ) { }
 
-  async startCatchball(projectData: {
-    projectName: string;
-    projectDescription: string;
-    shortTermGoal?: string;
-    midTermGoal?: string;
-    longTermGoal?: string;
-  }): Promise<{ questions: string[]; conversationId: string }> {
+  async startCatchball(projectData: CatchballRequestDto): Promise<CatchballResponseDto> {
     const conversationId = this.generateConversationId();
 
     const goalsContext: string[] = [];
@@ -37,30 +42,28 @@ export class PlanningService {
       const questions = this.parseQuestionsFromResponse(response);
 
       // Armazena histórico com todos os dados
-      const contextData = `Nome: ${projectData.projectName}\nDescrição: ${projectData.projectDescription}\n${goalsContext.join('\n')}`;
-      this.conversationHistory.set(conversationId, [contextData]);
+      const projectContext = `Nome: ${projectData.projectName}\nDescrição: ${projectData.projectDescription}\n${goalsContext.join('\n')}`;
+      this.conversationHistory.set(conversationId, { projectContext });
 
       return { questions, conversationId };
     } catch (error) {
-      console.error('Erro ao gerar perguntas de Catchball:', error);
+      this.logger.error(
+        'Erro ao gerar perguntas de Catchball:',
+        error instanceof Error ? error.stack : error,
+      );
       throw new Error('Não foi possível iniciar o planejamento com IA');
     }
   }
 
-  async suggestAnswer(
-    conversationId: string,
-    questionIndex: number,
-    question: string,
-    previousAnswers: string[],
-  ): Promise<string> {
-    const history = this.conversationHistory.get(conversationId) || [];
-    const projectContext = history[0] || '';
+  async suggestAnswer(dto: SuggestAnswerDto): Promise<string> {
+    const history = this.conversationHistory.get(dto.conversationId);
+    const projectContext = history?.projectContext || '';
 
     const prompt = buildSuggestAnswerPrompt({
-      questionIndex,
-      question,
+      questionIndex: dto.questionIndex,
+      question: dto.question,
       projectContext,
-      previousAnswers,
+      previousAnswers: dto.previousAnswers,
     });
 
     try {
@@ -72,22 +75,25 @@ export class PlanningService {
       }
       return String(response || '').trim();
     } catch (error) {
-      console.error('Erro ao gerar sugestão de resposta:', error);
+      this.logger.error(
+        'Erro ao gerar sugestão de resposta:',
+        error instanceof Error ? error.stack : error,
+      );
       throw new Error('Não foi possível gerar sugestão de resposta');
     }
   }
 
-  async generateSmartObjective(conversationId: string, answers: string[]): Promise<SmartObjectiveDto> {
-    const history = this.conversationHistory.get(conversationId) || [];
-    const projectContext = history[0] || '';
+  async generateSmartObjective(dto: RefineObjectiveDto): Promise<SmartObjectiveDto> {
+    const history = this.conversationHistory.get(dto.conversationId);
+    const projectContext = history?.projectContext || '';
 
-    const prompt = buildSmartObjectivePrompt({ projectContext, answers });
+    const prompt = buildSmartObjectivePrompt({ projectContext, answers: dto.answers });
 
     let response: string;
     try {
       response = await this.geminiService.generateContent(prompt);
     } catch (error) {
-      console.error('Erro ao gerar objetivo SMART:', error);
+      this.logger.error('Erro ao gerar objetivo SMART:', error instanceof Error ? error.stack : error);
       throw new Error('Não foi possível gerar o objetivo SMART');
     }
 
@@ -95,7 +101,7 @@ export class PlanningService {
     const smartObjective = this.parseSmartObjectiveFromResponse(response);
 
     // Limpa histórico após uso
-    this.conversationHistory.delete(conversationId);
+    this.conversationHistory.delete(dto.conversationId);
 
     return smartObjective;
   }
@@ -129,15 +135,12 @@ export class PlanningService {
 
   private parseQuestionsFromResponse(response: string): string[] {
     try {
-      // Remove markdown code blocks de várias formas
       let cleanResponse = response.trim();
 
-      // Remove ```json ... ``` ou ``` ... ```
       if (cleanResponse.startsWith('```')) {
         cleanResponse = cleanResponse.replace(/^```(?:json)?\s*/, '').replace(/```\s*$/, '');
       }
 
-      // Remove espaços e quebras de linha extras
       cleanResponse = cleanResponse.trim();
 
       const questions = JSON.parse(cleanResponse);
@@ -148,8 +151,12 @@ export class PlanningService {
 
       return questions;
     } catch (error) {
-      console.error('Erro ao fazer parse das perguntas:', error);
-      console.error('Resposta recebida:', response);
+      this.logger.error(
+        'Erro ao fazer parse das perguntas:',
+        error instanceof Error ? error.stack : error,
+      );
+      this.logger.warn(`Resposta recebida que falhou no parse: ${response}`);
+
       // Fallback: perguntas genéricas
       return [
         'Qual é o público-alvo principal deste projeto?',
@@ -163,15 +170,12 @@ export class PlanningService {
 
   private parseSmartObjectiveFromResponse(response: string): SmartObjectiveDto {
     try {
-      // Remove markdown code blocks de várias formas
       let cleanResponse = response.trim();
 
-      // Remove ```json ... ``` ou ``` ... ```
       if (cleanResponse.startsWith('```')) {
         cleanResponse = cleanResponse.replace(/^```(?:json)?\s*/, '').replace(/```\s*$/, '');
       }
 
-      // Remove espaços e quebras de linha extras
       cleanResponse = cleanResponse.trim();
 
       const smartObj = JSON.parse(cleanResponse);
@@ -188,8 +192,11 @@ export class PlanningService {
         risks: Array.isArray(smartObj.risks) ? smartObj.risks : [],
       };
     } catch (error) {
-      console.error('Erro ao fazer parse do objetivo SMART:', error);
-      console.error('Resposta recebida:', response);
+      this.logger.error(
+        'Erro ao fazer parse do objetivo SMART:',
+        error instanceof Error ? error.stack : error,
+      );
+      this.logger.warn(`Resposta recebida que falhou no parse do SMART: ${response}`);
       throw new Error('Não foi possível processar o objetivo SMART');
     }
   }

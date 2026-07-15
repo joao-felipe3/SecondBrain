@@ -41,7 +41,9 @@ describe('EVMProgressService', () => {
     });
 
     it('should throw BadRequestException if projectId is invalid', async () => {
-      await expect(service.recordProgress({ projectId: 'invalid', completedHours: 10, plannedValue: 20 })).rejects.toThrow(/projectId invalido/);
+      await expect(
+        service.recordProgress({ projectId: 'invalid', completedHours: 10, plannedValue: 20 }),
+      ).rejects.toThrow(/projectId invalido/);
     });
   });
 

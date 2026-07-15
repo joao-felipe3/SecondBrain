@@ -3,7 +3,11 @@ import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagg
 import { RTMService } from '../services/traceability';
 import { TasksService } from '../tasks.service';
 import { Requirement } from '../entities/requirement.entity';
-import { MapRequirementToTaskDto, AutoMapRequirementsResponseDto, GenerateTasksResponseDto } from '../dto';
+import {
+  MapRequirementToTaskDto,
+  AutoMapRequirementsResponseDto,
+  GenerateTasksResponseDto,
+} from '../dto';
 
 @ApiTags('RTM - Rastreabilidade da Jornada Pessoal')
 @ApiBearerAuth()

@@ -205,13 +205,7 @@ export class ProjectsController {
     const project = await this.projectsService.findOne(id);
     if (!project) throw new NotFoundException('Project not found');
 
-    return this.planningService.startCatchball({
-      projectName: dto.projectName,
-      projectDescription: dto.projectDescription,
-      shortTermGoal: dto.shortTermGoal,
-      midTermGoal: dto.midTermGoal,
-      longTermGoal: dto.longTermGoal,
-    });
+    return this.planningService.startCatchball(dto);
   }
 
   @Post(':id/suggest-answer')
@@ -223,12 +217,7 @@ export class ProjectsController {
     const project = await this.projectsService.findOne(id);
     if (!project) throw new NotFoundException('Project not found');
 
-    const suggestedAnswer = await this.planningService.suggestAnswer(
-      dto.conversationId,
-      dto.questionIndex,
-      dto.question,
-      dto.previousAnswers,
-    );
+    const suggestedAnswer = await this.planningService.suggestAnswer(dto);
 
     return { suggestedAnswer };
   }
@@ -240,7 +229,7 @@ export class ProjectsController {
     const project = await this.projectsService.findOne(id);
     if (!project) throw new NotFoundException('Project not found');
 
-    const smart = await this.planningService.generateSmartObjective(dto.conversationId, dto.answers);
+    const smart = await this.planningService.generateSmartObjective(dto);
 
     // Atualiza o projeto com os objetivos SMART
     await this.projectsService.update(id, {
