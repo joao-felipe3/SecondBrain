@@ -44,9 +44,7 @@ function sortPendingTasks(tasks: ReplanTaskInput[]): ReplanTaskInput[] {
   });
 }
 
-function calculateEffectiveWaveDates(
-  options: CalculateEffectiveWaveDatesOptions,
-): WaveDates {
+function calculateEffectiveWaveDates(options: CalculateEffectiveWaveDatesOptions): WaveDates {
   const { wave, index, anchorWaveIndex, cursor, dayMs } = options;
   const originalStart = startOfDay(new Date(wave.startDate));
   const originalEnd = endOfDay(new Date(wave.endDate));
@@ -67,7 +65,6 @@ function calculateEffectiveWaveDates(
 
   return { effectiveStart, effectiveEnd };
 }
-
 
 function buildUpdateOperationForTask(options: BuildTaskUpdateOpOptions): any | null {
   const { task, cumulativeHours, totalHours, availableDays, effectiveStart } = options;
@@ -132,7 +129,6 @@ function generateBulkOpsForPendingTasks(
 
   return { waveUpdatedCount, bulkOps };
 }
-
 
 function categorizeWaveTasks(
   taskIds: Array<string | Types.ObjectId>,

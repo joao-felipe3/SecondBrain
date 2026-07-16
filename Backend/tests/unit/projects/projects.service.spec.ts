@@ -1,7 +1,11 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getModelToken } from '@nestjs/mongoose';
 import { ProjectsService } from '../../../src/projects/projects.service';
-import { GanttService, PertDiagramService, ProjectsXMatrixService } from '../../../src/projects/services/visualization';
+import {
+  GanttService,
+  PertDiagramService,
+  ProjectsXMatrixService,
+} from '../../../src/projects/services/visualization';
 import { ProjectStatsService } from '../../../src/projects/services/execution';
 
 describe('ProjectsService', () => {

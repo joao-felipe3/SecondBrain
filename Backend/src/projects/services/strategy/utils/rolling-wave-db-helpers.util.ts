@@ -1,8 +1,5 @@
 import { MongoClient, ObjectId as NativeObjectId } from 'mongodb';
-import {
-  FreshMongoExecuteDto,
-  PersistWaveChunkedDto,
-} from '../../../interfaces/rolling-wave.interface';
+import { FreshMongoExecuteDto, PersistWaveChunkedDto } from '../../../interfaces/rolling-wave.interface';
 
 export async function executeWithFreshMongoClient<T>(
   options: FreshMongoExecuteDto<T>,
@@ -57,9 +54,7 @@ export async function executeWithFreshMongoClient<T>(
   return null;
 }
 
-export async function persistWaveIncrementalChunked(
-  options: PersistWaveChunkedDto,
-): Promise<boolean> {
+export async function persistWaveIncrementalChunked(options: PersistWaveChunkedDto): Promise<boolean> {
   const { waveModel, projectId, wave, logger, chunkSize = 25 } = options;
   const projectObjectId = new NativeObjectId(projectId);
   const safeDescription =

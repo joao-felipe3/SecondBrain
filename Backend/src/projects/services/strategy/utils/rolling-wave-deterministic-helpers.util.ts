@@ -15,9 +15,7 @@ import { estimateTaskHours, flattenWbsTree, resolveGroupKey } from './rolling-wa
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
-function calculateTimelineMetrics(
-  options: TimelineMetricsOptions,
-): TimelineMetrics {
+function calculateTimelineMetrics(options: TimelineMetricsOptions): TimelineMetrics {
   const { project, tasks, dailyCapacityHours, waveLengthDays, today } = options;
   const safeWaveLengthDays = Math.max(7, waveLengthDays);
 
@@ -65,9 +63,7 @@ function calculateTimelineMetrics(
   };
 }
 
-function normalizeTasks(
-  options: NormalizeTasksOptions,
-): WaveTask[] {
+function normalizeTasks(options: NormalizeTasksOptions): WaveTask[] {
   const { tasks, wbsTree, today, effectiveDurationDays, dayMs } = options;
   const wbsFlat = flattenWbsTree(wbsTree);
   const wbsById = new Map(wbsFlat.map((node) => [node.id, node]));
@@ -133,9 +129,7 @@ class WaveAssigner implements WaveAssignerInterface {
 }
 
 // Aloca tarefas com data de vencimento nas ondas correspondentes baseando-se no prazo
-function allocateTasksWithDeadline(
-  options: AllocateTasksWithDeadlineOptions,
-): void {
+function allocateTasksWithDeadline(options: AllocateTasksWithDeadlineOptions): void {
   const { assigner, normalizedTasks, today, waveLengthMs, waveCount } = options;
   const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
 
@@ -173,9 +167,7 @@ function allocateTasksWithoutDeadline(assigner: WaveAssigner, normalizedTasks: W
 }
 
 // Constrói a estrutura final das ondas particionadas
-function buildWaves(
-  options: BuildWavesOptions,
-): DeterministicWaveResult[] {
+function buildWaves(options: BuildWavesOptions): DeterministicWaveResult[] {
   const { assigner, waveCount, waveLengthMs, today, currentDeadline } = options;
   const waves: DeterministicWaveResult[] = [];
   for (let i = 1; i <= waveCount; i++) {

@@ -1,10 +1,7 @@
 import { TaskDocument } from '../../../../tasks/schemas/task.schema';
 import { ProjectWaveDocument } from '../../../schemas/project-wave.schema';
 import { XMatrixAxisItemDto } from '../../../dto/x-matrix.dto';
-import {
-  BuildTacticalItemsOptions,
-  TacticalAgg,
-} from '../../../interfaces/x-matrix.interface';
+import { BuildTacticalItemsOptions, TacticalAgg } from '../../../interfaces/x-matrix.interface';
 import { inferInitiativeFromWbsPath } from './x-matrix-text-helpers.util';
 
 export function buildTacticalItems(options: BuildTacticalItemsOptions): {

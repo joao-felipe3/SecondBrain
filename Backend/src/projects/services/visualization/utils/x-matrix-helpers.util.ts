@@ -1,11 +1,7 @@
 import { ProjectWaveDocument } from '../../../schemas/project-wave.schema';
 import { ProjectDocument } from '../../../schemas/project.schema';
 import { splitGoalText, scoreStrength } from './x-matrix-text-helpers.util';
-import {
-  CreateXMatrixDto,
-  XMatrixAxisItemDto,
-  XMatrixCellDto,
-} from '../../../dto/x-matrix.dto';
+import { CreateXMatrixDto, XMatrixAxisItemDto, XMatrixCellDto } from '../../../dto/x-matrix.dto';
 import {
   CalculateCorrelationsOptions,
   GenerateWarningsOptions,
@@ -13,7 +9,6 @@ import {
   ActiveIds,
   FilteredData,
 } from '../../../interfaces/x-matrix.interface';
-
 
 export { buildTacticalItems } from './x-matrix-tactical-helpers.util';
 
@@ -28,8 +23,13 @@ function formatWaveGoal(wave: ProjectWaveDocument): string {
   return `Meta de execucao da Onda ${wave.waveNumber} (${range})`;
 }
 
-export function resolveStrategyGoals(project: ProjectDocument, dto: CreateXMatrixDto): XMatrixAxisItemDto[] {
-  const strategyFromDto = (dto?.strategy3to5Years || []).map((item) => String(item).trim()).filter(Boolean);
+export function resolveStrategyGoals(
+  project: ProjectDocument,
+  dto: CreateXMatrixDto,
+): XMatrixAxisItemDto[] {
+  const strategyFromDto = (dto?.strategy3to5Years || [])
+    .map((item) => String(item).trim())
+    .filter(Boolean);
 
   const strategyFallback = [
     project.longTermGoal,
@@ -63,8 +63,8 @@ export function resolveAnnualGoals(
   const seed = annualFromDto.length
     ? annualFromDto
     : annualFallback.length
-    ? annualFallback
-    : waves.map(formatWaveGoal);
+      ? annualFallback
+      : waves.map(formatWaveGoal);
 
   return dedupe(seed).map((label, index) => ({
     id: `A${index + 1}`,
@@ -110,9 +110,12 @@ export function generateWarnings(options: GenerateWarningsOptions): string[] {
     strategyGoals.length === 0 && 'Nao foi possivel identificar objetivos estrategicos.',
     annualGoals.length === 0 && 'Nao foi possivel identificar metas anuais.',
     tacticalItems.length === 0 && 'Projeto sem iniciativas taticas suficientes (WBS nivel 1/2).',
-    tacticalByIdSize > tacticalItems.length && `Eixo tatico truncado para ${tacticalItems.length} iniciativas para manter legibilidade.`,
-    wavesCount === 0 && 'Nenhuma onda encontrada. Defina ondas para aplicar zoom tatico mensal/trimestral.',
-    hasShortDuration(project) && 'Zoom fractal aplicado: trate Norte como fim do semestre e Estrategico como metas mensais.',
+    tacticalByIdSize > tacticalItems.length &&
+      `Eixo tatico truncado para ${tacticalItems.length} iniciativas para manter legibilidade.`,
+    wavesCount === 0 &&
+      'Nenhuma onda encontrada. Defina ondas para aplicar zoom tatico mensal/trimestral.',
+    hasShortDuration(project) &&
+      'Zoom fractal aplicado: trate Norte como fim do semestre e Estrategico como metas mensais.',
   ].filter((warning): warning is string => typeof warning === 'string');
 }
 
@@ -128,7 +131,9 @@ function hasShortDuration(project: ProjectDocument): boolean {
   return durationDays <= 120;
 }
 
-export function applyFractalFilter(options: ApplyFractalFilterOptions): FilteredData & { extraWarnings: string[] } {
+export function applyFractalFilter(
+  options: ApplyFractalFilterOptions,
+): FilteredData & { extraWarnings: string[] } {
   const { strategyToAnnual, annualToTactical } = options;
 
   const usefulAnnualIds = findUsefulAnnualIds(strategyToAnnual, annualToTactical);
@@ -150,15 +155,20 @@ export function applyFractalFilter(options: ApplyFractalFilterOptions): Filtered
 function findUsefulAnnualIds(
   strategyToAnnual: XMatrixCellDto[],
   annualToTactical: XMatrixCellDto[],
- ): Set<string> {
+): Set<string> {
   const fromNorth = strategyToAnnual.filter((cell) => cell.strength !== 'none').map((cell) => cell.toId);
-  const fromTactical = annualToTactical.filter((cell) => cell.strength !== 'none').map((cell) => cell.fromId);
+  const fromTactical = annualToTactical
+    .filter((cell) => cell.strength !== 'none')
+    .map((cell) => cell.fromId);
 
   if (fromNorth.length > 0) return new Set(fromNorth);
   return new Set([...fromNorth, ...fromTactical]);
 }
 
-function determineActiveIds(usefulAnnualIds: Set<string>, options: ApplyFractalFilterOptions): ActiveIds {
+function determineActiveIds(
+  usefulAnnualIds: Set<string>,
+  options: ApplyFractalFilterOptions,
+): ActiveIds {
   const { strategyGoals, annualGoals, tacticalItems, strategyToAnnual, annualToTactical } = options;
 
   const allStrategyIds = new Set(strategyGoals.map((item) => item.id));
@@ -213,10 +223,7 @@ function buildFilteredData(activeIds: ActiveIds, options: ApplyFractalFilterOpti
   };
 }
 
-function generateHiddenWarnings(
-  filtered: FilteredData,
-  original: ApplyFractalFilterOptions,
-): string[] {
+function generateHiddenWarnings(filtered: FilteredData, original: ApplyFractalFilterOptions): string[] {
   return [
     filtered.filteredAnnualGoals.length < original.annualGoals.length &&
       `Metas estrategicas sem correlacao foram ocultadas (${original.annualGoals.length - filtered.filteredAnnualGoals.length}).`,

@@ -25,7 +25,7 @@ export class PlanningService {
   constructor(
     @Inject(forwardRef(() => GeminiService))
     private readonly geminiService: GeminiService,
-  ) { }
+  ) {}
 
   async startCatchball(projectData: CatchballRequestDto): Promise<CatchballResponseDto> {
     const conversationId = this.generateConversationId();

@@ -125,7 +125,7 @@ describe('PlanningService', () => {
       expect(geminiService.generateContent).toHaveBeenCalledWith(expect.stringContaining('Resposta 1'));
     });
   });
-  
+
   it('should generate SMART objectives from answers', async () => {
     const mockSmart = {
       specific: 'Criar e-commerce com 500 produtos',

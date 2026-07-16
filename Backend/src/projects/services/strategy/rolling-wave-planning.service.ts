@@ -231,7 +231,8 @@ export class RollingWavePlanningService {
 
     const wavesResult = await executeWithFreshMongoClient({
       waveModel: this.waveModel,
-      operation: (collection) => collection.find({ projectId: projectObjectId }).sort({ waveNumber: 1 }).toArray(),
+      operation: (collection) =>
+        collection.find({ projectId: projectObjectId }).sort({ waveNumber: 1 }).toArray(),
       operationName: `fetch saved waves for project ${projectId}`,
       logger: this.logger,
       maxAttempts: 5,

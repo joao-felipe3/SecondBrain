@@ -138,9 +138,7 @@ export class ProjectsXMatrixService {
     }
     if (dto?.taskIds?.length) {
       taskQuery._id = {
-        $in: dto.taskIds
-          .filter((id) => Types.ObjectId.isValid(id))
-          .map((id) => new Types.ObjectId(id)),
+        $in: dto.taskIds.filter((id) => Types.ObjectId.isValid(id)).map((id) => new Types.ObjectId(id)),
       };
     }
 
