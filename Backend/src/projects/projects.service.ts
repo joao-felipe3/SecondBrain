@@ -8,8 +8,7 @@ import { ProjectDocument } from './schemas/project.schema';
 import type { GanttDataResponse } from './dto/gantt.dto';
 import type { PertDiagramDataResponse } from './dto/pert-diagram.dto';
 import type { CreateXMatrixDto, XMatrixResponseDto } from './dto/x-matrix.dto';
-import { ProjectsXMatrixService } from './services/strategy';
-import { GanttService, PertDiagramService } from './services/visualization';
+import { GanttService, PertDiagramService, ProjectsXMatrixService } from './services/visualization';
 import { ProjectStatsService } from './services/execution';
 
 @Injectable()

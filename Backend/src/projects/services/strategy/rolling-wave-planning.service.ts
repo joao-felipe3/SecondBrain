@@ -4,7 +4,7 @@ import { Model, Types } from 'mongoose';
 import { ProjectWave, ProjectWaveDocument } from '../../schemas/project-wave.schema';
 import { ProjectsService } from '../../projects.service';
 import { WBSService } from '../wbs';
-import { RollingWaveAIService } from './rolling-wave-ai.service';
+import { RollingWaveAIService } from '../../../ai/rolling-wave-ai.service';
 import { AIPlan } from '../../interfaces/rolling-wave.interface';
 import { normalizeWavePlanShape } from './utils/rolling-wave-helpers.util';
 import {
@@ -39,14 +39,14 @@ export class RollingWavePlanningService {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    const partitionResult = partitionTasksDeterministically(
+    const partitionResult = partitionTasksDeterministically({
       project,
       tasks,
       wbsTree,
       dailyCapacityHours,
       waveLengthDays,
       today,
-    );
+    });
 
     if (partitionResult.adjustedDeadline) {
       await this.projectsService.update(projectId, {
@@ -177,26 +177,26 @@ export class RollingWavePlanningService {
     bulkOps: any[],
     preparedWaves: any[],
   ): Promise<void> {
-    const bulkResult = await executeWithFreshMongoClient(
-      this.waveModel,
-      (collection) => collection.bulkWrite(bulkOps, { ordered: true }),
-      `bulkWrite waves for project ${projectId}`,
-      this.logger,
-      5,
-    );
+    const bulkResult = await executeWithFreshMongoClient({
+      waveModel: this.waveModel,
+      operation: (collection) => collection.bulkWrite(bulkOps, { ordered: true }),
+      operationName: `bulkWrite waves for project ${projectId}`,
+      logger: this.logger,
+      maxAttempts: 5,
+    });
     if (bulkResult === null) {
       this.logger.warn(
         `[MONGO_FALLBACK] bulkWrite falhou. Tentando persistência incremental em chunks por onda...`,
       );
 
       for (const wave of preparedWaves) {
-        const persisted = await persistWaveIncrementalChunked(
-          this.waveModel,
+        const persisted = await persistWaveIncrementalChunked({
+          waveModel: this.waveModel,
           projectId,
           wave,
-          this.logger,
-          25,
-        );
+          logger: this.logger,
+          chunkSize: 25,
+        });
         if (!persisted) {
           this.logger.error(
             `Falha ao persistir Wave ${wave.waveNumber} no fallback incremental em chunks.`,
@@ -213,29 +213,29 @@ export class RollingWavePlanningService {
     dayMs: number,
   ): Promise<ProjectWave[]> {
     const projectObjectId = new Types.ObjectId(projectId);
-    const cleanupResult = await executeWithFreshMongoClient(
-      this.waveModel,
-      (collection) =>
+    const cleanupResult = await executeWithFreshMongoClient({
+      waveModel: this.waveModel,
+      operation: (collection) =>
         collection.deleteMany({
           projectId: projectObjectId,
           waveNumber: { $nin: waveNumbersToKeep },
         }),
-      `cleanup stale waves for project ${projectId}`,
-      this.logger,
-      5,
-    );
+      operationName: `cleanup stale waves for project ${projectId}`,
+      logger: this.logger,
+      maxAttempts: 5,
+    });
     if (cleanupResult === null) {
       this.logger.error(`Falha ao limpar waves antigas após bulkWrite.`);
       throw new Error('Database operation failed after retries');
     }
 
-    const wavesResult = await executeWithFreshMongoClient(
-      this.waveModel,
-      (collection) => collection.find({ projectId: projectObjectId }).sort({ waveNumber: 1 }).toArray(),
-      `fetch saved waves for project ${projectId}`,
-      this.logger,
-      5,
-    );
+    const wavesResult = await executeWithFreshMongoClient({
+      waveModel: this.waveModel,
+      operation: (collection) => collection.find({ projectId: projectObjectId }).sort({ waveNumber: 1 }).toArray(),
+      operationName: `fetch saved waves for project ${projectId}`,
+      logger: this.logger,
+      maxAttempts: 5,
+    });
     if (wavesResult === null) {
       this.logger.error(`Falha ao recuperar waves salvas após bulkWrite.`);
       throw new Error('Database operation failed after retries');

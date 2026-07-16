@@ -143,7 +143,11 @@ export class RollingWaveService {
       .lean()
       .exec();
 
-    const result = calculateReplannedDeadlines(waves, tasks, new Date());
+    const result = calculateReplannedDeadlines({
+      waves,
+      tasks,
+      now: new Date(),
+    });
 
     if (result.bulkOps.length > 0) {
       await this.taskModel.bulkWrite(result.bulkOps, { ordered: false });

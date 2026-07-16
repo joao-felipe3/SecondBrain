@@ -2,7 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { ProjectsController } from '../../../src/projects/projects.controller';
 import { getModelToken } from '@nestjs/mongoose';
 import { ProjectsService } from '../../../src/projects/projects.service';
-import { PlanningService } from '../../../src/projects/services/planning';
+import { PlanningService } from '../../../src/projects/services/strategy';
 import {
   WBSService,
   WbsValidationService,

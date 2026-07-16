@@ -17,16 +17,14 @@ import { XMatrixSnapshot, XMatrixSnapshotSchema } from './schemas/x-matrix-snaps
 import { WBSNodeSchema } from './schemas/wbs-node.schema';
 
 // Category Services
-import { PlanningService } from './services/planning';
 import { EVMService, EVMProgressService } from './services/evm';
 import {
-  ProjectsXMatrixService,
+  PlanningService,
   RollingWaveService,
-  RollingWaveAIService,
   RollingWavePlanningService,
 } from './services/strategy';
 import { RiskService, LeafTasksBufferService, ProjectStatsService } from './services/execution';
-import { GanttService, PertDiagramService } from './services/visualization';
+import { GanttService, PertDiagramService, ProjectsXMatrixService } from './services/visualization';
 import {
   WBSService,
   MonotonyDetectionService,
@@ -73,7 +71,6 @@ import {
     EVMProgressService,
     ProjectsXMatrixService,
     RollingWaveService,
-    RollingWaveAIService,
     RollingWavePlanningService,
     RiskService,
     LeafTasksBufferService,

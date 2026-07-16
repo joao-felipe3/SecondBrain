@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { PlanningService } from '../../../../src/projects/services/planning';
+import { PlanningService } from '../../../../src/projects/services/strategy';
 import { GeminiService } from '../../../../src/ai/gemini.service';
 
 describe('PlanningService', () => {
@@ -95,7 +95,12 @@ describe('PlanningService', () => {
         JSON.stringify({ suggestedAnswer: mockSuggestion }),
       );
 
-      const result = await service.suggestAnswer('conv_123', 0, 'Qual é o público-alvo?', []);
+      const result = await service.suggestAnswer({
+        conversationId: 'conv_123',
+        questionIndex: 0,
+        question: 'Qual é o público-alvo?',
+        previousAnswers: [],
+      });
 
       expect(result).toBe(mockSuggestion);
       expect(geminiService.generateContent).toHaveBeenCalled();
@@ -109,12 +114,18 @@ describe('PlanningService', () => {
       );
 
       const previousAnswers = ['Resposta 1', 'Resposta 2'];
-      const result = await service.suggestAnswer('conv_123', 2, 'Próxima pergunta', previousAnswers);
+      const result = await service.suggestAnswer({
+        conversationId: 'conv_123',
+        questionIndex: 2,
+        question: 'Próxima pergunta',
+        previousAnswers,
+      });
 
       expect(result).toBe(mockSuggestion);
       expect(geminiService.generateContent).toHaveBeenCalledWith(expect.stringContaining('Resposta 1'));
     });
   });
+  
   it('should generate SMART objectives from answers', async () => {
     const mockSmart = {
       specific: 'Criar e-commerce com 500 produtos',
@@ -131,7 +142,7 @@ describe('PlanningService', () => {
     const conversationId = 'conv_123';
     const answers = ['Público geral', '3 meses', 'Catálogo + carrinho'];
 
-    const result = await service.generateSmartObjective(conversationId, answers);
+    const result = await service.generateSmartObjective({ conversationId, answers });
 
     expect(result).toEqual(mockSmart);
     expect(geminiService.generateContent).toHaveBeenCalledWith(expect.stringContaining(answers[0]));
@@ -151,7 +162,10 @@ describe('PlanningService', () => {
     const responseWithCodeBlock = `\`\`\`json\n${JSON.stringify(mockSmart)}\n\`\`\``;
     geminiService.generateContent.mockResolvedValue(responseWithCodeBlock);
 
-    const result = await service.generateSmartObjective('conv_123', ['answer']);
+    const result = await service.generateSmartObjective({
+      conversationId: 'conv_123',
+      answers: ['answer'],
+    });
 
     expect(result.specific).toBe('Test');
   });
@@ -159,8 +173,8 @@ describe('PlanningService', () => {
   it('should throw error on invalid response', async () => {
     geminiService.generateContent.mockResolvedValue('Invalid JSON');
 
-    await expect(service.generateSmartObjective('conv_123', ['answer'])).rejects.toThrow(
-      'Não foi possível processar o objetivo SMART',
-    );
+    await expect(
+      service.generateSmartObjective({ conversationId: 'conv_123', answers: ['answer'] }),
+    ).rejects.toThrow('Não foi possível processar o objetivo SMART');
   });
 });

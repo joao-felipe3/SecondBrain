@@ -3,40 +3,58 @@ import {
   WaveTask,
   DeterministicPartitionResult,
   TimelineMetrics,
+  PartitionTasksDeterministicDto,
+  TimelineMetricsOptions,
+  NormalizeTasksOptions,
+  DeterministicWaveResult,
+  WaveAssignerInterface,
+  AllocateTasksWithDeadlineOptions,
+  BuildWavesOptions,
 } from '../../../interfaces/rolling-wave.interface';
 import { estimateTaskHours, flattenWbsTree, resolveGroupKey } from './rolling-wave-helpers.util';
 
+const DAY_MS = 24 * 60 * 60 * 1000;
+
 function calculateTimelineMetrics(
-  project: any,
-  tasks: any[],
-  dailyCapacityHours: number,
-  waveLengthDays: number,
-  today: Date,
+  options: TimelineMetricsOptions,
 ): TimelineMetrics {
+  const { project, tasks, dailyCapacityHours, waveLengthDays, today } = options;
   const safeWaveLengthDays = Math.max(7, waveLengthDays);
-  const dayMs = 24 * 60 * 60 * 1000;
+
+  if (!project?.deadline) {
+    throw new Error('Project deadline is required to calculate timeline metrics.');
+  }
 
   const deadline = new Date(project.deadline);
-  const plannedTotalMs = deadline.getTime() - today.getTime();
-  const plannedDurationDays = Math.max(1, Math.ceil(plannedTotalMs / dayMs));
+  if (isNaN(deadline.getTime())) {
+    throw new Error(`Invalid project deadline date format: ${project.deadline}`);
+  }
 
-  const totalTaskHours = tasks.reduce((sum, task) => sum + estimateTaskHours(task), 0);
+  if (dailyCapacityHours <= 0) {
+    throw new Error('Daily capacity hours must be greater than zero.');
+  }
+
+  const safeTasks = tasks || [];
+  const plannedTotalMs = deadline.getTime() - today.getTime();
+  const plannedDurationDays = Math.max(1, Math.ceil(plannedTotalMs / DAY_MS));
+
+  const totalTaskHours = safeTasks.reduce((sum, task) => sum + estimateTaskHours(task), 0);
   const requiredDaysByCapacity = Math.max(1, Math.ceil(totalTaskHours / dailyCapacityHours));
 
   const effectiveDurationDays = Math.max(plannedDurationDays, requiredDaysByCapacity);
   let adjustedDeadline: Date | null = null;
 
   if (effectiveDurationDays > plannedDurationDays) {
-    adjustedDeadline = new Date(today.getTime() + effectiveDurationDays * dayMs);
+    adjustedDeadline = new Date(today.getTime() + effectiveDurationDays * DAY_MS);
   }
 
-  const waveLengthMs = safeWaveLengthDays * dayMs;
+  const waveLengthMs = safeWaveLengthDays * DAY_MS;
   const waveCount = Math.max(1, Math.ceil(effectiveDurationDays / safeWaveLengthDays));
   const waveCapacityHours = safeWaveLengthDays * dailyCapacityHours;
 
   return {
     safeWaveLengthDays,
-    dayMs,
+    dayMs: DAY_MS,
     deadline,
     plannedDurationDays,
     effectiveDurationDays,
@@ -48,17 +66,14 @@ function calculateTimelineMetrics(
 }
 
 function normalizeTasks(
-  tasks: any[],
-  wbsTree: any[],
-  today: Date,
-  effectiveDurationDays: number,
-  dayMs: number,
+  options: NormalizeTasksOptions,
 ): WaveTask[] {
+  const { tasks, wbsTree, today, effectiveDurationDays, dayMs } = options;
   const wbsFlat = flattenWbsTree(wbsTree);
   const wbsById = new Map(wbsFlat.map((node) => [node.id, node]));
   const timelineRangeMs = Math.max(1, effectiveDurationDays * dayMs);
 
-  return tasks.map((task: any) => {
+  return tasks.map((task) => {
     const id = String(task._id || task.id);
     const hours = estimateTaskHours(task);
     const deadlineTime = task?.deadline ? new Date(task.deadline).getTime() : null;
@@ -67,7 +82,7 @@ function normalizeTasks(
   });
 }
 
-class WaveAssigner {
+class WaveAssigner implements WaveAssignerInterface {
   private waveTaskIds = new Map<number, Types.ObjectId[]>();
   private waveUsedHours: number[];
 
@@ -117,16 +132,11 @@ class WaveAssigner {
   }
 }
 
-/**
- * Aloca tarefas com data de vencimento nas ondas correspondentes baseando-se no prazo
- */
+// Aloca tarefas com data de vencimento nas ondas correspondentes baseando-se no prazo
 function allocateTasksWithDeadline(
-  assigner: WaveAssigner,
-  normalizedTasks: WaveTask[],
-  today: Date,
-  waveLengthMs: number,
-  waveCount: number,
+  options: AllocateTasksWithDeadlineOptions,
 ): void {
+  const { assigner, normalizedTasks, today, waveLengthMs, waveCount } = options;
   const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
 
   const tasksWithDeadline = normalizedTasks
@@ -149,9 +159,7 @@ function allocateTasksWithDeadline(
   }
 }
 
-/**
- * Aloca tarefas sem prazo definido priorizando as ondas menos carregadas
- */
+// Aloca tarefas sem prazo definido priorizando as ondas menos carregadas
 function allocateTasksWithoutDeadline(assigner: WaveAssigner, normalizedTasks: WaveTask[]): void {
   const tasksWithoutDeadline = normalizedTasks
     .filter((t) => t.deadlineTime == null)
@@ -164,17 +172,12 @@ function allocateTasksWithoutDeadline(assigner: WaveAssigner, normalizedTasks: W
   }
 }
 
-/**
- * Constrói a estrutura final das ondas particionadas
- */
+// Constrói a estrutura final das ondas particionadas
 function buildWaves(
-  assigner: WaveAssigner,
-  waveCount: number,
-  waveLengthMs: number,
-  today: Date,
-  currentDeadline: Date,
-): any[] {
-  const waves: any[] = [];
+  options: BuildWavesOptions,
+): DeterministicWaveResult[] {
+  const { assigner, waveCount, waveLengthMs, today, currentDeadline } = options;
+  const waves: DeterministicWaveResult[] = [];
   for (let i = 1; i <= waveCount; i++) {
     const waveStartDate = new Date(today.getTime() + (i - 1) * waveLengthMs);
     const nominalEnd = new Date(waveStartDate.getTime() + waveLengthMs);
@@ -194,38 +197,50 @@ function buildWaves(
   return waves;
 }
 
-/**
- * Particiona tarefas deterministicamente com base em prazos e capacidade diária
- */
+// Particiona tarefas deterministicamente com base em prazos e capacidade diária
 export function partitionTasksDeterministically(
-  project: any,
-  tasks: any[],
-  wbsTree: any[],
-  dailyCapacityHours: number,
-  waveLengthDays: number,
-  today: Date,
+  options: PartitionTasksDeterministicDto,
 ): DeterministicPartitionResult {
-  const metrics = calculateTimelineMetrics(project, tasks, dailyCapacityHours, waveLengthDays, today);
+  const { project, tasks, wbsTree, dailyCapacityHours, waveLengthDays, today } = options;
+  const metrics = calculateTimelineMetrics({
+    project,
+    tasks,
+    dailyCapacityHours,
+    waveLengthDays,
+    today,
+  });
 
-  const normalizedTasks = normalizeTasks(
+  const normalizedTasks = normalizeTasks({
     tasks,
     wbsTree,
     today,
-    metrics.effectiveDurationDays,
-    metrics.dayMs,
-  );
+    effectiveDurationDays: metrics.effectiveDurationDays,
+    dayMs: metrics.dayMs,
+  });
 
   const assigner = new WaveAssigner(metrics.waveCount, metrics.waveCapacityHours);
 
   // 1. Alocar tarefas com data de vencimento (deadline) definida
-  allocateTasksWithDeadline(assigner, normalizedTasks, today, metrics.waveLengthMs, metrics.waveCount);
+  allocateTasksWithDeadline({
+    assigner,
+    normalizedTasks,
+    today,
+    waveLengthMs: metrics.waveLengthMs,
+    waveCount: metrics.waveCount,
+  });
 
   // 2. Alocar tarefas sem data de vencimento
   allocateTasksWithoutDeadline(assigner, normalizedTasks);
 
   // 3. Estruturar o resultado com as informações das waves
   const currentDeadline = metrics.adjustedDeadline || metrics.deadline;
-  const waves = buildWaves(assigner, metrics.waveCount, metrics.waveLengthMs, today, currentDeadline);
+  const waves = buildWaves({
+    assigner,
+    waveCount: metrics.waveCount,
+    waveLengthMs: metrics.waveLengthMs,
+    today,
+    currentDeadline,
+  });
 
   return {
     adjustedDeadline: metrics.adjustedDeadline,

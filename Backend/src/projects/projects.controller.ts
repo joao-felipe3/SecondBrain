@@ -19,7 +19,7 @@ import { ProjectsService } from './projects.service';
 import { CreateProjectDto } from './dto/create-project.dto';
 import { UpdateProjectDto } from './dto/update-project.dto';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
-import { PlanningService } from './services/planning';
+import { PlanningService } from './services/strategy';
 import { CatchballRequestDto, RefineObjectiveDto, SuggestAnswerDto } from './dto/smart-objective.dto';
 import { WBSService, WbsValidationService, TaskConversionService, AuditService } from './services/wbs';
 import {

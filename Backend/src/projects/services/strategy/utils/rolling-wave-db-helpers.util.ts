@@ -1,14 +1,13 @@
-import { Logger } from '@nestjs/common';
 import { MongoClient, ObjectId as NativeObjectId } from 'mongodb';
-import { Model, Types } from 'mongoose';
+import {
+  FreshMongoExecuteDto,
+  PersistWaveChunkedDto,
+} from '../../../interfaces/rolling-wave.interface';
 
 export async function executeWithFreshMongoClient<T>(
-  waveModel: Model<any>,
-  operation: (collection: any) => Promise<T>,
-  operationName: string,
-  logger: Logger,
-  maxAttempts = 5,
+  options: FreshMongoExecuteDto<T>,
 ): Promise<T | null> {
+  const { waveModel, operation, operationName, logger, maxAttempts = 5 } = options;
   const uri = process.env.MONGODB_URI;
   if (!uri) {
     logger.warn(`[MONGO_FRESH] MONGODB_URI ausente para ${operationName}`);
@@ -59,26 +58,16 @@ export async function executeWithFreshMongoClient<T>(
 }
 
 export async function persistWaveIncrementalChunked(
-  waveModel: Model<any>,
-  projectId: string,
-  wave: {
-    waveNumber: number;
-    startDate: Date;
-    endDate: Date;
-    status: 'planned';
-    taskIds: Types.ObjectId[];
-    description?: string;
-  },
-  logger: Logger,
-  chunkSize = 25,
+  options: PersistWaveChunkedDto,
 ): Promise<boolean> {
+  const { waveModel, projectId, wave, logger, chunkSize = 25 } = options;
   const projectObjectId = new NativeObjectId(projectId);
   const safeDescription =
     typeof wave.description === 'string' ? wave.description.slice(0, 1000) : undefined;
 
-  const metadataResult = await executeWithFreshMongoClient(
+  const metadataResult = await executeWithFreshMongoClient({
     waveModel,
-    (collection) =>
+    operation: (collection) =>
       collection.updateOne(
         { projectId: projectObjectId, waveNumber: wave.waveNumber },
         {
@@ -94,10 +83,10 @@ export async function persistWaveIncrementalChunked(
         },
         { upsert: true },
       ),
-    `chunked metadata upsert wave ${wave.waveNumber} for project ${projectId}`,
+    operationName: `chunked metadata upsert wave ${wave.waveNumber} for project ${projectId}`,
     logger,
-    5,
-  );
+    maxAttempts: 5,
+  });
 
   if (metadataResult === null) {
     return false;
@@ -110,17 +99,17 @@ export async function persistWaveIncrementalChunked(
 
   for (let i = 0; i < nativeTaskIds.length; i += chunkSize) {
     const chunk = nativeTaskIds.slice(i, i + chunkSize);
-    const chunkResult = await executeWithFreshMongoClient(
+    const chunkResult = await executeWithFreshMongoClient({
       waveModel,
-      (collection) =>
+      operation: (collection) =>
         collection.updateOne(
           { projectId: projectObjectId, waveNumber: wave.waveNumber },
           { $addToSet: { taskIds: { $each: chunk } } },
         ),
-      `chunked taskIds upsert wave ${wave.waveNumber} chunk ${Math.floor(i / chunkSize) + 1}`,
+      operationName: `chunked taskIds upsert wave ${wave.waveNumber} chunk ${Math.floor(i / chunkSize) + 1}`,
       logger,
-      5,
-    );
+      maxAttempts: 5,
+    });
 
     if (chunkResult === null) {
       return false;
