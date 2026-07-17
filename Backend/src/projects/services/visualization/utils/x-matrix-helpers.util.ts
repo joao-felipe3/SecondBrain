@@ -1,16 +1,18 @@
 import { ProjectWaveDocument } from '../../../schemas/project-wave.schema';
 import { ProjectDocument } from '../../../schemas/project.schema';
 import { splitGoalText, scoreStrength } from './x-matrix-text-helpers.util';
-import { CreateXMatrixDto, XMatrixAxisItemDto, XMatrixCellDto } from '../../../dto/x-matrix.dto';
+import { CreateXMatrixDto, XMatrixAxisItemDto, XMatrixCellDto, XMatrixResponseDto } from '../../../dto/x-matrix.dto';
 import {
   CalculateCorrelationsOptions,
   GenerateWarningsOptions,
   ApplyFractalFilterOptions,
   ActiveIds,
   FilteredData,
+  GenerateXMatrixDataOptions,
 } from '../../../interfaces/x-matrix.interface';
 
-export { buildTacticalItems } from './x-matrix-tactical-helpers.util';
+import { buildTacticalItems } from './x-matrix-tactical-helpers.util';
+export { buildTacticalItems };
 
 function dedupe(items: string[]): string[] {
   return Array.from(new Set(items.map((v) => v.trim()).filter(Boolean)));
@@ -232,4 +234,74 @@ function generateHiddenWarnings(filtered: FilteredData, original: ApplyFractalFi
     filtered.filteredTacticalItems.length < original.tacticalItems.length &&
       `Iniciativas taticas sem correlacao foram ocultadas (${original.tacticalItems.length - filtered.filteredTacticalItems.length}).`,
   ].filter((w): w is string => typeof w === 'string');
+}
+
+export function generateXMatrixData(options: GenerateXMatrixDataOptions): Omit<XMatrixResponseDto, 'projectId' | 'projectName'> {
+  const { project, tasks, waves, dto } = options;
+
+  const maxTacticalItems = Math.max(20, Math.min(160, Number(dto?.maxTacticalItems || 80)));
+  const wbsLevels = new Set<number>(
+    (dto?.wbsLevels || [1, 2]).filter((level) => Number.isFinite(level) && level >= 1),
+  );
+
+  const strategyGoals = resolveStrategyGoals(project, dto);
+  const annualGoals = resolveAnnualGoals(project, waves, dto);
+
+  const { tacticalItems, tacticalContextById, tacticalByIdSize } = buildTacticalItems({
+    tasks,
+    waves,
+    wbsLevels,
+    maxTacticalItems,
+  });
+
+  const { strategyToAnnual, annualToTactical } = calculateCorrelations({
+    strategyGoals,
+    annualGoals,
+    tacticalItems,
+    tacticalContextById,
+  });
+
+  const warnings = generateWarnings({
+    strategyGoals,
+    annualGoals,
+    tacticalItems,
+    tacticalByIdSize,
+    wavesCount: waves.length,
+    project,
+  });
+
+  const {
+    filteredStrategyGoals,
+    filteredAnnualGoals,
+    filteredTacticalItems,
+    filteredStrategyToAnnual,
+    filteredAnnualToTactical,
+    extraWarnings,
+  } = applyFractalFilter({
+    strategyGoals,
+    annualGoals,
+    tacticalItems,
+    strategyToAnnual,
+    annualToTactical,
+  });
+
+  warnings.push(...extraWarnings);
+
+  return {
+    strategyGoals: filteredStrategyGoals,
+    annualGoals: filteredAnnualGoals,
+    tacticalItems: filteredTacticalItems,
+    tasks: filteredTacticalItems,
+    strategyToAnnual: filteredStrategyToAnnual,
+    annualToTactical: filteredAnnualToTactical,
+    annualToTasks: filteredAnnualToTactical,
+    diagnostics: {
+      generatedAt: new Date().toISOString(),
+      strategyCount: filteredStrategyGoals.length,
+      annualCount: filteredAnnualGoals.length,
+      tacticalCount: filteredTacticalItems.length,
+      taskCount: filteredTacticalItems.length,
+      warnings,
+    },
+  };
 }

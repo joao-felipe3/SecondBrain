@@ -49,3 +49,14 @@ export interface GanttDataResponse {
     score: number;
   }>;
 }
+
+export interface GanttQueryOptions {
+  includeCompleted?: boolean;
+}
+
+export interface GanttTimeWindow {
+  startDate: string;
+  endDate: string;
+}
+
+

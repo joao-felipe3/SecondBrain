@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getModelToken } from '@nestjs/mongoose';
 import { WBSService } from '../../../../src/projects/services/wbs';
-import { GeminiService } from '../../../../src/ai/gemini.service';
+import { WbsAiService } from '../../../../src/ai/wbs-ai.service';
 import { WBSNodeDto } from '../../../../src/projects/dto/wbs.dto';
 import {
   WbsPersistenceService,
@@ -11,12 +11,12 @@ import {
 
 describe('WBSService', () => {
   let service: WBSService;
-  let geminiService: GeminiService;
+  let wbsAiService: WbsAiService;
   let generationService: WbsGenerationService;
   let wbsNodeModel: any;
 
-  const mockGeminiService = {
-    generateContent: jest.fn(),
+  const mockWbsAiService = {
+    suggestDecomposition: jest.fn(),
   };
 
   const mockGenerationService = {
@@ -58,8 +58,8 @@ describe('WBSService', () => {
       providers: [
         WBSService,
         {
-          provide: GeminiService,
-          useValue: mockGeminiService,
+          provide: WbsAiService,
+          useValue: mockWbsAiService,
         },
         {
           provide: WbsPersistenceService,
@@ -84,7 +84,7 @@ describe('WBSService', () => {
     }).compile();
 
     service = module.get<WBSService>(WBSService);
-    geminiService = module.get<GeminiService>(GeminiService);
+    wbsAiService = module.get<WbsAiService>(WbsAiService);
     generationService = module.get<WbsGenerationService>(WbsGenerationService);
     wbsNodeModel = module.get(getModelToken('WBSNode'));
   });
@@ -328,8 +328,8 @@ describe('WBSService', () => {
   });
 
   describe('suggestDecomposition', () => {
-    it('should call gemini with node data for too large node', async () => {
-      mockGeminiService.generateContent.mockResolvedValue('suggestion text');
+    it('should call WbsAiService with node data', async () => {
+      mockWbsAiService.suggestDecomposition.mockResolvedValue('suggestion text');
 
       const result = await service.suggestDecomposition({
         name: 'Big Task',
@@ -338,25 +338,11 @@ describe('WBSService', () => {
       });
 
       expect(result).toBe('suggestion text');
-      expect(mockGeminiService.generateContent).toHaveBeenCalledTimes(1);
-      const prompt = mockGeminiService.generateContent.mock.calls[0][0];
-      expect(prompt).toContain('Big Task');
-      expect(prompt).toContain('120h');
-      expect(prompt).toContain('MUITO GRANDE');
-    });
-
-    it('should call gemini with node data for too small node', async () => {
-      mockGeminiService.generateContent.mockResolvedValue('combine suggestion');
-
-      await service.suggestDecomposition({
-        name: 'Tiny Task',
-        estimatedHours: 3,
+      expect(mockWbsAiService.suggestDecomposition).toHaveBeenCalledWith({
+        name: 'Big Task',
+        description: 'A very large task',
+        estimatedHours: 120,
       });
-
-      const prompt = mockGeminiService.generateContent.mock.calls[0][0];
-      expect(prompt).toContain('Tiny Task');
-      expect(prompt).toContain('3h');
-      expect(prompt).toContain('MUITO PEQUENO');
     });
   });
 

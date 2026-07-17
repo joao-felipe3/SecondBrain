@@ -1,7 +1,7 @@
 import { TaskDocument } from '../../tasks/schemas/task.schema';
 import { ProjectWaveDocument } from '../schemas/project-wave.schema';
 import { ProjectDocument } from '../schemas/project.schema';
-import { XMatrixAxisItemDto, XMatrixCellDto } from '../dto/x-matrix.dto';
+import { XMatrixAxisItemDto, XMatrixCellDto, CreateXMatrixDto } from '../dto/x-matrix.dto';
 
 export interface BuildTacticalItemsOptions {
   tasks: TaskDocument[];
@@ -55,3 +55,11 @@ export interface FilteredData {
   filteredStrategyToAnnual: XMatrixCellDto[];
   filteredAnnualToTactical: XMatrixCellDto[];
 }
+
+export interface GenerateXMatrixDataOptions {
+  project: ProjectDocument;
+  tasks: TaskDocument[];
+  waves: ProjectWaveDocument[];
+  dto: CreateXMatrixDto;
+}
+

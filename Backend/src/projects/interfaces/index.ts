@@ -4,3 +4,7 @@ export * from './wbs.interface';
 export * from './wbs-conversion.interface';
 export * from './drafts.interface';
 export * from './x-matrix.interface';
+export * from './gantt.interface';
+export * from './pert.interface';
+
+

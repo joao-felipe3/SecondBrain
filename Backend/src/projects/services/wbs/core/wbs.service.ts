@@ -1,28 +1,25 @@
-import { Injectable, Inject, forwardRef } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Injectable } from '@nestjs/common';
 import { WBSNodeDocument } from '../../../schemas/wbs-node.schema';
 import { WBSNodeDto } from '../../../dto/wbs.dto';
-import { GeminiService } from '../../../../ai/gemini.service';
 import { WbsPersistenceService } from './wbs-persistence.service';
 import { WbsGenerationService } from './wbs-generation.service';
 import { WbsConversionOrchestrationService } from '../conversion/wbs-conversion-orchestrator.service';
 import { getLeafNodesWithPaths } from '../utils/wbs-helpers.util';
-import { buildWbsDecompositionPrompt } from '../../../../ai/prompts/wbs.prompts';
-
-import { ValidationResult } from '../../../interfaces';
+import { WbsAiService } from '../../../../ai/wbs-ai.service';
+import {
+  GenerateTasksForSingleLeafParams,
+  GenerateWbsInput,
+  GenerateTasksForSingleLeafResult,
+} from '../../../interfaces';
 
 @Injectable()
 export class WBSService {
   constructor(
-    @InjectModel('WBSNode')
-    private readonly wbsNodeModel: Model<WBSNodeDocument>,
-    @Inject(forwardRef(() => GeminiService))
-    private readonly geminiService: GeminiService,
+    private readonly wbsAiService: WbsAiService,
     private readonly persistence: WbsPersistenceService,
     private readonly generation: WbsGenerationService,
     private readonly orchestrator: WbsConversionOrchestrationService,
-  ) {}
+  ) { }
 
   validateWBSNode(node: WBSNodeDto): { valid: boolean; reason?: string } {
     const isLeaf = !node.children || node.children.length === 0;
@@ -74,14 +71,7 @@ export class WBSService {
     description?: string;
     estimatedHours: number;
   }): Promise<string> {
-    const prompt = buildWbsDecompositionPrompt(node);
-
-    try {
-      return await this.geminiService.generateContent(prompt);
-    } catch (error) {
-      console.error('Erro ao gerar sugestão de decomposição:', error);
-      throw new Error('Não foi possível gerar sugestão de decomposição');
-    }
+    return this.wbsAiService.suggestDecomposition(node);
   }
 
   // Extract all leaf nodes from WBS tree with their full paths
@@ -94,48 +84,36 @@ export class WBSService {
   }
 
   // Generate a WBS from a SMART objective using Gemini (delegate to generation service)
-  async generateWBS(smartObjective: {
-    specific: string;
-    measurable: string;
-    achievable: string;
-    relevant: string;
-    temporal: string;
-    weeklyHours?: number;
-    budgetHours?: number;
-    weeksAvailable?: number;
-    summary?: string;
-  }): Promise<WBSNodeDto[]> {
+  async generateWBS(smartObjective: GenerateWbsInput): Promise<WBSNodeDto[]> {
     return this.generation.generate(smartObjective);
   }
 
   // Generate tasks for a single leaf node only (interactive mode)
   // Delegates to WbsConversionOrchestrationService and enriches result for backward compatibility
   async generateTasksForSingleLeaf(
-    leafNode: WBSNodeDto,
-    nodePath: string,
-    projectId: string,
-    project: any,
-    tasksService: { create: (dto: any) => Promise<any> },
-    preferences?: {
-      targetPomodoros?: number;
-      workflowMix?: Record<string, number>;
-      modelOverride?: string;
-    },
-    saveTasks: boolean = false,
-  ): Promise<{
-    tasks: any[];
-    leafNode: WBSNodeDto;
-    nodePath: string;
-    estimatedHours: number;
-    generatedHours: number;
-    pomodorosGenerated: number;
-  }> {
+    params: GenerateTasksForSingleLeafParams,
+  ): Promise<GenerateTasksForSingleLeafResult> {
+    const {
+      leafNode,
+      nodePath,
+      projectId,
+      project,
+      tasksService,
+      preferences,
+      saveTasks = false,
+    } = params;
+
     // Use orchestrator to convert WBS node to tasks
-    const result = await this.orchestrator.convertWbsToTasks(leafNode, project, nodePath, {
-      strategy: 'two-phase', // Orchestrator will fallback to legacy if needed
-      modelOverride: preferences?.modelOverride,
-      logVerbose: true, // Enable verbose logging for interactive mode
-      throwOnError: false, // Don't throw, return error in result
+    const result = await this.orchestrator.convertWbsToTasks({
+      node: leafNode,
+      project,
+      path: nodePath,
+      options: {
+        strategy: 'two-phase',
+        modelOverride: preferences?.modelOverride,
+        logVerbose: true,
+        throwOnError: false,
+      },
     });
 
     if (!result.success && result.error) {
@@ -155,8 +133,8 @@ export class WBSService {
       }));
 
       try {
-        if (typeof (tasksService as any).createMany === 'function') {
-          const created = await (tasksService as any).createMany(tasksToSave, {
+        if (typeof tasksService.createMany === 'function') {
+          const created = await tasksService.createMany(tasksToSave, {
             resolveProject: false,
             recalculateProjectStats: false,
           });

@@ -1,19 +1,12 @@
 import { InjectModel } from '@nestjs/mongoose';
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
-import { Model, Types } from 'mongoose';
+import { Model, Types, FilterQuery } from 'mongoose';
 import { TaskDocument } from '../../../tasks/schemas/task.schema';
 import { ProjectDocument } from '../../schemas/project.schema';
 import { ProjectWave, type ProjectWaveDocument } from '../../schemas/project-wave.schema';
 import { CreateXMatrixDto, type XMatrixResponseDto } from '../../dto/x-matrix.dto';
 import { XMatrixSnapshot, type XMatrixSnapshotDocument } from '../../schemas/x-matrix-snapshot.schema';
-import {
-  resolveStrategyGoals,
-  resolveAnnualGoals,
-  buildTacticalItems,
-  calculateCorrelations,
-  generateWarnings,
-  applyFractalFilter,
-} from './utils/x-matrix-helpers.util';
+import { generateXMatrixData } from './utils/x-matrix-helpers.util';
 
 @Injectable()
 export class ProjectsXMatrixService {
@@ -31,72 +24,12 @@ export class ProjectsXMatrixService {
     const project = await this.validateAndGetProject(projectId);
     const { tasks, waves } = await this.fetchTasksAndWaves(projectId, dto);
 
-    const maxTacticalItems = Math.max(20, Math.min(160, Number(dto?.maxTacticalItems || 80)));
-    const wbsLevels = new Set<number>(
-      (dto?.wbsLevels || [1, 2]).filter((level) => Number.isFinite(level) && level >= 1),
-    );
-
-    const strategyGoals = resolveStrategyGoals(project, dto);
-    const annualGoals = resolveAnnualGoals(project, waves, dto);
-
-    const { tacticalItems, tacticalContextById, tacticalByIdSize } = buildTacticalItems({
-      tasks,
-      waves,
-      wbsLevels,
-      maxTacticalItems,
-    });
-
-    const { strategyToAnnual, annualToTactical } = calculateCorrelations({
-      strategyGoals,
-      annualGoals,
-      tacticalItems,
-      tacticalContextById,
-    });
-
-    const warnings = generateWarnings({
-      strategyGoals,
-      annualGoals,
-      tacticalItems,
-      tacticalByIdSize,
-      wavesCount: waves.length,
-      project,
-    });
-
-    const {
-      filteredStrategyGoals,
-      filteredAnnualGoals,
-      filteredTacticalItems,
-      filteredStrategyToAnnual,
-      filteredAnnualToTactical,
-      extraWarnings,
-    } = applyFractalFilter({
-      strategyGoals,
-      annualGoals,
-      tacticalItems,
-      strategyToAnnual,
-      annualToTactical,
-    });
-
-    warnings.push(...extraWarnings);
+    const matrixData = generateXMatrixData({ project, tasks, waves, dto });
 
     const response: XMatrixResponseDto = {
       projectId,
-      projectName: String(project.name || 'Projeto'),
-      strategyGoals: filteredStrategyGoals,
-      annualGoals: filteredAnnualGoals,
-      tacticalItems: filteredTacticalItems,
-      tasks: filteredTacticalItems,
-      strategyToAnnual: filteredStrategyToAnnual,
-      annualToTactical: filteredAnnualToTactical,
-      annualToTasks: filteredAnnualToTactical,
-      diagnostics: {
-        generatedAt: new Date().toISOString(),
-        strategyCount: filteredStrategyGoals.length,
-        annualCount: filteredAnnualGoals.length,
-        tacticalCount: filteredTacticalItems.length,
-        taskCount: filteredTacticalItems.length,
-        warnings,
-      },
+      projectName: project.name || 'Projeto',
+      ...matrixData,
     };
 
     await this.xMatrixSnapshotModel
@@ -131,7 +64,7 @@ export class ProjectsXMatrixService {
     dto: CreateXMatrixDto,
   ): Promise<{ tasks: TaskDocument[]; waves: ProjectWaveDocument[] }> {
     const includeCompleted = dto?.includeCompleted ?? true;
-    const taskQuery: Record<string, any> = { project: projectId };
+    const taskQuery: FilterQuery<TaskDocument> = { project: projectId };
 
     if (!includeCompleted) {
       taskQuery.isConcluded = { $ne: true };

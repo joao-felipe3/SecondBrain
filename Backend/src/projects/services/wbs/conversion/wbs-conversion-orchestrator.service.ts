@@ -2,12 +2,13 @@ import { Injectable } from '@nestjs/common';
 import { ConfigService } from '../shared/config.service';
 import { DraftGenerationService, DraftProcessingService } from '../../drafts';
 import { TaskConversionService } from './task-conversion.service';
-import { AuditService } from '../core/audit.service';
 import { WBSNodeDto } from '../../../dto/wbs.dto';
-import { Task } from '../../../../tasks/entities/task.entity';
 import { computeChunkMinutes } from '../utils/metrics-calculator.util';
-
-import { GenerationStrategy, ConversionOptions, ConversionResult } from '../../../interfaces';
+import {
+  ConversionOptions,
+  ConversionResult,
+  ConvertWbsToTasksParams,
+} from '../../../interfaces';
 
 // Responsible for orchestrating the conversion of WBS nodes to tasks,
 // including error handling, logging, and optional auditing
@@ -18,7 +19,6 @@ export class WbsConversionOrchestrationService {
     private readonly draftGeneration: DraftGenerationService,
     private readonly draftProcessing: DraftProcessingService,
     private readonly taskConversion: TaskConversionService,
-    private readonly audit: AuditService,
   ) {}
 
   /**
@@ -30,15 +30,10 @@ export class WbsConversionOrchestrationService {
    * 3. Draft processing (themes, milestones)
    * 4. Task conversion
    * 5. Optional auditing
-   * 6. Optional application of fixes
    */
-  async convertWbsToTasks(
-    node: WBSNodeDto,
-    project: any,
-    path: string,
-    options: ConversionOptions = {},
-  ): Promise<ConversionResult> {
+  async convertWbsToTasks(params: ConvertWbsToTasksParams): Promise<ConversionResult> {
     const startMs = Date.now();
+    const { node, project, path, options = {} } = params;
     const opts = this.normalizeOptions(options);
 
     this.logIfVerbose(`[convertWbsToTasks] Iniciando conversão`, {
@@ -48,85 +43,24 @@ export class WbsConversionOrchestrationService {
     });
 
     const result: ConversionResult = {
-      success: false,
-      tasks: [],
-      metadata: {
-        strategy: opts.strategy,
-        durationMs: 0,
-        draftCount: 0,
-        taskCount: 0,
-        model: opts.modelOverride,
-      },
+      success: false, tasks: [],
+      metadata: { strategy: opts.strategy, durationMs: 0, draftCount: 0, taskCount: 0, model: opts.modelOverride },
     };
 
     try {
       const chunkMinutes = computeChunkMinutes((node.estimatedHours || 0) * 60);
 
       // ========== STAGE 1: Draft Generation ==========
-      let drafts: any[];
-      try {
-        drafts = await this.generateDrafts(node, project, path, opts, chunkMinutes);
-        result.metadata.draftCount = drafts.length;
-        this.logIfVerbose(`[convertWbsToTasks] Drafts gerados`, {
-          path,
-          count: drafts.length,
-          strategy: opts.strategy,
-        });
-      } catch (err: any) {
-        result.error = {
-          stage: 'draft-generation',
-          message: err.message || String(err),
-          originalError: err,
-        };
-        this.logError(`[convertWbsToTasks] Erro na geração de drafts`, result.error);
-        if (opts.throwOnError) throw err;
-        result.metadata.durationMs = Date.now() - startMs;
-        return result;
-      }
+      const drafts = await this.stage1DraftGeneration({ node, project, path, opts, chunkMinutes, result, startMs });
+      if (!drafts) return result;
 
       // ========== STAGE 2: Draft Processing ==========
-      try {
-        drafts = this.processDrafts(drafts, chunkMinutes);
-        this.logIfVerbose(`[convertWbsToTasks] Drafts processados`, {
-          path,
-          appliedThemes: true,
-          appliedMilestones: true,
-        });
-      } catch (err: any) {
-        result.error = {
-          stage: 'draft-processing',
-          message: err.message || String(err),
-          originalError: err,
-        };
-        this.logError(`[convertWbsToTasks] Erro no processamento de drafts`, result.error);
-        if (opts.throwOnError) throw err;
-        result.metadata.durationMs = Date.now() - startMs;
-        return result;
-      }
+      const processedDrafts = this.stage2DraftProcessing({ drafts, chunkMinutes, path, result, startMs, opts });
+      if (!processedDrafts) return result;
 
       // ========== STAGE 3: Task Conversion ==========
-      try {
-        result.tasks = await this.taskConversion.convertDraftsToTasks(drafts, {
-          wbsNode: node,
-          project,
-          path,
-        });
-        result.metadata.taskCount = result.tasks.length;
-        this.logIfVerbose(`[convertWbsToTasks] Tasks criadas`, {
-          path,
-          count: result.tasks.length,
-        });
-      } catch (err: any) {
-        result.error = {
-          stage: 'task-conversion',
-          message: err.message || String(err),
-          originalError: err,
-        };
-        this.logError(`[convertWbsToTasks] Erro na conversão para tasks`, result.error);
-        if (opts.throwOnError) throw err;
-        result.metadata.durationMs = Date.now() - startMs;
-        return result;
-      }
+      const success = await this.stage3TaskConversion({ drafts: processedDrafts, node, project, path, result, startMs, opts });
+      if (!success) return result;
 
       // ========== STAGE 4: Audit (Optional) ==========
       if (opts.autoAudit && opts.logVerbose) {
@@ -160,43 +94,101 @@ export class WbsConversionOrchestrationService {
     }
   }
 
+  // ========== STAGE 1: Draft Generation Helper ==========
+  private async stage1DraftGeneration(p: {
+    node: WBSNodeDto; project: any; path: string; opts: Required<ConversionOptions>; chunkMinutes: number[]; result: ConversionResult; startMs: number;
+  }): Promise<any[] | null> {
+    try {
+      const drafts = await this.generateDrafts(p.node, p.project, p.path, p.opts, p.chunkMinutes);
+      p.result.metadata.draftCount = drafts.length;
+      this.logIfVerbose(`[convertWbsToTasks] Drafts gerados`, {
+        path: p.path,
+        count: drafts.length,
+        strategy: p.opts.strategy,
+      });
+      return drafts;
+    } catch (err: any) {
+      p.result.error = {
+        stage: 'draft-generation',
+        message: err.message || String(err),
+        originalError: err,
+      };
+      this.logError(`[convertWbsToTasks] Erro na geração de drafts`, p.result.error);
+      if (p.opts.throwOnError) throw err;
+      p.result.metadata.durationMs = Date.now() - p.startMs;
+      return null;
+    }
+  }
+
+  // ========== STAGE 2: Draft Processing Helper ==========
+  private stage2DraftProcessing(p: {
+    drafts: any[]; chunkMinutes: number[]; path: string; result: ConversionResult; startMs: number; opts: Required<ConversionOptions>;
+  }): any[] | null {
+    try {
+      const processed = this.processDrafts(p.drafts, p.chunkMinutes);
+      this.logIfVerbose(`[convertWbsToTasks] Drafts processados`, {
+        path: p.path,
+        appliedThemes: true,
+        appliedMilestones: true,
+      });
+      return processed;
+    } catch (err: any) {
+      p.result.error = {
+        stage: 'draft-processing',
+        message: err.message || String(err),
+        originalError: err,
+      };
+      this.logError(`[convertWbsToTasks] Erro no processamento de drafts`, p.result.error);
+      if (p.opts.throwOnError) throw err;
+      p.result.metadata.durationMs = Date.now() - p.startMs;
+      return null;
+    }
+  }
+
+  // ========== STAGE 3: Task Conversion Helper ==========
+  private async stage3TaskConversion(p: {
+    drafts: any[]; node: WBSNodeDto; project: any; path: string; result: ConversionResult; startMs: number; opts: Required<ConversionOptions>;
+  }): Promise<boolean> {
+    try {
+      p.result.tasks = await this.taskConversion.convertDraftsToTasks(p.drafts, {
+        wbsNode: p.node,
+        project: p.project,
+        path: p.path,
+      });
+      p.result.metadata.taskCount = p.result.tasks.length;
+      this.logIfVerbose(`[convertWbsToTasks] Tasks criadas`, {
+        path: p.path,
+        count: p.result.tasks.length,
+      });
+      return true;
+    } catch (err: any) {
+      p.result.error = {
+        stage: 'task-conversion',
+        message: err.message || String(err),
+        originalError: err,
+      };
+      this.logError(`[convertWbsToTasks] Erro na conversão para tasks`, p.result.error);
+      if (p.opts.throwOnError) throw err;
+      p.result.metadata.durationMs = Date.now() - p.startMs;
+      return false;
+    }
+  }
+
   private async generateDrafts(
-    node: WBSNodeDto,
-    project: any,
-    path: string,
-    opts: Required<ConversionOptions>,
-    chunkMinutes: number[],
+    node: WBSNodeDto, project: any, path: string, opts: Required<ConversionOptions>, chunkMinutes: number[]
   ): Promise<any[]> {
     if (opts.strategy === 'two-phase') {
       const plan = await this.draftGeneration.generateMicroTasksPlanForLeaf({
-        project,
-        node,
-        currentPath: path,
-        level: 0,
-        chunkMinutes,
-        modelOverride: opts.modelOverride,
+        project, node, currentPath: path, level: 0, chunkMinutes, modelOverride: opts.modelOverride
       });
       return this.draftGeneration.generateMicroTasksDraftsForLeafWithPlan({
-        context: {
-          project,
-          node,
-          currentPath: path,
-          level: 0,
-          plan,
-          modelOverride: opts.modelOverride,
-        },
+        context: { project, node, currentPath: path, level: 0, plan, modelOverride: opts.modelOverride },
         chunkMinutes,
       });
     } else {
       return this.draftGeneration.generateMicroTasksDraftsForLeaf({
-        context: {
-          project,
-          node,
-          currentPath: path,
-          level: 0,
-        },
-        chunkMinutes,
-        modelOverride: opts.modelOverride,
+        context: { project, node, currentPath: path, level: 0 },
+        chunkMinutes, modelOverride: opts.modelOverride,
       });
     }
   }
@@ -211,19 +203,15 @@ export class WbsConversionOrchestrationService {
 
   private normalizeOptions(opts: ConversionOptions): Required<ConversionOptions> {
     return {
-      strategy: opts.strategy || 'two-phase',
-      modelOverride: opts.modelOverride || '',
-      autoAudit: opts.autoAudit !== false, // default true
-      autoApplyFixes: opts.autoApplyFixes === true, // default false
-      logVerbose: opts.logVerbose === true, // default false
-      throwOnError: opts.throwOnError === true, // default false
+      strategy: opts.strategy || 'two-phase', modelOverride: opts.modelOverride || '',
+      autoAudit: opts.autoAudit !== false, autoApplyFixes: opts.autoApplyFixes === true,
+      logVerbose: opts.logVerbose === true, throwOnError: opts.throwOnError === true,
     };
   }
 
   private logIfVerbose(message: string, data?: any): void {
     if (this.config.isVerboseTaskLogsEnabled()) {
       const ts = this.config.getNowIso();
-
       console.log(`[WbsOrchestrator][${ts}] ${message}`, data || '');
     }
   }

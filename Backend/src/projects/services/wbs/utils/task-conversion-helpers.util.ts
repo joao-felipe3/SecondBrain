@@ -1,6 +1,12 @@
 import { createHash } from 'crypto';
 import { WBSNodeDto } from '../../../dto/wbs.dto';
 import { computePertFromMinutes } from './metrics-calculator.util';
+import { computeChunkMinutes } from './metrics-calculator.util';
+import {
+  GeneratedTaskDto,
+  Task,
+} from '../../../interfaces/wbs-conversion.interface';
+import { MicroTaskDraft } from '../../../interfaces/drafts.interface';
 
 export function hashKey(input: any): string {
   const raw = typeof input === 'string' ? input : JSON.stringify(input);
@@ -98,41 +104,230 @@ export function shrinkLeafTasksToTargetHours(
   }>,
   targetHours: number,
 ): { targetHours: number; finalHours: number } {
-  const chunks = tasks.length;
-  const minHours = chunks * 0.5;
-
-  const target = Math.max(minHours, Math.round(targetHours * 2) / 2);
-  let currentPom = tasks.reduce((sum, t) => sum + Number(t?.pomodorosPlanned || 0), 0);
-  const targetPom = Math.round(target / 0.5);
-
-  while (currentPom > targetPom) {
-    let bestIdx = -1;
-    let bestPom = 1;
-
-    for (let i = 0; i < tasks.length; i++) {
-      const pom = Number(tasks[i]?.pomodorosPlanned || 0);
-      if (pom > bestPom) {
-        bestPom = pom;
-        bestIdx = i;
-      }
-    }
-
-    if (bestIdx === -1) break;
-
-    tasks[bestIdx].pomodorosPlanned = bestPom - 1;
-    const pert = computePertFromMinutes((bestPom - 1) * 25);
-    tasks[bestIdx].pertOptimisticMinutes = pert.optimistic;
-    tasks[bestIdx].pertMostLikelyMinutes = pert.mostLikely;
-    tasks[bestIdx].pertPessimisticMinutes = pert.pessimistic;
-    tasks[bestIdx].pertExpectedMinutes = pert.expected;
-    currentPom -= 1;
+  const currentHours = tasks.reduce((sum, t) => sum + (t.pomodorosPlanned || 1) * 25, 0) / 60;
+  if (currentHours <= targetHours) {
+    return { targetHours, finalHours: currentHours };
   }
 
-  const finalMinutes = tasks.reduce((sum, t) => sum + (t.pomodorosPlanned || 0) * 25, 0);
-  const finalHours = finalMinutes / 60;
+  const factor = targetHours / currentHours;
+  let finalMinutesSum = 0;
 
-  return {
-    targetHours: target,
-    finalHours,
+  for (const t of tasks) {
+    const planned = t.pomodorosPlanned || 1;
+    const currentMin = planned * 25;
+    const targetMin = currentMin * factor;
+    const finalPomos = Math.max(1, Math.round(targetMin / 25));
+    t.pomodorosPlanned = finalPomos;
+
+    const finalMin = finalPomos * 25;
+    finalMinutesSum += finalMin;
+
+    const computed = computePertFromMinutes(finalMin);
+
+    t.pertOptimisticMinutes = computed.optimistic;
+    t.pertMostLikelyMinutes = computed.mostLikely;
+    t.pertPessimisticMinutes = computed.pessimistic;
+    t.pertExpectedMinutes = computed.expected;
+    t.pertVariance = computed.variance;
+  }
+
+  return { targetHours, finalHours: finalMinutesSum / 60 };
+}
+
+// Convert WBS leaf nodes into tasks (legacy - simple conversion)
+export function convertWBSToTasks(
+  nodes: WBSNodeDto[],
+  projectId: string,
+): Array<{
+  name: string;
+  description: string;
+  projectId: string;
+  estimatedMinutes: number;
+  priority: number;
+  pomodorosPlanned: number;
+}> {
+  const tasks: Array<{
+    name: string;
+    description: string;
+    projectId: string;
+    estimatedMinutes: number;
+    priority: number;
+    pomodorosPlanned: number;
+  }> = [];
+
+  let priorityCounter = 1;
+
+  const traverse = (nodeList: WBSNodeDto[], parentPath: string = '') => {
+    for (const node of nodeList) {
+      const currentPath = parentPath ? `${parentPath} > ${node.name}` : node.name;
+
+      if (!node.children || node.children.length === 0) {
+        const totalMinutes = Math.max(0, Math.round((node.estimatedHours || 0) * 60));
+        const chunkMinutes = computeChunkMinutes(totalMinutes);
+        const chunks = chunkMinutes.length;
+
+        for (let chunkIndex = 0; chunkIndex < chunks; chunkIndex++) {
+          const estimatedMinutes = chunkMinutes[chunkIndex];
+          const pomodorosPlanned = Math.max(1, Math.ceil(estimatedMinutes / 25));
+          const suffix = chunks > 1 ? ` (${chunkIndex + 1}/${chunks})` : '';
+
+          tasks.push({
+            name: `${node.name}${suffix}`,
+            description: node.description
+              ? `${node.description}\n\nOrigem WBS (pacote 8/80): ${currentPath}\nMicro-tarefa: ${chunkIndex + 1}/${chunks} (~${estimatedMinutes}min)`
+              : `Origem WBS (pacote 8/80): ${currentPath}\nMicro-tarefa: ${chunkIndex + 1}/${chunks} (~${estimatedMinutes}min)`,
+            projectId,
+            estimatedMinutes,
+            priority: priorityCounter++,
+            pomodorosPlanned,
+          });
+        }
+      } else {
+        traverse(node.children, currentPath);
+      }
+    }
   };
+
+  traverse(nodes);
+  return tasks;
+}
+
+// Convert draft objects into task DTOs ready for database creation
+export function convertDraftsToTasks(
+  drafts: MicroTaskDraft[],
+  context: {
+    wbsNode?: WBSNodeDto;
+    project?: { _id?: any; id?: any };
+    path?: string;
+  } = {},
+): Task[] {
+  if (!drafts || drafts.length === 0) {
+    return [];
+  }
+
+  const tasks: any[] = [];
+  let taskIndex = 1;
+  const totalTasks = drafts.length;
+
+  const projectId = context.project?._id || context.project?.id;
+  const parentWbsNodeId = context.wbsNode?._id || context.wbsNode?.name;
+
+  for (const draft of drafts) {
+    const task: Record<string, any> = {
+      name: String(draft.name || `Tarefa ${taskIndex}`).trim(),
+      description: (draft.description || '').trim() || undefined,
+      // Canonical fields used by Task schema/DTO
+      project: projectId,
+      parentWbsNodeId,
+      wbsPath: context.path,
+
+      // Backward-compatible aliases (some clients used these)
+      projectId,
+      wbsNodeId: parentWbsNodeId,
+
+      // Task-specific fields from draft
+      checklist: Array.isArray(draft.checklist) ? draft.checklist : [],
+      definitionOfDone: (draft.definitionOfDone || '').trim() || undefined,
+      estimatedMinutes: (draft.pomodorosPlanned || 1) * 25,
+      pomodorosPlanned: Math.max(1, Math.min(6, draft.pomodorosPlanned || 1)),
+      priority: Math.max(1, Math.min(4, draft.priority || 2)),
+      difficult: Math.max(1, Math.min(4, draft.difficult || 2)),
+
+      // Metadata from draft
+      microTaskType: draft.microTaskType || 'execute',
+      themeTag: (draft.themeTag || '').trim() || undefined,
+      contextTag: (draft.contextTag || '').trim() || undefined,
+      cognitiveMode: draft.cognitiveMode || 'medium',
+      milestoneIndex: draft.milestoneIndex || undefined,
+
+      // Index info
+      taskIndexInBatch: taskIndex,
+      totalTasksInBatch: totalTasks,
+    };
+
+    tasks.push(task);
+    taskIndex++;
+  }
+
+  return tasks as Task[];
+}
+
+export function mapDraftsToTasks(params: {
+  drafts: MicroTaskDraft[];
+  node: WBSNodeDto;
+  nodePath: string;
+  projectId: string;
+  chunkMinutes: number[];
+  priorityOffset: number;
+  deadline: Date;
+}): GeneratedTaskDto[] {
+  const { drafts, node, nodePath, projectId, chunkMinutes, priorityOffset, deadline } = params;
+  const tasks: GeneratedTaskDto[] = [];
+  const chunks = chunkMinutes.length;
+
+  for (let i = 0; i < drafts.length; i++) {
+    const draft = drafts[i];
+    const suffix = chunks > 1 ? ` (${i + 1}/${chunks})` : '';
+    const estimatedMinutes = chunkMinutes[i];
+    const pomodorosPlanned = Math.max(1, Math.ceil(estimatedMinutes / 25));
+
+    tasks.push({
+      name: `${draft.name || node.name}${suffix}`,
+      description: draft.description
+        ? `${draft.description}\n\nOrigem WBS: ${nodePath} [Micro-tarefa ${i + 1}/${chunks}]`
+        : `Origem WBS (pacote 8/80): ${nodePath}\nMicro-tarefa: ${i + 1}/${chunks} (~${estimatedMinutes}min)`,
+      estimatedMinutes,
+      pomodorosPlanned,
+      priority: priorityOffset + i + 1,
+      project: projectId,
+      deadline,
+      isConcluded: false,
+      late: false,
+      recurrency: 'no-recurrence',
+      wbsPath: nodePath,
+      microTaskType: draft.microTaskType,
+      themeTag: draft.themeTag,
+      contextTag: draft.contextTag,
+      cognitiveMode: draft.cognitiveMode,
+    });
+  }
+  return tasks;
+}
+
+export function generateFallbackTasks(params: {
+  node: WBSNodeDto;
+  nodePath: string;
+  projectId: string;
+  chunkMinutes: number[];
+  priorityOffset: number;
+  deadline: Date;
+}): GeneratedTaskDto[] {
+  const { node, nodePath, projectId, chunkMinutes, priorityOffset, deadline } = params;
+  const tasks: GeneratedTaskDto[] = [];
+  const chunks = chunkMinutes.length;
+
+  for (let i = 0; i < chunks; i++) {
+    const suffix = chunks > 1 ? ` (${i + 1}/${chunks})` : '';
+    const estimatedMinutes = chunkMinutes[i];
+    const pomodorosPlanned = Math.max(1, Math.ceil(estimatedMinutes / 25));
+
+    const fallbackDesc = node.description
+      ? `${node.description}\n\nOrigem WBS (pacote 8/80): ${nodePath}\nMicro-tarefa: ${i + 1}/${chunks} (~${estimatedMinutes}min)`
+      : `Origem WBS (pacote 8/80): ${nodePath}\nMicro-tarefa: ${i + 1}/${chunks} (~${estimatedMinutes}min)`;
+
+    tasks.push({
+      name: `${node.name}${suffix}`,
+      description: fallbackDesc,
+      estimatedMinutes,
+      pomodorosPlanned,
+      priority: priorityOffset + i + 1,
+      project: projectId,
+      deadline,
+      isConcluded: false,
+      late: false,
+      recurrency: 'no-recurrence',
+      wbsPath: nodePath,
+    });
+  }
+  return tasks;
 }

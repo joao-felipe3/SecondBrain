@@ -375,18 +375,17 @@ export class ProjectsController {
     const project = await this.projectsService.findOne(id);
     if (!project) throw new NotFoundException('Project not found');
 
-    // Gera tasks enriquecidas com IA usando TaskConversionService
-    const result = await this.taskConversionService.convertWBSToTasksWithAI(
-      dto.nodes,
-      id,
+    const result = await this.taskConversionService.convertWBSToTasksWithAI({
+      nodes: dto.nodes,
+      projectId: id,
       project,
-      this.tasksService,
-      dto.preferences,
-      {
+      tasksService: this.tasksService,
+      preferences: dto.preferences,
+      options: {
         autoResolveDiscrepancies: !!dto.autoResolveDiscrepancies,
         autoAuditThresholdPct: dto.autoAuditThresholdPct,
       },
-    );
+    });
 
     console.log(`✅ ${result.createdTasks.length} micro-tarefas criadas com sucesso`);
 
@@ -449,15 +448,15 @@ export class ProjectsController {
       if (String(p.nodePath) === String(dto.nodePath)) continue;
       const key = this.buildLeafBufferKey(id, p.leafNode as any, p.nodePath, preferences);
       this.leafBuffer.prefetch(key, id, async () => {
-        return this.wbsService.generateTasksForSingleLeaf(
-          p.leafNode,
-          p.nodePath,
-          id,
+        return this.wbsService.generateTasksForSingleLeaf({
+          leafNode: p.leafNode,
+          nodePath: p.nodePath,
+          projectId: id,
           project,
-          this.tasksService,
+          tasksService: this.tasksService,
           preferences,
-          false,
-        );
+          saveTasks: false,
+        });
       });
     }
 
@@ -478,15 +477,15 @@ export class ProjectsController {
 
     let result: any;
     try {
-      result = await this.wbsService.generateTasksForSingleLeaf(
-        dto.leafNode,
-        dto.nodePath,
-        id,
+      result = await this.wbsService.generateTasksForSingleLeaf({
+        leafNode: dto.leafNode,
+        nodePath: dto.nodePath,
+        projectId: id,
         project,
-        this.tasksService,
+        tasksService: this.tasksService,
         preferences,
-        dto.saveTasks || false,
-      );
+        saveTasks: dto.saveTasks || false,
+      });
     } catch (err: any) {
       if (err?.code === 'RATE_LIMIT') {
         const retryAfterMs = Number(err?.retryAfterMs);

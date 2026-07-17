@@ -1,12 +1,8 @@
-import { Injectable, Inject, forwardRef } from '@nestjs/common';
-import { GeminiService } from '../../../../ai/gemini.service';
-import { WBSNodeDto } from '../../../dto/wbs.dto';
+import { Injectable } from '@nestjs/common';
 import { MonotonyDetectionService } from './monotony-detection.service';
-import { extractJsonArray } from '../utils/json-parser.util';
-import { normalizeTitle } from '../utils/normalizers.util';
 import { MAX_MONOTONY_FIX_ROUNDS, MONOTONY_FIX_BATCH_SIZE } from '../constants/wbs.constants';
-import { buildFixMonotonyPrompt } from '../../../../ai/prompts/monotony.prompts';
-import { MicroTaskDraft } from '../../../interfaces';
+import { WbsAiService } from '../../../../ai/wbs-ai.service';
+import { AutoFixMonotonyParams, MicroTaskDraft } from '../../../interfaces';
 
 /**
  * Service for auto-fixing monotony issues in micro-task batches using AI
@@ -14,8 +10,7 @@ import { MicroTaskDraft } from '../../../interfaces';
 @Injectable()
 export class MonotonyFixService {
   constructor(
-    @Inject(forwardRef(() => GeminiService))
-    private readonly geminiService: GeminiService,
+    private readonly wbsAiService: WbsAiService,
     private readonly monotonyDetection: MonotonyDetectionService,
   ) {}
 
@@ -38,29 +33,9 @@ export class MonotonyFixService {
    * Auto-fix monotony issues for a leaf node using AI regeneration
    * Regenerates problematic tasks in small batches to avoid truncation
    */
-  async autoFixMonotonyForLeaf(params: {
-    project: any;
-    node: WBSNodeDto;
-    currentPath: string;
-    level: number;
-    chunkMinutes: number[];
-    drafts: MicroTaskDraft[];
-    maxCalls: number;
-    forceIndices?: number[];
-    modelOverride?: string;
-  }): Promise<{ drafts: MicroTaskDraft[]; aiCallsUsed: number }> {
-    const isJsonishError = (err: any) => {
-      const msg = String(err?.message || err || '').toLowerCase();
-      return (
-        msg.includes('json') ||
-        msg.includes('truncad') ||
-        msg.includes('incomplet') ||
-        msg.includes('parse') ||
-        msg.includes('array') ||
-        msg.includes('object')
-      );
-    };
-
+  async autoFixMonotonyForLeaf(
+    params: AutoFixMonotonyParams,
+  ): Promise<{ drafts: MicroTaskDraft[]; aiCallsUsed: number }> {
     let drafts = params.drafts.slice().map((d) => ({
       ...d,
       name: this.sanitizeTitle(d?.name),
@@ -86,41 +61,22 @@ export class MonotonyFixService {
         start += MONOTONY_FIX_BATCH_SIZE
       ) {
         const indices = mergedBad.slice(start, start + MONOTONY_FIX_BATCH_SIZE);
-        const prompt = buildFixMonotonyPrompt({
-          project: params.project,
-          node: params.node,
-          currentPath: params.currentPath,
-          chunkMinutes: params.chunkMinutes,
-          drafts,
-          indices,
-          round,
-        });
-
-        const attempt = async (opts: { maxOutputTokens: number; temperature: number }) => {
-          const response = await this.geminiService.generateContent(prompt, {
-            responseMimeType: 'application/json',
-            maxOutputTokens: opts.maxOutputTokens,
-            temperature: opts.temperature,
-            model: params.modelOverride,
-          });
-          const parsed = extractJsonArray<any>(response);
-          if (!Array.isArray(parsed) || parsed.length !== indices.length) {
-            throw new Error(
-              `IA retornou ${Array.isArray(parsed) ? parsed.length : 0} itens; esperado ${indices.length}`,
-            );
-          }
-          return parsed;
-        };
 
         let items: any[];
         try {
-          items = await attempt({ maxOutputTokens: 1400, temperature: 0.65 });
+          items = await this.wbsAiService.fixMonotonyBatch({
+            project: params.project,
+            node: params.node,
+            currentPath: params.currentPath,
+            chunkMinutes: params.chunkMinutes,
+            drafts,
+            indices,
+            round,
+            modelOverride: params.modelOverride,
+          });
         } catch (err: any) {
-          if (isJsonishError(err)) {
-            items = await attempt({ maxOutputTokens: 2200, temperature: 0.35 });
-          } else {
-            throw err;
-          }
+          console.warn(`[WBS-Monotony] AI regeneration failed for round ${round}: ${err?.message || err}`);
+          continue;
         }
 
         const indexSet = new Set(indices);

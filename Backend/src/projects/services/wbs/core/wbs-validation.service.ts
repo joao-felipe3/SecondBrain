@@ -1,16 +1,12 @@
-import { Injectable, Inject, forwardRef } from '@nestjs/common';
-import { GeminiService } from '../../../../ai/gemini.service';
+import { Injectable } from '@nestjs/common';
 import { WBSNodeDto, ValidateWBSResponseDto } from '../../../dto/wbs.dto';
-
 import { BudgetValidationSummary } from '../../../interfaces';
+import { WbsAiService } from '../../../../ai/wbs-ai.service';
 
 // Handles WBS validation logic (8/80 rule) and decomposition suggestions
 @Injectable()
 export class WbsValidationService {
-  constructor(
-    @Inject(forwardRef(() => GeminiService))
-    private readonly geminiService: GeminiService,
-  ) {}
+  constructor(private readonly wbsAiService: WbsAiService) {}
 
   // Validate a single WBS node against the 8/80 rule
   validateNode(node: WBSNodeDto): ValidateWBSResponseDto {
@@ -183,38 +179,6 @@ export class WbsValidationService {
     description?: string;
     estimatedHours: number;
   }): Promise<string> {
-    const prompt = `Você é um consultor de gestão de projetos especializado em WBS (Work Breakdown Structure).
-
-O seguinte pacote de trabalho viola a regra 8/80 (deve ter entre 8 e 80 horas):
-
-Nome: "${node.name}"
-Descrição: "${node.description || 'Sem descrição'}"
-Horas Estimadas: ${node.estimatedHours}h
-
-${
-  node.estimatedHours > 80
-    ? `Este pacote é MUITO GRANDE (${node.estimatedHours}h > 80h). Sugira como decompor em sub-pacotes menores, cada um entre 8-80 horas.`
-    : `Este pacote é MUITO PEQUENO (${node.estimatedHours}h < 8h). Sugira como combinar com outras atividades ou expandir o escopo para atingir pelo menos 8 horas.`
-}
-
-Retorne APENAS um array JSON com os sub-pacotes sugeridos:
-[
-  {
-    "name": "Nome do sub-pacote",
-    "description": "Descrição",
-    "estimatedHours": 20,
-    "level": 3,
-    "order": 1,
-    "children": []
-  }
-]`;
-
-    try {
-      const response = await this.geminiService.generateContent(prompt);
-      return response;
-    } catch (error) {
-      console.error('Erro ao gerar sugestão de decomposição:', error);
-      throw new Error('Não foi possível gerar sugestão de decomposição');
-    }
+    return this.wbsAiService.suggestDecomposition(node);
   }
 }

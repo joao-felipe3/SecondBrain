@@ -1,18 +1,18 @@
-import { Injectable, Inject, forwardRef } from '@nestjs/common';
-import { GeminiService } from '../../../../ai/gemini.service';
-import { buildAuditPrompt } from '../../../../ai/prompts/audit.prompts';
-import { WBSNodeDto } from '../../../dto/wbs.dto';
-import { extractJsonObject } from '../utils/json-parser.util';
+import { Injectable } from '@nestjs/common';
 import { computeBatchMetrics } from '../utils/metrics-calculator.util';
-import { LeafAuditResult } from '../../../interfaces';
+import {
+  LeafAuditResult,
+  AuditLeafDiscrepancyInput,
+  ApplyGuardrailsParams,
+  AuditLeafDiscrepancyAiInput,
+  AuditLeafDiscrepancyAiResult,
+} from '../../../interfaces';
+import { WbsAiService } from '../../../../ai/wbs-ai.service';
 
 // Audits discrepancies between WBS estimates and generated micro-tasks
 @Injectable()
 export class AuditService {
-  constructor(
-    @Inject(forwardRef(() => GeminiService))
-    private readonly geminiService: GeminiService,
-  ) {}
+  constructor(private readonly wbsAiService: WbsAiService) {}
 
   private getModelOverride(): string | undefined {
     const m =
@@ -23,58 +23,35 @@ export class AuditService {
   }
 
   private safeEnv(name: string): string {
-    const v = process.env[name];
-    return String(v ?? '').trim();
+    return String(process.env[name] ?? '').trim();
   }
 
   // Audit a discrepancy between a WBS leaf estimate and its generated micro-tasks
   async auditLeafDiscrepancy(
-    project: any,
-    dto: {
-      leafNode: WBSNodeDto;
-      nodePath: string;
-      generatedHours: number;
-      tasks: Array<{
-        name: string;
-        pomodorosPlanned: number;
-        priority?: number;
-        microTaskType?: string;
-        themeTag?: string;
-        contextTag?: string;
-        cognitiveMode?: string;
-      }>;
-    },
+    project: { name?: string },
+    dto: AuditLeafDiscrepancyInput,
   ): Promise<LeafAuditResult> {
     const discrepancyMetrics = this.computeDiscrepancyMetrics(dto);
     const duplicateMetrics = this.computeDuplicateMetrics(Array.isArray(dto?.tasks) ? dto.tasks : []);
     const tasksPreview = this.formatTasksPreview(Array.isArray(dto?.tasks) ? dto.tasks : []);
 
-    const prompt = buildAuditPrompt({
-      projectName: String(project?.name || 'Projeto').trim(),
-      leafNodeName: String(dto.leafNode?.name || '').trim(),
-      nodePath: String(dto.nodePath || '').trim(),
-      budgetHours: discrepancyMetrics.budgetHours,
-      generatedHours: discrepancyMetrics.generatedHours,
-      diffPct: discrepancyMetrics.diffPct,
-      taskCount: dto.tasks?.length || 0,
-      duplicateRatio: duplicateMetrics.duplicateRatio,
-      topDuplicateKeys: duplicateMetrics.topDuplicateKeys,
+    const modelOverride = this.getModelOverride();
+
+    const parsedResponse = await this.wbsAiService.auditLeafDiscrepancy({
+      projectName: String(project?.name || 'Projeto').trim(), leafNodeName: String(dto.leafNode?.name || '').trim(),
+      nodePath: String(dto.nodePath || '').trim(), budgetHours: discrepancyMetrics.budgetHours,
+      generatedHours: discrepancyMetrics.generatedHours, diffPct: discrepancyMetrics.diffPct,
+      taskCount: dto.tasks?.length || 0, duplicateRatio: duplicateMetrics.duplicateRatio,
+      topDuplicateKeys: duplicateMetrics.topDuplicateKeys, modelOverride, tasksPreview,
       dupScore: Number(duplicateMetrics.repetitionMetrics?.dupScore ?? 0),
       similarScore: Number(duplicateMetrics.repetitionMetrics?.similarScore ?? 0),
-      tasksPreview,
     });
 
-    const geminiResponse = await this.callGeminiWithRetry(prompt);
-    const parsedResponse = this.parseAuditResponse(geminiResponse);
-
-    const finalResult = this.applyGuardrails(
-      parsedResponse.diagnosis,
-      parsedResponse.suggestedAction,
-      duplicateMetrics.duplicateRatio,
-      duplicateMetrics.repetitionMetrics,
-      discrepancyMetrics.diffPct,
-      Array.isArray(dto?.tasks) ? dto.tasks.length : 0,
-    );
+    const finalResult = this.applyGuardrails({
+      diagnosis: parsedResponse.diagnosis, suggestedAction: parsedResponse.suggestedAction,
+      duplicateRatio: duplicateMetrics.duplicateRatio, repetitionMetrics: duplicateMetrics.repetitionMetrics,
+      diffPct: discrepancyMetrics.diffPct, taskLength: Array.isArray(dto?.tasks) ? dto.tasks.length : 0,
+    });
 
     const guardrailsChanged =
       finalResult.diagnosis !== parsedResponse.diagnosis ||
@@ -92,7 +69,7 @@ export class AuditService {
   }
 
   // Compute percentual difference between top-down estimate and bottom-up generated hours
-  private computeDiscrepancyMetrics(dto: any): {
+  private computeDiscrepancyMetrics(dto: AuditLeafDiscrepancyInput): {
     budgetHours: number;
     generatedHours: number;
     diffPct: number;
@@ -104,8 +81,8 @@ export class AuditService {
     return { budgetHours, generatedHours, diffPct };
   }
 
-  // Identifys duplicated tasks, calculates duplication ratio and repetition metrics
-  private computeDuplicateMetrics(taskList: any[]): {
+  // Identifies duplicated tasks, calculates duplication ratio and repetition metrics
+  private computeDuplicateMetrics(taskList: AuditLeafDiscrepancyInput['tasks']): {
     duplicateRatio: number;
     topDuplicateKeys: string;
     repetitionMetrics: any;
@@ -132,7 +109,7 @@ export class AuditService {
       .join(', ');
 
     const repetitionMetrics = computeBatchMetrics(
-      taskList.map((t: any) => ({
+      taskList.map((t) => ({
         name: t?.name,
         description: '',
         themeTag: t?.themeTag || t?.contextTag || '',
@@ -157,85 +134,14 @@ export class AuditService {
     return normalized;
   }
 
-  private async callGeminiWithRetry(prompt: string): Promise<string> {
-    const modelOverride = this.getModelOverride();
-
-    const attemptCall = async (maxOutputTokens: number, temperature: number): Promise<string> => {
-      return this.geminiService.generateContent(prompt, {
-        model: modelOverride,
-        responseMimeType: 'application/json',
-        maxOutputTokens,
-        temperature,
-      });
-    };
-
-    try {
-      return await attemptCall(2048, 0.2);
-    } catch (err: any) {
-      return await attemptCall(4096, 0.1);
-    }
-  }
-
-  private parseAuditResponse(response: string): {
-    diagnosis: 'underestimated' | 'gold_plating' | 'mixed';
-    rationale: string;
-    suggestedAction: 'rebaseline' | 'simplify';
-    suggestedEstimatedHours?: number;
-  } {
-    const parsed = extractJsonObject<any>(response);
-
-    const diagnosisRaw = String(parsed?.diagnosis || '').trim();
-    const diagnosis: 'underestimated' | 'gold_plating' | 'mixed' =
-      diagnosisRaw === 'gold_plating'
-        ? 'gold_plating'
-        : diagnosisRaw === 'mixed'
-          ? 'mixed'
-          : 'underestimated';
-
-    const suggestedActionRaw = String(parsed?.suggestedAction || '').trim();
-    const suggestedAction: 'rebaseline' | 'simplify' =
-      suggestedActionRaw === 'simplify' ? 'simplify' : 'rebaseline';
-
-    const rationale = String(parsed?.rationale || '').trim() || 'Sem justificativa.';
-
-    let suggestedEstimatedHours: number | undefined;
-    if (parsed?.suggestedEstimatedHours !== undefined && parsed?.suggestedEstimatedHours !== null) {
-      const hours = this.parseHoursValue(parsed.suggestedEstimatedHours);
-      if (hours !== undefined) {
-        suggestedEstimatedHours = Math.round(hours * 2) / 2;
-      }
-    }
-
-    return { diagnosis, rationale, suggestedAction, suggestedEstimatedHours };
-  }
-
-  private parseHoursValue(value: unknown): number | undefined {
-    if (value === undefined || value === null) return undefined;
-
-    if (typeof value === 'number') {
-      return Number.isFinite(value) && value > 0 ? value : undefined;
-    }
-
-    const raw = String(value).trim();
-    if (!raw) return undefined;
-
-    // Accept formats like: "28", "28h", "28 horas", "28.5", "28,5"
-    const match = raw.match(/\d+(?:[\.,]\d+)?/);
-    if (!match) return undefined;
-
-    const normalized = match[0].replace(',', '.');
-    const n = Number(normalized);
-    return Number.isFinite(n) && n > 0 ? n : undefined;
-  }
-
-  private formatTasksPreview(taskList: any[]): string {
+  private formatTasksPreview(taskList: AuditLeafDiscrepancyInput['tasks']): string {
     return taskList
       .slice(0, 30)
       .map((task, idx) => this.formatTaskLine(task, idx))
       .join('\n');
   }
 
-  private formatTaskLine(task: any, index: number): string {
+  private formatTaskLine(task: AuditLeafDiscrepancyInput['tasks'][number], index: number): string {
     const priority = Number(task?.priority ?? 4);
     const pomodoros = Number(task?.pomodorosPlanned ?? 1);
     const type = String(task?.microTaskType || '').trim();
@@ -256,17 +162,12 @@ export class AuditService {
     return `${index + 1}. [P${priority}] ${pomodoros}🍅${typeStr}${tagsStr} — ${name}`;
   }
 
-  private applyGuardrails(
-    diagnosis: 'underestimated' | 'gold_plating' | 'mixed',
-    suggestedAction: 'rebaseline' | 'simplify',
-    duplicateRatio: number,
-    repetitionMetrics: any,
-    diffPct: number,
-    taskLength: number,
-  ): {
+  private applyGuardrails(params: ApplyGuardrailsParams): {
     diagnosis: 'underestimated' | 'gold_plating' | 'mixed';
     suggestedAction: 'rebaseline' | 'simplify';
   } {
+    const { diagnosis, suggestedAction, duplicateRatio, repetitionMetrics, diffPct, taskLength } =
+      params;
     let finalDiagnosis = diagnosis;
     let finalSuggestedAction = suggestedAction;
 
