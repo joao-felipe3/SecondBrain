@@ -8,6 +8,8 @@ import {
   ConversionOptions,
   ConversionResult,
   ConvertWbsToTasksParams,
+  GenerateTasksForSingleLeafParams,
+  GenerateTasksForSingleLeafResult,
 } from '../../../interfaces';
 
 // Responsible for orchestrating the conversion of WBS nodes to tasks,
@@ -19,18 +21,9 @@ export class WbsConversionOrchestrationService {
     private readonly draftGeneration: DraftGenerationService,
     private readonly draftProcessing: DraftProcessingService,
     private readonly taskConversion: TaskConversionService,
-  ) {}
+  ) { }
 
-  /**
-   * Convert a WBS node to tasks, orchestrating the entire flow
-   *
-   * Steps:
-   * 1. Basic validation of the node
-   * 2. Draft generation (strategy: two-phase or legacy)
-   * 3. Draft processing (themes, milestones)
-   * 4. Task conversion
-   * 5. Optional auditing
-   */
+
   async convertWbsToTasks(params: ConvertWbsToTasksParams): Promise<ConversionResult> {
     const startMs = Date.now();
     const { node, project, path, options = {} } = params;
@@ -197,6 +190,63 @@ export class WbsConversionOrchestrationService {
     let processed = this.draftProcessing.applyThemeWorkflowAndProgression(drafts);
     processed = this.draftProcessing.applyGoldilocksAndMilestones(processed, chunkMinutes);
     return processed;
+  }
+
+  async generateTasksForSingleLeaf(
+    params: GenerateTasksForSingleLeafParams,
+  ): Promise<GenerateTasksForSingleLeafResult> {
+    const { leafNode, nodePath, projectId, project, tasksService, preferences, saveTasks = false, } = params;
+
+    const result = await this.convertWbsToTasks({
+      node: leafNode, project, path: nodePath,
+      options: { strategy: 'two-phase', modelOverride: preferences?.modelOverride, logVerbose: true, throwOnError: false },
+    });
+
+    if (!result.success && result.error) {
+      this.handleSingleLeafConversionError(result);
+    }
+
+    let generatedTasks = result.tasks;
+    if (saveTasks && generatedTasks.length > 0) {
+      generatedTasks = await this.persistGeneratedTasks(generatedTasks, projectId, tasksService);
+    }
+
+    const pomodorosGenerated = generatedTasks.reduce((sum, task) => sum + (task.pomodorosPlanned || 0), 0);
+    return {
+      tasks: generatedTasks, leafNode, nodePath, estimatedHours: leafNode.estimatedHours,
+      generatedHours: pomodorosGenerated * 0.5, pomodorosGenerated,
+    };
+  }
+
+  private handleSingleLeafConversionError(result: ConversionResult): void {
+    console.error(`Erro na conversão: ${result.error?.stage} - ${result.error?.message}`);
+    if (result.error?.originalError) throw result.error.originalError;
+    throw new Error(`WBS conversion failed: ${result.error?.message}`);
+  }
+
+  private async persistGeneratedTasks(tasks: any[], projectId: string, tasksService: any): Promise<any[]> {
+    const tasksToSave = tasks.map((task) => ({ ...task, project: projectId }));
+    try {
+      if (typeof tasksService.createMany === 'function') {
+        return await tasksService.createMany(tasksToSave, {
+          resolveProject: false,
+          recalculateProjectStats: false,
+        });
+      } else {
+        const created: any[] = [];
+        for (const task of tasksToSave) {
+          try {
+            created.push(await tasksService.create(task));
+          } catch (error: any) {
+            console.error(`Erro ao criar task:`, error?.message || error);
+          }
+        }
+        return created;
+      }
+    } catch (error: any) {
+      console.error(`Erro ao criar tasks em lote:`, error?.message || error);
+      return tasks;
+    }
   }
 
   // ============ Private Helpers ============

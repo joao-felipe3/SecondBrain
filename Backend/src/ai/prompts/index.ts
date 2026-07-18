@@ -3,12 +3,20 @@
  * All functions here are pure (no NestJS dependency injection).
  */
 
-export * from './planning.prompts';
-export * from './wbs.prompts';
-export * from './risk.prompts';
-export * from './rolling-wave.prompts';
-export * from './audit.prompts';
-export * from './monotony.prompts';
-export * from './rtm.prompts';
-export * from './feedback.prompts';
-export * from './dependency.prompts';
+// Core Prompts
+export * from './core/gemini.prompts';
+
+// Tasks Prompts
+export * from './tasks/dependency.prompts';
+export * from './tasks/feedback.prompts';
+export * from './tasks/risk.prompts';
+export * from './tasks/rtm.prompts';
+
+// Projects Prompts
+export * from './projects/planning.prompts';
+export * from './projects/wbs.prompts';
+export * from './projects/rolling-wave.prompts';
+export * from './projects/audit.prompts';
+export * from './projects/monotony.prompts';
+export * from './projects/microtask-outline.prompts';
+export * from './projects/microtask-detail.prompts';

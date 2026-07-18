@@ -24,7 +24,7 @@ export {
   buildGenerateRequirementsPrompt,
   buildAutoMapBatchPrompt,
   buildGenerateTasksPrompt,
-} from '../../../../ai/prompts/rtm.prompts';
+} from '../../../../ai/prompts';
 
 // ===========================================================================
 // Response Normalizers

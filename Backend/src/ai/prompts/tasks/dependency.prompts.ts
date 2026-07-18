@@ -7,8 +7,8 @@
 import {
   InferenceTask,
   InferenceLeafGates,
-} from '../../tasks/interfaces/dependency-inference.interface';
-import { truncateText } from '../../tasks/services/dependencies/utils/dependency-inference.utils';
+} from '../../../tasks/interfaces/dependency-inference.interface';
+import { truncateText } from '../../../tasks/services/dependencies/utils/dependency-inference.utils';
 
 export function buildInferWithAiPrompt(params: {
   hardMaxEdges: number;

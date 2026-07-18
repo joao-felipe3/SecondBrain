@@ -1,16 +1,15 @@
 import { Injectable } from '@nestjs/common';
 import { WBSNodeDto, ValidateWBSResponseDto } from '../../../dto/wbs.dto';
 import { BudgetValidationSummary } from '../../../interfaces';
-import { WbsAiService } from '../../../../ai/wbs-ai.service';
+import { WbsAiService } from '../../../../ai/services/projects/wbs-ai.service';
 
 // Handles WBS validation logic (8/80 rule) and decomposition suggestions
 @Injectable()
 export class WbsValidationService {
-  constructor(private readonly wbsAiService: WbsAiService) {}
+  constructor(private readonly wbsAiService: WbsAiService) { }
 
   // Validate a single WBS node against the 8/80 rule
   validateNode(node: WBSNodeDto): ValidateWBSResponseDto {
-    // Only validate leaf nodes (no children or empty children)
     const isLeaf = !node.children || node.children.length === 0;
     if (!isLeaf) return { valid: true };
 
@@ -84,39 +83,46 @@ export class WbsValidationService {
     const leaves = this.collectLeafNodes(normalized);
     const safeBudget = Number(budgetHours);
 
-    if (!Number.isFinite(safeBudget) || safeBudget <= 0 || leaves.length === 0) {
-      return normalized;
-    }
+    if (!Number.isFinite(safeBudget) || safeBudget <= 0 || leaves.length === 0) return normalized;
 
-    const currentTotal = leaves.reduce((sum, node) => sum + (Number(node.estimatedHours) || 0), 0);
-    if (!Number.isFinite(currentTotal) || currentTotal <= 0) {
-      return normalized;
-    }
+    const currentTotal = this.sumHours(leaves);
+    if (!Number.isFinite(currentTotal) || currentTotal <= 0) return normalized;
 
-    const scaleFactor = safeBudget / currentTotal;
+    this.scaleLeafsToBudget(leaves, safeBudget / currentTotal);
+    this.iterativelyAdjustLeafs(leaves, safeBudget);
+
+    for (const node of normalized) this.recalculateNodeHours(node);
+    return normalized;
+  }
+
+  private sumHours(nodes: WBSNodeDto[]): number {
+    return nodes.reduce((sum, n) => sum + (Number(n.estimatedHours) || 0), 0);
+  }
+
+  private scaleLeafsToBudget(leaves: WBSNodeDto[], scaleFactor: number): void {
     for (const leaf of leaves) {
       const scaled = (Number(leaf.estimatedHours) || 0) * scaleFactor;
       leaf.estimatedHours = this.roundHours(Math.min(80, Math.max(8, scaled)));
     }
+  }
 
-    let adjustedTotal = leaves.reduce((sum, node) => sum + (Number(node.estimatedHours) || 0), 0);
+  private iterativelyAdjustLeafs(leaves: WBSNodeDto[], safeBudget: number): void {
+    let adjustedTotal = this.sumHours(leaves);
     let guard = 0;
 
     while (Math.abs(adjustedTotal - safeBudget) > 0.1 && guard < 1000) {
       const shouldDecrease = adjustedTotal > safeBudget;
-      const sortedLeaves = [...leaves].sort((a, b) =>
+      const sorted = [...leaves].sort((a, b) =>
         shouldDecrease
           ? (Number(b.estimatedHours) || 0) - (Number(a.estimatedHours) || 0)
           : (Number(a.estimatedHours) || 0) - (Number(b.estimatedHours) || 0),
       );
 
       let changed = false;
-      for (const leaf of sortedLeaves) {
-        const current = Number(leaf.estimatedHours) || 0;
+      for (const leaf of sorted) {
         const step = shouldDecrease ? -0.5 : 0.5;
-        const candidate = this.roundHours(current + step);
+        const candidate = this.roundHours((Number(leaf.estimatedHours) || 0) + step);
         if (candidate < 8 || candidate > 80) continue;
-
         leaf.estimatedHours = candidate;
         adjustedTotal = this.roundHours(adjustedTotal + step);
         changed = true;
@@ -126,12 +132,6 @@ export class WbsValidationService {
       if (!changed) break;
       guard += 1;
     }
-
-    for (const node of normalized) {
-      this.recalculateNodeHours(node);
-    }
-
-    return normalized;
   }
 
   private cloneNodes(nodes: WBSNodeDto[]): WBSNodeDto[] {
@@ -146,14 +146,10 @@ export class WbsValidationService {
     const leaves: WBSNodeDto[] = [];
     const traverse = (list: WBSNodeDto[]) => {
       for (const node of list) {
-        if (!node.children || node.children.length === 0) {
-          leaves.push(node);
-          continue;
-        }
+        if (!node.children || node.children.length === 0) { leaves.push(node); continue; }
         traverse(node.children);
       }
     };
-
     traverse(nodes);
     return leaves;
   }
@@ -163,7 +159,6 @@ export class WbsValidationService {
       node.estimatedHours = this.roundHours(Number(node.estimatedHours) || 0);
       return node.estimatedHours;
     }
-
     const total = node.children.reduce((sum, child) => sum + this.recalculateNodeHours(child), 0);
     node.estimatedHours = this.roundHours(total);
     return node.estimatedHours;

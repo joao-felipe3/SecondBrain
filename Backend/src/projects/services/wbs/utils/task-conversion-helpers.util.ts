@@ -1,26 +1,25 @@
 import { createHash } from 'crypto';
 import { WBSNodeDto } from '../../../dto/wbs.dto';
-import { computePertFromMinutes } from './metrics-calculator.util';
-import { computeChunkMinutes } from './metrics-calculator.util';
+import { computePertFromMinutes, computeChunkMinutes } from './metrics-calculator.util';
 import {
   GeneratedTaskDto,
   Task,
-} from '../../../interfaces/wbs-conversion.interface';
-import { MicroTaskDraft } from '../../../interfaces/drafts.interface';
+  ShrinkTaskInput,
+  ShrinkResult,
+  LegacyGeneratedTask,
+  DraftToTaskContext,
+  DraftsWithPlanCacheParams,
+  MapDraftsToTasksParams,
+  GenerateFallbackTasksParams,
+  MicroTaskDraft,
+} from '../../../interfaces';
 
 export function hashKey(input: any): string {
   const raw = typeof input === 'string' ? input : JSON.stringify(input);
   return createHash('sha1').update(raw).digest('hex').slice(0, 16);
 }
 
-export function buildDraftsWithPlanCacheKey(params: {
-  projectId: string;
-  node: WBSNodeDto;
-  nodePath: string;
-  chunkMinutes: number[];
-  plan: any;
-  modelOverride?: string;
-}): string {
+export function buildDraftsWithPlanCacheKey(params: DraftsWithPlanCacheParams): string {
   const nodeId = (params.node as any)?._id ? String((params.node as any)._id) : undefined;
   const model =
     params.modelOverride ||
@@ -30,15 +29,9 @@ export function buildDraftsWithPlanCacheKey(params: {
     '';
 
   const fingerprint = {
-    v: 2,
-    nodeId,
-    nodeName: params.node?.name,
-    nodeDesc: params.node?.description,
-    nodePath: params.nodePath,
-    estimatedHours: params.node?.estimatedHours,
-    chunkMinutes: params.chunkMinutes,
-    plan: params.plan,
-    model,
+    v: 2, nodeId, nodeName: params.node?.name, nodeDesc: params.node?.description,
+    nodePath: params.nodePath, estimatedHours: params.node?.estimatedHours,
+    chunkMinutes: params.chunkMinutes, plan: params.plan, model,
     twoPass: String(process.env.WBS_TWO_PASS_DETAILS || '').trim(),
     detailsModel: String(process.env.WBS_DETAILS_MODEL || '').trim(),
   };
@@ -93,17 +86,7 @@ export function collectLeafNodesInOrder(
   return out;
 }
 
-export function shrinkLeafTasksToTargetHours(
-  tasks: Array<{
-    pomodorosPlanned: number;
-    pertOptimisticMinutes?: number;
-    pertMostLikelyMinutes?: number;
-    pertPessimisticMinutes?: number;
-    pertExpectedMinutes?: number;
-    pertVariance?: number;
-  }>,
-  targetHours: number,
-): { targetHours: number; finalHours: number } {
+export function shrinkLeafTasksToTargetHours(tasks: ShrinkTaskInput[], targetHours: number): ShrinkResult {
   const currentHours = tasks.reduce((sum, t) => sum + (t.pomodorosPlanned || 1) * 25, 0) / 60;
   if (currentHours <= targetHours) {
     return { targetHours, finalHours: currentHours };
@@ -138,14 +121,7 @@ export function shrinkLeafTasksToTargetHours(
 export function convertWBSToTasks(
   nodes: WBSNodeDto[],
   projectId: string,
-): Array<{
-  name: string;
-  description: string;
-  projectId: string;
-  estimatedMinutes: number;
-  priority: number;
-  pomodorosPlanned: number;
-}> {
+): LegacyGeneratedTask[] {
   const tasks: Array<{
     name: string;
     description: string;
@@ -195,11 +171,7 @@ export function convertWBSToTasks(
 // Convert draft objects into task DTOs ready for database creation
 export function convertDraftsToTasks(
   drafts: MicroTaskDraft[],
-  context: {
-    wbsNode?: WBSNodeDto;
-    project?: { _id?: any; id?: any };
-    path?: string;
-  } = {},
+  context: DraftToTaskContext = {},
 ): Task[] {
   if (!drafts || drafts.length === 0) {
     return [];
@@ -252,15 +224,7 @@ export function convertDraftsToTasks(
   return tasks as Task[];
 }
 
-export function mapDraftsToTasks(params: {
-  drafts: MicroTaskDraft[];
-  node: WBSNodeDto;
-  nodePath: string;
-  projectId: string;
-  chunkMinutes: number[];
-  priorityOffset: number;
-  deadline: Date;
-}): GeneratedTaskDto[] {
+export function mapDraftsToTasks(params: MapDraftsToTasksParams): GeneratedTaskDto[] {
   const { drafts, node, nodePath, projectId, chunkMinutes, priorityOffset, deadline } = params;
   const tasks: GeneratedTaskDto[] = [];
   const chunks = chunkMinutes.length;
@@ -294,14 +258,7 @@ export function mapDraftsToTasks(params: {
   return tasks;
 }
 
-export function generateFallbackTasks(params: {
-  node: WBSNodeDto;
-  nodePath: string;
-  projectId: string;
-  chunkMinutes: number[];
-  priorityOffset: number;
-  deadline: Date;
-}): GeneratedTaskDto[] {
+export function generateFallbackTasks(params: GenerateFallbackTasksParams): GeneratedTaskDto[] {
   const { node, nodePath, projectId, chunkMinutes, priorityOffset, deadline } = params;
   const tasks: GeneratedTaskDto[] = [];
   const chunks = chunkMinutes.length;
@@ -316,17 +273,12 @@ export function generateFallbackTasks(params: {
       : `Origem WBS (pacote 8/80): ${nodePath}\nMicro-tarefa: ${i + 1}/${chunks} (~${estimatedMinutes}min)`;
 
     tasks.push({
-      name: `${node.name}${suffix}`,
-      description: fallbackDesc,
-      estimatedMinutes,
-      pomodorosPlanned,
+      name: `${node.name}${suffix}`, description: fallbackDesc,
+      estimatedMinutes, pomodorosPlanned,
       priority: priorityOffset + i + 1,
-      project: projectId,
-      deadline,
-      isConcluded: false,
-      late: false,
-      recurrency: 'no-recurrence',
-      wbsPath: nodePath,
+      project: projectId, deadline,
+      isConcluded: false, late: false,
+      recurrency: 'no-recurrence', wbsPath: nodePath,
     });
   }
   return tasks;

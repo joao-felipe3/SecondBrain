@@ -1,7 +1,7 @@
 import { Injectable, Inject, forwardRef } from '@nestjs/common';
-import { GeminiService } from './gemini.service';
-import { PromptBuilderService } from './prompt-builder.service';
-import { extractJsonArray, extractJsonObject } from '../projects/services/wbs/utils/json-parser.util';
+import { GeminiService } from '../core/gemini.service';
+import { PromptBuilderService } from '../projects/prompt-builder.service';
+import { extractJsonArray, extractJsonObject } from '../../../projects/services/wbs/utils/json-parser.util';
 import {
   MicroTaskOutline,
   MicroTaskDetails,
@@ -12,17 +12,17 @@ import {
   WBSLeafWithPlanGenerationContext,
   SingleDetailsParamsDto,
   MultipleDetailsParamsDto,
-} from '../projects/interfaces/drafts.interface';
+} from '../../../projects/interfaces/drafts.interface';
 import {
   plannerSchema,
   draftsSchema,
   draftOutlinesSchema,
   draftDetailsSchema,
-} from '../projects/schemas/drafts-validation.schema';
+} from '../../../projects/schemas/drafts-validation.schema';
 import {
   getNumericEnv,
   isJsonishError,
-} from '../projects/services/drafts/utils/draft-generation-helpers.util';
+} from '../../../projects/services/drafts/utils/draft-generation-helpers.util';
 
 @Injectable()
 export class DraftsAiService {

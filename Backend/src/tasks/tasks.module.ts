@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { TasksService } from './tasks.service';
-import { GeminiService } from '../ai/gemini.service';
+import { GeminiService } from '../ai/services/core/gemini.service';
 import { ChecklistService } from './services/intelligence';
 import { PertService, BufferService } from './services/analysis';
 import { CPMService, DependencyInferenceService, TasksHierarchyService } from './services/dependencies';

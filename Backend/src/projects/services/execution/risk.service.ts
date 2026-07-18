@@ -2,8 +2,8 @@ import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { Risk, RiskDocument } from '../../schemas/risk.schema';
-import { GeminiService } from '../../../ai/gemini.service';
-import { buildRiskAssessmentPrompt } from '../../../ai/prompts/risk.prompts';
+import { GeminiService } from '../../../ai/services/core/gemini.service';
+import { buildRiskAssessmentPrompt } from '../../../ai/prompts';
 import { CreateRiskDto, UpdateRiskDto } from '../../dto/risk.dto';
 import {
   RiskSeverity,

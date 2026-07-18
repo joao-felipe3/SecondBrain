@@ -2,7 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { TasksService } from '../../../src/tasks/tasks.service';
 import { getModelToken } from '@nestjs/mongoose';
 import { BadRequestException } from '@nestjs/common';
-import { GeminiService } from '../../../src/ai/gemini.service';
+import { GeminiService } from '../../../src/ai/services/core/gemini.service';
 import { ChecklistService } from '../../../src/tasks/services/intelligence/checklist.service';
 import { ProjectsService } from '../../../src/projects/projects.service';
 import { EVMProgressService } from '../../../src/projects/services/evm';

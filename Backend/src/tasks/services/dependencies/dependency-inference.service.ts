@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { GeminiService } from '../../../ai/gemini.service';
+import { GeminiService } from '../../../ai/services/core/gemini.service';
 import {
   inferHeuristicPhases as runHeuristics,
   filterInvalidAndSelfEdges,
@@ -9,7 +9,7 @@ import {
   buildInferWithAiPrompt,
   buildRetryPrompt,
   buildInferInterLeafPrompt,
-} from '../../../ai/prompts/dependency.prompts';
+} from '../../../ai/prompts';
 import {
   InferWithAiDto,
   InferInterLeafWithAiDto,

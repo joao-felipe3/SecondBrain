@@ -17,7 +17,7 @@ import {
   getWbsGenerationModelOverride,
   getDetailsModelOverride,
 } from './utils/draft-generation-helpers.util';
-import { DraftsAiService } from '../../../ai/drafts-ai.service';
+import { DraftsAiService } from '../../../ai/services/tasks/drafts-ai.service';
 
 @Injectable()
 export class DraftWithPlanGenerationService {

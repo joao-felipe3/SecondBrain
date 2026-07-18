@@ -4,7 +4,7 @@ import { Model, Types } from 'mongoose';
 import { ProjectWave, ProjectWaveDocument } from '../../schemas/project-wave.schema';
 import { ProjectsService } from '../../projects.service';
 import { WBSService } from '../wbs';
-import { RollingWaveAIService } from '../../../ai/rolling-wave-ai.service';
+import { RollingWaveAIService } from '../../../ai/services/projects/rolling-wave-ai.service';
 import { AIPlan } from '../../interfaces/rolling-wave.interface';
 import { normalizeWavePlanShape } from './utils/rolling-wave-helpers.util';
 import {
@@ -304,11 +304,11 @@ export class RollingWavePlanningService {
     const wbsTree = await this.wbsService.getWBS(projectId);
 
     // Passo 1: Determinar estrutura de ondas
-    const waveStructure = await this.rollingWaveAIService.planWaveStructure(
+    const waveStructure = await this.rollingWaveAIService.planWaveStructure({
       project,
       tasks,
       dailyCapacityHours,
-    );
+    });
 
     if (!waveStructure) {
       this.logger.warn(`Fallback para modo determinístico (sem IA) para ${projectId}`);
@@ -323,13 +323,13 @@ export class RollingWavePlanningService {
     }
 
     // Passo 2: Agrupar tarefas nas ondas
-    const aiPlan = await this.rollingWaveAIService.planWaveGrouping(
+    const aiPlan = await this.rollingWaveAIService.planWaveGrouping({
       project,
       tasks,
-      waveStructure.recommendedWaveCount,
+      waveCount: waveStructure.recommendedWaveCount,
       wbsTree,
       dailyCapacityHours,
-    );
+    });
 
     if (aiPlan) {
       return this.applyAIPlanToWaves(

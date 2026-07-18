@@ -1,5 +1,5 @@
 import { Injectable, Inject, forwardRef, Logger } from '@nestjs/common';
-import { GeminiService } from '../../../ai/gemini.service';
+import { GeminiService } from '../../../ai/services/core/gemini.service';
 import {
   SmartObjectiveDto,
   CatchballRequestDto,
@@ -11,7 +11,7 @@ import {
   buildCatchballQuestionsPrompt,
   buildSuggestAnswerPrompt,
   buildSmartObjectivePrompt,
-} from '../../../ai/prompts/planning.prompts';
+} from '../../../ai/prompts';
 
 interface ConversationContext {
   projectContext: string;

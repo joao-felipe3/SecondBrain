@@ -1,12 +1,7 @@
-/**
- * Calculation utilities for metrics, PERT, chunks, embeddings, etc
- */
-
 import {
   MICRO_TASK_MIN_MINUTES,
   MICRO_TASK_HARD_MAX_MINUTES,
   MICRO_TASK_MAX_PER_LEAF,
-  MICRO_TASK_PREFERRED_MINUTES,
 } from '../constants/wbs.constants';
 import {
   normalizeTitle,
@@ -15,17 +10,17 @@ import {
   normalizePreferredPomodoros,
 } from './normalizers.util';
 import { WBSNodeDto } from '../../../dto/wbs.dto';
+import {
+  PertCalculationResult,
+  BatchMetricInputTask,
+  BatchMetricsOptions,
+  BatchMetricsResult,
+  ChunkMinutesParams,
+  RefineChunksParams,
+} from '../../../interfaces';
 
-/**
- * Compute PERT estimates from minutes
- */
-export function computePertFromMinutes(minutes: number): {
-  optimistic: number;
-  mostLikely: number;
-  pessimistic: number;
-  expected: number;
-  variance: number;
-} {
+// Compute PERT estimates from minutes
+export function computePertFromMinutes(minutes: number): PertCalculationResult {
   const base = Math.max(5, Math.round(minutes));
   const optimistic = Math.max(5, Math.round(base * 0.75));
   const mostLikely = Math.max(optimistic, base);
@@ -36,9 +31,7 @@ export function computePertFromMinutes(minutes: number): {
   return { optimistic, mostLikely, pessimistic, expected, variance };
 }
 
-/**
- * Estimate total micro-task count from WBS nodes
- */
+// Estimate total micro-task count from WBS nodes
 export function estimateMicroTaskCount(nodes: WBSNodeDto[]): number {
   let count = 0;
   const traverse = (list: WBSNodeDto[]) => {
@@ -55,9 +48,40 @@ export function estimateMicroTaskCount(nodes: WBSNodeDto[]): number {
   return count;
 }
 
-/**
- * Compute how to split total minutes into optimal micro-task chunks
- */
+function calculateTargetChunks(params: ChunkMinutesParams): number {
+  const { minutes, preferredM, hardMaxM, minM } = params;
+  const minChunks = Math.max(1, Math.ceil(minutes / hardMaxM));
+  const preferredChunks = Math.max(1, Math.ceil(minutes / preferredM));
+  let chunks = Math.min(preferredChunks, MICRO_TASK_MAX_PER_LEAF);
+  chunks = Math.max(chunks, minChunks);
+
+  const maxChunksByMin = Math.max(1, Math.floor(minutes / minM));
+  chunks = Math.min(chunks, maxChunksByMin);
+  return Math.max(chunks, minChunks);
+}
+
+function distributeMinutes(minutes: number, chunks: number): number[] {
+  const base = Math.floor(minutes / chunks);
+  const remainder = minutes % chunks;
+  return Array.from({ length: chunks }, (_, i) => base + (i < remainder ? 1 : 0));
+}
+
+function refineChunksForSoftMax(params: RefineChunksParams): number[] {
+  const { minutes, chunksList, softMaxM, minChunks } = params;
+  const average = minutes / chunksList.length;
+  if (average <= softMaxM) return chunksList;
+
+  const targetChunks = Math.min(
+    Math.max(minChunks, Math.ceil(minutes / softMaxM)),
+    Math.max(minChunks, MICRO_TASK_MAX_PER_LEAF),
+  );
+  if (targetChunks > chunksList.length) {
+    return distributeMinutes(minutes, targetChunks);
+  }
+  return chunksList;
+}
+
+// Compute how to split total minutes into optimal micro-task chunks
 export function computeChunkMinutes(
   totalMinutes: number,
   options?: {
@@ -71,98 +95,36 @@ export function computeChunkMinutes(
   const softMaxM = Math.min(MICRO_TASK_HARD_MAX_MINUTES, Math.max(preferredM, preferredPomodoros * 40));
   const hardMaxM = MICRO_TASK_HARD_MAX_MINUTES;
 
-  // Minimum chunks needed to respect hard max
-  const minChunks = Math.max(1, Math.ceil(minutes / hardMaxM));
-  // Prefer smaller chunks (roughly 1–3 pomodoros)
-  const preferredChunks = Math.max(1, Math.ceil(minutes / preferredM));
-  // Avoid too many chunks per leaf unless required by hard max
-  let chunks = Math.min(preferredChunks, MICRO_TASK_MAX_PER_LEAF);
-  chunks = Math.max(chunks, minChunks);
+  // 1. Calculate target chunk count
+  let chunks = calculateTargetChunks({ minutes, preferredM, hardMaxM, minM });
 
-  // Also do not create chunks smaller than the minimum size
-  const maxChunksByMin = Math.max(1, Math.floor(minutes / minM));
-  chunks = Math.min(chunks, maxChunksByMin);
-  chunks = Math.max(chunks, minChunks);
-
-  // Distribute minutes as evenly as possible
-  let base = Math.floor(minutes / chunks);
-  let remainder = minutes % chunks;
-
-  // If the base is still too large (can happen with caps), increase chunks as needed
-  while (base > hardMaxM) {
+  // 2. Adjust chunk count if base size exceeds hard max (e.g. due to capping/bounds)
+  while (Math.floor(minutes / chunks) > hardMaxM) {
     chunks++;
-    base = Math.floor(minutes / chunks);
-    remainder = minutes % chunks;
   }
 
-  const chunkMinutes: number[] = [];
-  for (let i = 0; i < chunks; i++) {
-    const m = base + (i < remainder ? 1 : 0);
-    chunkMinutes.push(m);
-  }
+  // 3. Distribute minutes evenly
+  const chunkMinutes = distributeMinutes(minutes, chunks);
 
-  // If chunks are still very large, try to split down towards the soft max.
-  // (but never exceed the max-per-leaf cap unless needed)
-  const average = minutes / chunkMinutes.length;
-  if (average > softMaxM) {
-    const targetChunks = Math.min(
-      Math.max(minChunks, Math.ceil(minutes / softMaxM)),
-      Math.max(minChunks, MICRO_TASK_MAX_PER_LEAF),
-    );
-    if (targetChunks > chunkMinutes.length) {
-      const newBase = Math.floor(minutes / targetChunks);
-      const newRemainder = minutes % targetChunks;
-      const next: number[] = [];
-      for (let i = 0; i < targetChunks; i++) {
-        next.push(newBase + (i < newRemainder ? 1 : 0));
-      }
-      return next;
-    }
-  }
-
-  return chunkMinutes;
+  // 4. Refine chunks towards soft max if needed
+  const minChunks = Math.max(1, Math.ceil(minutes / hardMaxM));
+  return refineChunksForSoftMax({ minutes, chunksList: chunkMinutes, softMaxM, minChunks });
 }
 
-/**
- * Compute batch metrics for quality assessment
- */
+function createZeroMetrics(): BatchMetricsResult {
+  return {
+    total: 0, uniqueTitles: 0, dupScore: 0, uniqueTemplates: 0, similarScore: 0,
+    verbVariety: 0, verbsCount: 0, cognitiveVariety: 0, cognitiveTypesCount: 0, themesCount: 0,
+  };
+}
+
+// Compute batch metrics for quality assessment
 export function computeBatchMetrics(
-  tasks: Array<{
-    name?: string;
-    description?: string;
-    themeTag?: string;
-    microTaskType?: string;
-  }>,
-  options?: {
-    inferCognitiveType?: (title?: string, description?: string) => string;
-  },
-): {
-  total: number;
-  uniqueTitles: number;
-  dupScore: number;
-  uniqueTemplates: number;
-  similarScore: number;
-  verbVariety: number;
-  verbsCount: number;
-  cognitiveVariety: number;
-  cognitiveTypesCount: number;
-  themesCount: number;
-} {
+  tasks: BatchMetricInputTask[],
+  options?: BatchMetricsOptions,
+): BatchMetricsResult {
   const total = tasks.length || 0;
-  if (!total) {
-    return {
-      total: 0,
-      uniqueTitles: 0,
-      dupScore: 0,
-      uniqueTemplates: 0,
-      similarScore: 0,
-      verbVariety: 0,
-      verbsCount: 0,
-      cognitiveVariety: 0,
-      cognitiveTypesCount: 0,
-      themesCount: 0,
-    };
-  }
+  if (!total) return createZeroMetrics();
 
   const normalizedTitles = tasks.map((t) => normalizeTitle(t.name));
   const templateTitles = tasks.map((t) => templateTitle(t.name));
@@ -193,16 +155,8 @@ export function computeBatchMetrics(
   const cognitiveVariety = uniqueCognitiveTypes / total;
 
   return {
-    total,
-    uniqueTitles,
-    dupScore,
-    uniqueTemplates,
-    similarScore,
-    verbVariety,
-    verbsCount: uniqueVerbs,
-    cognitiveVariety,
-    cognitiveTypesCount: uniqueCognitiveTypes,
-    themesCount: uniqueThemes,
+    total, uniqueTitles, dupScore, uniqueTemplates, similarScore, verbVariety, verbsCount: uniqueVerbs,
+    cognitiveVariety, cognitiveTypesCount: uniqueCognitiveTypes, themesCount: uniqueThemes,
   };
 }
 
@@ -223,9 +177,7 @@ function mapMicroTaskTypeToCognitiveType(
   return undefined;
 }
 
-/**
- * Infer cognitive type from title/description
- */
+// Infer cognitive type from title/description
 function inferCognitiveTypeDefault(title?: string, description?: string): string {
   const text = `${title || ''} ${description || ''}`.toLowerCase();
   if (/\b(coletar|compilar|baixar|buscar|encontrar|reunir)\b/.test(text)) return 'capture';
@@ -235,9 +187,7 @@ function inferCognitiveTypeDefault(title?: string, description?: string): string
   return 'other';
 }
 
-/**
- * Cosine similarity between two vectors
- */
+// Cosine similarity between two vectors
 export function cosineSimilarity(a: number[], b: number[]): number {
   if (!a.length || !b.length || a.length !== b.length) return 0;
   let dot = 0;
@@ -252,18 +202,14 @@ export function cosineSimilarity(a: number[], b: number[]): number {
   return dot / (Math.sqrt(na) * Math.sqrt(nb));
 }
 
-/**
- * Normalize vector to unit length
- */
+// Normalize vector to unit length
 export function normalizeVector(vec: number[]): number[] {
   const norm = Math.sqrt(vec.reduce((sum, v) => sum + v * v, 0));
   if (!norm) return vec;
   return vec.map((v) => v / norm);
 }
 
-/**
- * Simple k-means clustering for embeddings
- */
+// Simple k-means clustering for embeddings
 export function kMeansClusters(
   vectors: number[][],
   k: number,

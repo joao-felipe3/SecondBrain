@@ -6,5 +6,4 @@ export * from './drafts.interface';
 export * from './x-matrix.interface';
 export * from './gantt.interface';
 export * from './pert.interface';
-
-
+export * from './wbs-metrics.interface';

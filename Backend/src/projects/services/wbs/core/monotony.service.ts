@@ -1,18 +1,59 @@
 import { Injectable } from '@nestjs/common';
-import { MonotonyDetectionService } from './monotony-detection.service';
+import { normalizeTitle, templateTitle } from '../utils/normalizers.util';
 import { MAX_MONOTONY_FIX_ROUNDS, MONOTONY_FIX_BATCH_SIZE } from '../constants/wbs.constants';
-import { WbsAiService } from '../../../../ai/wbs-ai.service';
+import { WbsAiService } from '../../../../ai/services/projects/wbs-ai.service';
 import { AutoFixMonotonyParams, MicroTaskDraft } from '../../../interfaces';
 
 /**
- * Service for auto-fixing monotony issues in micro-task batches using AI
+ * Service for detecting and auto-fixing monotony issues in micro-task batches using AI.
  */
 @Injectable()
-export class MonotonyFixService {
+export class MonotonyService {
   constructor(
     private readonly wbsAiService: WbsAiService,
-    private readonly monotonyDetection: MonotonyDetectionService,
-  ) {}
+  ) { }
+
+  /**
+   * Detect monotony issues: duplicates and repeated templates
+   *
+   * Identifies task indices that have:
+   * - Normalized titles matching other tasks (exact duplicates)
+   * - Templates matching other tasks (similar structure/pattern)
+   *
+   * Used in the monotony correction loop to determine which tasks need regeneration.
+   */
+  detectMonotonyIssues(drafts: Array<{ name?: string }>): {
+    badIndices: number[];
+    hasForbiddenPatterns: boolean;
+  } {
+    const bad = new Set<number>();
+
+    const normalizedTitles = drafts.map((d) => normalizeTitle(d?.name));
+    const templateTitles = drafts.map((d) => templateTitle(d?.name));
+
+    // Flag only repeated occurrences (keep the first) to keep changes minimal.
+    const firstByNormalized = new Map<string, number>();
+    normalizedTitles.forEach((key, idx) => {
+      if (!key) {
+        bad.add(idx);
+        return;
+      }
+      if (firstByNormalized.has(key)) bad.add(idx);
+      else firstByNormalized.set(key, idx);
+    });
+
+    const firstByTemplate = new Map<string, number>();
+    templateTitles.forEach((key, idx) => {
+      if (!key) return;
+      if (firstByTemplate.has(key)) bad.add(idx);
+      else firstByTemplate.set(key, idx);
+    });
+
+    return {
+      badIndices: Array.from(bad.values()).sort((a, b) => a - b),
+      hasForbiddenPatterns: false,
+    };
+  }
 
   /**
    * Simple sanitization: remove "1/4" patterns and clean whitespace
@@ -47,7 +88,7 @@ export class MonotonyFixService {
     ).sort((a, b) => a - b);
 
     for (let round = 0; round < MAX_MONOTONY_FIX_ROUNDS; round++) {
-      const issues = this.monotonyDetection.detectMonotonyIssues(drafts);
+      const issues = this.detectMonotonyIssues(drafts);
       const mergedBad = Array.from(new Set([...(issues.badIndices || []), ...forcedIndices])).sort(
         (a, b) => a - b,
       );

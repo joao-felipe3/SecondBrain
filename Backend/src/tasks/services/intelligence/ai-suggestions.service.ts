@@ -8,7 +8,7 @@ import {
   AiTaskSuggestionDto,
 } from '../../dto/intelligence/generate-ai-suggestions.dto';
 import { TaskDocument } from '../../schemas/task.schema';
-import { GeminiService } from '../../../ai/gemini.service';
+import { GeminiService } from '../../../ai/services/core/gemini.service';
 import { SuggestionState } from '../../interfaces';
 import {
   calculateSuggestionsHours,

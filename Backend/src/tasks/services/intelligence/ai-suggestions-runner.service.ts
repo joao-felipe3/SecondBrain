@@ -2,7 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { TaskDocument } from '../../schemas/task.schema';
-import { GeminiService } from '../../../ai/gemini.service';
+import { GeminiService } from '../../../ai/services/core/gemini.service';
 import {
   GenerateAiSuggestionsDto,
   AiTaskSuggestionDto,

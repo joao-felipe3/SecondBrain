@@ -5,7 +5,7 @@ import { Requirement as RequirementSchema, RequirementDocument } from '../../sch
 import { Requirement } from '../../entities/requirement.entity';
 import { RequirementMapper } from '../../mappers/requirement.mapper';
 import { CreateTaskDto } from '../../dto/task/create-task.dto';
-import { GeminiService } from '../../../ai/gemini.service';
+import { GeminiService } from '../../../ai/services/core/gemini.service';
 import { TasksService } from '../../tasks.service';
 import { RTMValidation } from '../../interfaces/rtm.interface';
 import { RTMValidationService } from './rtm-validation.service';

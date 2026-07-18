@@ -1,7 +1,7 @@
 import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
-import { GeminiService } from '../../../ai/gemini.service';
+import { GeminiService } from '../../../ai/services/core/gemini.service';
 import { TaskDocument } from '../../schemas/task.schema';
 import { TaskCompletionFeedbackDocument } from '../../schemas/task-completion-feedback.schema';
 import {
@@ -14,7 +14,7 @@ import {
   SaveErrorFeedbackOnCompletionDto,
   ChecklistItemDto,
 } from '../../dto';
-import { buildFeedbackPrompt } from '../../../ai/prompts/feedback.prompts';
+import { buildFeedbackPrompt } from '../../../ai/prompts';
 
 export { CompletionFeedbackPayloadDto as CompletionFeedbackPayload, CompletionFeedbackResponse };
 

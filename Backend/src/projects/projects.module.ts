@@ -23,9 +23,7 @@ import { RiskService, LeafTasksBufferService, ProjectStatsService } from './serv
 import { GanttService, PertDiagramService, ProjectsXMatrixService } from './services/visualization';
 import {
   WBSService,
-  MonotonyDetectionService,
-  MonotonyFixService,
-  PromptBuilderService,
+  MonotonyService,
   ThemeExtractionService,
   CacheService,
   WbsValidationService,
@@ -72,8 +70,7 @@ import {
     LeafTasksBufferService,
     ProjectStatsService,
     WBSService,
-    MonotonyDetectionService,
-    MonotonyFixService,
+    MonotonyService,
     ThemeExtractionService,
     CacheService,
     WbsValidationService,

@@ -262,3 +262,25 @@ export interface BuildWaveSummaryOptions {
   startDate: Date | null;
   endDate: Date | null;
 }
+
+export interface PlanWaveStructureParams {
+  project: { name?: string; deadline: Date | string };
+  tasks: Array<{ pertExpectedMinutes?: number | null; pomodorosPlanned?: number | null }>;
+  dailyCapacityHours: number;
+}
+
+export interface PlanWaveGroupingParams {
+  project: { name?: string; deadline: Date | string };
+  tasks: Array<{
+    _id?: any;
+    id?: any;
+    name?: string;
+    wbsPath?: string;
+    pertExpectedMinutes?: number | null;
+    pomodorosPlanned?: number | null;
+  }>;
+  waveCount: number;
+  wbsTree: any[];
+  dailyCapacityHours: number;
+}
+

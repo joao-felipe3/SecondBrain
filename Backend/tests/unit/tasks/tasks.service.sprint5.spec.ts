@@ -3,7 +3,7 @@ import { getModelToken } from '@nestjs/mongoose';
 import { Types } from 'mongoose';
 import { TasksService } from '../../../src/tasks/tasks.service';
 import { ProjectsService } from '../../../src/projects/projects.service';
-import { GeminiService } from '../../../src/ai/gemini.service';
+import { GeminiService } from '../../../src/ai/services/core/gemini.service';
 import { EVMProgressService } from '../../../src/projects/services/evm';
 import { PertService } from '../../../src/tasks/services/analysis/pert.service';
 import { ChecklistService } from '../../../src/tasks/services/intelligence/checklist.service';

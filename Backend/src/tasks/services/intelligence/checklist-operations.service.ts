@@ -4,7 +4,7 @@ import { Model, Types } from 'mongoose';
 import { TaskDocument, TaskChecklistItem } from '../../schemas/task.schema';
 import { ChecklistItemDto } from '../../dto/task/create-task.dto';
 import { TasksInputService } from '../workflow/input.service';
-import { GeminiService } from '../../../ai/gemini.service';
+import { GeminiService } from '../../../ai/services/core/gemini.service';
 import { ChecklistService } from './checklist.service';
 import { ChecklistValidationResult, ChecklistHistoryProjectRef } from '../../interfaces';
 import {

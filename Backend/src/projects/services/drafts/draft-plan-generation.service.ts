@@ -7,7 +7,7 @@ import {
   hashKey,
 } from './utils/draft-generation-helpers.util';
 import { WBSLeafPlanParamsDto, WBSLeafPlanResultDto } from '../../interfaces/drafts.interface';
-import { DraftsAiService } from '../../../ai/drafts-ai.service';
+import { DraftsAiService } from '../../../ai/services/tasks/drafts-ai.service';
 
 @Injectable()
 export class DraftPlanGenerationService {

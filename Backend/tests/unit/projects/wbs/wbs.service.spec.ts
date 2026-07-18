@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getModelToken } from '@nestjs/mongoose';
 import { WBSService } from '../../../../src/projects/services/wbs';
-import { WbsAiService } from '../../../../src/ai/wbs-ai.service';
+import { WbsAiService } from '../../../../src/ai/services/projects/wbs-ai.service';
 import { WBSNodeDto } from '../../../../src/projects/dto/wbs.dto';
 import {
   WbsPersistenceService,

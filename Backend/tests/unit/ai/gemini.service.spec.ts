@@ -1,7 +1,12 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ConfigService } from '@nestjs/config';
 import { beforeEach, describe, expect, it, jest } from '@jest/globals';
-import { GeminiService } from '../../../src/ai/gemini.service';
+import { GeminiService } from '../../../src/ai/services/core/gemini.service';
+import { GeminiExecutorService } from '../../../src/ai/services/core/gemini-executor.service';
+import { ChecklistAiService } from '../../../src/ai/services/tasks/checklist-ai.service';
+import { PertAiService } from '../../../src/ai/services/tasks/pert-ai.service';
+import { SuggestionsAiService } from '../../../src/ai/services/tasks/suggestions-ai.service';
+import { DependencyAiService } from '../../../src/ai/services/tasks/dependency-ai.service';
 
 describe('GeminiService', () => {
   let service: GeminiService;
@@ -10,6 +15,11 @@ describe('GeminiService', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         GeminiService,
+        GeminiExecutorService,
+        ChecklistAiService,
+        PertAiService,
+        SuggestionsAiService,
+        DependencyAiService,
         {
           provide: ConfigService,
           useValue: {

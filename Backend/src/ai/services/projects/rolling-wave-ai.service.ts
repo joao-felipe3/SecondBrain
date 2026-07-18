@@ -1,117 +1,22 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { GeminiService } from './gemini.service';
+import { GeminiService } from '../core/gemini.service';
 import {
   buildPlanWaveStructurePrompt,
   buildPlanWaveGroupingPrompt,
-} from './prompts/rolling-wave.prompts';
-import { AIPlan, AIWaveStructure } from '../projects/interfaces/rolling-wave.interface';
+} from '../../prompts';
+import {
+  AIPlan,
+  AIWaveStructure,
+  PlanWaveStructureParams,
+  PlanWaveGroupingParams,
+} from '../../../projects/interfaces/rolling-wave.interface';
 import {
   estimateTaskHours,
   buildBalancedWaveDurations,
   normalizeWavePlanShape,
-  redistributeTasksAcrossWaves,
-} from '../projects/services/strategy/utils/rolling-wave-helpers.util';
-
-function sanitizeJSON(jsonString: string): string {
-  try {
-    let result = jsonString.trim();
-    const chars: string[] = [];
-    let inString = false;
-    let escapeNext = false;
-
-    for (let i = 0; i < result.length; i++) {
-      const char = result[i];
-
-      if (escapeNext) {
-        chars.push(char);
-        escapeNext = false;
-        continue;
-      }
-
-      if (char === '\\') {
-        chars.push(char);
-        escapeNext = true;
-        continue;
-      }
-
-      if (char === '"' && (i === 0 || result[i - 1] !== '\\')) {
-        inString = !inString;
-        chars.push(char);
-        continue;
-      }
-
-      if (inString && (char === '\n' || char === '\r')) {
-        chars.push(' ');
-        continue;
-      }
-
-      chars.push(char);
-    }
-
-    result = chars.join('');
-    result = result.replace(/,\s*}/g, '}');
-    result = result.replace(/,\s*]/g, ']');
-
-    result = result.replace(/"([^"]*?)(['"])([^"]*?)"/g, (match, prefix, quote, suffix) => {
-      if (quote === "'") {
-        return match;
-      }
-      return match;
-    });
-
-    return result;
-  } catch (e) {
-    return jsonString;
-  }
-}
-
-function extractAndValidateJSON<T extends Record<string, any>>(
-  responseText: string,
-  requiredFields: string[],
-  logger?: { warn: (msg: string) => void },
-): T | null {
-  try {
-    const cleaned = responseText
-      .replace(/```json\n?/g, '')
-      .replace(/```\n?/g, '')
-      .replace(/^[\s\n]*```/gm, '')
-      .replace(/```[\s\n]*$/gm, '')
-      .trim();
-
-    const jsonStart = cleaned.indexOf('{');
-    const jsonEnd = cleaned.lastIndexOf('}');
-
-    if (jsonStart < 0 || jsonEnd <= jsonStart) {
-      logger?.warn(`[JSON_EXTRACT] Nenhum JSON encontrado na resposta`);
-      return null;
-    }
-
-    let jsonString = cleaned.substring(jsonStart, jsonEnd + 1);
-
-    if (!jsonString.endsWith('}')) {
-      logger?.warn(
-        `[JSON_INCOMPLETE] JSON não termina com "}" - truncado?\nEnd: ...${jsonString.substring(Math.max(0, jsonString.length - 100))}`,
-      );
-      return null;
-    }
-
-    jsonString = sanitizeJSON(jsonString);
-
-    const parsedAny: any = JSON.parse(jsonString);
-
-    for (const field of requiredFields) {
-      if (!(field in parsedAny)) {
-        logger?.warn(`[JSON_MISSING_FIELD] Campo obrigatório ausente: ${field}`);
-        return null;
-      }
-    }
-
-    return parsedAny as T;
-  } catch (e: any) {
-    logger?.warn(`[JSON_PARSE_ERROR] ${e.message}\nResponse: ${responseText.substring(0, 400)}`);
-    return null;
-  }
-}
+} from '../../../projects/services/strategy/utils/rolling-wave-helpers.util';
+import { extractAndValidateJSON } from '../../utils/json-sanitizer.util';
+import { rebalanceWaveDistribution } from '../../utils/rolling-wave-rebalance.helper';
 
 @Injectable()
 export class RollingWaveAIService {
@@ -120,13 +25,10 @@ export class RollingWaveAIService {
   constructor(private readonly geminiService: GeminiService) {}
 
   /**
-   * Primeira chamada Gemini: determinar número ideal de ondas
+   * Determinar número ideal de ondas
    */
-  async planWaveStructure(
-    project: any,
-    tasks: any[],
-    dailyCapacityHours: number,
-  ): Promise<AIWaveStructure | null> {
+  async planWaveStructure(params: PlanWaveStructureParams): Promise<AIWaveStructure | null> {
+    const { project, tasks, dailyCapacityHours } = params;
     try {
       const modelName = process.env.GEMINI_MODEL || 'gemma-3-27b-it';
 
@@ -147,7 +49,6 @@ export class RollingWaveAIService {
 
       const responseText = await this.geminiService.generateContent(prompt, { model: modelName });
 
-      // Validar e extrair JSON
       const parsed = extractAndValidateJSON<AIWaveStructure>(
         responseText,
         ['recommendedWaveCount', 'totalDurationDays', 'description', 'reasoning'],
@@ -161,7 +62,6 @@ export class RollingWaveAIService {
         return null;
       }
 
-      // Validar valores
       if (
         !parsed.recommendedWaveCount ||
         !parsed.totalDurationDays ||
@@ -184,15 +84,10 @@ export class RollingWaveAIService {
   }
 
   /**
-   * Segunda chamada Gemini: Determinar alocação de WBS para cada onda
+   * Determinar alocação de WBS para cada onda
    */
-  async planWaveGrouping(
-    project: any,
-    tasks: any[],
-    waveCount: number,
-    wbsTree: any[],
-    dailyCapacityHours: number,
-  ): Promise<AIPlan | null> {
+  async planWaveGrouping(params: PlanWaveGroupingParams): Promise<AIPlan | null> {
+    const { project, tasks, waveCount, wbsTree, dailyCapacityHours } = params;
     try {
       const modelName = process.env.GEMINI_STRONG_MODEL || 'gemini-2.5-flash-lite';
 
@@ -203,7 +98,6 @@ export class RollingWaveAIService {
       );
       const waveDurations = buildBalancedWaveDurations(totalAvailableDays, waveCount);
 
-      // Calcular distribuição equilibrada de tasks
       const totalTasks = tasks.length;
       const tasksPerWave = Math.ceil(totalTasks / waveCount);
       const minTasksPerWave = Math.max(1, Math.floor(tasksPerWave * 0.8));
@@ -213,7 +107,6 @@ export class RollingWaveAIService {
         `[DISTRIBUTION] Total tasks: ${totalTasks}, waves: ${waveCount}, target: ${tasksPerWave}±20% (${minTasksPerWave}-${maxTasksPerWave})`,
       );
 
-      // Montar ESTRUTURA WBS com QUANTIDADE de tasks por pacote
       const wbsTaskCount = new Map<string, number>();
       const tasksByWbs = new Map<string, any[]>();
 
@@ -231,7 +124,6 @@ export class RollingWaveAIService {
         .map(([wbs, count]) => ({ wbs, count }))
         .sort((a, b) => b.count - a.count);
 
-      // Preparar exemplos de tasks por WBS (apenas títulos)
       const taskExamplesByWbs = new Map<string, string[]>();
       for (const [wbs, taskList] of tasksByWbs.entries()) {
         taskExamplesByWbs.set(
@@ -240,7 +132,6 @@ export class RollingWaveAIService {
         );
       }
 
-      // IMPORTANTE: Usar títulos, não IDs, para semântica real
       const wbsWithExamples = wbsDistribution.map((item) => ({
         wbs: item.wbs,
         count: item.count,
@@ -279,18 +170,14 @@ export class RollingWaveAIService {
       const normalizedPlan = normalizeWavePlanShape(parsed, waveCount, totalAvailableDays);
       const taskCursorByWbs = new Map<string, number>();
 
-      // CONVERTER ALOCAÇÃO DE WBS EM TASK IDs REAIS
       for (const wave of normalizedPlan.waves) {
         const taskIds: string[] = [];
-
-        // Para cada WBS alocado nesta onda
         const wbsAllocation = wave.wbsAllocation || {};
         for (const [wbs, quantityNeeded] of Object.entries(wbsAllocation)) {
           const tasksInWbs = tasksByWbs.get(wbs) || [];
           const startIndex = taskCursorByWbs.get(wbs) || 0;
           const safeQuantityNeeded = Math.max(0, Number(quantityNeeded) || 0);
 
-          // Consumir tarefas sem reaproveitar o mesmo começo do pacote em múltiplas ondas.
           const selectedTasks = tasksInWbs.slice(startIndex, startIndex + safeQuantityNeeded);
 
           for (const task of selectedTasks) {
@@ -309,7 +196,6 @@ export class RollingWaveAIService {
         wave.taskIds = taskIds;
       }
 
-      // DEBUG: Log
       this.logger.debug(
         `[GEMINI] Agrupamento (WBS-based) retornou: ${normalizedPlan.waves.length} ondas`,
       );
@@ -322,7 +208,6 @@ export class RollingWaveAIService {
         );
       }
 
-      // VALIDAR DISTRIBUIÇÃO
       const allTaskIds = tasks.map((t) => String(t._id || t.id));
       const taskCountByWave = normalizedPlan.waves.map((w) => w.taskIds.length);
       const allocatedUniqueTaskIds = new Set(normalizedPlan.waves.flatMap((w) => w.taskIds));
@@ -335,14 +220,15 @@ export class RollingWaveAIService {
         this.logger.warn(
           `[DISTRIBUTION] Plano inválido para persistência direta: mismatchOndas=${parsed.waves.length !== waveCount}, missingTasks=${missingTaskCount}, ondasForaDoRange=${unbalancedWaves.length}. Rebalanceando...`,
         );
-        return this.rebalanceWaveDistribution(
-          normalizedPlan,
+        return rebalanceWaveDistribution({
+          aiPlan: normalizedPlan,
           allTaskIds,
           minTasksPerWave,
           maxTasksPerWave,
-          waveCount,
-          totalAvailableDays,
-        );
+          expectedWaveCount: waveCount,
+          totalDurationDays: totalAvailableDays,
+          logger: this.logger,
+        });
       }
 
       return normalizedPlan;
@@ -350,71 +236,5 @@ export class RollingWaveAIService {
       this.logger.warn(`Erro ao chamar Gemini para agrupamento WBS: ${error.message}`);
       return null;
     }
-  }
-
-  /**
-   * Rebalancear distribuição de tasks se ondas ficarem muito desbalanceadas
-   */
-  rebalanceWaveDistribution(
-    aiPlan: AIPlan,
-    allTaskIds: string[],
-    minTasksPerWave: number,
-    maxTasksPerWave: number,
-    expectedWaveCount: number,
-    totalDurationDays: number,
-  ): AIPlan {
-    this.logger.debug(`[REBALANCE] Iniciando rebalanceamento de distribuição...`);
-
-    const normalizedPlan = normalizeWavePlanShape(aiPlan, expectedWaveCount, totalDurationDays);
-
-    // Coletar todas as tarefas alocadas do plano
-    const allocatedTasks = new Set<string>();
-    let duplicateTaskCount = 0;
-    for (const wave of normalizedPlan.waves) {
-      for (const tid of wave.taskIds) {
-        if (allocatedTasks.has(tid)) {
-          duplicateTaskCount++;
-          continue;
-        }
-        allocatedTasks.add(tid);
-      }
-    }
-
-    // Encontrar tarefas não alocadas
-    const unallocatedTasks = allTaskIds.filter((tid) => !allocatedTasks.has(tid));
-    this.logger.debug(
-      `[REBALANCE] Tarefas alocadas: ${allocatedTasks.size}, não alocadas: ${unallocatedTasks.length}, duplicadas ignoradas: ${duplicateTaskCount}`,
-    );
-
-    this.logger.debug(
-      `[REBALANCE] Redistribuindo ${allTaskIds.length} tarefas em ${expectedWaveCount} ondas.`,
-    );
-
-    const redistributedPlan = redistributeTasksAcrossWaves(
-      normalizedPlan,
-      allTaskIds,
-      expectedWaveCount,
-      totalDurationDays,
-      minTasksPerWave,
-      maxTasksPerWave,
-    );
-
-    // Log Final
-    this.logger.debug(`[REBALANCE] Distribuição final:`);
-    for (const wave of redistributedPlan.waves) {
-      this.logger.debug(`  Wave ${wave.waveNumber}: ${wave.taskIds.length} tasks`);
-    }
-
-    const finalCounts = redistributedPlan.waves.map((w) => w.taskIds.length);
-    const finalOutOfRangeCount = finalCounts.filter(
-      (cnt) => cnt < minTasksPerWave || cnt > maxTasksPerWave,
-    ).length;
-    if (finalOutOfRangeCount > 0) {
-      this.logger.warn(
-        `[REBALANCE] ${finalOutOfRangeCount} ondas ainda ficaram fora do range alvo ${minTasksPerWave}-${maxTasksPerWave}, embora todas as tarefas tenham sido redistribuídas.`,
-      );
-    }
-
-    return redistributedPlan;
   }
 }

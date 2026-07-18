@@ -1,6 +1,7 @@
 import { Task } from '../../tasks/entities/task.entity';
 import { WBSNodeDto } from '../dto/wbs.dto';
 import { MicroTaskDraft } from './drafts.interface';
+import { BatchMetricsResult } from './wbs-metrics.interface';
 export { Task };
 
 export type GenerationStrategy = 'two-phase' | 'legacy';
@@ -176,7 +177,7 @@ export interface ApplyGuardrailsParams {
   diagnosis: 'underestimated' | 'gold_plating' | 'mixed';
   suggestedAction: 'rebaseline' | 'simplify';
   duplicateRatio: number;
-  repetitionMetrics: any;
+  repetitionMetrics: BatchMetricsResult;
   diffPct: number;
   taskLength: number;
 }
@@ -272,3 +273,73 @@ export interface GenerateTasksForSingleLeafResult {
   generatedHours: number;
   pomodorosGenerated: number;
 }
+
+export interface ShrinkTaskInput {
+  pomodorosPlanned: number;
+  pertOptimisticMinutes?: number;
+  pertMostLikelyMinutes?: number;
+  pertPessimisticMinutes?: number;
+  pertExpectedMinutes?: number;
+  pertVariance?: number;
+}
+
+export interface ShrinkResult {
+  targetHours: number;
+  finalHours: number;
+}
+
+export interface LegacyGeneratedTask {
+  name: string;
+  description: string;
+  projectId: string;
+  estimatedMinutes: number;
+  priority: number;
+  pomodorosPlanned: number;
+}
+
+export interface DraftToTaskContext {
+  wbsNode?: WBSNodeDto;
+  project?: { _id?: any; id?: any };
+  path?: string;
+}
+
+export interface DraftsWithPlanCacheParams {
+  projectId: string;
+  node: WBSNodeDto;
+  nodePath: string;
+  chunkMinutes: number[];
+  plan: any;
+  modelOverride?: string;
+}
+
+export interface MapDraftsToTasksParams {
+  drafts: MicroTaskDraft[];
+  node: WBSNodeDto;
+  nodePath: string;
+  projectId: string;
+  chunkMinutes: number[];
+  priorityOffset: number;
+  deadline: Date;
+}
+
+export interface GenerateFallbackTasksParams {
+  node: WBSNodeDto;
+  nodePath: string;
+  projectId: string;
+  chunkMinutes: number[];
+  priorityOffset: number;
+  deadline: Date;
+}
+
+export interface FixMonotonyBatchParams {
+  project: any;
+  node: WBSNodeDto;
+  currentPath: string;
+  chunkMinutes: number[];
+  drafts: MicroTaskDraft[];
+  indices: number[];
+  round: number;
+  modelOverride?: string;
+}
+
+

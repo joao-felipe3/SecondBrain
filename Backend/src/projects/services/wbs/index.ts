@@ -15,11 +15,9 @@ export { TaskConversionHelperService } from './conversion/task-conversion-helper
 export { WbsConversionOrchestrationService } from './conversion/wbs-conversion-orchestrator.service';
 
 // Monotony Services
-export { MonotonyDetectionService } from './monotony/monotony-detection.service';
-export { MonotonyFixService } from './monotony/monotony-fix.service';
+export { MonotonyService } from './core/monotony.service';
 
 // Shared / Utility Services
 export { CacheService } from './shared/cache.service';
 export { ConfigService } from './shared/config.service';
-export { PromptBuilderService } from './shared/prompt-builder.service';
 export { ThemeExtractionService } from './shared/theme-extraction.service';

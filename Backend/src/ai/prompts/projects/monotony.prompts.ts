@@ -4,9 +4,9 @@
  * No NestJS decorators, no side effects — only string construction.
  */
 
-import { MicroTaskDraft } from '../../projects/interfaces';
-import { WBSNodeDto } from '../../projects/dto/wbs.dto';
-import { extractVerb, templateTitle } from '../../projects/services/wbs/utils/normalizers.util';
+import { MicroTaskDraft } from '../../../projects/interfaces';
+import { WBSNodeDto } from '../../../projects/dto/wbs.dto';
+import { extractVerb, templateTitle } from '../../../projects/services/wbs/utils/normalizers.util';
 
 export function buildFixMonotonyPrompt(params: {
   project: any;

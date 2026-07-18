@@ -17,7 +17,7 @@ import {
   SingleDetailsParamsDto,
   MultipleDetailsParamsDto,
 } from '../../interfaces/drafts.interface';
-import { DraftsAiService } from '../../../ai/drafts-ai.service';
+import { DraftsAiService } from '../../../ai/services/tasks/drafts-ai.service';
 
 @Injectable()
 export class DraftDetailsEnrichmentService {

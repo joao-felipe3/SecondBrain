@@ -5,7 +5,7 @@ import { WbsPersistenceService } from './wbs-persistence.service';
 import { WbsGenerationService } from './wbs-generation.service';
 import { WbsConversionOrchestrationService } from '../conversion/wbs-conversion-orchestrator.service';
 import { getLeafNodesWithPaths } from '../utils/wbs-helpers.util';
-import { WbsAiService } from '../../../../ai/wbs-ai.service';
+import { WbsAiService } from '../../../../ai/services/projects/wbs-ai.service';
 import {
   GenerateTasksForSingleLeafParams,
   GenerateWbsInput,
@@ -93,85 +93,7 @@ export class WBSService {
   async generateTasksForSingleLeaf(
     params: GenerateTasksForSingleLeafParams,
   ): Promise<GenerateTasksForSingleLeafResult> {
-    const {
-      leafNode,
-      nodePath,
-      projectId,
-      project,
-      tasksService,
-      preferences,
-      saveTasks = false,
-    } = params;
-
-    // Use orchestrator to convert WBS node to tasks
-    const result = await this.orchestrator.convertWbsToTasks({
-      node: leafNode,
-      project,
-      path: nodePath,
-      options: {
-        strategy: 'two-phase',
-        modelOverride: preferences?.modelOverride,
-        logVerbose: true,
-        throwOnError: false,
-      },
-    });
-
-    if (!result.success && result.error) {
-      console.error(`Erro na conversão: ${result.error.stage} - ${result.error.message}`);
-      if (result.error.originalError) {
-        throw result.error.originalError;
-      }
-      throw new Error(`WBS conversion failed: ${result.error.message}`);
-    }
-
-    // Save tasks if requested
-    let generatedTasks = result.tasks;
-    if (saveTasks && generatedTasks.length > 0) {
-      const tasksToSave = generatedTasks.map((task) => ({
-        ...task,
-        project: projectId,
-      }));
-
-      try {
-        if (typeof tasksService.createMany === 'function') {
-          const created = await tasksService.createMany(tasksToSave, {
-            resolveProject: false,
-            recalculateProjectStats: false,
-          });
-          generatedTasks = created;
-        } else {
-          // Fallback: sequential create()
-          const created: any[] = [];
-          for (let i = 0; i < tasksToSave.length; i++) {
-            try {
-              const createdTask = await tasksService.create(tasksToSave[i]);
-              created.push(createdTask);
-            } catch (error: any) {
-              console.error(`Erro ao criar task:`, error?.message || error);
-            }
-          }
-          generatedTasks = created;
-        }
-      } catch (error: any) {
-        console.error(`Erro ao criar tasks em lote:`, error?.message || error);
-      }
-    }
-
-    // Calculate summary metrics
-    const pomodorosGenerated = generatedTasks.reduce(
-      (sum, task) => sum + (task.pomodorosPlanned || 0),
-      0,
-    );
-    const generatedHours = pomodorosGenerated * 0.5;
-
-    return {
-      tasks: generatedTasks,
-      leafNode,
-      nodePath,
-      estimatedHours: leafNode.estimatedHours,
-      generatedHours,
-      pomodorosGenerated,
-    };
+    return this.orchestrator.generateTasksForSingleLeaf(params);
   }
 
   async saveWBS(projectId: string, nodes: WBSNodeDto[]): Promise<WBSNodeDocument[]> {

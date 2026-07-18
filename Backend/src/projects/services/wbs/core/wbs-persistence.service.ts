@@ -33,14 +33,8 @@ export class WbsPersistenceService {
     const saveRecursive = async (nodeList: WBSNodeDto[], parentId: string | null = null, level = 1) => {
       for (const node of nodeList) {
         const doc = new this.wbsNodeModel({
-          projectId,
-          name: node.name,
-          description: node.description || '',
-          level: level,
-          parentId,
-          estimatedHours: node.estimatedHours,
-          order: node.order || 0,
-          status: 'planned',
+          projectId, name: node.name, description: node.description || '',
+          level, parentId, estimatedHours: node.estimatedHours, order: node.order || 0, status: 'planned',
         });
 
         const saved = await doc.save();
@@ -79,14 +73,9 @@ export class WbsPersistenceService {
     // First, add all nodes to map
     for (const doc of allNodes) {
       const node: WBSNodeDto & { _id: string } = {
-        _id: String(doc._id),
-        name: doc.name,
-        description: doc.description,
-        level: doc.level,
-        parentId: doc.parentId || undefined,
-        estimatedHours: doc.estimatedHours,
-        order: doc.order,
-        children: [],
+        _id: String(doc._id), name: doc.name, description: doc.description,
+        level: doc.level, parentId: doc.parentId || undefined,
+        estimatedHours: doc.estimatedHours, order: doc.order, children: [],
       };
       nodeMap.set(node._id, node);
     }

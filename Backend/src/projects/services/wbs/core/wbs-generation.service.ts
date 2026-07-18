@@ -1,18 +1,14 @@
 import { Injectable } from '@nestjs/common';
-import { WbsAiService } from '../../../../ai/wbs-ai.service';
+import { WbsAiService } from '../../../../ai/services/projects/wbs-ai.service';
 import { WBSNodeDto } from '../../../dto/wbs.dto';
 import { GenerateWbsInput } from '../../../interfaces';
 
-/**
- * Handles WBS generation from SMART objectives using Gemini AI
- */
+// Handles WBS generation from SMART objectives using Gemini AI
 @Injectable()
 export class WbsGenerationService {
-  constructor(private readonly wbsAiService: WbsAiService) {}
+  constructor(private readonly wbsAiService: WbsAiService) { }
 
-  /**
-   * Generate a WBS from a SMART objective using Gemini
-   */
+  // Generate a WBS from a SMART objective using Gemini
   async generate(smartObjective: GenerateWbsInput): Promise<WBSNodeDto[]> {
     try {
       const parsed = await this.wbsAiService.generateWbs(smartObjective);

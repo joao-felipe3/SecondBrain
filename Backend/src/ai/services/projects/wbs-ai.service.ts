@@ -1,26 +1,23 @@
 import { Injectable, Inject, forwardRef } from '@nestjs/common';
-import { GeminiService } from './gemini.service';
+import { GeminiService } from '../core/gemini.service';
 import {
   buildWbsGenerationPrompt,
   buildWbsDecompositionPrompt,
   buildAuditPrompt,
   buildFixMonotonyPrompt,
-} from './prompts';
-import { WBSNodeDto } from '../projects/dto/wbs.dto';
-import { extractJsonArray, extractJsonObject } from '../projects/services/wbs/utils/json-parser.util';
-import { MicroTaskDraft } from '../projects/interfaces/drafts.interface';
-import { AuditLeafDiscrepancyAiInput, AuditLeafDiscrepancyAiResult, GenerateWbsInput } from '../projects/interfaces';
+} from '../../prompts';
+import { extractJsonArray, extractJsonObject } from '../../../projects/services/wbs/utils/json-parser.util';
+import { AuditLeafDiscrepancyAiInput, AuditLeafDiscrepancyAiResult, GenerateWbsInput, FixMonotonyBatchParams } from '../../../projects/interfaces';
 
 @Injectable()
 export class WbsAiService {
   constructor(
     @Inject(forwardRef(() => GeminiService))
     private readonly geminiService: GeminiService,
-  ) {}
+  ) { }
 
-  /**
-   * Generate WBS nodes from a SMART objective
-   */
+
+  // Generate WBS nodes from a SMART objective
   async generateWbs(smartObjective: GenerateWbsInput): Promise<any[]> {
     const prompt = buildWbsGenerationPrompt(smartObjective);
     try {
@@ -46,9 +43,7 @@ export class WbsAiService {
     }
   }
 
-  /**
-   * Suggest decomposition for a WBS node violating 8/80
-   */
+  // Suggest decomposition for a WBS node violating 8/80
   async suggestDecomposition(node: {
     name: string;
     description?: string;
@@ -63,9 +58,7 @@ export class WbsAiService {
     }
   }
 
-  /**
-   * Audit discrepancy between WBS leaf node estimate and generated micro-tasks
-   */
+  // Audit discrepancy between WBS leaf node estimate and generated micro-tasks
   async auditLeafDiscrepancy(params: AuditLeafDiscrepancyAiInput): Promise<AuditLeafDiscrepancyAiResult> {
     const prompt = buildAuditPrompt(params);
     const attemptCall = async (maxOutputTokens: number, temperature: number): Promise<string> => {
@@ -110,19 +103,8 @@ export class WbsAiService {
     return { diagnosis, rationale, suggestedAction, suggestedEstimatedHours };
   }
 
-  /**
-   * Regenerate a batch of drafts to resolve monotony issues
-   */
-  async fixMonotonyBatch(params: {
-    project: any;
-    node: WBSNodeDto;
-    currentPath: string;
-    chunkMinutes: number[];
-    drafts: MicroTaskDraft[];
-    indices: number[];
-    round: number;
-    modelOverride?: string;
-  }): Promise<any[]> {
+  // Regenerate a batch of drafts to resolve monotony issues
+  async fixMonotonyBatch(params: FixMonotonyBatchParams): Promise<any[]> {
     const prompt = buildFixMonotonyPrompt(params);
     const isJsonishError = (err: any) => {
       const msg = String(err?.message || err || '').toLowerCase();

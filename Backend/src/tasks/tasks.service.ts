@@ -34,7 +34,7 @@ import { Task } from './entities/task.entity';
 
 // Services
 import { ProjectsService } from '../projects/projects.service';
-import { GeminiService } from '../ai/gemini.service';
+import { GeminiService } from '../ai/services/core/gemini.service';
 import {
   CompletionFeedbackPayload,
   CompletionFeedbackResponse,

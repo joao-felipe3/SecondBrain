@@ -6,8 +6,9 @@ import {
   ApplyGuardrailsParams,
   AuditLeafDiscrepancyAiInput,
   AuditLeafDiscrepancyAiResult,
+  BatchMetricsResult,
 } from '../../../interfaces';
-import { WbsAiService } from '../../../../ai/wbs-ai.service';
+import { WbsAiService } from '../../../../ai/services/projects/wbs-ai.service';
 
 // Audits discrepancies between WBS estimates and generated micro-tasks
 @Injectable()
@@ -85,7 +86,7 @@ export class AuditService {
   private computeDuplicateMetrics(taskList: AuditLeafDiscrepancyInput['tasks']): {
     duplicateRatio: number;
     topDuplicateKeys: string;
-    repetitionMetrics: any;
+    repetitionMetrics: BatchMetricsResult;
   } {
     const keyCounts = new Map<string, number>();
 

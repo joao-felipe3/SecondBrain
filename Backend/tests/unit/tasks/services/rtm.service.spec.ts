@@ -8,7 +8,7 @@ import { RTMMappingService } from '../../../../src/tasks/services/traceability/r
 import { RTMValidationService } from '../../../../src/tasks/services/traceability/rtm-validation.service';
 import { RTMTaskGeneratorService } from '../../../../src/tasks/services/traceability/rtm-task-generator.service';
 import { Requirement } from '../../../../src/tasks/schemas/requirement.schema';
-import { GeminiService } from '../../../../src/ai/gemini.service';
+import { GeminiService } from '../../../../src/ai/services/core/gemini.service';
 import { TasksService } from '../../../../src/tasks/tasks.service';
 import { Types } from 'mongoose';
 

@@ -1,7 +1,3 @@
-/**
- * Helper functions for WBS task processing
- */
-
 // Infer cognitive type from task title and description
 export function inferCognitiveType(title?: string, description?: string): string {
   const text = `${title || ''} ${description || ''}`.toLowerCase();
