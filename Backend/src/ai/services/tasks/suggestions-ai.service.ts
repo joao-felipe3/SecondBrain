@@ -6,6 +6,11 @@ import {
   buildCompletionFeedbackPrompt,
   buildGeminiNextStepsPrompt,
 } from '../../prompts';
+import {
+  CompletionFeedbackPromptParams,
+  NextStepsPromptParams,
+  TaskSuggestionsPromptParams,
+} from '../../interfaces';
 
 @Injectable()
 export class SuggestionsAiService {
@@ -14,24 +19,8 @@ export class SuggestionsAiService {
     private readonly geminiService: GeminiService,
   ) {}
 
-  async generateTaskSuggestions(
-    projectName: string,
-    shortTermGoal?: string,
-    midTermGoal?: string,
-    longTermGoal?: string,
-    userPrompt?: string,
-    existingTaskNames?: string[],
-    remainingHours?: number,
-  ): Promise<string> {
-    const prompt = buildTaskSuggestionsPrompt(
-      projectName,
-      shortTermGoal,
-      midTermGoal,
-      longTermGoal,
-      userPrompt,
-      existingTaskNames,
-      remainingHours,
-    );
+  async generateTaskSuggestions(params: TaskSuggestionsPromptParams): Promise<string> {
+    const prompt = buildTaskSuggestionsPrompt(params);
 
     return this.geminiService.generateContent(prompt, {
       temperature: 0.8,
@@ -42,8 +31,8 @@ export class SuggestionsAiService {
     });
   }
 
-  async generateCompletionFeedback(taskName: string, taskDescription?: string): Promise<string> {
-    const prompt = buildCompletionFeedbackPrompt(taskName, taskDescription);
+  async generateCompletionFeedback(params: CompletionFeedbackPromptParams): Promise<string> {
+    const prompt = buildCompletionFeedbackPrompt(params);
 
     const raw = await this.geminiService.generateContent(prompt, {
       responseMimeType: 'application/json',
@@ -99,11 +88,9 @@ export class SuggestionsAiService {
     };
   }
 
-  async generateNextSteps(
-    taskName: string,
-    feedback: any,
-  ): Promise<Array<{ title: string; description: string }>> {
-    const prompt = buildGeminiNextStepsPrompt(taskName, feedback);
+  async generateNextSteps(params: NextStepsPromptParams): Promise<Array<{ title: string; description: string }>> {
+    const { taskName, feedback } = params;
+    const prompt = buildGeminiNextStepsPrompt(params);
 
     try {
       const raw = await this.geminiService.generateContent(prompt, {
@@ -153,15 +140,15 @@ export class SuggestionsAiService {
     } = params;
 
     try {
-      const aiResponse = await this.generateTaskSuggestions(
+      const aiResponse = await this.generateTaskSuggestions({
         projectName,
         shortTermGoal,
         midTermGoal,
         longTermGoal,
         userPrompt,
         existingTaskNames,
-        chunkHours,
-      );
+        remainingHours: chunkHours,
+      });
 
       const parsed = this.safeParseJson(aiResponse);
       if (!Array.isArray(parsed) || parsed.length === 0) {

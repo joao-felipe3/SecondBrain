@@ -191,7 +191,7 @@ export class ChecklistOperationsService {
 
   async generateChecklistForTask(dto: GenerateChecklistDto): Promise<string[]> {
     const { taskName, description, microTaskType } = dto;
-    return this.geminiService.generateChecklistForTask(taskName, description, microTaskType);
+    return this.geminiService.generateChecklistForTask({ taskName, description, microTaskType });
   }
 
   async generateChecklistWithHistory(dto: GenerateChecklistWithHistoryDto): Promise<string[]> {
@@ -199,15 +199,15 @@ export class ChecklistOperationsService {
     const historicalContext = await this.buildHistoricalContext({ projectId, microTaskType });
 
     if (historicalContext) {
-      return this.geminiService.generateChecklistWithHistory(
+      return this.geminiService.generateChecklistWithHistory({
         taskName,
         description,
         microTaskType,
         historicalContext,
-      );
+      });
     }
 
-    return this.geminiService.generateChecklistForTask(taskName, description, microTaskType);
+    return this.geminiService.generateChecklistForTask({ taskName, description, microTaskType });
   }
 
   private async buildHistoricalContext(params: {

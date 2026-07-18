@@ -1,8 +1,14 @@
-export function buildChecklistGenerationPrompt(
-  taskName: string,
-  description?: string,
-  microTaskType?: string,
-): string {
+import {
+  ChecklistPromptParams,
+  ChecklistWithHistoryPromptParams,
+  CompletionFeedbackPromptParams,
+  NextStepsPromptParams,
+  PertEstimatePromptParams,
+  TaskSuggestionsPromptParams,
+} from '../../interfaces';
+
+export function buildChecklistGenerationPrompt(params: ChecklistPromptParams): string {
+  const { taskName, description, microTaskType } = params;
   return [
     'Gere um checklist objetivo para uma micro-tarefa.',
     `Tipo: ${microTaskType || 'generic'}`,
@@ -12,12 +18,8 @@ export function buildChecklistGenerationPrompt(
   ].join('\n');
 }
 
-export function buildChecklistWithHistoryPrompt(
-  taskName: string,
-  description?: string,
-  microTaskType?: string,
-  historicalContext?: string,
-): string {
+export function buildChecklistWithHistoryPrompt(params: ChecklistWithHistoryPromptParams): string {
+  const { taskName, description, microTaskType, historicalContext } = params;
   return [
     'Gere um checklist objetivo para uma micro-tarefa, baseado no histórico de tarefas similares.',
     `Tipo: ${microTaskType || 'generic'}`,
@@ -30,11 +32,8 @@ export function buildChecklistWithHistoryPrompt(
     .join('\n');
 }
 
-export function buildPertEstimatePrompt(
-  taskType: string,
-  description: string,
-  projectContext?: string,
-): string {
+export function buildPertEstimatePrompt(params: PertEstimatePromptParams): string {
+  const { taskType, description, projectContext } = params;
   return [
     'Você é um especialista em estimativas de software usando técnica PERT.',
     `Tarefa: ${description}`,
@@ -54,10 +53,8 @@ export function buildPertEstimatePrompt(
     .join('\n');
 }
 
-export function buildCompletionFeedbackPrompt(
-  taskName: string,
-  taskDescription?: string,
-): string {
+export function buildCompletionFeedbackPrompt(params: CompletionFeedbackPromptParams): string {
+  const { taskName, taskDescription } = params;
   const normalize = (value: unknown): string =>
     String(value ?? '')
       .replace(/\s+/g, ' ')
@@ -90,10 +87,8 @@ export function buildCompletionFeedbackPrompt(
     .join('\n');
 }
 
-export function buildGeminiNextStepsPrompt(
-  taskName: string,
-  feedback: any,
-): string {
+export function buildGeminiNextStepsPrompt(params: NextStepsPromptParams): string {
+  const { taskName, feedback } = params;
   return [
     'Você é um assistente de produtividade e mentor de execução.',
     'Com base na tarefa recém-concluída e no feedback do usuário, sugira de 2 a 3 ações futuras ou próximas tarefas lógicas.',
@@ -112,15 +107,16 @@ export function buildGeminiNextStepsPrompt(
   ].join('\n');
 }
 
-export function buildTaskSuggestionsPrompt(
-  projectName: string,
-  shortTermGoal?: string,
-  midTermGoal?: string,
-  longTermGoal?: string,
-  userPrompt?: string,
-  existingTaskNames?: string[],
-  remainingHours?: number,
-): string {
+export function buildTaskSuggestionsPrompt(params: TaskSuggestionsPromptParams): string {
+  const {
+    projectName,
+    shortTermGoal,
+    midTermGoal,
+    longTermGoal,
+    userPrompt,
+    existingTaskNames,
+    remainingHours,
+  } = params;
   let prompt = `Gere sugestões de tarefas para o projeto "${projectName}".\n\n`;
 
   if (shortTermGoal) prompt += `Objetivo de Curto Prazo: ${shortTermGoal}\n`;

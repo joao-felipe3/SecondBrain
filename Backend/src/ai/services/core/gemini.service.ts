@@ -4,6 +4,14 @@ import { ChecklistAiService } from '../tasks/checklist-ai.service';
 import { PertAiService } from '../tasks/pert-ai.service';
 import { SuggestionsAiService } from '../tasks/suggestions-ai.service';
 import { DependencyAiService } from '../tasks/dependency-ai.service';
+import {
+  ChecklistPromptParams,
+  ChecklistWithHistoryPromptParams,
+  CompletionFeedbackPromptParams,
+  NextStepsPromptParams,
+  PertEstimatePromptParams,
+  TaskSuggestionsPromptParams,
+} from '../../interfaces';
 
 @Injectable()
 export class GeminiService {
@@ -15,33 +23,15 @@ export class GeminiService {
     private readonly dependencyAiService: DependencyAiService,
   ) {}
 
-  generateChecklistForTask(
-    taskName: string,
-    description?: string,
-    microTaskType?: string,
-  ): Promise<string[]> {
-    return this.checklistAiService.generateChecklistForTask(taskName, description, microTaskType);
+  generateChecklistForTask(params: ChecklistPromptParams): Promise<string[]> {
+    return this.checklistAiService.generateChecklistForTask(params);
   }
 
-  generateChecklistWithHistory(
-    taskName: string,
-    description?: string,
-    microTaskType?: string,
-    historicalContext?: string,
-  ): Promise<string[]> {
-    return this.checklistAiService.generateChecklistWithHistory(
-      taskName,
-      description,
-      microTaskType,
-      historicalContext,
-    );
+  generateChecklistWithHistory(params: ChecklistWithHistoryPromptParams): Promise<string[]> {
+    return this.checklistAiService.generateChecklistWithHistory(params);
   }
 
-  suggestPertEstimates(
-    taskType: string,
-    description: string,
-    projectContext?: string,
-  ): Promise<{
+  suggestPertEstimates(params: PertEstimatePromptParams): Promise<{
     optimistic: number;
     likely: number;
     pessimistic: number;
@@ -50,31 +40,15 @@ export class GeminiService {
     recommendation: string;
     fromLLM: boolean;
   }> {
-    return this.pertAiService.suggestPertEstimates(taskType, description, projectContext);
+    return this.pertAiService.suggestPertEstimates(params);
   }
 
-  generateTaskSuggestions(
-    projectName: string,
-    shortTermGoal?: string,
-    midTermGoal?: string,
-    longTermGoal?: string,
-    userPrompt?: string,
-    existingTaskNames?: string[],
-    remainingHours?: number,
-  ): Promise<string> {
-    return this.suggestionsAiService.generateTaskSuggestions(
-      projectName,
-      shortTermGoal,
-      midTermGoal,
-      longTermGoal,
-      userPrompt,
-      existingTaskNames,
-      remainingHours,
-    );
+  generateTaskSuggestions(params: TaskSuggestionsPromptParams): Promise<string> {
+    return this.suggestionsAiService.generateTaskSuggestions(params);
   }
 
-  generateCompletionFeedback(taskName: string, taskDescription?: string): Promise<string> {
-    return this.suggestionsAiService.generateCompletionFeedback(taskName, taskDescription);
+  generateCompletionFeedback(params: CompletionFeedbackPromptParams): Promise<string> {
+    return this.suggestionsAiService.generateCompletionFeedback(params);
   }
 
   generateCompletionFeedbackStructured(prompt: string): Promise<{
@@ -86,11 +60,8 @@ export class GeminiService {
     return this.suggestionsAiService.generateCompletionFeedbackStructured(prompt);
   }
 
-  generateNextSteps(
-    taskName: string,
-    feedback: any,
-  ): Promise<Array<{ title: string; description: string }>> {
-    return this.suggestionsAiService.generateNextSteps(taskName, feedback);
+  generateNextSteps(params: NextStepsPromptParams): Promise<Array<{ title: string; description: string }>> {
+    return this.suggestionsAiService.generateNextSteps(params);
   }
 
   getTaskSuggestions(params: {

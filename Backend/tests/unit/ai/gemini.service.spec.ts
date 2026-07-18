@@ -42,11 +42,11 @@ describe('GeminiService', () => {
   it('retorna fallback quando a chamada ao LLM falha', async () => {
     jest.spyOn(service as any, 'generateContent').mockRejectedValue(new Error('LLM indisponível'));
 
-    const checklist = await service.generateChecklistForTask(
-      'Preparar revisão de código',
-      'Revisar PR de sprint 1',
-      'subtask',
-    );
+    const checklist = await service.generateChecklistForTask({
+      taskName: 'Preparar revisão de código',
+      description: 'Revisar PR de sprint 1',
+      microTaskType: 'subtask',
+    });
 
     expect(checklist).toEqual(['Preparar contexto', 'Executar tarefa', 'Validar entrega']);
   });
@@ -56,16 +56,16 @@ describe('GeminiService', () => {
       .spyOn(service as any, 'generateContent')
       .mockResolvedValue(JSON.stringify(['Abrir branch', 'Implementar endpoint', 'Validar resposta']));
 
-    const first = await service.generateChecklistForTask(
-      'Criar endpoint de micro-task',
-      'Implementação inicial',
-      'quick',
-    );
-    const second = await service.generateChecklistForTask(
-      'Criar endpoint de micro-task',
-      'Implementação inicial',
-      'quick',
-    );
+    const first = await service.generateChecklistForTask({
+      taskName: 'Criar endpoint de micro-task',
+      description: 'Implementação inicial',
+      microTaskType: 'quick',
+    });
+    const second = await service.generateChecklistForTask({
+      taskName: 'Criar endpoint de micro-task',
+      description: 'Implementação inicial',
+      microTaskType: 'quick',
+    });
 
     expect(first).toEqual(['Abrir branch', 'Implementar endpoint', 'Validar resposta']);
     expect(second).toEqual(first);

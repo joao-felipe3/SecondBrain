@@ -73,7 +73,7 @@ Gera sugestões de tarefas para um projeto usando o Gemini, com suporte a **gera
 loadExistingTasks(dto.projectId)         ← conta horas já planejadas + nomes existentes
   remainingHours = targetHours - alreadyPlannedHours
     while currentHours < remainingHours && iteration < 15:
-      geminiService.generateTaskSuggestions(chunkHours = min(remaining, 8))
+      geminiService.generateTaskSuggestions({ projectName, shortTermGoal, ..., remainingHours: 8 })
         safeParseGeminiJson(response)    ← tenta JSON direto → array nested → regex fallback
           deduplication por nome        ← filtra duplicatas contra existingTaskNames
             acumula allSuggestions
@@ -131,17 +131,17 @@ Orquestra ciclo de vida completo dos checklists: persistência, validação de g
 | `updateChecklistItem(taskId, itemIndex, completed)` | Atualiza o campo `completed` de um item por índice. Retorna a tarefa com `completionPercentage`. |
 | `validateCompletionRequirements(taskId)` | Quality gate: verifica se todos os itens do checklist estão concluídos. |
 | `getValidationErrors(taskId)` | Retorna lista de erros: checklist incompleto e PERT ausente (ignora tarefas de tipo `habit`). |
-| `generateChecklistForTask(name, description?, type?)` | Geração simples via Gemini sem histórico. |
-| `generateChecklistWithHistory(name, description?, type?, projectId?)` | Geração enriquecida: busca tarefas similares → monta contexto histórico → envia para Gemini com histórico. |
+| `generateChecklistForTask(params)` | Geração simples via Gemini sem histórico. |
+| `generateChecklistWithHistory(params)` | Geração enriquecida: busca tarefas similares → monta contexto histórico → envia para Gemini com histórico. |
 
 **Fluxo de `generateChecklistWithHistory`:**
 ```
 checklistService.findSimilarTasksInProject(projectId, microTaskType)
   checklistService.enrichHistoryContext(similarTasks)     ← formata texto do histórico
     if historicalContext:
-      geminiService.generateChecklistWithHistory(...)     ← prompt enriquecido
+      geminiService.generateChecklistWithHistory({ taskName, description, microTaskType, historicalContext })     ← prompt enriquecido
     else:
-      geminiService.generateChecklistForTask(...)         ← prompt simples
+      geminiService.generateChecklistForTask({ taskName, description, microTaskType })         ← prompt simples
 ```
 
 **Tipo `ChecklistHistoryProjectRef`:** aceita `string`, `Types.ObjectId` ou `{ _id: string | ObjectId }`.

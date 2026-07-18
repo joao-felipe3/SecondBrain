@@ -2,6 +2,7 @@ import { Injectable, Inject, forwardRef } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { GeminiService } from '../core/gemini.service';
 import { buildPertEstimatePrompt } from '../../prompts';
+import { PertEstimatePromptParams } from '../../interfaces';
 
 @Injectable()
 export class PertAiService {
@@ -142,11 +143,7 @@ export class PertAiService {
     return '✅ Incerteza baixa. Estimativa confiável.';
   }
 
-  async suggestPertEstimates(
-    taskType: string,
-    description: string,
-    projectContext?: string,
-  ): Promise<{
+  async suggestPertEstimates(params: PertEstimatePromptParams): Promise<{
     optimistic: number;
     likely: number;
     pessimistic: number;
@@ -155,11 +152,12 @@ export class PertAiService {
     recommendation: string;
     fromLLM: boolean;
   }> {
+    const { taskType, description, projectContext } = params;
     const cacheKey = this.getPertCacheKey(taskType, description);
     const cached = await this.getPertCache(cacheKey);
     if (cached) return cached;
 
-    const prompt = buildPertEstimatePrompt(taskType, description, projectContext);
+    const prompt = buildPertEstimatePrompt(params);
 
     try {
       const response = await this.geminiService.generateContent(prompt, {

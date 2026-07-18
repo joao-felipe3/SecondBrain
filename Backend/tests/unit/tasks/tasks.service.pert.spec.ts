@@ -112,18 +112,22 @@ describe('TasksService - PERT Methods (Unit Tests)', () => {
       expect(result).toHaveProperty('optimistic');
       expect(result).toHaveProperty('likely');
       expect(result).toHaveProperty('pessimistic');
-      expect(geminiService.suggestPertEstimates).toHaveBeenCalledWith(
-        'complex',
-        'Implement OAuth 2.0',
-        'Auth Module',
-      );
+      expect(geminiService.suggestPertEstimates).toHaveBeenCalledWith({
+        taskType: 'complex',
+        description: 'Implement OAuth 2.0',
+        projectContext: 'Auth Module',
+      });
     });
 
     it('should work with minimal parameters', async () => {
       const result = await service.suggestPertEstimates('quick', 'Fix typo');
 
       expect(result.optimistic).toBeDefined();
-      expect(geminiService.suggestPertEstimates).toHaveBeenCalledWith('quick', 'Fix typo', undefined);
+      expect(geminiService.suggestPertEstimates).toHaveBeenCalledWith({
+        taskType: 'quick',
+        description: 'Fix typo',
+        projectContext: undefined,
+      });
     });
   });
 

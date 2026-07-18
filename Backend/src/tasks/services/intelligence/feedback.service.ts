@@ -124,7 +124,7 @@ export class FeedbackService {
       throw new BadRequestException('Task inválida');
     }
 
-    return this.geminiService.generateNextSteps(task.name, feedback);
+    return this.geminiService.generateNextSteps({ taskName: task.name, feedback });
   }
 
   // ===========================================================================

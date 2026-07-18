@@ -1,6 +1,4 @@
 import { Injectable, NotFoundException, Inject, forwardRef, BadRequestException } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { FilterQuery, Model, Types } from 'mongoose';
 
 // DTOs
 import { CreateTaskDto, ChecklistItemDto, RecurringRuleDto } from './dto/task/create-task.dto';
@@ -41,11 +39,7 @@ import {
   FeedbackService,
 } from './services/intelligence';
 import { TasksRecurringService, TasksCompletionService, TasksWriteService } from './services/workflow';
-import {
-  TasksAiSuggestionsService,
-  ChecklistOperationsService,
-  ChecklistHistoryProjectRef,
-} from './services/intelligence';
+import { TasksAiSuggestionsService, ChecklistOperationsService } from './services/intelligence';
 import { TasksHabitsService } from './services/monitoring';
 import { TasksPertService } from './services/analysis';
 import { TasksHierarchyService, TaskDescendantNode, TaskLineageResult } from './services/dependencies';
@@ -255,11 +249,11 @@ export class TasksService {
     description: string,
     projectContext?: string,
   ): Promise<Awaited<ReturnType<GeminiService['suggestPertEstimates']>>> {
-    const estimates = await this.geminiService.suggestPertEstimates(
+    const estimates = await this.geminiService.suggestPertEstimates({
       taskType,
       description,
       projectContext,
-    );
+    });
     return estimates;
   }
 

@@ -2,6 +2,7 @@ import { Injectable, Inject, forwardRef } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { GeminiService } from '../core/gemini.service';
 import { buildChecklistGenerationPrompt, buildChecklistWithHistoryPrompt } from '../../prompts';
+import { ChecklistPromptParams, ChecklistWithHistoryPromptParams } from '../../interfaces';
 
 @Injectable()
 export class ChecklistAiService {
@@ -167,16 +168,13 @@ export class ChecklistAiService {
     return ['Preparar contexto', 'Executar tarefa', 'Validar entrega'];
   }
 
-  async generateChecklistForTask(
-    taskName: string,
-    description?: string,
-    microTaskType?: string,
-  ): Promise<string[]> {
+  async generateChecklistForTask(params: ChecklistPromptParams): Promise<string[]> {
+    const { taskName, description, microTaskType } = params;
     const key = this.getChecklistCacheKey(taskName, microTaskType);
     const cached = await this.getChecklistCache(key);
     if (cached && cached.length > 0) return cached;
 
-    const prompt = buildChecklistGenerationPrompt(taskName, description, microTaskType);
+    const prompt = buildChecklistGenerationPrompt(params);
 
     try {
       const response = await this.geminiService.generateContent(prompt, {
@@ -196,21 +194,17 @@ export class ChecklistAiService {
     }
   }
 
-  async generateChecklistWithHistory(
-    taskName: string,
-    description?: string,
-    microTaskType?: string,
-    historicalContext?: string,
-  ): Promise<string[]> {
+  async generateChecklistWithHistory(params: ChecklistWithHistoryPromptParams): Promise<string[]> {
+    const { taskName, description, microTaskType, historicalContext } = params;
     if (!historicalContext || historicalContext.trim() === '') {
-      return this.generateChecklistForTask(taskName, description, microTaskType);
+      return this.generateChecklistForTask(params);
     }
 
     const key = this.getChecklistCacheKey(taskName, microTaskType);
     const cached = await this.getChecklistCache(key);
     if (cached && cached.length > 0) return cached;
 
-    const prompt = buildChecklistWithHistoryPrompt(taskName, description, microTaskType, historicalContext);
+    const prompt = buildChecklistWithHistoryPrompt(params);
 
     try {
       const response = await this.geminiService.generateContent(prompt, {
