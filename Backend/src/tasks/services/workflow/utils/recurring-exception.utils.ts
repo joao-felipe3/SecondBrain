@@ -31,7 +31,9 @@ export function extractExceptionDate(rawException: unknown): Date | undefined {
   if (candidate instanceof Date) return candidate;
   if (candidate === undefined || candidate === null) return undefined;
 
-  const parsed = new Date(String(candidate));
+  const parsed = new Date(
+    typeof candidate === 'string' || typeof candidate === 'number' ? String(candidate) : '',
+  );
   return Number.isNaN(parsed.getTime()) ? undefined : parsed;
 }
 

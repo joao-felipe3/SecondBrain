@@ -125,7 +125,7 @@ export class TasksHierarchyService {
     return task;
   }
 
-  private mapToLineageNode(doc: any): TaskLineageNode {
+  private mapToLineageNode(doc: TaskDocument): TaskLineageNode {
     return {
       _id: doc._id,
       name: doc.name,
@@ -133,7 +133,7 @@ export class TasksHierarchyService {
     };
   }
 
-  private mapToDescendantNode(doc: any): TaskDescendantNode {
+  private mapToDescendantNode(doc: TaskDocument): TaskDescendantNode {
     return {
       _id: doc._id,
       name: doc.name,
@@ -171,7 +171,7 @@ export class TasksHierarchyService {
 
     if (targetTask) {
       nodes.push({
-        _id: targetTask._id as any,
+        _id: targetTask._id,
         experience: targetTask.experience || 0,
         isConcluded: targetTask.isConcluded || false,
       });

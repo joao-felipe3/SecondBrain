@@ -49,8 +49,8 @@ export class TasksHabitsService {
       const habits = await this._fetchHabits(filter);
       const summaries = await this._createHabitSummaries(habits);
       return this._calculateDashboardMetrics(summaries, filter.projectId);
-    } catch (error) {
-      throw new BadRequestException('Could not retrieve habits dashboard data.');
+    } catch {
+      throw new BadRequestException('Could not retrieve habits dashboard data');
     }
   }
 

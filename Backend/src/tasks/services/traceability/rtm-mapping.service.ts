@@ -1,4 +1,4 @@
-import { Injectable, Logger, Inject, forwardRef } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { Requirement as RequirementSchema, RequirementDocument } from '../../schemas/requirement.schema';
@@ -6,7 +6,6 @@ import { Requirement } from '../../entities/requirement.entity';
 import { RequirementMapper } from '../../mappers/requirement.mapper';
 import { Task } from '../../entities/task.entity';
 import { GeminiService } from '../../../ai/services/core/gemini.service';
-import { TasksService } from '../../tasks.service';
 import { RTMValidationService } from './rtm-validation.service';
 import { AutoMapRequirementsResponseDto } from '../../dto';
 import { normalizeKind, getLinkedActions, parseJsonArray, levelForKind } from './utils/rtm.utils';
@@ -77,7 +76,7 @@ export class RTMMappingService {
     actionItems: Requirement[];
   }> {
     const allItemsDocs = await this.requirementModel.find({ projectId });
-    const allItems = allItemsDocs.map(RequirementMapper.toDomain);
+    const allItems = allItemsDocs.map((doc) => RequirementMapper.toDomain(doc));
     const actionItems = allItems.filter(
       (item: Requirement) => normalizeKind(item.kind || item.type) === 'action',
     );

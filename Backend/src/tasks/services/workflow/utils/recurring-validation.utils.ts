@@ -64,7 +64,8 @@ export function normalizeInterval(raw: unknown): number {
 
 export function parseAndValidateEndDate(raw?: unknown, allowPast = false): Date | undefined {
   if (raw === undefined || raw === null) return undefined;
-  const endDate = raw instanceof Date ? raw : new Date(String(raw));
+  const endDate =
+    raw instanceof Date ? raw : new Date(typeof raw === 'string' || typeof raw === 'number' ? raw : '');
   if (Number.isNaN(endDate.getTime())) {
     throw new BadRequestException('recurringRule inválida: endDate inválida.');
   }

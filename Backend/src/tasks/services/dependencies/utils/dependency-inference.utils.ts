@@ -139,16 +139,32 @@ export function keepAcyclic(taskIds: string[], deps: InferredDependencyDto[]): I
   return accepted;
 }
 
+function safeStringify(val: unknown): string {
+  if (val === null || val === undefined) {
+    return '';
+  }
+  if (typeof val === 'string') {
+    return val;
+  }
+  if (
+    typeof val === 'number' ||
+    typeof val === 'boolean' ||
+    typeof val === 'bigint' ||
+    typeof val === 'symbol'
+  ) {
+    return String(val);
+  }
+  return '';
+}
+
 export function truncateText(input: unknown, maxLen: number): string | undefined {
-  const s = String(input ?? '').trim();
+  const s = safeStringify(input).trim();
   if (!s) return undefined;
   return s.length <= maxLen ? s : s.slice(0, maxLen) + '…';
 }
 
 export function previewText(input: unknown, maxLen: number): string {
-  const s = String(input ?? '')
-    .replace(/\s+/g, ' ')
-    .trim();
+  const s = safeStringify(input).replace(/\s+/g, ' ').trim();
   if (!s) return '';
   return s.length <= maxLen ? s : s.slice(0, maxLen) + '…';
 }
@@ -157,9 +173,9 @@ export function normalizeDependencies(raw: Array<unknown>): InferredDependencyDt
   const out: InferredDependencyDto[] = [];
   for (const item of raw || []) {
     if (Array.isArray(item)) {
-      const taskId = String(item[0] ?? '').trim();
-      const dependsOnTaskId = String(item[1] ?? '').trim();
-      const relationship = item[2] ? String(item[2]).trim() : 'FINISH_TO_START';
+      const taskId = safeStringify(item[0]).trim();
+      const dependsOnTaskId = safeStringify(item[1]).trim();
+      const relationship = item[2] ? safeStringify(item[2]).trim() : 'FINISH_TO_START';
 
       if (taskId && dependsOnTaskId) {
         out.push({ taskId, dependsOnTaskId, relationship });
@@ -170,10 +186,10 @@ export function normalizeDependencies(raw: Array<unknown>): InferredDependencyDt
     if (item && typeof item === 'object') {
       const anyItem = item as Record<string, unknown>;
       out.push({
-        taskId: String(anyItem.taskId ?? '').trim(),
-        dependsOnTaskId: String(anyItem.dependsOnTaskId ?? '').trim(),
-        relationship: anyItem.relationship ? String(anyItem.relationship).trim() : undefined,
-        reason: anyItem.reason ? String(anyItem.reason) : undefined,
+        taskId: safeStringify(anyItem.taskId).trim(),
+        dependsOnTaskId: safeStringify(anyItem.dependsOnTaskId).trim(),
+        relationship: anyItem.relationship ? safeStringify(anyItem.relationship).trim() : undefined,
+        reason: anyItem.reason ? safeStringify(anyItem.reason) : undefined,
         confidence: typeof anyItem.confidence === 'number' ? anyItem.confidence : undefined,
       });
     }

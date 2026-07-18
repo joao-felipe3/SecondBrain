@@ -4,6 +4,7 @@ import {
   inferHeuristicPhases as runHeuristics,
   filterInvalidAndSelfEdges,
   keepAcyclic,
+  normalizeDependencies,
 } from './utils/dependency-inference.utils';
 import {
   buildInferWithAiPrompt,
@@ -50,7 +51,7 @@ export class DependencyInferenceService {
 
     try {
       return await this.executeInferenceAttempt(attemptParams);
-    } catch (err) {
+    } catch {
       this.logger.warn(`AI Inference failed for request ${requestId}. Retrying with fallback limits...`);
       return await this.executeRetryAttempt(attemptParams);
     }
@@ -84,7 +85,7 @@ export class DependencyInferenceService {
 
     try {
       return await this.executeInterLeafAttempt(attemptParams);
-    } catch (err) {
+    } catch {
       this.logger.warn(`Inter-leaf AI inference failed for request ${sanitized.requestId}. Retrying...`);
       return await this.executeInterLeafRetry(attemptParams);
     }
@@ -184,7 +185,8 @@ export class DependencyInferenceService {
     maxOutputTokens: number;
     model?: string;
   }): Promise<InferredDependencyDto[]> {
-    return this.geminiService.inferDependencies(params);
+    const raw = await this.geminiService.inferDependencies(params);
+    return normalizeDependencies(raw);
   }
 
   private processLeavesData(leaves: InferenceLeafGatesDto[]) {
@@ -294,7 +296,14 @@ export class DependencyInferenceService {
     };
   }
 
-  private async executeRetryAttempt(originalParams: any): Promise<InferredDependencyDto[]> {
+  private async executeRetryAttempt(originalParams: {
+    edges: number;
+    prompt: string;
+    maxOutputTokens: number;
+    tasks: InferenceTaskDto[];
+    requestId: string;
+    model?: string;
+  }): Promise<InferredDependencyDto[]> {
     const retryEdges = Math.max(5, Math.floor(originalParams.edges / 2));
     const retryPrompt = buildRetryPrompt(originalParams.prompt, retryEdges);
     const retryTokens = Math.max(800, Math.floor(originalParams.maxOutputTokens * 0.8));
@@ -315,7 +324,16 @@ export class DependencyInferenceService {
     };
   }
 
-  private async executeInterLeafRetry(originalParams: any): Promise<InferredDependencyDto[]> {
+  private async executeInterLeafRetry(originalParams: {
+    edges: number;
+    prompt: string;
+    maxOutputTokens: number;
+    validIds: Set<string>;
+    gateToLeafId: Map<string, string>;
+    leafById: Map<string, InferenceLeafGatesDto>;
+    model?: string;
+    requestId: string;
+  }): Promise<InferredDependencyDto[]> {
     const retryEdges = Math.max(2, Math.floor(originalParams.edges / 2));
     const retryPrompt = buildRetryPrompt(originalParams.prompt, retryEdges);
     const retryTokens = Math.max(800, Math.floor(originalParams.maxOutputTokens * 0.85));

@@ -17,14 +17,14 @@ export class TaskDependency {
     example: '507f1f77bcf86cd799439011',
   })
   @Prop({ required: true })
-  taskId: string;
+  taskId!: string;
 
   @ApiProperty({
     description: 'ID da tarefa predecessor (predecessora)',
     example: '507f1f77bcf86cd799439012',
   })
   @Prop({ required: true })
-  dependsOnTaskId: string;
+  dependsOnTaskId!: string;
 
   @ApiProperty({
     description: 'Tipo de relação de dependência',
@@ -36,7 +36,7 @@ export class TaskDependency {
     enum: Object.values(DependencyType),
     default: DependencyType.FINISH_TO_START,
   })
-  relationship: DependencyType;
+  relationship!: DependencyType;
 
   @ApiProperty({
     description: 'Motivo ou justificativa da dependência',
@@ -50,7 +50,7 @@ export class TaskDependency {
     example: '507f1f77bcf86cd799439013',
   })
   @Prop({ required: true })
-  projectId: string;
+  projectId!: string;
 
   @ApiProperty({
     description: 'Se a dependência foi identificada automaticamente por IA',

@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model, Types } from 'mongoose';
+import { Model } from 'mongoose';
 import { CreateTaskDto } from '../../dto/task/create-task.dto';
 import { CreateMicroTaskDto } from '../../dto/task/create-micro-task.dto';
 import { TaskDocument } from '../../schemas/task.schema';
@@ -51,7 +51,7 @@ export class TasksWriteService {
     this.tasksInputService.validatePertInput(createMicroTaskDto);
 
     const normalizedChecklist = this.tasksInputService.normalizeChecklist(createMicroTaskDto.checklist);
-    const payload = await this.buildMicroTaskPayload(createMicroTaskDto, normalizedChecklist);
+    const payload = this.buildMicroTaskPayload(createMicroTaskDto, normalizedChecklist);
 
     this.validateMicroTaskChecklistInput(createMicroTaskDto, normalizedChecklist);
     await this.ensureChecklistGenerated(createMicroTaskDto, payload);
@@ -146,7 +146,7 @@ export class TasksWriteService {
       throw new NotFoundException(`Project not found by id or name '${project}'`);
     }
 
-    createTaskDto.project = projectDoc._id as any;
+    createTaskDto.project = projectDoc._id;
   }
 
   private applyDerivedFields(dto: Partial<CreateTaskDto>): void {
@@ -246,10 +246,10 @@ export class TasksWriteService {
     }
   }
 
-  private async buildMicroTaskPayload(
+  private buildMicroTaskPayload(
     dto: CreateMicroTaskDto,
     normalizedChecklist: CreateTaskDto['checklist'],
-  ): Promise<CreateTaskDto> {
+  ): CreateTaskDto {
     return {
       ...dto,
       checklist: normalizedChecklist,

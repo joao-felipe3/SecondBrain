@@ -108,14 +108,14 @@ export class RTMValidationService {
 
   private async fetchRequirements(projectId: string): Promise<Requirement[]> {
     const docs = await this.requirementModel.find({ projectId });
-    return docs.map(RequirementMapper.toDomain);
+    return docs.map((doc) => RequirementMapper.toDomain(doc));
   }
 
   private async fetchSortedRequirements(projectId: string): Promise<Requirement[]> {
     const docs = await this.requirementModel
       .find({ projectId })
       .sort({ hierarchyLevel: 1, createdAt: 1, _id: 1 });
-    return docs.map(RequirementMapper.toDomain);
+    return docs.map((doc) => RequirementMapper.toDomain(doc));
   }
 
   private buildRequirementMaps(requirements: Requirement[]): RequirementMaps {

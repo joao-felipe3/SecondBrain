@@ -49,13 +49,19 @@ export function normalizeChecklistFromTask(task: TaskDocument): CreateTaskDto['c
         return { item: entry, completed: false, order: index };
       }
 
-      const item = String((entry as any).item || '');
+      const anyEntry = entry as unknown as Record<string, unknown>;
+      const item = typeof anyEntry?.item === 'string' ? anyEntry.item.trim() : '';
       if (!item) return null;
+
+      const orderVal =
+        anyEntry?.order !== undefined && anyEntry?.order !== null && Number.isFinite(anyEntry.order)
+          ? Number(anyEntry.order)
+          : index;
 
       return {
         item,
         completed: false,
-        order: Number.isFinite((entry as any).order) ? Number((entry as any).order) : index,
+        order: orderVal,
       };
     })
     .filter((item): item is NonNullable<CreateTaskDto['checklist']>[number] => item !== null);

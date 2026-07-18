@@ -1,11 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
-import {
-  Requirement as RequirementSchema,
-  RequirementDocument,
-  JourneyKind,
-} from '../../schemas/requirement.schema';
+import { Requirement as RequirementSchema, RequirementDocument } from '../../schemas/requirement.schema';
 import { Requirement } from '../../entities/requirement.entity';
 import { RequirementMapper } from '../../mappers/requirement.mapper';
 import {
@@ -34,7 +30,7 @@ export class RTMCrudService {
       const docs = await this.requirementModel
         .find({ projectId })
         .sort({ hierarchyLevel: 1, createdAt: 1, _id: 1 });
-      return docs.map(RequirementMapper.toDomain);
+      return docs.map((doc) => RequirementMapper.toDomain(doc));
     } catch (error: unknown) {
       this.logger.error(
         `Erro ao buscar requisitos para o projeto ${projectId}: ${(error as Error).message}`,
@@ -267,7 +263,7 @@ export class RTMCrudService {
   ): Promise<void> {
     if (getLinkedActions(requirement).length === 0 && requirement.status !== 'open') {
       this.logger.log(
-        `Item ${requirement._id} não possui mais ações vinculadas. Atualizando status para 'open'.`,
+        `Item ${String(requirement._id)} não possui mais ações vinculadas. Atualizando status para 'open'.`,
       );
       requirement.status = 'open';
       await requirement.save();

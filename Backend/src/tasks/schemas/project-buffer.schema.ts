@@ -6,16 +6,16 @@ export type ProjectBufferDocument = ProjectBuffer & Document;
 @Schema({ timestamps: true, collection: 'project-buffers' })
 export class ProjectBuffer {
   @Prop({ required: true, type: MongoSchema.Types.ObjectId })
-  projectId: string;
+  projectId!: string;
 
   @Prop({ required: true, type: Number, min: 0 })
-  projectBuffer: number;
+  projectBuffer!: number;
 
   @Prop({ required: true, type: Number, min: 0, default: 0 })
-  consumed: number;
+  consumed!: number;
 
   @Prop({ required: true, type: Number, min: 0, max: 100, default: 75 })
-  threshold: number;
+  threshold!: number;
 
   @Prop({ type: Number, min: 0 })
   criticalPathDuration?: number;
@@ -27,7 +27,7 @@ export class ProjectBuffer {
   standardDeviation?: number;
 
   @Prop({ type: [{ taskId: String, variance: Number }], default: [] })
-  taskVariances: Array<{ taskId: string; variance: number }>;
+  taskVariances!: Array<{ taskId: string; variance: number }>;
 
   @Prop({ type: Date })
   createdAt?: Date;

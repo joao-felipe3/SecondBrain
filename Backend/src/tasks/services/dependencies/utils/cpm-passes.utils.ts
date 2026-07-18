@@ -37,7 +37,7 @@ export function normalizeRelationship(input?: string): DependencyType {
 
 export function extractExplicitEdges(dependencyEdges: unknown, seen: Set<string>): TaskDependencyEdge[] {
   const normalized: TaskDependencyEdge[] = [];
-  const edges = Array.isArray(dependencyEdges) ? dependencyEdges : [];
+  const edges = (Array.isArray(dependencyEdges) ? dependencyEdges : []) as Partial<TaskDependencyEdge>[];
 
   for (const edge of edges) {
     const predecessorId = String(edge?.predecessorId ?? '').trim();

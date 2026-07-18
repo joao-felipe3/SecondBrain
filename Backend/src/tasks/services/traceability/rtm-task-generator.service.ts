@@ -7,7 +7,6 @@ import { RequirementMapper } from '../../mappers/requirement.mapper';
 import { CreateTaskDto } from '../../dto/task/create-task.dto';
 import { GeminiService } from '../../../ai/services/core/gemini.service';
 import { TasksService } from '../../tasks.service';
-import { RTMValidation } from '../../interfaces/rtm.interface';
 import { RTMValidationService } from './rtm-validation.service';
 import { GenerateTasksResponseDto } from '../../dto';
 import { normalizeKind, parseJsonArray } from './utils/rtm.utils';
@@ -51,7 +50,7 @@ export class RTMTaskGeneratorService {
       const requirementsDocs = await this.requirementModel.find({
         _id: { $in: validation.unmappedRequirements },
       });
-      const requirements = requirementsDocs.map(RequirementMapper.toDomain);
+      const requirements = requirementsDocs.map((doc) => RequirementMapper.toDomain(doc));
 
       const actionItems = requirements.filter(
         (item: Requirement) => normalizeKind(item.kind || item.type) === 'action',
@@ -158,9 +157,11 @@ export class RTMTaskGeneratorService {
     for (const taskData of tasksToCreate) {
       try {
         const anyTaskData = taskData as Record<string, unknown>;
+        const titleVal = safeStringify(anyTaskData.title).trim();
+        const descVal = safeStringify(anyTaskData.description).trim();
         const createDto: CreateTaskDto = {
-          name: String(anyTaskData.title || 'Nova Tarefa'),
-          description: String(anyTaskData.description || ''),
+          name: titleVal || 'Nova Tarefa',
+          description: descVal,
           project: projectId,
           pomodorosPlanned: 3,
           deadline: new Date(),
@@ -182,4 +183,22 @@ export class RTMTaskGeneratorService {
 
     return taskIds;
   }
+}
+
+function safeStringify(val: unknown): string {
+  if (val === null || val === undefined) {
+    return '';
+  }
+  if (typeof val === 'string') {
+    return val;
+  }
+  if (
+    typeof val === 'number' ||
+    typeof val === 'boolean' ||
+    typeof val === 'bigint' ||
+    typeof val === 'symbol'
+  ) {
+    return String(val);
+  }
+  return '';
 }

@@ -30,6 +30,24 @@ export {
 // Response Normalizers
 // ===========================================================================
 
+function safeStringify(val: unknown): string {
+  if (val === null || val === undefined) {
+    return '';
+  }
+  if (typeof val === 'string') {
+    return val;
+  }
+  if (
+    typeof val === 'number' ||
+    typeof val === 'boolean' ||
+    typeof val === 'bigint' ||
+    typeof val === 'symbol'
+  ) {
+    return String(val);
+  }
+  return '';
+}
+
 // Normaliza e deduplica itens brutos retornados pelo Gemini para geração de jornada.
 export function normalizeGeneratedItems(parsed: unknown[]): JourneyDraft[] {
   const normalized: JourneyDraft[] = parsed
@@ -38,9 +56,10 @@ export function normalizeGeneratedItems(parsed: unknown[]): JourneyDraft[] {
       const kind = normalizeKind(anyItem.kind);
       const defaultRefPrefix =
         kind === 'objective' ? 'O' : kind === 'habit' ? 'H' : kind === 'stage' ? 'E' : 'A';
-      const ref = String(anyItem.ref ?? `${defaultRefPrefix}${index + 1}`).trim();
-      const parentRef = anyItem.parentRef == null ? undefined : String(anyItem.parentRef).trim();
-      const description = String(anyItem.description ?? '').trim();
+      const refVal = safeStringify(anyItem.ref).trim();
+      const ref = refVal || `${defaultRefPrefix}${index + 1}`;
+      const parentRef = anyItem.parentRef == null ? undefined : safeStringify(anyItem.parentRef).trim();
+      const description = safeStringify(anyItem.description).trim();
 
       return { ref, parentRef, kind, description, type: normalizeType(anyItem.type, kind) };
     })
@@ -72,16 +91,16 @@ export function processMappingResponse(
 ): void {
   for (const mapping of mappingArray) {
     const anyMapping = mapping as RawMappingEntry;
-    const taskId = String(anyMapping.taskId || '');
+    const taskId = safeStringify(anyMapping.taskId).trim();
     if (!taskId) continue;
 
-    if (String(anyMapping.requirementId || '').toUpperCase() === 'ORPHAN') {
+    if (safeStringify(anyMapping.requirementId).trim().toUpperCase() === 'ORPHAN') {
       const orphan = batch.find((t) => String(t.id) === taskId);
       if (orphan) orphanTasks.push(orphan);
       continue;
     }
 
-    const reqId = String(anyMapping.requirementId);
+    const reqId = safeStringify(anyMapping.requirementId).trim();
     if (!mappings[reqId]) mappings[reqId] = [];
     mappings[reqId].push(taskId);
   }

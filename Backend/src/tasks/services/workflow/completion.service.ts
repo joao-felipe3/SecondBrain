@@ -102,7 +102,7 @@ export class TasksCompletionService {
   }
 
   async handleTaskSkipped(taskId: string): Promise<TaskDocument> {
-    const task = await this.getTaskOrThrow(taskId);
+    await this.getTaskOrThrow(taskId);
 
     const updatedTask = await this.taskModel
       .findByIdAndUpdate(
@@ -174,8 +174,8 @@ export class TasksCompletionService {
     }
 
     const created = await this.alertsService.createAlert({
-      taskId: task._id as any,
-      projectId: task.project as any,
+      taskId: task._id,
+      projectId: task.project,
       type: 'warning',
       message: deviation.message || 'Time deviation detected',
       recommendation: deviation.recommendation,
@@ -325,12 +325,13 @@ export class TasksCompletionService {
         source,
         taskId,
       });
-    } catch (error: any) {
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
       console.warn('[TasksCompletionService] Falha ao registrar progresso EVM automatico', {
         projectId,
         taskId,
         source,
-        message: error?.message,
+        message,
       });
     }
   }
@@ -347,8 +348,8 @@ export class TasksCompletionService {
     if (!task) return;
 
     await this.alertsService.createAlert({
-      taskId: task._id as any,
-      projectId: task.project as any,
+      taskId: task._id,
+      projectId: task.project,
       type: 'warning',
       message: deviation.message || 'Time deviation detected',
       recommendation: deviation.recommendation,
@@ -366,6 +367,6 @@ export class TasksCompletionService {
     if (!nextDeadline) return;
 
     const payload = this.tasksRecurringService.buildOccurrencePayload(task, nextDeadline);
-    await this.tasksWriteService.createTaskCore(payload as any);
+    await this.tasksWriteService.createTaskCore(payload);
   }
 }

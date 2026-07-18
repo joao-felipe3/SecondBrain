@@ -1,9 +1,25 @@
-import { JourneyKind, RequirementType } from '../../../schemas/requirement.schema';
+import { JourneyKind, RequirementType, Requirement } from '../../../schemas/requirement.schema';
+
+function safeStringify(val: unknown): string {
+  if (val === null || val === undefined) {
+    return '';
+  }
+  if (typeof val === 'string') {
+    return val;
+  }
+  if (
+    typeof val === 'number' ||
+    typeof val === 'boolean' ||
+    typeof val === 'bigint' ||
+    typeof val === 'symbol'
+  ) {
+    return String(val);
+  }
+  return '';
+}
 
 export function normalizeKind(value: unknown): JourneyKind {
-  const raw = String(value ?? '')
-    .trim()
-    .toLowerCase();
+  const raw = safeStringify(value).trim().toLowerCase();
   if (raw === 'objective' || raw === 'objetivo') return 'objective';
   if (raw === 'habit' || raw === 'habito' || raw === 'hábito') return 'habit';
   if (raw === 'stage' || raw === 'etapa') return 'stage';
@@ -11,9 +27,7 @@ export function normalizeKind(value: unknown): JourneyKind {
 }
 
 export function normalizeType(value: unknown, fallbackKind?: JourneyKind): RequirementType {
-  const raw = String(value ?? '')
-    .trim()
-    .toLowerCase();
+  const raw = safeStringify(value).trim().toLowerCase();
   if (raw === 'functional') return 'functional';
   if (raw === 'non_functional' || raw === 'non-functional' || raw === 'nonfunctional') {
     return 'non_functional';
@@ -34,13 +48,13 @@ export function levelForKind(kind: JourneyKind): number {
   return 3;
 }
 
-export function getLinkedActions(requirement: any): string[] {
+export function getLinkedActions(requirement: Partial<Requirement>): string[] {
   const modern = Array.isArray(requirement?.traceableActionItems)
     ? requirement.traceableActionItems.map(String)
     : [];
   if (modern.length > 0) return modern;
   const legacy = Array.isArray(requirement?.traceableItems)
-    ? requirement?.traceableItems.map(String)
+    ? requirement.traceableItems.map(String)
     : [];
   return legacy;
 }
@@ -50,9 +64,9 @@ export function parseJsonArray(rawResponse: string): unknown[] | null {
     .replace(/```json\n?/gi, '')
     .replace(/```\n?/g, '')
     .trim();
-  const tryParse = (text: string) => {
+  const tryParse = (text: string): unknown[] | null => {
     try {
-      const parsed = JSON.parse(text);
+      const parsed = JSON.parse(text) as unknown;
       return Array.isArray(parsed) ? parsed : null;
     } catch {
       return null;

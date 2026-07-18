@@ -15,6 +15,7 @@ import {
 } from '@nestjs/common';
 import { Observable } from 'rxjs';
 import { TasksService } from './tasks.service';
+import { TaskDocument } from './schemas/task.schema';
 import { CreateTaskDto } from './dto/task/create-task.dto';
 import { CreateMicroTaskDto } from './dto/task/create-micro-task.dto';
 import { CreateBulkTasksDto } from './dto/task/create-bulk-tasks.dto';
@@ -69,9 +70,9 @@ export class TasksController {
     let dependencyOps = 0;
     if (mode !== 'none' && inserted.length >= 2) {
       // Build consecutive WBS-leaf groups based on parentWbsNodeId.
-      const groups: Array<{ leafId: string; tasks: any[] }> = [];
+      const groups: Array<{ leafId: string; tasks: TaskDocument[] }> = [];
       for (const t of inserted) {
-        const leafId = String((t as any)?.parentWbsNodeId || '').trim();
+        const leafId = String(t.parentWbsNodeId || '').trim();
         if (!leafId) {
           // Ignore non-WBS tasks for auto dependency.
           continue;
@@ -113,13 +114,15 @@ export class TasksController {
         }
 
         if (mode === 'heuristic-phases' || mode === 'ai-per-leaf') {
-          const inferenceTasks = g.tasks.map((t: any) => ({
-            id: String(t?._id ?? t?.id ?? ''),
-            name: String(t?.name ?? t?.title ?? 'Task'),
-            description: t?.description,
-            checklist: t?.checklist,
-            definitionOfDone: t?.definitionOfDone,
-            microTaskType: t?.microTaskType,
+          const inferenceTasks = g.tasks.map((t) => ({
+            id: String(t._id ?? t.id ?? ''),
+            name: String(t.name ?? ''),
+            description: t.description,
+            checklist: t.checklist
+              ? t.checklist.map((item) => (typeof item === 'string' ? item : item.item))
+              : undefined,
+            definitionOfDone: t.definitionOfDone,
+            microTaskType: t.microTaskType,
           }));
 
           const inferred =
@@ -167,7 +170,7 @@ export class TasksController {
     return {
       insertedCount: inserted.length,
       autoDependenciesCreatedOrUpdated: dependencyOps,
-      taskIds: inserted.map((t: any) => String(t?._id ?? t?.id ?? '')).filter(Boolean),
+      taskIds: inserted.map((t) => String(t._id ?? t.id ?? '')).filter(Boolean),
     };
   }
 
@@ -383,7 +386,7 @@ export class TasksController {
 
     return new Observable((observer) => {
       // Chama o método assíncrono e captura erros
-      (async () => {
+      void (async () => {
         try {
           await this.tasksService.generateAiSuggestionsWithProgress({
             dto: generateDto,
@@ -499,22 +502,22 @@ export class TasksController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    const task = this.tasksService.findOne(id);
+  async findOne(@Param('id') id: string) {
+    const task = await this.tasksService.findOne(id);
     if (!task) throw new NotFoundException('Task not found');
     return task;
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateTaskDto: UpdateTaskDto) {
-    const task = this.tasksService.update(id, updateTaskDto);
+  async update(@Param('id') id: string, @Body() updateTaskDto: UpdateTaskDto) {
+    const task = await this.tasksService.update(id, updateTaskDto);
     if (!task) throw new NotFoundException('Task not found');
     return task;
   }
 
   @Delete('item/:id')
-  remove(@Param('id') id: string) {
-    const removed = this.tasksService.remove(id);
+  async remove(@Param('id') id: string) {
+    const removed = await this.tasksService.remove(id);
     if (!removed) throw new NotFoundException('Task not found');
     return { message: 'Task removed successfully' };
   }

@@ -8,7 +8,6 @@ import {
 } from '../../schemas/task-dependency.schema';
 import { TaskDependency } from '../../entities/task-dependency.entity';
 import { TaskDependencyMapper } from '../../mappers/task-dependency.mapper';
-import { TaskNode, CPMAnalysis, TaskMetrics } from '../../interfaces/cpm.interface';
 import {
   calculateCriticalPath as calculateCP,
   getTaskMetrics as getTM,
@@ -51,10 +50,11 @@ export class CPMService {
         relationship: normalizedRelationship,
       });
       return TaskDependencyMapper.toDomain(created);
-    } catch (error: any) {
+    } catch (error) {
+      const stack = error instanceof Error ? error.stack : undefined;
       this.logger.error(
         `Failed to add dependency between task ${taskId} and ${dependsOnTaskId} for project ${projectId}.`,
-        error.stack,
+        stack,
       );
       throw new InternalServerErrorException('Failed to add dependency.', {
         cause: error,
@@ -76,7 +76,8 @@ export class CPMService {
       const modified = result?.modifiedCount ?? 0;
       return upserted + modified;
     } catch (error) {
-      this.logger.error('Failed to bulk upsert dependencies.', error.stack);
+      const stack = error instanceof Error ? error.stack : undefined;
+      this.logger.error('Failed to bulk upsert dependencies.', stack);
       throw new InternalServerErrorException('Failed to upsert dependencies.', { cause: error });
     }
   }
@@ -85,9 +86,10 @@ export class CPMService {
     try {
       await this.dependencyModel.deleteOne({ taskId, dependsOnTaskId }).exec();
     } catch (error) {
+      const stack = error instanceof Error ? error.stack : undefined;
       this.logger.error(
         `Failed to remove dependency between task ${taskId} and ${dependsOnTaskId}.`,
-        error.stack,
+        stack,
       );
       throw new InternalServerErrorException('Failed to remove dependency.', {
         cause: error,
@@ -98,9 +100,10 @@ export class CPMService {
   async getDependencies(projectId: string): Promise<TaskDependency[]> {
     try {
       const docs = await this.dependencyModel.find({ projectId }).exec();
-      return docs.map(TaskDependencyMapper.toDomain);
+      return docs.map((doc) => TaskDependencyMapper.toDomain(doc));
     } catch (error) {
-      this.logger.error(`Failed to get dependencies for project ${projectId}.`, error.stack);
+      const stack = error instanceof Error ? error.stack : undefined;
+      this.logger.error(`Failed to get dependencies for project ${projectId}.`, stack);
       throw new InternalServerErrorException('Failed to retrieve dependencies.', { cause: error });
     }
   }
@@ -115,7 +118,8 @@ export class CPMService {
       const result = await this.dependencyModel.deleteMany({ _id: { $in: validIds } }).exec();
       return result?.deletedCount ?? 0;
     } catch (error) {
-      this.logger.error(`Failed to remove dependencies by IDs: [${ids.join(', ')}].`, error.stack);
+      const stack = error instanceof Error ? error.stack : undefined;
+      this.logger.error(`Failed to remove dependencies by IDs: [${ids.join(', ')}].`, stack);
       throw new InternalServerErrorException('Failed to remove dependencies by IDs.', { cause: error });
     }
   }

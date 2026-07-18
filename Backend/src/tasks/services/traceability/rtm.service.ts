@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { RequirementDocument, RequirementType, JourneyKind } from '../../schemas/requirement.schema';
+import { RequirementType, JourneyKind } from '../../schemas/requirement.schema';
 import { Task } from '../../entities/task.entity';
 import { Requirement } from '../../entities/requirement.entity';
 import { RTMValidation, RTMMatrixData } from '../../interfaces/rtm.interface';
