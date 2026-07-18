@@ -9,14 +9,14 @@ export class CalculateBufferDto {
   })
   @IsString()
   @IsNotEmpty()
-  projectId: string;
+  projectId!: string;
 
   @ApiProperty({
     description: 'Métricas das tarefas do projeto',
     type: 'array',
   })
   @IsArray()
-  tasks: BufferTaskMetrics[];
+  tasks!: BufferTaskMetrics[];
 
   @ApiProperty({
     description: 'Caminho crítico contendo os IDs das tarefas',
@@ -24,13 +24,13 @@ export class CalculateBufferDto {
     type: [String],
   })
   @IsArray()
-  criticalPath: string[];
+  criticalPath!: string[];
 }
 
 export class UpdateOrCreateBufferDto {
-  projectId: string;
-  calculationResult: BufferCalculationResult;
-  criticalTasks: BufferTaskMetrics[];
+  projectId!: string;
+  calculationResult!: BufferCalculationResult;
+  criticalTasks!: BufferTaskMetrics[];
 }
 
 export class BufferHistoryDto {
@@ -38,17 +38,17 @@ export class BufferHistoryDto {
     description: 'Data do registro do snapshot do buffer',
     example: '2026-07-11T02:36:56.000Z',
   })
-  date: Date;
+  date!: Date;
 
   @ApiProperty({
     description: 'Quantidade de horas consumidas',
     example: 5.5,
   })
-  consumed: number;
+  consumed!: number;
 
   @ApiProperty({
     description: 'Porcentagem utilizada do buffer total',
     example: 32.5,
   })
-  percentageUsed: number;
+  percentageUsed!: number;
 }

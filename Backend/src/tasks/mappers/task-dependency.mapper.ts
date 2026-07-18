@@ -7,16 +7,17 @@ export class TaskDependencyMapper {
       throw new Error('TaskDependencyDocument is null or undefined');
     }
 
+    const docRecord = document as unknown as { id?: string | number; createdAt?: Date; updatedAt?: Date };
     const entity = new TaskDependency();
-    entity.id = document._id ? document._id.toString() : (document as any).id;
+    entity.id = document._id ? document._id.toString() : docRecord.id ? String(docRecord.id) : '';
     entity.taskId = document.taskId ? document.taskId.toString() : '';
     entity.dependsOnTaskId = document.dependsOnTaskId ? document.dependsOnTaskId.toString() : '';
     entity.relationship = document.relationship;
     entity.reason = document.reason;
     entity.projectId = document.projectId ? document.projectId.toString() : '';
     entity.isAutoIdentified = document.isAutoIdentified;
-    entity.createdAt = (document as any).createdAt;
-    entity.updatedAt = (document as any).updatedAt;
+    entity.createdAt = docRecord.createdAt as Date;
+    entity.updatedAt = docRecord.updatedAt as Date;
 
     return entity;
   }
@@ -26,7 +27,7 @@ export class TaskDependencyMapper {
       throw new Error('TaskDependency entity is null or undefined');
     }
 
-    const document: any = {};
+    const document: Record<string, unknown> = {};
     if (entity.id) document._id = entity.id;
     if (entity.taskId !== undefined) document.taskId = entity.taskId;
     if (entity.dependsOnTaskId !== undefined) document.dependsOnTaskId = entity.dependsOnTaskId;
@@ -35,6 +36,6 @@ export class TaskDependencyMapper {
     if (entity.projectId !== undefined) document.projectId = entity.projectId;
     if (entity.isAutoIdentified !== undefined) document.isAutoIdentified = entity.isAutoIdentified;
 
-    return document;
+    return document as Partial<TaskDependencyDocument>;
   }
 }

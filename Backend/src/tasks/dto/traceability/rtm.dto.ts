@@ -9,7 +9,7 @@ export class MapRequirementToTaskDto {
   })
   @IsString()
   @IsNotEmpty()
-  projectId: string;
+  projectId!: string;
 
   @ApiProperty({
     description: 'ID do item da jornada (requisito)',
@@ -17,7 +17,7 @@ export class MapRequirementToTaskDto {
   })
   @IsString()
   @IsNotEmpty()
-  requirementId: string;
+  requirementId!: string;
 
   @ApiProperty({
     description: 'ID da tarefa',
@@ -25,7 +25,7 @@ export class MapRequirementToTaskDto {
   })
   @IsString()
   @IsNotEmpty()
-  taskId: string;
+  taskId!: string;
 }
 
 export class SaveRequirementDto {
@@ -35,7 +35,7 @@ export class SaveRequirementDto {
   })
   @IsString()
   @IsNotEmpty()
-  description: string;
+  description!: string;
 
   @ApiPropertyOptional({
     description: 'Tipo do requisito',
@@ -79,20 +79,20 @@ export class SaveRequirementDto {
 }
 
 export class PreparedRequirementDataDto {
-  ref: string;
+  ref!: string;
   parentRef?: string;
-  description: string;
-  kind: JourneyKind;
-  type: string;
-  hierarchyLevel: number;
-  source: string;
+  description!: string;
+  kind!: JourneyKind;
+  type!: string;
+  hierarchyLevel!: number;
+  source!: string;
 }
 
 export class ProcessSingleRequirementDto {
-  projectId: string;
-  item: PreparedRequirementDataDto;
-  refToId: Map<string, string>;
-  insertedDedupKeys: Set<string>;
+  projectId!: string;
+  item!: PreparedRequirementDataDto;
+  refToId!: Map<string, string>;
+  insertedDedupKeys!: Set<string>;
 }
 
 export class RTMValidationDto {
@@ -100,25 +100,25 @@ export class RTMValidationDto {
     description: 'Se o mapeamento é válido (sem anomalias/órfãos graves)',
     example: true,
   })
-  isValid: boolean;
+  isValid!: boolean;
 
   @ApiProperty({
     description: 'IDs dos requisitos/ações que não possuem nenhuma tarefa mapeada',
     example: ['req-456'],
   })
-  unmappedRequirements: string[];
+  unmappedRequirements!: string[];
 
   @ApiProperty({
     description: 'Alertas/sinais de riscos detectados na matriz de rastreabilidade',
     example: ['Requisito X sem nenhuma tarefa correspondente'],
   })
-  risks: string[];
+  risks!: string[];
 
   @ApiProperty({
     description: 'Porcentagem de cobertura das ações da jornada (0-100)',
     example: 85.5,
   })
-  coverage: number;
+  coverage!: number;
 }
 
 export class AutoMapRequirementsResponseDto {
@@ -126,37 +126,37 @@ export class AutoMapRequirementsResponseDto {
     description: 'Indica se a operação foi realizada com sucesso',
     example: true,
   })
-  success: boolean;
+  success!: boolean;
 
   @ApiProperty({
     description: 'Quantidade de tarefas que foram vinculadas a ações existentes',
     example: 5,
   })
-  mappedCount: number;
+  mappedCount!: number;
 
   @ApiProperty({
     description: 'Quantidade de novas ações criadas automaticamente para tarefas sem correspondência',
     example: 1,
   })
-  createdRequirementsCount: number;
+  createdRequirementsCount!: number;
 
   @ApiProperty({
     description: 'Porcentagem de cobertura atual',
     example: 100,
   })
-  coverage: number;
+  coverage!: number;
 
   @ApiProperty({
     description: 'Validação atualizada da matriz de rastreabilidade',
     type: RTMValidationDto,
   })
-  validation: RTMValidationDto;
+  validation!: RTMValidationDto;
 
   @ApiProperty({
     description: 'Mensagem explicativa sobre o resultado do mapeamento',
     example: 'Auto-vínculo concluído: 5 tarefa(s) vinculada(s) + 1 ação(ões) criada(s).',
   })
-  message: string;
+  message!: string;
 
   @ApiProperty({
     description: 'Data e hora da resposta',
@@ -170,31 +170,31 @@ export class GenerateTasksResponseDto {
     description: 'Indica se a operação foi realizada com sucesso',
     example: true,
   })
-  success: boolean;
+  success!: boolean;
 
   @ApiProperty({
     description: 'Quantidade de tarefas criadas automaticamente para preencher as lacunas',
     example: 3,
   })
-  createdTasksCount: number;
+  createdTasksCount!: number;
 
   @ApiProperty({
     description: 'Porcentagem de cobertura após a geração',
     example: 95.0,
   })
-  coverage: number;
+  coverage!: number;
 
   @ApiProperty({
     description: 'Validação atualizada da matriz de rastreabilidade',
     type: RTMValidationDto,
   })
-  validation: RTMValidationDto;
+  validation!: RTMValidationDto;
 
   @ApiProperty({
     description: 'Mensagem explicativa sobre o resultado da geração',
     example: '3 tarefa(s) gerada(s) para ações órfãs.',
   })
-  message: string;
+  message!: string;
 
   @ApiProperty({
     description: 'Data e hora da resposta',

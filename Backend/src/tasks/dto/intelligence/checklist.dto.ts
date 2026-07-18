@@ -9,7 +9,7 @@ export class FindSimilarTasksDto {
   })
   @IsString()
   @IsNotEmpty()
-  projectId: string;
+  projectId!: string;
 
   @ApiProperty({
     description: 'Tipo de micro-tarefa',
@@ -37,7 +37,7 @@ export class UpdateChecklistTaskItemDto {
   })
   @IsString()
   @IsNotEmpty()
-  taskId: string;
+  taskId!: string;
 
   @ApiProperty({
     description: 'Índice do item do checklist a ser atualizado',
@@ -45,7 +45,7 @@ export class UpdateChecklistTaskItemDto {
   })
   @IsString()
   @IsNotEmpty()
-  itemIndex: string;
+  itemIndex!: string;
 
   @ApiProperty({
     description: 'Novo estado de conclusão do item',
@@ -53,7 +53,7 @@ export class UpdateChecklistTaskItemDto {
   })
   @IsBoolean()
   @IsNotEmpty()
-  completed: boolean;
+  completed!: boolean;
 }
 
 export class GenerateChecklistDto {
@@ -63,7 +63,7 @@ export class GenerateChecklistDto {
   })
   @IsString()
   @IsNotEmpty()
-  taskName: string;
+  taskName!: string;
 
   @ApiProperty({
     description: 'Descrição da tarefa',
@@ -91,7 +91,7 @@ export class GenerateChecklistWithHistoryDto {
   })
   @IsString()
   @IsNotEmpty()
-  taskName: string;
+  taskName!: string;
 
   @ApiProperty({
     description: 'Descrição da tarefa',

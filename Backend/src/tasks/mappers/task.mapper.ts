@@ -7,8 +7,9 @@ export class TaskMapper {
       throw new Error('TaskDocument is null or undefined');
     }
 
+    const docRecord = document as unknown as { id?: string | number };
     const entity = new Task();
-    entity.id = document._id ? document._id.toString() : document.id;
+    entity.id = document._id ? document._id.toString() : docRecord.id ? String(docRecord.id) : '';
     entity.name = document.name;
     entity.description = document.description;
     entity.definitionOfDone = document.definitionOfDone;
@@ -64,7 +65,7 @@ export class TaskMapper {
       throw new Error('Task entity is null or undefined');
     }
 
-    const document: any = {};
+    const document: Record<string, unknown> = {};
     if (entity.id) document._id = entity.id;
     if (entity.name !== undefined) document.name = entity.name;
     if (entity.description !== undefined) document.description = entity.description;
@@ -119,6 +120,6 @@ export class TaskMapper {
     if (entity.themeTag !== undefined) document.themeTag = entity.themeTag;
     if (entity.createdAt !== undefined) document.createdAt = entity.createdAt;
 
-    return document;
+    return document as Partial<TaskDocument>;
   }
 }

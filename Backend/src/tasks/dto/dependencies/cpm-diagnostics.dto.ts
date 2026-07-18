@@ -11,119 +11,119 @@ import {
 
 export class SlackBucketsDto implements SlackBuckets {
   @ApiProperty({ description: 'Quantidade de tarefas com folga negativa' })
-  negative: number;
+  negative!: number;
 
   @ApiProperty({ description: 'Quantidade de tarefas críticas (folga menor que 0.1h)' })
-  critical: number;
+  critical!: number;
 
   @ApiProperty({ description: 'Quantidade de tarefas quase críticas (folga < 2h)' })
-  nearCritical: number;
+  nearCritical!: number;
 
   @ApiProperty({ description: 'Quantidade de tarefas com folga baixa (folga < 8h)' })
-  lowSlack: number;
+  lowSlack!: number;
 
   @ApiProperty({ description: 'Quantidade de tarefas confortáveis (folga >= 8h)' })
-  comfortable: number;
+  comfortable!: number;
 }
 
 export class TopUnlockerDto implements TopUnlocker {
   @ApiProperty({ description: 'ID da tarefa' })
-  taskId: string;
+  taskId!: string;
 
   @ApiProperty({ description: 'Nome da tarefa' })
-  taskName: string;
+  taskName!: string;
 
   @ApiProperty({ description: 'Grau de saída (out-degree) da tarefa' })
-  outDegree: number;
+  outDegree!: number;
 }
 
 export class TopBottleneckDto implements TopBottleneck {
   @ApiProperty({ description: 'ID da tarefa' })
-  taskId: string;
+  taskId!: string;
 
   @ApiProperty({ description: 'Nome da tarefa' })
-  taskName: string;
+  taskName!: string;
 
   @ApiProperty({ description: 'Grau de entrada (in-degree) da tarefa' })
-  inDegree: number;
+  inDegree!: number;
 }
 
 export class MissingDependencySampleDto implements MissingDependencySample {
   @ApiProperty({ description: 'ID da tarefa' })
-  taskId: string;
+  taskId!: string;
 
   @ApiProperty({ description: 'ID da tarefa de que depende e que está ausente no projeto' })
-  dependsOnTaskId: string;
+  dependsOnTaskId!: string;
 }
 
 export class CPMValidationDto implements CPMValidation {
   @ApiProperty({ description: 'Quantidade de dependências com referências ausentes no projeto' })
-  missingDependencyRefs: number;
+  missingDependencyRefs!: number;
 
   @ApiProperty({ type: [MissingDependencySampleDto], description: 'Amostras de dependências ausentes' })
-  missingDependencySamples: MissingDependencySampleDto[];
+  missingDependencySamples!: MissingDependencySampleDto[];
 
   @ApiProperty({ enum: ['high', 'medium', 'low'], description: 'Grau de confiabilidade do cálculo' })
-  reliability: 'high' | 'medium' | 'low';
+  reliability!: 'high' | 'medium' | 'low';
 }
 
 export class CPMDiagnosticsDto implements CPMDiagnostics {
   @ApiProperty({ description: 'Total de tarefas consideradas no cálculo' })
-  taskCount: number;
+  taskCount!: number;
 
   @ApiProperty({ description: 'Quantidade de tarefas críticas' })
-  criticalCount: number;
+  criticalCount!: number;
 
   @ApiProperty({ description: 'Percentual de tarefas críticas' })
-  criticalPercent: number;
+  criticalPercent!: number;
 
   @ApiProperty({ description: 'Quantidade de tarefas no caminho crítico' })
-  criticalChainTaskCount: number;
+  criticalChainTaskCount!: number;
 
   @ApiProperty({ description: 'Duração total do caminho crítico em horas' })
-  criticalChainDuration: number;
+  criticalChainDuration!: number;
 
   @ApiProperty({ description: 'Quantidade de tarefas quase críticas (folga < 2h)' })
-  nearCriticalCount: number;
+  nearCriticalCount!: number;
 
   @ApiProperty({ description: 'Trabalho total (soma das durações das tarefas) em horas' })
-  totalWork: number;
+  totalWork!: number;
 
   @ApiProperty({ description: 'Paralelismo implícito (totalWork / projectDuration)' })
-  impliedParallelism: number;
+  impliedParallelism!: number;
 
   @ApiProperty({ description: 'Indica se foi detectado algum ciclo (loop) de dependência' })
-  hasCycle: boolean;
+  hasCycle!: boolean;
 
   @ApiProperty({ description: 'Quantidade de nós não processados no forward pass' })
-  unprocessedForward: number;
+  unprocessedForward!: number;
 
   @ApiProperty({ description: 'Quantidade de nós não processados no backward pass' })
-  unprocessedBackward: number;
+  unprocessedBackward!: number;
 
   @ApiProperty({ description: 'Quantidade de conexões (arestas) no grafo' })
-  edgeCount: number;
+  edgeCount!: number;
 
   @ApiProperty({ description: 'Quantidade de nós de início (sem predecessores)' })
-  startNodeCount: number;
+  startNodeCount!: number;
 
   @ApiProperty({ description: 'Quantidade de nós de término (sem sucessores)' })
-  endNodeCount: number;
+  endNodeCount!: number;
 
   @ApiProperty({ description: 'Média de dependências por tarefa' })
-  avgDependenciesPerTask: number;
+  avgDependenciesPerTask!: number;
 
   @ApiProperty({ type: SlackBucketsDto })
-  slackBuckets: SlackBucketsDto;
+  slackBuckets!: SlackBucketsDto;
 
   @ApiProperty({ type: [TopUnlockerDto] })
-  topUnlockers: TopUnlockerDto[];
+  topUnlockers!: TopUnlockerDto[];
 
   @ApiProperty({ type: [TopBottleneckDto] })
-  topBottlenecks: TopBottleneckDto[];
+  topBottlenecks!: TopBottleneckDto[];
 
   @ApiProperty({ type: CPMValidationDto })
-  validation: CPMValidationDto;
+  validation!: CPMValidationDto;
 
   constructor(params: {
     tasksInHours: TaskNode[];

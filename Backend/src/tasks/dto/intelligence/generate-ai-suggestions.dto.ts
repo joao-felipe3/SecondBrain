@@ -1,5 +1,5 @@
 export class GenerateAiSuggestionsDto {
-  projectName: string;
+  projectName!: string;
   projectId?: string; // ID do projeto para buscar tarefas existentes
   shortTermGoal?: string;
   midTermGoal?: string;
@@ -9,25 +9,25 @@ export class GenerateAiSuggestionsDto {
 }
 
 export class AiTaskSuggestionDto {
-  name: string;
-  deadline: string; // ISO date string
-  pomodoros: number;
-  priority: number;
-  difficulty: number;
-  selected: boolean;
+  name!: string;
+  deadline!: string; // ISO date string
+  pomodoros!: number;
+  priority!: number;
+  difficulty!: number;
+  selected!: boolean;
 }
 
 export class AiSuggestionsProgressDto {
-  currentIteration: number;
-  maxIterations: number;
-  currentHours: number;
-  targetHours: number;
-  tasksGenerated: number;
-  status: 'loading' | 'success' | 'error' | 'partial';
-  message: string;
+  currentIteration!: number;
+  maxIterations!: number;
+  currentHours!: number;
+  targetHours!: number;
+  tasksGenerated!: number;
+  status!: 'loading' | 'success' | 'error' | 'partial';
+  message!: string;
 }
 
 export class AiSuggestionsResponseDto {
-  suggestions: AiTaskSuggestionDto[];
-  progress: AiSuggestionsProgressDto;
+  suggestions!: AiTaskSuggestionDto[];
+  progress!: AiSuggestionsProgressDto;
 }

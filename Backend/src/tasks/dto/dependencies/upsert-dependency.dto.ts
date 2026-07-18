@@ -9,7 +9,7 @@ export class UpsertDependencyDto {
   })
   @IsString()
   @IsNotEmpty()
-  taskId: string;
+  taskId!: string;
 
   @ApiProperty({
     description: 'ID da tarefa predecessora',
@@ -17,7 +17,7 @@ export class UpsertDependencyDto {
   })
   @IsString()
   @IsNotEmpty()
-  dependsOnTaskId: string;
+  dependsOnTaskId!: string;
 
   @ApiProperty({
     description: 'ID do projeto associado',
@@ -25,7 +25,7 @@ export class UpsertDependencyDto {
   })
   @IsString()
   @IsNotEmpty()
-  projectId: string;
+  projectId!: string;
 
   @ApiProperty({
     description: 'Motivo / explicação da dependência',

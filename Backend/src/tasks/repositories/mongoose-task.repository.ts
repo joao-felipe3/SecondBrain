@@ -13,7 +13,7 @@ export class MongooseTaskRepository implements TaskRepository {
 
   async findAll(): Promise<Task[]> {
     const docs = await this.taskModel.find().exec();
-    return docs.map(TaskMapper.toDomain);
+    return docs.map((doc) => TaskMapper.toDomain(doc));
   }
 
   async findById(id: string): Promise<Task | null> {
@@ -39,7 +39,8 @@ export class MongooseTaskRepository implements TaskRepository {
       const validIds = taskIds.filter((id) => Types.ObjectId.isValid(id));
       if (validIds.length > 0) {
         const validObjectIds = validIds.map((id) => new Types.ObjectId(id));
-        query._id = { $in: validObjectIds } as FilterQuery<TaskDocument>['_id'];
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        query._id = { $in: validObjectIds } as any;
       }
     }
 
@@ -48,7 +49,7 @@ export class MongooseTaskRepository implements TaskRepository {
     }
 
     const docs = await this.taskModel.find(query).exec();
-    return docs.map(TaskMapper.toDomain);
+    return docs.map((doc) => TaskMapper.toDomain(doc));
   }
 
   async save(task: Task): Promise<Task> {

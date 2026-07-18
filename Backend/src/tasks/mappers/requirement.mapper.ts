@@ -7,8 +7,9 @@ export class RequirementMapper {
       throw new Error('RequirementDocument is null or undefined');
     }
 
+    const docRecord = document as unknown as { id?: string | number };
     const entity = new Requirement();
-    entity.id = document._id ? document._id.toString() : (document as any).id;
+    entity.id = document._id ? document._id.toString() : docRecord.id ? String(docRecord.id) : '';
     entity.projectId = document.projectId ? document.projectId.toString() : '';
     entity.description = document.description;
     entity.type = document.type;
@@ -35,7 +36,7 @@ export class RequirementMapper {
       throw new Error('Requirement entity is null or undefined');
     }
 
-    const document: any = {};
+    const document: Record<string, unknown> = {};
     if (entity.id) document._id = entity.id;
     if (entity.projectId !== undefined) document.projectId = entity.projectId;
     if (entity.description !== undefined) document.description = entity.description;
@@ -50,6 +51,6 @@ export class RequirementMapper {
     if (entity.source !== undefined) document.source = entity.source;
     if (entity.status !== undefined) document.status = entity.status;
 
-    return document;
+    return document as Partial<RequirementDocument>;
   }
 }

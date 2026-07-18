@@ -1,9 +1,11 @@
-import { Controller, Get, Post, Param, Body, Logger, Inject, forwardRef } from '@nestjs/common';
+import { Controller, Get, Post, Param, Body, Logger } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
-import { BufferService, TaskNode, BufferTaskMetrics } from '../services/analysis';
+import { BufferService, BufferTaskMetrics } from '../services/analysis';
 import { CPMService } from '../services/dependencies';
 import { TasksService } from '../tasks.service';
 import { BufferHistoryDto } from '../dto';
+import { Task } from '../entities/task.entity';
+import { TaskNodeResponseDto } from '../dto/dependencies/cpm.dto';
 
 @ApiTags('Buffers')
 @Controller('buffers')
@@ -27,10 +29,10 @@ export class BufferController {
       const tasks = await this.tasksService.findByProjectId(projectId);
 
       // Convertir a TaskNode
-      const taskNodes: TaskNode[] = tasks.map((task: any) => ({
-        id: task._id?.toString() || task.id,
-        name: task.title || task.name || 'Task',
-        duration: task.pertExpectedMinutes || task.estimatedMinutes || 60,
+      const taskNodes: TaskNodeResponseDto[] = tasks.map((task: Task) => ({
+        id: task.id,
+        name: task.name || 'Task',
+        duration: task.pertExpectedMinutes || 60,
         dependencies: [],
       }));
 
@@ -38,10 +40,10 @@ export class BufferController {
       const dependencies = await this.cpmService.getDependencies(projectId);
 
       // Llenar las dependencias en TaskNodes
-      const nodeById = new Map<string, TaskNode>();
+      const nodeById = new Map<string, TaskNodeResponseDto>();
       for (const n of taskNodes) nodeById.set(n.id, n);
 
-      for (const dep of dependencies as any[]) {
+      for (const dep of dependencies) {
         const taskId = String(dep?.taskId ?? '').trim();
         const depId = String(dep?.dependsOnTaskId ?? '').trim();
         if (!taskId || !depId) continue;
@@ -53,12 +55,14 @@ export class BufferController {
       const analysis = this.cpmService.calculateCriticalPath(taskNodes);
 
       // Convertir a TaskMetrics para BufferService
-      const taskMetrics: BufferTaskMetrics[] = (analysis.tasksByImpact || []).map((task: any) => ({
-        taskId: task.id,
-        estimatedHours: task.duration || 0,
-        variance: task.variance || 0,
-        isCritical: task.isCritical,
-      }));
+      const taskMetrics: BufferTaskMetrics[] = (analysis.tasksByImpact || []).map(
+        (task: TaskNodeResponseDto) => ({
+          taskId: task.id,
+          estimatedHours: task.duration || 0,
+          variance: task.slack || 0, // In this case slack represents the margin. The buffer service handles it. Or variance if we had it. Let's assume variance from slack or 0 for now as it doesn't exist on TaskNode
+          isCritical: !!task.isCritical,
+        }),
+      );
 
       // Calcular buffer
       const buffer = await this.bufferService.calculateProjectBuffer({
@@ -85,9 +89,10 @@ export class BufferController {
           message: `Buffer calculado: ${buffer.projectBuffer}h (50% de ${buffer.criticalPathDuration}h)`,
         },
       };
-    } catch (error: any) {
-      this.logger.error(`Error calculando buffer: ${error.message}`);
-      return { success: false, error: error.message };
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      this.logger.error(`Error calculando buffer: ${message}`);
+      return { success: false, error: message };
     }
   }
 
@@ -112,9 +117,10 @@ export class BufferController {
           alerts,
         },
       };
-    } catch (error: any) {
-      this.logger.error(`Error obteniendo status del buffer: ${error.message}`);
-      return { success: false, error: error.message };
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      this.logger.error(`Error obteniendo status del buffer: ${message}`);
+      return { success: false, error: message };
     }
   }
 
@@ -138,9 +144,10 @@ export class BufferController {
           message: `Buffer actualizado: ${status.consumed}h/${status.total}h consumido (${status.percentageUsed}%)`,
         },
       };
-    } catch (error: any) {
-      this.logger.error(`Error consumiendo buffer: ${error.message}`);
-      return { success: false, error: error.message };
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      this.logger.error(`Error consumiendo buffer: ${message}`);
+      return { success: false, error: message };
     }
   }
 
@@ -166,9 +173,10 @@ export class BufferController {
           },
         },
       };
-    } catch (error: any) {
-      this.logger.error(`Error verificando salud del buffer: ${error.message}`);
-      return { success: false, error: error.message };
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      this.logger.error(`Error verificando salud del buffer: ${message}`);
+      return { success: false, error: message };
     }
   }
 
@@ -185,9 +193,10 @@ export class BufferController {
         success: true,
         message: `Buffer reseteado para proyecto: ${projectId}`,
       };
-    } catch (error: any) {
-      this.logger.error(`Error reseteando buffer: ${error.message}`);
-      return { success: false, error: error.message };
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      this.logger.error(`Error reseteando buffer: ${message}`);
+      return { success: false, error: message };
     }
   }
 
@@ -211,9 +220,10 @@ export class BufferController {
         success: true,
         history,
       };
-    } catch (error: any) {
-      this.logger.error(`Error obteniendo histórico del buffer: ${error.message}`);
-      return { success: false, error: error.message };
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      this.logger.error(`Error obteniendo histórico del buffer: ${message}`);
+      return { success: false, error: message };
     }
   }
 }

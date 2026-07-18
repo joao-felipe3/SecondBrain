@@ -34,24 +34,24 @@ export class ValueContributionResponseDto {
     description: 'Porcentagem de contribuição de valor da sub-árvore',
     example: 25.5,
   })
-  contributionPercent: number;
+  contributionPercent!: number;
 
   @ApiProperty({
     description: 'XP completado na sub-árvore',
     example: 500,
   })
-  subtreeCompletedXP: number;
+  subtreeCompletedXP!: number;
 
   @ApiProperty({
     description: 'XP total completado na árvore principal',
     example: 2000,
   })
-  totalCompletedXP: number;
+  totalCompletedXP!: number;
 
   @ApiProperty({
     description: 'Detalhamento dos nós da sub-árvore',
   })
-  breakdown: Array<{
+  breakdown!: Array<{
     _id: any;
     experience: number;
     isConcluded: boolean;

@@ -2,12 +2,7 @@ import { Controller, Post, Get, Delete, Param, Body, Logger } from '@nestjs/comm
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { RTMService } from '../services/traceability';
 import { TasksService } from '../tasks.service';
-import { Requirement } from '../entities/requirement.entity';
-import {
-  MapRequirementToTaskDto,
-  AutoMapRequirementsResponseDto,
-  GenerateTasksResponseDto,
-} from '../dto';
+import { AutoMapRequirementsResponseDto, GenerateTasksResponseDto } from '../dto';
 
 @ApiTags('RTM - Rastreabilidade da Jornada Pessoal')
 @ApiBearerAuth()
@@ -35,7 +30,7 @@ export class RTMController {
   })
   async autoGenerateRequirements(
     @Param('projectId') projectId: string,
-    @Body() body: { smartObjective: any },
+    @Body() body: { smartObjective: Record<string, string | undefined> },
   ) {
     const startedAt = Date.now();
 
@@ -60,7 +55,7 @@ export class RTMController {
       // 2. Salvar no banco
       const saved = await this.rtmService.saveRequirements(
         projectId,
-        generatedReqs.map((req: any) => ({
+        generatedReqs.map((req) => ({
           description: req.description,
           type: req.type,
           kind: req.kind,
@@ -82,8 +77,8 @@ export class RTMController {
       return {
         success: true,
         count: saved.length,
-        requirements: saved.map((req: any) => ({
-          id: req._id?.toString() || req.id,
+        requirements: saved.map((req) => ({
+          id: req.id,
           description: req.description,
           type: req.type,
           kind: req.kind,
@@ -94,11 +89,12 @@ export class RTMController {
         validation,
         timestamp: new Date().toISOString(),
       };
-    } catch (error: any) {
-      this.logger.error(`[auto-gen-req] projectId=${projectId} erro: ${error?.message}`);
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      this.logger.error(`[auto-gen-req] projectId=${projectId} erro: ${errorMessage}`);
       return {
         success: false,
-        error: error?.message,
+        error: errorMessage,
         requirements: [],
       };
     }
@@ -142,7 +138,7 @@ export class RTMController {
 
       // Debug: log WBS distribution
       const wbsDistribution = new Map<string, number>();
-      matrixData.tasks.forEach((t: any) => {
+      matrixData.tasks.forEach((t) => {
         const wbsName = t.wbsNodeName || 'Sem WBS';
         wbsDistribution.set(wbsName, (wbsDistribution.get(wbsName) || 0) + 1);
       });
@@ -160,11 +156,12 @@ export class RTMController {
         validation: matrixData.validation,
         timestamp: new Date().toISOString(),
       };
-    } catch (error: any) {
-      this.logger.error(`[rtm-matrix] projectId=${projectId} erro: ${error?.message}`);
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      this.logger.error(`[rtm-matrix] projectId=${projectId} erro: ${errorMessage}`);
       return {
         success: false,
-        error: error?.message,
+        error: errorMessage,
       };
     }
   }
@@ -215,9 +212,10 @@ export class RTMController {
         },
         validation,
       };
-    } catch (error: any) {
-      this.logger.error(`[map-req] projectId=${projectId} erro: ${error?.message}`);
-      return { success: false, error: error?.message };
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      this.logger.error(`[map-req] projectId=${projectId} erro: ${errorMessage}`);
+      return { success: false, error: errorMessage };
     }
   }
 
@@ -263,9 +261,10 @@ export class RTMController {
         },
         validation,
       };
-    } catch (error: any) {
-      this.logger.error(`[unmap-req] projectId=${projectId} erro: ${error?.message}`);
-      return { success: false, error: error?.message };
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      this.logger.error(`[unmap-req] projectId=${projectId} erro: ${errorMessage}`);
+      return { success: false, error: errorMessage };
     }
   }
 
@@ -292,9 +291,10 @@ export class RTMController {
       }
 
       return { success: true, message: 'Item da jornada deletado com sucesso' };
-    } catch (error: any) {
-      this.logger.error(`[delete-req] erro: ${error?.message}`);
-      return { success: false, error: error?.message };
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      this.logger.error(`[delete-req] erro: ${errorMessage}`);
+      return { success: false, error: errorMessage };
     }
   }
 
@@ -321,9 +321,10 @@ export class RTMController {
         message: `${count} item(ns) da jornada deletado(s) com sucesso`,
         count,
       };
-    } catch (error: any) {
-      this.logger.error(`[delete-all-req] projectId=${projectId} erro: ${error?.message}`);
-      return { success: false, error: error?.message };
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      this.logger.error(`[delete-all-req] projectId=${projectId} erro: ${errorMessage}`);
+      return { success: false, error: errorMessage };
     }
   }
 
@@ -347,8 +348,8 @@ export class RTMController {
       return {
         success: true,
         count: requirements.length,
-        requirements: requirements.map((req: any) => ({
-          id: req._id?.toString() || req.id,
+        requirements: requirements.map((req) => ({
+          id: req.id,
           description: req.description,
           type: req.type,
           kind: req.kind,
@@ -360,9 +361,10 @@ export class RTMController {
         })),
         validation,
       };
-    } catch (error: any) {
-      this.logger.error(`[list-req] projectId=${projectId} erro: ${error?.message}`);
-      return { success: false, error: error?.message };
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      this.logger.error(`[list-req] projectId=${projectId} erro: ${errorMessage}`);
+      return { success: false, error: errorMessage };
     }
   }
 
@@ -418,11 +420,12 @@ export class RTMController {
       );
 
       return result;
-    } catch (error: any) {
-      this.logger.error(`[auto-map] projectId=${projectId} erro: ${error?.message}`);
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      this.logger.error(`[auto-map] projectId=${projectId} erro: ${errorMessage}`);
       return {
         success: false,
-        message: error?.message || 'Erro interno no auto-mapeamento',
+        message: errorMessage || 'Erro interno no auto-mapeamento',
         mappedCount: 0,
         createdRequirementsCount: 0,
         coverage: 0,
@@ -430,7 +433,7 @@ export class RTMController {
           isValid: false,
           coverage: 0,
           unmappedRequirements: [],
-          risks: [error?.message || 'Erro interno no auto-mapeamento'],
+          risks: [errorMessage || 'Erro interno no auto-mapeamento'],
         },
         timestamp: new Date().toISOString(),
       };
@@ -467,18 +470,19 @@ export class RTMController {
       );
 
       return result;
-    } catch (error: any) {
-      this.logger.error(`[gen-tasks] projectId=${projectId} erro: ${error?.message}`);
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      this.logger.error(`[gen-tasks] projectId=${projectId} erro: ${errorMessage}`);
       return {
         success: false,
-        message: error?.message || 'Erro interno na geração de tarefas',
+        message: errorMessage || 'Erro interno na geração de tarefas',
         createdTasksCount: 0,
         coverage: 0,
         validation: {
           isValid: false,
           coverage: 0,
           unmappedRequirements: [],
-          risks: [error?.message || 'Erro interno na geração de tarefas'],
+          risks: [errorMessage || 'Erro interno na geração de tarefas'],
         },
         timestamp: new Date().toISOString(),
       };

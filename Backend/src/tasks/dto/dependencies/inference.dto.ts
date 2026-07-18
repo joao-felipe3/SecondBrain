@@ -5,11 +5,11 @@ import { Type } from 'class-transformer';
 export class InferenceTaskDto {
   @ApiProperty({ description: 'ID da tarefa' })
   @IsString()
-  id: string;
+  id!: string;
 
   @ApiProperty({ description: 'Nome da tarefa' })
   @IsString()
-  name: string;
+  name!: string;
 
   @ApiProperty({ description: 'Descrição da tarefa', required: false })
   @IsString()
@@ -36,7 +36,7 @@ export class InferenceTaskDto {
 export class InferenceLeafGatesDto {
   @ApiProperty({ description: 'ID do pacote WBS' })
   @IsString()
-  leafId: string;
+  leafId!: string;
 
   @ApiProperty({ description: 'Caminho WBS', required: false })
   @IsString()
@@ -50,11 +50,11 @@ export class InferenceLeafGatesDto {
 
   @ApiProperty({ description: 'ID do gate inicial' })
   @IsString()
-  startGateId: string;
+  startGateId!: string;
 
   @ApiProperty({ description: 'ID do gate final' })
   @IsString()
-  endGateId: string;
+  endGateId!: string;
 
   @ApiProperty({ description: 'Número de tarefas', required: false })
   @IsNumber()
@@ -65,11 +65,11 @@ export class InferenceLeafGatesDto {
 export class InferredDependencyDto {
   @ApiProperty({ description: 'ID da tarefa' })
   @IsString()
-  taskId: string;
+  taskId!: string;
 
   @ApiProperty({ description: 'ID da tarefa dependente' })
   @IsString()
-  dependsOnTaskId: string;
+  dependsOnTaskId!: string;
 
   @ApiProperty({ description: 'Tipo do relacionamento de dependência', required: false })
   @IsString()
@@ -107,7 +107,7 @@ export class InferWithAiDto {
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => InferenceTaskDto)
-  tasks: InferenceTaskDto[];
+  tasks!: InferenceTaskDto[];
 
   @ApiProperty({ description: 'Número máximo de arestas', required: false })
   @IsNumber()
@@ -130,7 +130,7 @@ export class InferInterLeafWithAiDto {
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => InferenceLeafGatesDto)
-  leaves: InferenceLeafGatesDto[];
+  leaves!: InferenceLeafGatesDto[];
 
   @ApiProperty({ description: 'Número máximo de arestas', required: false })
   @IsNumber()

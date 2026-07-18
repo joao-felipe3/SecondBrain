@@ -9,7 +9,7 @@ export class PertEstimateDto {
   })
   @IsNumber()
   @IsPositive()
-  optimistic: number;
+  optimistic!: number;
 
   @ApiProperty({
     description: 'Estimativa mais provável (caso normal) em minutos',
@@ -18,7 +18,7 @@ export class PertEstimateDto {
   })
   @IsNumber()
   @IsPositive()
-  mostLikely: number;
+  mostLikely!: number;
 
   @ApiProperty({
     description: 'Estimativa pessimista (pior caso) em minutos',
@@ -27,7 +27,7 @@ export class PertEstimateDto {
   })
   @IsNumber()
   @IsPositive()
-  pessimistic: number;
+  pessimistic!: number;
 }
 
 export class PertEstimateResponseDto {
@@ -35,28 +35,28 @@ export class PertEstimateResponseDto {
     description: 'Tempo esperado calculado via fórmula PERT: (O + 4M + P) / 6',
     example: 760,
   })
-  expectedTime: number;
+  expectedTime!: number;
 
   @ApiProperty({
     description: 'Variância calculada: ((P - O) / 6)²',
     example: 14400,
   })
-  variance: number;
+  variance!: number;
 
   @ApiProperty({
     description: 'Desvio padrão: √variância',
     example: 120,
   })
-  standardDeviation: number;
+  standardDeviation!: number;
 
   @ApiProperty({
     description: 'Fórmula utilizada para o cálculo',
     example: '(O + 4M + P) / 6',
   })
-  formula: string;
+  formula!: string;
 
   @ApiProperty({
     description: 'Valores originais da estimativa',
   })
-  estimate: PertEstimateDto;
+  estimate!: PertEstimateDto;
 }
