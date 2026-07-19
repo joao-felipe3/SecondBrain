@@ -6,7 +6,7 @@ import { GenerateWbsInput } from '../../../interfaces';
 // Handles WBS generation from SMART objectives using Gemini AI
 @Injectable()
 export class WbsGenerationService {
-  constructor(private readonly wbsAiService: WbsAiService) { }
+  constructor(private readonly wbsAiService: WbsAiService) {}
 
   // Generate a WBS from a SMART objective using Gemini
   async generate(smartObjective: GenerateWbsInput): Promise<WBSNodeDto[]> {

@@ -9,9 +9,7 @@ import { AutoFixMonotonyParams, MicroTaskDraft } from '../../../interfaces';
  */
 @Injectable()
 export class MonotonyService {
-  constructor(
-    private readonly wbsAiService: WbsAiService,
-  ) { }
+  constructor(private readonly wbsAiService: WbsAiService) {}
 
   /**
    * Detect monotony issues: duplicates and repeated templates
@@ -116,7 +114,9 @@ export class MonotonyService {
             modelOverride: params.modelOverride,
           });
         } catch (err: any) {
-          console.warn(`[WBS-Monotony] AI regeneration failed for round ${round}: ${err?.message || err}`);
+          console.warn(
+            `[WBS-Monotony] AI regeneration failed for round ${round}: ${err?.message || err}`,
+          );
           continue;
         }
 

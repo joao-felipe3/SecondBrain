@@ -6,22 +6,22 @@ export type RiskDocument = Risk & Document;
 @Schema({ timestamps: true })
 export class Risk {
   @Prop({ required: true, type: Types.ObjectId })
-  projectId: Types.ObjectId;
+  projectId!: Types.ObjectId;
 
   @Prop({ required: true })
-  description: string;
+  description!: string;
 
   @Prop({ required: true, min: 0, max: 100 })
-  probability: number; // 0-100 (%)
+  probability!: number; // 0-100 (%)
 
   @Prop({ required: true, min: 1, max: 5 })
-  impact: number; // 1-5 (escala de impacto)
+  impact!: number; // 1-5 (escala de impacto)
 
   @Prop({
     required: true,
     enum: ['baixa', 'média', 'alta'],
   })
-  severity: 'baixa' | 'média' | 'alta';
+  severity!: 'baixa' | 'média' | 'alta';
 
   @Prop({ type: String, default: null })
   mitigationPlan?: string;
@@ -31,7 +31,7 @@ export class Risk {
     enum: ['identificado', 'mitigando', 'resolvido', 'aceito'],
     default: 'identificado',
   })
-  status: 'identificado' | 'mitigando' | 'resolvido' | 'aceito';
+  status!: 'identificado' | 'mitigando' | 'resolvido' | 'aceito';
 
   @Prop({ type: String, default: null })
   owner?: string; // URL para referência ao usuário/pessoa responsável

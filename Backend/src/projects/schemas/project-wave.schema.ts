@@ -6,26 +6,26 @@ export type ProjectWaveDocument = ProjectWave & Document;
 @Schema({ timestamps: true })
 export class ProjectWave {
   @Prop({ required: true, type: Types.ObjectId })
-  projectId: Types.ObjectId;
+  projectId!: Types.ObjectId;
 
   @Prop({ required: true })
-  waveNumber: number;
+  waveNumber!: number;
 
   @Prop({ required: true })
-  startDate: Date;
+  startDate!: Date;
 
   @Prop({ required: true })
-  endDate: Date;
+  endDate!: Date;
 
   @Prop({
     required: true,
     enum: ['planned', 'active', 'completed'],
     default: 'planned',
   })
-  status: 'planned' | 'active' | 'completed';
+  status!: 'planned' | 'active' | 'completed';
 
   @Prop({ type: [Types.ObjectId], default: [] })
-  taskIds: Types.ObjectId[];
+  taskIds!: Types.ObjectId[];
 
   @Prop({ type: String, default: null })
   description?: string;

@@ -45,7 +45,7 @@ export class TaskConversionService {
     if (estimatedTotalTasks > maxTasksToCreate) {
       throw new Error(
         `Conversão abortada: a WBS geraria ~${estimatedTotalTasks} micro-tarefas (limite ${maxTasksToCreate}). ` +
-        `Reduza a granularidade da WBS ou converta por partes.`,
+          `Reduza a granularidade da WBS ou converta por partes.`,
       );
     }
 
@@ -85,7 +85,11 @@ export class TaskConversionService {
   // Process a single leaf node: generate, audit, and create its tasks
   private async processLeafNode(p: ProcessLeafNodeParams): Promise<void> {
     const autoResolveEnabled = !!p.options?.autoResolveDiscrepancies;
-    const autoAuditThresholdPct = typeof p.options?.autoAuditThresholdPct === 'number' && Number.isFinite(p.options.autoAuditThresholdPct) ? p.options.autoAuditThresholdPct : 60;
+    const autoAuditThresholdPct =
+      typeof p.options?.autoAuditThresholdPct === 'number' &&
+      Number.isFinite(p.options.autoAuditThresholdPct)
+        ? p.options.autoAuditThresholdPct
+        : 60;
 
     // Generate tasks for this leaf node based on time estimates and breaks them into chunks
     const leafTaskDtos = await this.taskConversionHelper.generateTasksForLeafNode({
@@ -97,7 +101,8 @@ export class TaskConversionService {
 
     if (autoResolveEnabled && leafTaskDtos.length > 0) {
       const budgetHours = Number(p.node.estimatedHours || 0);
-      const generatedHoursBefore = leafTaskDtos.reduce((acc, t) => acc + (t.estimatedMinutes || 0), 0) / 60;
+      const generatedHoursBefore =
+        leafTaskDtos.reduce((acc, t) => acc + (t.estimatedMinutes || 0), 0) / 60;
       const diffPct = budgetHours > 0 ? ((generatedHoursBefore - budgetHours) / budgetHours) * 100 : 0;
 
       // Only audit if discrepancy exceeds threshold
@@ -122,7 +127,9 @@ export class TaskConversionService {
         result: p.result,
       });
     } else {
-      console.warn(`[WBS-Conversion] ⚠️ No tasks generated for "${p.nodePath}" (might be invalid leaf or zero hours)`);
+      console.warn(
+        `[WBS-Conversion] ⚠️ No tasks generated for "${p.nodePath}" (might be invalid leaf or zero hours)`,
+      );
     }
   }
 
@@ -138,7 +145,10 @@ export class TaskConversionService {
   }
 
   // Convert draft objects into task DTOs ready for database creation
-  async convertDraftsToTasks(drafts: MicroTaskDraft[], context: { wbsNode?: WBSNodeDto; project?: { _id?: any; id?: any }; path?: string } = {}): Promise<Task[]> {
+  async convertDraftsToTasks(
+    drafts: MicroTaskDraft[],
+    context: { wbsNode?: WBSNodeDto; project?: { _id?: any; id?: any }; path?: string } = {},
+  ): Promise<Task[]> {
     return convertDraftsToTasks(drafts, context);
   }
 }

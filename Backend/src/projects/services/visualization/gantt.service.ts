@@ -22,10 +22,7 @@ export class GanttService {
     private readonly cpmService: CPMService,
   ) {}
 
-  async getGanttData(
-    projectId: string,
-    options?: GanttQueryOptions,
-  ): Promise<GanttDataResponse> {
+  async getGanttData(projectId: string, options?: GanttQueryOptions): Promise<GanttDataResponse> {
     const project = await this.validateAndGetProject(projectId);
     const includeCompleted = options?.includeCompleted ?? true;
     const [tasks, dependencies, waves] = await this.fetchGanttRawData(projectId, includeCompleted);

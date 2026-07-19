@@ -58,7 +58,7 @@ export class DraftPlanGenerationService {
     if (!projectId) {
       return '';
     }
-    const { project, node, ...rest } = params;
+    const { node, ...rest } = params;
     const planFingerprint = {
       v: 1,
       kind: 'plan',

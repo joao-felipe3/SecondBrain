@@ -6,16 +6,16 @@ export type ProjectProgressDocument = ProjectProgress & Document;
 @Schema({ timestamps: true })
 export class ProjectProgress {
   @Prop({ required: true, type: Types.ObjectId, ref: 'Project' })
-  projectId: Types.ObjectId;
+  projectId!: Types.ObjectId;
 
   @Prop({ required: true, type: Date })
-  date: Date;
+  date!: Date;
 
   @Prop({ required: true, min: 0 })
-  completedHours: number;
+  completedHours!: number;
 
   @Prop({ required: true, min: 0 })
-  plannedValue: number;
+  plannedValue!: number;
 
   @Prop({
     required: false,

@@ -19,7 +19,7 @@ export class WBSService {
     private readonly persistence: WbsPersistenceService,
     private readonly generation: WbsGenerationService,
     private readonly orchestrator: WbsConversionOrchestrationService,
-  ) { }
+  ) {}
 
   validateWBSNode(node: WBSNodeDto): { valid: boolean; reason?: string } {
     const isLeaf = !node.children || node.children.length === 0;

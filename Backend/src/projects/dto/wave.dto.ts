@@ -2,13 +2,13 @@ import { IsString, IsDateString, IsEnum, IsOptional, IsArray, IsNumber } from 'c
 
 export class CreateWaveDto {
   @IsNumber()
-  waveNumber: number;
+  waveNumber!: number;
 
   @IsDateString()
-  startDate: string;
+  startDate!: string;
 
   @IsDateString()
-  endDate: string;
+  endDate!: string;
 
   @IsEnum(['planned', 'active', 'completed'])
   @IsOptional()

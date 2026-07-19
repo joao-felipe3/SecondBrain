@@ -7,7 +7,11 @@ export class TaskDependencyMapper {
       throw new Error('TaskDependencyDocument is null or undefined');
     }
 
-    const docRecord = document as unknown as { id?: string | number; createdAt?: Date; updatedAt?: Date };
+    const docRecord = document as unknown as {
+      id?: string | number;
+      createdAt?: Date;
+      updatedAt?: Date;
+    };
     const entity = new TaskDependency();
     entity.id = document._id ? document._id.toString() : docRecord.id ? String(docRecord.id) : '';
     entity.taskId = document.taskId ? document.taskId.toString() : '';

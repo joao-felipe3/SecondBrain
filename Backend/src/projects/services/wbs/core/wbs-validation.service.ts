@@ -6,7 +6,7 @@ import { WbsAiService } from '../../../../ai/services/projects/wbs-ai.service';
 // Handles WBS validation logic (8/80 rule) and decomposition suggestions
 @Injectable()
 export class WbsValidationService {
-  constructor(private readonly wbsAiService: WbsAiService) { }
+  constructor(private readonly wbsAiService: WbsAiService) {}
 
   // Validate a single WBS node against the 8/80 rule
   validateNode(node: WBSNodeDto): ValidateWBSResponseDto {
@@ -146,7 +146,10 @@ export class WbsValidationService {
     const leaves: WBSNodeDto[] = [];
     const traverse = (list: WBSNodeDto[]) => {
       for (const node of list) {
-        if (!node.children || node.children.length === 0) { leaves.push(node); continue; }
+        if (!node.children || node.children.length === 0) {
+          leaves.push(node);
+          continue;
+        }
         traverse(node.children);
       }
     };

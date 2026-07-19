@@ -1,9 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { GeminiService } from '../core/gemini.service';
-import {
-  buildPlanWaveStructurePrompt,
-  buildPlanWaveGroupingPrompt,
-} from '../../prompts';
+import { buildPlanWaveStructurePrompt, buildPlanWaveGroupingPrompt } from '../../prompts';
 import {
   AIPlan,
   AIWaveStructure,

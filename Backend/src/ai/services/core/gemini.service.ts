@@ -60,7 +60,9 @@ export class GeminiService {
     return this.suggestionsAiService.generateCompletionFeedbackStructured(prompt);
   }
 
-  generateNextSteps(params: NextStepsPromptParams): Promise<Array<{ title: string; description: string }>> {
+  generateNextSteps(
+    params: NextStepsPromptParams,
+  ): Promise<Array<{ title: string; description: string }>> {
     return this.suggestionsAiService.generateNextSteps(params);
   }
 

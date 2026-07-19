@@ -1,7 +1,10 @@
 import { Injectable, Inject, forwardRef } from '@nestjs/common';
 import { GeminiService } from '../core/gemini.service';
 import { PromptBuilderService } from '../projects/prompt-builder.service';
-import { extractJsonArray, extractJsonObject } from '../../../projects/services/wbs/utils/json-parser.util';
+import {
+  extractJsonArray,
+  extractJsonObject,
+} from '../../../projects/services/wbs/utils/json-parser.util';
 import {
   MicroTaskOutline,
   MicroTaskDetails,

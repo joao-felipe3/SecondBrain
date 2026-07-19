@@ -341,5 +341,3 @@ export interface FixMonotonyBatchParams {
   round: number;
   modelOverride?: string;
 }
-
-

@@ -56,7 +56,10 @@ export function mapMetricsByTaskId(tasksByImpact: TaskNode[]): Map<string, TaskN
   return metricsById;
 }
 
-export function getWaveBounds(wave: ProjectWaveDocument | null): { start: Date | null; end: Date | null } {
+export function getWaveBounds(wave: ProjectWaveDocument | null): {
+  start: Date | null;
+  end: Date | null;
+} {
   return {
     start: wave?.startDate ? new Date(wave.startDate) : null,
     end: wave?.endDate ? new Date(wave.endDate) : null,
@@ -72,7 +75,10 @@ export function calculateEffectiveEnd(params: EffectiveEndParams): Date {
   return end;
 }
 
-export function adjustWindowToBounds(params: AdjustWindowBoundsParams): { startDate: Date; endDate: Date } {
+export function adjustWindowToBounds(params: AdjustWindowBoundsParams): {
+  startDate: Date;
+  endDate: Date;
+} {
   const { start, end, waveStart, waveEnd, durationMs } = params;
   let effectiveStart = new Date(start);
   let effectiveEnd = new Date(end);

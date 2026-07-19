@@ -39,19 +39,28 @@ export class AuditService {
     const modelOverride = this.getModelOverride();
 
     const parsedResponse = await this.wbsAiService.auditLeafDiscrepancy({
-      projectName: String(project?.name || 'Projeto').trim(), leafNodeName: String(dto.leafNode?.name || '').trim(),
-      nodePath: String(dto.nodePath || '').trim(), budgetHours: discrepancyMetrics.budgetHours,
-      generatedHours: discrepancyMetrics.generatedHours, diffPct: discrepancyMetrics.diffPct,
-      taskCount: dto.tasks?.length || 0, duplicateRatio: duplicateMetrics.duplicateRatio,
-      topDuplicateKeys: duplicateMetrics.topDuplicateKeys, modelOverride, tasksPreview,
+      projectName: String(project?.name || 'Projeto').trim(),
+      leafNodeName: String(dto.leafNode?.name || '').trim(),
+      nodePath: String(dto.nodePath || '').trim(),
+      budgetHours: discrepancyMetrics.budgetHours,
+      generatedHours: discrepancyMetrics.generatedHours,
+      diffPct: discrepancyMetrics.diffPct,
+      taskCount: dto.tasks?.length || 0,
+      duplicateRatio: duplicateMetrics.duplicateRatio,
+      topDuplicateKeys: duplicateMetrics.topDuplicateKeys,
+      modelOverride,
+      tasksPreview,
       dupScore: Number(duplicateMetrics.repetitionMetrics?.dupScore ?? 0),
       similarScore: Number(duplicateMetrics.repetitionMetrics?.similarScore ?? 0),
     });
 
     const finalResult = this.applyGuardrails({
-      diagnosis: parsedResponse.diagnosis, suggestedAction: parsedResponse.suggestedAction,
-      duplicateRatio: duplicateMetrics.duplicateRatio, repetitionMetrics: duplicateMetrics.repetitionMetrics,
-      diffPct: discrepancyMetrics.diffPct, taskLength: Array.isArray(dto?.tasks) ? dto.tasks.length : 0,
+      diagnosis: parsedResponse.diagnosis,
+      suggestedAction: parsedResponse.suggestedAction,
+      duplicateRatio: duplicateMetrics.duplicateRatio,
+      repetitionMetrics: duplicateMetrics.repetitionMetrics,
+      diffPct: discrepancyMetrics.diffPct,
+      taskLength: Array.isArray(dto?.tasks) ? dto.tasks.length : 0,
     });
 
     const guardrailsChanged =

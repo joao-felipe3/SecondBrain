@@ -65,14 +65,20 @@ describe('GeminiService - PERT Estimation (Unit Tests)', () => {
     });
 
     it('should enforce O <= M <= P constraint', async () => {
-      const result = await service.suggestPertEstimates({ taskType: 'quick', description: 'Fix minor bug' });
+      const result = await service.suggestPertEstimates({
+        taskType: 'quick',
+        description: 'Fix minor bug',
+      });
 
       expect(result.optimistic).toBeLessThanOrEqual(result.likely);
       expect(result.likely).toBeLessThanOrEqual(result.pessimistic);
     });
 
     it('should calculate expectedTime using PERT formula', async () => {
-      const result = await service.suggestPertEstimates({ taskType: 'complex', description: 'Build REST API' });
+      const result = await service.suggestPertEstimates({
+        taskType: 'complex',
+        description: 'Build REST API',
+      });
 
       // TE = (O + 4*M + P) / 6
       const expectedTE = (result.optimistic + 4 * result.likely + result.pessimistic) / 6;
@@ -80,7 +86,10 @@ describe('GeminiService - PERT Estimation (Unit Tests)', () => {
     });
 
     it('should calculate standardDeviation correctly', async () => {
-      const result = await service.suggestPertEstimates({ taskType: 'subtask', description: 'Add comments to function' });
+      const result = await service.suggestPertEstimates({
+        taskType: 'subtask',
+        description: 'Add comments to function',
+      });
 
       // σ = (P - O) / 6
       const expectedSigma = (result.pessimistic - result.optimistic) / 6;
@@ -88,7 +97,10 @@ describe('GeminiService - PERT Estimation (Unit Tests)', () => {
     });
 
     it('should return recommendations based on coefficient of variation', async () => {
-      const result = await service.suggestPertEstimates({ taskType: 'quick', description: 'Simple task with low uncertainty' });
+      const result = await service.suggestPertEstimates({
+        taskType: 'quick',
+        description: 'Simple task with low uncertainty',
+      });
 
       const cv = result.standardDeviation / result.expectedTime;
 
@@ -103,7 +115,10 @@ describe('GeminiService - PERT Estimation (Unit Tests)', () => {
 
     it('should return fallback values when LLM is unavailable', async () => {
       // Force fallback by using invalid API key or mocking LLM failure
-      const result = await service.suggestPertEstimates({ taskType: 'subtask', description: 'Any task' });
+      const result = await service.suggestPertEstimates({
+        taskType: 'subtask',
+        description: 'Any task',
+      });
 
       // Should still have valid values
       expect(result.optimistic).toBeGreaterThan(0);
@@ -143,7 +158,10 @@ describe('GeminiService - PERT Estimation (Unit Tests)', () => {
         description: 'Migrate database to new schema',
       });
 
-      const quickResult = await service.suggestPertEstimates({ taskType: 'quick', description: 'Fix typo in README' });
+      const quickResult = await service.suggestPertEstimates({
+        taskType: 'quick',
+        description: 'Fix typo in README',
+      });
 
       // Complex tasks should generally take longer than quick tasks
       expect(complexResult.expectedTime).toBeGreaterThan(quickResult.expectedTime);
@@ -168,7 +186,10 @@ describe('GeminiService - PERT Estimation (Unit Tests)', () => {
     it('should handle long descriptions gracefully', async () => {
       const longDescription = 'A'.repeat(500) + ' very long task description';
 
-      const result = await service.suggestPertEstimates({ taskType: 'complex', description: longDescription });
+      const result = await service.suggestPertEstimates({
+        taskType: 'complex',
+        description: longDescription,
+      });
 
       expect(result.optimistic).toBeGreaterThan(0);
       expect(result.optimistic).toBeLessThanOrEqual(result.likely);

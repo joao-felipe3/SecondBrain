@@ -6,16 +6,23 @@ import {
   buildAuditPrompt,
   buildFixMonotonyPrompt,
 } from '../../prompts';
-import { extractJsonArray, extractJsonObject } from '../../../projects/services/wbs/utils/json-parser.util';
-import { AuditLeafDiscrepancyAiInput, AuditLeafDiscrepancyAiResult, GenerateWbsInput, FixMonotonyBatchParams } from '../../../projects/interfaces';
+import {
+  extractJsonArray,
+  extractJsonObject,
+} from '../../../projects/services/wbs/utils/json-parser.util';
+import {
+  AuditLeafDiscrepancyAiInput,
+  AuditLeafDiscrepancyAiResult,
+  GenerateWbsInput,
+  FixMonotonyBatchParams,
+} from '../../../projects/interfaces';
 
 @Injectable()
 export class WbsAiService {
   constructor(
     @Inject(forwardRef(() => GeminiService))
     private readonly geminiService: GeminiService,
-  ) { }
-
+  ) {}
 
   // Generate WBS nodes from a SMART objective
   async generateWbs(smartObjective: GenerateWbsInput): Promise<any[]> {
@@ -59,7 +66,9 @@ export class WbsAiService {
   }
 
   // Audit discrepancy between WBS leaf node estimate and generated micro-tasks
-  async auditLeafDiscrepancy(params: AuditLeafDiscrepancyAiInput): Promise<AuditLeafDiscrepancyAiResult> {
+  async auditLeafDiscrepancy(
+    params: AuditLeafDiscrepancyAiInput,
+  ): Promise<AuditLeafDiscrepancyAiResult> {
     const prompt = buildAuditPrompt(params);
     const attemptCall = async (maxOutputTokens: number, temperature: number): Promise<string> => {
       return this.geminiService.generateContent(prompt, {

@@ -58,5 +58,3 @@ export interface GanttTimeWindow {
   startDate: string;
   endDate: string;
 }
-
-

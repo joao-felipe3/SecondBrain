@@ -1,7 +1,6 @@
 import { IsDateString, IsNumber, IsOptional } from 'class-validator';
 import { ProjectDocument } from '../schemas/project.schema';
 import { ProjectProgress } from '../schemas/project-progress.schema';
-import { ProjectWave } from '../schemas/project-wave.schema';
 
 export class RecordProjectProgressDto {
   @IsOptional()
@@ -9,10 +8,10 @@ export class RecordProjectProgressDto {
   date?: string;
 
   @IsNumber()
-  completedHours: number;
+  completedHours!: number;
 
   @IsNumber()
-  plannedValue: number;
+  plannedValue!: number;
 }
 
 export interface EVMForecast {

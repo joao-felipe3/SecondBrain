@@ -3,7 +3,6 @@ import { CacheService } from '../wbs';
 import {
   WBSLeafGenerationContext,
   MicroTaskDraft,
-  MicroTaskOutline,
   GenerateLeafDraftsDto,
 } from '../../interfaces/drafts.interface';
 import { DraftDetailsEnrichmentService } from './draft-details-enrichment.service';
@@ -17,6 +16,8 @@ import {
   getProjectId,
   getWbsGenerationModelOverride,
   getDetailsModelOverride,
+  safeString,
+  safeStringOrUndefined,
 } from './utils/draft-generation-helpers.util';
 import { DraftsAiService } from '../../../ai/services/tasks/drafts-ai.service';
 
@@ -104,7 +105,7 @@ export class DraftSinglePassGenerationService {
     resolvedModelOverride: string | undefined,
   ): string {
     if (!projectId) return '';
-    const { project, node, ...rest } = params;
+    const { node, ...rest } = params;
     const fingerprint = {
       v: 1,
       kind: 'drafts',
@@ -154,21 +155,38 @@ export class DraftSinglePassGenerationService {
     return slices;
   }
 
-  private normalizeGeneratedDrafts(allDrafts: any[], expectedCount: number): MicroTaskDraft[] {
-    return allDrafts.map((d, idx) => ({
-      name: String(d.name || `Micro-tarefa (${idx + 1}/${expectedCount})`).trim(),
-      description: String(d?.description || '').trim() || undefined,
-      checklist: Array.isArray(d?.checklist)
-        ? (d.checklist as any[]).map((s) => String(s || '').trim()).filter(Boolean)
-        : [],
-      definitionOfDone: String(d.definitionOfDone || '').trim(),
-      pomodorosPlanned: Math.max(1, Math.min(6, Number(d?.pomodorosPlanned) || 1)),
-      priority: Math.max(1, Math.min(4, Number(d?.priority) || 2)),
-      difficult: Math.max(1, Math.min(4, Number(d?.difficult) || 2)),
-      microTaskType: d?.microTaskType || '',
-      themeTag: d?.themeTag || '',
-      contextTag: d?.contextTag || '',
-      cognitiveMode: d?.cognitiveMode || '',
-    }));
+  private normalizeGeneratedDrafts(
+    allDrafts: Partial<MicroTaskDraft>[],
+    expectedCount: number,
+  ): MicroTaskDraft[] {
+    return allDrafts.map((d, idx) => {
+      const name = safeString(d.name).trim() || `Micro-tarefa (${idx + 1}/${expectedCount})`;
+      const description = safeStringOrUndefined(d.description);
+      const checklist = Array.isArray(d.checklist)
+        ? d.checklist.map((s) => safeString(s).trim()).filter(Boolean)
+        : [];
+      const definitionOfDone = safeString(d.definitionOfDone).trim();
+      const pomodorosPlanned = Math.max(1, Math.min(6, Number(d.pomodorosPlanned) || 1));
+      const priority = Math.max(1, Math.min(4, Number(d.priority) || 2));
+      const difficult = Math.max(1, Math.min(4, Number(d.difficult) || 2));
+      const microTaskType = safeString(d.microTaskType);
+      const themeTag = safeString(d.themeTag);
+      const contextTag = safeString(d.contextTag);
+      const cognitiveMode = safeString(d.cognitiveMode);
+
+      return {
+        name,
+        description,
+        checklist,
+        definitionOfDone,
+        pomodorosPlanned,
+        priority,
+        difficult,
+        microTaskType,
+        themeTag,
+        contextTag,
+        cognitiveMode,
+      };
+    });
   }
 }

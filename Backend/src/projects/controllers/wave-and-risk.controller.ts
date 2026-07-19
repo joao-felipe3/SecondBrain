@@ -16,13 +16,31 @@ import { RiskService } from '../services/execution';
 import { EVMService, EVMProgressService } from '../services/evm';
 import { TasksService } from '../../tasks/tasks.service';
 import { CPMService, TaskNode, TaskDependencyEdge } from '../../tasks/services/dependencies';
-import { CreateWaveDto, UpdateWaveDto } from '../dto/wave.dto';
-import { CreateRiskDto, UpdateRiskDto, AssessRisksDto } from '../dto/risk.dto';
+import { UpdateWaveDto } from '../dto/wave.dto';
+import { CreateRiskDto, UpdateRiskDto } from '../dto/risk.dto';
 import { RecordProjectProgressDto } from '../dto/evm.dto';
 import { ProjectWave } from '../schemas/project-wave.schema';
 import { Risk } from '../schemas/risk.schema';
 import { Project } from '../entities/project.entity';
+import { ProjectDocument } from '../schemas/project.schema';
 import { RiskSeverity } from '../interfaces';
+
+interface ITaskRecord {
+  _id?: string | { toString(): string };
+  id?: string;
+  name?: string;
+  pertExpectedMinutes?: number;
+  pomodorosPlanned?: number;
+  parentWbsNodeId?: string | { toString(): string };
+  wbsPath?: string | { toString(): string };
+  isConcluded?: boolean;
+}
+
+interface IDepRecord {
+  taskId?: string | { toString(): string };
+  dependsOnTaskId?: string | { toString(): string };
+  relationship?: string;
+}
 
 @Controller('projects/:projectId')
 export class WaveAndRiskController {
@@ -33,7 +51,7 @@ export class WaveAndRiskController {
     private readonly evmProgressService: EVMProgressService,
     private readonly tasksService: TasksService,
     private readonly cpmService: CPMService,
-    @InjectModel(Project.name) private projectModel: Model<any>,
+    @InjectModel(Project.name) private projectModel: Model<ProjectDocument>,
   ) {}
 
   private getErrorMessage(error: unknown): string {
@@ -42,7 +60,7 @@ export class WaveAndRiskController {
   }
 
   private mapTaskToNode(
-    task: any,
+    task: ITaskRecord,
     dependencyMap: Map<string, string[]>,
     dependencyEdgeMap: Map<string, TaskDependencyEdge[]>,
   ): TaskNode {
@@ -184,10 +202,7 @@ export class WaveAndRiskController {
   }
 
   @Post('waves/:waveId/advance')
-  async advanceWave(
-    @Param('projectId') projectId: string,
-    @Param('waveId') waveId: string,
-  ): Promise<ProjectWave | null> {
+  async advanceWave(@Param('projectId') projectId: string): Promise<ProjectWave | null> {
     try {
       return await this.waveService.advanceToNextWave(projectId);
     } catch (error) {
@@ -509,9 +524,9 @@ export class WaveAndRiskController {
 
       const dependencyMap = new Map<string, string[]>();
       const dependencyEdgeMap = new Map<string, TaskDependencyEdge[]>();
-      for (const dep of dependencies as any[]) {
-        const taskId = String(dep.taskId);
-        const dependsOnTaskId = String(dep.dependsOnTaskId);
+      for (const dep of dependencies as unknown as IDepRecord[]) {
+        const taskId = String(dep.taskId ?? '');
+        const dependsOnTaskId = String(dep.dependsOnTaskId ?? '');
         const existing = dependencyMap.get(taskId) || [];
         existing.push(dependsOnTaskId);
         dependencyMap.set(taskId, existing);
@@ -524,13 +539,16 @@ export class WaveAndRiskController {
         dependencyEdgeMap.set(taskId, existingEdges);
       }
 
-      const taskNodes: TaskNode[] = (tasks as any[])
+      const taskNodes: TaskNode[] = (tasks as unknown as ITaskRecord[])
         .filter((task) => !task?.isConcluded)
         .map((task) => this.mapTaskToNode(task, dependencyMap, dependencyEdgeMap));
 
       const cpmAnalysis = this.cpmService.calculateCriticalPath(taskNodes);
       const taskNameById = new Map<string, string>(
-        (tasks as any[]).map((task) => [String(task?._id), String(task?.name || 'Task')]),
+        (tasks as unknown as ITaskRecord[]).map((task) => [
+          String(task?._id ?? ''),
+          String(task?.name || 'Task'),
+        ]),
       );
 
       const action = this.selectNextAction({

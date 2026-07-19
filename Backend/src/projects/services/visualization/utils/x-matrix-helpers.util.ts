@@ -1,7 +1,12 @@
 import { ProjectWaveDocument } from '../../../schemas/project-wave.schema';
 import { ProjectDocument } from '../../../schemas/project.schema';
 import { splitGoalText, scoreStrength } from './x-matrix-text-helpers.util';
-import { CreateXMatrixDto, XMatrixAxisItemDto, XMatrixCellDto, XMatrixResponseDto } from '../../../dto/x-matrix.dto';
+import {
+  CreateXMatrixDto,
+  XMatrixAxisItemDto,
+  XMatrixCellDto,
+  XMatrixResponseDto,
+} from '../../../dto/x-matrix.dto';
 import {
   CalculateCorrelationsOptions,
   GenerateWarningsOptions,
@@ -236,7 +241,9 @@ function generateHiddenWarnings(filtered: FilteredData, original: ApplyFractalFi
   ].filter((w): w is string => typeof w === 'string');
 }
 
-export function generateXMatrixData(options: GenerateXMatrixDataOptions): Omit<XMatrixResponseDto, 'projectId' | 'projectName'> {
+export function generateXMatrixData(
+  options: GenerateXMatrixDataOptions,
+): Omit<XMatrixResponseDto, 'projectId' | 'projectName'> {
   const { project, tasks, waves, dto } = options;
 
   const maxTacticalItems = Math.max(20, Math.min(160, Number(dto?.maxTacticalItems || 80)));

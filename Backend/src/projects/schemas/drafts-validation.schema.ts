@@ -1,6 +1,19 @@
 import { z } from 'zod';
 import { MicroTaskDraft, WBSLeafPlanResultDto, MicroTaskOutline } from '../interfaces/drafts.interface';
 
+const safeString = (v: unknown): string => {
+  if (typeof v === 'string') return v;
+  if (typeof v === 'number' || typeof v === 'boolean') return String(v);
+  return '';
+};
+
+const safeStringOrUndefined = (v: unknown): string | undefined => {
+  if (v === undefined || v === null) return undefined;
+  if (typeof v === 'string') return v;
+  if (typeof v === 'number' || typeof v === 'boolean') return String(v);
+  return undefined;
+};
+
 export const plannerSchema: z.ZodType<WBSLeafPlanResultDto> = z
   .object({
     themes: z
@@ -32,14 +45,12 @@ export const plannerSchema: z.ZodType<WBSLeafPlanResultDto> = z
 export const draftSchema = z
   .object({
     name: z.string().min(1),
-    description: z
-      .preprocess((v) => (v === undefined || v === null ? undefined : String(v)), z.string().optional())
-      .optional(),
+    description: z.preprocess(safeStringOrUndefined, z.string().optional()).optional(),
     checklist: z
-      .array(z.preprocess((v) => String(v ?? '').trim(), z.string().min(1)))
+      .array(z.preprocess((v) => safeString(v).trim(), z.string().min(1)))
       .min(2)
       .max(8),
-    definitionOfDone: z.preprocess((v) => String(v ?? '').trim(), z.string().min(1)),
+    definitionOfDone: z.preprocess((v) => safeString(v).trim(), z.string().min(1)),
     pomodorosPlanned: z.preprocess(
       (v) => (v === undefined || v === null || v === '' ? v : Number(v)),
       z.number().int().min(1).max(6),
@@ -100,12 +111,10 @@ export const draftOutlinesSchema: z.ZodType<MicroTaskOutline[]> = z.array(draftO
 export const draftDetailsSchema = z
   .object({
     checklist: z
-      .array(z.preprocess((v) => String(v ?? '').trim(), z.string().min(1)))
+      .array(z.preprocess((v) => safeString(v).trim(), z.string().min(1)))
       .min(2)
       .max(8),
-    definitionOfDone: z.preprocess((v) => String(v ?? '').trim(), z.string().min(1)),
-    description: z
-      .preprocess((v) => (v === undefined || v === null ? undefined : String(v)), z.string().optional())
-      .optional(),
+    definitionOfDone: z.preprocess((v) => safeString(v).trim(), z.string().min(1)),
+    description: z.preprocess(safeStringOrUndefined, z.string().optional()).optional(),
   })
   .passthrough();

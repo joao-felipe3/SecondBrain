@@ -1,4 +1,4 @@
-import { IsString, IsNumber, IsOptional, IsArray, IsEnum, IsBoolean, IsIn } from 'class-validator';
+import { IsString, IsNumber, IsOptional, IsArray, IsBoolean, IsIn } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
@@ -10,7 +10,7 @@ export class WBSNodeDto {
 
   @ApiProperty({ description: 'Name of the WBS node' })
   @IsString()
-  name: string;
+  name!: string;
 
   @ApiPropertyOptional({ description: 'Description of the WBS node' })
   @IsOptional()
@@ -19,7 +19,7 @@ export class WBSNodeDto {
 
   @ApiProperty({ description: 'Hierarchy level (1 = project root)' })
   @IsNumber()
-  level: number;
+  level!: number;
 
   @ApiPropertyOptional({ description: 'Parent node ID' })
   @IsOptional()
@@ -28,7 +28,7 @@ export class WBSNodeDto {
 
   @ApiProperty({ description: 'Estimated hours for this work package' })
   @IsNumber()
-  estimatedHours: number;
+  estimatedHours!: number;
 
   @ApiPropertyOptional({ description: 'Sort order' })
   @IsOptional()
@@ -45,23 +45,23 @@ export class WBSNodeDto {
 export class GenerateWBSDto {
   @ApiProperty({ description: 'SMART objective specific field' })
   @IsString()
-  specific: string;
+  specific!: string;
 
   @ApiProperty({ description: 'SMART objective measurable field' })
   @IsString()
-  measurable: string;
+  measurable!: string;
 
   @ApiProperty({ description: 'SMART objective achievable field' })
   @IsString()
-  achievable: string;
+  achievable!: string;
 
   @ApiProperty({ description: 'SMART objective relevant field' })
   @IsString()
-  relevant: string;
+  relevant!: string;
 
   @ApiProperty({ description: 'SMART objective temporal field' })
   @IsString()
-  temporal: string;
+  temporal!: string;
 
   @ApiPropertyOptional({ description: 'Executive summary' })
   @IsOptional()
@@ -87,13 +87,13 @@ export class SaveWBSDto {
   @ApiProperty({ description: 'WBS nodes to save', type: [WBSNodeDto] })
   @IsArray()
   @Type(() => WBSNodeDto)
-  nodes: WBSNodeDto[];
+  nodes!: WBSNodeDto[];
 }
 
 export class SuggestDecompositionDto {
   @ApiProperty({ description: 'Name of the node to decompose' })
   @IsString()
-  name: string;
+  name!: string;
 
   @ApiPropertyOptional({ description: 'Description of the node' })
   @IsOptional()
@@ -102,12 +102,12 @@ export class SuggestDecompositionDto {
 
   @ApiProperty({ description: 'Current estimated hours' })
   @IsNumber()
-  estimatedHours: number;
+  estimatedHours!: number;
 }
 
 export class ValidateWBSResponseDto {
   @ApiProperty()
-  valid: boolean;
+  valid!: boolean;
 
   @ApiPropertyOptional()
   reason?: string;
@@ -123,7 +123,7 @@ export class ConvertWBSToTasksDto {
   })
   @IsArray()
   @Type(() => WBSNodeDto)
-  nodes: WBSNodeDto[];
+  nodes!: WBSNodeDto[];
 
   @ApiPropertyOptional({
     description:
@@ -164,17 +164,17 @@ export class GetLeafNodesDto {
   })
   @IsArray()
   @Type(() => WBSNodeDto)
-  nodes: WBSNodeDto[];
+  nodes!: WBSNodeDto[];
 }
 
 export class GenerateTasksForLeafDto {
   @ApiProperty({ description: 'The leaf node to generate tasks for' })
   @Type(() => WBSNodeDto)
-  leafNode: WBSNodeDto;
+  leafNode!: WBSNodeDto;
 
   @ApiProperty({ description: 'Path to this node in the WBS tree' })
   @IsString()
-  nodePath: string;
+  nodePath!: string;
 
   @ApiPropertyOptional({
     description: 'Conversion preferences for micro-task granularity and workflow mix',
@@ -212,21 +212,21 @@ export class GenerateTasksForLeafDto {
 export class AuditLeafDiscrepancyDto {
   @ApiProperty({ description: 'The leaf node being audited' })
   @Type(() => WBSNodeDto)
-  leafNode: WBSNodeDto;
+  leafNode!: WBSNodeDto;
 
   @ApiProperty({ description: 'Path to this node in the WBS tree' })
   @IsString()
-  nodePath: string;
+  nodePath!: string;
 
   @ApiProperty({
     description: 'Generated hours total from micro-tasks for this leaf',
   })
   @IsNumber()
-  generatedHours: number;
+  generatedHours!: number;
 
   @ApiProperty({ description: 'Task summaries for audit', type: [Object] })
   @IsArray()
-  tasks: Array<{
+  tasks!: Array<{
     name: string;
     pomodorosPlanned: number;
     priority?: number;
@@ -244,11 +244,11 @@ export class ResolveWBSBudgetDto {
   })
   @IsArray()
   @Type(() => WBSNodeDto)
-  nodes: WBSNodeDto[];
+  nodes!: WBSNodeDto[];
 
   @ApiProperty({ description: 'Target global budget hours for WBS leaves' })
   @IsNumber()
-  budgetHours: number;
+  budgetHours!: number;
 
   @ApiProperty({
     description: 'Resolution strategy for over-budget trees',
@@ -256,5 +256,5 @@ export class ResolveWBSBudgetDto {
   })
   @IsString()
   @IsIn(['normalize', 'reject'])
-  strategy: 'normalize' | 'reject';
+  strategy!: 'normalize' | 'reject';
 }

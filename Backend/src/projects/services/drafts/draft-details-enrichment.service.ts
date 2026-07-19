@@ -13,7 +13,6 @@ import {
   MicroTaskDetails,
   MicroTaskDraft,
   DraftBatchResult,
-  WBSLeafGenerationContext,
   SingleDetailsParamsDto,
   MultipleDetailsParamsDto,
 } from '../../interfaces/drafts.interface';
@@ -24,7 +23,6 @@ export class DraftDetailsEnrichmentService {
   constructor(private readonly draftsAi: DraftsAiService) {}
 
   async enrichOutlinesWithDetails(dto: EnrichOutlinesParamsDto): Promise<MicroTaskDraft[]> {
-    const { outlines, sliceMinutes } = dto;
     const { detailsConcurrency, detailsBatchSize, detailsBatchConcurrency } = getConcurrencyParams();
 
     const enriched =

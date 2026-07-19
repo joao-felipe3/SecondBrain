@@ -113,8 +113,16 @@ export function computeChunkMinutes(
 
 function createZeroMetrics(): BatchMetricsResult {
   return {
-    total: 0, uniqueTitles: 0, dupScore: 0, uniqueTemplates: 0, similarScore: 0,
-    verbVariety: 0, verbsCount: 0, cognitiveVariety: 0, cognitiveTypesCount: 0, themesCount: 0,
+    total: 0,
+    uniqueTitles: 0,
+    dupScore: 0,
+    uniqueTemplates: 0,
+    similarScore: 0,
+    verbVariety: 0,
+    verbsCount: 0,
+    cognitiveVariety: 0,
+    cognitiveTypesCount: 0,
+    themesCount: 0,
   };
 }
 
@@ -155,8 +163,16 @@ export function computeBatchMetrics(
   const cognitiveVariety = uniqueCognitiveTypes / total;
 
   return {
-    total, uniqueTitles, dupScore, uniqueTemplates, similarScore, verbVariety, verbsCount: uniqueVerbs,
-    cognitiveVariety, cognitiveTypesCount: uniqueCognitiveTypes, themesCount: uniqueThemes,
+    total,
+    uniqueTitles,
+    dupScore,
+    uniqueTemplates,
+    similarScore,
+    verbVariety,
+    verbsCount: uniqueVerbs,
+    cognitiveVariety,
+    cognitiveTypesCount: uniqueCognitiveTypes,
+    themesCount: uniqueThemes,
   };
 }
 

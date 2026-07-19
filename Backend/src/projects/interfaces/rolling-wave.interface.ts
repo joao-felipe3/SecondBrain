@@ -283,4 +283,3 @@ export interface PlanWaveGroupingParams {
   wbsTree: any[];
   dailyCapacityHours: number;
 }
-

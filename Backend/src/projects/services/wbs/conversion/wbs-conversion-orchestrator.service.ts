@@ -21,8 +21,7 @@ export class WbsConversionOrchestrationService {
     private readonly draftGeneration: DraftGenerationService,
     private readonly draftProcessing: DraftProcessingService,
     private readonly taskConversion: TaskConversionService,
-  ) { }
-
+  ) {}
 
   async convertWbsToTasks(params: ConvertWbsToTasksParams): Promise<ConversionResult> {
     const startMs = Date.now();
@@ -36,23 +35,53 @@ export class WbsConversionOrchestrationService {
     });
 
     const result: ConversionResult = {
-      success: false, tasks: [],
-      metadata: { strategy: opts.strategy, durationMs: 0, draftCount: 0, taskCount: 0, model: opts.modelOverride },
+      success: false,
+      tasks: [],
+      metadata: {
+        strategy: opts.strategy,
+        durationMs: 0,
+        draftCount: 0,
+        taskCount: 0,
+        model: opts.modelOverride,
+      },
     };
 
     try {
       const chunkMinutes = computeChunkMinutes((node.estimatedHours || 0) * 60);
 
       // ========== STAGE 1: Draft Generation ==========
-      const drafts = await this.stage1DraftGeneration({ node, project, path, opts, chunkMinutes, result, startMs });
+      const drafts = await this.stage1DraftGeneration({
+        node,
+        project,
+        path,
+        opts,
+        chunkMinutes,
+        result,
+        startMs,
+      });
       if (!drafts) return result;
 
       // ========== STAGE 2: Draft Processing ==========
-      const processedDrafts = this.stage2DraftProcessing({ drafts, chunkMinutes, path, result, startMs, opts });
+      const processedDrafts = this.stage2DraftProcessing({
+        drafts,
+        chunkMinutes,
+        path,
+        result,
+        startMs,
+        opts,
+      });
       if (!processedDrafts) return result;
 
       // ========== STAGE 3: Task Conversion ==========
-      const success = await this.stage3TaskConversion({ drafts: processedDrafts, node, project, path, result, startMs, opts });
+      const success = await this.stage3TaskConversion({
+        drafts: processedDrafts,
+        node,
+        project,
+        path,
+        result,
+        startMs,
+        opts,
+      });
       if (!success) return result;
 
       // ========== STAGE 4: Audit (Optional) ==========
@@ -89,7 +118,13 @@ export class WbsConversionOrchestrationService {
 
   // ========== STAGE 1: Draft Generation Helper ==========
   private async stage1DraftGeneration(p: {
-    node: WBSNodeDto; project: any; path: string; opts: Required<ConversionOptions>; chunkMinutes: number[]; result: ConversionResult; startMs: number;
+    node: WBSNodeDto;
+    project: any;
+    path: string;
+    opts: Required<ConversionOptions>;
+    chunkMinutes: number[];
+    result: ConversionResult;
+    startMs: number;
   }): Promise<any[] | null> {
     try {
       const drafts = await this.generateDrafts(p.node, p.project, p.path, p.opts, p.chunkMinutes);
@@ -115,7 +150,12 @@ export class WbsConversionOrchestrationService {
 
   // ========== STAGE 2: Draft Processing Helper ==========
   private stage2DraftProcessing(p: {
-    drafts: any[]; chunkMinutes: number[]; path: string; result: ConversionResult; startMs: number; opts: Required<ConversionOptions>;
+    drafts: any[];
+    chunkMinutes: number[];
+    path: string;
+    result: ConversionResult;
+    startMs: number;
+    opts: Required<ConversionOptions>;
   }): any[] | null {
     try {
       const processed = this.processDrafts(p.drafts, p.chunkMinutes);
@@ -140,7 +180,13 @@ export class WbsConversionOrchestrationService {
 
   // ========== STAGE 3: Task Conversion Helper ==========
   private async stage3TaskConversion(p: {
-    drafts: any[]; node: WBSNodeDto; project: any; path: string; result: ConversionResult; startMs: number; opts: Required<ConversionOptions>;
+    drafts: any[];
+    node: WBSNodeDto;
+    project: any;
+    path: string;
+    result: ConversionResult;
+    startMs: number;
+    opts: Required<ConversionOptions>;
   }): Promise<boolean> {
     try {
       p.result.tasks = await this.taskConversion.convertDraftsToTasks(p.drafts, {
@@ -168,11 +214,20 @@ export class WbsConversionOrchestrationService {
   }
 
   private async generateDrafts(
-    node: WBSNodeDto, project: any, path: string, opts: Required<ConversionOptions>, chunkMinutes: number[]
+    node: WBSNodeDto,
+    project: any,
+    path: string,
+    opts: Required<ConversionOptions>,
+    chunkMinutes: number[],
   ): Promise<any[]> {
     if (opts.strategy === 'two-phase') {
       const plan = await this.draftGeneration.generateMicroTasksPlanForLeaf({
-        project, node, currentPath: path, level: 0, chunkMinutes, modelOverride: opts.modelOverride
+        project,
+        node,
+        currentPath: path,
+        level: 0,
+        chunkMinutes,
+        modelOverride: opts.modelOverride,
       });
       return this.draftGeneration.generateMicroTasksDraftsForLeafWithPlan({
         context: { project, node, currentPath: path, level: 0, plan, modelOverride: opts.modelOverride },
@@ -181,7 +236,8 @@ export class WbsConversionOrchestrationService {
     } else {
       return this.draftGeneration.generateMicroTasksDraftsForLeaf({
         context: { project, node, currentPath: path, level: 0 },
-        chunkMinutes, modelOverride: opts.modelOverride,
+        chunkMinutes,
+        modelOverride: opts.modelOverride,
       });
     }
   }
@@ -195,11 +251,26 @@ export class WbsConversionOrchestrationService {
   async generateTasksForSingleLeaf(
     params: GenerateTasksForSingleLeafParams,
   ): Promise<GenerateTasksForSingleLeafResult> {
-    const { leafNode, nodePath, projectId, project, tasksService, preferences, saveTasks = false, } = params;
+    const {
+      leafNode,
+      nodePath,
+      projectId,
+      project,
+      tasksService,
+      preferences,
+      saveTasks = false,
+    } = params;
 
     const result = await this.convertWbsToTasks({
-      node: leafNode, project, path: nodePath,
-      options: { strategy: 'two-phase', modelOverride: preferences?.modelOverride, logVerbose: true, throwOnError: false },
+      node: leafNode,
+      project,
+      path: nodePath,
+      options: {
+        strategy: 'two-phase',
+        modelOverride: preferences?.modelOverride,
+        logVerbose: true,
+        throwOnError: false,
+      },
     });
 
     if (!result.success && result.error) {
@@ -211,10 +282,17 @@ export class WbsConversionOrchestrationService {
       generatedTasks = await this.persistGeneratedTasks(generatedTasks, projectId, tasksService);
     }
 
-    const pomodorosGenerated = generatedTasks.reduce((sum, task) => sum + (task.pomodorosPlanned || 0), 0);
+    const pomodorosGenerated = generatedTasks.reduce(
+      (sum, task) => sum + (task.pomodorosPlanned || 0),
+      0,
+    );
     return {
-      tasks: generatedTasks, leafNode, nodePath, estimatedHours: leafNode.estimatedHours,
-      generatedHours: pomodorosGenerated * 0.5, pomodorosGenerated,
+      tasks: generatedTasks,
+      leafNode,
+      nodePath,
+      estimatedHours: leafNode.estimatedHours,
+      generatedHours: pomodorosGenerated * 0.5,
+      pomodorosGenerated,
     };
   }
 
@@ -224,7 +302,11 @@ export class WbsConversionOrchestrationService {
     throw new Error(`WBS conversion failed: ${result.error?.message}`);
   }
 
-  private async persistGeneratedTasks(tasks: any[], projectId: string, tasksService: any): Promise<any[]> {
+  private async persistGeneratedTasks(
+    tasks: any[],
+    projectId: string,
+    tasksService: any,
+  ): Promise<any[]> {
     const tasksToSave = tasks.map((task) => ({ ...task, project: projectId }));
     try {
       if (typeof tasksService.createMany === 'function') {
@@ -253,9 +335,12 @@ export class WbsConversionOrchestrationService {
 
   private normalizeOptions(opts: ConversionOptions): Required<ConversionOptions> {
     return {
-      strategy: opts.strategy || 'two-phase', modelOverride: opts.modelOverride || '',
-      autoAudit: opts.autoAudit !== false, autoApplyFixes: opts.autoApplyFixes === true,
-      logVerbose: opts.logVerbose === true, throwOnError: opts.throwOnError === true,
+      strategy: opts.strategy || 'two-phase',
+      modelOverride: opts.modelOverride || '',
+      autoAudit: opts.autoAudit !== false,
+      autoApplyFixes: opts.autoApplyFixes === true,
+      logVerbose: opts.logVerbose === true,
+      throwOnError: opts.throwOnError === true,
     };
   }
 

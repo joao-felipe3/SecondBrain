@@ -88,7 +88,9 @@ export class SuggestionsAiService {
     };
   }
 
-  async generateNextSteps(params: NextStepsPromptParams): Promise<Array<{ title: string; description: string }>> {
+  async generateNextSteps(
+    params: NextStepsPromptParams,
+  ): Promise<Array<{ title: string; description: string }>> {
     const { taskName, feedback } = params;
     const prompt = buildGeminiNextStepsPrompt(params);
 

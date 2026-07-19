@@ -29,9 +29,15 @@ export function buildDraftsWithPlanCacheKey(params: DraftsWithPlanCacheParams): 
     '';
 
   const fingerprint = {
-    v: 2, nodeId, nodeName: params.node?.name, nodeDesc: params.node?.description,
-    nodePath: params.nodePath, estimatedHours: params.node?.estimatedHours,
-    chunkMinutes: params.chunkMinutes, plan: params.plan, model,
+    v: 2,
+    nodeId,
+    nodeName: params.node?.name,
+    nodeDesc: params.node?.description,
+    nodePath: params.nodePath,
+    estimatedHours: params.node?.estimatedHours,
+    chunkMinutes: params.chunkMinutes,
+    plan: params.plan,
+    model,
     twoPass: String(process.env.WBS_TWO_PASS_DETAILS || '').trim(),
     detailsModel: String(process.env.WBS_DETAILS_MODEL || '').trim(),
   };
@@ -86,7 +92,10 @@ export function collectLeafNodesInOrder(
   return out;
 }
 
-export function shrinkLeafTasksToTargetHours(tasks: ShrinkTaskInput[], targetHours: number): ShrinkResult {
+export function shrinkLeafTasksToTargetHours(
+  tasks: ShrinkTaskInput[],
+  targetHours: number,
+): ShrinkResult {
   const currentHours = tasks.reduce((sum, t) => sum + (t.pomodorosPlanned || 1) * 25, 0) / 60;
   if (currentHours <= targetHours) {
     return { targetHours, finalHours: currentHours };
@@ -118,10 +127,7 @@ export function shrinkLeafTasksToTargetHours(tasks: ShrinkTaskInput[], targetHou
 }
 
 // Convert WBS leaf nodes into tasks (legacy - simple conversion)
-export function convertWBSToTasks(
-  nodes: WBSNodeDto[],
-  projectId: string,
-): LegacyGeneratedTask[] {
+export function convertWBSToTasks(nodes: WBSNodeDto[], projectId: string): LegacyGeneratedTask[] {
   const tasks: Array<{
     name: string;
     description: string;
@@ -273,12 +279,17 @@ export function generateFallbackTasks(params: GenerateFallbackTasksParams): Gene
       : `Origem WBS (pacote 8/80): ${nodePath}\nMicro-tarefa: ${i + 1}/${chunks} (~${estimatedMinutes}min)`;
 
     tasks.push({
-      name: `${node.name}${suffix}`, description: fallbackDesc,
-      estimatedMinutes, pomodorosPlanned,
+      name: `${node.name}${suffix}`,
+      description: fallbackDesc,
+      estimatedMinutes,
+      pomodorosPlanned,
       priority: priorityOffset + i + 1,
-      project: projectId, deadline,
-      isConcluded: false, late: false,
-      recurrency: 'no-recurrence', wbsPath: nodePath,
+      project: projectId,
+      deadline,
+      isConcluded: false,
+      late: false,
+      recurrency: 'no-recurrence',
+      wbsPath: nodePath,
     });
   }
   return tasks;

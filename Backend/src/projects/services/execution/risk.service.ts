@@ -37,7 +37,7 @@ export class RiskService {
       let parsedResponse: LLMRiskAssessmentResponse;
       try {
         parsedResponse = JSON.parse(responseText) as LLMRiskAssessmentResponse;
-      } catch (parseError) {
+      } catch {
         this.logger.warn(`Erro ao parsear resposta do LLM: ${responseText}`);
         return [];
       }

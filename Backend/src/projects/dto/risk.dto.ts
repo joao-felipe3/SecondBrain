@@ -2,13 +2,13 @@ import { IsString, IsNumber, IsEnum, IsOptional } from 'class-validator';
 
 export class CreateRiskDto {
   @IsString()
-  description: string;
+  description!: string;
 
   @IsNumber()
-  probability: number; // 0-100 (%)
+  probability!: number; // 0-100 (%)
 
   @IsNumber()
-  impact: number; // 1-5
+  impact!: number; // 1-5
 
   @IsEnum(['baixa', 'média', 'alta'])
   @IsOptional()
@@ -67,5 +67,5 @@ export class UpdateRiskDto {
 
 export class AssessRisksDto {
   @IsString()
-  projectDescription: string;
+  projectDescription!: string;
 }

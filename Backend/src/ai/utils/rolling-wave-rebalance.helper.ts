@@ -47,9 +47,7 @@ export function rebalanceWaveDistribution(params: {
     `[REBALANCE] Tarefas alocadas: ${allocatedTasks.size}, não alocadas: ${unallocatedTasks.length}, duplicadas ignoradas: ${duplicateTaskCount}`,
   );
 
-  logger.debug(
-    `[REBALANCE] Redistribuindo ${allTaskIds.length} tarefas em ${expectedWaveCount} ondas.`,
-  );
+  logger.debug(`[REBALANCE] Redistribuindo ${allTaskIds.length} tarefas em ${expectedWaveCount} ondas.`);
 
   const redistributedPlan = redistributeTasksAcrossWaves(
     normalizedPlan,

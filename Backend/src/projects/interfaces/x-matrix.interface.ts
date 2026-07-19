@@ -62,4 +62,3 @@ export interface GenerateXMatrixDataOptions {
   waves: ProjectWaveDocument[];
   dto: CreateXMatrixDto;
 }
-

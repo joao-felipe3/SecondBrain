@@ -56,7 +56,10 @@ export function buildTaskNodes(params: BuildPertTaskNodesParams): TaskNode[] {
   return taskNodes;
 }
 
-export function computeTaskLevels(tasks: TaskDocument[], dependencies: TaskDependency[]): Map<string, number> {
+export function computeTaskLevels(
+  tasks: TaskDocument[],
+  dependencies: TaskDependency[],
+): Map<string, number> {
   const predecessorMap = new Map<string, Set<string>>();
   for (const task of tasks) {
     const id = task?._id?.toString?.() || String(task?.id || '');

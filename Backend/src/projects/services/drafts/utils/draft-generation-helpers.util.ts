@@ -1,7 +1,6 @@
 import { createHash } from 'crypto';
 import {
   MicroTaskOutline,
-  MicroTaskDetails,
   MicroTaskDraft,
   DraftBatchItem,
   DraftBatchResult,
@@ -9,14 +8,25 @@ import {
 } from '../../../interfaces/drafts.interface';
 import {
   plannerSchema,
-  draftSchema,
   draftsSchema,
-  draftOutlineSchema,
   draftOutlinesSchema,
   draftDetailsSchema,
 } from '../../../schemas/drafts-validation.schema';
 
-export function validateDraftOutlines(outlines: any[]): any[] {
+export function safeString(v: unknown): string {
+  if (typeof v === 'string') return v;
+  if (typeof v === 'number' || typeof v === 'boolean') return String(v);
+  return '';
+}
+
+export function safeStringOrUndefined(v: unknown): string | undefined {
+  if (v === undefined || v === null) return undefined;
+  if (typeof v === 'string') return v;
+  if (typeof v === 'number' || typeof v === 'boolean') return String(v);
+  return undefined;
+}
+
+export function validateDraftOutlines(outlines: unknown[]): MicroTaskOutline[] {
   const parsed = draftOutlinesSchema.safeParse(outlines);
   if (!parsed.success) {
     const issues = parsed.error.issues
@@ -24,10 +34,10 @@ export function validateDraftOutlines(outlines: any[]): any[] {
       .join('; ');
     throw new Error(`Outlines inválidos: ${issues}`);
   }
-  return parsed.data as any;
+  return parsed.data;
 }
 
-export function validateDraftDetails(details: any): {
+export function validateDraftDetails(details: unknown): {
   checklist: string[];
   definitionOfDone: string;
   description?: string;
@@ -39,7 +49,7 @@ export function validateDraftDetails(details: any): {
       .join('; ');
     throw new Error(`Details inválidos: ${issues}`);
   }
-  return parsed.data as any;
+  return parsed.data;
 }
 
 export function validatePlannerPlan(plan: any): {
@@ -58,7 +68,7 @@ export function validatePlannerPlan(plan: any): {
   return parsed.data;
 }
 
-export function validateDrafts(drafts: any[]): any[] {
+export function validateDrafts(drafts: unknown[]): MicroTaskDraft[] {
   const parsed = draftsSchema.safeParse(drafts);
   if (!parsed.success) {
     const issues = parsed.error.issues
@@ -66,7 +76,7 @@ export function validateDrafts(drafts: any[]): any[] {
       .join('; ');
     throw new Error(`Drafts inválidos: ${issues}`);
   }
-  return parsed.data as any;
+  return parsed.data;
 }
 
 export function safeEnv(name: string): string {
@@ -108,8 +118,19 @@ export function isCacheDebugEnabled(): boolean {
   return v === '1' || v === 'true' || v === 'yes' || v === 'on';
 }
 
-export function getProjectId(project: any): string {
-  return String(project?._id || project?.id || project || '').trim();
+export function getProjectId(project: unknown): string {
+  if (!project) return '';
+  if (typeof project === 'string') return project.trim();
+  if (typeof project === 'object') {
+    const p = project as Record<string, unknown>;
+    const idVal = p._id || p.id;
+    if (typeof idVal === 'string') return idVal.trim();
+    if (typeof idVal === 'number' || typeof idVal === 'boolean') return String(idVal).trim();
+    if (idVal && typeof idVal === 'object' && 'toString' in idVal) {
+      return (idVal as { toString(): string }).toString().trim();
+    }
+  }
+  return '';
 }
 
 export function hashKey(input: any): string {
@@ -142,7 +163,7 @@ export async function mapWithConcurrency<T, R>(
   worker: (item: T, index: number) => Promise<R>,
 ): Promise<R[]> {
   const limit = Math.max(1, Math.floor(concurrency || 1));
-  const results: R[] = new Array(items.length);
+  const results: R[] = new Array<R>(items.length);
   let nextIndex = 0;
 
   const runOne = async () => {
@@ -191,8 +212,22 @@ export function assembleEnrichedBatches(
   return enriched;
 }
 
-export function isJsonishError(err: any): boolean {
-  const msg = String(err?.message || err || '').toLowerCase();
+export function isJsonishError(err: unknown): boolean {
+  let errMsg = '';
+  if (err instanceof Error) {
+    errMsg = err.message;
+  } else if (typeof err === 'object' && err !== null) {
+    if ('message' in err) {
+      const msgVal = (err as Record<string, unknown>).message;
+      if (typeof msgVal === 'string') errMsg = msgVal;
+      else if (typeof msgVal === 'number' || typeof msgVal === 'boolean') errMsg = String(msgVal);
+    }
+  } else if (typeof err === 'string') {
+    errMsg = err;
+  } else if (typeof err === 'number' || typeof err === 'boolean') {
+    errMsg = String(err);
+  }
+  const msg = errMsg.toLowerCase();
   return (
     msg.includes('json') ||
     msg.includes('truncad') ||
