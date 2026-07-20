@@ -1,6 +1,31 @@
-import { WbsNodeFlat, AIPlanWave, AIPlan } from '../../../interfaces/rolling-wave.interface';
+import {
+  WbsNodeFlat,
+  AIPlanWave,
+  AIPlan,
+  DeterministicTaskInput,
+  DeterministicWbsNodeInput,
+} from '../../../interfaces/rolling-wave.interface';
 
-export function flattenWbsTree(nodes: any[], acc: WbsNodeFlat[] = []): WbsNodeFlat[] {
+type TaskMetricsInput = DeterministicTaskInput & {
+  pomodorosDid?: number | null;
+  createdAt?: Date | string;
+  deadline?: Date | string | null;
+  parentWbsNodeId?: string | null;
+};
+
+function toDateOrNull(value: Date | string | null | undefined): Date | null {
+  if (!value) {
+    return null;
+  }
+
+  const parsed = new Date(value);
+  return Number.isNaN(parsed.getTime()) ? null : parsed;
+}
+
+export function flattenWbsTree(
+  nodes: DeterministicWbsNodeInput[],
+  acc: WbsNodeFlat[] = [],
+): WbsNodeFlat[] {
   for (const node of nodes || []) {
     acc.push({
       id: String(node._id || node.id),
@@ -15,12 +40,15 @@ export function flattenWbsTree(nodes: any[], acc: WbsNodeFlat[] = []): WbsNodeFl
   return acc;
 }
 
-export function estimateTaskHours(task: any): number {
-  if (typeof task?.pertExpectedMinutes === 'number' && task.pertExpectedMinutes > 0) {
-    return task.pertExpectedMinutes / 60;
+export function estimateTaskHours(task: TaskMetricsInput): number {
+  const expectedMinutes = task.pertExpectedMinutes;
+  if (typeof expectedMinutes === 'number' && expectedMinutes > 0) {
+    return expectedMinutes / 60;
   }
-  if (typeof task?.pomodorosPlanned === 'number' && task.pomodorosPlanned > 0) {
-    return task.pomodorosPlanned * 0.5;
+
+  const pomodorosPlanned = task.pomodorosPlanned;
+  if (typeof pomodorosPlanned === 'number' && pomodorosPlanned > 0) {
+    return pomodorosPlanned * 0.5;
   }
   return 1;
 }
@@ -43,12 +71,17 @@ export function addDays(date: Date, days: number): Date {
   return next;
 }
 
-export function buildTaskScheduleMetrics(task: any, deadline: Date) {
+export function buildTaskScheduleMetrics(task: TaskMetricsInput, deadline: Date) {
+  const expectedMinutesValue = task.pertExpectedMinutes;
+  const pomodorosPlannedValue = task.pomodorosPlanned;
+  const pomodorosDidValue = task.pomodorosDid;
+  const createdAt = toDateOrNull(task.createdAt) || new Date();
+
   const expectedMinutes =
-    typeof task?.pertExpectedMinutes === 'number' && task.pertExpectedMinutes > 0
-      ? task.pertExpectedMinutes
-      : typeof task?.pomodorosPlanned === 'number' && task.pomodorosPlanned > 0
-        ? task.pomodorosPlanned * 25
+    typeof expectedMinutesValue === 'number' && expectedMinutesValue > 0
+      ? expectedMinutesValue
+      : typeof pomodorosPlannedValue === 'number' && pomodorosPlannedValue > 0
+        ? pomodorosPlannedValue * 25
         : undefined;
 
   if (!expectedMinutes) {
@@ -56,13 +89,12 @@ export function buildTaskScheduleMetrics(task: any, deadline: Date) {
   }
 
   const pomodorosPlanned =
-    typeof task?.pomodorosPlanned === 'number' && task.pomodorosPlanned > 0
-      ? task.pomodorosPlanned
+    typeof pomodorosPlannedValue === 'number' && pomodorosPlannedValue > 0
+      ? pomodorosPlannedValue
       : Math.max(1, Math.round(expectedMinutes / 25));
-  const pomodorosDid = typeof task?.pomodorosDid === 'number' ? task.pomodorosDid : 0;
+  const pomodorosDid = typeof pomodorosDidValue === 'number' ? pomodorosDidValue : 0;
   const progress = Math.max(0, Math.min(1, pomodorosPlanned ? pomodorosDid / pomodorosPlanned : 0));
 
-  const createdAt = task?.createdAt ? new Date(task.createdAt) : new Date();
   const totalDurationMs = deadline.getTime() - createdAt.getTime();
   const elapsedRatio =
     totalDurationMs <= 0
@@ -83,12 +115,12 @@ export function buildTaskScheduleMetrics(task: any, deadline: Date) {
 }
 
 export function resolveGroupKey(
-  task: any,
+  task: TaskMetricsInput,
   wbsById: Map<string, WbsNodeFlat>,
   startTime: number,
   totalRangeMs: number,
 ): string {
-  const parentWbsNodeId = task?.parentWbsNodeId ? String(task.parentWbsNodeId) : '';
+  const parentWbsNodeId = task.parentWbsNodeId ? String(task.parentWbsNodeId) : '';
   if (parentWbsNodeId && wbsById.has(parentWbsNodeId)) {
     const visited = new Set<string>();
     let cursor = wbsById.get(parentWbsNodeId);
@@ -101,7 +133,7 @@ export function resolveGroupKey(
     }
   }
 
-  const deadline = task?.deadline ? new Date(task.deadline) : null;
+  const deadline = toDateOrNull(task.deadline);
   const deadlineTime = deadline?.getTime() || null;
   if (deadlineTime && totalRangeMs > 0) {
     const ratio = (deadlineTime - startTime) / totalRangeMs;

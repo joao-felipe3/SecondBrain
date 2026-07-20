@@ -16,6 +16,7 @@ import {
   ApplySimplifyFixParams,
   ApplyRebaselineFixParams,
   CreateAndSaveLeaveTasksParams,
+  WbsConversionResult,
 } from '../../../interfaces/wbs-conversion.interface';
 import { MicroTaskDraft } from '../../../interfaces/drafts.interface';
 
@@ -31,7 +32,7 @@ export class TaskConversionHelperService {
 
   // Helper to push audit results to result array
   private pushAudit(p: {
-    result: any;
+    result: WbsConversionResult;
     nodeId?: string;
     nodePath: string;
     budgetHours: number;
@@ -73,7 +74,7 @@ export class TaskConversionHelperService {
       const plan = { themes: [{ name: node.name }], workflow: ['execute'] };
       const cacheKey = buildDraftsWithPlanCacheKey({ projectId, node, nodePath, chunkMinutes, plan });
 
-      const cached = await this.cacheService.get(cacheKey);
+      const cached = (await this.cacheService.get(cacheKey)) as unknown;
       let drafts: MicroTaskDraft[];
       if (cached && Array.isArray(cached) && cached.length > 0) {
         drafts = cached as MicroTaskDraft[];
@@ -94,9 +95,10 @@ export class TaskConversionHelperService {
         priorityOffset,
         deadline,
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const errMsg = error instanceof Error ? error.message : String(error);
       console.warn(
-        `[WBS-Conversion] ⚠️ DraftGenerationService failed: ${error.message}. Using fallback static descriptions.`,
+        `[WBS-Conversion] ⚠️ DraftGenerationService failed: ${errMsg}. Using fallback static descriptions.`,
       );
       return generateFallbackTasks({
         node,
@@ -168,8 +170,9 @@ export class TaskConversionHelperService {
           finalHours: generatedHoursBefore,
         });
       }
-    } catch (err: any) {
-      console.warn(`[TaskConversion] auto-audit failed for leaf="${node.name}": ${err?.message || err}`);
+    } catch (err: unknown) {
+      const errMsg = err instanceof Error ? err.message : String(err);
+      console.warn(`[TaskConversion] auto-audit failed for leaf="${node.name}": ${errMsg}`);
     }
   }
 
@@ -237,21 +240,17 @@ export class TaskConversionHelperService {
       } else {
         for (const dto of leafTaskDtos) {
           try {
-            const createdTask = await tasksService.create(dto);
+            const createdTask: unknown = await tasksService.create(dto);
             result.createdTasks.push(createdTask);
-          } catch (error: any) {
-            console.error(
-              `[WBS-Conversion] ❌ Failed to create "${dto?.name}": ${error?.message}`,
-              error,
-            );
+          } catch (error: unknown) {
+            const errMsg = error instanceof Error ? error.message : String(error);
+            console.error(`[WBS-Conversion] ❌ Failed to create "${dto?.name}": ${errMsg}`, error);
           }
         }
       }
-    } catch (error: any) {
-      console.error(
-        `[WBS-Conversion] ❌ Batch creation failed for "${nodePath}": ${error?.message || error}`,
-        error,
-      );
+    } catch (error: unknown) {
+      const errMsg = error instanceof Error ? error.message : String(error);
+      console.error(`[WBS-Conversion] ❌ Batch creation failed for "${nodePath}": ${errMsg}`, error);
     }
   }
 }

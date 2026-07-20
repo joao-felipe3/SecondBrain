@@ -3,7 +3,7 @@ import { BufferEntry } from '../../interfaces';
 
 @Injectable()
 export class LeafTasksBufferService {
-  private readonly entries = new Map<string, BufferEntry<any>>();
+  private readonly entries = new Map<string, BufferEntry<unknown>>();
   private readonly inFlight = new Map<string, Promise<void>>();
 
   private running = 0;
@@ -34,13 +34,13 @@ export class LeafTasksBufferService {
     return v === '1' || v === 'true' || v === 'yes' || v === 'on';
   }
 
-  private log(message: string, extra?: any) {
+  private log(message: string, extra?: unknown) {
     if (!this.isDebugEnabled()) return;
 
     console.log(`[LeafBuffer] ${message}`, extra || '');
   }
 
-  private isExpired(entry: BufferEntry<any>): boolean {
+  private isExpired(entry: BufferEntry<unknown>): boolean {
     return Date.now() > entry.exp;
   }
 
@@ -105,7 +105,7 @@ export class LeafTasksBufferService {
   }
 
   // Consume the buffered value (removes from buffer). If it's currently being prefetched, waits for it.
-  async consume<T = any>(key: string): Promise<T | null> {
+  async consume<T = unknown>(key: string): Promise<T | null> {
     this.cleanupKey(key);
     const entry = this.entries.get(key);
     if (entry) {
@@ -144,7 +144,7 @@ export class LeafTasksBufferService {
   }
 
   // Prefetch a value into the buffer (non-blocking). Dedupes in-flight tasks per key.
-  prefetch(key: string, projectId: string, producer: () => Promise<any>): void {
+  prefetch(key: string, projectId: string, producer: () => Promise<unknown>): void {
     this.cleanupKey(key);
     if (this.entries.has(key)) return;
     if (this.inFlight.has(key)) return;
@@ -168,10 +168,11 @@ export class LeafTasksBufferService {
           keyPrefix: key.split(':').slice(0, 2).join(':'),
           ms: Date.now() - startedAt,
         });
-      } catch (err: any) {
+      } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : String(err);
         this.log('prefetch:error', {
           keyPrefix: key.split(':').slice(0, 2).join(':'),
-          message: err?.message || String(err),
+          message,
         });
       }
     }).finally(() => {

@@ -5,12 +5,11 @@ import { ProjectWave, ProjectWaveDocument } from '../../schemas/project-wave.sch
 import { ProjectsService } from '../../projects.service';
 import { WBSService } from '../wbs';
 import { RollingWaveAIService } from '../../../ai/services/projects/rolling-wave-ai.service';
-import { AIPlan } from '../../interfaces/rolling-wave.interface';
+import { AIPlan, DeterministicProjectInput } from '../../interfaces/rolling-wave.interface';
+import { UpdateProjectDto } from '../../dto/update-project.dto';
+import { WBSNodeDto } from '../../dto/wbs.dto';
+import { TaskDocument } from '../../../tasks/schemas/task.schema';
 import { normalizeWavePlanShape } from './utils/rolling-wave-helpers.util';
-import {
-  executeWithFreshMongoClient,
-  persistWaveIncrementalChunked,
-} from './utils/rolling-wave-db-helpers.util';
 import { partitionTasksDeterministically } from './utils/rolling-wave-deterministic-helpers.util';
 
 @Injectable()
@@ -30,9 +29,9 @@ export class RollingWavePlanningService {
    */
   private async createWavesDeterministic(
     projectId: string,
-    project: any,
-    tasks: any[],
-    wbsTree: any[],
+    project: DeterministicProjectInput,
+    tasks: TaskDocument[],
+    wbsTree: WBSNodeDto[],
     dailyCapacityHours: number,
     waveLengthDays: number,
   ): Promise<ProjectWave[]> {
@@ -49,9 +48,10 @@ export class RollingWavePlanningService {
     });
 
     if (partitionResult.adjustedDeadline) {
-      await this.projectsService.update(projectId, {
+      const updateDto: UpdateProjectDto = {
         deadline: partitionResult.adjustedDeadline,
-      } as any);
+      };
+      await this.projectsService.update(projectId, updateDto);
       this.logger.warn(
         `Deadline ajustado para ${partitionResult.adjustedDeadline.toISOString()} (requer mais dias)`,
       );
@@ -84,13 +84,12 @@ export class RollingWavePlanningService {
 
   private prepareWavesAndBulkOps(
     projectId: string,
-    validPlan: any,
-    taskMap: Map<string, any>,
+    validPlan: AIPlan,
+    taskMap: Map<string, TaskDocument>,
     today: Date,
     dayMs: number,
   ): {
     waveNumbersToKeep: number[];
-    bulkOps: any[];
     preparedWaves: Array<{
       waveNumber: number;
       startDate: Date;
@@ -100,9 +99,7 @@ export class RollingWavePlanningService {
       description?: string;
     }>;
   } {
-    const projectObjectId = new Types.ObjectId(projectId);
     const waveNumbersToKeep: number[] = [];
-    const bulkOps: any[] = [];
     const preparedWaves: Array<{
       waveNumber: number;
       startDate: Date;
@@ -123,7 +120,7 @@ export class RollingWavePlanningService {
         if (taskMap.has(taskId)) {
           try {
             validTaskIds.push(new Types.ObjectId(taskId));
-          } catch (e) {
+          } catch {
             this.logger.warn(`[WARN] ID inválido (ObjectId parse failed): ${taskId}`);
             notFoundCount++;
           }
@@ -147,63 +144,43 @@ export class RollingWavePlanningService {
         taskIds: validTaskIds,
         description: aiWave.description,
       });
-      bulkOps.push({
-        replaceOne: {
-          filter: {
-            projectId: projectObjectId,
-            waveNumber: aiWave.waveNumber,
-          },
-          replacement: {
-            projectId: projectObjectId,
-            waveNumber: aiWave.waveNumber,
-            startDate: currentWaveStart,
-            endDate: waveEnd,
-            status: 'planned',
-            taskIds: validTaskIds,
-            description: aiWave.description,
-          },
-          upsert: true,
-        },
-      });
 
       currentWaveStart = waveEnd;
     }
 
-    return { waveNumbersToKeep, bulkOps, preparedWaves };
+    return { waveNumbersToKeep, preparedWaves };
   }
 
   private async persistWavesToDb(
     projectId: string,
-    bulkOps: any[],
-    preparedWaves: any[],
+    preparedWaves: Array<{
+      waveNumber: number;
+      startDate: Date;
+      endDate: Date;
+      status: 'planned';
+      taskIds: Types.ObjectId[];
+      description?: string;
+    }>,
   ): Promise<void> {
-    const bulkResult = await executeWithFreshMongoClient({
-      waveModel: this.waveModel,
-      operation: (collection) => collection.bulkWrite(bulkOps, { ordered: true }),
-      operationName: `bulkWrite waves for project ${projectId}`,
-      logger: this.logger,
-      maxAttempts: 5,
-    });
-    if (bulkResult === null) {
-      this.logger.warn(
-        `[MONGO_FALLBACK] bulkWrite falhou. Tentando persistência incremental em chunks por onda...`,
-      );
-
-      for (const wave of preparedWaves) {
-        const persisted = await persistWaveIncrementalChunked({
-          waveModel: this.waveModel,
-          projectId,
-          wave,
-          logger: this.logger,
-          chunkSize: 25,
-        });
-        if (!persisted) {
-          this.logger.error(
-            `Falha ao persistir Wave ${wave.waveNumber} no fallback incremental em chunks.`,
-          );
-          throw new Error('Database operation failed after retries');
-        }
-      }
+    for (const wave of preparedWaves) {
+      await this.waveModel
+        .findOneAndUpdate(
+          {
+            projectId: new Types.ObjectId(projectId),
+            waveNumber: wave.waveNumber,
+          },
+          {
+            projectId: new Types.ObjectId(projectId),
+            waveNumber: wave.waveNumber,
+            startDate: wave.startDate,
+            endDate: wave.endDate,
+            status: wave.status,
+            taskIds: wave.taskIds,
+            description: wave.description,
+          },
+          { upsert: true, new: true },
+        )
+        .exec();
     }
   }
 
@@ -213,36 +190,17 @@ export class RollingWavePlanningService {
     dayMs: number,
   ): Promise<ProjectWave[]> {
     const projectObjectId = new Types.ObjectId(projectId);
-    const cleanupResult = await executeWithFreshMongoClient({
-      waveModel: this.waveModel,
-      operation: (collection) =>
-        collection.deleteMany({
-          projectId: projectObjectId,
-          waveNumber: { $nin: waveNumbersToKeep },
-        }),
-      operationName: `cleanup stale waves for project ${projectId}`,
-      logger: this.logger,
-      maxAttempts: 5,
-    });
-    if (cleanupResult === null) {
-      this.logger.error(`Falha ao limpar waves antigas após bulkWrite.`);
-      throw new Error('Database operation failed after retries');
-    }
+    await this.waveModel
+      .deleteMany({
+        projectId: projectObjectId,
+        waveNumber: { $nin: waveNumbersToKeep },
+      })
+      .exec();
 
-    const wavesResult = await executeWithFreshMongoClient({
-      waveModel: this.waveModel,
-      operation: (collection) =>
-        collection.find({ projectId: projectObjectId }).sort({ waveNumber: 1 }).toArray(),
-      operationName: `fetch saved waves for project ${projectId}`,
-      logger: this.logger,
-      maxAttempts: 5,
-    });
-    if (wavesResult === null) {
-      this.logger.error(`Falha ao recuperar waves salvas após bulkWrite.`);
-      throw new Error('Database operation failed after retries');
-    }
-
-    const waves = wavesResult as ProjectWave[];
+    const waves = await this.waveModel
+      .find({ projectId: projectObjectId })
+      .sort({ waveNumber: 1 })
+      .exec();
     const wavesSummary = waves
       .map(
         (w) =>
@@ -258,7 +216,7 @@ export class RollingWavePlanningService {
 
   private async applyAIPlanToWaves(
     projectId: string,
-    tasks: any[],
+    tasks: TaskDocument[],
     aiPlan: AIPlan,
     expectedWaveCount: number,
     totalDurationDays: number,
@@ -269,7 +227,7 @@ export class RollingWavePlanningService {
 
     const validPlan = normalizeWavePlanShape(aiPlan, expectedWaveCount, totalDurationDays);
 
-    const taskMap = new Map(tasks.map((t: any) => [String(t._id || t.id), t]));
+    const taskMap = new Map<string, TaskDocument>(tasks.map((task) => [String(task._id), task]));
 
     this.logger.debug(`[DEBUG] Plano após normalização (${validPlan.waves.length} ondas):`);
     for (const wave of validPlan.waves) {
@@ -278,7 +236,7 @@ export class RollingWavePlanningService {
       );
     }
 
-    const { waveNumbersToKeep, bulkOps, preparedWaves } = this.prepareWavesAndBulkOps(
+    const { waveNumbersToKeep, preparedWaves } = this.prepareWavesAndBulkOps(
       projectId,
       validPlan,
       taskMap,
@@ -286,21 +244,21 @@ export class RollingWavePlanningService {
       dayMs,
     );
 
-    await this.persistWavesToDb(projectId, bulkOps, preparedWaves);
+    await this.persistWavesToDb(projectId, preparedWaves);
 
     return this.cleanupAndFetchWaves(projectId, waveNumbersToKeep, dayMs);
   }
 
   async createInitialWaves(
     projectId: string,
-    project: any,
+    project: DeterministicProjectInput,
     waveLengthDays: number = 28,
   ): Promise<ProjectWave[]> {
     const dailyCapacityHours = Number(process.env.ROLLING_WAVE_DAILY_CAPACITY_HOURS || 6);
 
     this.logger.debug(`Planejando ondas inteligentes (2-step IA) para projeto ${projectId}`);
 
-    const tasks = (await this.projectsService.getTasksForProject(projectId)) as any[];
+    const tasks = await this.projectsService.getTasksForProject(projectId);
     const wbsTree = await this.wbsService.getWBS(projectId);
 
     // Passo 1: Determinar estrutura de ondas

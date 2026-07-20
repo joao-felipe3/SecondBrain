@@ -139,16 +139,17 @@ export class TaskConversionService {
       if (typeof tasksService.recalculateProjectStats === 'function') {
         await tasksService.recalculateProjectStats(projectId);
       }
-    } catch (err: any) {
-      console.warn(`[TaskConversion] Failed to recalculate project stats: ${err?.message || err}`);
+    } catch (err: unknown) {
+      const errMsg = err instanceof Error ? err.message : String(err);
+      console.warn(`[TaskConversion] Failed to recalculate project stats: ${errMsg}`);
     }
   }
 
   // Convert draft objects into task DTOs ready for database creation
-  async convertDraftsToTasks(
+  convertDraftsToTasks(
     drafts: MicroTaskDraft[],
     context: { wbsNode?: WBSNodeDto; project?: { _id?: any; id?: any }; path?: string } = {},
   ): Promise<Task[]> {
-    return convertDraftsToTasks(drafts, context);
+    return Promise.resolve(convertDraftsToTasks(drafts, context));
   }
 }

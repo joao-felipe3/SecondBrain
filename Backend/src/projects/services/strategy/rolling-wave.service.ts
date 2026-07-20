@@ -5,6 +5,7 @@ import { ProjectWave, ProjectWaveDocument } from '../../schemas/project-wave.sch
 import { TaskDocument } from '../../../tasks/schemas/task.schema';
 import { ProjectsService } from '../../projects.service';
 import { RollingWavePlanningService } from './rolling-wave-planning.service';
+import { DeterministicProjectInput } from '../../interfaces/rolling-wave.interface';
 
 import { ReplanTaskDeadlinesResult } from '../../interfaces/rolling-wave.interface';
 
@@ -24,13 +25,13 @@ export class RollingWaveService {
 
   async createInitialWaves(
     projectId: string,
-    project: any,
+    project: DeterministicProjectInput,
     waveLengthDays: number = 28,
   ): Promise<ProjectWave[]> {
     return this.rollingWavePlanningService.createInitialWaves(projectId, project, waveLengthDays);
   }
 
-  async getWavesByProject(projectId: string): Promise<ProjectWave[]> {
+  async getWavesByProject(projectId: string): Promise<ProjectWaveDocument[]> {
     return this.waveModel
       .find({ projectId: new Types.ObjectId(projectId) })
       .sort({ waveNumber: 1 })
@@ -41,7 +42,7 @@ export class RollingWaveService {
     projectId: string,
     waveId: string,
     status: 'planned' | 'active' | 'completed',
-  ): Promise<ProjectWave | null> {
+  ): Promise<ProjectWaveDocument | null> {
     if (status === 'active') {
       await this.waveModel.updateMany(
         { projectId: new Types.ObjectId(projectId), status: 'active' },
@@ -64,7 +65,7 @@ export class RollingWaveService {
       .exec();
   }
 
-  async getCurrentWave(projectId: string): Promise<ProjectWave | null> {
+  async getCurrentWave(projectId: string): Promise<ProjectWaveDocument | null> {
     return this.waveModel
       .findOne({
         projectId: new Types.ObjectId(projectId),
@@ -73,10 +74,10 @@ export class RollingWaveService {
       .exec();
   }
 
-  async advanceToNextWave(projectId: string): Promise<ProjectWave | null> {
+  async advanceToNextWave(projectId: string): Promise<ProjectWaveDocument | null> {
     const currentWave = await this.getCurrentWave(projectId);
     if (currentWave) {
-      const waveId = (currentWave as any)._id?.toString();
+      const waveId = String(currentWave._id);
       if (waveId) {
         await this.updateWaveStatus(projectId, waveId, 'completed');
       }
@@ -86,7 +87,7 @@ export class RollingWaveService {
     const plannedWave = waves.find((w) => w.status === 'planned');
 
     if (plannedWave) {
-      const waveId = (plannedWave as any)._id?.toString();
+      const waveId = String(plannedWave._id);
       if (waveId) {
         return this.updateWaveStatus(projectId, waveId, 'active');
       }
@@ -150,7 +151,9 @@ export class RollingWaveService {
     });
 
     if (result.bulkOps.length > 0) {
-      await this.taskModel.bulkWrite(result.bulkOps, { ordered: false });
+      await this.taskModel.bulkWrite(result.bulkOps as Parameters<typeof this.taskModel.bulkWrite>[0], {
+        ordered: false,
+      });
       await this.projectsService.recalculateProjectStats(projectId);
     }
 

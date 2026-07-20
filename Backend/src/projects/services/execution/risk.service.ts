@@ -104,7 +104,7 @@ export class RiskService {
     }
 
     const { targetResolutionDate, ...rest } = updateRiskDto;
-    const updates: Partial<Risk> = { ...rest } as any;
+    const updates: Partial<Risk> = { ...rest };
 
     if (targetResolutionDate !== undefined) {
       updates.targetResolutionDate = targetResolutionDate ? new Date(targetResolutionDate) : undefined;
@@ -127,14 +127,14 @@ export class RiskService {
     return this.riskModel.findByIdAndUpdate(riskId, updates, { new: true }).exec();
   }
 
-  async getRisksByProject(projectId: string): Promise<Risk[]> {
+  async getRisksByProject(projectId: string): Promise<RiskDocument[]> {
     return this.riskModel
       .find({ projectId: new Types.ObjectId(projectId) })
       .sort({ createdAt: -1 })
       .exec();
   }
 
-  async getRisksBySeverity(projectId: string, severity: RiskSeverity): Promise<Risk[]> {
+  async getRisksBySeverity(projectId: string, severity: RiskSeverity): Promise<RiskDocument[]> {
     return this.riskModel
       .find({
         projectId: new Types.ObjectId(projectId),
@@ -209,7 +209,7 @@ export class RiskService {
         }
 
         return {
-          riskId: String((risk as any)._id),
+          riskId: String(risk._id),
           description: risk.description,
           severity: risk.severity,
           status: risk.status,

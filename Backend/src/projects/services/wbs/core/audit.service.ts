@@ -4,8 +4,6 @@ import {
   LeafAuditResult,
   AuditLeafDiscrepancyInput,
   ApplyGuardrailsParams,
-  AuditLeafDiscrepancyAiInput,
-  AuditLeafDiscrepancyAiResult,
   BatchMetricsResult,
 } from '../../../interfaces';
 import { WbsAiService } from '../../../../ai/services/projects/wbs-ai.service';

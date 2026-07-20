@@ -1,4 +1,4 @@
-import { MongoClient, ObjectId as NativeObjectId } from 'mongodb';
+import { Collection, MongoClient, ObjectId as NativeObjectId } from 'mongodb';
 import { FreshMongoExecuteDto, PersistWaveChunkedDto } from '../../../interfaces/rolling-wave.interface';
 
 export async function executeWithFreshMongoClient<T>(
@@ -27,12 +27,13 @@ export async function executeWithFreshMongoClient<T>(
       await client.connect();
       const dbName = waveModel.db?.name || undefined;
       const db = dbName ? client.db(dbName) : client.db();
-      const collection = db.collection(waveModel.collection.name);
+      const collection: Collection = db.collection(waveModel.collection.name);
       const result = await operation(collection);
       return result;
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
       logger.warn(
-        `[MONGO_FRESH] ${operationName} tentativa ${attempt}/${maxAttempts} falhou: ${err?.message || err}`,
+        `[MONGO_FRESH] ${operationName} tentativa ${attempt}/${maxAttempts} falhou: ${message}`,
       );
       if (attempt < maxAttempts) {
         const baseDelay = Math.min(8000, Math.pow(2, attempt - 1) * 1000);

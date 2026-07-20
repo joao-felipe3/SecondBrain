@@ -1,5 +1,7 @@
-import { Types, Model } from 'mongoose';
+import { AnyBulkWriteOperation, Types, Model } from 'mongoose';
 import { Logger } from '@nestjs/common';
+import { Collection } from 'mongodb';
+import { TaskDocument } from '../../tasks/schemas/task.schema';
 
 export interface WaveTask {
   id: string;
@@ -81,7 +83,7 @@ export interface TimelineMetrics {
 export interface ReplanCalculationResult {
   updatedCount: number;
   skippedConcludedCount: number;
-  bulkOps: any[];
+  bulkOps: AnyBulkWriteOperation<TaskDocument>[];
   summaries: ReplanTaskDeadlinesResult['summaries'];
 }
 
@@ -92,12 +94,12 @@ export interface WaveDates {
 
 export interface PendingTasksResult {
   waveUpdatedCount: number;
-  bulkOps: any[];
+  bulkOps: AnyBulkWriteOperation<TaskDocument>[];
 }
 
 export interface FreshMongoExecuteDto<T> {
   waveModel: Model<any>;
-  operation: (collection: any) => Promise<T>;
+  operation: (collection: Collection) => Promise<T>;
   operationName: string;
   logger: Logger;
   maxAttempts?: number;
@@ -250,7 +252,7 @@ export interface ProcessWaveReplanOptions {
 export interface WaveReplanResult {
   waveUpdatedCount: number;
   skippedConcludedTasks: number;
-  bulkOps: any[];
+  bulkOps: AnyBulkWriteOperation<TaskDocument>[];
   summary: WaveReplanSummary;
   nextCursor: Date;
 }

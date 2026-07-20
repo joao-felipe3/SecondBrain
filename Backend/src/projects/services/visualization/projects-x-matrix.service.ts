@@ -105,7 +105,8 @@ export class ProjectsXMatrixService {
 
     if (snapshot?.data) return snapshot.data as XMatrixResponseDto;
 
-    const legacySnapshot = (project as any).xMatrixSnapshot;
+    const legacySnapshot = (project as ProjectDocument & { xMatrixSnapshot?: XMatrixResponseDto })
+      .xMatrixSnapshot;
     if (legacySnapshot) {
       await this.xMatrixSnapshotModel
         .updateOne(
@@ -117,7 +118,7 @@ export class ProjectsXMatrixService {
 
       await this.projectModel.updateOne({ _id: projectId }, { $unset: { xMatrixSnapshot: '' } }).exec();
 
-      return legacySnapshot as XMatrixResponseDto;
+      return legacySnapshot;
     }
 
     return null;

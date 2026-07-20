@@ -127,7 +127,7 @@ export class PlanningService {
       const first = cleanResponse[0];
       if (first !== '{' && first !== '[') return null;
 
-      return JSON.parse(cleanResponse) as T;
+      return JSON.parse(cleanResponse) as unknown as T;
     } catch {
       return null;
     }
@@ -143,9 +143,9 @@ export class PlanningService {
 
       cleanResponse = cleanResponse.trim();
 
-      const questions = JSON.parse(cleanResponse);
+      const questions = JSON.parse(cleanResponse) as unknown;
 
-      if (!Array.isArray(questions)) {
+      if (!Array.isArray(questions) || !questions.every((question) => typeof question === 'string')) {
         throw new Error('Resposta não é um array');
       }
 
@@ -178,18 +178,20 @@ export class PlanningService {
 
       cleanResponse = cleanResponse.trim();
 
-      const smartObj = JSON.parse(cleanResponse);
+      const smartObj = JSON.parse(cleanResponse) as Record<string, unknown>;
       const weeklyHours = Number(smartObj.weeklyHours);
 
       return {
-        specific: smartObj.specific || '',
-        measurable: smartObj.measurable || '',
-        achievable: smartObj.achievable || '',
-        relevant: smartObj.relevant || '',
-        temporal: smartObj.temporal || '',
+        specific: typeof smartObj.specific === 'string' ? smartObj.specific : '',
+        measurable: typeof smartObj.measurable === 'string' ? smartObj.measurable : '',
+        achievable: typeof smartObj.achievable === 'string' ? smartObj.achievable : '',
+        relevant: typeof smartObj.relevant === 'string' ? smartObj.relevant : '',
+        temporal: typeof smartObj.temporal === 'string' ? smartObj.temporal : '',
         ...(Number.isFinite(weeklyHours) && weeklyHours > 0 ? { weeklyHours } : {}),
-        summary: smartObj.summary || '',
-        risks: Array.isArray(smartObj.risks) ? smartObj.risks : [],
+        summary: typeof smartObj.summary === 'string' ? smartObj.summary : '',
+        risks: Array.isArray(smartObj.risks)
+          ? smartObj.risks.filter((r): r is string => typeof r === 'string')
+          : [],
       };
     } catch (error) {
       this.logger.error(

@@ -47,7 +47,8 @@ function groupTasksIntoTacticalAgg(
     const taskId = String(task._id || '').trim();
     const pathLabel = inferInitiativeFromWbsPath(task.wbsPath, wbsLevels);
     const parentNodeId = String(task.parentWbsNodeId || '').trim();
-    const fallbackLabel = String((task as any).title || task.name || '').trim() || 'Iniciativa sem nome';
+    const fallbackLabel =
+      String((task as { title?: string }).title || task.name || '').trim() || 'Iniciativa sem nome';
     const initiativeLabel = pathLabel || fallbackLabel;
     const initiativeId = parentNodeId || initiativeLabel.toLowerCase();
 

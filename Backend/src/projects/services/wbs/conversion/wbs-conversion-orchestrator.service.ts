@@ -10,6 +10,10 @@ import {
   ConvertWbsToTasksParams,
   GenerateTasksForSingleLeafParams,
   GenerateTasksForSingleLeafResult,
+  MicroTaskDraft,
+  MicroTaskOutline,
+  Task,
+  TasksServiceSubset,
 } from '../../../interfaces';
 
 // Responsible for orchestrating the conversion of WBS nodes to tasks,
@@ -103,12 +107,13 @@ export class WbsConversionOrchestrationService {
       });
 
       return result;
-    } catch (err: any) {
+    } catch (err: unknown) {
       result.metadata.durationMs = Date.now() - startMs;
       if (!result.error) {
+        const errMsg = err instanceof Error ? err.message : String(err);
         result.error = {
           stage: 'draft-generation' as const,
-          message: err.message || String(err),
+          message: errMsg,
           originalError: err,
         };
       }
@@ -119,13 +124,13 @@ export class WbsConversionOrchestrationService {
   // ========== STAGE 1: Draft Generation Helper ==========
   private async stage1DraftGeneration(p: {
     node: WBSNodeDto;
-    project: any;
+    project: { name?: string; _id?: any; id?: any };
     path: string;
     opts: Required<ConversionOptions>;
     chunkMinutes: number[];
     result: ConversionResult;
     startMs: number;
-  }): Promise<any[] | null> {
+  }): Promise<MicroTaskDraft[] | null> {
     try {
       const drafts = await this.generateDrafts(p.node, p.project, p.path, p.opts, p.chunkMinutes);
       p.result.metadata.draftCount = drafts.length;
@@ -135,10 +140,11 @@ export class WbsConversionOrchestrationService {
         strategy: p.opts.strategy,
       });
       return drafts;
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const errMsg = err instanceof Error ? err.message : String(err);
       p.result.error = {
         stage: 'draft-generation',
-        message: err.message || String(err),
+        message: errMsg,
         originalError: err,
       };
       this.logError(`[convertWbsToTasks] Erro na geração de drafts`, p.result.error);
@@ -150,13 +156,13 @@ export class WbsConversionOrchestrationService {
 
   // ========== STAGE 2: Draft Processing Helper ==========
   private stage2DraftProcessing(p: {
-    drafts: any[];
+    drafts: MicroTaskDraft[];
     chunkMinutes: number[];
     path: string;
     result: ConversionResult;
     startMs: number;
     opts: Required<ConversionOptions>;
-  }): any[] | null {
+  }): MicroTaskDraft[] | null {
     try {
       const processed = this.processDrafts(p.drafts, p.chunkMinutes);
       this.logIfVerbose(`[convertWbsToTasks] Drafts processados`, {
@@ -165,10 +171,11 @@ export class WbsConversionOrchestrationService {
         appliedMilestones: true,
       });
       return processed;
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const errMsg = err instanceof Error ? err.message : String(err);
       p.result.error = {
         stage: 'draft-processing',
-        message: err.message || String(err),
+        message: errMsg,
         originalError: err,
       };
       this.logError(`[convertWbsToTasks] Erro no processamento de drafts`, p.result.error);
@@ -180,9 +187,9 @@ export class WbsConversionOrchestrationService {
 
   // ========== STAGE 3: Task Conversion Helper ==========
   private async stage3TaskConversion(p: {
-    drafts: any[];
+    drafts: MicroTaskDraft[];
     node: WBSNodeDto;
-    project: any;
+    project: { name?: string; _id?: any; id?: any };
     path: string;
     result: ConversionResult;
     startMs: number;
@@ -200,10 +207,11 @@ export class WbsConversionOrchestrationService {
         count: p.result.tasks.length,
       });
       return true;
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const errMsg = err instanceof Error ? err.message : String(err);
       p.result.error = {
         stage: 'task-conversion',
-        message: err.message || String(err),
+        message: errMsg,
         originalError: err,
       };
       this.logError(`[convertWbsToTasks] Erro na conversão para tasks`, p.result.error);
@@ -215,11 +223,11 @@ export class WbsConversionOrchestrationService {
 
   private async generateDrafts(
     node: WBSNodeDto,
-    project: any,
+    project: { name?: string; _id?: any; id?: any },
     path: string,
     opts: Required<ConversionOptions>,
     chunkMinutes: number[],
-  ): Promise<any[]> {
+  ): Promise<MicroTaskDraft[]> {
     if (opts.strategy === 'two-phase') {
       const plan = await this.draftGeneration.generateMicroTasksPlanForLeaf({
         project,
@@ -242,24 +250,17 @@ export class WbsConversionOrchestrationService {
     }
   }
 
-  private processDrafts(drafts: any[], chunkMinutes: number[]): any[] {
-    let processed = this.draftProcessing.applyThemeWorkflowAndProgression(drafts);
+  private processDrafts(drafts: MicroTaskDraft[], chunkMinutes: number[]): MicroTaskDraft[] {
+    let processed: MicroTaskOutline[] = this.draftProcessing.applyThemeWorkflowAndProgression(drafts);
     processed = this.draftProcessing.applyGoldilocksAndMilestones(processed, chunkMinutes);
-    return processed;
+    return processed as MicroTaskDraft[];
   }
 
   async generateTasksForSingleLeaf(
     params: GenerateTasksForSingleLeafParams,
   ): Promise<GenerateTasksForSingleLeafResult> {
-    const {
-      leafNode,
-      nodePath,
-      projectId,
-      project,
-      tasksService,
-      preferences,
-      saveTasks = false,
-    } = params;
+    const { leafNode, nodePath, projectId, tasksService, preferences, saveTasks = false } = params;
+    const project = params.project as { name?: string; _id?: any; id?: any };
 
     const result = await this.convertWbsToTasks({
       node: leafNode,
@@ -303,30 +304,34 @@ export class WbsConversionOrchestrationService {
   }
 
   private async persistGeneratedTasks(
-    tasks: any[],
+    tasks: Task[],
     projectId: string,
-    tasksService: any,
-  ): Promise<any[]> {
+    tasksService: TasksServiceSubset,
+  ): Promise<Task[]> {
     const tasksToSave = tasks.map((task) => ({ ...task, project: projectId }));
     try {
       if (typeof tasksService.createMany === 'function') {
-        return await tasksService.createMany(tasksToSave, {
+        const created = await tasksService.createMany(tasksToSave, {
           resolveProject: false,
           recalculateProjectStats: false,
         });
+        return created as Task[];
       } else {
-        const created: any[] = [];
+        const created: Task[] = [];
         for (const task of tasksToSave) {
           try {
-            created.push(await tasksService.create(task));
-          } catch (error: any) {
-            console.error(`Erro ao criar task:`, error?.message || error);
+            const createdTask = (await tasksService.create(task)) as Task;
+            created.push(createdTask);
+          } catch (error: unknown) {
+            const errMsg = error instanceof Error ? error.message : String(error);
+            console.error(`Erro ao criar task:`, errMsg);
           }
         }
         return created;
       }
-    } catch (error: any) {
-      console.error(`Erro ao criar tasks em lote:`, error?.message || error);
+    } catch (error: unknown) {
+      const errMsg = error instanceof Error ? error.message : String(error);
+      console.error(`Erro ao criar tasks em lote:`, errMsg);
       return tasks;
     }
   }

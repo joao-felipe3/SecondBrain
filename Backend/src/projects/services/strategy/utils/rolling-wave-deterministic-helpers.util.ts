@@ -25,7 +25,7 @@ function calculateTimelineMetrics(options: TimelineMetricsOptions): TimelineMetr
 
   const deadline = new Date(project.deadline);
   if (isNaN(deadline.getTime())) {
-    throw new Error(`Invalid project deadline date format: ${project.deadline}`);
+    throw new Error(`Invalid project deadline date format: ${String(project.deadline)}`);
   }
 
   if (dailyCapacityHours <= 0) {

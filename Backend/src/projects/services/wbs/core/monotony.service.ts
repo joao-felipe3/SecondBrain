@@ -2,7 +2,19 @@ import { Injectable } from '@nestjs/common';
 import { normalizeTitle, templateTitle } from '../utils/normalizers.util';
 import { MAX_MONOTONY_FIX_ROUNDS, MONOTONY_FIX_BATCH_SIZE } from '../constants/wbs.constants';
 import { WbsAiService } from '../../../../ai/services/projects/wbs-ai.service';
-import { AutoFixMonotonyParams, MicroTaskDraft } from '../../../interfaces';
+import { AutoFixMonotonyParams } from '../../../interfaces/wbs-conversion.interface';
+import { MicroTaskDraft } from '../../../interfaces/drafts.interface';
+
+interface FixedMonotonyItem {
+  name?: string;
+  description?: string;
+  definitionOfDone?: string;
+  checklist?: string[];
+  pomodorosPlanned?: number;
+  priority?: number;
+  difficult?: number;
+  chunkIndex?: number;
+}
 
 /**
  * Service for detecting and auto-fixing monotony issues in micro-task batches using AI.
@@ -101,9 +113,9 @@ export class MonotonyService {
       ) {
         const indices = mergedBad.slice(start, start + MONOTONY_FIX_BATCH_SIZE);
 
-        let items: any[];
+        let items: FixedMonotonyItem[];
         try {
-          items = await this.wbsAiService.fixMonotonyBatch({
+          items = (await this.wbsAiService.fixMonotonyBatch({
             project: params.project,
             node: params.node,
             currentPath: params.currentPath,
@@ -112,16 +124,15 @@ export class MonotonyService {
             indices,
             round,
             modelOverride: params.modelOverride,
-          });
-        } catch (err: any) {
-          console.warn(
-            `[WBS-Monotony] AI regeneration failed for round ${round}: ${err?.message || err}`,
-          );
+          })) as FixedMonotonyItem[];
+        } catch (err: unknown) {
+          const errMsg = err instanceof Error ? err.message : String(err);
+          console.warn(`[WBS-Monotony] AI regeneration failed for round ${round}: ${errMsg}`);
           continue;
         }
 
         const indexSet = new Set(indices);
-        const byIndex = new Map<number, any>();
+        const byIndex = new Map<number, FixedMonotonyItem>();
 
         // Prefer explicit chunkIndex mapping; fallback to positional mapping if missing.
         const allHaveIndex = items.every((it) => Number.isInteger(Number(it?.chunkIndex)));
@@ -138,7 +149,8 @@ export class MonotonyService {
         }
 
         for (const idx of indices) {
-          const current = drafts[idx] || ({} as any);
+          const current = drafts[idx];
+          if (!current) continue;
           const it = byIndex.get(idx);
           if (!it) continue;
 
@@ -148,7 +160,7 @@ export class MonotonyService {
           const nextDesc = String(it?.description || '').trim();
           const nextDefinitionOfDone = String(it?.definitionOfDone || '').trim();
           const nextChecklist = Array.isArray(it?.checklist)
-            ? (it.checklist as any[]).map((s) => String(s || '').trim()).filter(Boolean)
+            ? it.checklist.map((s) => String(s || '').trim()).filter(Boolean)
             : undefined;
 
           if (!nextName || !nextDefinitionOfDone || !nextChecklist || nextChecklist.length < 2) continue;

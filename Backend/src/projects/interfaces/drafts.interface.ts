@@ -21,7 +21,7 @@ export interface MicroTaskDetails {
 export interface MicroTaskDraft extends MicroTaskOutline, MicroTaskDetails {}
 
 export interface WBSLeafProjectContext {
-  _id?: any;
+  _id?: string;
   description?: string;
   smartObjective?: {
     summary?: string;

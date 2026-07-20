@@ -4,12 +4,12 @@
  * No NestJS decorators, no side effects — only string construction.
  */
 
-import { MicroTaskDraft } from '../../../projects/interfaces';
+import { MicroTaskDraft, WBSLeafProjectContext } from '../../../projects/interfaces';
 import { WBSNodeDto } from '../../../projects/dto/wbs.dto';
 import { extractVerb, templateTitle } from '../../../projects/services/wbs/utils/normalizers.util';
 
 export function buildFixMonotonyPrompt(params: {
-  project: any;
+  project: WBSLeafProjectContext | null | undefined;
   node: WBSNodeDto;
   currentPath: string;
   chunkMinutes: number[];
@@ -24,7 +24,7 @@ export function buildFixMonotonyPrompt(params: {
 
   const fixedTargets = params.indices
     .map((idx) => {
-      const d: any = params.drafts[idx] || {};
+      const d = (params.drafts[idx] || {}) as Partial<MicroTaskDraft>;
       const minutes = params.chunkMinutes[idx];
       return {
         chunkIndex: idx,

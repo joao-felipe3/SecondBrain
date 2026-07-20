@@ -1,6 +1,6 @@
 import { Task } from '../../tasks/entities/task.entity';
 import { WBSNodeDto } from '../dto/wbs.dto';
-import { MicroTaskDraft } from './drafts.interface';
+import { MicroTaskDraft, WBSLeafProjectContext } from './drafts.interface';
 import { BatchMetricsResult } from './wbs-metrics.interface';
 export { Task };
 
@@ -183,7 +183,7 @@ export interface ApplyGuardrailsParams {
 }
 
 export interface AutoFixMonotonyParams {
-  project: any;
+  project: WBSLeafProjectContext | null | undefined;
   node: WBSNodeDto;
   currentPath: string;
   level: number;
@@ -332,7 +332,7 @@ export interface GenerateFallbackTasksParams {
 }
 
 export interface FixMonotonyBatchParams {
-  project: any;
+  project: WBSLeafProjectContext | null | undefined;
   node: WBSNodeDto;
   currentPath: string;
   chunkMinutes: number[];

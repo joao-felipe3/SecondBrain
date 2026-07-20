@@ -1,4 +1,5 @@
 import { Types } from 'mongoose';
+import { AnyBulkWriteOperation } from 'mongoose';
 import {
   ReplanTaskDeadlinesResult,
   ReplanCalculationResult,
@@ -14,6 +15,7 @@ import {
   WaveReplanSummary,
   BuildWaveSummaryOptions,
 } from '../../../interfaces/rolling-wave.interface';
+import { TaskDocument } from '../../../../tasks/schemas/task.schema';
 import {
   startOfDay,
   endOfDay,
@@ -66,7 +68,9 @@ function calculateEffectiveWaveDates(options: CalculateEffectiveWaveDatesOptions
   return { effectiveStart, effectiveEnd };
 }
 
-function buildUpdateOperationForTask(options: BuildTaskUpdateOpOptions): any | null {
+function buildUpdateOperationForTask(
+  options: BuildTaskUpdateOpOptions,
+): AnyBulkWriteOperation<TaskDocument> | null {
   const { task, cumulativeHours, totalHours, availableDays, effectiveStart } = options;
   const dayOffset = Math.min(
     availableDays - 1,
@@ -106,7 +110,7 @@ function generateBulkOpsForPendingTasks(
     0,
   );
 
-  const bulkOps: any[] = [];
+  const bulkOps: AnyBulkWriteOperation<TaskDocument>[] = [];
   let cumulativeHours = 0;
   let waveUpdatedCount = 0;
 
@@ -219,12 +223,12 @@ export function calculateReplannedDeadlines(
   let cursor = startOfDay(now);
   let updatedCount = 0;
   let skippedConcludedCount = 0;
-  const bulkOps: any[] = [];
+  const bulkOps: AnyBulkWriteOperation<TaskDocument>[] = [];
   const summaries: ReplanTaskDeadlinesResult['summaries'] = [];
 
   for (let index = 0; index < waves.length; index++) {
     const wave = waves[index];
-    const result = processSingleWaveReplan({
+    const result: WaveReplanResult = processSingleWaveReplan({
       wave,
       taskById,
       anchorWaveIndex,
@@ -233,7 +237,9 @@ export function calculateReplannedDeadlines(
       dayMs,
     });
 
-    bulkOps.push(...result.bulkOps);
+    for (const operation of result.bulkOps) {
+      bulkOps.push(operation);
+    }
     updatedCount += result.waveUpdatedCount;
     skippedConcludedCount += result.skippedConcludedTasks;
     summaries.push(result.summary);
