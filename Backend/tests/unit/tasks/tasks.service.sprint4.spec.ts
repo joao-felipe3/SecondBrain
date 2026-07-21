@@ -10,16 +10,39 @@ import { PertService } from '../../../src/tasks/services/analysis/pert.service';
 import { FeedbackService } from '../../../src/tasks/services/intelligence/feedback.service';
 import { AlertsService } from '../../../src/tasks/services/monitoring/alerts.service';
 import { DeviationDetectionService } from '../../../src/tasks/services/monitoring/deviation-detection.service';
-import { Types } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { createTasksServiceTestProviders } from './tasks-service-test-providers';
+import { TaskCompletionFeedbackDocument } from '../../../src/tasks/schemas/task-completion-feedback.schema';
+import { TaskDocument } from '../../../src/tasks/schemas/task.schema';
 
 describe('TasksService - Sprint 4: Kanban + Rastreabilidade', () => {
   let service: TasksService;
-  let taskModel: any;
-  let feedbackModel: any;
-  let geminiService: any;
-  let checklistService: any;
-  let feedbackService: any;
+  let taskModel: {
+    findById: jest.Mock;
+    findOne: jest.Mock;
+    updateOne: jest.Mock;
+    countDocuments: jest.Mock;
+    findByIdAndUpdate: jest.Mock;
+    find: jest.Mock;
+  };
+  let feedbackModel: {
+    findOne: jest.Mock;
+    create: jest.Mock;
+  };
+  let geminiService: {
+    generateContent: jest.Mock;
+    supportsJsonMode: jest.Mock;
+    generateCompletionFeedback: jest.Mock;
+    getModelName: jest.Mock;
+  };
+  let checklistService: {
+    validateChecklistCompletion: jest.Mock;
+    calculateCompletionPercentage: jest.Mock;
+    validateChecklistStructure: jest.Mock;
+    findSimilarTasksInProject: jest.Mock;
+    enrichHistoryContext: jest.Mock;
+  };
+  let feedbackService: FeedbackService;
 
   const taskId = new Types.ObjectId().toString();
   const projectId = new Types.ObjectId().toString();
@@ -33,7 +56,9 @@ describe('TasksService - Sprint 4: Kanban + Rastreabilidade', () => {
     kanbanOrder: 0,
     isConcluded: false,
     checklist: [],
-    save: jest.fn().mockResolvedValue(this),
+    save: jest.fn().mockImplementation(function (this: unknown) {
+      return Promise.resolve(this);
+    }),
   };
 
   const mockFeedbackDocument = {
@@ -54,6 +79,9 @@ describe('TasksService - Sprint 4: Kanban + Rastreabilidade', () => {
     checklistService = {
       validateChecklistCompletion: jest.fn(),
       calculateCompletionPercentage: jest.fn(),
+      validateChecklistStructure: jest.fn(),
+      findSimilarTasksInProject: jest.fn(),
+      enrichHistoryContext: jest.fn(),
     };
 
     taskModel = {
@@ -61,6 +89,7 @@ describe('TasksService - Sprint 4: Kanban + Rastreabilidade', () => {
       findOne: jest.fn(),
       updateOne: jest.fn(),
       countDocuments: jest.fn(),
+      find: jest.fn(),
       findByIdAndUpdate: jest.fn().mockReturnValue({
         exec: jest.fn().mockResolvedValue(mockTaskDocument),
       }),
@@ -71,7 +100,11 @@ describe('TasksService - Sprint 4: Kanban + Rastreabilidade', () => {
       create: jest.fn(),
     };
 
-    feedbackService = new FeedbackService(geminiService, taskModel, feedbackModel);
+    feedbackService = new FeedbackService(
+      geminiService as unknown as GeminiService,
+      taskModel as unknown as Model<TaskDocument>,
+      feedbackModel as unknown as Model<TaskCompletionFeedbackDocument>,
+    );
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -121,11 +154,6 @@ describe('TasksService - Sprint 4: Kanban + Rastreabilidade', () => {
 
   describe('moveTaskStatus', () => {
     it('should move task from todo to doing and update timestamp', async () => {
-      const updatedTask = {
-        ...mockTaskDocument,
-        status: 'doing',
-        statusUpdatedAt: new Date(),
-      };
       taskModel.findById.mockReturnValue({
         exec: jest.fn().mockResolvedValue(mockTaskDocument),
       });
@@ -268,14 +296,14 @@ describe('TasksService - Sprint 4: Kanban + Rastreabilidade', () => {
       taskModel.findById.mockReturnValue({
         exec: jest.fn().mockResolvedValue(concludedTask),
       });
-      jest
+      const generateFeedbackSpy = jest
         .spyOn(feedbackService, 'generateCompletionFeedback')
         .mockResolvedValue('Bom trabalho\nAprendeu algo\nProximo passo');
 
       const feedback = await service.generateCompletionFeedback(taskId);
 
       expect(typeof feedback).toBe('string');
-      expect(feedbackService.generateCompletionFeedback).toHaveBeenCalled();
+      expect(generateFeedbackSpy).toHaveBeenCalled();
     });
 
     it('should throw error if task does not exist', async () => {
@@ -303,9 +331,12 @@ describe('TasksService - Sprint 4: Kanban + Rastreabilidade', () => {
         action: 'continue',
       });
 
-      const createCall = feedbackModel.create.mock.calls[0];
-      expect(createCall[0]).toHaveProperty('feedback');
-      expect(createCall[0]).toHaveProperty('task', taskId);
+      expect(feedbackModel.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          feedback: expect.any(String) as unknown as string,
+          task: taskId,
+        }),
+      );
     });
   });
 
@@ -442,9 +473,7 @@ describe('TasksService - Sprint 4: Kanban + Rastreabilidade', () => {
       });
       taskModel.findOne = jest.fn().mockReturnValue({
         sort: jest.fn().mockReturnValue({
-          select: jest.fn().mockReturnValue({
-            exec: jest.fn().mockResolvedValue({ kanbanOrder: 0 }),
-          }),
+          select: jest.fn().mockResolvedValue({ kanbanOrder: 0 }),
         }),
       });
 

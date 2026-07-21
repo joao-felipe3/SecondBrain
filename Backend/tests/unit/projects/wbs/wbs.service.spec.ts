@@ -9,11 +9,14 @@ import {
   WbsConversionOrchestrationService,
 } from '../../../../src/projects/services/wbs';
 
+interface MockModelType {
+  (data?: Record<string, unknown>): Record<string, unknown>;
+  find: jest.Mock;
+  deleteMany: jest.Mock;
+}
+
 describe('WBSService', () => {
   let service: WBSService;
-  let wbsAiService: WbsAiService;
-  let generationService: WbsGenerationService;
-  let wbsNodeModel: any;
 
   const mockWbsAiService = {
     suggestDecomposition: jest.fn(),
@@ -23,28 +26,24 @@ describe('WBSService', () => {
     generate: jest.fn(),
   };
 
-  const mockWBSNodeModel = {
-    find: jest.fn(),
-    deleteMany: jest.fn(),
-    prototype: {
-      save: jest.fn(),
-    },
-  };
-
   // Use a factory function for the model
-  function createMockModel(data?: any) {
-    const instance = {
+  function createMockModel(data?: Record<string, unknown>): Record<string, unknown> {
+    return {
       ...data,
       save: jest.fn().mockResolvedValue({ _id: 'mock-id', ...data }),
     };
-    return instance;
   }
 
   beforeEach(async () => {
     // Reset mocks
     jest.clearAllMocks();
 
-    const MockModel: any = jest.fn().mockImplementation((data) => createMockModel(data));
+    const MockModel = jest
+      .fn()
+      .mockImplementation((data: Record<string, unknown>) =>
+        createMockModel(data),
+      ) as unknown as MockModelType;
+
     MockModel.find = jest.fn().mockReturnValue({
       sort: jest.fn().mockReturnValue({
         exec: jest.fn().mockResolvedValue([]),
@@ -84,9 +83,6 @@ describe('WBSService', () => {
     }).compile();
 
     service = module.get<WBSService>(WBSService);
-    wbsAiService = module.get<WbsAiService>(WbsAiService);
-    generationService = module.get<WbsGenerationService>(WbsGenerationService);
-    wbsNodeModel = module.get(getModelToken('WBSNode'));
   });
 
   describe('validateWBSNode', () => {
@@ -294,8 +290,6 @@ describe('WBSService', () => {
     });
 
     it('should handle Gemini response with markdown code blocks', async () => {
-      const mockWBS = '```json\n[{"name":"Dev","level":1,"estimatedHours":40,"children":[]}]\n```';
-
       mockGenerationService.generate.mockResolvedValue([
         { name: 'Dev', level: 1, estimatedHours: 40, children: [] },
       ]);

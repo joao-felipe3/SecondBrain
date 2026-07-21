@@ -7,10 +7,23 @@ import { SuggestionsAiService } from '../../../src/ai/services/tasks/suggestions
 import { DependencyAiService } from '../../../src/ai/services/tasks/dependency-ai.service';
 import { ConfigService } from '@nestjs/config';
 
+interface PrivatePertAiService {
+  getPertFallback(type: string): Record<string, number>;
+  calculatePertMetrics(
+    o: number,
+    m: number,
+    p: number,
+  ): { expectedTime: number; variance: number; standardDeviation: number };
+  getPertRecommendation(sd: number, te: number): string;
+  getPertCacheKey(type: string, desc: string): string;
+  getPertCache(key: string): Promise<Record<string, unknown> | null>;
+  setPertCache(key: string, val: unknown): Promise<void>;
+}
+
 describe('GeminiService - PERT Estimation (Unit Tests)', () => {
   let service: GeminiService;
   let pertAiService: PertAiService;
-  let configService: ConfigService;
+  let privateHelper: PrivatePertAiService;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -36,7 +49,7 @@ describe('GeminiService - PERT Estimation (Unit Tests)', () => {
 
     service = module.get<GeminiService>(GeminiService);
     pertAiService = module.get<PertAiService>(PertAiService);
-    configService = module.get<ConfigService>(ConfigService);
+    privateHelper = pertAiService as unknown as PrivatePertAiService;
   });
 
   describe('suggestPertEstimates', () => {
@@ -169,7 +182,7 @@ describe('GeminiService - PERT Estimation (Unit Tests)', () => {
 
     it('should handle different task types correctly', async () => {
       const taskTypes = ['subtask', 'quick', 'complex', 'habit'];
-      const results: any[] = [];
+      const results: Array<Awaited<ReturnType<typeof service.suggestPertEstimates>>> = [];
 
       for (const taskType of taskTypes) {
         const result = await service.suggestPertEstimates({ taskType, description: 'Sample task' });
@@ -180,7 +193,9 @@ describe('GeminiService - PERT Estimation (Unit Tests)', () => {
       // Complex should generally be largest
       const complexResult = results[taskTypes.indexOf('complex')];
       const quickResult = results[taskTypes.indexOf('quick')];
-      expect(complexResult.expectedTime).toBeGreaterThanOrEqual(quickResult.expectedTime);
+      if (complexResult && quickResult) {
+        expect(complexResult.expectedTime).toBeGreaterThanOrEqual(quickResult.expectedTime);
+      }
     });
 
     it('should handle long descriptions gracefully', async () => {
@@ -206,7 +221,7 @@ describe('GeminiService - PERT Estimation (Unit Tests)', () => {
 
   describe('getPertFallback', () => {
     it('should return fallback values for subtask', () => {
-      const fallback = pertAiService['getPertFallback']('subtask');
+      const fallback = privateHelper.getPertFallback('subtask');
       expect(fallback).toEqual({
         optimistic: 5,
         likely: 15,
@@ -215,7 +230,7 @@ describe('GeminiService - PERT Estimation (Unit Tests)', () => {
     });
 
     it('should return fallback values for quick', () => {
-      const fallback = pertAiService['getPertFallback']('quick');
+      const fallback = privateHelper.getPertFallback('quick');
       expect(fallback).toEqual({
         optimistic: 5,
         likely: 10,
@@ -224,7 +239,7 @@ describe('GeminiService - PERT Estimation (Unit Tests)', () => {
     });
 
     it('should return fallback values for complex', () => {
-      const fallback = pertAiService['getPertFallback']('complex');
+      const fallback = privateHelper.getPertFallback('complex');
       expect(fallback).toEqual({
         optimistic: 30,
         likely: 60,
@@ -233,7 +248,7 @@ describe('GeminiService - PERT Estimation (Unit Tests)', () => {
     });
 
     it('should return fallback values for habit', () => {
-      const fallback = pertAiService['getPertFallback']('habit');
+      const fallback = privateHelper.getPertFallback('habit');
       expect(fallback).toEqual({
         optimistic: 3,
         likely: 8,
@@ -242,7 +257,7 @@ describe('GeminiService - PERT Estimation (Unit Tests)', () => {
     });
 
     it('should return generic fallback for unknown type', () => {
-      const fallback = pertAiService['getPertFallback']('unknown_type');
+      const fallback = privateHelper.getPertFallback('unknown_type');
       expect(fallback).toEqual({
         optimistic: 10,
         likely: 20,
@@ -254,24 +269,24 @@ describe('GeminiService - PERT Estimation (Unit Tests)', () => {
   describe('calculatePertMetrics', () => {
     it('should calculate correct TE', () => {
       // TE = (10 + 4*20 + 50) / 6 = 140/6 = 23.33
-      const metrics = pertAiService['calculatePertMetrics'](10, 20, 50);
+      const metrics = privateHelper.calculatePertMetrics(10, 20, 50);
       expect(metrics.expectedTime).toBeCloseTo(23.33, 1);
     });
 
     it('should calculate correct variance', () => {
       // σ² = ((50-10) / 6)² = (40/6)² = 44.44
-      const metrics = pertAiService['calculatePertMetrics'](10, 20, 50);
+      const metrics = privateHelper.calculatePertMetrics(10, 20, 50);
       expect(metrics.variance).toBeCloseTo(44.44, 0);
     });
 
     it('should calculate correct standard deviation', () => {
       // σ = √44.44 = 6.67
-      const metrics = pertAiService['calculatePertMetrics'](10, 20, 50);
+      const metrics = privateHelper.calculatePertMetrics(10, 20, 50);
       expect(metrics.standardDeviation).toBeCloseTo(6.67, 1);
     });
 
     it('should handle edge case with O = P', () => {
-      const metrics = pertAiService['calculatePertMetrics'](10, 10, 10);
+      const metrics = privateHelper.calculatePertMetrics(10, 10, 10);
       expect(metrics.expectedTime).toEqual(10);
       expect(metrics.variance).toEqual(0);
       expect(metrics.standardDeviation).toEqual(0);
@@ -280,23 +295,23 @@ describe('GeminiService - PERT Estimation (Unit Tests)', () => {
 
   describe('getPertRecommendation', () => {
     it('should return warning for high CV', () => {
-      const recommendation = pertAiService['getPertRecommendation'](10, 10); // CV = 1.0
+      const recommendation = privateHelper.getPertRecommendation(10, 10); // CV = 1.0
       expect(recommendation).toContain('⚠️');
     });
 
     it('should return caution for moderate CV', () => {
-      const recommendation = pertAiService['getPertRecommendation'](5, 20); // CV = 0.25
+      const recommendation = privateHelper.getPertRecommendation(5, 20); // CV = 0.25
       expect(recommendation).toContain('✅');
     });
 
     it('should return confidence for low CV', () => {
-      const recommendation = pertAiService['getPertRecommendation'](2, 20); // CV = 0.1
+      const recommendation = privateHelper.getPertRecommendation(2, 20); // CV = 0.1
       expect(recommendation).toContain('✅');
     });
 
     it('should handle edge case with zero expected time', () => {
       // Should not throw error
-      const recommendation = pertAiService['getPertRecommendation'](5, 0.1);
+      const recommendation = privateHelper.getPertRecommendation(5, 0.1);
       expect(recommendation).toBeDefined();
     });
   });
@@ -308,10 +323,10 @@ describe('GeminiService - PERT Estimation (Unit Tests)', () => {
         description: 'Test cache',
       };
 
-      const cacheKey = pertAiService['getPertCacheKey'](input.taskType, input.description);
+      const cacheKey = privateHelper.getPertCacheKey(input.taskType, input.description);
 
       // Initially no cache
-      let cached = await pertAiService['getPertCache'](cacheKey);
+      let cached = await privateHelper.getPertCache(cacheKey);
       expect(cached).toBeNull();
 
       // Set cache
@@ -324,10 +339,10 @@ describe('GeminiService - PERT Estimation (Unit Tests)', () => {
         recommendation: '✅ Low uncertainty',
         fromLLM: true,
       };
-      await pertAiService['setPertCache'](cacheKey, testValue);
+      await privateHelper.setPertCache(cacheKey, testValue);
 
       // Retrieve cache
-      cached = await pertAiService['getPertCache'](cacheKey);
+      cached = await privateHelper.getPertCache(cacheKey);
       expect(cached).toEqual(testValue);
     });
 
@@ -335,10 +350,10 @@ describe('GeminiService - PERT Estimation (Unit Tests)', () => {
       const cacheKey = 'test:expiration';
       const testValue = { test: 'data' };
 
-      await pertAiService['setPertCache'](cacheKey, testValue);
+      await privateHelper.setPertCache(cacheKey, testValue);
 
       // Immediately should be in cache
-      const cached = await pertAiService['getPertCache'](cacheKey);
+      const cached = await privateHelper.getPertCache(cacheKey);
       expect(cached).toBeDefined();
 
       // Note: TTL is 24h, so we can't actually test expiration in unit tests

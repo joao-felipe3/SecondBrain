@@ -5,7 +5,9 @@ import { Types } from 'mongoose';
 
 describe('ChecklistService', () => {
   let service: ChecklistService;
-  let mockTaskModel: any;
+  let mockTaskModel: {
+    find: jest.Mock;
+  };
 
   beforeEach(async () => {
     mockTaskModel = {

@@ -4,25 +4,24 @@ import { GeminiService } from '../../../../src/ai/services/core/gemini.service';
 
 describe('PlanningService', () => {
   let service: PlanningService;
-  let geminiService: jest.Mocked<GeminiService>;
+  let generateContentMock: jest.Mock;
 
   beforeEach(async () => {
-    const mockGeminiService = {
-      generateContent: jest.fn(),
-    };
+    generateContentMock = jest.fn();
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         PlanningService,
         {
           provide: GeminiService,
-          useValue: mockGeminiService,
+          useValue: {
+            generateContent: generateContentMock,
+          },
         },
       ],
     }).compile();
 
     service = module.get<PlanningService>(PlanningService);
-    geminiService = module.get(GeminiService);
   });
 
   it('should be defined', () => {
@@ -37,7 +36,7 @@ describe('PlanningService', () => {
         'Quais são as funcionalidades principais?',
       ];
 
-      geminiService.generateContent.mockResolvedValue(JSON.stringify(mockQuestions));
+      generateContentMock.mockResolvedValue(JSON.stringify(mockQuestions));
 
       const projectData = {
         projectName: 'E-commerce Platform',
@@ -51,16 +50,14 @@ describe('PlanningService', () => {
 
       expect(result.questions).toEqual(mockQuestions);
       expect(result.conversationId).toBeDefined();
-      expect(geminiService.generateContent).toHaveBeenCalledWith(
-        expect.stringContaining('E-commerce Platform'),
-      );
+      expect(generateContentMock).toHaveBeenCalledWith(expect.stringContaining('E-commerce Platform'));
     });
 
     it('should handle JSON with code blocks', async () => {
       const mockQuestions = ['Pergunta 1', 'Pergunta 2'];
       const responseWithCodeBlock = `\`\`\`json\n${JSON.stringify(mockQuestions)}\n\`\`\``;
 
-      geminiService.generateContent.mockResolvedValue(responseWithCodeBlock);
+      generateContentMock.mockResolvedValue(responseWithCodeBlock);
 
       const projectData = {
         projectName: 'Test Project',
@@ -73,7 +70,7 @@ describe('PlanningService', () => {
     });
 
     it('should use fallback questions on parse error', async () => {
-      geminiService.generateContent.mockResolvedValue('Invalid JSON');
+      generateContentMock.mockResolvedValue('Invalid JSON');
 
       const projectData = {
         projectName: 'Test Project',
@@ -91,9 +88,7 @@ describe('PlanningService', () => {
     it('should generate a suggested answer for a question', async () => {
       const mockSuggestion = 'Sugestão de resposta baseada na pergunta';
 
-      geminiService.generateContent.mockResolvedValue(
-        JSON.stringify({ suggestedAnswer: mockSuggestion }),
-      );
+      generateContentMock.mockResolvedValue(JSON.stringify({ suggestedAnswer: mockSuggestion }));
 
       const result = await service.suggestAnswer({
         conversationId: 'conv_123',
@@ -103,15 +98,13 @@ describe('PlanningService', () => {
       });
 
       expect(result).toBe(mockSuggestion);
-      expect(geminiService.generateContent).toHaveBeenCalled();
+      expect(generateContentMock).toHaveBeenCalled();
     });
 
     it('should include previous answers in context', async () => {
       const mockSuggestion = 'Resposta baseada no contexto';
 
-      geminiService.generateContent.mockResolvedValue(
-        JSON.stringify({ suggestedAnswer: mockSuggestion }),
-      );
+      generateContentMock.mockResolvedValue(JSON.stringify({ suggestedAnswer: mockSuggestion }));
 
       const previousAnswers = ['Resposta 1', 'Resposta 2'];
       const result = await service.suggestAnswer({
@@ -122,7 +115,7 @@ describe('PlanningService', () => {
       });
 
       expect(result).toBe(mockSuggestion);
-      expect(geminiService.generateContent).toHaveBeenCalledWith(expect.stringContaining('Resposta 1'));
+      expect(generateContentMock).toHaveBeenCalledWith(expect.stringContaining('Resposta 1'));
     });
   });
 
@@ -137,7 +130,7 @@ describe('PlanningService', () => {
       risks: ['Integração de pagamento', 'Prazo apertado'],
     };
 
-    geminiService.generateContent.mockResolvedValue(JSON.stringify(mockSmart));
+    generateContentMock.mockResolvedValue(JSON.stringify(mockSmart));
 
     const conversationId = 'conv_123';
     const answers = ['Público geral', '3 meses', 'Catálogo + carrinho'];
@@ -145,7 +138,7 @@ describe('PlanningService', () => {
     const result = await service.generateSmartObjective({ conversationId, answers });
 
     expect(result).toEqual(mockSmart);
-    expect(geminiService.generateContent).toHaveBeenCalledWith(expect.stringContaining(answers[0]));
+    expect(generateContentMock).toHaveBeenCalledWith(expect.stringContaining(answers[0]));
   });
 
   it('should handle JSON with code blocks', async () => {
@@ -160,7 +153,7 @@ describe('PlanningService', () => {
     };
 
     const responseWithCodeBlock = `\`\`\`json\n${JSON.stringify(mockSmart)}\n\`\`\``;
-    geminiService.generateContent.mockResolvedValue(responseWithCodeBlock);
+    generateContentMock.mockResolvedValue(responseWithCodeBlock);
 
     const result = await service.generateSmartObjective({
       conversationId: 'conv_123',
@@ -171,7 +164,7 @@ describe('PlanningService', () => {
   });
 
   it('should throw error on invalid response', async () => {
-    geminiService.generateContent.mockResolvedValue('Invalid JSON');
+    generateContentMock.mockResolvedValue('Invalid JSON');
 
     await expect(
       service.generateSmartObjective({ conversationId: 'conv_123', answers: ['answer'] }),

@@ -1,3 +1,4 @@
+import { Model } from 'mongoose';
 import { TasksInputService } from '../../../src/tasks/services/workflow/input.service';
 import { TasksMetricsService } from '../../../src/tasks/services/analysis/metrics.service';
 import { TasksRecurringService } from '../../../src/tasks/services/workflow/recurring.service';
@@ -9,50 +10,75 @@ import { ChecklistOperationsService } from '../../../src/tasks/services/intellig
 import { TasksCompletionService } from '../../../src/tasks/services/workflow/completion.service';
 import { TasksPertService } from '../../../src/tasks/services/analysis/pert.service';
 import { TasksWriteService } from '../../../src/tasks/services/workflow/write.service';
+import { TaskDocument } from '../../../src/tasks/schemas/task.schema';
+import { ProjectDocument } from '../../../src/projects/schemas/project.schema';
+import { ProjectsService } from '../../../src/projects/projects.service';
+import { GeminiService } from '../../../src/ai/services/core/gemini.service';
+import { ChecklistService } from '../../../src/tasks/services/intelligence/checklist.service';
+import { PertService } from '../../../src/tasks/services/analysis/pert.service';
+import { EVMProgressService } from '../../../src/projects/services/evm/evm-progress.service';
+import { AlertsService } from '../../../src/tasks/services/monitoring/alerts.service';
+import { DeviationDetectionService } from '../../../src/tasks/services/monitoring/deviation-detection.service';
 
 type TasksServiceTestDeps = {
-  taskModel: any;
-  projectModel: any;
-  projectsService: any;
-  geminiService: any;
-  checklistService: any;
-  pertService: any;
-  evmProgressService: any;
-  alertsService: any;
-  deviationDetectionService: any;
+  taskModel: unknown;
+  projectModel: unknown;
+  projectsService: unknown;
+  geminiService: unknown;
+  checklistService: unknown;
+  pertService: unknown;
+  evmProgressService: unknown;
+  alertsService: unknown;
+  deviationDetectionService: unknown;
 };
 
 export function createTasksServiceTestProviders(deps: TasksServiceTestDeps) {
+  const taskModel = deps.taskModel as Model<TaskDocument>;
+  const projectModel = deps.projectModel as Model<ProjectDocument>;
+  const projectsService = deps.projectsService as ProjectsService;
+  const geminiService = deps.geminiService as GeminiService;
+  const checklistService = deps.checklistService as ChecklistService;
+  const pertService = deps.pertService as PertService;
+  const evmProgressService = deps.evmProgressService as EVMProgressService;
+  const alertsService = deps.alertsService as AlertsService;
+  const deviationDetectionService = deps.deviationDetectionService as DeviationDetectionService;
+
   const inputService = new TasksInputService();
   const metricsService = new TasksMetricsService();
-  const recurringService = new TasksRecurringService(deps.taskModel, deps.projectsService);
+  const recurringService = new TasksRecurringService(taskModel, projectsService);
   let completionService!: TasksCompletionService;
   let writeService!: TasksWriteService;
 
   const taskRepositoryMock = {
-    findAll: jest.fn().mockImplementation(async () => []),
-    findById: jest.fn().mockImplementation(async (id: string) => {
-      if (deps.taskModel && typeof deps.taskModel.findById === 'function') {
-        const queryObj = deps.taskModel.findById(id);
+    findAll: jest.fn().mockImplementation(() => Promise.resolve([])),
+    findById: jest.fn().mockImplementation((id: string) => {
+      const tm = taskModel as unknown as {
+        findById: (i: string) => { exec?: () => Promise<unknown> };
+      };
+      if (tm && typeof tm.findById === 'function') {
+        const queryObj = tm.findById(id);
         if (queryObj && typeof queryObj.exec === 'function') {
-          return await queryObj.exec();
+          return queryObj.exec();
         }
-        return queryObj;
+        return Promise.resolve(queryObj);
       }
-      return null;
+      return Promise.resolve(null);
     }),
-    findByProjectId: jest.fn().mockImplementation(async (projectId: string, opts?: any) => {
-      if (deps.taskModel && typeof deps.taskModel.find === 'function') {
-        const queryObj = deps.taskModel.find({ project: projectId });
+    findByProjectId: jest.fn().mockImplementation((projectId: string) => {
+      const tm = taskModel as unknown as {
+        find: (q: Record<string, unknown>) => { exec?: () => Promise<unknown> };
+      };
+      if (tm && typeof tm.find === 'function') {
+        const queryObj = tm.find({ project: projectId });
         if (queryObj && typeof queryObj.exec === 'function') {
-          return await queryObj.exec();
+          return queryObj.exec();
         }
-        return queryObj;
+        return Promise.resolve(queryObj);
       }
-      return [];
+      return Promise.resolve([]);
     }),
-    save: jest.fn().mockImplementation(async (task: any) => task),
-    delete: jest.fn().mockImplementation(async () => {}),
+    save: jest.fn().mockImplementation((task: unknown) => Promise.resolve(task)),
+    delete: jest.fn().mockImplementation(() => Promise.resolve()),
   };
 
   return [
@@ -65,43 +91,38 @@ export function createTasksServiceTestProviders(deps: TasksServiceTestDeps) {
     },
     {
       provide: TasksAiSuggestionsLoopRunner,
-      useValue: new TasksAiSuggestionsLoopRunner(deps.taskModel, deps.geminiService),
+      useValue: new TasksAiSuggestionsLoopRunner(taskModel, geminiService),
     },
     {
       provide: TasksAiSuggestionsService,
       useValue: new TasksAiSuggestionsService(
-        deps.taskModel,
-        deps.geminiService,
-        new TasksAiSuggestionsLoopRunner(deps.taskModel, deps.geminiService),
+        taskModel,
+        geminiService,
+        new TasksAiSuggestionsLoopRunner(taskModel, geminiService),
       ),
     },
     {
       provide: TasksHabitsService,
-      useValue: new TasksHabitsService(deps.taskModel),
+      useValue: new TasksHabitsService(taskModel),
     },
     {
       provide: TasksHierarchyService,
-      useValue: new TasksHierarchyService(deps.taskModel),
+      useValue: new TasksHierarchyService(taskModel),
     },
     {
       provide: ChecklistOperationsService,
-      useValue: new ChecklistOperationsService(
-        deps.taskModel,
-        deps.checklistService,
-        inputService,
-        deps.geminiService,
-      ),
+      useValue: new ChecklistOperationsService(taskModel, checklistService, inputService, geminiService),
     },
     {
       provide: TasksCompletionService,
       useFactory: () => {
         completionService = new TasksCompletionService(
-          deps.taskModel,
-          deps.projectsService,
-          deps.evmProgressService,
+          taskModel,
+          projectsService,
+          evmProgressService,
           metricsService,
-          deps.deviationDetectionService,
-          deps.alertsService,
+          deviationDetectionService,
+          alertsService,
           recurringService,
           writeService,
         );
@@ -111,27 +132,24 @@ export function createTasksServiceTestProviders(deps: TasksServiceTestDeps) {
     },
     {
       provide: TasksPertService,
-      useValue: new TasksPertService(deps.taskModel, deps.pertService, metricsService),
+      useValue: new TasksPertService(taskModel, pertService, metricsService),
     },
     {
       provide: TasksWriteService,
       useFactory: () => {
         writeService = new TasksWriteService(
-          deps.taskModel,
-          deps.projectModel,
-          deps.projectsService,
+          taskModel,
+          projectModel,
+          projectsService,
           metricsService,
           inputService,
-          new ChecklistOperationsService(
-            deps.taskModel,
-            deps.checklistService,
-            inputService,
-            deps.geminiService,
-          ),
+          new ChecklistOperationsService(taskModel, checklistService, inputService, geminiService),
         );
 
-        (recurringService as any).tasksWriteService = writeService;
-        (completionService as any).tasksWriteService = writeService;
+        (recurringService as unknown as { tasksWriteService: TasksWriteService }).tasksWriteService =
+          writeService;
+        (completionService as unknown as { tasksWriteService: TasksWriteService }).tasksWriteService =
+          writeService;
 
         return writeService;
       },

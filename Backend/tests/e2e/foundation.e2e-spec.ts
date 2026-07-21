@@ -2,12 +2,34 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import request from 'supertest';
+import { App } from 'supertest/types';
 import { TasksController } from '../../src/tasks/tasks.controller';
 import { TasksService } from '../../src/tasks/tasks.service';
 import { GeminiService } from '../../src/ai/services/core/gemini.service';
 import { ProjectsService } from '../../src/projects/projects.service';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import { Types } from 'mongoose';
+
+interface ChecklistItemResponse {
+  item: string;
+  completed: boolean;
+  order?: number;
+}
+
+interface TaskResponse {
+  _id?: string;
+  name?: string;
+  description?: string;
+  microTaskType?: string;
+  project?: string;
+  checklist?: ChecklistItemResponse[];
+  pertOptimisticMinutes?: number;
+  pertMostLikelyMinutes?: number;
+  pertPessimisticMinutes?: number;
+  pertExpectedMinutes?: number;
+  pertVariance?: number;
+  message?: string;
+}
 
 /**
  * Sprint 1 E2E Tests: Foundation Backend + Schema
@@ -27,8 +49,6 @@ import { Types } from 'mongoose';
  */
 describe('Sprint 1: Foundation Backend + Schema (E2E)', () => {
   let app: INestApplication;
-  let taskService: TasksService;
-  let geminiService: GeminiService;
   let mongoServer: MongoMemoryServer;
   let projectId: string;
 
@@ -45,9 +65,6 @@ describe('Sprint 1: Foundation Backend + Schema (E2E)', () => {
 
     app = moduleFixture.createNestApplication();
     await app.init();
-
-    taskService = moduleFixture.get<TasksService>(TasksService);
-    geminiService = moduleFixture.get<GeminiService>(GeminiService);
 
     // Setup: Create test project
     projectId = new Types.ObjectId().toString();
@@ -73,29 +90,36 @@ describe('Sprint 1: Foundation Backend + Schema (E2E)', () => {
         pertPessimisticMinutes: 120,
       };
 
-      const response = await request(app.getHttpServer()).post('/tasks/micro').send(payload).expect(201);
+      const response = await request(app.getHttpServer() as App)
+        .post('/tasks/micro')
+        .send(payload)
+        .expect(201);
+
+      const body = response.body as TaskResponse;
 
       // Validate basic structure
-      expect(response.body).toBeDefined();
-      expect(response.body._id).toBeDefined();
-      expect(response.body.name).toBe(payload.name);
-      expect(response.body.microTaskType).toBe('complex');
+      expect(body).toBeDefined();
+      expect(body._id).toBeDefined();
+      expect(body.name).toBe(payload.name);
+      expect(body.microTaskType).toBe('complex');
 
       // Validate PERT calculation
-      expect(response.body.pertOptimisticMinutes).toBe(30);
-      expect(response.body.pertMostLikelyMinutes).toBe(60);
-      expect(response.body.pertPessimisticMinutes).toBe(120);
-      expect(response.body.pertExpectedMinutes).toBeDefined();
-      expect(response.body.pertVariance).toBeDefined();
+      expect(body.pertOptimisticMinutes).toBe(30);
+      expect(body.pertMostLikelyMinutes).toBe(60);
+      expect(body.pertPessimisticMinutes).toBe(120);
+      expect(body.pertExpectedMinutes).toBeDefined();
+      expect(body.pertVariance).toBeDefined();
 
       // Validate checklist auto-generation
-      expect(response.body.checklist).toBeDefined();
-      expect(Array.isArray(response.body.checklist)).toBe(true);
-      expect(response.body.checklist.length).toBeGreaterThanOrEqual(3);
-      expect(response.body.checklist.length).toBeLessThanOrEqual(10);
+      expect(body.checklist).toBeDefined();
+      expect(Array.isArray(body.checklist)).toBe(true);
+
+      const checklist = body.checklist ?? [];
+      expect(checklist.length).toBeGreaterThanOrEqual(3);
+      expect(checklist.length).toBeLessThanOrEqual(10);
 
       // Validate checklist item structure
-      response.body.checklist.forEach((item: any, index: number) => {
+      checklist.forEach((item: ChecklistItemResponse, index: number) => {
         expect(item).toHaveProperty('item');
         expect(item).toHaveProperty('completed');
         expect(item).toHaveProperty('order');
@@ -108,7 +132,7 @@ describe('Sprint 1: Foundation Backend + Schema (E2E)', () => {
 
       // Validate PERT calculation: TE = (O + 4M + P) / 6
       const expectedTE = (30 + 4 * 60 + 120) / 6;
-      expect(response.body.pertExpectedMinutes).toBe(Math.round(expectedTE));
+      expect(body.pertExpectedMinutes).toBe(Math.round(expectedTE));
     });
   });
 
@@ -125,10 +149,14 @@ describe('Sprint 1: Foundation Backend + Schema (E2E)', () => {
         pertPessimisticMinutes: 120,
       };
 
-      const response = await request(app.getHttpServer()).post('/tasks/micro').send(payload).expect(400);
+      const response = await request(app.getHttpServer() as App)
+        .post('/tasks/micro')
+        .send(payload)
+        .expect(400);
 
-      expect(response.body.message).toContain('PERT inválido');
-      expect(response.body.message).toContain('optimistic');
+      const body = response.body as TaskResponse;
+      expect(body.message).toContain('PERT inválido');
+      expect(body.message).toContain('optimistic');
     });
 
     it('should reject when likely >= pessimistic', async () => {
@@ -143,9 +171,13 @@ describe('Sprint 1: Foundation Backend + Schema (E2E)', () => {
         pertPessimisticMinutes: 20,
       };
 
-      const response = await request(app.getHttpServer()).post('/tasks/micro').send(payload).expect(400);
+      const response = await request(app.getHttpServer() as App)
+        .post('/tasks/micro')
+        .send(payload)
+        .expect(400);
 
-      expect(response.body.message).toContain('PERT inválido');
+      const body = response.body as TaskResponse;
+      expect(body.message).toContain('PERT inválido');
     });
 
     it('should reject when any PERT value <= 0', async () => {
@@ -160,9 +192,13 @@ describe('Sprint 1: Foundation Backend + Schema (E2E)', () => {
         pertPessimisticMinutes: 20,
       };
 
-      const response = await request(app.getHttpServer()).post('/tasks/micro').send(payload).expect(400);
+      const response = await request(app.getHttpServer() as App)
+        .post('/tasks/micro')
+        .send(payload)
+        .expect(400);
 
-      expect(response.body.message).toContain('PERT');
+      const body = response.body as TaskResponse;
+      expect(body.message).toContain('PERT');
     });
 
     it('should reject when only partial PERT provided', async () => {
@@ -177,9 +213,13 @@ describe('Sprint 1: Foundation Backend + Schema (E2E)', () => {
         // pessimistic missing
       };
 
-      const response = await request(app.getHttpServer()).post('/tasks/micro').send(payload).expect(400);
+      const response = await request(app.getHttpServer() as App)
+        .post('/tasks/micro')
+        .send(payload)
+        .expect(400);
 
-      expect(response.body.message).toContain('PERT');
+      const body = response.body as TaskResponse;
+      expect(body.message).toContain('PERT');
     });
   });
 
@@ -197,24 +237,30 @@ describe('Sprint 1: Foundation Backend + Schema (E2E)', () => {
         pertPessimisticMinutes: 80,
       };
 
-      const createResponse = await request(app.getHttpServer())
+      const createResponse = await request(app.getHttpServer() as App)
         .post('/tasks/micro')
         .send(createPayload)
         .expect(201);
 
-      const taskId = createResponse.body._id;
-      const originalChecklist = createResponse.body.checklist;
+      const createBody = createResponse.body as TaskResponse;
+      const taskId = createBody._id || '';
+      const originalChecklist = createBody.checklist || [];
 
       // Retrieve task
-      const getResponse = await request(app.getHttpServer()).get(`/tasks/micro/${taskId}`).expect(200);
+      const getResponse = await request(app.getHttpServer() as App)
+        .get(`/tasks/micro/${taskId}`)
+        .expect(200);
+
+      const getBody = getResponse.body as TaskResponse;
+      const getChecklist = getBody.checklist || [];
 
       // Verify checklist persisted
-      expect(getResponse.body.checklist).toBeDefined();
-      expect(getResponse.body.checklist).toHaveLength(originalChecklist.length);
+      expect(getBody.checklist).toBeDefined();
+      expect(getChecklist).toHaveLength(originalChecklist.length);
 
       // Item-by-item validation
-      getResponse.body.checklist.forEach((item: any, index: number) => {
-        expect(item.item).toBe(originalChecklist[index].item);
+      getChecklist.forEach((item: ChecklistItemResponse, index: number) => {
+        expect(item.item).toBe(originalChecklist[index]?.item);
         expect(item.completed).toBe(false);
         expect(item.order).toBe(index);
       });
@@ -233,12 +279,13 @@ describe('Sprint 1: Foundation Backend + Schema (E2E)', () => {
         pertPessimisticMinutes: 20,
       };
 
-      const createResponse = await request(app.getHttpServer())
+      const createResponse = await request(app.getHttpServer() as App)
         .post('/tasks/micro')
         .send(createPayload)
         .expect(201);
 
-      const taskId = createResponse.body._id;
+      const createBody = createResponse.body as TaskResponse;
+      const taskId = createBody._id || '';
 
       // Update checklist
       const updatedChecklist = [
@@ -247,20 +294,28 @@ describe('Sprint 1: Foundation Backend + Schema (E2E)', () => {
         { item: 'Refletir sobre resultado', completed: false, order: 2 },
       ];
 
-      const updateResponse = await request(app.getHttpServer())
+      const updateResponse = await request(app.getHttpServer() as App)
         .post(`/tasks/${taskId}/checklist`)
         .send({ checklist: updatedChecklist })
         .expect(200);
 
+      const updateBody = updateResponse.body as TaskResponse;
+      const updateChecklist = updateBody.checklist || [];
+
       // Verify update response
-      expect(updateResponse.body.checklist).toHaveLength(3);
-      expect(updateResponse.body.checklist[0].completed).toBe(true);
+      expect(updateChecklist).toHaveLength(3);
+      expect(updateChecklist[0]?.completed).toBe(true);
 
       // Verify persistence: retrieve again
-      const getResponse = await request(app.getHttpServer()).get(`/tasks/micro/${taskId}`).expect(200);
+      const getResponse = await request(app.getHttpServer() as App)
+        .get(`/tasks/micro/${taskId}`)
+        .expect(200);
 
-      expect(getResponse.body.checklist[0].completed).toBe(true);
-      expect(getResponse.body.checklist[1].completed).toBe(false);
+      const getBody = getResponse.body as TaskResponse;
+      const getChecklist = getBody.checklist || [];
+
+      expect(getChecklist[0]?.completed).toBe(true);
+      expect(getChecklist[1]?.completed).toBe(false);
     });
   });
 
@@ -285,26 +340,27 @@ describe('Sprint 1: Foundation Backend + Schema (E2E)', () => {
         },
       };
 
-      const response = await request(app.getHttpServer())
+      const response = await request(app.getHttpServer() as App)
         .post('/tasks/bulk')
         .send(bulkPayload)
         .expect(201);
 
       const elapsed = Date.now() - startTime;
+      const bodyList = response.body as TaskResponse[];
 
       // Validate results
-      expect(response.body).toBeDefined();
-      expect(Array.isArray(response.body)).toBe(true);
-      expect(response.body.length).toBe(100);
+      expect(bodyList).toBeDefined();
+      expect(Array.isArray(bodyList)).toBe(true);
+      expect(bodyList.length).toBe(100);
 
       // Validate all tasks have checklist
-      response.body.forEach((task: any, index: number) => {
+      bodyList.forEach((task: TaskResponse, index: number) => {
         expect(task._id).toBeDefined();
         expect(task.name).toContain(`Performance test task ${index + 1}`);
         expect(task.microTaskType).toBeDefined();
         expect(task.checklist).toBeDefined();
         expect(Array.isArray(task.checklist)).toBe(true);
-        expect(task.checklist.length).toBeGreaterThanOrEqual(3);
+        expect((task.checklist || []).length).toBeGreaterThanOrEqual(3);
         expect(task.pertExpectedMinutes).toBeDefined();
       });
 
@@ -326,30 +382,38 @@ describe('Sprint 1: Foundation Backend + Schema (E2E)', () => {
     });
 
     it('should retrieve all 100 bulk-inserted tasks', async () => {
-      const response = await request(app.getHttpServer()).get(`/tasks`).expect(200);
+      const response = await request(app.getHttpServer() as App)
+        .get(`/tasks`)
+        .expect(200);
 
-      expect(response.body).toBeDefined();
-      expect(Array.isArray(response.body)).toBe(true);
-      expect(response.body.length).toBeGreaterThanOrEqual(100);
+      const bodyList = response.body as TaskResponse[];
+      expect(bodyList).toBeDefined();
+      expect(Array.isArray(bodyList)).toBe(true);
+      expect(bodyList.length).toBeGreaterThanOrEqual(100);
     });
 
     it('should filter 100 tasks by project', async () => {
-      const response = await request(app.getHttpServer()).get(`/tasks?project=${projectId}`).expect(200);
+      const response = await request(app.getHttpServer() as App)
+        .get(`/tasks?project=${projectId}`)
+        .expect(200);
 
-      expect(response.body).toBeDefined();
-      expect(Array.isArray(response.body)).toBe(true);
-      expect(response.body.length).toBeGreaterThanOrEqual(100);
+      const bodyList = response.body as TaskResponse[];
+      expect(bodyList).toBeDefined();
+      expect(Array.isArray(bodyList)).toBe(true);
+      expect(bodyList.length).toBeGreaterThanOrEqual(100);
 
       // All should be from our project
-      response.body.forEach((task: any) => {
+      bodyList.forEach((task: TaskResponse) => {
         expect(task.project).toBe(projectId);
       });
     });
 
     it('should count different micro-task types in bulk insert', async () => {
-      const response = await request(app.getHttpServer()).get(`/tasks?project=${projectId}`).expect(200);
+      const response = await request(app.getHttpServer() as App)
+        .get(`/tasks?project=${projectId}`)
+        .expect(200);
 
-      const tasks = response.body;
+      const tasks = response.body as TaskResponse[];
       const typeCounts = {
         subtask: 0,
         habit: 0,
@@ -357,8 +421,8 @@ describe('Sprint 1: Foundation Backend + Schema (E2E)', () => {
         complex: 0,
       };
 
-      tasks.forEach((task: any) => {
-        if (task.microTaskType) {
+      tasks.forEach((task: TaskResponse) => {
+        if (task.microTaskType && task.microTaskType in typeCounts) {
           typeCounts[task.microTaskType as keyof typeof typeCounts]++;
         }
       });
@@ -398,12 +462,13 @@ describe('Sprint 1: Foundation Backend + Schema (E2E)', () => {
           pertPessimisticMinutes: tc.p,
         };
 
-        const response = await request(app.getHttpServer())
+        const response = await request(app.getHttpServer() as App)
           .post('/tasks/micro')
           .send(payload)
           .expect(201);
 
-        expect(response.body.pertExpectedMinutes).toBe(tc.expected);
+        const body = response.body as TaskResponse;
+        expect(body.pertExpectedMinutes).toBe(tc.expected);
       }
     });
   });
@@ -421,10 +486,14 @@ describe('Sprint 1: Foundation Backend + Schema (E2E)', () => {
         pertPessimisticMinutes: 3,
       };
 
-      const response = await request(app.getHttpServer()).post('/tasks/micro').send(payload).expect(201);
+      const response = await request(app.getHttpServer() as App)
+        .post('/tasks/micro')
+        .send(payload)
+        .expect(201);
 
-      expect(response.body.pertExpectedMinutes).toBeDefined();
-      expect(response.body.pertExpectedMinutes).toBeGreaterThan(0);
+      const body = response.body as TaskResponse;
+      expect(body.pertExpectedMinutes).toBeDefined();
+      expect(body.pertExpectedMinutes).toBeGreaterThan(0);
     });
 
     it('should handle large PERT values', async () => {
@@ -439,10 +508,14 @@ describe('Sprint 1: Foundation Backend + Schema (E2E)', () => {
         pertPessimisticMinutes: 2400,
       };
 
-      const response = await request(app.getHttpServer()).post('/tasks/micro').send(payload).expect(201);
+      const response = await request(app.getHttpServer() as App)
+        .post('/tasks/micro')
+        .send(payload)
+        .expect(201);
 
-      expect(response.body.pertExpectedMinutes).toBeDefined();
-      expect(response.body.pertExpectedMinutes).toBeGreaterThan(600);
+      const body = response.body as TaskResponse;
+      expect(body.pertExpectedMinutes).toBeDefined();
+      expect(body.pertExpectedMinutes).toBeGreaterThan(600);
     });
 
     it('should handle micro-tasks without deadline', async () => {
@@ -458,9 +531,13 @@ describe('Sprint 1: Foundation Backend + Schema (E2E)', () => {
         // deadline omitted
       };
 
-      const response = await request(app.getHttpServer()).post('/tasks/micro').send(payload).expect(201);
+      const response = await request(app.getHttpServer() as App)
+        .post('/tasks/micro')
+        .send(payload)
+        .expect(201);
 
-      expect(response.body._id).toBeDefined();
+      const body = response.body as TaskResponse;
+      expect(body._id).toBeDefined();
       // deadline may be null or auto-calculated
     });
   });

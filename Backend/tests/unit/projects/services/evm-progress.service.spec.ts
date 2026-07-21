@@ -1,10 +1,19 @@
 import { EVMProgressService } from '../../../../src/projects/services/evm/evm-progress.service';
-import { Types } from 'mongoose';
+import { ProjectProgressDocument } from '../../../../src/projects/schemas/project-progress.schema';
+import { ProjectDocument } from '../../../../src/projects/schemas/project.schema';
+import { Model, Types } from 'mongoose';
 
 describe('EVMProgressService', () => {
   let service: EVMProgressService;
-  let mockProgressModel: any;
-  let mockProjectModel: any;
+  let mockProgressModel: {
+    create: jest.Mock;
+    find: jest.Mock;
+    deleteOne: jest.Mock;
+  };
+  let mockProjectModel: {
+    findById: jest.Mock;
+    findByIdAndUpdate: jest.Mock;
+  };
 
   beforeEach(() => {
     mockProgressModel = {
@@ -16,7 +25,10 @@ describe('EVMProgressService', () => {
       findById: jest.fn(),
       findByIdAndUpdate: jest.fn(),
     };
-    service = new EVMProgressService(mockProgressModel, mockProjectModel);
+    service = new EVMProgressService(
+      mockProgressModel as unknown as Model<ProjectProgressDocument>,
+      mockProjectModel as unknown as Model<ProjectDocument>,
+    );
   });
 
   afterEach(() => {

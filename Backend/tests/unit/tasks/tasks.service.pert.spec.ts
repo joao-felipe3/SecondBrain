@@ -7,13 +7,17 @@ import { PertService } from '../../../src/tasks/services/analysis/pert.service';
 import { TasksMetricsService } from '../../../src/tasks/services/analysis/metrics.service';
 import { TasksPertService } from '../../../src/tasks/services/analysis/pert.service';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
-import { Types } from 'mongoose';
+import { Model, Types } from 'mongoose';
+import { TaskDocument } from '../../../src/tasks/schemas/task.schema';
 
 describe('TasksService - PERT Methods (Unit Tests)', () => {
   let service: TasksService;
-  let geminiService: GeminiService;
-  let mockTaskModel: any;
+  let mockTaskModel: {
+    findById: jest.Mock;
+    findByIdAndUpdate: jest.Mock;
+  };
   let tasksMetricsService: TasksMetricsService;
+  let suggestPertEstimatesMock: jest.Mock;
 
   const validTaskId = new Types.ObjectId().toString();
 
@@ -24,6 +28,16 @@ describe('TasksService - PERT Methods (Unit Tests)', () => {
   };
 
   beforeEach(async () => {
+    suggestPertEstimatesMock = jest.fn().mockResolvedValue({
+      optimistic: 30,
+      likely: 60,
+      pessimistic: 120,
+      expectedTime: 62.5,
+      standardDeviation: 15,
+      recommendation: '⚡ Moderate uncertainty',
+      fromLLM: true,
+    });
+
     // Mock the MongoDB Task model with proper query chain
     mockTaskModel = {
       findById: jest.fn().mockReturnValue({
@@ -61,15 +75,7 @@ describe('TasksService - PERT Methods (Unit Tests)', () => {
         {
           provide: GeminiService,
           useValue: {
-            suggestPertEstimates: jest.fn().mockResolvedValue({
-              optimistic: 30,
-              likely: 60,
-              pessimistic: 120,
-              expectedTime: 62.5,
-              standardDeviation: 15,
-              recommendation: '⚡ Moderate uncertainty',
-              fromLLM: true,
-            }),
+            suggestPertEstimates: suggestPertEstimatesMock,
           },
         },
         {
@@ -87,22 +93,21 @@ describe('TasksService - PERT Methods (Unit Tests)', () => {
         {
           provide: TasksPertService,
           useValue: new TasksPertService(
-            mockTaskModel,
+            mockTaskModel as unknown as Model<TaskDocument>,
             {
               calculatePertMetrics: jest.fn().mockReturnValue({ expectedTime: 62.5, variance: 225 }),
-            } as any,
+            } as unknown as PertService,
             tasksMetricsService,
           ),
         },
       ],
     })
-      .useMocker((token) => {
+      .useMocker(() => {
         return {};
       })
       .compile();
 
     service = module.get<TasksService>(TasksService);
-    geminiService = module.get<GeminiService>(GeminiService);
   });
 
   describe('suggestPertEstimates', () => {
@@ -112,7 +117,7 @@ describe('TasksService - PERT Methods (Unit Tests)', () => {
       expect(result).toHaveProperty('optimistic');
       expect(result).toHaveProperty('likely');
       expect(result).toHaveProperty('pessimistic');
-      expect(geminiService.suggestPertEstimates).toHaveBeenCalledWith({
+      expect(suggestPertEstimatesMock).toHaveBeenCalledWith({
         taskType: 'complex',
         description: 'Implement OAuth 2.0',
         projectContext: 'Auth Module',
@@ -123,7 +128,7 @@ describe('TasksService - PERT Methods (Unit Tests)', () => {
       const result = await service.suggestPertEstimates('quick', 'Fix typo');
 
       expect(result.optimistic).toBeDefined();
-      expect(geminiService.suggestPertEstimates).toHaveBeenCalledWith({
+      expect(suggestPertEstimatesMock).toHaveBeenCalledWith({
         taskType: 'quick',
         description: 'Fix typo',
         projectContext: undefined,
@@ -210,7 +215,7 @@ describe('TasksService - PERT Methods (Unit Tests)', () => {
 
     it('should reject if any value is not a number', async () => {
       const invalidDto = {
-        pertOptimisticMinutes: 'thirty' as any,
+        pertOptimisticMinutes: 'thirty' as unknown as number,
         pertMostLikelyMinutes: 60,
         pertPessimisticMinutes: 120,
       };
@@ -259,7 +264,7 @@ describe('TasksService - PERT Methods (Unit Tests)', () => {
     });
 
     it('should update existing PERT fields', async () => {
-      const result = await service.updatePert(validTaskId, validUpdateDto);
+      await service.updatePert(validTaskId, validUpdateDto);
 
       expect(mockTaskModel.findByIdAndUpdate).toHaveBeenCalledWith(
         validTaskId,
@@ -267,9 +272,9 @@ describe('TasksService - PERT Methods (Unit Tests)', () => {
           pertOptimisticMinutes: 30,
           pertMostLikelyMinutes: 60,
           pertPessimisticMinutes: 120,
-          pertExpectedMinutes: expect.any(Number),
-          pertVariance: expect.any(Number),
-          deadline: expect.any(Date),
+          pertExpectedMinutes: expect.any(Number) as unknown as number,
+          pertVariance: expect.any(Number) as unknown as number,
+          deadline: expect.any(Date) as unknown as Date,
         }),
         { new: true },
       );

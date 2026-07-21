@@ -6,7 +6,12 @@ import { DependencyType } from '../../../../src/tasks/schemas/task-dependency.sc
 
 describe('CPMService - Critical Path Method', () => {
   let service: CPMService;
-  let mockDependencyModel: any;
+  let mockDependencyModel: {
+    find: jest.Mock;
+    deleteOne: jest.Mock;
+    constructor: jest.Mock;
+    save: jest.Mock;
+  };
 
   beforeEach(async () => {
     // Mock do model

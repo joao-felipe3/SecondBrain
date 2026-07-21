@@ -15,14 +15,33 @@ import { TasksCompletionService } from '../../../src/tasks/services/workflow/com
 import { TasksWriteService } from '../../../src/tasks/services/workflow/write.service';
 import { TasksHabitsService } from '../../../src/tasks/services/monitoring/habits.service';
 import { createTasksServiceTestProviders } from './tasks-service-test-providers';
+import { TaskDocument } from '../../../src/tasks/schemas/task.schema';
+import { RecurringTaskOccurrenceDto } from '../../../src/tasks/dto/task/create-task.dto';
+import { CreateMicroTaskDto } from '../../../src/tasks/dto/task/create-micro-task.dto';
 
 describe('TasksService - Sprint 5: Recorrência', () => {
   let service: TasksService;
   let recurringService: TasksRecurringService;
   let completionService: TasksCompletionService;
-  let taskModel: any;
-  let tasksWriteServiceMock: any;
-  let tasksHabitsServiceMock: any;
+  let taskModel: {
+    findById: jest.Mock;
+    findByIdAndUpdate: jest.Mock;
+    find: jest.Mock;
+    findOne: jest.Mock;
+    findByIdAndDelete: jest.Mock;
+    insertMany: jest.Mock;
+  };
+  let tasksWriteServiceMock: {
+    createMany: jest.Mock;
+    createMicroTask: jest.Mock;
+    createTaskCore: jest.Mock;
+    update: jest.Mock;
+    remove: jest.Mock;
+  };
+  let tasksHabitsServiceMock: {
+    getStreakData: jest.Mock;
+    getHabitsDashboard: jest.Mock;
+  };
 
   beforeEach(async () => {
     taskModel = {
@@ -36,16 +55,20 @@ describe('TasksService - Sprint 5: Recorrência', () => {
 
     tasksWriteServiceMock = {
       createMany: jest.fn(),
-      createMicroTask: jest.fn().mockImplementation(async (dto: any) => ({
-        ...dto,
-        _id: new Types.ObjectId(),
-        save: jest.fn(),
-      })),
-      createTaskCore: jest.fn().mockImplementation(async (dto: any) => ({
-        ...dto,
-        _id: new Types.ObjectId(),
-        save: jest.fn(),
-      })),
+      createMicroTask: jest.fn().mockImplementation((dto: Record<string, unknown>) =>
+        Promise.resolve({
+          ...dto,
+          _id: new Types.ObjectId(),
+          save: jest.fn(),
+        }),
+      ),
+      createTaskCore: jest.fn().mockImplementation((dto: Record<string, unknown>) =>
+        Promise.resolve({
+          ...dto,
+          _id: new Types.ObjectId(),
+          save: jest.fn(),
+        }),
+      ),
       update: jest.fn(),
       remove: jest.fn(),
     };
@@ -178,20 +201,23 @@ describe('TasksService - Sprint 5: Recorrência', () => {
     const template = {
       _id: new Types.ObjectId(),
       recurringRule: { frequency: 'daily', interval: 1 },
-    };
+    } as unknown as TaskDocument;
     const occurrence = {
       _id: new Types.ObjectId(),
       parentRecurringId: template._id,
-    };
+    } as unknown as RecurringTaskOccurrenceDto;
 
-    jest.spyOn(recurringService, 'createRecurringTemplate').mockResolvedValue(template as any);
-    jest.spyOn(recurringService, 'buildOccurrencePayload').mockReturnValue(occurrence as any);
-    tasksWriteServiceMock.createTaskCore.mockResolvedValue(occurrence as any);
+    const createTemplateMock = jest.fn().mockResolvedValue(template);
+    const buildPayloadMock = jest.fn().mockReturnValue(occurrence);
+
+    recurringService.createRecurringTemplate = createTemplateMock;
+    recurringService.buildOccurrencePayload = buildPayloadMock;
+    tasksWriteServiceMock.createTaskCore.mockResolvedValue(occurrence);
 
     const result = await service.createRecurringMicroTask({
       name: 'Daily habit',
       description: 'Test recurring flow',
-      project: new Types.ObjectId(),
+      project: new Types.ObjectId().toString(),
       microTaskType: 'habit',
       pomodorosPlanned: 1,
       deadline: new Date('2026-04-20T10:00:00.000Z'),
@@ -200,11 +226,11 @@ describe('TasksService - Sprint 5: Recorrência', () => {
       recurrency: 'daily',
       notification: new Date('2026-04-20T09:00:00.000Z'),
       recurringRule: { frequency: 'daily', interval: 1 },
-    } as any);
+    } as unknown as CreateMicroTaskDto);
 
     expect(result).toBe(occurrence);
-    expect(recurringService.createRecurringTemplate).toHaveBeenCalledTimes(1);
-    expect(recurringService.buildOccurrencePayload).toHaveBeenCalledTimes(1);
+    expect(createTemplateMock).toHaveBeenCalledTimes(1);
+    expect(buildPayloadMock).toHaveBeenCalledTimes(1);
   });
 
   it('handleTaskSkipped should mark occurrence skipped and create next one when recurring', async () => {
@@ -228,11 +254,11 @@ describe('TasksService - Sprint 5: Recorrência', () => {
     taskModel.findByIdAndUpdate.mockReturnValue({
       exec: jest.fn().mockResolvedValue(updatedTask),
     });
-    tasksWriteServiceMock.createTaskCore.mockResolvedValue({ _id: new Types.ObjectId() } as any);
+    tasksWriteServiceMock.createTaskCore.mockResolvedValue({ _id: new Types.ObjectId() });
 
     const result = await service.handleTaskSkipped(taskId);
 
-    expect(result.recurringState).toBe('skipped');
+    expect((result as unknown as { recurringState: string }).recurringState).toBe('skipped');
     expect(tasksWriteServiceMock.createTaskCore).toHaveBeenCalled();
   });
 
@@ -373,7 +399,7 @@ describe('TasksService - Sprint 5: Recorrência', () => {
       exec: jest.fn().mockResolvedValue(updated),
     });
 
-    const result = await service.handleTaskDeferred(taskId, newDeadline);
+    const result = (await service.handleTaskDeferred(taskId, newDeadline)) as { deadline: Date };
 
     expect(result.deadline).toEqual(newDeadline);
     expect(taskModel.findByIdAndUpdate).toHaveBeenCalled();
@@ -449,7 +475,6 @@ describe('TasksService - Sprint 5: Recorrência', () => {
 
   it('calculateNextRecurringDate should return null when endDate is in the past', () => {
     // Use dates further in future to avoid normalizeRecurringRule validation
-    const baseDate = new Date('2026-04-20T10:00:00.000Z');
     const endDate = new Date('2026-04-25T23:59:59.999Z');
     const futureProbe = new Date('2026-04-26T10:00:00.000Z');
 

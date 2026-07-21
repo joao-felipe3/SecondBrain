@@ -1,8 +1,34 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
-import request = require('supertest');
+import request from 'supertest';
 import { App } from 'supertest/types';
 import { AppModule } from '../../src/app.module';
+
+interface ProjectResponse {
+  _id?: string;
+}
+
+interface TaskResponse {
+  _id?: string;
+  parentRecurringId?: string;
+  status?: string;
+  deadline?: string;
+  createdAt?: string;
+  recurringRule?: {
+    frequency?: string;
+    interval?: number;
+    daysOfWeek?: number[];
+  };
+}
+
+interface HabitDashboardItem {
+  parentRecurringId?: string;
+  currentStreak?: number;
+}
+
+interface HabitsDashboardResponse {
+  habits?: HabitDashboardItem[];
+}
 
 describe('Sprint 5: Recurrence E2E', () => {
   let app: INestApplication<App>;
@@ -33,8 +59,9 @@ describe('Sprint 5: Recurrence E2E', () => {
         })
         .expect(201);
 
-      expect(res.body).toHaveProperty('_id');
-      projectId = res.body._id;
+      const body = res.body as ProjectResponse;
+      expect(body).toHaveProperty('_id');
+      projectId = body._id || '';
     });
 
     it('should create a recurring daily habit', async () => {
@@ -52,10 +79,11 @@ describe('Sprint 5: Recurrence E2E', () => {
         })
         .expect(201);
 
-      expect(res.body).toHaveProperty('_id');
-      expect(res.body.recurringRule).toBeDefined();
-      expect(res.body.recurringRule.frequency).toBe('daily');
-      recurringTaskId = res.body._id;
+      const body = res.body as TaskResponse;
+      expect(body).toHaveProperty('_id');
+      expect(body.recurringRule).toBeDefined();
+      expect(body.recurringRule?.frequency).toBe('daily');
+      recurringTaskId = body._id || '';
     });
 
     it('should generate first occurrence of recurring task', async () => {
@@ -63,10 +91,11 @@ describe('Sprint 5: Recurrence E2E', () => {
         .post(`/tasks/${recurringTaskId}/generate-next-occurrence`)
         .expect(201);
 
-      expect(res.body).toHaveProperty('_id');
-      expect(res.body.parentRecurringId).toBe(recurringTaskId);
-      expect(res.body.status).toBe('pending');
-      occurrenceId = res.body._id;
+      const body = res.body as TaskResponse;
+      expect(body).toHaveProperty('_id');
+      expect(body.parentRecurringId).toBe(recurringTaskId);
+      expect(body.status).toBe('pending');
+      occurrenceId = body._id || '';
     });
 
     it('should mark occurrence as done and generate next', async () => {
@@ -75,7 +104,8 @@ describe('Sprint 5: Recurrence E2E', () => {
         .send({ status: 'done' })
         .expect(200);
 
-      expect(res.body.status).toBe('done');
+      const body = res.body as TaskResponse;
+      expect(body.status).toBe('done');
     });
 
     it('should retrieve next occurrence after completing previous', async () => {
@@ -83,11 +113,12 @@ describe('Sprint 5: Recurrence E2E', () => {
         .post(`/tasks/${recurringTaskId}/generate-next-occurrence`)
         .expect(201);
 
-      expect(res.body).toHaveProperty('_id');
-      expect(res.body.parentRecurringId).toBe(recurringTaskId);
-      expect(res.body.status).toBe('pending');
+      const body = res.body as TaskResponse;
+      expect(body).toHaveProperty('_id');
+      expect(body.parentRecurringId).toBe(recurringTaskId);
+      expect(body.status).toBe('pending');
       // Verify it's a different task (next day)
-      expect(res.body._id).not.toBe(occurrenceId);
+      expect(body._id).not.toBe(occurrenceId);
     });
   });
 
@@ -95,7 +126,6 @@ describe('Sprint 5: Recurrence E2E', () => {
     let weeklyTaskId: string;
     let monday: string;
     let wednesday: string;
-    let friday: string;
 
     it('should create weekly habit with specific days', async () => {
       const res = await request(app.getHttpServer())
@@ -112,8 +142,9 @@ describe('Sprint 5: Recurrence E2E', () => {
         })
         .expect(201);
 
-      expect(res.body.recurringRule.daysOfWeek).toEqual([1, 3, 5]);
-      weeklyTaskId = res.body._id;
+      const body = res.body as TaskResponse;
+      expect(body.recurringRule?.daysOfWeek).toEqual([1, 3, 5]);
+      weeklyTaskId = body._id || '';
     });
 
     it('should generate Monday occurrence', async () => {
@@ -121,11 +152,12 @@ describe('Sprint 5: Recurrence E2E', () => {
         .post(`/tasks/${weeklyTaskId}/generate-next-occurrence`)
         .expect(201);
 
-      expect(res.body.parentRecurringId).toBe(weeklyTaskId);
+      const body = res.body as TaskResponse;
+      expect(body.parentRecurringId).toBe(weeklyTaskId);
       // Verify Monday (day 1) is generated
-      const occDate = new Date(res.body.deadline || res.body.createdAt);
+      const occDate = new Date(body.deadline || body.createdAt || '');
       expect(occDate.getUTCDay()).toBe(1);
-      monday = res.body._id;
+      monday = body._id || '';
     });
 
     it('should skip to Wednesday after Monday', async () => {
@@ -137,9 +169,10 @@ describe('Sprint 5: Recurrence E2E', () => {
         .post(`/tasks/${weeklyTaskId}/generate-next-occurrence`)
         .expect(201);
 
-      const occDate = new Date(res.body.deadline || res.body.createdAt);
+      const body = res.body as TaskResponse;
+      const occDate = new Date(body.deadline || body.createdAt || '');
       expect(occDate.getUTCDay()).toBe(3); // Wednesday
-      wednesday = res.body._id;
+      wednesday = body._id || '';
     });
 
     it('should skip to Friday after Wednesday', async () => {
@@ -154,9 +187,9 @@ describe('Sprint 5: Recurrence E2E', () => {
         .post(`/tasks/${weeklyTaskId}/generate-next-occurrence`)
         .expect(201);
 
-      const occDate = new Date(res.body.deadline || res.body.createdAt);
+      const body = res.body as TaskResponse;
+      const occDate = new Date(body.deadline || body.createdAt || '');
       expect(occDate.getUTCDay()).toBe(5); // Friday
-      friday = res.body._id;
     });
   });
 
@@ -177,7 +210,8 @@ describe('Sprint 5: Recurrence E2E', () => {
         })
         .expect(201);
 
-      streamTaskId = res.body._id;
+      const body = res.body as TaskResponse;
+      streamTaskId = body._id || '';
     });
 
     it('should generate and complete 3 consecutive days', async () => {
@@ -186,8 +220,10 @@ describe('Sprint 5: Recurrence E2E', () => {
           .post(`/tasks/${streamTaskId}/generate-next-occurrence`)
           .expect(201);
 
+        const genBody = genRes.body as TaskResponse;
+
         await request(app.getHttpServer())
-          .patch(`/tasks/${genRes.body._id}`)
+          .patch(`/tasks/${genBody._id || ''}`)
           .send({ status: 'done' })
           .expect(200);
       }
@@ -195,9 +231,11 @@ describe('Sprint 5: Recurrence E2E', () => {
       // Verify streak is 3
       const dashRes = await request(app.getHttpServer()).get(`/tasks/habits-dashboard`).expect(200);
 
-      const habit = dashRes.body.habits.find((h: any) => h.parentRecurringId === streamTaskId);
+      const dashBody = dashRes.body as HabitsDashboardResponse;
+      const habits = dashBody.habits || [];
+      const habit = habits.find((h) => h.parentRecurringId === streamTaskId);
       expect(habit).toBeDefined();
-      expect(habit.currentStreak).toBe(3);
+      expect(habit?.currentStreak).toBe(3);
     });
 
     it('should skip a day via /skip endpoint', async () => {
@@ -206,12 +244,14 @@ describe('Sprint 5: Recurrence E2E', () => {
         .post(`/tasks/${streamTaskId}/generate-next-occurrence`)
         .expect(201);
 
-      const occId = genRes.body._id;
+      const genBody = genRes.body as TaskResponse;
+      const occId = genBody._id || '';
 
       // Skip it
       const skipRes = await request(app.getHttpServer()).post(`/tasks/${occId}/skip`).expect(200);
 
-      expect(skipRes.body.status).toBe('skipped');
+      const skipBody = skipRes.body as TaskResponse;
+      expect(skipBody.status).toBe('skipped');
     });
 
     it('should resume streak after skip', async () => {
@@ -220,7 +260,8 @@ describe('Sprint 5: Recurrence E2E', () => {
         .post(`/tasks/${streamTaskId}/generate-next-occurrence`)
         .expect(201);
 
-      const occId = genRes.body._id;
+      const genBody = genRes.body as TaskResponse;
+      const occId = genBody._id || '';
 
       // Complete it
       await request(app.getHttpServer()).patch(`/tasks/${occId}`).send({ status: 'done' }).expect(200);
@@ -228,10 +269,12 @@ describe('Sprint 5: Recurrence E2E', () => {
       // Check streak is maintained
       const dashRes = await request(app.getHttpServer()).get(`/tasks/habits-dashboard`).expect(200);
 
-      const habit = dashRes.body.habits.find((h: any) => h.parentRecurringId === streamTaskId);
+      const dashBody = dashRes.body as HabitsDashboardResponse;
+      const habits = dashBody.habits || [];
+      const habit = habits.find((h) => h.parentRecurringId === streamTaskId);
       expect(habit).toBeDefined();
       // Should still have streak since skip doesn't break it
-      expect(habit.currentStreak).toBeGreaterThan(0);
+      expect(habit?.currentStreak ?? 0).toBeGreaterThan(0);
     });
   });
 });

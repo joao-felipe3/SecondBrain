@@ -13,19 +13,32 @@ import { AlertsService } from '../../../src/tasks/services/monitoring/alerts.ser
 import { DeviationDetectionService } from '../../../src/tasks/services/monitoring/deviation-detection.service';
 import { beforeEach, describe, expect, it, jest } from '@jest/globals';
 import { createTasksServiceTestProviders } from './tasks-service-test-providers';
+import { CreateMicroTaskDto } from '../../../src/tasks/dto/task/create-micro-task.dto';
+import { TaskDocument } from '../../../src/tasks/schemas/task.schema';
+import { CreateTaskDto } from '../../../src/tasks/dto/task/create-task.dto';
 
 describe('TasksService', () => {
   let service: TasksService;
-  let taskModelMock: any;
+  let taskModelMock: jest.Mock & { findById?: jest.Mock; find?: jest.Mock };
   let projectsServiceMock: { recalculateProjectStats: jest.Mock };
-  let geminiServiceMock: any;
-  let checklistServiceMock: any;
-  let feedbackModelMock: any;
+  let geminiServiceMock: {
+    generateContent: jest.Mock;
+    generateChecklistForTask: jest.Mock;
+    generateChecklistWithHistory: jest.Mock;
+  };
+  let checklistServiceMock: {
+    validateChecklistStructure: jest.Mock;
+    findSimilarTasksInProject: jest.Mock;
+    enrichHistoryContext: jest.Mock;
+    calculateCompletionPercentage: jest.Mock;
+    validateChecklistCompletion: jest.Mock;
+  };
+  let feedbackModelMock: Record<string, jest.Mock>;
 
   const baseMicroTaskDto = {
     name: 'Criar endpoint de micro-task',
     description: 'Implementar e validar rota',
-    project: new Types.ObjectId(),
+    project: new Types.ObjectId().toString(),
     microTaskType: 'subtask',
     pomodorosPlanned: 2,
     deadline: new Date('2026-04-20T10:00:00.000Z'),
@@ -36,17 +49,17 @@ describe('TasksService', () => {
   };
 
   beforeEach(async () => {
-    const saveMock = jest.fn().mockImplementation(async function saveImpl(this: any) {
-      return {
+    const saveMock = jest.fn().mockImplementation(function (this: Record<string, unknown>) {
+      return Promise.resolve({
         ...this,
         _id: new Types.ObjectId(),
-      };
+      });
     });
 
-    taskModelMock = jest.fn().mockImplementation((dto: any) => ({
+    taskModelMock = jest.fn().mockImplementation((dto: Record<string, unknown>) => ({
       ...dto,
       save: saveMock,
-    }));
+    })) as unknown as jest.Mock & { findById?: jest.Mock; find?: jest.Mock };
 
     projectsServiceMock = {
       recalculateProjectStats: jest.fn(),
@@ -56,22 +69,24 @@ describe('TasksService', () => {
       generateContent: jest.fn(),
       generateChecklistForTask: jest
         .fn()
-        .mockImplementation(async () => ['Preparar contexto', 'Executar tarefa', 'Validar entrega']),
+        .mockResolvedValue(['Preparar contexto', 'Executar tarefa', 'Validar entrega']),
       generateChecklistWithHistory: jest
         .fn()
-        .mockImplementation(async () => ['Preparar contexto', 'Executar tarefa', 'Validar entrega']),
+        .mockResolvedValue(['Preparar contexto', 'Executar tarefa', 'Validar entrega']),
     };
 
     checklistServiceMock = {
-      validateChecklistStructure: (jest.fn() as any).mockReturnValue({
+      validateChecklistStructure: jest.fn().mockReturnValue({
         isValid: true,
       }),
-      findSimilarTasksInProject: (jest.fn() as any).mockResolvedValue([] as any),
-      enrichHistoryContext: (jest.fn() as any).mockReturnValue(''),
-      calculateCompletionPercentage: (jest.fn() as any).mockReturnValue(0),
-      validateChecklistCompletion: (jest.fn() as any).mockImplementation((items: any[]) => {
+      findSimilarTasksInProject: jest.fn().mockResolvedValue([]),
+      enrichHistoryContext: jest.fn().mockReturnValue(''),
+      calculateCompletionPercentage: jest.fn().mockReturnValue(0),
+      validateChecklistCompletion: jest.fn().mockImplementation((items: unknown) => {
         const normalized = Array.isArray(items) ? items : [];
-        const isValid = normalized.every((it) => Boolean(it?.completed) === true);
+        const isValid = normalized.every(
+          (it: { completed?: boolean }) => Boolean(it?.completed) === true,
+        );
         return {
           isValid,
           reason: isValid
@@ -84,29 +99,31 @@ describe('TasksService', () => {
     feedbackModelMock = {};
 
     const taskRepositoryMock = {
-      findAll: jest.fn().mockImplementation(async () => []),
-      findById: jest.fn().mockImplementation(async (id: string) => {
+      findAll: jest.fn().mockResolvedValue([]),
+      findById: jest.fn().mockImplementation((id: string) => {
         if (taskModelMock.findById) {
-          const queryObj = taskModelMock.findById(id);
+          const queryObj = taskModelMock.findById(id) as { exec?: () => Promise<unknown> };
           if (queryObj && typeof queryObj.exec === 'function') {
-            return await queryObj.exec();
+            return queryObj.exec();
           }
-          return queryObj;
+          return Promise.resolve(queryObj);
         }
-        return null;
+        return Promise.resolve(null);
       }),
-      findByProjectId: jest.fn().mockImplementation(async (projectId: string, opts?: any) => {
+      findByProjectId: jest.fn().mockImplementation((projectId: string) => {
         if (taskModelMock.find) {
-          const queryObj = taskModelMock.find({ project: projectId });
+          const queryObj = taskModelMock.find({ project: projectId }) as {
+            exec?: () => Promise<unknown>;
+          };
           if (queryObj && typeof queryObj.exec === 'function') {
-            return await queryObj.exec();
+            return queryObj.exec();
           }
-          return queryObj;
+          return Promise.resolve(queryObj);
         }
-        return [];
+        return Promise.resolve([]);
       }),
-      save: jest.fn().mockImplementation(async (task: any) => task),
-      delete: jest.fn().mockImplementation(async () => {}),
+      save: jest.fn().mockImplementation((task: unknown) => Promise.resolve(task)),
+      delete: jest.fn().mockImplementation(() => Promise.resolve()),
     };
 
     const module: TestingModule = await Test.createTestingModule({
@@ -154,12 +171,12 @@ describe('TasksService', () => {
   it('redireciona create() para createMicroTask() quando microTaskType estiver definido', async () => {
     const createMicroTaskSpy = jest
       .spyOn(service, 'createMicroTask')
-      .mockResolvedValue({ _id: new Types.ObjectId() } as any);
+      .mockResolvedValue({ _id: new Types.ObjectId() } as unknown as TaskDocument);
 
     await service.create({
       ...baseMicroTaskDto,
       microTaskType: 'quick',
-    } as any);
+    } as unknown as CreateTaskDto);
 
     expect(createMicroTaskSpy).toHaveBeenCalledTimes(1);
     expect(createMicroTaskSpy).toHaveBeenCalledWith(
@@ -177,7 +194,7 @@ describe('TasksService', () => {
         pertOptimisticMinutes: 30,
         pertMostLikelyMinutes: 20,
         pertPessimisticMinutes: 60,
-      } as any),
+      } as unknown as CreateMicroTaskDto),
     ).rejects.toThrow(BadRequestException);
 
     await expect(
@@ -186,7 +203,7 @@ describe('TasksService', () => {
         pertOptimisticMinutes: 30,
         pertMostLikelyMinutes: 20,
         pertPessimisticMinutes: 60,
-      } as any),
+      } as unknown as CreateMicroTaskDto),
     ).rejects.toThrow('PERT inválido');
   });
 
@@ -194,7 +211,7 @@ describe('TasksService', () => {
     await service.createMicroTask({
       ...baseMicroTaskDto,
       autoGenerateChecklist: true,
-    } as any);
+    } as unknown as CreateMicroTaskDto);
 
     expect(geminiServiceMock.generateChecklistForTask).toHaveBeenCalledTimes(1);
     expect(taskModelMock).toHaveBeenCalledWith(
@@ -215,7 +232,7 @@ describe('TasksService', () => {
         ...baseMicroTaskDto,
         autoGenerateChecklist: false,
         checklist: [],
-      } as any),
+      } as unknown as CreateMicroTaskDto),
     ).rejects.toThrow(BadRequestException);
 
     await expect(
@@ -223,7 +240,7 @@ describe('TasksService', () => {
         ...baseMicroTaskDto,
         autoGenerateChecklist: false,
         checklist: [],
-      } as any),
+      } as unknown as CreateMicroTaskDto),
     ).rejects.toThrow('Checklist inválido');
   });
 
@@ -232,7 +249,7 @@ describe('TasksService', () => {
   describe('validateCompletionRequirements', () => {
     it('deve permitir conclusão de tarefa sem checklist', async () => {
       const taskId = new Types.ObjectId();
-      const mockTaskFind = (jest.fn() as any).mockResolvedValue({
+      const mockTaskFind = jest.fn().mockResolvedValue({
         _id: taskId,
         checklist: [],
       });
@@ -244,7 +261,7 @@ describe('TasksService', () => {
 
     it('deve permitir conclusão de hábito sem checklist', async () => {
       const taskId = new Types.ObjectId();
-      const mockTaskFind = (jest.fn() as any).mockResolvedValue({
+      const mockTaskFind = jest.fn().mockResolvedValue({
         _id: taskId,
         microTaskType: 'habit',
         recurringRule: { frequency: 'daily', interval: 1 },
@@ -259,7 +276,7 @@ describe('TasksService', () => {
 
     it('deve rejeitar conclusão quando checklist legado está como string[] (0%)', async () => {
       const taskId = new Types.ObjectId();
-      const mockTaskFind = (jest.fn() as any).mockResolvedValue({
+      const mockTaskFind = jest.fn().mockResolvedValue({
         _id: taskId,
         checklist: ['Item 1', 'Item 2', 'Item 3'],
       });
@@ -272,7 +289,7 @@ describe('TasksService', () => {
 
     it('deve rejeitar conclusão com checklist incompleto (50%)', async () => {
       const taskId = new Types.ObjectId();
-      const mockTaskFind = (jest.fn() as any).mockResolvedValue({
+      const mockTaskFind = jest.fn().mockResolvedValue({
         _id: taskId,
         checklist: [
           { item: 'item1', completed: true },
@@ -298,14 +315,13 @@ describe('TasksService', () => {
   });
 
   describe('updateChecklistItem', () => {
-    it('deve atualizar um item específico do checklist', async () => {
-      const taskId = new Types.ObjectId();
+    it('deve atualizar um item específico do checklist', () => {
       const mockTask = {
         checklist: [
           { item: 'item1', completed: false, order: 0 },
           { item: 'item2', completed: false, order: 1 },
         ],
-        save: (jest.fn() as any).mockResolvedValue({
+        save: jest.fn().mockResolvedValue({
           checklist: [
             { item: 'item1', completed: true, order: 0 },
             { item: 'item2', completed: false, order: 1 },
@@ -313,7 +329,7 @@ describe('TasksService', () => {
         }),
       };
 
-      const execFind = (jest.fn() as any).mockResolvedValue(mockTask);
+      const execFind = jest.fn().mockResolvedValue(mockTask);
       taskModelMock.findById = jest.fn().mockReturnValue({ exec: execFind });
 
       // Nota: Este é um teste estrutural. Para teste completo, seria necessário
@@ -330,9 +346,9 @@ describe('TasksService', () => {
       ).rejects.toThrow(BadRequestException);
     });
 
-    it('deve rejeitar index fora do range', async () => {
+    it('deve rejeitar index fora do range', () => {
       const taskId = new Types.ObjectId();
-      const mockTaskFind = (jest.fn() as any).mockResolvedValue({
+      const mockTaskFind = jest.fn().mockResolvedValue({
         _id: taskId,
         checklist: [{ item: 'item1', completed: false }],
       });

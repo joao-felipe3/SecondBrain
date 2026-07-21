@@ -1,7 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { INestApplication, BadRequestException } from '@nestjs/common';
+import { INestApplication } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import request from 'supertest';
+import { App } from 'supertest/types';
 import { TasksController } from '../../src/tasks/tasks.controller';
 import { TasksService } from '../../src/tasks/tasks.service';
 import { GeminiService } from '../../src/ai/services/core/gemini.service';
@@ -11,6 +12,20 @@ import { PertService } from '../../src/tasks/services/analysis/pert.service';
 import { EVMService, EVMProgressService } from '../../src/projects/services/evm';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import { Types } from 'mongoose';
+
+interface ChecklistItemResponse {
+  item: string;
+  completed: boolean;
+  order?: number;
+}
+
+interface TaskResponse {
+  _id: string;
+  checklist?: ChecklistItemResponse[];
+  completionPercentage?: number;
+  isConcluded?: boolean;
+  message?: string;
+}
 
 /**
  * Sprint 2 E2E Tests: Gold Standard Checklists
@@ -23,9 +38,6 @@ import { Types } from 'mongoose';
  */
 describe('Sprint 2: Checklist Validation & Historical Context (E2E)', () => {
   let app: INestApplication;
-  let taskService: TasksService;
-  let geminiService: GeminiService;
-  let checklistService: ChecklistService;
   let mongoServer: MongoMemoryServer;
   let projectId: string;
   let taskId: string;
@@ -56,10 +68,6 @@ describe('Sprint 2: Checklist Validation & Historical Context (E2E)', () => {
     app = moduleFixture.createNestApplication();
     await app.init();
 
-    taskService = moduleFixture.get<TasksService>(TasksService);
-    geminiService = moduleFixture.get<GeminiService>(GeminiService);
-    checklistService = moduleFixture.get<ChecklistService>(ChecklistService);
-
     // Setup: Create test project
     projectId = new Types.ObjectId().toString();
   });
@@ -82,23 +90,30 @@ describe('Sprint 2: Checklist Validation & Historical Context (E2E)', () => {
         pertPessimisticMinutes: 90,
       };
 
-      const response = await request(app.getHttpServer()).post('/tasks/micro').send(payload).expect(201);
+      const response = await request(app.getHttpServer() as App)
+        .post('/tasks/micro')
+        .send(payload)
+        .expect(201);
 
-      expect(response.body).toBeDefined();
-      expect(response.body._id).toBeDefined();
-      expect(response.body.checklist).toBeDefined();
-      expect(Array.isArray(response.body.checklist)).toBe(true);
-      expect(response.body.checklist.length).toBeGreaterThanOrEqual(3);
-      expect(response.body.checklist.length).toBeLessThanOrEqual(10);
+      const body = response.body as TaskResponse;
+
+      expect(body).toBeDefined();
+      expect(body._id).toBeDefined();
+      expect(body.checklist).toBeDefined();
+      expect(Array.isArray(body.checklist)).toBe(true);
+
+      const checklist = body.checklist ?? [];
+      expect(checklist.length).toBeGreaterThanOrEqual(3);
+      expect(checklist.length).toBeLessThanOrEqual(10);
 
       // Validate checklist structure
-      response.body.checklist.forEach((item: any) => {
+      checklist.forEach((item: ChecklistItemResponse) => {
         expect(item.item).toBeDefined();
         expect(typeof item.completed).toBe('boolean');
         expect(Number.isFinite(item.order || 0)).toBe(true);
       });
 
-      taskId = response.body._id;
+      taskId = body._id;
     });
 
     it('should reject checklist with < 3 items', async () => {
@@ -114,9 +129,13 @@ describe('Sprint 2: Checklist Validation & Historical Context (E2E)', () => {
         pertPessimisticMinutes: 15,
       };
 
-      const response = await request(app.getHttpServer()).post('/tasks/micro').send(payload).expect(400);
+      const response = await request(app.getHttpServer() as App)
+        .post('/tasks/micro')
+        .send(payload)
+        .expect(400);
 
-      expect(response.body.message).toContain('mínimo 3');
+      const body = response.body as TaskResponse;
+      expect(body.message).toContain('mínimo 3');
     });
   });
 
@@ -126,15 +145,18 @@ describe('Sprint 2: Checklist Validation & Historical Context (E2E)', () => {
         throw new Error('taskId not set');
       }
 
-      const response = await request(app.getHttpServer())
+      const response = await request(app.getHttpServer() as App)
         .patch(`/tasks/${taskId}/checklist/0`)
         .send({ completed: true })
         .expect(200);
 
-      expect(response.body.checklist).toBeDefined();
-      expect(response.body.checklist[0].completed).toBe(true);
-      expect(response.body.completionPercentage).toBeDefined();
-      expect(response.body.completionPercentage).toBeGreaterThan(0);
+      const body = response.body as TaskResponse;
+      expect(body.checklist).toBeDefined();
+
+      const checklist = body.checklist ?? [];
+      expect(checklist[0]?.completed).toBe(true);
+      expect(body.completionPercentage).toBeDefined();
+      expect(body.completionPercentage).toBeGreaterThan(0);
     });
 
     it('should update full checklist and persist changes', async () => {
@@ -149,14 +171,16 @@ describe('Sprint 2: Checklist Validation & Historical Context (E2E)', () => {
         { item: 'Documentar API', completed: false, order: 3 },
       ];
 
-      const response = await request(app.getHttpServer())
+      const response = await request(app.getHttpServer() as App)
         .post(`/tasks/${taskId}/checklist`)
         .send({ checklist: updatedChecklist })
         .expect(200);
 
-      expect(response.body.checklist).toHaveLength(4);
-      expect(response.body.checklist[0].completed).toBe(true);
-      expect(response.body.checklist[2].completed).toBe(false);
+      const body = response.body as TaskResponse;
+      const checklist = body.checklist ?? [];
+      expect(checklist).toHaveLength(4);
+      expect(checklist[0]?.completed).toBe(true);
+      expect(checklist[2]?.completed).toBe(false);
     });
 
     it('should calculate correct progress percentage', async () => {
@@ -164,10 +188,13 @@ describe('Sprint 2: Checklist Validation & Historical Context (E2E)', () => {
         throw new Error('taskId not set');
       }
 
-      const response = await request(app.getHttpServer()).get(`/tasks/micro/${taskId}`).expect(200);
+      const response = await request(app.getHttpServer() as App)
+        .get(`/tasks/micro/${taskId}`)
+        .expect(200);
 
-      const checklist = response.body.checklist;
-      const completed = checklist.filter((item: any) => item.completed).length;
+      const body = response.body as TaskResponse;
+      const checklist = body.checklist ?? [];
+      const completed = checklist.filter((item: ChecklistItemResponse) => item.completed).length;
       const percentage = Math.round((completed / checklist.length) * 100);
 
       expect(percentage).toBeGreaterThanOrEqual(0);
@@ -188,15 +215,18 @@ describe('Sprint 2: Checklist Validation & Historical Context (E2E)', () => {
         { item: 'Task 3', completed: false, order: 2 },
       ];
 
-      await request(app.getHttpServer())
+      await request(app.getHttpServer() as App)
         .post(`/tasks/${taskId}/checklist`)
         .send({ checklist: incompleteChecklist });
 
       // Try to mark as concluded
-      const response = await request(app.getHttpServer()).patch(`/tasks/${taskId}/conclude`).expect(400);
+      const response = await request(app.getHttpServer() as App)
+        .patch(`/tasks/${taskId}/conclude`)
+        .expect(400);
 
-      expect(response.body.message).toContain('incompleto');
-      expect(response.body.message).toContain('%');
+      const body = response.body as TaskResponse;
+      expect(body.message).toContain('incompleto');
+      expect(body.message).toContain('%');
     });
   });
 
@@ -213,14 +243,17 @@ describe('Sprint 2: Checklist Validation & Historical Context (E2E)', () => {
         { item: 'Task 3', completed: true, order: 2 },
       ];
 
-      await request(app.getHttpServer())
+      await request(app.getHttpServer() as App)
         .post(`/tasks/${taskId}/checklist`)
         .send({ checklist: completeChecklist });
 
       // Mark as concluded should succeed
-      const response = await request(app.getHttpServer()).patch(`/tasks/${taskId}/conclude`).expect(200);
+      const response = await request(app.getHttpServer() as App)
+        .patch(`/tasks/${taskId}/conclude`)
+        .expect(200);
 
-      expect(response.body.isConcluded).toBe(true);
+      const body = response.body as TaskResponse;
+      expect(body.isConcluded).toBe(true);
     });
 
     it('should allow task conclusion when task has no checklist', async () => {
@@ -232,16 +265,21 @@ describe('Sprint 2: Checklist Validation & Historical Context (E2E)', () => {
         deadline: new Date(Date.now() + 86400000),
       };
 
-      const createResponse = await request(app.getHttpServer()).post('/tasks').send(payload).expect(201);
+      const createResponse = await request(app.getHttpServer() as App)
+        .post('/tasks')
+        .send(payload)
+        .expect(201);
 
-      const regularTaskId = createResponse.body._id;
+      const createBody = createResponse.body as TaskResponse;
+      const regularTaskId = createBody._id;
 
       // Should allow conclusion without checklist validation
-      const concludeResponse = await request(app.getHttpServer())
+      const concludeResponse = await request(app.getHttpServer() as App)
         .patch(`/tasks/${regularTaskId}/conclude`)
         .expect(200);
 
-      expect(concludeResponse.body.isConcluded).toBe(true);
+      const concludeBody = concludeResponse.body as TaskResponse;
+      expect(concludeBody.isConcluded).toBe(true);
     });
   });
 
@@ -260,9 +298,13 @@ describe('Sprint 2: Checklist Validation & Historical Context (E2E)', () => {
         ],
       };
 
-      const response = await request(app.getHttpServer()).post('/tasks/micro').send(payload).expect(400);
+      const response = await request(app.getHttpServer() as App)
+        .post('/tasks/micro')
+        .send(payload)
+        .expect(400);
 
-      expect(response.body.message).toContain('duplicado');
+      const body = response.body as TaskResponse;
+      expect(body.message).toContain('duplicado');
     });
 
     it('should reject checklist with empty items', async () => {
@@ -279,9 +321,13 @@ describe('Sprint 2: Checklist Validation & Historical Context (E2E)', () => {
         ],
       };
 
-      const response = await request(app.getHttpServer()).post('/tasks/micro').send(payload).expect(400);
+      const response = await request(app.getHttpServer() as App)
+        .post('/tasks/micro')
+        .send(payload)
+        .expect(400);
 
-      expect(response.body.message).toContain('vazi');
+      const body = response.body as TaskResponse;
+      expect(body.message).toContain('vazi');
     });
 
     it('should accept checklist with 3-10 valid items', async () => {
@@ -303,12 +349,13 @@ describe('Sprint 2: Checklist Validation & Historical Context (E2E)', () => {
           pertPessimisticMinutes: 30,
         };
 
-        const response = await request(app.getHttpServer())
+        const response = await request(app.getHttpServer() as App)
           .post('/tasks/micro')
           .send(payload)
           .expect(201);
 
-        expect(response.body.checklist).toHaveLength(count);
+        const body = response.body as TaskResponse;
+        expect(body.checklist).toHaveLength(count);
       }
     });
 
@@ -327,9 +374,13 @@ describe('Sprint 2: Checklist Validation & Historical Context (E2E)', () => {
         checklist,
       };
 
-      const response = await request(app.getHttpServer()).post('/tasks/micro').send(payload).expect(400);
+      const response = await request(app.getHttpServer() as App)
+        .post('/tasks/micro')
+        .send(payload)
+        .expect(400);
 
-      expect(response.body.message).toContain('10');
+      const body = response.body as TaskResponse;
+      expect(body.message).toContain('10');
     });
   });
 
@@ -350,10 +401,15 @@ describe('Sprint 2: Checklist Validation & Historical Context (E2E)', () => {
           pertPessimisticMinutes: 15,
         };
 
-        const response = await request(app.getHttpServer()).post('/tasks/micro').send(payload);
+        const response = await request(app.getHttpServer() as App)
+          .post('/tasks/micro')
+          .send(payload);
 
         if (response.status === 201) {
-          tasks.push(response.body._id);
+          const body = response.body as TaskResponse;
+          if (body._id) {
+            tasks.push(body._id);
+          }
         }
       }
 

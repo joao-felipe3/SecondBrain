@@ -5,7 +5,11 @@ import { Settings } from '../../../src/settings/settings.schema';
 
 describe('SettingsService', () => {
   let service: SettingsService;
-  let mockModel;
+  let mockModel: {
+    findOne: jest.Mock;
+    create: jest.Mock;
+    findOneAndUpdate: jest.Mock;
+  };
 
   beforeEach(async () => {
     mockModel = {

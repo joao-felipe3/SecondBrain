@@ -1,14 +1,36 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
-import request = require('supertest');
+import request from 'supertest';
+import { App } from 'supertest/types';
 import { Types } from 'mongoose';
 import { AppModule } from '../../src/app.module';
 import { TasksService } from '../../src/tasks/tasks.service';
 
+interface PertSuggestionResponse {
+  optimistic?: number;
+  likely?: number;
+  pessimistic?: number;
+  expectedTime?: number;
+  standardDeviation?: number;
+  recommendation?: string;
+  fromLLM?: boolean;
+  message?: string;
+}
+
+interface TaskPertResponse {
+  _id?: string | Types.ObjectId;
+  pertOptimisticMinutes?: number;
+  pertMostLikelyMinutes?: number;
+  pertPessimisticMinutes?: number;
+  pertExpectedMinutes?: number;
+  pertVariance?: number;
+  deadline?: string | Date;
+  message?: string;
+}
+
 describe('Sprint 3: PERT Suggestions and Estimation (e2e)', () => {
   let app: INestApplication;
   let tasksService: TasksService;
-  let testProjectId: string;
   let testTaskId: string;
 
   beforeAll(async () => {
@@ -29,7 +51,7 @@ describe('Sprint 3: PERT Suggestions and Estimation (e2e)', () => {
 
   describe('POST /tasks/micro/suggest-estimates', () => {
     it('should suggest PERT estimates for a complex task', async () => {
-      const response = await request(app.getHttpServer())
+      const response = await request(app.getHttpServer() as App)
         .post('/tasks/micro/suggest-estimates')
         .send({
           taskType: 'complex',
@@ -38,25 +60,27 @@ describe('Sprint 3: PERT Suggestions and Estimation (e2e)', () => {
         })
         .expect(200);
 
-      expect(response.body).toHaveProperty('optimistic');
-      expect(response.body).toHaveProperty('likely');
-      expect(response.body).toHaveProperty('pessimistic');
-      expect(response.body).toHaveProperty('expectedTime');
-      expect(response.body).toHaveProperty('standardDeviation');
-      expect(response.body).toHaveProperty('recommendation');
-      expect(response.body).toHaveProperty('fromLLM');
+      const body = response.body as PertSuggestionResponse;
+
+      expect(body).toHaveProperty('optimistic');
+      expect(body).toHaveProperty('likely');
+      expect(body).toHaveProperty('pessimistic');
+      expect(body).toHaveProperty('expectedTime');
+      expect(body).toHaveProperty('standardDeviation');
+      expect(body).toHaveProperty('recommendation');
+      expect(body).toHaveProperty('fromLLM');
 
       // Validate constraint: O <= M <= P
-      expect(response.body.optimistic).toBeLessThanOrEqual(response.body.likely);
-      expect(response.body.likely).toBeLessThanOrEqual(response.body.pessimistic);
+      expect(body.optimistic ?? 0).toBeLessThanOrEqual(body.likely ?? 0);
+      expect(body.likely ?? 0).toBeLessThanOrEqual(body.pessimistic ?? 0);
 
       // Validate calculated values
-      expect(response.body.expectedTime).toBeGreaterThan(0);
-      expect(response.body.standardDeviation).toBeGreaterThanOrEqual(0);
+      expect(body.expectedTime ?? 0).toBeGreaterThan(0);
+      expect(body.standardDeviation ?? 0).toBeGreaterThanOrEqual(0);
     });
 
     it('should suggest PERT estimates for a quick task (shorter values)', async () => {
-      const response = await request(app.getHttpServer())
+      const response = await request(app.getHttpServer() as App)
         .post('/tasks/micro/suggest-estimates')
         .send({
           taskType: 'quick',
@@ -64,13 +88,15 @@ describe('Sprint 3: PERT Suggestions and Estimation (e2e)', () => {
         })
         .expect(200);
 
-      expect(response.body.optimistic).toBeGreaterThan(0);
-      expect(response.body.optimistic).toBeLessThanOrEqual(response.body.likely);
-      expect(response.body.likely).toBeLessThanOrEqual(response.body.pessimistic);
+      const body = response.body as PertSuggestionResponse;
+
+      expect(body.optimistic ?? 0).toBeGreaterThan(0);
+      expect(body.optimistic ?? 0).toBeLessThanOrEqual(body.likely ?? 0);
+      expect(body.likely ?? 0).toBeLessThanOrEqual(body.pessimistic ?? 0);
     });
 
     it('should return fallback values for unsupported task type', async () => {
-      const response = await request(app.getHttpServer())
+      const response = await request(app.getHttpServer() as App)
         .post('/tasks/micro/suggest-estimates')
         .send({
           taskType: 'complex', // Valid type
@@ -78,14 +104,16 @@ describe('Sprint 3: PERT Suggestions and Estimation (e2e)', () => {
         })
         .expect(200);
 
+      const body = response.body as PertSuggestionResponse;
+
       // Should have valid response even if LLM unavailable
-      expect(response.body.optimistic).toBeDefined();
-      expect(response.body.likely).toBeDefined();
-      expect(response.body.pessimistic).toBeDefined();
+      expect(body.optimistic).toBeDefined();
+      expect(body.likely).toBeDefined();
+      expect(body.pessimistic).toBeDefined();
     });
 
     it('should reject invalid taskType', async () => {
-      const response = await request(app.getHttpServer())
+      const response = await request(app.getHttpServer() as App)
         .post('/tasks/micro/suggest-estimates')
         .send({
           taskType: 'invalid_type',
@@ -93,11 +121,12 @@ describe('Sprint 3: PERT Suggestions and Estimation (e2e)', () => {
         })
         .expect(400);
 
-      expect(response.body.message).toContain('Invalid taskType');
+      const body = response.body as PertSuggestionResponse;
+      expect(body.message).toContain('Invalid taskType');
     });
 
     it('should reject empty description', async () => {
-      const response = await request(app.getHttpServer())
+      const response = await request(app.getHttpServer() as App)
         .post('/tasks/micro/suggest-estimates')
         .send({
           taskType: 'quick',
@@ -105,7 +134,8 @@ describe('Sprint 3: PERT Suggestions and Estimation (e2e)', () => {
         })
         .expect(400);
 
-      expect(response.body.message).toBeDefined();
+      const body = response.body as PertSuggestionResponse;
+      expect(body.message).toBeDefined();
     });
 
     it('should cache results for same input', async () => {
@@ -115,28 +145,31 @@ describe('Sprint 3: PERT Suggestions and Estimation (e2e)', () => {
       };
 
       // First call
-      const response1 = await request(app.getHttpServer())
+      const response1 = await request(app.getHttpServer() as App)
         .post('/tasks/micro/suggest-estimates')
         .send(input)
         .expect(200);
 
       // Second call (should be cached, much faster)
-      const response2 = await request(app.getHttpServer())
+      const response2 = await request(app.getHttpServer() as App)
         .post('/tasks/micro/suggest-estimates')
         .send(input)
         .expect(200);
 
+      const body1 = response1.body as PertSuggestionResponse;
+      const body2 = response2.body as PertSuggestionResponse;
+
       // Results should be identical
-      expect(response1.body.optimistic).toEqual(response2.body.optimistic);
-      expect(response1.body.likely).toEqual(response2.body.likely);
-      expect(response1.body.pessimistic).toEqual(response2.body.pessimistic);
+      expect(body1.optimistic).toEqual(body2.optimistic);
+      expect(body1.likely).toEqual(body2.likely);
+      expect(body1.pessimistic).toEqual(body2.pessimistic);
     });
   });
 
   describe('PATCH /tasks/:id/pert', () => {
     beforeEach(async () => {
       // Create a test task
-      const created = await tasksService.createMicroTask({
+      const created = (await tasksService.createMicroTask({
         name: 'Test PERT Task',
         description: 'Task for PERT estimation testing',
         microTaskType: 'quick',
@@ -149,12 +182,13 @@ describe('Sprint 3: PERT Suggestions and Estimation (e2e)', () => {
         notification: new Date(),
         isConcluded: false,
         late: false,
-      });
-      testTaskId = (created as any)._id.toString();
+      })) as { _id: Types.ObjectId };
+
+      testTaskId = created._id.toString();
     });
 
     it('should update PERT estimates for a task', async () => {
-      const response = await request(app.getHttpServer())
+      const response = await request(app.getHttpServer() as App)
         .patch(`/tasks/${testTaskId}/pert`)
         .send({
           pertOptimisticMinutes: 30,
@@ -163,15 +197,17 @@ describe('Sprint 3: PERT Suggestions and Estimation (e2e)', () => {
         })
         .expect(200);
 
-      expect(response.body.pertOptimisticMinutes).toEqual(30);
-      expect(response.body.pertMostLikelyMinutes).toEqual(60);
-      expect(response.body.pertPessimisticMinutes).toEqual(120);
-      expect(response.body.pertExpectedMinutes).toBeDefined();
-      expect(response.body.deadline).toBeDefined();
+      const body = response.body as TaskPertResponse;
+
+      expect(body.pertOptimisticMinutes).toEqual(30);
+      expect(body.pertMostLikelyMinutes).toEqual(60);
+      expect(body.pertPessimisticMinutes).toEqual(120);
+      expect(body.pertExpectedMinutes).toBeDefined();
+      expect(body.deadline).toBeDefined();
     });
 
     it('should calculate expectedTime correctly', async () => {
-      const response = await request(app.getHttpServer())
+      const response = await request(app.getHttpServer() as App)
         .patch(`/tasks/${testTaskId}/pert`)
         .send({
           pertOptimisticMinutes: 10,
@@ -180,14 +216,16 @@ describe('Sprint 3: PERT Suggestions and Estimation (e2e)', () => {
         })
         .expect(200);
 
+      const body = response.body as TaskPertResponse;
+
       // TE = (10 + 4*20 + 50) / 6 = 150 / 6 = 25
-      expect(response.body.pertExpectedMinutes).toBeCloseTo(25, 1);
+      expect(body.pertExpectedMinutes ?? 0).toBeCloseTo(25, 1);
     });
 
     it('should set deadline based on TE and 10% margin', async () => {
       const beforeUpdate = new Date();
 
-      const response = await request(app.getHttpServer())
+      const response = await request(app.getHttpServer() as App)
         .patch(`/tasks/${testTaskId}/pert`)
         .send({
           pertOptimisticMinutes: 60,
@@ -196,7 +234,8 @@ describe('Sprint 3: PERT Suggestions and Estimation (e2e)', () => {
         })
         .expect(200);
 
-      const deadline = new Date(response.body.deadline);
+      const body = response.body as TaskPertResponse;
+      const deadline = new Date(body.deadline || '');
 
       // Deadline should be in the future
       expect(deadline.getTime()).toBeGreaterThan(beforeUpdate.getTime());
@@ -210,7 +249,7 @@ describe('Sprint 3: PERT Suggestions and Estimation (e2e)', () => {
     });
 
     it('should reject if O > M', async () => {
-      const response = await request(app.getHttpServer())
+      const response = await request(app.getHttpServer() as App)
         .patch(`/tasks/${testTaskId}/pert`)
         .send({
           pertOptimisticMinutes: 120,
@@ -219,11 +258,12 @@ describe('Sprint 3: PERT Suggestions and Estimation (e2e)', () => {
         })
         .expect(400);
 
-      expect(response.body.message).toContain('Ordem inválida');
+      const body = response.body as TaskPertResponse;
+      expect(body.message).toContain('Ordem inválida');
     });
 
     it('should reject if M > P', async () => {
-      const response = await request(app.getHttpServer())
+      const response = await request(app.getHttpServer() as App)
         .patch(`/tasks/${testTaskId}/pert`)
         .send({
           pertOptimisticMinutes: 10,
@@ -232,11 +272,12 @@ describe('Sprint 3: PERT Suggestions and Estimation (e2e)', () => {
         })
         .expect(400);
 
-      expect(response.body.message).toContain('Ordem inválida');
+      const body = response.body as TaskPertResponse;
+      expect(body.message).toContain('Ordem inválida');
     });
 
     it('should reject if any value is <= 0', async () => {
-      const response = await request(app.getHttpServer())
+      const response = await request(app.getHttpServer() as App)
         .patch(`/tasks/${testTaskId}/pert`)
         .send({
           pertOptimisticMinutes: 0,
@@ -245,11 +286,12 @@ describe('Sprint 3: PERT Suggestions and Estimation (e2e)', () => {
         })
         .expect(400);
 
-      expect(response.body.message).toContain('maiores que zero');
+      const body = response.body as TaskPertResponse;
+      expect(body.message).toContain('maiores que zero');
     });
 
     it('should reject if task not found', async () => {
-      const response = await request(app.getHttpServer())
+      const response = await request(app.getHttpServer() as App)
         .patch('/tasks/invalid_id/pert')
         .send({
           pertOptimisticMinutes: 10,
@@ -258,13 +300,14 @@ describe('Sprint 3: PERT Suggestions and Estimation (e2e)', () => {
         })
         .expect(400);
 
-      expect(response.body.message).toBeDefined();
+      const body = response.body as TaskPertResponse;
+      expect(body.message).toBeDefined();
     });
 
     it('should allow equal values at boundaries (O = M or M = P for edge cases)', async () => {
       // Note: Current implementation requires O < M < P strictly
       // If we want to allow O <= M <= P, this test validates that
-      const response = await request(app.getHttpServer())
+      const response = await request(app.getHttpServer() as App)
         .patch(`/tasks/${testTaskId}/pert`)
         .send({
           pertOptimisticMinutes: 10,
@@ -273,10 +316,12 @@ describe('Sprint 3: PERT Suggestions and Estimation (e2e)', () => {
         })
         .expect(200);
 
+      const body = response.body as TaskPertResponse;
+
       // Should succeed if backend allows it, fail if not
       // Current implementation: strict inequality required
       if (response.status === 200) {
-        expect(response.body.pertOptimisticMinutes).toEqual(10);
+        expect(body.pertOptimisticMinutes).toEqual(10);
       }
     });
   });
@@ -290,7 +335,7 @@ describe('Sprint 3: PERT Suggestions and Estimation (e2e)', () => {
       ];
 
       for (const testCase of testCases) {
-        const response = await request(app.getHttpServer())
+        await request(app.getHttpServer() as App)
           .post('/tasks/micro/suggest-estimates')
           .send({
             taskType: 'complex',
@@ -300,7 +345,7 @@ describe('Sprint 3: PERT Suggestions and Estimation (e2e)', () => {
 
         // Note: LLM might suggest different values, so we test with direct PATCH
         // to verify calculation is accurate
-        const created = await tasksService.createMicroTask({
+        const created = (await tasksService.createMicroTask({
           name: `PERT Test ${testCase.O}-${testCase.M}-${testCase.P}`,
           description: 'PERT calculation test',
           microTaskType: 'quick',
@@ -313,10 +358,10 @@ describe('Sprint 3: PERT Suggestions and Estimation (e2e)', () => {
           notification: new Date(),
           isConcluded: false,
           late: false,
-        });
+        })) as { _id: Types.ObjectId };
 
-        const patchResponse = await request(app.getHttpServer())
-          .patch(`/tasks/${(created as any)._id}/pert`)
+        const patchResponse = await request(app.getHttpServer() as App)
+          .patch(`/tasks/${created._id.toString()}/pert`)
           .send({
             pertOptimisticMinutes: testCase.O,
             pertMostLikelyMinutes: testCase.M,
@@ -324,14 +369,15 @@ describe('Sprint 3: PERT Suggestions and Estimation (e2e)', () => {
           })
           .expect(200);
 
-        expect(patchResponse.body.pertExpectedMinutes).toBeCloseTo(testCase.expectedTE, 1);
+        const patchBody = patchResponse.body as TaskPertResponse;
+        expect(patchBody.pertExpectedMinutes ?? 0).toBeCloseTo(testCase.expectedTE, 1);
       }
     });
 
     it('should calculate standard deviation correctly', async () => {
       // σ = (P - O) / 6
       // For O=10, M=20, P=50: σ = (50-10)/6 = 40/6 = 6.67
-      const created = await tasksService.createMicroTask({
+      const created = (await tasksService.createMicroTask({
         name: 'Sigma Test',
         description: 'Standard deviation calculation',
         microTaskType: 'quick',
@@ -344,18 +390,18 @@ describe('Sprint 3: PERT Suggestions and Estimation (e2e)', () => {
         notification: new Date(),
         isConcluded: false,
         late: false,
-      });
+      })) as { _id: Types.ObjectId };
 
       // Note: Current implementation doesn't expose pertVariance/pertStdDev in response
       // But we can verify by calling the calculation directly via service
-      const result = await tasksService.updatePert((created as any)._id.toString(), {
+      const result = (await tasksService.updatePert(created._id.toString(), {
         pertOptimisticMinutes: 10,
         pertMostLikelyMinutes: 20,
         pertPessimisticMinutes: 50,
-      });
+      })) as TaskPertResponse;
 
       const expectedSigma = (50 - 10) / 6;
-      expect(result.pertVariance).toBeCloseTo(expectedSigma * expectedSigma, 1);
+      expect(result.pertVariance ?? 0).toBeCloseTo(expectedSigma * expectedSigma, 1);
     });
   });
 });

@@ -41,7 +41,7 @@ describe('TasksController', () => {
           provide: DependencyInferenceService,
           useValue: {
             inferHeuristicPhases: jest.fn().mockReturnValue([]),
-            inferWithAi: jest.fn(async () => []),
+            inferWithAi: jest.fn().mockResolvedValue([]),
           },
         },
       ],

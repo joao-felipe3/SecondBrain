@@ -1,16 +1,38 @@
-import { EVMService } from '../../../../src/projects/services/evm';
-import { Types } from 'mongoose';
+import { EVMService, EVMProgressService } from '../../../../src/projects/services/evm';
+import { ProjectWaveDocument } from '../../../../src/projects/schemas/project-wave.schema';
+import { ProjectDocument } from '../../../../src/projects/schemas/project.schema';
+import { ProjectProgress } from '../../../../src/projects/schemas/project-progress.schema';
+import { Model, Types } from 'mongoose';
 
 describe('EVMService', () => {
   let service: EVMService;
-  let mockProgressService: any;
+  let mockProgressService: jest.Mocked<EVMProgressService>;
 
   beforeEach(() => {
     mockProgressService = {
       getProgressEntries: jest.fn().mockResolvedValue([]),
       getDashboardPreferences: jest.fn(),
-    };
-    service = new EVMService(mockProgressService, {} as any, {} as any);
+      saveDashboardPreferences: jest.fn(),
+      recordProgress: jest.fn(),
+      deleteProgressEntry: jest.fn(),
+      normalizeDashboardPreferences: jest.fn(),
+      defaultManualVisibility: {
+        spi: true,
+        plannedVsEarned: true,
+        completedHours: true,
+        consistency: true,
+        planAdherence: true,
+        trend: true,
+        perceivedProgress: true,
+        remainingHours: true,
+      },
+    } as unknown as jest.Mocked<EVMProgressService>;
+
+    service = new EVMService(
+      mockProgressService,
+      {} as unknown as Model<ProjectWaveDocument>,
+      {} as unknown as Model<ProjectDocument>,
+    );
   });
 
   afterEach(() => {
@@ -18,7 +40,7 @@ describe('EVMService', () => {
   });
 
   it('calculateSPI should return EV/PV', async () => {
-    jest.spyOn(service as any, 'getCoreMetrics').mockResolvedValue({
+    jest.spyOn(service as unknown as { getCoreMetrics: jest.Mock }, 'getCoreMetrics').mockResolvedValue({
       pv: 50,
       ev: 45,
       bac: 50,
@@ -72,8 +94,8 @@ describe('EVMService', () => {
       actualValue: [18, 35, 48, 55],
       dates: ['2026-03-01', '2026-03-08', '2026-03-15', '2026-03-22'],
     });
-    jest.spyOn(mockProgressService, 'getProgressEntries').mockResolvedValue(entries as any);
-    jest.spyOn(mockProgressService, 'getDashboardPreferences').mockResolvedValue({
+    mockProgressService.getProgressEntries.mockResolvedValue(entries as unknown as ProjectProgress[]);
+    mockProgressService.getDashboardPreferences.mockResolvedValue({
       mode: 'auto',
       manualVisibility: {
         spi: true,
@@ -86,13 +108,15 @@ describe('EVMService', () => {
         remainingHours: true,
       },
     });
-    jest.spyOn(service as any, 'getMilestoneProgress').mockResolvedValue({
-      totalMilestones: 0,
-      completedMilestones: 0,
-      overallPercent: 0,
-      nextMilestone: null,
-    });
-    jest.spyOn(service as any, 'getCoreMetrics').mockResolvedValue({
+    jest
+      .spyOn(service as unknown as { getMilestoneProgress: jest.Mock }, 'getMilestoneProgress')
+      .mockResolvedValue({
+        totalMilestones: 0,
+        completedMilestones: 0,
+        overallPercent: 0,
+        nextMilestone: null,
+      });
+    jest.spyOn(service as unknown as { getCoreMetrics: jest.Mock }, 'getCoreMetrics').mockResolvedValue({
       pv: 80,
       ev: 55,
       bac: 100,

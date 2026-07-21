@@ -14,8 +14,17 @@ import { Types } from 'mongoose';
 
 describe('RTMService', () => {
   let service: RTMService;
-  let mockModel: any;
-  let mockGeminiService: any;
+  let mockModel: {
+    find: jest.Mock;
+    findOneAndUpdate: jest.Mock;
+    findByIdAndUpdate: jest.Mock;
+    findByIdAndDelete: jest.Mock;
+    insertMany: jest.Mock;
+    create: jest.Mock;
+  };
+  let mockGeminiService: {
+    generateContent: jest.Mock;
+  };
 
   const mockProjectId = new Types.ObjectId().toString();
   const mockRequirementId = new Types.ObjectId().toString();
@@ -103,7 +112,9 @@ describe('RTMService', () => {
 
     it('deve retornar array vazio se Smart Objective for null', async () => {
       // Act
-      const result = await service.generateRequirements(null as any);
+      const result = await service.generateRequirements(
+        null as unknown as Record<string, string | undefined>,
+      );
 
       // Assert
       expect(result).toEqual([]);
@@ -138,18 +149,18 @@ describe('RTMService', () => {
       mockModel.findOneAndUpdate.mockResolvedValue(mockRequirement);
 
       // Act
-      const result = await service.mapRequirementToTask({
+      const result = (await service.mapRequirementToTask({
         projectId: mockProjectId,
         requirementId: mockRequirementId,
         taskId: mockTaskId,
-      });
+      })) as { traceableItems?: string[] } | null;
 
       // Assert
       expect(result).not.toBeNull();
-      expect(result!.traceableItems).toContain(mockTaskId);
+      expect(result?.traceableItems).toContain(mockTaskId);
       expect(mockModel.findOneAndUpdate).toHaveBeenCalledWith(
         {
-          _id: expect.any(Types.ObjectId),
+          _id: expect.any(Types.ObjectId) as unknown,
           projectId: mockProjectId,
         },
         expect.objectContaining({
@@ -168,11 +179,11 @@ describe('RTMService', () => {
       mockModel.findOneAndUpdate.mockResolvedValue(null);
 
       // Act
-      const result = await service.mapRequirementToTask({
+      const result = (await service.mapRequirementToTask({
         projectId: mockProjectId,
         requirementId: mockRequirementId,
         taskId: mockTaskId,
-      });
+      })) as unknown;
 
       // Assert
       expect(result).toBeNull();
@@ -304,7 +315,10 @@ describe('RTMService', () => {
         .mockResolvedValueOnce(mockRequirements as any);
 
       // Act
-      const result = await service.getRTMMatrix(mockProjectId, mockTasks as any);
+      const result = await service.getRTMMatrix(
+        mockProjectId,
+        mockTasks as unknown as Parameters<typeof service.getRTMMatrix>[1],
+      );
 
       // Assert
       expect(result.requirements.length).toBe(1);

@@ -5,7 +5,10 @@ import { ProjectBuffer } from '../../../../src/tasks/schemas/project-buffer.sche
 
 describe('BufferService', () => {
   let service: BufferService;
-  let mockModel: any;
+  let mockModel: {
+    findOneAndUpdate: jest.Mock;
+    findOne: jest.Mock;
+  };
 
   const mockProjectId = 'project-123';
 
@@ -77,7 +80,7 @@ describe('BufferService', () => {
       expect(mockModel.findOneAndUpdate).toHaveBeenCalledWith(
         { projectId: mockProjectId },
         expect.objectContaining({
-          projectBuffer: expect.any(Number),
+          projectBuffer: expect.any(Number) as number,
           consumed: 0,
         }),
         { upsert: true, new: true },
