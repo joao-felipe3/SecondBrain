@@ -1,4 +1,3 @@
-import { ProjectProgress } from '../../../schemas/project-progress.schema';
 import { ProjectWave } from '../../../schemas/project-wave.schema';
 import type { EVMCurve, BuildEVMCurvePointsParamsDto } from '../../../dto/evm.dto';
 import { getScheduleRatioByDates, toFiniteNumber } from './evm-calculations.util';

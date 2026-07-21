@@ -274,14 +274,14 @@ export interface PlanWaveStructureParams {
 export interface PlanWaveGroupingParams {
   project: { name?: string; deadline: Date | string };
   tasks: Array<{
-    _id?: any;
-    id?: any;
+    _id?: string | Types.ObjectId | null;
+    id?: string | null;
     name?: string;
     wbsPath?: string;
     pertExpectedMinutes?: number | null;
     pomodorosPlanned?: number | null;
   }>;
   waveCount: number;
-  wbsTree: any[];
+  wbsTree: unknown[];
   dailyCapacityHours: number;
 }

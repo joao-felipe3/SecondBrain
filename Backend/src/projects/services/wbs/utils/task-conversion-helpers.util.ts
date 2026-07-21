@@ -14,13 +14,13 @@ import {
   MicroTaskDraft,
 } from '../../../interfaces';
 
-export function hashKey(input: any): string {
+export function hashKey(input: unknown): string {
   const raw = typeof input === 'string' ? input : JSON.stringify(input);
   return createHash('sha1').update(raw).digest('hex').slice(0, 16);
 }
 
 export function buildDraftsWithPlanCacheKey(params: DraftsWithPlanCacheParams): string {
-  const nodeId = (params.node as any)?._id ? String((params.node as any)._id) : undefined;
+  const nodeId = params.node?._id ? String(params.node._id) : undefined;
   const model =
     params.modelOverride ||
     String(process.env.WBS_GEMINI_MODEL || '').trim() ||
@@ -36,7 +36,7 @@ export function buildDraftsWithPlanCacheKey(params: DraftsWithPlanCacheParams): 
     nodePath: params.nodePath,
     estimatedHours: params.node?.estimatedHours,
     chunkMinutes: params.chunkMinutes,
-    plan: params.plan,
+    plan: params.plan as unknown,
     model,
     twoPass: String(process.env.WBS_TWO_PASS_DETAILS || '').trim(),
     detailsModel: String(process.env.WBS_DETAILS_MODEL || '').trim(),
@@ -52,7 +52,7 @@ export async function mapWithConcurrency<T, R>(
   worker: (item: T, index: number) => Promise<R>,
 ): Promise<R[]> {
   const limit = Math.max(1, Math.floor(concurrency || 1));
-  const results: R[] = new Array(items.length);
+  const results: R[] = new Array<R>(items.length);
   let nextIndex = 0;
 
   const runOne = async () => {
@@ -179,25 +179,31 @@ export function convertDraftsToTasks(
   drafts: MicroTaskDraft[],
   context: DraftToTaskContext = {},
 ): Task[] {
+  const ctx = context || {};
   if (!drafts || drafts.length === 0) {
     return [];
   }
 
-  const tasks: any[] = [];
+  const tasks: Record<string, unknown>[] = [];
   let taskIndex = 1;
   const totalTasks = drafts.length;
 
-  const projectId = context.project?._id || context.project?.id;
-  const parentWbsNodeId = context.wbsNode?._id || context.wbsNode?.name;
+  let projectId: string | undefined;
+  if (ctx.project?._id != null) {
+    projectId = String(ctx.project._id);
+  } else if (ctx.project?.id != null) {
+    projectId = String(ctx.project.id);
+  }
+  const parentWbsNodeId = ctx.wbsNode?._id || ctx.wbsNode?.name;
 
   for (const draft of drafts) {
-    const task: Record<string, any> = {
+    const task: Record<string, unknown> = {
       name: String(draft.name || `Tarefa ${taskIndex}`).trim(),
       description: (draft.description || '').trim() || undefined,
       // Canonical fields used by Task schema/DTO
       project: projectId,
       parentWbsNodeId,
-      wbsPath: context.path,
+      wbsPath: ctx.path,
 
       // Backward-compatible aliases (some clients used these)
       projectId,
@@ -227,7 +233,7 @@ export function convertDraftsToTasks(
     taskIndex++;
   }
 
-  return tasks as Task[];
+  return tasks as unknown as Task[];
 }
 
 export function mapDraftsToTasks(params: MapDraftsToTasksParams): GeneratedTaskDto[] {

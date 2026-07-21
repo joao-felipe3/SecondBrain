@@ -1,3 +1,4 @@
+import { Types } from 'mongoose';
 import { Task } from '../../tasks/entities/task.entity';
 import { WBSNodeDto } from '../dto/wbs.dto';
 import { MicroTaskDraft, WBSLeafProjectContext } from './drafts.interface';
@@ -299,7 +300,7 @@ export interface LegacyGeneratedTask {
 
 export interface DraftToTaskContext {
   wbsNode?: WBSNodeDto;
-  project?: { _id?: any; id?: any };
+  project?: { _id?: string | Types.ObjectId | null; id?: string | null };
   path?: string;
 }
 
@@ -308,7 +309,7 @@ export interface DraftsWithPlanCacheParams {
   node: WBSNodeDto;
   nodePath: string;
   chunkMinutes: number[];
-  plan: any;
+  plan?: Record<string, unknown> | null;
   modelOverride?: string;
 }
 

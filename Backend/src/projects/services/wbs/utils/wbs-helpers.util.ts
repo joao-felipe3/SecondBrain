@@ -1,3 +1,5 @@
+import { WBSNodeDto } from '../../../dto/wbs.dto';
+
 // Infer cognitive type from task title and description
 export function inferCognitiveType(title?: string, description?: string): string {
   const text = `${title || ''} ${description || ''}`.toLowerCase();
@@ -40,7 +42,7 @@ export function extractChecklistSteps(description?: string): string[] | undefine
 
   for (const line of lines) {
     // Match numbered steps: "1. ...", "2) ...", "3- ...", etc
-    const match = line.match(/^\s*\d+[\.\)\-\:]?\s+(.+)$/);
+    const match = line.match(/^\s*\d+[.)\-:]?\s+(.+)$/);
 
     if (match && match[1]) {
       const step = match[1].trim();
@@ -57,7 +59,7 @@ export function extractChecklistSteps(description?: string): string[] | undefine
   // Fallback: bullet points
   const bullets: string[] = [];
   for (const line of lines) {
-    const match = line.match(/^\s*[\-\*\•]\s+(.+)$/);
+    const match = line.match(/^\s*[-*•]\s+(.+)$/);
     if (match && match[1]) {
       const step = match[1].trim();
       if (step.length >= 5) {
@@ -74,15 +76,15 @@ export function extractChecklistSteps(description?: string): string[] | undefine
 }
 
 // Returns all "leaf" nodes from a WBS tree,
-export function getLeafNodesWithPaths(nodes: any[]): Array<{
-  node: any;
+export function getLeafNodesWithPaths(nodes: WBSNodeDto[]): Array<{
+  node: WBSNodeDto;
   path: string;
   level: number;
 }> {
-  const leafNodes: Array<{ node: any; path: string; level: number }> = [];
+  const leafNodes: Array<{ node: WBSNodeDto; path: string; level: number }> = [];
 
   // Recursive function to traverse WBS nodes
-  const traverse = (nodeList: any[], parentPath: string = '', level: number = 1) => {
+  const traverse = (nodeList: WBSNodeDto[], parentPath: string = '', level: number = 1) => {
     for (const node of nodeList) {
       // Build the readable path to the current node
       const nodePath = parentPath ? `${parentPath} > ${node.name}` : node.name;

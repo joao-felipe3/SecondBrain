@@ -36,7 +36,7 @@ export interface CompletionFeedbackPromptParams {
  */
 export interface NextStepsPromptParams {
   taskName: string;
-  feedback: any;
+  feedback?: string | Record<string, unknown> | null;
 }
 
 /**

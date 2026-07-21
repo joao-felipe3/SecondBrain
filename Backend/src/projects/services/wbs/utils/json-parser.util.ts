@@ -23,16 +23,17 @@ export function repairJsonString(raw: string): string {
   s = s.replace(/[\u2018\u2019\u2032]/g, "'");
 
   // Remove control characters except \t \n \r
+  // eslint-disable-next-line no-control-regex
   s = s.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, ' ');
 
   // Normalize literal escaped newline sequences in string values: \n → \\n etc.
   // (Gemma sometimes outputs real newlines inside JSON strings)
   // We'll handle this by replacing newlines inside string values only — risky to do globally,
   // so just replace raw \r\n inside strings with space.
-  s = s.replace(/([^\\])(\r?\n)(\s*[^"\[\{])/g, (_, pre, _nl, post) => pre + ' ' + post);
+  s = s.replace(/([^\\])(\r?\n)(\s*[^"[{])/g, (_, pre, _nl, post: string) => pre + ' ' + post);
 
   // Remove trailing commas before ] or }
-  s = s.replace(/,\s*([\]\}])/g, '$1');
+  s = s.replace(/,\s*([\]}])/g, '$1');
 
   // Remove duplicate commas
   s = s.replace(/,\s*,/g, ',');
@@ -54,13 +55,13 @@ export function repairJsonString(raw: string): string {
  * Try to salvage an incomplete/malformed JSON array by extracting complete objects.
  * Returns an empty array if nothing can be salvaged.
  */
-function extractPartialArray(raw: string): any[] {
+function extractPartialArray(raw: string): Record<string, unknown>[] {
   // Find array start
   const arrStart = raw.indexOf('[');
   if (arrStart === -1) return [];
 
   const content = raw.slice(arrStart + 1);
-  const objects: any[] = [];
+  const objects: Record<string, unknown>[] = [];
 
   // Split on object boundaries: },{ or },\n{
   const parts = content.split(/\}\s*,\s*\{/);
@@ -78,9 +79,9 @@ function extractPartialArray(raw: string): any[] {
     chunk = chunk.trim();
     if (!chunk.startsWith('{')) chunk = '{' + chunk;
     try {
-      const parsed = JSON.parse(repairJsonString(chunk));
+      const parsed: unknown = JSON.parse(repairJsonString(chunk));
       if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
-        objects.push(parsed);
+        objects.push(parsed as Record<string, unknown>);
       }
     } catch {
       // Salvage failed for this chunk — skip it
@@ -94,7 +95,7 @@ function extractPartialArray(raw: string): any[] {
  * Extract and parse a JSON array from AI response.
  * Handles: markdown fences, truncation, malformed JSON, partial arrays.
  */
-export function extractJsonArray<T = any>(response: string): T[] {
+export function extractJsonArray<T = unknown>(response: string): T[] {
   if (!response || typeof response !== 'string') {
     throw new Error('Resposta da IA vazia');
   }
@@ -107,7 +108,7 @@ export function extractJsonArray<T = any>(response: string): T[] {
 
   // --- Attempt 1: direct parse ---
   try {
-    const parsed = JSON.parse(cleaned);
+    const parsed: unknown = JSON.parse(cleaned);
     if (Array.isArray(parsed)) return parsed as T[];
   } catch {
     /* fall through */
@@ -116,7 +117,7 @@ export function extractJsonArray<T = any>(response: string): T[] {
   // --- Attempt 2: repair then parse ---
   const repaired = repairJsonString(cleaned);
   try {
-    const parsed = JSON.parse(repaired);
+    const parsed: unknown = JSON.parse(repaired);
     if (Array.isArray(parsed)) return parsed as T[];
   } catch {
     /* fall through */
@@ -128,7 +129,7 @@ export function extractJsonArray<T = any>(response: string): T[] {
     console.warn(
       `[json-parser] extractJsonArray: parsing failed; salvaged ${salvaged.length} object(s) from partial response.`,
     );
-    return salvaged as T[];
+    return salvaged as unknown as T[];
   }
 
   // Nothing worked — throw with useful context
@@ -144,7 +145,7 @@ export function extractJsonArray<T = any>(response: string): T[] {
  * the partial one. We truncate there and close with `}`.
  * Handles multi-line values and quotes inside strings (Gemma's verbose rationales).
  */
-function salvageIncompleteObject(raw: string): any | null {
+function salvageIncompleteObject(raw: string): Record<string, unknown> | null {
   const objStart = raw.indexOf('{');
   if (objStart === -1) return null;
 
@@ -190,8 +191,10 @@ function salvageIncompleteObject(raw: string): any | null {
   }
 
   try {
-    const parsed = JSON.parse(repairJsonString(candidate));
-    if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) return parsed;
+    const parsed: unknown = JSON.parse(repairJsonString(candidate));
+    if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
+      return parsed as Record<string, unknown>;
+    }
   } catch {
     return null;
   }
@@ -202,7 +205,7 @@ function salvageIncompleteObject(raw: string): any | null {
  * Extract and parse a JSON object from AI response.
  * Handles: markdown fences, truncation, malformed JSON.
  */
-export function extractJsonObject<T = any>(response: string): T {
+export function extractJsonObject<T = unknown>(response: string): T {
   if (!response || typeof response !== 'string') {
     throw new Error('Resposta da IA vazia');
   }
@@ -215,7 +218,7 @@ export function extractJsonObject<T = any>(response: string): T {
 
   // --- Attempt 1: direct parse ---
   try {
-    const parsed = JSON.parse(cleaned);
+    const parsed: unknown = JSON.parse(cleaned);
     if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) return parsed as T;
   } catch {
     /* fall through */
@@ -224,7 +227,7 @@ export function extractJsonObject<T = any>(response: string): T {
   // --- Attempt 2: repair then parse ---
   const repaired = repairJsonString(cleaned);
   try {
-    const parsed = JSON.parse(repaired);
+    const parsed: unknown = JSON.parse(repaired);
     if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) return parsed as T;
   } catch {
     /* fall through */
@@ -234,7 +237,7 @@ export function extractJsonObject<T = any>(response: string): T {
   const salvaged = salvageIncompleteObject(repaired || cleaned);
   if (salvaged) {
     console.warn('[json-parser] extractJsonObject: salvaged truncated object from partial AI response.');
-    return salvaged as T;
+    return salvaged as unknown as T;
   }
 
   const preview = cleaned.slice(0, 120).replace(/\s+/g, ' ');

@@ -42,10 +42,10 @@ export class EVMProgressService {
     const project = await this.projectModel
       .findById(projectId)
       .select({ dashboardMetricPreferences: 1 })
-      .lean()
+      .lean<{ dashboardMetricPreferences?: EVMDashboardPreferencesInput } | null>()
       .exec();
 
-    return this.normalizeDashboardPreferences((project as any)?.dashboardMetricPreferences);
+    return this.normalizeDashboardPreferences(project?.dashboardMetricPreferences);
   }
 
   async saveDashboardPreferences(
@@ -112,7 +112,7 @@ export class EVMProgressService {
     return result.deletedCount > 0;
   }
 
-  normalizeDashboardPreferences(raw: any): EVMDashboardPreferences {
+  normalizeDashboardPreferences(raw?: EVMDashboardPreferencesInput | null): EVMDashboardPreferences {
     const mode = raw?.mode === 'manual' ? 'manual' : 'auto';
 
     return {

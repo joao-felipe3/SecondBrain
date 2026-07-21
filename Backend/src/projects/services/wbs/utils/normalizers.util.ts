@@ -132,7 +132,7 @@ export function mapCognitiveModeToContextTag(mode?: string): string {
  * Normalize workflow types into an array matching the total count
  */
 export function normalizeWorkflowTypes(types: string[], total: number): string[] {
-  if (!types || !types.length) return Array(total).fill('practice');
+  if (!types || !types.length) return Array.from({ length: total }, () => 'practice');
   if (types.length === total) return types.map((t) => normalizeMicroTaskType(t));
 
   // Distribute types evenly across total

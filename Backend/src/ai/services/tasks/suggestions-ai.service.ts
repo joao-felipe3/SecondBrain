@@ -42,18 +42,15 @@ export class SuggestionsAiService {
       maxOutputTokens: 512,
     });
 
-    const normalize = (value: unknown): string =>
-      String(value ?? '')
-        .replace(/\s+/g, ' ')
-        .trim();
+    const normalize = (value?: string | null): string => (value || '').replace(/\s+/g, ' ').trim();
 
     try {
-      const parsed = JSON.parse(raw);
+      const parsed = JSON.parse(raw) as Record<string, unknown>;
       const payload = {
-        praise: normalize(parsed?.praise),
-        learning: normalize(parsed?.learning),
-        nextStep: normalize(parsed?.nextStep),
-        finalText: String(parsed?.finalText ?? '').trim(),
+        praise: normalize(typeof parsed?.praise === 'string' ? parsed.praise : null),
+        learning: normalize(typeof parsed?.learning === 'string' ? parsed.learning : null),
+        nextStep: normalize(typeof parsed?.nextStep === 'string' ? parsed.nextStep : null),
+        finalText: typeof parsed?.finalText === 'string' ? parsed.finalText.trim() : '',
       };
 
       return JSON.stringify(payload);
@@ -62,7 +59,7 @@ export class SuggestionsAiService {
         praise: '',
         learning: '',
         nextStep: '',
-        finalText: String(raw ?? '').trim(),
+        finalText: typeof raw === 'string' ? raw.trim() : '',
       });
     }
   }
@@ -79,19 +76,21 @@ export class SuggestionsAiService {
       maxOutputTokens: 400,
     });
 
-    const parsed = this.safeParseJson(raw) || {};
+    const parsed = (this.safeParseJson(raw) as Record<string, unknown>) || {};
+    const getString = (val: unknown): string => (typeof val === 'string' ? val.trim() : '');
+
     return {
-      celebration: String(parsed.celebration || parsed.praise || '').trim(),
-      validation: String(parsed.validation || parsed.learning || '').trim(),
-      question: String(parsed.question || parsed.nextStep || '').trim(),
-      suggestion: String(parsed.suggestion || parsed.finalText || '').trim(),
+      celebration: getString(parsed.celebration) || getString(parsed.praise),
+      validation: getString(parsed.validation) || getString(parsed.learning),
+      question: getString(parsed.question) || getString(parsed.nextStep),
+      suggestion: getString(parsed.suggestion) || getString(parsed.finalText),
     };
   }
 
   async generateNextSteps(
     params: NextStepsPromptParams,
   ): Promise<Array<{ title: string; description: string }>> {
-    const { taskName, feedback } = params;
+    const { taskName } = params;
     const prompt = buildGeminiNextStepsPrompt(params);
 
     try {
@@ -103,10 +102,10 @@ export class SuggestionsAiService {
 
       const parsed = this.safeParseJson(raw);
       if (Array.isArray(parsed) && parsed.length > 0) {
-        return parsed
-          .map((item: any) => ({
-            title: String(item.title || '').trim(),
-            description: String(item.description || '').trim(),
+        return (parsed as Array<Record<string, unknown>>)
+          .map((item) => ({
+            title: typeof item.title === 'string' ? item.title.trim() : '',
+            description: typeof item.description === 'string' ? item.description.trim() : '',
           }))
           .filter((it) => it.title);
       }
@@ -130,7 +129,7 @@ export class SuggestionsAiService {
     userPrompt?: string;
     existingTaskNames?: string[];
     chunkHours?: number;
-  }): Promise<{ suggestions: any[]; isFallback: boolean }> {
+  }): Promise<{ suggestions: Record<string, unknown>[]; isFallback: boolean }> {
     const {
       projectName,
       shortTermGoal,
@@ -160,14 +159,13 @@ export class SuggestionsAiService {
         };
       }
 
-      const suggestions = parsed.map((item: any) => {
-        const anyItem = item as Record<string, unknown>;
+      const suggestions = (parsed as Array<Record<string, unknown>>).map((anyItem) => {
         return {
-          name: String(anyItem.name || ''),
-          deadline: anyItem.deadline ? String(anyItem.deadline) : undefined,
-          pomodoros: Number.isFinite(anyItem.pomodoros) ? Number(anyItem.pomodoros) : 0,
-          priority: Number.isFinite(anyItem.priority) ? Number(anyItem.priority) : 0,
-          difficulty: Number.isFinite(anyItem.difficulty) ? Number(anyItem.difficulty) : 0,
+          name: typeof anyItem.name === 'string' ? anyItem.name : '',
+          deadline: typeof anyItem.deadline === 'string' ? anyItem.deadline : undefined,
+          pomodoros: typeof anyItem.pomodoros === 'number' ? anyItem.pomodoros : 0,
+          priority: typeof anyItem.priority === 'number' ? anyItem.priority : 0,
+          difficulty: typeof anyItem.difficulty === 'number' ? anyItem.difficulty : 0,
           selected: Boolean(anyItem.selected),
         };
       });
@@ -181,7 +179,7 @@ export class SuggestionsAiService {
     }
   }
 
-  generateMockSuggestions(projectName: string): any[] {
+  generateMockSuggestions(projectName: string): Record<string, unknown>[] {
     const baseName = String(projectName || 'Projeto').trim();
     const today = new Date();
 
@@ -213,12 +211,12 @@ export class SuggestionsAiService {
     ];
   }
 
-  private safeParseJson(str: string): any {
+  private safeParseJson(str: string): unknown {
     if (!str) return null;
     try {
       return JSON.parse(str);
     } catch {
-      const extracted = extractJsonObject<any>(str);
+      const extracted = extractJsonObject<Record<string, unknown>>(str);
       if (extracted) return extracted;
       try {
         const match = str.match(/\[[\s\S]*\]|\{[\s\S]*\}/);

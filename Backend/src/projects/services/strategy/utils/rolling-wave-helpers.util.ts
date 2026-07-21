@@ -1,3 +1,4 @@
+import { Types } from 'mongoose';
 import {
   WbsNodeFlat,
   AIPlanWave,
@@ -6,11 +7,11 @@ import {
   DeterministicWbsNodeInput,
 } from '../../../interfaces/rolling-wave.interface';
 
-type TaskMetricsInput = DeterministicTaskInput & {
+export type TaskMetricsInput = DeterministicTaskInput & {
   pomodorosDid?: number | null;
   createdAt?: Date | string;
   deadline?: Date | string | null;
-  parentWbsNodeId?: string | null;
+  parentWbsNodeId?: string | Types.ObjectId | null;
 };
 
 function toDateOrNull(value: Date | string | null | undefined): Date | null {

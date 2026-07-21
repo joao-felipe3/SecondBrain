@@ -153,11 +153,12 @@ export class GeminiExecutorService {
       const model = this.genAI.getGenerativeModel({
         model: this.embeddingModel,
       });
-      const result: any = await model.embedContent(text);
-      return result?.embedding?.values || [];
-    } catch (error: any) {
-      const status = error?.status || error?.code;
-      const message = String(error?.message || error || '');
+      const result = await model.embedContent(text);
+      return result.embedding.values || [];
+    } catch (error: unknown) {
+      const errObj = error as { status?: number; code?: number; message?: string };
+      const status = errObj.status || errObj.code;
+      const message = typeof errObj.message === 'string' ? errObj.message : String(error);
       if (status === 404 || /not found|is not supported for embedContent/i.test(message)) {
         this.embeddingDisabled = true;
         if (!this.warnedEmbedding) {
@@ -169,7 +170,7 @@ export class GeminiExecutorService {
         return [];
       }
 
-      console.warn('Erro ao gerar embedding com Gemini:', error?.message || error);
+      console.warn('Erro ao gerar embedding com Gemini:', errObj.message || message);
       return [];
     }
   }
@@ -227,9 +228,9 @@ export class GeminiExecutorService {
     let attempt = 0;
     let baseModelAttempts = 0;
     let triedStrongModel = false;
-    let lastError: any;
+    let lastError: { status?: number; code?: number; message?: string } | null = null;
 
-    const isTransientOverload = (status: any, message: string) => {
+    const isTransientOverload = (status: number | undefined, message: string) => {
       const numericStatus = Number(status);
       if ([429, 500, 502, 503, 504].includes(numericStatus)) return true;
       return /overloaded|service unavailable|temporarily unavailable|try again later/i.test(message);
@@ -245,9 +246,10 @@ export class GeminiExecutorService {
         });
         this.trackModelUsage(currentModelName);
         return result.response.text();
-      } catch (err: any) {
-        const status = err?.status || err?.code;
-        const message = String(err?.message || err || '');
+      } catch (err: unknown) {
+        const errObj = err as { status?: number; code?: number; message?: string };
+        const status = errObj.status || errObj.code;
+        const message = typeof errObj.message === 'string' ? errObj.message : String(err);
 
         if (currentModelName === baseModelName) {
           baseModelAttempts++;
@@ -284,13 +286,13 @@ export class GeminiExecutorService {
           continue;
         }
 
-        lastError = err;
+        lastError = errObj;
         break;
       }
     }
 
     if (lastError && (lastError.status === 429 || lastError.code === 429)) {
-      const rateError: any = new Error('Gemini rate limit after retries');
+      const rateError = new Error('Gemini rate limit after retries') as Error & { code?: string };
       rateError.code = 'RATE_LIMIT';
       throw rateError;
     }

@@ -74,8 +74,9 @@ export class RollingWaveAIService {
         `Estrutura de ondas sugerida: ${parsed.recommendedWaveCount} ondas em ${parsed.totalDurationDays} dias`,
       );
       return parsed;
-    } catch (error: any) {
-      this.logger.warn(`Erro ao chamar Gemini para estrutura: ${error.message}`);
+    } catch (error: unknown) {
+      const errMsg = error instanceof Error ? error.message : String(error);
+      this.logger.warn(`Erro ao chamar Gemini para estrutura: ${errMsg}`);
       return null;
     }
   }
@@ -84,7 +85,7 @@ export class RollingWaveAIService {
    * Determinar alocação de WBS para cada onda
    */
   async planWaveGrouping(params: PlanWaveGroupingParams): Promise<AIPlan | null> {
-    const { project, tasks, waveCount, wbsTree, dailyCapacityHours } = params;
+    const { project, tasks, waveCount } = params;
     try {
       const modelName = process.env.GEMINI_STRONG_MODEL || 'gemini-2.5-flash-lite';
 
@@ -105,7 +106,8 @@ export class RollingWaveAIService {
       );
 
       const wbsTaskCount = new Map<string, number>();
-      const tasksByWbs = new Map<string, any[]>();
+      type TaskItem = PlanWaveGroupingParams['tasks'][number];
+      const tasksByWbs = new Map<string, TaskItem[]>();
 
       for (const task of tasks) {
         const wbsPath = task.wbsPath || 'SEM_WBS';
@@ -170,7 +172,8 @@ export class RollingWaveAIService {
       for (const wave of normalizedPlan.waves) {
         const taskIds: string[] = [];
         const wbsAllocation = wave.wbsAllocation || {};
-        for (const [wbs, quantityNeeded] of Object.entries(wbsAllocation)) {
+        for (const wbs of Object.keys(wbsAllocation)) {
+          const quantityNeeded = wbsAllocation[wbs];
           const tasksInWbs = tasksByWbs.get(wbs) || [];
           const startIndex = taskCursorByWbs.get(wbs) || 0;
           const safeQuantityNeeded = Math.max(0, Number(quantityNeeded) || 0);
@@ -178,7 +181,10 @@ export class RollingWaveAIService {
           const selectedTasks = tasksInWbs.slice(startIndex, startIndex + safeQuantityNeeded);
 
           for (const task of selectedTasks) {
-            taskIds.push(String(task._id || task.id));
+            const rawId = task._id || task.id;
+            if (rawId != null) {
+              taskIds.push(String(rawId));
+            }
           }
 
           taskCursorByWbs.set(wbs, startIndex + selectedTasks.length);
@@ -197,15 +203,18 @@ export class RollingWaveAIService {
         `[GEMINI] Agrupamento (WBS-based) retornou: ${normalizedPlan.waves.length} ondas`,
       );
       for (const wave of normalizedPlan.waves) {
-        const wbsList = Object.entries(wave.wbsAllocation || {})
-          .map(([w, c]) => `${w}(${c})`)
+        const wbsList = Object.keys(wave.wbsAllocation || {})
+          .map((w) => `${w}(${wave.wbsAllocation[w]})`)
           .join(', ');
         this.logger.debug(
           `[GEMINI] Wave ${wave.waveNumber}: ${wave.durationDays}d, ${wave.taskIds.length} tasks | Desc: "${wave.description}" | WBS=[${wbsList}]`,
         );
       }
 
-      const allTaskIds = tasks.map((t) => String(t._id || t.id));
+      const allTaskIds = tasks
+        .map((t) => (t._id || t.id ? String(t._id || t.id) : null))
+        .filter((id): id is string => id !== null);
+
       const taskCountByWave = normalizedPlan.waves.map((w) => w.taskIds.length);
       const allocatedUniqueTaskIds = new Set(normalizedPlan.waves.flatMap((w) => w.taskIds));
       const missingTaskCount = allTaskIds.length - allocatedUniqueTaskIds.size;
@@ -229,8 +238,9 @@ export class RollingWaveAIService {
       }
 
       return normalizedPlan;
-    } catch (error: any) {
-      this.logger.warn(`Erro ao chamar Gemini para agrupamento WBS: ${error.message}`);
+    } catch (error: unknown) {
+      const errMsg = error instanceof Error ? error.message : String(error);
+      this.logger.warn(`Erro ao chamar Gemini para agrupamento WBS: ${errMsg}`);
       return null;
     }
   }

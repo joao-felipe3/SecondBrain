@@ -1,8 +1,9 @@
 import { WBSNodeDto } from '../../../projects/dto/wbs.dto';
 import { normalizeWorkflowTypes } from '../../../projects/services/wbs/utils/normalizers.util';
+import { WBSLeafProjectContext } from '../../../projects/interfaces/drafts.interface';
 
 export function buildMicroTaskDetailsPrompt(params: {
-  project: any;
+  project?: WBSLeafProjectContext | null;
   node: WBSNodeDto;
   currentPath: string;
   level: number;
@@ -61,7 +62,7 @@ Use hoje como ${today}.`;
 }
 
 export function buildMicroTaskDetailsBatchPrompt(params: {
-  project: any;
+  project?: WBSLeafProjectContext | null;
   node: WBSNodeDto;
   currentPath: string;
   level: number;
@@ -89,7 +90,7 @@ export function buildMicroTaskDetailsBatchPrompt(params: {
 
   const tasksBlock = params.items
     .map((it, i) => {
-      const o = it.outline || ({} as any);
+      const o = it.outline;
       return [
         `${i + 1}) name: "${String(o.name || '').trim()}"`,
         `   targetMinutes: ${it.targetMinutes}min`,
@@ -134,7 +135,7 @@ Use hoje como ${today}.`;
 }
 
 export function buildMicroTasksGeneratorPrompt(params: {
-  project: any;
+  project?: WBSLeafProjectContext | null;
   node: WBSNodeDto;
   currentPath: string;
   level: number;

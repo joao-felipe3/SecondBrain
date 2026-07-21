@@ -1,6 +1,7 @@
 import { Injectable, Inject, forwardRef } from '@nestjs/common';
 import { GeminiService } from '../../../../ai/services/core/gemini.service';
 import { WBSNodeDto } from '../../../dto/wbs.dto';
+import { WBSLeafProjectContext } from '../../../interfaces/drafts.interface';
 import {
   MIN_EMBEDDING_TEXT_LENGTH,
   MIN_EMBEDDING_SEGMENTS,
@@ -23,7 +24,7 @@ export class ThemeExtractionService {
    * Get theme suggestions using heuristics and keyword matching (fallback)
    * (Fast, no AI calls) - Private: used as fallback only
    */
-  private getThemeSuggestions(params: { project?: any; node: WBSNodeDto }): {
+  private getThemeSuggestions(params: { project?: WBSLeafProjectContext; node: WBSNodeDto }): {
     category: 'vocab' | 'tech' | 'general';
     themes: string[];
   } {
@@ -161,7 +162,10 @@ export class ThemeExtractionService {
    * Get theme suggestions using embeddings and clustering
    * (Slower, requires AI calls, more accurate for complex descriptions)
    */
-  async getThemeSuggestionsForLeaf(params: { project?: any; node: WBSNodeDto }): Promise<{
+  async getThemeSuggestionsForLeaf(params: {
+    project?: WBSLeafProjectContext;
+    node: WBSNodeDto;
+  }): Promise<{
     category: 'vocab' | 'tech' | 'general' | 'embedding';
     themes: string[];
   }> {
@@ -222,10 +226,7 @@ export class ThemeExtractionService {
    */
   extractThemeSegments(text: string): string[] {
     if (!text) return [];
-    const cleaned = text
-      .replace(/\r/g, ' ')
-      .replace(/\t/g, ' ')
-      .replace(/\u0000/g, ' ');
+    const cleaned = text.split('\r').join(' ').split('\t').join(' ').split('\0').join(' ');
 
     const parts = cleaned
       .split(/[\n;•]+/)

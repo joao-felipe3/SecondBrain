@@ -15,13 +15,13 @@ export class WbsPersistenceService {
 
   // Save WBS nodes to the database
   async save(projectId: string, nodes: WBSNodeDto[]): Promise<WBSNodeDocument[]> {
-    const deleteResult = await this.wbsNodeModel.deleteMany({ projectId }).exec();
     const savedNodes: WBSNodeDocument[] = [];
 
     // Clean _id from all nodes recursively before saving
     const cleanNodeIds = (nodeList: WBSNodeDto[]): WBSNodeDto[] => {
       return nodeList.map((node) => {
-        const { _id, ...cleanNode } = node as any;
+        const cleanNode = { ...node };
+        delete cleanNode._id;
         return {
           ...cleanNode,
           children: node.children && node.children.length > 0 ? cleanNodeIds(node.children) : [],

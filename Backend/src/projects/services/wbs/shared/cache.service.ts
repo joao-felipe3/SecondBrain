@@ -1,9 +1,10 @@
 import { Injectable } from '@nestjs/common';
+import Redis from 'ioredis';
 
 @Injectable()
 export class CacheService {
-  private draftsCache = new Map<string, { value: any; exp: number }>();
-  private redisClient: any = null;
+  private draftsCache = new Map<string, { value: unknown; exp: number }>();
+  private redisClient: Redis | null = null;
   private cacheTTLSeconds = 60 * 60 * 24; // 24h
 
   constructor() {
@@ -14,10 +15,7 @@ export class CacheService {
     try {
       const redisUrl = process.env.REDIS_URL?.trim();
       if (redisUrl) {
-        // Dynamically require to avoid hard dependency at compile-time
-
-        const IORedis = require('ioredis');
-        const redisClient = new IORedis(redisUrl, {
+        const redisClient = new Redis(redisUrl, {
           lazyConnect: true,
           enableOfflineQueue: false,
           maxRetriesPerRequest: 1,
@@ -50,7 +48,7 @@ export class CacheService {
           })
           .catch(() => disableRedis());
       }
-    } catch (err) {
+    } catch {
       // Redis not available — fallback to in-memory cache
       this.redisClient = null;
     }
@@ -74,7 +72,7 @@ export class CacheService {
   private logCache(
     event: 'hit' | 'miss' | 'set' | 'clear',
     key: string,
-    extra?: Record<string, any>,
+    extra?: Record<string, unknown>,
   ): void {
     if (!this.isCacheDebugEnabled()) return;
     const payload = {
@@ -87,10 +85,11 @@ export class CacheService {
     console.log(`[CacheService][cache:${event}]`, payload);
   }
 
-  async get<T = any>(key: string): Promise<T | null> {
+  async get<T = unknown>(key: string): Promise<T | null> {
     try {
-      if (this.redisClient) {
-        const raw = await this.redisClient.get(key);
+      const client = this.redisClient;
+      if (client) {
+        const raw = await client.get(key);
         if (!raw) {
           this.logCache('miss', key);
           return null;
@@ -98,7 +97,7 @@ export class CacheService {
         this.logCache('hit', key);
         return JSON.parse(raw) as T;
       }
-    } catch (err) {
+    } catch {
       // ignore redis errors
     }
 
@@ -116,17 +115,18 @@ export class CacheService {
     return entry.value as T;
   }
 
-  async set(key: string, value: any): Promise<void> {
+  async set(key: string, value: unknown): Promise<void> {
     try {
-      if (this.redisClient) {
-        await this.redisClient.set(key, JSON.stringify(value), 'EX', this.cacheTTLSeconds);
+      const client = this.redisClient;
+      if (client) {
+        await client.set(key, JSON.stringify(value), 'EX', this.cacheTTLSeconds);
         this.logCache('set', key, {
           ttlSeconds: this.cacheTTLSeconds,
-          items: value?.length || 0,
+          items: Array.isArray(value) ? value.length : 0,
         });
         return;
       }
-    } catch (err) {
+    } catch {
       // ignore redis errors
     }
 
@@ -134,7 +134,7 @@ export class CacheService {
     this.draftsCache.set(key, { value, exp });
     this.logCache('set', key, {
       ttlSeconds: this.cacheTTLSeconds,
-      items: value?.length || 0,
+      items: Array.isArray(value) ? value.length : 0,
     });
   }
 
@@ -146,27 +146,28 @@ export class CacheService {
     const prefix2 = `drafts_with_plan:${projectId}:`;
 
     try {
-      if (this.redisClient) {
+      const client = this.redisClient;
+      if (client) {
         // Use SCAN to iterate keys safely
         let cursor = '0';
         let deleted = 0;
 
         do {
           // scan for prefix1
-          const [next, keys] = await this.redisClient.scan(cursor, 'MATCH', `${prefix1}*`, 'COUNT', 100);
+          const [next, keys] = await client.scan(cursor, 'MATCH', `${prefix1}*`, 'COUNT', 100);
           cursor = next;
           if (keys && keys.length) {
-            await Promise.all(keys.map((k: string) => this.redisClient.del(k)));
+            await Promise.all(keys.map((k: string) => client.del(k)));
             deleted += keys.length;
           }
         } while (cursor !== '0');
 
         cursor = '0';
         do {
-          const [next, keys] = await this.redisClient.scan(cursor, 'MATCH', `${prefix2}*`, 'COUNT', 100);
+          const [next, keys] = await client.scan(cursor, 'MATCH', `${prefix2}*`, 'COUNT', 100);
           cursor = next;
           if (keys && keys.length) {
-            await Promise.all(keys.map((k: string) => this.redisClient.del(k)));
+            await Promise.all(keys.map((k: string) => client.del(k)));
             deleted += keys.length;
           }
         } while (cursor !== '0');

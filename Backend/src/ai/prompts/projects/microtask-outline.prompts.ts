@@ -1,8 +1,9 @@
 import { WBSNodeDto } from '../../../projects/dto/wbs.dto';
 import { normalizeWorkflowTypes } from '../../../projects/services/wbs/utils/normalizers.util';
+import { WBSLeafProjectContext } from '../../../projects/interfaces/drafts.interface';
 
 export function buildMicroTasksOutlinePrompt(params: {
-  project: any;
+  project?: WBSLeafProjectContext | null;
   node: WBSNodeDto;
   currentPath: string;
   level: number;
@@ -65,7 +66,7 @@ Use hoje como ${today}.`;
 }
 
 export function buildMicroTasksOutlineWithPlanPrompt(params: {
-  project: any;
+  project?: WBSLeafProjectContext | null;
   node: WBSNodeDto;
   currentPath: string;
   level: number;
@@ -146,7 +147,7 @@ Use hoje como ${today}.`;
 }
 
 export function buildMicroTasksPlannerPrompt(params: {
-  project: any;
+  project?: WBSLeafProjectContext | null;
   node: WBSNodeDto;
   currentPath: string;
   level: number;
@@ -202,7 +203,7 @@ FORMATO DE RESPOSTA OBRIGATÓRIO (JSON válido, sem markdown):
 }
 
 export function buildMicroTasksPrompt(params: {
-  project: any;
+  project?: WBSLeafProjectContext | null;
   node: WBSNodeDto;
   currentPath: string;
   level: number;

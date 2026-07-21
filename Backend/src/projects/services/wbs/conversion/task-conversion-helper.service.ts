@@ -74,7 +74,7 @@ export class TaskConversionHelperService {
       const plan = { themes: [{ name: node.name }], workflow: ['execute'] };
       const cacheKey = buildDraftsWithPlanCacheKey({ projectId, node, nodePath, chunkMinutes, plan });
 
-      const cached = (await this.cacheService.get(cacheKey)) as unknown;
+      const cached = await this.cacheService.get(cacheKey);
       let drafts: MicroTaskDraft[];
       if (cached && Array.isArray(cached) && cached.length > 0) {
         drafts = cached as MicroTaskDraft[];

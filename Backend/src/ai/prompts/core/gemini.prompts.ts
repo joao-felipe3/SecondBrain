@@ -55,10 +55,7 @@ export function buildPertEstimatePrompt(params: PertEstimatePromptParams): strin
 
 export function buildCompletionFeedbackPrompt(params: CompletionFeedbackPromptParams): string {
   const { taskName, taskDescription } = params;
-  const normalize = (value: unknown): string =>
-    String(value ?? '')
-      .replace(/\s+/g, ' ')
-      .trim();
+  const normalize = (value?: string | null): string => (value || '').replace(/\s+/g, ' ').trim();
 
   return [
     'Você é um mentor de produtividade e aprendizado.',
@@ -89,12 +86,14 @@ export function buildCompletionFeedbackPrompt(params: CompletionFeedbackPromptPa
 
 export function buildGeminiNextStepsPrompt(params: NextStepsPromptParams): string {
   const { taskName, feedback } = params;
-  return [
+  const feedbackText: string =
+    typeof feedback === 'string' ? feedback : String(JSON.stringify(feedback || ''));
+  const lines: string[] = [
     'Você é um assistente de produtividade e mentor de execução.',
     'Com base na tarefa recém-concluída e no feedback do usuário, sugira de 2 a 3 ações futuras ou próximas tarefas lógicas.',
     '',
     `Tarefa Concluída: "${taskName}"`,
-    `Feedback/Reflexão: "${typeof feedback === 'string' ? feedback : JSON.stringify(feedback)}"`,
+    `Feedback/Reflexão: "${feedbackText}"`,
     '',
     'FORMATO DE RETORNO:',
     'Responda APENAS com um array JSON válido de objetos.',
@@ -104,7 +103,8 @@ export function buildGeminiNextStepsPrompt(params: NextStepsPromptParams): strin
     '[',
     '  { "title": "Nome da ação sugerida", "description": "Explicação breve de por que fazer isso e como começar" }',
     ']',
-  ].join('\n');
+  ];
+  return lines.join('\n');
 }
 
 export function buildTaskSuggestionsPrompt(params: TaskSuggestionsPromptParams): string {

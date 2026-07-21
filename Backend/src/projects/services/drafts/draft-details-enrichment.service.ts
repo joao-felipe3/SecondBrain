@@ -30,7 +30,7 @@ export class DraftDetailsEnrichmentService {
         ? await this.enrichWithoutBatching(dto, detailsConcurrency)
         : await this.enrichWithBatching(dto, detailsBatchSize, detailsBatchConcurrency);
 
-    return validateDrafts(enriched) as MicroTaskDraft[];
+    return validateDrafts(enriched);
   }
 
   private async enrichWithoutBatching(

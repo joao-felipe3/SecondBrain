@@ -132,7 +132,7 @@ export class ConfigService {
     return new Date().toISOString();
   }
 
-  logIfTimingDebug(message: string, data?: any): void {
+  logIfTimingDebug(message: string, data?: Record<string, unknown>): void {
     if (this.isTimingDebugEnabled()) {
       const ts = this.getNowIso();
       const output = data ? { ts, message, ...data } : { ts, message };
@@ -141,7 +141,7 @@ export class ConfigService {
     }
   }
 
-  logIfCacheDebug(message: string, data?: any): void {
+  logIfCacheDebug(message: string, data?: Record<string, unknown>): void {
     if (this.isCacheDebugEnabled()) {
       const ts = this.getNowIso();
       const output = data ? { ts, message, ...data } : { ts, message };
@@ -150,7 +150,7 @@ export class ConfigService {
     }
   }
 
-  logIfVerboseTaskLogs(message: string, data?: any): void {
+  logIfVerboseTaskLogs(message: string, data?: Record<string, unknown>): void {
     if (this.isVerboseTaskLogsEnabled()) {
       const ts = this.getNowIso();
       const output = data ? { ts, message, ...data } : { ts, message };
@@ -161,7 +161,7 @@ export class ConfigService {
 
   // ============ Summary/Debug Info ============
 
-  getSummary(): any {
+  getSummary(): Record<string, unknown> {
     return {
       generation: {
         modelOverride: this.getWbsGenerationModelOverride() || 'default',
