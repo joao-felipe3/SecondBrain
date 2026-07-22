@@ -18,7 +18,7 @@ import * as Joi from 'joi';
     MongooseModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
-      useFactory: async (configService: ConfigService) => ({
+      useFactory: (configService: ConfigService) => ({
         uri: configService.get<string>('MONGODB_URI'),
         // Endurecer conexao para Atlas em redes instaveis.
         maxPoolSize: Number(configService.get('MONGODB_MAX_POOL_SIZE') || 10),

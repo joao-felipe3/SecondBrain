@@ -60,13 +60,27 @@ export class ProjectsController {
 
   private buildLeafBufferKey(
     projectId: string,
-    leafNode: any,
+    leafNode: Record<string, unknown> | null | undefined,
     nodePath: string,
-    preferences: any,
+    preferences: Record<string, unknown> | null | undefined,
   ): string {
     const fingerprint = {
       v: 1,
-      nodeId: leafNode?._id ? String(leafNode._id) : undefined,
+      nodeId: (() => {
+        if (!leafNode || typeof leafNode !== 'object' || !('_id' in leafNode)) return undefined;
+        const rawId = (leafNode as { _id?: unknown })._id;
+        if (typeof rawId === 'string') return rawId;
+        if (typeof rawId === 'number') return String(rawId);
+        if (
+          rawId &&
+          typeof rawId === 'object' &&
+          'toString' in rawId &&
+          typeof rawId.toString === 'function'
+        ) {
+          return (rawId as { toString(): string }).toString();
+        }
+        return undefined;
+      })(),
       nodeName: leafNode?.name,
       nodeDesc: leafNode?.description,
       estimatedHours: leafNode?.estimatedHours,
@@ -132,7 +146,7 @@ export class ProjectsController {
   })
   @ApiResponse({ status: 200, description: 'Micro-tasks returned.' })
   async getMicroTasks(@Param('id') id: string, @Query('status') status?: string) {
-    const query: any = { project: id };
+    const query: Record<string, unknown> = { project: id };
     if (status) query.status = String(status);
     // Primary: kanbanOrder asc, Secondary: priority desc, Tertiary: deadline asc
     return this.taskModel.find(query).sort({ kanbanOrder: 1, priority: -1, deadline: 1 }).exec();
@@ -315,7 +329,7 @@ export class ProjectsController {
   @Post(':id/wbs/validate')
   @ApiOperation({ summary: 'Validate WBS nodes against 8/80 rule' })
   @ApiResponse({ status: 200, description: 'Validation result.' })
-  async validateWBS(@Param('id') id: string, @Body() dto: SaveWBSDto) {
+  validateWBS(@Param('id') _id: string, @Body() dto: SaveWBSDto) {
     return this.validation.validateTree(dto.nodes);
   }
 
@@ -400,9 +414,17 @@ export class ProjectsController {
       auditsApplied: result.auditsApplied,
       summary: {
         totalTasks: result.createdTasks.length,
-        totalPomodoros: result.createdTasks.reduce((sum, t: any) => sum + (t.pomodorosPlanned || 0), 0),
+        totalPomodoros: (result.createdTasks as Record<string, unknown>[]).reduce(
+          (sum: number, t: Record<string, unknown>) =>
+            sum + (typeof t.pomodorosPlanned === 'number' ? t.pomodorosPlanned : 0),
+          0,
+        ),
         estimatedHours: (
-          result.createdTasks.reduce((sum, t: any) => sum + (t.pomodorosPlanned || 0), 0) * 0.5
+          (result.createdTasks as Record<string, unknown>[]).reduce(
+            (sum: number, t: Record<string, unknown>) =>
+              sum + (typeof t.pomodorosPlanned === 'number' ? t.pomodorosPlanned : 0),
+            0,
+          ) * 0.5
         ).toFixed(1),
       },
     };
@@ -413,7 +435,7 @@ export class ProjectsController {
     summary: 'Get all leaf nodes from WBS tree with their paths (for interactive generation)',
   })
   @ApiResponse({ status: 200, description: 'List of leaf nodes with paths' })
-  async getLeafNodes(@Param('id') id: string, @Body() dto: GetLeafNodesDto) {
+  getLeafNodes(@Param('id') _id: string, @Body() dto: GetLeafNodesDto) {
     const leafNodes = this.wbsService.getLeafNodesWithPaths(dto.nodes);
 
     return {
@@ -438,7 +460,12 @@ export class ProjectsController {
     console.log(`🔄 Gerando tasks para leaf: "${dto.leafNode.name}"...`);
 
     const preferences = dto.preferences || {};
-    const currentKey = this.buildLeafBufferKey(id, dto.leafNode as any, dto.nodePath, preferences);
+    const currentKey = this.buildLeafBufferKey(
+      id,
+      dto.leafNode as unknown as Record<string, unknown>,
+      dto.nodePath,
+      preferences as Record<string, unknown>,
+    );
 
     // Start prefetch for upcoming leaves in parallel (buffer).
     const prefetchLeafs = Array.isArray(dto.prefetchLeafs) ? dto.prefetchLeafs : [];
@@ -446,7 +473,12 @@ export class ProjectsController {
       if (!p?.leafNode || !p?.nodePath) continue;
       // Skip if user accidentally included current leaf.
       if (String(p.nodePath) === String(dto.nodePath)) continue;
-      const key = this.buildLeafBufferKey(id, p.leafNode as any, p.nodePath, preferences);
+      const key = this.buildLeafBufferKey(
+        id,
+        p.leafNode as unknown as Record<string, unknown>,
+        p.nodePath,
+        preferences as Record<string, unknown>,
+      );
       this.leafBuffer.prefetch(key, id, async () => {
         return this.wbsService.generateTasksForSingleLeaf({
           leafNode: p.leafNode,
@@ -463,7 +495,9 @@ export class ProjectsController {
     // If current leaf is already prefetched, consume it instantly.
     // Safety: only do this for interactive preview (saveTasks=false), so we never skip persistence.
     const shouldUseBuffer = !(dto.saveTasks || false);
-    const buffered = shouldUseBuffer ? await this.leafBuffer.consume<any>(currentKey) : null;
+    const buffered = shouldUseBuffer
+      ? await this.leafBuffer.consume<{ tasks?: unknown[] }>(currentKey)
+      : null;
     if (buffered) {
       console.log(`⚡ Buffer hit for leaf: "${dto.leafNode.name}"`);
       console.log(`✅ ${buffered.tasks?.length || 0} tasks preparadas`);
@@ -475,9 +509,9 @@ export class ProjectsController {
       };
     }
 
-    let result: any;
+    let result: { tasks: unknown[] };
     try {
-      result = await this.wbsService.generateTasksForSingleLeaf({
+      result = (await this.wbsService.generateTasksForSingleLeaf({
         leafNode: dto.leafNode,
         nodePath: dto.nodePath,
         projectId: id,
@@ -485,19 +519,25 @@ export class ProjectsController {
         tasksService: this.tasksService,
         preferences,
         saveTasks: dto.saveTasks || false,
-      });
-    } catch (err: any) {
-      if (err?.code === 'RATE_LIMIT') {
-        const retryAfterMs = Number(err?.retryAfterMs);
+      })) as { tasks: unknown[] };
+    } catch (err: unknown) {
+      const errorObj = err as {
+        code?: string;
+        retryAfterMs?: number;
+        isQuotaExceeded?: boolean;
+        model?: string;
+      };
+      if (errorObj?.code === 'RATE_LIMIT') {
+        const retryAfterMs = Number(errorObj?.retryAfterMs);
         throw new HttpException(
           {
-            message: err?.isQuotaExceeded
+            message: errorObj?.isQuotaExceeded
               ? 'Limite/Quota do Gemini atingido. Tente novamente mais tarde ou aumente a quota/billing.'
               : 'Rate limit do Gemini. Aguarde e tente novamente.',
             code: 'RATE_LIMIT',
-            isQuotaExceeded: !!err?.isQuotaExceeded,
+            isQuotaExceeded: !!errorObj?.isQuotaExceeded,
             retryAfterMs: Number.isFinite(retryAfterMs) ? retryAfterMs : undefined,
-            model: err?.model,
+            model: errorObj?.model,
           },
           HttpStatus.TOO_MANY_REQUESTS,
         );
@@ -612,9 +652,9 @@ export class ProjectsController {
   })
   async recalculateAllStats() {
     const projects = await this.projectsService.findAll();
-    const results: any[] = [];
+    const results: Record<string, unknown>[] = [];
     for (const project of projects) {
-      const projectId = (project as any)._id.toString();
+      const projectId = String(project._id);
       const updated = await this.projectsService.recalculateProjectStats(projectId);
       // Skip if project was deleted during the loop
       if (updated) {

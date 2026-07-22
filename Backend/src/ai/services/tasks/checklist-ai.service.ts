@@ -1,5 +1,6 @@
 import { Injectable, Inject, forwardRef } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import Redis from 'ioredis';
 import { GeminiService } from '../core/gemini.service';
 import { buildChecklistGenerationPrompt, buildChecklistWithHistoryPrompt } from '../../prompts';
 import { ChecklistPromptParams, ChecklistWithHistoryPromptParams } from '../../interfaces';
@@ -7,7 +8,7 @@ import { ChecklistPromptParams, ChecklistWithHistoryPromptParams } from '../../i
 @Injectable()
 export class ChecklistAiService {
   private readonly checklistCache = new Map<string, { value: string[]; exp: number }>();
-  private checklistRedisClient: any = null;
+  private checklistRedisClient: Redis | null = null;
   private readonly checklistCacheTtlSeconds = 60 * 60;
 
   constructor(
@@ -23,8 +24,7 @@ export class ChecklistAiService {
       const redisUrl = this.configService.get<string>('REDIS_URL') || process.env.REDIS_URL;
       if (!redisUrl) return;
 
-      const IORedis = require('ioredis');
-      const redisClient = new IORedis(redisUrl, {
+      const redisClient = new Redis(redisUrl, {
         lazyConnect: true,
         enableOfflineQueue: false,
         maxRetriesPerRequest: 1,
@@ -69,8 +69,8 @@ export class ChecklistAiService {
       if (this.checklistRedisClient) {
         const raw = await this.checklistRedisClient.get(key);
         if (!raw) return null;
-        const parsed = JSON.parse(raw);
-        return Array.isArray(parsed) ? parsed : null;
+        const parsed = JSON.parse(raw) as unknown;
+        return Array.isArray(parsed) ? (parsed as string[]) : null;
       }
     } catch {
       // fallback to memory
@@ -118,7 +118,7 @@ export class ChecklistAiService {
       }
 
       if (row && typeof row === 'object') {
-        const value = row.item;
+        const value = (row as Record<string, unknown>).item;
         if (typeof value === 'string' && value.trim()) {
           unique.add(value.trim());
         }
@@ -138,7 +138,7 @@ export class ChecklistAiService {
       .trim();
 
     try {
-      const parsed = JSON.parse(cleaned);
+      const parsed = JSON.parse(cleaned) as unknown;
       const items = this.normalizeChecklistItems(parsed);
       if (items.length > 0) return items;
     } catch {
@@ -169,7 +169,7 @@ export class ChecklistAiService {
   }
 
   async generateChecklistForTask(params: ChecklistPromptParams): Promise<string[]> {
-    const { taskName, description, microTaskType } = params;
+    const { taskName, microTaskType } = params;
     const key = this.getChecklistCacheKey(taskName, microTaskType);
     const cached = await this.getChecklistCache(key);
     if (cached && cached.length > 0) return cached;
@@ -195,7 +195,7 @@ export class ChecklistAiService {
   }
 
   async generateChecklistWithHistory(params: ChecklistWithHistoryPromptParams): Promise<string[]> {
-    const { taskName, description, microTaskType, historicalContext } = params;
+    const { taskName, microTaskType, historicalContext } = params;
     if (!historicalContext || historicalContext.trim() === '') {
       return this.generateChecklistForTask(params);
     }

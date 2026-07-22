@@ -194,7 +194,7 @@ export interface BuildWavesOptions {
 }
 
 export interface ReplanWaveInput {
-  status: 'planned' | 'active' | 'completed' | string;
+  status: 'planned' | 'active' | 'completed' | (string & {});
   taskIds: Array<string | Types.ObjectId>;
   waveNumber: number;
   startDate: Date | string;

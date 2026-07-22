@@ -25,7 +25,7 @@ export class WbsAiService {
   ) {}
 
   // Generate WBS nodes from a SMART objective
-  async generateWbs(smartObjective: GenerateWbsInput): Promise<any[]> {
+  async generateWbs(smartObjective: GenerateWbsInput): Promise<Record<string, unknown>[]> {
     const prompt = buildWbsGenerationPrompt(smartObjective);
     try {
       const response = await this.geminiService.generateContent(prompt);
@@ -39,11 +39,11 @@ export class WbsAiService {
           .trim();
       }
 
-      const parsed = JSON.parse(cleanResponse);
+      const parsed = JSON.parse(cleanResponse) as unknown;
       if (!Array.isArray(parsed)) {
         throw new Error('Resposta da IA não é um array JSON válido');
       }
-      return parsed;
+      return parsed as Record<string, unknown>[];
     } catch (error) {
       console.error('[WbsAiService] Erro ao gerar WBS:', error);
       throw new Error('Não foi possível gerar a WBS com IA');
@@ -82,11 +82,17 @@ export class WbsAiService {
     let response: string;
     try {
       response = await attemptCall(2048, 0.2);
-    } catch (err: any) {
+    } catch {
       response = await attemptCall(4096, 0.1);
     }
 
-    const parsed = extractJsonObject<any>(response);
+    const parsed = extractJsonObject<{
+      diagnosis?: string;
+      suggestedAction?: string;
+      rationale?: string;
+      suggestedEstimatedHours?: unknown;
+    }>(response);
+
     const diagnosisRaw = String(parsed?.diagnosis || '').trim();
     const diagnosis: 'underestimated' | 'gold_plating' | 'mixed' =
       diagnosisRaw === 'gold_plating'
@@ -113,10 +119,12 @@ export class WbsAiService {
   }
 
   // Regenerate a batch of drafts to resolve monotony issues
-  async fixMonotonyBatch(params: FixMonotonyBatchParams): Promise<any[]> {
+  async fixMonotonyBatch(params: FixMonotonyBatchParams): Promise<Record<string, unknown>[]> {
     const prompt = buildFixMonotonyPrompt(params);
-    const isJsonishError = (err: any) => {
-      const msg = String(err?.message || err || '').toLowerCase();
+    const isJsonishError = (err: unknown) => {
+      const msg = String(
+        err && typeof err === 'object' && 'message' in err ? err.message : err,
+      ).toLowerCase();
       return (
         msg.includes('json') ||
         msg.includes('truncad') ||
@@ -134,7 +142,7 @@ export class WbsAiService {
         temperature: opts.temperature,
         model: params.modelOverride,
       });
-      const parsed = extractJsonArray<any>(response);
+      const parsed = extractJsonArray<Record<string, unknown>>(response);
       if (!Array.isArray(parsed) || parsed.length !== params.indices.length) {
         throw new Error(
           `IA retornou ${Array.isArray(parsed) ? parsed.length : 0} itens; esperado ${params.indices.length}`,
@@ -145,7 +153,7 @@ export class WbsAiService {
 
     try {
       return await attempt({ maxOutputTokens: 1400, temperature: 0.65 });
-    } catch (err: any) {
+    } catch (err: unknown) {
       if (isJsonishError(err)) {
         return await attempt({ maxOutputTokens: 2200, temperature: 0.35 });
       } else {
@@ -159,9 +167,10 @@ export class WbsAiService {
     if (typeof value === 'number') {
       return Number.isFinite(value) && value > 0 ? value : undefined;
     }
-    const raw = String(value).trim();
+    if (typeof value !== 'string') return undefined;
+    const raw = value.trim();
     if (!raw) return undefined;
-    const match = raw.match(/\d+(?:[\.,]\d+)?/);
+    const match = raw.match(/\d+(?:[.,]\d+)?/);
     if (!match) return undefined;
     const normalized = match[0].replace(',', '.');
     const n = Number(normalized);

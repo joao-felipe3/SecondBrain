@@ -69,17 +69,21 @@ describe('TasksService', () => {
       generateContent: jest.fn(),
       generateChecklistForTask: jest
         .fn()
-        .mockResolvedValue(['Preparar contexto', 'Executar tarefa', 'Validar entrega']),
+        .mockImplementation(() =>
+          Promise.resolve(['Preparar contexto', 'Executar tarefa', 'Validar entrega']),
+        ),
       generateChecklistWithHistory: jest
         .fn()
-        .mockResolvedValue(['Preparar contexto', 'Executar tarefa', 'Validar entrega']),
+        .mockImplementation(() =>
+          Promise.resolve(['Preparar contexto', 'Executar tarefa', 'Validar entrega']),
+        ),
     };
 
     checklistServiceMock = {
       validateChecklistStructure: jest.fn().mockReturnValue({
         isValid: true,
       }),
-      findSimilarTasksInProject: jest.fn().mockResolvedValue([]),
+      findSimilarTasksInProject: jest.fn().mockImplementation(() => Promise.resolve([])),
       enrichHistoryContext: jest.fn().mockReturnValue(''),
       calculateCompletionPercentage: jest.fn().mockReturnValue(0),
       validateChecklistCompletion: jest.fn().mockImplementation((items: unknown) => {
@@ -99,7 +103,7 @@ describe('TasksService', () => {
     feedbackModelMock = {};
 
     const taskRepositoryMock = {
-      findAll: jest.fn().mockResolvedValue([]),
+      findAll: jest.fn<any>().mockResolvedValue([]),
       findById: jest.fn().mockImplementation((id: string) => {
         if (taskModelMock.findById) {
           const queryObj = taskModelMock.findById(id) as { exec?: () => Promise<unknown> };
@@ -249,7 +253,7 @@ describe('TasksService', () => {
   describe('validateCompletionRequirements', () => {
     it('deve permitir conclusão de tarefa sem checklist', async () => {
       const taskId = new Types.ObjectId();
-      const mockTaskFind = jest.fn().mockResolvedValue({
+      const mockTaskFind = jest.fn<any>().mockResolvedValue({
         _id: taskId,
         checklist: [],
       });
@@ -261,7 +265,7 @@ describe('TasksService', () => {
 
     it('deve permitir conclusão de hábito sem checklist', async () => {
       const taskId = new Types.ObjectId();
-      const mockTaskFind = jest.fn().mockResolvedValue({
+      const mockTaskFind = jest.fn<any>().mockResolvedValue({
         _id: taskId,
         microTaskType: 'habit',
         recurringRule: { frequency: 'daily', interval: 1 },
@@ -276,7 +280,7 @@ describe('TasksService', () => {
 
     it('deve rejeitar conclusão quando checklist legado está como string[] (0%)', async () => {
       const taskId = new Types.ObjectId();
-      const mockTaskFind = jest.fn().mockResolvedValue({
+      const mockTaskFind = jest.fn<any>().mockResolvedValue({
         _id: taskId,
         checklist: ['Item 1', 'Item 2', 'Item 3'],
       });
@@ -289,7 +293,7 @@ describe('TasksService', () => {
 
     it('deve rejeitar conclusão com checklist incompleto (50%)', async () => {
       const taskId = new Types.ObjectId();
-      const mockTaskFind = jest.fn().mockResolvedValue({
+      const mockTaskFind = jest.fn<any>().mockResolvedValue({
         _id: taskId,
         checklist: [
           { item: 'item1', completed: true },
@@ -321,7 +325,7 @@ describe('TasksService', () => {
           { item: 'item1', completed: false, order: 0 },
           { item: 'item2', completed: false, order: 1 },
         ],
-        save: jest.fn().mockResolvedValue({
+        save: jest.fn<any>().mockResolvedValue({
           checklist: [
             { item: 'item1', completed: true, order: 0 },
             { item: 'item2', completed: false, order: 1 },
@@ -329,7 +333,7 @@ describe('TasksService', () => {
         }),
       };
 
-      const execFind = jest.fn().mockResolvedValue(mockTask);
+      const execFind = jest.fn<any>().mockResolvedValue(mockTask);
       taskModelMock.findById = jest.fn().mockReturnValue({ exec: execFind });
 
       // Nota: Este é um teste estrutural. Para teste completo, seria necessário
@@ -348,7 +352,7 @@ describe('TasksService', () => {
 
     it('deve rejeitar index fora do range', () => {
       const taskId = new Types.ObjectId();
-      const mockTaskFind = jest.fn().mockResolvedValue({
+      const mockTaskFind = jest.fn<any>().mockResolvedValue({
         _id: taskId,
         checklist: [{ item: 'item1', completed: false }],
       });

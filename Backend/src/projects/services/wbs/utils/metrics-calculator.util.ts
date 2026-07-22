@@ -253,7 +253,7 @@ export function kMeansClusters(
     centroids.forEach((c, cIdx) => {
       const members = clusters[cIdx];
       if (!members.length) return;
-      const next = new Array(c.length).fill(0);
+      const next: number[] = new Array<number>(c.length).fill(0);
       members.forEach((idx) => {
         const v = vectors[idx];
         for (let i = 0; i < v.length; i++) next[i] += v[i];

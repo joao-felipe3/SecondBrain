@@ -1,13 +1,14 @@
 import { Injectable, Inject, forwardRef } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import Redis from 'ioredis';
 import { GeminiService } from '../core/gemini.service';
 import { buildPertEstimatePrompt } from '../../prompts';
 import { PertEstimatePromptParams } from '../../interfaces';
 
 @Injectable()
 export class PertAiService {
-  private readonly pertCache = new Map<string, { value: any; exp: number }>();
-  private checklistRedisClient: any = null;
+  private readonly pertCache = new Map<string, { value: unknown; exp: number }>();
+  private checklistRedisClient: Redis | null = null;
   private readonly pertCacheTtlSeconds = 24 * 60 * 60;
 
   constructor(
@@ -23,8 +24,7 @@ export class PertAiService {
       const redisUrl = this.configService.get<string>('REDIS_URL') || process.env.REDIS_URL;
       if (!redisUrl) return;
 
-      const IORedis = require('ioredis');
-      const redisClient = new IORedis(redisUrl, {
+      const redisClient = new Redis(redisUrl, {
         lazyConnect: true,
         enableOfflineQueue: false,
         maxRetriesPerRequest: 1,
@@ -65,7 +65,7 @@ export class PertAiService {
     return `pert:${type}:${desc}`;
   }
 
-  private async getPertCache(key: string): Promise<any | null> {
+  private async getPertCache(key: string): Promise<any> {
     try {
       if (this.checklistRedisClient) {
         const raw = await this.checklistRedisClient.get(key);
@@ -152,9 +152,17 @@ export class PertAiService {
     recommendation: string;
     fromLLM: boolean;
   }> {
-    const { taskType, description, projectContext } = params;
+    const { taskType, description } = params;
     const cacheKey = this.getPertCacheKey(taskType, description);
-    const cached = await this.getPertCache(cacheKey);
+    const cached = (await this.getPertCache(cacheKey)) as {
+      optimistic: number;
+      likely: number;
+      pessimistic: number;
+      expectedTime: number;
+      standardDeviation: number;
+      recommendation: string;
+      fromLLM: boolean;
+    } | null;
     if (cached) return cached;
 
     const prompt = buildPertEstimatePrompt(params);
@@ -166,7 +174,7 @@ export class PertAiService {
         temperature: 0.3,
       });
 
-      const parsed = JSON.parse(response);
+      const parsed = JSON.parse(response) as Record<string, unknown>;
       const optimistic = Number(parsed?.optimistic);
       const likely = Number(parsed?.likely);
       const pessimistic = Number(parsed?.pessimistic);
