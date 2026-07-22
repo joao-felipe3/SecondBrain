@@ -1,13 +1,13 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getModelToken } from '@nestjs/mongoose';
-import { WBSService } from '../../../../src/projects/services/wbs';
-import { WbsAiService } from '../../../../src/ai/services/projects/wbs-ai.service';
-import { WBSNodeDto } from '../../../../src/projects/dto/wbs.dto';
+import { WBSService } from '../../../../../src/projects/services/wbs';
+import { WbsAiService } from '../../../../../src/ai/services/projects/wbs-ai.service';
+import { WBSNodeDto } from '../../../../../src/projects/dto/wbs.dto';
 import {
   WbsPersistenceService,
   WbsGenerationService,
   WbsConversionOrchestrationService,
-} from '../../../../src/projects/services/wbs';
+} from '../../../../../src/projects/services/wbs';
 
 interface MockModelType {
   (data?: Record<string, unknown>): Record<string, unknown>;
@@ -26,7 +26,6 @@ describe('WBSService', () => {
     generate: jest.fn(),
   };
 
-  // Use a factory function for the model
   function createMockModel(data?: Record<string, unknown>): Record<string, unknown> {
     return {
       ...data,
@@ -35,7 +34,6 @@ describe('WBSService', () => {
   }
 
   beforeEach(async () => {
-    // Reset mocks
     jest.clearAllMocks();
 
     const MockModel = jest

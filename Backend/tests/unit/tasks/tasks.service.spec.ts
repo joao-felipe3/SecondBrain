@@ -12,7 +12,7 @@ import { FeedbackService } from '../../../src/tasks/services/intelligence/feedba
 import { AlertsService } from '../../../src/tasks/services/monitoring/alerts.service';
 import { DeviationDetectionService } from '../../../src/tasks/services/monitoring/deviation-detection.service';
 import { beforeEach, describe, expect, it, jest } from '@jest/globals';
-import { createTasksServiceTestProviders } from './tasks-service-test-providers';
+import { createTasksServiceTestProviders } from './helpers/tasks-service-test-providers';
 import { CreateMicroTaskDto } from '../../../src/tasks/dto/task/create-micro-task.dto';
 import { TaskDocument } from '../../../src/tasks/schemas/task.schema';
 import { CreateTaskDto } from '../../../src/tasks/dto/task/create-task.dto';
@@ -102,6 +102,19 @@ describe('TasksService', () => {
 
     feedbackModelMock = {};
 
+    const projectModelMock = {
+      findById: jest.fn().mockReturnValue({
+        exec: jest
+          .fn()
+          .mockImplementation(() => Promise.resolve({ _id: new Types.ObjectId(), name: 'Project 1' })),
+      }),
+      findOne: jest.fn().mockReturnValue({
+        exec: jest
+          .fn()
+          .mockImplementation(() => Promise.resolve({ _id: new Types.ObjectId(), name: 'Project 1' })),
+      }),
+    };
+
     const taskRepositoryMock = {
       findAll: jest.fn<any>().mockResolvedValue([]),
       findById: jest.fn().mockImplementation((id: string) => {
@@ -135,7 +148,7 @@ describe('TasksService', () => {
         TasksService,
         { provide: 'TaskRepository', useValue: taskRepositoryMock },
         { provide: getModelToken('Task'), useValue: taskModelMock },
-        { provide: getModelToken('Project'), useValue: {} },
+        { provide: getModelToken('Project'), useValue: projectModelMock },
         {
           provide: getModelToken('TaskCompletionFeedback'),
           useValue: feedbackModelMock,
@@ -153,7 +166,7 @@ describe('TasksService', () => {
         },
         ...createTasksServiceTestProviders({
           taskModel: taskModelMock,
-          projectModel: {},
+          projectModel: projectModelMock,
           projectsService: projectsServiceMock,
           geminiService: geminiServiceMock,
           checklistService: checklistServiceMock,

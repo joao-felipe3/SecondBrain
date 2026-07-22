@@ -1,7 +1,7 @@
-import { EVMService, EVMProgressService } from '../../../../src/projects/services/evm';
-import { ProjectWaveDocument } from '../../../../src/projects/schemas/project-wave.schema';
-import { ProjectDocument } from '../../../../src/projects/schemas/project.schema';
-import { ProjectProgress } from '../../../../src/projects/schemas/project-progress.schema';
+import { EVMService, EVMProgressService } from '../../../../../src/projects/services/evm';
+import { ProjectWaveDocument } from '../../../../../src/projects/schemas/project-wave.schema';
+import { ProjectDocument } from '../../../../../src/projects/schemas/project.schema';
+import { ProjectProgress } from '../../../../../src/projects/schemas/project-progress.schema';
 import { Model, Types } from 'mongoose';
 
 describe('EVMService', () => {

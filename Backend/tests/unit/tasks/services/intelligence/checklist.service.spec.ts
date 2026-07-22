@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getModelToken } from '@nestjs/mongoose';
-import { ChecklistService } from '../../../../src/tasks/services/intelligence/checklist.service';
+import { ChecklistService } from '../../../../../src/tasks/services/intelligence/checklist.service';
 import { Types } from 'mongoose';
 
 describe('ChecklistService', () => {
@@ -165,7 +165,7 @@ describe('ChecklistService', () => {
         { completed: false },
         { completed: false },
       ]);
-      expect(result).toBe(33); // 1/3 = 0.333... → 33
+      expect(result).toBe(33);
     });
   });
 
