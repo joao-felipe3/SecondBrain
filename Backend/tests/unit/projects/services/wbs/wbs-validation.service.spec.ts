@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { WbsValidationService } from '../../../../src/projects/services/wbs/core/wbs-validation.service';
-import { WbsAiService } from '../../../../src/ai/services/projects/wbs-ai.service';
-import { WBSNodeDto } from '../../../../src/projects/dto/wbs.dto';
+import { WbsValidationService } from '../../../../../src/projects/services/wbs/core/wbs-validation.service';
+import { WbsAiService } from '../../../../../src/ai/services/projects/wbs-ai.service';
+import { WBSNodeDto } from '../../../../../src/projects/dto/wbs.dto';
 
 describe('WbsValidationService', () => {
   let service: WbsValidationService;

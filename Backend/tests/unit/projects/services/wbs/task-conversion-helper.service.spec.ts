@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { TaskConversionHelperService } from '../../../../src/projects/services/wbs/conversion/task-conversion-helper.service';
-import { AuditService, CacheService } from '../../../../src/projects/services/wbs';
-import { DraftGenerationService } from '../../../../src/projects/services/drafts';
+import { TaskConversionHelperService } from '../../../../../src/projects/services/wbs/conversion/task-conversion-helper.service';
+import { AuditService, CacheService } from '../../../../../src/projects/services/wbs';
+import { DraftGenerationService } from '../../../../../src/projects/services/drafts';
 
 describe('TaskConversionHelperService', () => {
   let service: TaskConversionHelperService;

@@ -1,10 +1,10 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getModelToken } from '@nestjs/mongoose';
-import { RollingWavePlanningService } from '../../../../src/projects/services/strategy/rolling-wave-planning.service';
-import { ProjectsService } from '../../../../src/projects/projects.service';
-import { WBSService } from '../../../../src/projects/services/wbs/core/wbs.service';
-import { RollingWaveAIService } from '../../../../src/ai/services/projects/rolling-wave-ai.service';
-import { ProjectWave } from '../../../../src/projects/schemas/project-wave.schema';
+import { RollingWavePlanningService } from '../../../../../src/projects/services/strategy/rolling-wave-planning.service';
+import { ProjectsService } from '../../../../../src/projects/projects.service';
+import { WBSService } from '../../../../../src/projects/services/wbs/core/wbs.service';
+import { RollingWaveAIService } from '../../../../../src/ai/services/projects/rolling-wave-ai.service';
+import { ProjectWave } from '../../../../../src/projects/schemas/project-wave.schema';
 
 describe('RollingWavePlanningService', () => {
   let service: RollingWavePlanningService;

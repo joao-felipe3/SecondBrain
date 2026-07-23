@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { MonotonyService } from '../../../../src/projects/services/wbs/core/monotony.service';
-import { WbsAiService } from '../../../../src/ai/services/projects/wbs-ai.service';
+import { MonotonyService } from '../../../../../src/projects/services/wbs/core/monotony.service';
+import { WbsAiService } from '../../../../../src/ai/services/projects/wbs-ai.service';
 
 describe('MonotonyService', () => {
   let service: MonotonyService;

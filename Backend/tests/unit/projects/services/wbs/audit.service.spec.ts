@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { AuditService } from '../../../../src/projects/services/wbs/core/audit.service';
-import { WbsAiService } from '../../../../src/ai/services/projects/wbs-ai.service';
+import { AuditService } from '../../../../../src/projects/services/wbs/core/audit.service';
+import { WbsAiService } from '../../../../../src/ai/services/projects/wbs-ai.service';
 
 describe('AuditService', () => {
   let service: AuditService;

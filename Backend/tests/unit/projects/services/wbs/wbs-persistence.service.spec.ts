@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getModelToken } from '@nestjs/mongoose';
-import { WbsPersistenceService } from '../../../../src/projects/services/wbs/core/wbs-persistence.service';
-import { CacheService } from '../../../../src/projects/services/wbs/shared/cache.service';
+import { WbsPersistenceService } from '../../../../../src/projects/services/wbs/core/wbs-persistence.service';
+import { CacheService } from '../../../../../src/projects/services/wbs/shared/cache.service';
 
 describe('WbsPersistenceService', () => {
   let service: WbsPersistenceService;

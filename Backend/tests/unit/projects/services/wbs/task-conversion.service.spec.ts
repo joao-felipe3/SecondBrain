@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { TaskConversionService } from '../../../../src/projects/services/wbs/conversion/task-conversion.service';
-import { TaskConversionHelperService } from '../../../../src/projects/services/wbs/conversion/task-conversion-helper.service';
+import { TaskConversionService } from '../../../../../src/projects/services/wbs/conversion/task-conversion.service';
+import { TaskConversionHelperService } from '../../../../../src/projects/services/wbs/conversion/task-conversion-helper.service';
 
 describe('TaskConversionService', () => {
   let service: TaskConversionService;
