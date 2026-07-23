@@ -37,7 +37,6 @@ describe('BufferService', () => {
 
   describe('calculateProjectBuffer', () => {
     it('deve calcular buffer como 50% da duração do caminho crítico', async () => {
-      // Arrange
       const tasks = [
         { taskId: 'task1', estimatedHours: 10, variance: 1, isCritical: true },
         { taskId: 'task2', estimatedHours: 15, variance: 2, isCritical: true },
@@ -52,7 +51,7 @@ describe('BufferService', () => {
 
       const mockBuffer = {
         projectId: mockProjectId,
-        projectBuffer: 12.5, // (10 + 15) * 0.5
+        projectBuffer: 12.5,
         consumed: 0,
         threshold: 75,
         criticalPathDuration: 25,
@@ -66,14 +65,12 @@ describe('BufferService', () => {
 
       mockModel.findOneAndUpdate.mockResolvedValue(mockBuffer);
 
-      // Act
       const result = await service.calculateProjectBuffer({
         projectId: mockProjectId,
         tasks,
         criticalPath,
       });
 
-      // Assert
       expect(result).not.toBeNull();
       expect(result!.projectBuffer).toBeCloseTo(12.5, 1);
       expect(result!.criticalPathDuration).toBe(25);
@@ -88,46 +85,38 @@ describe('BufferService', () => {
     });
 
     it('deve retornar buffer padrão se não houver caminho crítico', async () => {
-      // Arrange
       const tasks = [{ taskId: 'task1', estimatedHours: 10, variance: 0 }];
       const criticalPath: string[] = [];
 
-      // Act
       const result = await service.calculateProjectBuffer({
         projectId: mockProjectId,
         tasks,
         criticalPath,
       });
 
-      // Assert
       expect(result).not.toBeNull();
       expect(result!.projectBuffer).toBe(0);
     });
 
     it('deve usar desvio padrão se for maior que 50% da duração', async () => {
-      // Arrange
-      const tasks = [
-        { taskId: 'task1', estimatedHours: 10, variance: 25, isCritical: true }, // DP = 5
-      ];
+      const tasks = [{ taskId: 'task1', estimatedHours: 10, variance: 25, isCritical: true }];
       const criticalPath = ['task1'];
 
       const mockBuffer = {
         projectId: mockProjectId,
-        projectBuffer: 8.225, // max(10 * 0.5, 5 * 1.645)
+        projectBuffer: 8.225,
         consumed: 0,
         threshold: 75,
       };
 
       mockModel.findOneAndUpdate.mockResolvedValue(mockBuffer);
 
-      // Act
       const result = await service.calculateProjectBuffer({
         projectId: mockProjectId,
         tasks,
         criticalPath,
       });
 
-      // Assert
       expect(result).not.toBeNull();
       expect(result!.projectBuffer).toBeGreaterThan(5);
     });
@@ -135,7 +124,6 @@ describe('BufferService', () => {
 
   describe('consumeBuffer', () => {
     it('deve registrar consumo e incrementar contador', async () => {
-      // Arrange
       const mockBuffer = {
         projectId: mockProjectId,
         projectBuffer: 20,
@@ -145,10 +133,8 @@ describe('BufferService', () => {
 
       mockModel.findOneAndUpdate.mockResolvedValue(mockBuffer);
 
-      // Act
       const result = await service.consumeBuffer(mockProjectId, 5);
 
-      // Assert
       expect(result.consumed).toBe(5);
       expect(result.percentageUsed).toBe(25);
       expect(mockModel.findOneAndUpdate).toHaveBeenCalledWith(
@@ -159,7 +145,6 @@ describe('BufferService', () => {
     });
 
     it('deve disparar alerta se ultrapassar threshold', async () => {
-      // Arrange
       const mockBuffer = {
         projectId: mockProjectId,
         projectBuffer: 20,
@@ -169,10 +154,8 @@ describe('BufferService', () => {
 
       mockModel.findOneAndUpdate.mockResolvedValue(mockBuffer);
 
-      // Act
       const result = await service.consumeBuffer(mockProjectId, 5);
 
-      // Assert
       expect(result.percentageUsed).toBe(75);
       expect(result.isAlert).toBe(true);
     });
@@ -180,7 +163,6 @@ describe('BufferService', () => {
 
   describe('getBufferStatus', () => {
     it('deve retornar status correto do buffer', async () => {
-      // Arrange
       const mockBuffer = {
         projectId: mockProjectId,
         projectBuffer: 20,
@@ -190,10 +172,8 @@ describe('BufferService', () => {
 
       mockModel.findOne.mockResolvedValue(mockBuffer);
 
-      // Act
       const result = await service.getBufferStatus(mockProjectId);
 
-      // Assert
       expect(result.total).toBe(20);
       expect(result.consumed).toBe(5);
       expect(result.remaining).toBe(15);
@@ -202,13 +182,10 @@ describe('BufferService', () => {
     });
 
     it('deve retornar status padrão se buffer não existir', async () => {
-      // Arrange
       mockModel.findOne.mockResolvedValue(null);
 
-      // Act
       const result = await service.getBufferStatus(mockProjectId);
 
-      // Assert
       expect(result.total).toBe(0);
       expect(result.percentageUsed).toBe(0);
     });
@@ -216,7 +193,6 @@ describe('BufferService', () => {
 
   describe('checkBufferHealth', () => {
     it('deve gerar alerta em 50%', async () => {
-      // Arrange
       const mockBuffer = {
         projectId: mockProjectId,
         projectBuffer: 20,
@@ -226,17 +202,14 @@ describe('BufferService', () => {
 
       mockModel.findOne.mockResolvedValue(mockBuffer);
 
-      // Act
       const alerts = await service.checkBufferHealth(mockProjectId);
 
-      // Assert
       expect(alerts.length).toBe(1);
       expect(alerts[0].severity).toBe('warning');
       expect(alerts[0].percentageUsed).toBe(50);
     });
 
     it('deve gerar alerta crítico em 75%', async () => {
-      // Arrange
       const mockBuffer = {
         projectId: mockProjectId,
         projectBuffer: 20,
@@ -246,16 +219,13 @@ describe('BufferService', () => {
 
       mockModel.findOne.mockResolvedValue(mockBuffer);
 
-      // Act
       const alerts = await service.checkBufferHealth(mockProjectId);
 
-      // Assert
       expect(alerts.length).toBeGreaterThan(0);
       expect(alerts.some((a) => a.severity === 'critical')).toBe(true);
     });
 
     it('deve gerar alerta se buffer estiver 100% consumido', async () => {
-      // Arrange
       const mockBuffer = {
         projectId: mockProjectId,
         projectBuffer: 20,
@@ -265,28 +235,22 @@ describe('BufferService', () => {
 
       mockModel.findOne.mockResolvedValue(mockBuffer);
 
-      // Act
       const alerts = await service.checkBufferHealth(mockProjectId);
 
-      // Assert
       expect(alerts.some((a) => a.message.includes('completamente consumido')));
     });
 
     it('deve retornar array vazio se buffer não existir', async () => {
-      // Arrange
       mockModel.findOne.mockResolvedValue(null);
 
-      // Act
       const alerts = await service.checkBufferHealth(mockProjectId);
 
-      // Assert
       expect(alerts).toEqual([]);
     });
   });
 
   describe('resetBufferConsumption', () => {
     it('deve resetar consumo para 0', async () => {
-      // Arrange
       const mockBuffer = {
         projectId: mockProjectId,
         projectBuffer: 20,
@@ -296,10 +260,8 @@ describe('BufferService', () => {
 
       mockModel.findOneAndUpdate.mockResolvedValue(mockBuffer);
 
-      // Act
       const result = await service.resetBufferConsumption(mockProjectId);
 
-      // Assert
       expect(result).not.toBeNull();
       expect(result!.consumed).toBe(0);
       expect(mockModel.findOneAndUpdate).toHaveBeenCalledWith(
@@ -312,7 +274,6 @@ describe('BufferService', () => {
 
   describe('getBufferHistory', () => {
     it('deve retornar o histórico do buffer se ele existir', async () => {
-      // Arrange
       const date = new Date('2026-07-11T00:00:00.000Z');
       const mockBuffer = {
         projectId: mockProjectId,
@@ -322,10 +283,8 @@ describe('BufferService', () => {
       };
       mockModel.findOne.mockResolvedValue(mockBuffer);
 
-      // Act
       const result = await service.getBufferHistory(mockProjectId);
 
-      // Assert
       expect(result).toHaveLength(1);
       expect(result[0]).toEqual({
         date,
@@ -336,21 +295,16 @@ describe('BufferService', () => {
     });
 
     it('deve retornar array vazio se o buffer não for encontrado', async () => {
-      // Arrange
       mockModel.findOne.mockResolvedValue(null);
 
-      // Act
       const result = await service.getBufferHistory(mockProjectId);
 
-      // Assert
       expect(result).toEqual([]);
     });
   });
 
-  // Edge Cases
   describe('Edge Cases', () => {
     it('deve arredondar buffer a 1 decimal', async () => {
-      // Arrange
       const tasks = [
         {
           taskId: 'task1',
@@ -363,27 +317,24 @@ describe('BufferService', () => {
 
       const mockBuffer = {
         projectId: mockProjectId,
-        projectBuffer: 3.7, // 7.33 * 0.5 arredondado
+        projectBuffer: 3.7,
         consumed: 0,
         threshold: 75,
       };
 
       mockModel.findOneAndUpdate.mockResolvedValue(mockBuffer);
 
-      // Act
       const result = await service.calculateProjectBuffer({
         projectId: mockProjectId,
         tasks,
         criticalPath,
       });
 
-      // Assert
       expect(result).not.toBeNull();
       expect(result!.projectBuffer.toString().split('.')[1].length).toBeLessThanOrEqual(1);
     });
 
     it('deve lidar com buffer muito pequeno', async () => {
-      // Arrange
       const mockBuffer = {
         projectId: mockProjectId,
         projectBuffer: 0.1,
@@ -393,16 +344,13 @@ describe('BufferService', () => {
 
       mockModel.findOne.mockResolvedValue(mockBuffer);
 
-      // Act
       const result = await service.getBufferStatus(mockProjectId);
 
-      // Assert
       expect(result.total).toBe(0.1);
       expect(result.percentageUsed).toBeLessThanOrEqual(100);
     });
 
     it('deve lidar com consumo maior que buffer', async () => {
-      // Arrange
       const mockBuffer = {
         projectId: mockProjectId,
         projectBuffer: 20,
@@ -412,12 +360,10 @@ describe('BufferService', () => {
 
       mockModel.findOne.mockResolvedValue(mockBuffer);
 
-      // Act
       const result = await service.getBufferStatus(mockProjectId);
 
-      // Assert
       expect(result.percentageUsed).toBeLessThanOrEqual(125);
-      expect(result.remaining).toBe(0); // remaining não deve ser negativo
+      expect(result.remaining).toBe(0);
     });
   });
 });

@@ -77,7 +77,6 @@ describe('RTMService', () => {
 
   describe('generateRequirements', () => {
     it('deve gerar requisitos a partir de Smart Objective com IA', async () => {
-      // Arrange
       const smartObjective = {
         objective: 'Implementar sistema de vendas online',
         specific: 'Permitir que clientes comprem produtos',
@@ -100,10 +99,8 @@ describe('RTMService', () => {
 
       mockGeminiService.generateContent.mockResolvedValue(mockAIResponse);
 
-      // Act
       const result = await service.generateRequirements(smartObjective);
 
-      // Assert
       expect(result.length).toBe(2);
       expect(result[0].description).toContain('login');
       expect(result[1].type).toBe('non_functional');
@@ -111,32 +108,26 @@ describe('RTMService', () => {
     });
 
     it('deve retornar array vazio se Smart Objective for null', async () => {
-      // Act
       const result = await service.generateRequirements(
         null as unknown as Record<string, string | undefined>,
       );
 
-      // Assert
       expect(result).toEqual([]);
     });
 
     it('deve retornar array vazio se IA retornar valor inválido', async () => {
-      // Arrange
       mockGeminiService.generateContent.mockResolvedValue('invalid json');
 
-      // Act
       const result = await service.generateRequirements({
         objective: 'test',
       });
 
-      // Assert
       expect(result).toEqual([]);
     });
   });
 
   describe('mapRequirementToTask', () => {
     it('deve mapear um requisito para uma tarefa', async () => {
-      // Arrange
       const mockRequirement = {
         _id: mockRequirementId,
         projectId: mockProjectId,
@@ -148,14 +139,12 @@ describe('RTMService', () => {
 
       mockModel.findOneAndUpdate.mockResolvedValue(mockRequirement);
 
-      // Act
       const result = (await service.mapRequirementToTask({
         projectId: mockProjectId,
         requirementId: mockRequirementId,
         taskId: mockTaskId,
       })) as { traceableItems?: string[] } | null;
 
-      // Assert
       expect(result).not.toBeNull();
       expect(result?.traceableItems).toContain(mockTaskId);
       expect(mockModel.findOneAndUpdate).toHaveBeenCalledWith(
@@ -175,24 +164,20 @@ describe('RTMService', () => {
     });
 
     it('deve retornar null se requisito não existir', async () => {
-      // Arrange
       mockModel.findOneAndUpdate.mockResolvedValue(null);
 
-      // Act
       const result = (await service.mapRequirementToTask({
         projectId: mockProjectId,
         requirementId: mockRequirementId,
         taskId: mockTaskId,
       })) as unknown;
 
-      // Assert
       expect(result).toBeNull();
     });
   });
 
   describe('unmapRequirementFromTask', () => {
     it('deve remover mapeamento de requisito', async () => {
-      // Arrange
       const mockRequirement = {
         _id: mockRequirementId,
         description: 'Requisito de teste',
@@ -203,10 +188,8 @@ describe('RTMService', () => {
 
       mockModel.findByIdAndUpdate.mockResolvedValue(mockRequirement);
 
-      // Act
       const result = await service.unmapRequirementFromTask(mockRequirementId, mockTaskId);
 
-      // Assert
       expect(result).not.toBeNull();
       expect(mockModel.findByIdAndUpdate).toHaveBeenCalledWith(
         mockRequirementId,
@@ -223,7 +206,6 @@ describe('RTMService', () => {
 
   describe('validateRTM', () => {
     it('deve validar RTM e encontrar requisitos não mapeados', async () => {
-      // Arrange
       const mockRequirements = [
         {
           _id: 'req-1',
@@ -239,10 +221,8 @@ describe('RTMService', () => {
 
       mockModel.find.mockResolvedValue(mockRequirements);
 
-      // Act
       const result = await service.validateRTM(mockProjectId);
 
-      // Assert
       expect(result.isValid).toBe(false);
       expect(result.unmappedRequirements.length).toBe(1);
       expect(result.coverage).toBeLessThan(100);
@@ -250,7 +230,6 @@ describe('RTMService', () => {
     });
 
     it('deve retornar isValid=true se todos requisitos estão mapeados', async () => {
-      // Arrange
       const mockRequirements = [
         {
           _id: 'req-1',
@@ -261,17 +240,14 @@ describe('RTMService', () => {
 
       mockModel.find.mockResolvedValue(mockRequirements);
 
-      // Act
       const result = await service.validateRTM(mockProjectId);
 
-      // Assert
       expect(result.isValid).toBe(true);
       expect(result.unmappedRequirements).toEqual([]);
       expect(result.coverage).toBe(100);
     });
 
     it('deve alertar sobre requisitos mapeados para múltiplas tarefas', async () => {
-      // Arrange
       const mockRequirements = [
         {
           _id: 'req-1',
@@ -282,17 +258,14 @@ describe('RTMService', () => {
 
       mockModel.find.mockResolvedValue(mockRequirements);
 
-      // Act
       const result = await service.validateRTM(mockProjectId);
 
-      // Assert
       expect(result.risks.some((r) => r.includes('4 tarefas'))).toBe(true);
     });
   });
 
   describe('getRTMMatrix', () => {
     it('deve retornar matriz de rastreabilidade', async () => {
-      // Arrange
       const mockRequirements = [
         {
           _id: 'req-1',
@@ -314,26 +287,21 @@ describe('RTMService', () => {
         })
         .mockResolvedValueOnce(mockRequirements as any);
 
-      // Act
       const result = await service.getRTMMatrix(
         mockProjectId,
         mockTasks as unknown as Parameters<typeof service.getRTMMatrix>[1],
       );
 
-      // Assert
       expect(result.requirements.length).toBe(1);
       expect(result.tasks.length).toBe(2);
       expect(result.matrix.size).toBe(1);
     });
 
     it('deve retornar matriz vazia se não houver requisitos', async () => {
-      // Arrange
       mockModel.find.mockResolvedValue([]);
 
-      // Act
       const result = await service.getRTMMatrix(mockProjectId, []);
 
-      // Assert
       expect(result.requirements).toEqual([]);
       expect(result.matrix.size).toBe(0);
     });
@@ -341,7 +309,6 @@ describe('RTMService', () => {
 
   describe('saveRequirements', () => {
     it('deve salvar múltiplos requisitos', async () => {
-      // Arrange
       const requirementsData = [
         { description: 'Req 1', type: 'functional' },
         { description: 'Req 2', type: 'non_functional' },
@@ -356,10 +323,8 @@ describe('RTMService', () => {
         .mockResolvedValueOnce(mockSavedRequirements[0])
         .mockResolvedValueOnce(mockSavedRequirements[1]);
 
-      // Act
       const result = await service.saveRequirements(mockProjectId, requirementsData);
 
-      // Assert
       expect(result.length).toBe(2);
       expect(mockModel.create).toHaveBeenCalled();
     });
@@ -367,25 +332,19 @@ describe('RTMService', () => {
 
   describe('deleteRequirement', () => {
     it('deve deletar um requisito', async () => {
-      // Arrange
       mockModel.findByIdAndDelete.mockResolvedValue({ _id: mockRequirementId });
 
-      // Act
       const result = await service.deleteRequirement(mockRequirementId);
 
-      // Assert
       expect(result).toBe(true);
       expect(mockModel.findByIdAndDelete).toHaveBeenCalledWith(mockRequirementId);
     });
 
     it('deve retornar false se requisito não existir', async () => {
-      // Arrange
       mockModel.findByIdAndDelete.mockResolvedValue(null);
 
-      // Act
       const result = await service.deleteRequirement(mockRequirementId);
 
-      // Assert
       expect(result).toBe(false);
     });
   });

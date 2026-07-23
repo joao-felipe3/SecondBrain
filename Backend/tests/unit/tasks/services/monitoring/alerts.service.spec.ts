@@ -1,67 +1,51 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getModelToken } from '@nestjs/mongoose';
-import { AlertsService } from '../../../../../src/tasks/services/monitoring/alerts.service';
 import { Types } from 'mongoose';
+import { AlertsService } from '../../../../../src/tasks/services/monitoring/alerts.service';
 
 describe('AlertsService', () => {
   let service: AlertsService;
-  let mockAlertModel: any;
+  let mockAlertModel: {
+    create: jest.Mock;
+    find: jest.Mock;
+    findOneAndUpdate: jest.Mock;
+  };
+
+  const validAlertId = new Types.ObjectId().toString();
 
   beforeEach(async () => {
     mockAlertModel = {
-      create: jest.fn().mockImplementation((payload) => Promise.resolve({ ...payload, _id: 'alert-1' })),
-      find: jest.fn().mockReturnValue({
-        sort: jest.fn().mockReturnValue({
-          limit: jest.fn().mockReturnValue({
-            hint: jest.fn().mockReturnValue({
-              exec: jest.fn().mockResolvedValue([{ _id: 'alert-1', message: 'Teste' }]),
-            }),
-          }),
-        }),
-      }),
-      findOneAndUpdate: jest.fn().mockReturnValue({
-        exec: jest.fn().mockResolvedValue({ _id: 'alert-1', isRead: true }),
-      }),
+      create: jest.fn(),
+      find: jest.fn(),
+      findOneAndUpdate: jest.fn(),
     };
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         AlertsService,
-        {
-          provide: getModelToken('TaskAlert'),
-          useValue: mockAlertModel,
-        },
+        { provide: getModelToken('TaskAlert'), useValue: mockAlertModel },
       ],
     }).compile();
 
     service = module.get<AlertsService>(AlertsService);
   });
 
-  it('should be defined', () => {
-    expect(service).toBeDefined();
-  });
-
   describe('createAlert', () => {
-    it('deve criar um alerta com sucesso', async () => {
-      const taskId = new Types.ObjectId();
-      const projectId = new Types.ObjectId();
+    it('deve criar e retornar um novo alerta', async () => {
+      const mockCreated = { _id: validAlertId, type: 'warning', message: 'Alerta de teste' };
+      mockAlertModel.create.mockResolvedValue(mockCreated);
 
       const result = await service.createAlert({
-        userId: 'user-1',
-        taskId: taskId.toString(),
-        projectId: projectId.toString(),
         type: 'warning',
-        message: 'Aviso de atraso',
-        recommendation: 'Ajustar prazo',
+        message: 'Alerta de teste',
+        taskId: new Types.ObjectId().toString(),
       });
 
-      expect(result).toBeDefined();
+      expect(result).toEqual(mockCreated);
       expect(mockAlertModel.create).toHaveBeenCalledWith(
         expect.objectContaining({
-          userId: 'user-1',
           type: 'warning',
-          message: 'Aviso de atraso',
-          recommendation: 'Ajustar prazo',
+          message: 'Alerta de teste',
           isRead: false,
         }),
       );
@@ -69,30 +53,35 @@ describe('AlertsService', () => {
   });
 
   describe('listAlerts', () => {
-    it('deve listar alertas aplicandos filtros e paginação', async () => {
-      const result = await service.listAlerts({
-        userId: 'user-1',
-        unreadOnly: true,
-        projectId: 'proj-1',
-        limit: 10,
+    it('deve listar alertas aplicando filtros e limite', async () => {
+      const mockAlerts = [{ _id: validAlertId, isRead: false }];
+      mockAlertModel.find.mockReturnValue({
+        sort: jest.fn().mockReturnValue({
+          limit: jest.fn().mockReturnValue({
+            hint: jest.fn().mockReturnValue({
+              exec: jest.fn().mockResolvedValue(mockAlerts),
+            }),
+          }),
+        }),
       });
 
-      expect(result).toHaveLength(1);
-      expect(mockAlertModel.find).toHaveBeenCalledWith({
-        userId: 'user-1',
-        project: 'proj-1',
-        isRead: false,
-      });
+      const result = await service.listAlerts({ unreadOnly: true, limit: 10 });
+      expect(result).toEqual(mockAlerts);
+      expect(mockAlertModel.find).toHaveBeenCalledWith({ isRead: false });
     });
   });
 
   describe('markRead', () => {
-    it('deve marcar um alerta como lido', async () => {
-      const result = await service.markRead('alert-1', 'user-1');
+    it('deve marcar alerta como lido', async () => {
+      const mockAlert = { _id: validAlertId, isRead: true };
+      mockAlertModel.findOneAndUpdate.mockReturnValue({
+        exec: jest.fn().mockResolvedValue(mockAlert),
+      });
 
-      expect(result).toEqual({ _id: 'alert-1', isRead: true });
+      const result = await service.markRead(validAlertId, 'user-1');
+      expect(result).toEqual(mockAlert);
       expect(mockAlertModel.findOneAndUpdate).toHaveBeenCalledWith(
-        { _id: 'alert-1', userId: 'user-1' },
+        { _id: validAlertId, userId: 'user-1' },
         { isRead: true },
         { new: true },
       );

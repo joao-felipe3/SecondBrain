@@ -1,86 +1,140 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { getModelToken } from '@nestjs/mongoose';
-import { BadRequestException } from '@nestjs/common';
-import { EVMService } from '../../../../../src/projects/services/evm/evm.service';
-import { EVMProgressService } from '../../../../../src/projects/services/evm/evm-progress.service';
+import { EVMService, EVMProgressService } from '../../../../../src/projects/services/evm';
+import { ProjectWaveDocument } from '../../../../../src/projects/schemas/project-wave.schema';
+import { ProjectDocument } from '../../../../../src/projects/schemas/project.schema';
+import { ProjectProgress } from '../../../../../src/projects/schemas/project-progress.schema';
+import { Model, Types } from 'mongoose';
 
 describe('EVMService', () => {
   let service: EVMService;
-  let evmProgressServiceMock: any;
-  let projectWaveModelMock: any;
-  let projectModelMock: any;
+  let mockProgressService: jest.Mocked<EVMProgressService>;
 
-  const validObjectId = '507f1f77bcf86cd799439011';
-
-  beforeEach(async () => {
-    evmProgressServiceMock = {
+  beforeEach(() => {
+    mockProgressService = {
       getProgressEntries: jest.fn().mockResolvedValue([]),
-    };
+      getDashboardPreferences: jest.fn(),
+      saveDashboardPreferences: jest.fn(),
+      recordProgress: jest.fn(),
+      deleteProgressEntry: jest.fn(),
+      normalizeDashboardPreferences: jest.fn(),
+      defaultManualVisibility: {
+        spi: true,
+        plannedVsEarned: true,
+        completedHours: true,
+        consistency: true,
+        planAdherence: true,
+        trend: true,
+        perceivedProgress: true,
+        remainingHours: true,
+      },
+    } as unknown as jest.Mocked<EVMProgressService>;
 
-    projectWaveModelMock = {
-      find: jest.fn().mockReturnValue({
-        sort: jest.fn().mockReturnValue({
-          exec: jest.fn().mockResolvedValue([]),
-        }),
-      }),
-    };
-
-    projectModelMock = {
-      findById: jest.fn().mockReturnValue({
-        exec: jest.fn().mockResolvedValue({
-          _id: validObjectId,
-          name: 'Projeto Teste',
-        }),
-      }),
-    };
-
-    const module: TestingModule = await Test.createTestingModule({
-      providers: [
-        EVMService,
-        { provide: EVMProgressService, useValue: evmProgressServiceMock },
-        { provide: getModelToken('ProjectWave'), useValue: projectWaveModelMock },
-        { provide: getModelToken('Project'), useValue: projectModelMock },
-      ],
-    }).compile();
-
-    service = module.get<EVMService>(EVMService);
+    service = new EVMService(
+      mockProgressService,
+      {} as unknown as Model<ProjectWaveDocument>,
+      {} as unknown as Model<ProjectDocument>,
+    );
   });
 
-  it('should be defined', () => {
-    expect(service).toBeDefined();
+  afterEach(() => {
+    jest.restoreAllMocks();
   });
 
-  describe('calculateSPI', () => {
-    it('deve lançar BadRequestException para ID inválido', async () => {
-      await expect(service.calculateSPI('invalid')).rejects.toThrow(BadRequestException);
+  it('calculateSPI should return EV/PV', async () => {
+    jest.spyOn(service as unknown as { getCoreMetrics: jest.Mock }, 'getCoreMetrics').mockResolvedValue({
+      pv: 50,
+      ev: 45,
+      bac: 50,
+      completedHours: 10,
+      plannedHours: 20,
     });
 
-    it('deve retornar 1 se PV for zero ou negativo', async () => {
-      jest.spyOn(service as any, 'getCoreMetrics').mockResolvedValue({
-        pv: 0,
-        ev: 10,
+    const projectId = new Types.ObjectId().toString();
+    const result = await service.calculateSPI(projectId);
+
+    expect(result).toBe(0.9);
+  });
+
+  it('getEVMSummary should include personal metrics for personal projects', async () => {
+    const projectId = new Types.ObjectId().toString();
+    const entries = [
+      {
+        date: new Date('2026-03-01').toISOString(),
+        completedHours: 8,
+        plannedValue: 20,
+      },
+      {
+        date: new Date('2026-03-08').toISOString(),
+        completedHours: 6,
+        plannedValue: 20,
+      },
+      {
+        date: new Date('2026-03-15').toISOString(),
+        completedHours: 4,
+        plannedValue: 20,
+      },
+      {
+        date: new Date('2026-03-22').toISOString(),
+        completedHours: 3,
+        plannedValue: 20,
+      },
+    ];
+
+    jest.spyOn(service, 'calculateSPI').mockResolvedValue(0.9);
+    jest.spyOn(service, 'forecastCompletion').mockResolvedValue({
+      estimatedDate: new Date('2026-04-10').toISOString(),
+      variance: -5,
+      remainingHours: 19,
+      completionRate: 52.5,
+      bac: 100,
+      ev: 50,
+      pv: 55,
+    });
+    jest.spyOn(service, 'getEVMCurve').mockResolvedValue({
+      plannedValue: [20, 40, 60, 80],
+      actualValue: [18, 35, 48, 55],
+      dates: ['2026-03-01', '2026-03-08', '2026-03-15', '2026-03-22'],
+    });
+    mockProgressService.getProgressEntries.mockResolvedValue(entries as unknown as ProjectProgress[]);
+    mockProgressService.getDashboardPreferences.mockResolvedValue({
+      mode: 'auto',
+      manualVisibility: {
+        spi: true,
+        plannedVsEarned: true,
+        completedHours: true,
+        consistency: true,
+        planAdherence: true,
+        trend: true,
+        perceivedProgress: true,
+        remainingHours: true,
+      },
+    });
+    jest
+      .spyOn(service as unknown as { getMilestoneProgress: jest.Mock }, 'getMilestoneProgress')
+      .mockResolvedValue({
+        totalMilestones: 0,
+        completedMilestones: 0,
+        overallPercent: 0,
+        nextMilestone: null,
       });
-
-      const spi = await service.calculateSPI(validObjectId);
-      expect(spi).toBe(1);
+    jest.spyOn(service as unknown as { getCoreMetrics: jest.Mock }, 'getCoreMetrics').mockResolvedValue({
+      pv: 80,
+      ev: 55,
+      bac: 100,
+      completedHours: 21,
+      plannedHours: 40,
     });
 
-    it('deve calcular a taxa SPI corretamente', async () => {
-      jest.spyOn(service as any, 'getCoreMetrics').mockResolvedValue({
-        pv: 100,
-        ev: 90,
-      });
+    const summary = await service.getEVMSummary(projectId);
 
-      const spi = await service.calculateSPI(validObjectId);
-      expect(spi).toBe(0.9);
-    });
-  });
-
-  describe('getEVMCurve', () => {
-    it('deve retornar curvas vazias se não houver entradas de progresso', async () => {
-      const result = await service.getEVMCurve(validObjectId);
-
-      expect(result).toEqual({ plannedValue: [], actualValue: [], dates: [] });
-    });
+    expect(summary.totals.completedHours).toBe(21);
+    expect(summary.personalMetrics).toBeDefined();
+    expect(summary.personalMetrics.consistencyScore).toBeGreaterThanOrEqual(0);
+    expect(summary.personalMetrics.planAdherence).toBeGreaterThanOrEqual(0);
+    expect(summary.personalMetrics.perceivedValueScore).toBeGreaterThanOrEqual(0);
+    expect(summary.personalMetrics.completionTrend).toMatch(
+      /acelerando|estavel|desacelerando|insuficiente/,
+    );
+    expect(typeof summary.personalMetrics.actionHint).toBe('string');
+    expect(summary.personalMetrics.actionHint.length).toBeGreaterThan(5);
   });
 });

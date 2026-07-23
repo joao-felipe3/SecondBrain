@@ -40,7 +40,7 @@ export function sanitizeJSON(jsonString: string): string {
     result = result.replace(/,\s*}/g, '}');
     result = result.replace(/,\s*]/g, ']');
 
-    result = result.replace(/"([^"]*?)(['"])([^"]*?)"/g, (match, prefix, quote, suffix) => {
+    result = result.replace(/"([^"]*?)(['"])([^"]*?)"/g, (match, _prefix, quote) => {
       if (quote === "'") {
         return match;
       }
@@ -48,7 +48,7 @@ export function sanitizeJSON(jsonString: string): string {
     });
 
     return result;
-  } catch (e) {
+  } catch {
     return jsonString;
   }
 }
@@ -85,18 +85,19 @@ export function extractAndValidateJSON<T extends Record<string, any>>(
 
     jsonString = sanitizeJSON(jsonString);
 
-    const parsedAny: any = JSON.parse(jsonString);
+    const parsedObj = JSON.parse(jsonString) as Record<string, unknown>;
 
     for (const field of requiredFields) {
-      if (!(field in parsedAny)) {
+      if (!(field in parsedObj)) {
         logger?.warn(`[JSON_MISSING_FIELD] Campo obrigatório ausente: ${field}`);
         return null;
       }
     }
 
-    return parsedAny as T;
-  } catch (e: any) {
-    logger?.warn(`[JSON_PARSE_ERROR] ${e.message}\nResponse: ${responseText.substring(0, 400)}`);
+    return parsedObj as T;
+  } catch (e: unknown) {
+    const message = e instanceof Error ? e.message : String(e);
+    logger?.warn(`[JSON_PARSE_ERROR] ${message}\nResponse: ${responseText.substring(0, 400)}`);
     return null;
   }
 }

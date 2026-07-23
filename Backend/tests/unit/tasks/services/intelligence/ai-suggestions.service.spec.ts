@@ -6,74 +6,116 @@ import { TasksAiSuggestionsLoopRunner } from '../../../../../src/tasks/services/
 
 describe('TasksAiSuggestionsService', () => {
   let service: TasksAiSuggestionsService;
-  let mockTaskModel: any;
-  let geminiServiceMock: any;
-  let loopRunnerMock: any;
+  let mockTaskModel: {
+    find: jest.Mock;
+  };
+  let mockGeminiService: {
+    generateContent: jest.Mock;
+    getTaskSuggestions?: jest.Mock;
+  };
+  let mockLoopRunner: {
+    handleSuggestionsError: jest.Mock;
+    runGenerationLoop: jest.Mock;
+    runMultiBatchGenerationLoop?: jest.Mock;
+  };
 
   beforeEach(async () => {
     mockTaskModel = {
       find: jest.fn().mockReturnValue({
         select: jest.fn().mockReturnValue({
-          exec: jest.fn().mockResolvedValue([
-            { name: 'Tarefa Existente 1', estimatedHours: 5 },
-          ]),
+          exec: jest.fn().mockResolvedValue([]),
         }),
+        exec: jest.fn().mockResolvedValue([]),
       }),
     };
 
-    geminiServiceMock = {
-      generateContent: jest.fn().mockResolvedValue(
-        JSON.stringify({
-          suggestions: [
-            { name: 'Sugestão 1', description: 'Desc 1', estimatedHours: 4, priority: 'alta' },
-          ],
-        }),
-      ),
+    mockGeminiService = {
+      generateContent: jest.fn(),
+      getTaskSuggestions: jest.fn().mockResolvedValue({
+        suggestions: [{ name: 'Zero Hours Task', pomodoros: 2 }],
+        isFallback: false,
+      }),
     };
 
-    loopRunnerMock = {
-      handleSuggestionsError: jest.fn().mockReturnValue({ suggestions: [], summary: 'Erro' }),
-      executeGenerationLoop: jest.fn().mockResolvedValue({
-        suggestions: [{ name: 'Sugestão 1', description: 'Desc 1', estimatedHours: 4, priority: 'alta' }],
+    mockLoopRunner = {
+      handleSuggestionsError: jest.fn(),
+      runGenerationLoop: jest.fn().mockResolvedValue({
+        suggestions: [{ name: 'Task Sugerida', pomodorosPlanned: 2 }],
+        totalHours: 1,
       }),
+      runMultiBatchGenerationLoop: jest.fn().mockResolvedValue(undefined),
     };
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         TasksAiSuggestionsService,
         { provide: getModelToken('Task'), useValue: mockTaskModel },
-        { provide: GeminiService, useValue: geminiServiceMock },
-        { provide: TasksAiSuggestionsLoopRunner, useValue: loopRunnerMock },
+        { provide: GeminiService, useValue: mockGeminiService },
+        { provide: TasksAiSuggestionsLoopRunner, useValue: mockLoopRunner },
       ],
     }).compile();
 
     service = module.get<TasksAiSuggestionsService>(TasksAiSuggestionsService);
   });
 
-  it('should be defined', () => {
-    expect(service).toBeDefined();
-  });
-
   describe('generateAiSuggestions', () => {
-    it('deve gerar sugestões de tarefas usando o serviço de IA', async () => {
-      const dto: any = { projectDescription: 'Sistema de e-commerce', availableHours: 20 };
-      const result = await service.generateAiSuggestions(dto);
+    it('deve inicializar estado e gerar sugestoes', async () => {
+      const dto = {
+        projectId: 'proj-1',
+        desiredHoursPerWeek: 10,
+        deadline: '2026-06-01',
+      };
 
+      mockLoopRunner.runGenerationLoop = jest.fn().mockResolvedValue({
+        suggestions: [{ name: 'Task Sugerida', pomodorosPlanned: 2 }],
+        totalHours: 1,
+      });
+
+      const result = await service.generateAiSuggestions(dto as any);
       expect(result).toBeDefined();
     });
   });
 
   describe('generateAiSuggestionsWithProgress', () => {
-    it('deve emitir progresso e chamar onComplete ao finalizar', async () => {
-      const dto: any = { projectDescription: 'Sistema de e-commerce', availableHours: 20 };
+    it('deve disparar callbacks de progresso e conclusao', async () => {
+      const dto = {
+        projectId: 'proj-1',
+        desiredHoursPerWeek: 10,
+      };
+
       const onProgress = jest.fn();
       const onComplete = jest.fn();
       const onError = jest.fn();
 
-      await service.generateAiSuggestionsWithProgress({ dto, onProgress, onComplete, onError });
+      await service.generateAiSuggestionsWithProgress({
+        dto: dto as any,
+        onProgress,
+        onComplete,
+        onError,
+      });
 
-      expect(onComplete).toHaveBeenCalled();
       expect(onProgress).toHaveBeenCalled();
+      expect(onComplete).toHaveBeenCalled();
+      expect(onError).not.toHaveBeenCalled();
+    });
+
+    it('deve disparar callback onError se ocorrer uma excecao', async () => {
+      mockTaskModel.find.mockImplementation(() => {
+        throw new Error('Fatal error');
+      });
+
+      const onProgress = jest.fn();
+      const onComplete = jest.fn();
+      const onError = jest.fn();
+
+      await service.generateAiSuggestionsWithProgress({
+        dto: { projectId: 'proj-1' } as any,
+        onProgress,
+        onComplete,
+        onError,
+      });
+
+      expect(onError).toHaveBeenCalled();
     });
   });
 });

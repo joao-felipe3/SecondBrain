@@ -51,7 +51,7 @@ export class DraftsAiService {
       temperature: 0.25,
     });
 
-    const planJson = extractJsonObject<any>(rawResponse);
+    const planJson = extractJsonObject<unknown>(rawResponse);
     const parsed = plannerSchema.safeParse(planJson);
     if (!parsed.success) {
       const issues = parsed.error.issues
@@ -361,7 +361,7 @@ export class DraftsAiService {
       temperature,
     });
 
-    const details = extractJsonObject<any>(response);
+    const details = extractJsonObject<unknown>(response);
     const parsed = draftDetailsSchema.safeParse(details);
     if (!parsed.success) {
       const issues = parsed.error.issues

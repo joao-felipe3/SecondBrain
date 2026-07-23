@@ -2,7 +2,6 @@ import { TaskDocument } from '../../tasks/schemas/task.schema';
 import { TaskDependency } from '../../tasks/entities/task-dependency.entity';
 import { TaskNode } from '../../tasks/interfaces/cpm.interface';
 import { DependencyType } from '../../tasks/schemas/task-dependency.schema';
-import { PertDiagramNode, PertDiagramEdge } from '../dto/pert-diagram.dto';
 
 export interface BuildPertTaskNodesParams {
   tasks: TaskDocument[];

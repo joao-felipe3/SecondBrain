@@ -37,7 +37,7 @@ export interface ConversionResult {
 }
 
 export interface LeafAuditResult {
-  diagnosis: 'underestimated' | 'gold_plating' | 'mixed' | string;
+  diagnosis: 'underestimated' | 'gold_plating' | 'mixed' | (string & {});
   rationale: string;
   suggestedAction: 'rebaseline' | 'simplify' | 'none';
   suggestedEstimatedHours?: number;

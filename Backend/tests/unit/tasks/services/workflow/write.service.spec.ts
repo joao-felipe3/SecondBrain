@@ -1,6 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getModelToken } from '@nestjs/mongoose';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
+import { Types } from 'mongoose';
 import { TasksWriteService } from '../../../../../src/tasks/services/workflow/write.service';
 import { ProjectsService } from '../../../../../src/projects/projects.service';
 import { TasksMetricsService } from '../../../../../src/tasks/services/analysis/metrics.service';
@@ -9,71 +10,87 @@ import { ChecklistOperationsService } from '../../../../../src/tasks/services/in
 
 describe('TasksWriteService', () => {
   let service: TasksWriteService;
-  let taskModelMock: any;
-  let projectModelMock: any;
-  let projectsServiceMock: any;
-  let metricsServiceMock: any;
-  let tasksInputServiceMock: any;
-  let checklistOperationsServiceMock: any;
+  let mockTaskModel: any;
+  let mockProjectModel: {
+    findById: jest.Mock;
+    findOne: jest.Mock;
+  };
+  let mockProjectsService: {
+    recalculateProjectStats: jest.Mock;
+  };
+  let mockMetricsService: {
+    deriveMetrics: jest.Mock;
+    applyPertEstimates: jest.Mock;
+    applyRtmRisk: jest.Mock;
+    applyEvmMetrics: jest.Mock;
+  };
+  let mockTasksInputService: {
+    validatePertInput: jest.Mock;
+    normalizeChecklist: jest.Mock;
+  };
+  let mockChecklistOperationsService: {
+    generateChecklistWithHistory: jest.Mock;
+    validateChecklistStructure: jest.Mock;
+  };
 
-  const validObjectId = '507f1f77bcf86cd799439011';
+  const validTaskId = new Types.ObjectId().toString();
+  const validProjectId = new Types.ObjectId().toString();
 
   beforeEach(async () => {
-    taskModelMock = jest.fn().mockImplementation((dto) => ({
+    const saveMock = jest.fn().mockImplementation(function (this: any) {
+      return Promise.resolve(this);
+    });
+
+    mockTaskModel = jest.fn().mockImplementation((dto: any) => ({
       ...dto,
-      _id: validObjectId,
-      save: jest.fn().mockResolvedValue({ ...dto, _id: validObjectId, project: validObjectId }),
-    }));
+      _id: validTaskId,
+      save: saveMock,
+    })) as any;
 
-    taskModelMock.insertMany = jest.fn().mockResolvedValue([{ _id: validObjectId, name: 'Task 1' }]);
-    taskModelMock.findById = jest.fn().mockReturnValue({
-      exec: jest.fn().mockResolvedValue({ _id: validObjectId, project: validObjectId }),
-    });
-    taskModelMock.findByIdAndUpdate = jest.fn().mockReturnValue({
-      exec: jest.fn().mockResolvedValue({ _id: validObjectId, name: 'Updated Task', project: validObjectId }),
-    });
-    taskModelMock.findByIdAndDelete = jest.fn().mockReturnValue({
-      exec: jest.fn().mockResolvedValue({ _id: validObjectId, project: validObjectId }),
-    });
+    mockTaskModel.findById = jest.fn();
+    mockTaskModel.findByIdAndUpdate = jest.fn();
+    mockTaskModel.findByIdAndDelete = jest.fn();
+    mockTaskModel.insertMany = jest.fn();
 
-    projectModelMock = {
+    mockProjectModel = {
       findById: jest.fn().mockReturnValue({
-        exec: jest.fn().mockResolvedValue({ _id: validObjectId }),
+        exec: jest.fn().mockResolvedValue({ _id: validProjectId, name: 'Project 1' }),
       }),
       findOne: jest.fn().mockReturnValue({
-        exec: jest.fn().mockResolvedValue({ _id: validObjectId }),
+        exec: jest.fn().mockResolvedValue({ _id: validProjectId, name: 'Project 1' }),
       }),
     };
 
-    projectsServiceMock = {
-      recalculateProjectStats: jest.fn().mockResolvedValue({}),
+    mockProjectsService = {
+      recalculateProjectStats: jest.fn().mockResolvedValue(undefined),
     };
 
-    metricsServiceMock = {
+    mockMetricsService = {
       deriveMetrics: jest.fn().mockImplementation((dto) => dto),
       applyPertEstimates: jest.fn(),
       applyRtmRisk: jest.fn(),
       applyEvmMetrics: jest.fn(),
     };
 
-    tasksInputServiceMock = {
+    mockTasksInputService = {
       validatePertInput: jest.fn(),
-      normalizeChecklist: jest.fn().mockReturnValue([{ item: 'Step 1' }]),
+      normalizeChecklist: jest.fn().mockImplementation((chk) => chk || []),
     };
 
-    checklistOperationsServiceMock = {
+    mockChecklistOperationsService = {
+      generateChecklistWithHistory: jest.fn().mockResolvedValue([{ item: 'Item 1', completed: false }]),
       validateChecklistStructure: jest.fn().mockReturnValue({ isValid: true }),
     };
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         TasksWriteService,
-        { provide: getModelToken('Task'), useValue: taskModelMock },
-        { provide: getModelToken('Project'), useValue: projectModelMock },
-        { provide: ProjectsService, useValue: projectsServiceMock },
-        { provide: TasksMetricsService, useValue: metricsServiceMock },
-        { provide: TasksInputService, useValue: tasksInputServiceMock },
-        { provide: ChecklistOperationsService, useValue: checklistOperationsServiceMock },
+        { provide: getModelToken('Task'), useValue: mockTaskModel },
+        { provide: getModelToken('Project'), useValue: mockProjectModel },
+        { provide: ProjectsService, useValue: mockProjectsService },
+        { provide: TasksMetricsService, useValue: mockMetricsService },
+        { provide: TasksInputService, useValue: mockTasksInputService },
+        { provide: ChecklistOperationsService, useValue: mockChecklistOperationsService },
       ],
     }).compile();
 
@@ -86,29 +103,113 @@ describe('TasksWriteService', () => {
 
   describe('createTaskCore', () => {
     it('deve criar uma tarefa e recalcular estatísticas do projeto', async () => {
-      const dto: any = { name: 'Minha Tarefa', projectId: validObjectId };
+      const dto: any = { name: 'Minha Tarefa', project: validProjectId };
       const result = await service.createTaskCore(dto);
 
       expect(result).toBeDefined();
-      expect(projectsServiceMock.recalculateProjectStats).toHaveBeenCalled();
+      expect(mockProjectsService.recalculateProjectStats).toHaveBeenCalledWith(validProjectId);
+    });
+  });
+
+  describe('createMany', () => {
+    it('deve retornar array vazio se nenhuma tarefa for enviada', async () => {
+      const result = await service.createMany([]);
+      expect(result).toEqual([]);
+    });
+
+    it('deve inserir tarefas em lote e recalcular estatisticas do projeto', async () => {
+      const dtos = [{ name: 'Task 1', project: validProjectId }, { name: 'Task 2', project: validProjectId }];
+      const insertedDocs = dtos.map((d) => ({ ...d, _id: new Types.ObjectId() }));
+
+      mockTaskModel.insertMany.mockResolvedValue(insertedDocs);
+
+      const result = await service.createMany(dtos as any, { recalculateProjectStats: true });
+
+      expect(result).toEqual(insertedDocs);
+      expect(mockProjectsService.recalculateProjectStats).toHaveBeenCalledWith(validProjectId);
+    });
+  });
+
+  describe('createMicroTask', () => {
+    it('deve criar micro-tarefa e gerar checklist se necessario', async () => {
+      const dto = {
+        name: 'Micro Task Test',
+        project: validProjectId,
+        autoGenerateChecklist: true,
+      };
+
+      const result = await service.createMicroTask(dto as any);
+      expect(result).toBeDefined();
+      expect(mockTasksInputService.validatePertInput).toHaveBeenCalledWith(dto);
+      expect(mockChecklistOperationsService.generateChecklistWithHistory).toHaveBeenCalled();
+    });
+
+    it('deve rejeitar checklist vazio se autoGenerateChecklist for false', async () => {
+      const dto = {
+        name: 'Micro Task Test',
+        checklist: [],
+        autoGenerateChecklist: false,
+      };
+
+      await expect(service.createMicroTask(dto as any)).rejects.toThrow(BadRequestException);
     });
   });
 
   describe('update', () => {
-    it('deve atualizar tarefa existente', async () => {
-      const result = await service.update(validObjectId, { name: 'Novo Nome' });
+    it('deve rejeitar ID invalido', async () => {
+      await expect(service.update('invalid-id', {})).rejects.toThrow(BadRequestException);
+    });
 
-      expect(result).toBeDefined();
-      expect(taskModelMock.findByIdAndUpdate).toHaveBeenCalled();
+    it('deve atualizar tarefa e recalcular estatisticas do projeto se o projeto for alterado', async () => {
+      const oldProjectId = new Types.ObjectId().toString();
+      const newProjectId = new Types.ObjectId().toString();
+
+      mockTaskModel.findById.mockReturnValue({
+        exec: jest.fn().mockResolvedValue({ _id: validTaskId, project: oldProjectId }),
+      });
+
+      mockProjectModel.findById.mockReturnValue({
+        exec: jest.fn().mockResolvedValue({ _id: newProjectId }),
+      });
+
+      const updatedTask = { _id: validTaskId, project: newProjectId };
+      mockTaskModel.findByIdAndUpdate.mockReturnValue({
+        exec: jest.fn().mockResolvedValue(updatedTask),
+      });
+
+      const result = await service.update(validTaskId, { project: newProjectId });
+
+      expect(result).toEqual(updatedTask);
+      expect(mockProjectsService.recalculateProjectStats).toHaveBeenCalledWith(oldProjectId);
+      expect(mockProjectsService.recalculateProjectStats).toHaveBeenCalledWith(newProjectId);
     });
   });
 
   describe('remove', () => {
-    it('deve remover tarefa existente por ID', async () => {
-      const result = await service.remove(validObjectId);
+    it('deve rejeitar ID invalido', async () => {
+      await expect(service.remove('invalid-id')).rejects.toThrow(BadRequestException);
+    });
 
-      expect(result).toBeDefined();
-      expect(taskModelMock.findByIdAndDelete).toHaveBeenCalled();
+    it('deve lancar NotFoundException se a tarefa nao for encontrada', async () => {
+      mockTaskModel.findById.mockReturnValue({
+        exec: jest.fn().mockResolvedValue(null),
+      });
+
+      await expect(service.remove(validTaskId)).rejects.toThrow(NotFoundException);
+    });
+
+    it('deve remover tarefa e recalcular estatisticas do projeto', async () => {
+      mockTaskModel.findById.mockReturnValue({
+        exec: jest.fn().mockResolvedValue({ _id: validTaskId, project: validProjectId }),
+      });
+
+      mockTaskModel.findByIdAndDelete.mockReturnValue({
+        exec: jest.fn().mockResolvedValue({ _id: validTaskId }),
+      });
+
+      const success = await service.remove(validTaskId);
+      expect(success).toBe(true);
+      expect(mockProjectsService.recalculateProjectStats).toHaveBeenCalledWith(validProjectId);
     });
   });
 });

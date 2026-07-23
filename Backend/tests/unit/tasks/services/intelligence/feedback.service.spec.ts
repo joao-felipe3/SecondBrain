@@ -1,87 +1,109 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getModelToken } from '@nestjs/mongoose';
-import { BadRequestException } from '@nestjs/common';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
+import { Types } from 'mongoose';
 import { FeedbackService } from '../../../../../src/tasks/services/intelligence/feedback.service';
 import { GeminiService } from '../../../../../src/ai/services/core/gemini.service';
 
 describe('FeedbackService', () => {
   let service: FeedbackService;
-  let taskModelMock: any;
-  let feedbackModelMock: any;
-  let geminiServiceMock: any;
+  let mockGeminiService: {
+    generateContent: jest.Mock;
+  };
+  let mockTaskModel: {
+    findById: jest.Mock;
+  };
+  let mockFeedbackModel: {
+    create: jest.Mock;
+    findOne: jest.Mock;
+  };
 
-  const validObjectId = '507f1f77bcf86cd799439011';
+  const validTaskId = new Types.ObjectId().toString();
 
   beforeEach(async () => {
-    taskModelMock = {
-      findById: jest.fn().mockReturnValue({
-        exec: jest.fn().mockResolvedValue({
-          _id: validObjectId,
-          name: 'Task Concluída',
-          description: 'Desc',
-          isConcluded: true,
-          pomodorosDid: 2,
-          checklist: [{ item: 'Step 1', completed: true }],
-        }),
-      }),
+    mockGeminiService = {
+      generateContent: jest.fn(),
     };
 
-    feedbackModelMock = {
-      findOne: jest.fn().mockReturnValue({
-        sort: jest.fn().mockReturnValue({
-          select: jest.fn().mockReturnValue({
-            exec: jest.fn().mockResolvedValue({ feedback: 'Excelente trabalho!', createdAt: new Date() }),
-          }),
-        }),
-      }),
-      create: jest.fn().mockResolvedValue({ _id: 'f-1' }),
+    mockTaskModel = {
+      findById: jest.fn(),
     };
 
-    geminiServiceMock = {
-      getModelName: jest.fn().mockReturnValue('gemini-2.5-flash-lite'),
-      generateCompletionFeedbackStructured: jest.fn().mockResolvedValue({
-        celebration: 'Parabéns!',
-        validation: 'Checklist 100% completo',
-        question: 'Algum obstáculo?',
-        nextStepSuggestions: [],
-      }),
+    mockFeedbackModel = {
+      create: jest.fn().mockResolvedValue({ _id: 'feedback-1' }),
+      findOne: jest.fn(),
     };
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         FeedbackService,
-        { provide: getModelToken('Task'), useValue: taskModelMock },
-        { provide: getModelToken('TaskCompletionFeedback'), useValue: feedbackModelMock },
-        { provide: GeminiService, useValue: geminiServiceMock },
+        { provide: GeminiService, useValue: mockGeminiService },
+        { provide: getModelToken('Task'), useValue: mockTaskModel },
+        { provide: getModelToken('TaskCompletionFeedback'), useValue: mockFeedbackModel },
       ],
     }).compile();
 
     service = module.get<FeedbackService>(FeedbackService);
   });
 
-  it('should be defined', () => {
-    expect(service).toBeDefined();
+  describe('generateCompletionFeedback', () => {
+    it('deve lancar NotFoundException se a tarefa nao existir', async () => {
+      mockTaskModel.findById.mockReturnValue({
+        exec: jest.fn().mockResolvedValue(null),
+      });
+
+      await expect(service.generateCompletionFeedback(validTaskId)).rejects.toThrow(NotFoundException);
+    });
+
+    it('deve salvar feedback do usuario diretamente se o payload for fornecido', async () => {
+      const mockTask = { _id: validTaskId, name: 'Task Test', isConcluded: true };
+      mockTaskModel.findById.mockReturnValue({
+        exec: jest.fn().mockResolvedValue(mockTask),
+      });
+
+      const payload = { celebration: 'Excelente progresso realizado' };
+      const result = await service.generateCompletionFeedback(validTaskId, payload);
+
+      expect(result).toBe(JSON.stringify(payload));
+      expect(mockFeedbackModel.create).toHaveBeenCalledWith(
+        expect.objectContaining({ feedback: JSON.stringify(payload) }),
+      );
+    });
   });
 
   describe('getCompletionFeedback', () => {
-    it('deve lançar BadRequestException para ID de tarefa inválido', async () => {
-      await expect(service.getCompletionFeedback('invalid')).rejects.toThrow(BadRequestException);
+    it('deve rejeitar ID invalido', async () => {
+      await expect(service.getCompletionFeedback('invalid-id')).rejects.toThrow(BadRequestException);
     });
 
-    it('deve retornar o feedback gerado da tarefa', async () => {
-      const result = await service.getCompletionFeedback(validObjectId);
+    it('deve retornar null se nao houver feedback registrado', async () => {
+      mockFeedbackModel.findOne.mockReturnValue({
+        sort: jest.fn().mockReturnValue({
+          select: jest.fn().mockReturnValue({
+            exec: jest.fn().mockResolvedValue(null),
+          }),
+        }),
+      });
 
-      expect(result).toBeDefined();
-      expect(result?.feedback).toBe('Excelente trabalho!');
+      const result = await service.getCompletionFeedback(validTaskId);
+      expect(result).toBeNull();
     });
-  });
 
-  describe('generateCompletionFeedback', () => {
-    it('deve gerar feedback estruturado para conclusão de tarefa', async () => {
-      const result = await service.generateCompletionFeedback(validObjectId);
+    it('deve retornar o feedback se for encontrado', async () => {
+      const mockDoc = { feedback: 'Bom trabalho', createdAt: new Date() };
+      mockFeedbackModel.findOne.mockReturnValue({
+        sort: jest.fn().mockReturnValue({
+          select: jest.fn().mockReturnValue({
+            exec: jest.fn().mockResolvedValue(mockDoc),
+          }),
+        }),
+      });
 
-      expect(result).toBeDefined();
-      expect(geminiServiceMock.generateCompletionFeedbackStructured).toHaveBeenCalled();
+      const result = await service.getCompletionFeedback(validTaskId);
+      expect(result).toEqual({
+        feedback: 'Bom trabalho',
+        createdAt: mockDoc.createdAt,
+      });
     });
   });
 });
