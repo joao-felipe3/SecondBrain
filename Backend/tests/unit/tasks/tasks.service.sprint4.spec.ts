@@ -473,7 +473,9 @@ describe('TasksService - Sprint 4: Kanban + Rastreabilidade', () => {
       });
       taskModel.findOne = jest.fn().mockReturnValue({
         sort: jest.fn().mockReturnValue({
-          select: jest.fn().mockResolvedValue({ kanbanOrder: 0 }),
+          select: jest.fn().mockReturnValue({
+            exec: jest.fn().mockResolvedValue({ kanbanOrder: 0 }),
+          }),
         }),
       });
 
