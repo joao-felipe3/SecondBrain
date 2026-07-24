@@ -5,7 +5,6 @@ import {
   getScheduleRatioByDates,
   scopeEntriesByWindow,
   estimateCompletionDate,
-  calculateEffortBalanceScore,
   calculateConsistencyScore,
   calculateCompletionTrend,
   buildActionHint,

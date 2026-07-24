@@ -7,7 +7,6 @@ import {
   getWaveBounds,
   calculateEffectiveEnd,
   adjustWindowToBounds,
-  resolveWindowByDeadline,
   buildTaskNodes,
   mapSingleTaskItem,
   mapTaskItems,
