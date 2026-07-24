@@ -139,3 +139,4 @@ HOOKS.md
 .agents/
 GEMINI.md
 skills-lock.json
+.aider*

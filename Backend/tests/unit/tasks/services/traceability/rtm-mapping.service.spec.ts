@@ -16,16 +16,18 @@ describe('RTMMappingService', () => {
   beforeEach(async () => {
     requirementModelMock = {
       find: jest.fn().mockResolvedValue([
-        { _id: 'r-1', projectId: validObjectId, title: 'Ação 1', kind: 'action' },
+        { _id: '507f1f77bcf86cd799439012', projectId: validObjectId, title: 'Ação 1', kind: 'action', type: 'action' },
       ]),
+      create: jest.fn().mockResolvedValue({ _id: '507f1f77bcf86cd799439013' }),
+      updateOne: jest.fn().mockResolvedValue({ modifiedCount: 1 }),
     };
 
     geminiServiceMock = {
-      generateContent: jest.fn().mockResolvedValue(JSON.stringify([{ taskId: 't-1', actionId: 'r-1' }])),
+      generateContent: jest.fn().mockResolvedValue(JSON.stringify([{ taskId: 't-1', actionId: '507f1f77bcf86cd799439012' }])),
     };
 
     validationServiceMock = {
-      validateRTM: jest.fn().mockResolvedValue({ coverage: { coverageRate: 100 } }),
+      validateRTM: jest.fn().mockResolvedValue({ coverage: 100, isValid: true, unmappedRequirements: [], risks: [] }),
     };
 
     const module: TestingModule = await Test.createTestingModule({
@@ -51,6 +53,24 @@ describe('RTMMappingService', () => {
 
       expect(result).toBeDefined();
       expect(result.success).toBe(true);
+    });
+
+    it('should return error if no journey items exist', async () => {
+      requirementModelMock.find.mockResolvedValueOnce([]);
+      const result = await service.autoMapRequirementsToTasks(validObjectId, [{ id: 't-1' }] as any);
+      expect(result.success).toBe(false);
+    });
+
+    it('should handle orphan tasks and create new requirements', async () => {
+      geminiServiceMock.generateContent.mockResolvedValueOnce(
+        JSON.stringify([{ taskId: 't-99', requirementId: 'ORPHAN' }]),
+      );
+
+      const tasks: any[] = [{ id: 't-99', name: 'Orphan Task' }];
+      const result = await service.autoMapRequirementsToTasks(validObjectId, tasks);
+
+      expect(result.success).toBe(true);
+      expect(requirementModelMock.create).toHaveBeenCalled();
     });
   });
 });

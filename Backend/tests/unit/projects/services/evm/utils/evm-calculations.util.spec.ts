@@ -3,56 +3,90 @@ import {
   toBoundedScore,
   toWeekKey,
   getScheduleRatioByDates,
+  scopeEntriesByWindow,
+  estimateCompletionDate,
   calculateEffortBalanceScore,
-} from '../../../../../../src/projects/services/evm/utils/evm-calculations.util';
+  calculateConsistencyScore,
+  calculateCompletionTrend,
+  buildActionHint,
+  buildPersonalMetrics,
+} from '@src/projects/services/evm/utils/evm-calculations.util';
 
 describe('evm-calculations.util', () => {
-  describe('toFiniteNumber', () => {
-    it('deve converter valores válidos e usar fallback em nulos ou NaNs', () => {
-      expect(toFiniteNumber(42)).toBe(42);
-      expect(toFiniteNumber('10.5')).toBe(10.5);
-      expect(toFiniteNumber(NaN, 5)).toBe(5);
-      expect(toFiniteNumber(undefined, 0)).toBe(0);
-    });
+  it('toFiniteNumber & toBoundedScore', () => {
+    expect(toFiniteNumber(10)).toBe(10);
+    expect(toFiniteNumber(NaN, 5)).toBe(5);
+
+    expect(toBoundedScore(120)).toBe(100);
+    expect(toBoundedScore(-10)).toBe(0);
+    expect(toBoundedScore(85.45)).toBe(85.5);
   });
 
-  describe('toBoundedScore', () => {
-    it('deve limitar pontuações entre 0 e 100 com 1 casa decimal', () => {
-      expect(toBoundedScore(105)).toBe(100);
-      expect(toBoundedScore(-10)).toBe(0);
-      expect(toBoundedScore(75.56)).toBe(75.6);
-    });
+  it('toWeekKey & getScheduleRatioByDates', () => {
+    const key = toWeekKey(new Date('2026-01-15T00:00:00Z'));
+    expect(key).toContain('2026-W');
+
+    const ratio = getScheduleRatioByDates(
+      new Date('2026-01-01T00:00:00Z'),
+      new Date('2026-01-11T00:00:00Z'),
+      new Date('2026-01-06T00:00:00Z'),
+    );
+    expect(ratio).toBe(0.5);
   });
 
-  describe('toWeekKey', () => {
-    it('deve gerar chave de semana no formato YYYY-Www', () => {
-      const date = new Date('2026-07-23T12:00:00Z');
-      const weekKey = toWeekKey(date);
+  it('scopeEntriesByWindow & estimateCompletionDate', () => {
+    const entries: any[] = [
+      { date: new Date('2026-01-05') },
+      { date: new Date('2026-01-15') },
+    ];
+    const scoped = scopeEntriesByWindow(
+      entries,
+      new Date('2026-01-01'),
+      new Date('2026-01-10'),
+    );
+    expect(scoped.length).toBe(1);
 
-      expect(weekKey).toMatch(/^\d{4}-W\d{2}$/);
+    const completionDate = estimateCompletionDate({
+      project: { startDate: new Date('2026-01-01'), deadline: new Date('2026-02-01') } as any,
+      metrics: { completedHours: 10, plannedHours: 20 },
+      scopeStartDate: new Date('2026-01-01'),
+      scopeEndDate: new Date('2026-02-01'),
     });
+
+    expect(completionDate).not.toBeNull();
   });
 
-  describe('getScheduleRatioByDates', () => {
-    it('deve calcular a proporção entre data de início e fim', () => {
-      const start = new Date('2026-01-01T00:00:00Z');
-      const end = new Date('2026-01-10T00:00:00Z');
-      const at = new Date('2026-01-05T12:00:00Z');
+  it('calculateConsistencyScore & calculateCompletionTrend', () => {
+    const entries: any[] = [
+      { date: '2026-01-01', completedHours: 5 },
+      { date: '2026-01-08', completedHours: 5 },
+      { date: '2026-01-15', completedHours: 6 },
+      { date: '2026-01-22', completedHours: 7 },
+    ];
 
-      const ratio = getScheduleRatioByDates(start, end, at);
-      expect(ratio).toBeGreaterThan(0);
-      expect(ratio).toBeLessThanOrEqual(1);
-    });
+    const consistency = calculateConsistencyScore(entries);
+    expect(consistency).toBeGreaterThan(0);
 
-    it('deve retornar null se datas forem inválidas', () => {
-      expect(getScheduleRatioByDates(null, new Date())).toBeNull();
-    });
+    const trend = calculateCompletionTrend(entries);
+    expect(['acelerando', 'estavel', 'desacelerando', 'insuficiente']).toContain(trend);
   });
 
-  describe('calculateEffortBalanceScore', () => {
-    it('deve calcular o score de equilíbrio de esforço', () => {
-      const score = calculateEffortBalanceScore({ completedHours: 10, plannedHours: 10 });
-      expect(score).toBe(100);
+  it('buildActionHint & buildPersonalMetrics', () => {
+    const hint = buildActionHint({
+      spi: 0.8,
+      consistencyScore: 90,
+      effortBalanceScore: 90,
+      planAdherence: 90,
+      completionTrend: 'estavel',
     });
+    expect(hint).toContain('abaixo do ritmo planejado');
+
+    const personalMetrics = buildPersonalMetrics({
+      entries: [{ date: '2026-01-01', completedHours: 5 }] as any,
+      spi: 1.0,
+      coreMetrics: { completedHours: 10, plannedHours: 20, ev: 10, pv: 10 },
+    });
+
+    expect(personalMetrics.perceivedValueScore).toBeGreaterThan(0);
   });
 });

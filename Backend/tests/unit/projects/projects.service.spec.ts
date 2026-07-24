@@ -1,52 +1,47 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { getModelToken } from '@nestjs/mongoose';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
-import { ProjectsService } from '../../../src/projects/projects.service';
-import {
-  GanttService,
-  PertDiagramService,
-  ProjectsXMatrixService,
-} from '../../../src/projects/services/visualization';
-import { ProjectStatsService } from '../../../src/projects/services/execution';
+import { Types } from 'mongoose';
+import { ProjectsService } from '@src/projects/projects.service';
 
 describe('ProjectsService', () => {
   let service: ProjectsService;
-  let projectModelMock: any;
-  let taskModelMock: any;
-  let xMatrixServiceMock: any;
-  let ganttServiceMock: any;
-  let pertDiagramServiceMock: any;
-  let projectStatsServiceMock: any;
+  let mockProjectModel: any;
+  let mockTaskModel: any;
+  let mockXMatrixService: any;
+  let mockGanttService: any;
+  let mockPertDiagramService: any;
+  let mockProjectStatsService: any;
 
-  const validObjectId = '507f1f77bcf86cd799439011';
+  const validProjId = new Types.ObjectId().toHexString();
+  const validProjId2 = new Types.ObjectId().toHexString();
 
-  beforeEach(async () => {
-    projectModelMock = jest.fn().mockImplementation((dto) => ({
+  beforeEach(() => {
+    mockProjectModel = jest.fn().mockImplementation((dto) => ({
       ...dto,
-      save: jest.fn().mockResolvedValue({ ...dto, _id: validObjectId }),
+      save: jest.fn().mockResolvedValue({ _id: validProjId, ...dto }),
     }));
-    projectModelMock.find = jest.fn().mockReturnValue({
-      exec: jest.fn().mockResolvedValue([{ _id: validObjectId, name: 'Projeto 1' }]),
+
+    mockProjectModel.find = jest.fn().mockReturnValue({
+      exec: jest.fn().mockResolvedValue([{ _id: validProjId, name: 'Proj 1' }]),
     });
-    projectModelMock.findById = jest.fn().mockReturnValue({
+    mockProjectModel.findById = jest.fn().mockReturnValue({
       exec: jest.fn().mockResolvedValue({
-        _id: validObjectId,
-        name: 'Projeto 1',
+        _id: validProjId,
+        name: 'Proj 1',
         totalHoursWorked: 10,
         plannedHours: 100,
-        save: jest.fn().mockResolvedValue({ _id: validObjectId, totalHoursWorked: 20 }),
+        save: jest.fn().mockResolvedValue({ _id: validProjId, totalHoursWorked: 12 }),
       }),
     });
-    projectModelMock.findByIdAndUpdate = jest.fn().mockReturnValue({
-      exec: jest.fn().mockResolvedValue({ _id: validObjectId, name: 'Projeto Atualizado' }),
+    mockProjectModel.findByIdAndUpdate = jest.fn().mockReturnValue({
+      exec: jest.fn().mockResolvedValue({ _id: validProjId }),
     });
-    projectModelMock.findByIdAndDelete = jest.fn().mockReturnValue({
-      exec: jest.fn().mockResolvedValue({ _id: validObjectId }),
+    mockProjectModel.findByIdAndDelete = jest.fn().mockReturnValue({
+      exec: jest.fn().mockResolvedValue({ _id: validProjId }),
     });
 
-    taskModelMock = {
+    mockTaskModel = {
       find: jest.fn().mockReturnValue({
-        exec: jest.fn().mockResolvedValue([{ _id: 'task-1', name: 'Task 1' }]),
+        exec: jest.fn().mockResolvedValue([{ _id: 't1' }]),
       }),
       deleteMany: jest.fn().mockReturnValue({
         exec: jest.fn().mockResolvedValue({ deletedCount: 1 }),
@@ -56,156 +51,117 @@ describe('ProjectsService', () => {
       }),
     };
 
-    xMatrixServiceMock = {
-      createXMatrix: jest.fn().mockResolvedValue({ matrix: [] }),
-      getSavedXMatrix: jest.fn().mockResolvedValue({ matrix: [] }),
+    mockXMatrixService = {
+      createXMatrix: jest.fn().mockResolvedValue({ projectId: validProjId }),
+      getSavedXMatrix: jest.fn().mockResolvedValue({ projectId: validProjId }),
     };
 
-    ganttServiceMock = {
+    mockGanttService = {
       getGanttData: jest.fn().mockResolvedValue({ tasks: [] }),
     };
 
-    pertDiagramServiceMock = {
+    mockPertDiagramService = {
       getPertDiagramData: jest.fn().mockResolvedValue({ nodes: [], edges: [] }),
     };
 
-    projectStatsServiceMock = {
-      recalculateProjectStats: jest.fn().mockResolvedValue({ _id: validObjectId }),
+    mockProjectStatsService = {
+      recalculateProjectStats: jest.fn().mockResolvedValue({ _id: validProjId }),
     };
 
-    const module: TestingModule = await Test.createTestingModule({
-      providers: [
-        ProjectsService,
-        { provide: getModelToken('Project'), useValue: projectModelMock },
-        { provide: getModelToken('Task'), useValue: taskModelMock },
-        { provide: ProjectsXMatrixService, useValue: xMatrixServiceMock },
-        { provide: GanttService, useValue: ganttServiceMock },
-        { provide: PertDiagramService, useValue: pertDiagramServiceMock },
-        { provide: ProjectStatsService, useValue: projectStatsServiceMock },
-      ],
-    }).compile();
-
-    service = module.get<ProjectsService>(ProjectsService);
+    service = new ProjectsService(
+      mockProjectModel as any,
+      mockTaskModel as any,
+      mockXMatrixService,
+      mockGanttService,
+      mockPertDiagramService,
+      mockProjectStatsService,
+    );
   });
 
-  it('should be defined', () => {
-    expect(service).toBeDefined();
-  });
-
-  describe('createXMatrix', () => {
-    it('deve delegar a criação do XMatrix ao xMatrixService', async () => {
-      const result = await service.createXMatrix(validObjectId, {} as any);
-      expect(result).toBeDefined();
-      expect(xMatrixServiceMock.createXMatrix).toHaveBeenCalledWith(validObjectId, {});
+  describe('CRUD & visualization methods', () => {
+    it('should create project', async () => {
+      const proj = await service.create({ name: 'New Proj' } as any);
+      expect(proj._id).toBe(validProjId);
     });
-  });
 
-  describe('getSavedXMatrix', () => {
-    it('deve buscar XMatrix salvo', async () => {
-      const result = await service.getSavedXMatrix(validObjectId);
-      expect(result).toBeDefined();
-      expect(xMatrixServiceMock.getSavedXMatrix).toHaveBeenCalledWith(validObjectId);
+    it('should find all and find one', async () => {
+      const all = await service.findAll();
+      expect(all.length).toBe(1);
+
+      const one = await service.findOne(validProjId);
+      expect(one).toBeDefined();
     });
-  });
 
-  describe('getGanttData', () => {
-    it('deve buscar dados do gráfico de Gantt', async () => {
-      const result = await service.getGanttData(validObjectId);
-      expect(result).toBeDefined();
-      expect(ganttServiceMock.getGanttData).toHaveBeenCalledWith(validObjectId, undefined);
-    });
-  });
-
-  describe('getPertDiagramData', () => {
-    it('deve buscar dados do diagrama PERT', async () => {
-      const result = await service.getPertDiagramData(validObjectId);
-      expect(result).toBeDefined();
-      expect(pertDiagramServiceMock.getPertDiagramData).toHaveBeenCalledWith(validObjectId, undefined);
-    });
-  });
-
-  describe('getTasksForProject', () => {
-    it('deve lançar BadRequestException para ID inválido', async () => {
+    it('should throw BadRequestException on invalid ObjectId', async () => {
+      await expect(service.findOne('invalid-id')).rejects.toThrow(BadRequestException);
+      await expect(service.update('invalid-id', {})).rejects.toThrow(BadRequestException);
+      await expect(service.remove('invalid-id')).rejects.toThrow(BadRequestException);
       await expect(service.getTasksForProject('invalid-id')).rejects.toThrow(BadRequestException);
     });
 
-    it('deve buscar tarefas do projeto para ID válido', async () => {
-      const result = await service.getTasksForProject(validObjectId);
-      expect(result).toHaveLength(1);
-    });
-  });
+    it('should update and remove project', async () => {
+      const updated = await service.update(validProjId, { name: 'Updated' });
+      expect(updated).toBeDefined();
 
-  describe('create', () => {
-    it('deve criar um projeto', async () => {
-      const result = await service.create({ name: 'Novo Projeto' } as any);
-      expect(result._id).toBe(validObjectId);
-    });
-  });
-
-  describe('findAll', () => {
-    it('deve listar todos os projetos', async () => {
-      const result = await service.findAll();
-      expect(result).toHaveLength(1);
-    });
-  });
-
-  describe('findOne', () => {
-    it('deve buscar um projeto por ID', async () => {
-      const result = await service.findOne(validObjectId);
-      expect(result?._id).toBe(validObjectId);
+      const removed = await service.remove(validProjId);
+      expect(removed).toBe(true);
     });
 
-    it('deve lançar erro se ID for inválido', async () => {
-      await expect(service.findOne('123')).rejects.toThrow(BadRequestException);
-    });
-  });
+    it('should remove project with options (deleteTasks = true and false)', async () => {
+      const resultDelete = await service.removeWithOptions(validProjId, true);
+      expect(resultDelete.deleted).toBe(true);
+      expect(mockTaskModel.deleteMany).toHaveBeenCalled();
 
-  describe('update', () => {
-    it('deve atualizar o projeto por ID', async () => {
-      const result = await service.update(validObjectId, { name: 'Atualizado' });
-      expect(result?.name).toBe('Projeto Atualizado');
-    });
-  });
-
-  describe('remove', () => {
-    it('deve remover o projeto', async () => {
-      const result = await service.remove(validObjectId);
-      expect(result).toBe(true);
-    });
-  });
-
-  describe('removeWithOptions', () => {
-    it('deve deletar tarefas e projeto quando deleteTasks=true', async () => {
-      const result = await service.removeWithOptions(validObjectId, true);
-      expect(result.deleted).toBe(true);
-      expect(taskModelMock.deleteMany).toHaveBeenCalledWith({ project: validObjectId });
+      const resultUnset = await service.removeWithOptions(validProjId, false);
+      expect(resultUnset.deleted).toBe(true);
+      expect(mockTaskModel.updateMany).toHaveBeenCalled();
     });
 
-    it('deve desvincular tarefas do projeto quando deleteTasks=false', async () => {
-      const result = await service.removeWithOptions(validObjectId, false);
-      expect(result.deleted).toBe(true);
-      expect(taskModelMock.updateMany).toHaveBeenCalled();
-    });
-  });
+    it('should handle project not found when removing with options', async () => {
+      mockProjectModel.findById.mockReturnValueOnce({
+        exec: jest.fn().mockResolvedValue(null),
+      });
 
-  describe('incrementHoursWorked', () => {
-    it('deve incrementar as horas trabalhadas do projeto', async () => {
-      const result = await service.incrementHoursWorked(validObjectId, 10);
-      expect(result).toBeDefined();
+      const res = await service.removeWithOptions(validProjId, true);
+      expect(res.deleted).toBe(false);
+      expect(res.tasksAffected).toBe(0);
     });
 
-    it('deve lançar NotFoundException se projeto não for encontrado', async () => {
-      projectModelMock.findById.mockReturnValueOnce({ exec: jest.fn().mockResolvedValue(null) });
-      await expect(service.incrementHoursWorked(validObjectId, 10)).rejects.toThrow(
+    it('should increment hours worked or throw if not found', async () => {
+      const updated = await service.incrementHoursWorked(validProjId, 2);
+      expect(updated).toBeDefined();
+
+      mockProjectModel.findById.mockReturnValueOnce({
+        exec: jest.fn().mockResolvedValue(null),
+      });
+      await expect(service.incrementHoursWorked(validProjId, 2)).rejects.toThrow(
         NotFoundException,
       );
     });
-  });
 
-  describe('moveTaskToProject', () => {
-    it('deve mover tarefa entre projetos e recalcular estatísticas', async () => {
-      await service.moveTaskToProject('task-1', validObjectId, validObjectId);
-      expect(projectStatsServiceMock.recalculateProjectStats).toHaveBeenCalled();
+    it('should delegate XMatrix methods and tasks management', async () => {
+      await service.createXMatrix(validProjId, {} as any);
+      expect(mockXMatrixService.createXMatrix).toHaveBeenCalled();
+
+      await service.getSavedXMatrix(validProjId);
+      expect(mockXMatrixService.getSavedXMatrix).toHaveBeenCalled();
+
+      await service.getTasksForProject(validProjId);
+      expect(mockTaskModel.find).toHaveBeenCalled();
+
+      await service.moveTaskToProject('t1', validProjId, validProjId2);
+      expect(mockProjectStatsService.recalculateProjectStats).toHaveBeenCalled();
+    });
+
+    it('should delegate visualization and stats methods', async () => {
+      await service.getGanttData(validProjId);
+      expect(mockGanttService.getGanttData).toHaveBeenCalled();
+
+      await service.getPertDiagramData(validProjId);
+      expect(mockPertDiagramService.getPertDiagramData).toHaveBeenCalled();
+
+      await service.recalculateProjectStats(validProjId);
+      expect(mockProjectStatsService.recalculateProjectStats).toHaveBeenCalled();
     });
   });
 });

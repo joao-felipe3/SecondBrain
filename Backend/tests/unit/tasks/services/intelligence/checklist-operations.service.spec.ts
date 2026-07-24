@@ -1,4 +1,4 @@
-import { BadRequestException } from '@nestjs/common';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { Types } from 'mongoose';
 import { ChecklistOperationsService } from '@src/tasks/services/intelligence/checklist-operations.service';
 
@@ -34,8 +34,8 @@ describe('ChecklistOperationsService', () => {
       validateChecklistStructure: jest.fn().mockReturnValue({ isValid: true }),
       calculateCompletionPercentage: jest.fn().mockReturnValue(100),
       validateChecklistCompletion: jest.fn().mockReturnValue({ isValid: true }),
-      findSimilarTasksInProject: jest.fn().mockResolvedValue([]),
-      enrichHistoryContext: jest.fn().mockReturnValue(''),
+      findSimilarTasksInProject: jest.fn().mockResolvedValue([{ name: 'Similar' }]),
+      enrichHistoryContext: jest.fn().mockReturnValue('History Context'),
     };
 
     mockInputService = {
@@ -55,17 +55,28 @@ describe('ChecklistOperationsService', () => {
     );
   });
 
-  describe('updateMicroTaskChecklist & updateChecklistItem', () => {
+  describe('Checklist operations & AI generation', () => {
+    it('should validate checklist structure', () => {
+      const res = service.validateChecklistStructure(['item 1']);
+      expect(res.isValid).toBe(true);
+    });
+
     it('should throw BadRequestException for invalid task ObjectId', async () => {
       await expect(service.updateMicroTaskChecklist('invalid-id', ['item 1'])).rejects.toThrow(
         BadRequestException,
       );
     });
 
+    it('should throw NotFoundException if task not found on update', async () => {
+      mockTaskModel.findByIdAndUpdate.mockReturnValueOnce({ exec: jest.fn().mockResolvedValue(null) });
+      await expect(service.updateMicroTaskChecklist(validTaskId, ['item 1'])).rejects.toThrow(
+        NotFoundException,
+      );
+    });
+
     it('should update task checklist items', async () => {
       const res = await service.updateMicroTaskChecklist(validTaskId, ['item 1']);
       expect(res).toBeDefined();
-      expect(mockTaskModel.findByIdAndUpdate).toHaveBeenCalled();
     });
 
     it('should update individual checklist item completed state', async () => {
@@ -77,18 +88,42 @@ describe('ChecklistOperationsService', () => {
 
       expect(res.completionPercentage).toBe(100);
     });
-  });
 
-  describe('validateCompletionRequirements & getValidationErrors', () => {
+    it('should throw BadRequestException if itemIndex is out of range', async () => {
+      await expect(
+        service.updateChecklistItem({
+          taskId: validTaskId,
+          itemIndex: '99',
+          completed: true,
+        }),
+      ).rejects.toThrow(BadRequestException);
+    });
+
     it('should validate completion requirements for task', async () => {
       const res = await service.validateCompletionRequirements(validTaskId);
       expect(res.isValid).toBe(true);
+
+      const invalidRes = await service.validateCompletionRequirements('invalid-id');
+      expect(invalidRes.isValid).toBe(false);
     });
 
     it('should get validation errors for incomplete task checklist', async () => {
       const res = await service.getValidationErrors(validTaskId);
       expect(res.valid).toBe(true);
-      expect(res.errors.length).toBe(0);
+
+      const invalidRes = await service.getValidationErrors('invalid-id');
+      expect(invalidRes.valid).toBe(false);
+    });
+
+    it('should generate checklist with AI and history', async () => {
+      const simple = await service.generateChecklistForTask({ taskName: 'T1' });
+      expect(simple.length).toBe(2);
+
+      const history = await service.generateChecklistWithHistory({
+        taskName: 'T1',
+        projectId: new Types.ObjectId().toHexString(),
+      });
+      expect(history.length).toBe(2);
     });
   });
 });

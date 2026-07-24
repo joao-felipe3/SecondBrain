@@ -1,378 +1,216 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { getModelToken } from '@nestjs/mongoose';
-import { BadRequestException } from '@nestjs/common';
-import { Types } from 'mongoose';
-import { TasksService } from '../../../src/tasks/tasks.service';
-import { ProjectsService } from '../../../src/projects/projects.service';
-import { GeminiService } from '../../../src/ai/services/core/gemini.service';
-import { EVMProgressService } from '../../../src/projects/services/evm';
-import { PertService } from '../../../src/tasks/services/analysis/pert.service';
-import { ChecklistService } from '../../../src/tasks/services/intelligence/checklist.service';
-import { FeedbackService } from '../../../src/tasks/services/intelligence/feedback.service';
-import { AlertsService } from '../../../src/tasks/services/monitoring/alerts.service';
-import { DeviationDetectionService } from '../../../src/tasks/services/monitoring/deviation-detection.service';
-import { beforeEach, describe, expect, it, jest } from '@jest/globals';
-import { createTasksServiceTestProviders } from './helpers/tasks-service-test-providers';
-import { CreateMicroTaskDto } from '../../../src/tasks/dto/task/create-micro-task.dto';
-import { TaskDocument } from '../../../src/tasks/schemas/task.schema';
-import { CreateTaskDto } from '../../../src/tasks/dto/task/create-task.dto';
+import { TasksService } from '@src/tasks/tasks.service';
 
 describe('TasksService', () => {
   let service: TasksService;
-  let taskModelMock: jest.Mock & { findById?: jest.Mock; find?: jest.Mock };
-  let projectsServiceMock: { recalculateProjectStats: jest.Mock };
-  let geminiServiceMock: {
-    generateContent: jest.Mock;
-    generateChecklistForTask: jest.Mock;
-    generateChecklistWithHistory: jest.Mock;
-  };
-  let checklistServiceMock: {
-    validateChecklistStructure: jest.Mock;
-    findSimilarTasksInProject: jest.Mock;
-    enrichHistoryContext: jest.Mock;
-    calculateCompletionPercentage: jest.Mock;
-    validateChecklistCompletion: jest.Mock;
-  };
-  let feedbackModelMock: Record<string, jest.Mock>;
+  let mockTaskRepo: any;
+  let mockProjectsService: any;
+  let mockGeminiService: any;
+  let mockFeedbackService: any;
+  let mockPertService: any;
+  let mockWriteService: any;
+  let mockRecurringService: any;
+  let mockAiSuggestionsService: any;
+  let mockHabitsService: any;
+  let mockHierarchyService: any;
+  let mockChecklistOpsService: any;
+  let mockCompletionService: any;
 
-  const baseMicroTaskDto = {
-    name: 'Criar endpoint de micro-task',
-    description: 'Implementar e validar rota',
-    project: new Types.ObjectId().toString(),
-    microTaskType: 'subtask',
-    pomodorosPlanned: 2,
-    deadline: new Date('2026-04-20T10:00:00.000Z'),
-    isConcluded: false,
-    late: false,
-    recurrency: 'no-recurrence',
-    notification: new Date('2026-04-20T09:00:00.000Z'),
-  };
-
-  beforeEach(async () => {
-    const saveMock = jest.fn().mockImplementation(function (this: Record<string, unknown>) {
-      return Promise.resolve({
-        ...this,
-        _id: new Types.ObjectId(),
-      });
-    });
-
-    taskModelMock = jest.fn().mockImplementation((dto: Record<string, unknown>) => ({
-      ...dto,
-      save: saveMock,
-    })) as unknown as jest.Mock & { findById?: jest.Mock; find?: jest.Mock };
-
-    projectsServiceMock = {
-      recalculateProjectStats: jest.fn(),
+  beforeEach(() => {
+    mockTaskRepo = {
+      findAll: jest.fn().mockResolvedValue([{ id: 't1' }]),
+      findByProjectId: jest.fn().mockResolvedValue([{ id: 't1' }]),
+      findById: jest.fn().mockResolvedValue({ id: 't1' }),
     };
 
-    geminiServiceMock = {
-      generateContent: jest.fn(),
-      generateChecklistForTask: jest
-        .fn()
-        .mockImplementation(() =>
-          Promise.resolve(['Preparar contexto', 'Executar tarefa', 'Validar entrega']),
-        ),
-      generateChecklistWithHistory: jest
-        .fn()
-        .mockImplementation(() =>
-          Promise.resolve(['Preparar contexto', 'Executar tarefa', 'Validar entrega']),
-        ),
+    mockProjectsService = {
+      recalculateProjectStats: jest.fn().mockResolvedValue(undefined),
     };
 
-    checklistServiceMock = {
-      validateChecklistStructure: jest.fn().mockReturnValue({
-        isValid: true,
-      }),
-      findSimilarTasksInProject: jest.fn().mockImplementation(() => Promise.resolve([])),
-      enrichHistoryContext: jest.fn().mockReturnValue(''),
-      calculateCompletionPercentage: jest.fn().mockReturnValue(0),
-      validateChecklistCompletion: jest.fn().mockImplementation((items: unknown) => {
-        const normalized = Array.isArray(items) ? items : [];
-        const isValid = normalized.every(
-          (it: { completed?: boolean }) => Boolean(it?.completed) === true,
-        );
-        return {
-          isValid,
-          reason: isValid
-            ? undefined
-            : 'Checklist incompleto: complete todos os itens antes de concluir.',
-        };
-      }),
+    mockGeminiService = {
+      suggestPertEstimates: jest.fn().mockResolvedValue({ optimistic: 30, mostLikely: 60, pessimistic: 120 }),
     };
 
-    feedbackModelMock = {};
-
-    const projectModelMock = {
-      findById: jest.fn().mockReturnValue({
-        exec: jest
-          .fn()
-          .mockImplementation(() => Promise.resolve({ _id: new Types.ObjectId(), name: 'Project 1' })),
-      }),
-      findOne: jest.fn().mockReturnValue({
-        exec: jest
-          .fn()
-          .mockImplementation(() => Promise.resolve({ _id: new Types.ObjectId(), name: 'Project 1' })),
-      }),
+    mockFeedbackService = {
+      generateCompletionFeedback: jest.fn().mockResolvedValue('Feedback AI'),
+      getCompletionFeedback: jest.fn().mockResolvedValue(null),
     };
 
-    const taskRepositoryMock = {
-      findAll: jest.fn<any>().mockResolvedValue([]),
-      findById: jest.fn().mockImplementation((id: string) => {
-        if (taskModelMock.findById) {
-          const queryObj = taskModelMock.findById(id) as { exec?: () => Promise<unknown> };
-          if (queryObj && typeof queryObj.exec === 'function') {
-            return queryObj.exec();
-          }
-          return Promise.resolve(queryObj);
-        }
-        return Promise.resolve(null);
-      }),
-      findByProjectId: jest.fn().mockImplementation((projectId: string) => {
-        if (taskModelMock.find) {
-          const queryObj = taskModelMock.find({ project: projectId }) as {
-            exec?: () => Promise<unknown>;
-          };
-          if (queryObj && typeof queryObj.exec === 'function') {
-            return queryObj.exec();
-          }
-          return Promise.resolve(queryObj);
-        }
-        return Promise.resolve([]);
-      }),
-      save: jest.fn().mockImplementation((task: unknown) => Promise.resolve(task)),
-      delete: jest.fn().mockImplementation(() => Promise.resolve()),
+    mockPertService = {
+      updatePert: jest.fn().mockResolvedValue({ id: 't1' }),
+      savePertEstimate: jest.fn().mockResolvedValue({ taskId: 't1' }),
     };
 
-    const module: TestingModule = await Test.createTestingModule({
-      providers: [
-        TasksService,
-        { provide: 'TaskRepository', useValue: taskRepositoryMock },
-        { provide: getModelToken('Task'), useValue: taskModelMock },
-        { provide: getModelToken('Project'), useValue: projectModelMock },
-        {
-          provide: getModelToken('TaskCompletionFeedback'),
-          useValue: feedbackModelMock,
-        },
-        { provide: ProjectsService, useValue: projectsServiceMock },
-        { provide: GeminiService, useValue: geminiServiceMock },
-        { provide: EVMProgressService, useValue: { recordProgress: jest.fn() } },
-        { provide: ChecklistService, useValue: checklistServiceMock },
-        { provide: PertService, useValue: { calculatePertMetrics: jest.fn() } },
-        { provide: FeedbackService, useValue: { generateFeedback: jest.fn() } },
-        { provide: AlertsService, useValue: { createAlert: jest.fn() } },
-        {
-          provide: DeviationDetectionService,
-          useValue: { generateDeviationAlert: jest.fn() },
-        },
-        ...createTasksServiceTestProviders({
-          taskModel: taskModelMock,
-          projectModel: projectModelMock,
-          projectsService: projectsServiceMock,
-          geminiService: geminiServiceMock,
-          checklistService: checklistServiceMock,
-          pertService: { calculatePertMetrics: jest.fn() },
-          evmProgressService: { recordProgress: jest.fn() },
-          alertsService: { createAlert: jest.fn() },
-          deviationDetectionService: { generateDeviationAlert: jest.fn() },
-        }),
-      ],
-    }).compile();
+    mockWriteService = {
+      createMany: jest.fn().mockResolvedValue([{ id: 't1' }]),
+      createMicroTask: jest.fn().mockResolvedValue({ id: 't1' }),
+      createTaskCore: jest.fn().mockResolvedValue({ id: 't1' }),
+      update: jest.fn().mockResolvedValue({ id: 't1' }),
+      remove: jest.fn().mockResolvedValue(true),
+    };
 
-    service = module.get<TasksService>(TasksService);
-  });
+    mockRecurringService = {
+      createRecurringTemplate: jest.fn().mockResolvedValue({ id: 't1' }),
+      createRecurringMicroTask: jest.fn().mockResolvedValue({ id: 't1' }),
+      updateRecurringRule: jest.fn().mockResolvedValue({ id: 't1' }),
+      generateNextOccurrence: jest.fn().mockResolvedValue({ id: 't2' }),
+      findRecurringSeries: jest.fn().mockResolvedValue([{ id: 't1' }]),
+      deleteRecurringSeries: jest.fn().mockResolvedValue({ deletedCount: 1 }),
+    };
 
-  it('should be defined', () => {
-    expect(service).toBeDefined();
-  });
+    mockAiSuggestionsService = {
+      generateAiSuggestionsWithProgress: jest.fn().mockResolvedValue(undefined),
+      generateAiSuggestions: jest.fn().mockResolvedValue({ suggestions: [] }),
+    };
 
-  it('redireciona create() para createMicroTask() quando microTaskType estiver definido', async () => {
-    const createMicroTaskSpy = jest
-      .spyOn(service, 'createMicroTask')
-      .mockResolvedValue({ _id: new Types.ObjectId() } as unknown as TaskDocument);
+    mockHabitsService = {
+      getStreakData: jest.fn().mockResolvedValue({ currentStreak: 5 }),
+      getHabitsDashboard: jest.fn().mockResolvedValue({ summary: {} }),
+    };
 
-    await service.create({
-      ...baseMicroTaskDto,
-      microTaskType: 'quick',
-    } as unknown as CreateTaskDto);
+    mockHierarchyService = {
+      getTaskLineage: jest.fn().mockResolvedValue({ chain: [] }),
+      getDescendants: jest.fn().mockResolvedValue([]),
+      calculateValueContribution: jest.fn().mockResolvedValue({ contributionScore: 100 }),
+    };
 
-    expect(createMicroTaskSpy).toHaveBeenCalledTimes(1);
-    expect(createMicroTaskSpy).toHaveBeenCalledWith(
-      expect.objectContaining({
-        microTaskType: 'quick',
-        autoGenerateChecklist: true,
-      }),
+    mockChecklistOpsService = {
+      generateChecklistForTask: jest.fn().mockResolvedValue(['step 1']),
+      generateChecklistWithHistory: jest.fn().mockResolvedValue(['step 1']),
+      updateChecklistItem: jest.fn().mockResolvedValue({ id: 't1' }),
+      updateMicroTaskChecklist: jest.fn().mockResolvedValue({ id: 't1' }),
+      validateCompletionRequirements: jest.fn().mockResolvedValue({ isValid: true }),
+      getValidationErrors: jest.fn().mockResolvedValue({ valid: true, errors: [] }),
+    };
+
+    mockCompletionService = {
+      moveTaskStatus: jest.fn().mockResolvedValue({ id: 't1' }),
+      markAsConcluded: jest.fn().mockResolvedValue({ id: 't1', recurringRule: 'FREQ=DAILY' }),
+      incrementPomodorosDid: jest.fn().mockResolvedValue({ id: 't1' }),
+      handleTaskCompletion: jest.fn().mockResolvedValue({ id: 't1' }),
+      handleTaskSkipped: jest.fn().mockResolvedValue({ id: 't1' }),
+      handleTaskDeferred: jest.fn().mockResolvedValue({ id: 't1' }),
+      createDeviationAlertForTask: jest.fn().mockResolvedValue({ alertCreated: false }),
+    };
+
+    service = new TasksService(
+      mockTaskRepo,
+      mockProjectsService,
+      mockGeminiService,
+      mockFeedbackService,
+      mockPertService,
+      mockWriteService,
+      mockRecurringService,
+      mockAiSuggestionsService,
+      mockHabitsService,
+      mockHierarchyService,
+      mockChecklistOpsService,
+      mockCompletionService,
     );
   });
 
-  it('rejeita PERT inválido para micro-task', async () => {
-    await expect(
-      service.createMicroTask({
-        ...baseMicroTaskDto,
-        pertOptimisticMinutes: 30,
-        pertMostLikelyMinutes: 20,
-        pertPessimisticMinutes: 60,
-      } as unknown as CreateMicroTaskDto),
-    ).rejects.toThrow(BadRequestException);
+  describe('CRUD & delegate calls', () => {
+    it('should delegate create calls properly', async () => {
+      await service.create({ name: 'Task' } as any);
+      expect(mockWriteService.createTaskCore).toHaveBeenCalled();
 
-    await expect(
-      service.createMicroTask({
-        ...baseMicroTaskDto,
-        pertOptimisticMinutes: 30,
-        pertMostLikelyMinutes: 20,
-        pertPessimisticMinutes: 60,
-      } as unknown as CreateMicroTaskDto),
-    ).rejects.toThrow('PERT inválido');
-  });
+      await service.create({ name: 'MicroTask', microTaskType: 'code' } as any);
+      expect(mockWriteService.createMicroTask).toHaveBeenCalled();
 
-  it('gera checklist automaticamente quando não enviado no payload', async () => {
-    await service.createMicroTask({
-      ...baseMicroTaskDto,
-      autoGenerateChecklist: true,
-    } as unknown as CreateMicroTaskDto);
+      await service.createMany([{ name: 'Task' }] as any);
+      expect(mockWriteService.createMany).toHaveBeenCalled();
 
-    expect(geminiServiceMock.generateChecklistForTask).toHaveBeenCalledTimes(1);
-    expect(taskModelMock).toHaveBeenCalledWith(
-      expect.objectContaining({
-        checklist: [
-          { item: 'Preparar contexto', completed: false, order: 0 },
-          { item: 'Executar tarefa', completed: false, order: 1 },
-          { item: 'Validar entrega', completed: false, order: 2 },
-        ],
-      }),
-    );
-    expect(projectsServiceMock.recalculateProjectStats).toHaveBeenCalledTimes(1);
-  });
+      await service.createRecurringTemplate({ name: 'Rec' } as any);
+      expect(mockRecurringService.createRecurringTemplate).toHaveBeenCalled();
 
-  it('rejeita checklist vazio quando autoGenerateChecklist está desabilitado', async () => {
-    await expect(
-      service.createMicroTask({
-        ...baseMicroTaskDto,
-        autoGenerateChecklist: false,
-        checklist: [],
-      } as unknown as CreateMicroTaskDto),
-    ).rejects.toThrow(BadRequestException);
-
-    await expect(
-      service.createMicroTask({
-        ...baseMicroTaskDto,
-        autoGenerateChecklist: false,
-        checklist: [],
-      } as unknown as CreateMicroTaskDto),
-    ).rejects.toThrow('Checklist inválido');
-  });
-
-  // === Sprint 2 Tests ===
-
-  describe('validateCompletionRequirements', () => {
-    it('deve permitir conclusão de tarefa sem checklist', async () => {
-      const taskId = new Types.ObjectId();
-      const mockTaskFind = jest.fn<any>().mockResolvedValue({
-        _id: taskId,
-        checklist: [],
-      });
-      taskModelMock.findById = jest.fn().mockReturnValue({ exec: mockTaskFind });
-      const result = await service.validateCompletionRequirements(taskId.toString());
-
-      expect(result.isValid).toBe(true);
+      await service.createRecurringMicroTask({ name: 'RecMicro' } as any);
+      expect(mockRecurringService.createRecurringMicroTask).toHaveBeenCalled();
     });
 
-    it('deve permitir conclusão de hábito sem checklist', async () => {
-      const taskId = new Types.ObjectId();
-      const mockTaskFind = jest.fn<any>().mockResolvedValue({
-        _id: taskId,
-        microTaskType: 'habit',
-        recurringRule: { frequency: 'daily', interval: 1 },
-        checklist: [],
-      });
-      taskModelMock.findById = jest.fn().mockReturnValue({ exec: mockTaskFind });
+    it('should delegate read & project stats calls', async () => {
+      await service.recalculateProjectStats('p1');
+      expect(mockProjectsService.recalculateProjectStats).toHaveBeenCalledWith('p1');
 
-      const result = await service.validateCompletionRequirements(taskId.toString());
+      const all = await service.findAll();
+      expect(all.length).toBe(1);
 
-      expect(result.isValid).toBe(true);
+      const projTasks = await service.findByProjectId('p1');
+      expect(projTasks.length).toBe(1);
+
+      const task = await service.findOne('t1');
+      expect(task).toBeDefined();
+
+      const micro = await service.findMicroTask('t1');
+      expect(micro).toBeDefined();
     });
 
-    it('deve rejeitar conclusão quando checklist legado está como string[] (0%)', async () => {
-      const taskId = new Types.ObjectId();
-      const mockTaskFind = jest.fn<any>().mockResolvedValue({
-        _id: taskId,
-        checklist: ['Item 1', 'Item 2', 'Item 3'],
-      });
-      taskModelMock.findById = jest.fn().mockReturnValue({ exec: mockTaskFind });
+    it('should delegate checklist & copilot calls', async () => {
+      await service.generateChecklistViaCopilot({ taskName: 'T1' } as any);
+      expect(mockChecklistOpsService.generateChecklistForTask).toHaveBeenCalled();
 
-      const result = await service.validateCompletionRequirements(taskId.toString());
-      expect(result.isValid).toBe(false);
-      expect(result.reason || '').toContain('Checklist incompleto');
+      await service.generateChecklistViaCopilotWithHistory({ taskName: 'T1' } as any);
+      expect(mockChecklistOpsService.generateChecklistWithHistory).toHaveBeenCalled();
+
+      await service.updateChecklistItem({ taskId: 't1', itemIndex: '0', completed: true });
+      expect(mockChecklistOpsService.updateChecklistItem).toHaveBeenCalled();
+
+      await service.updateMicroTaskChecklist('t1', ['item 1']);
+      expect(mockChecklistOpsService.updateMicroTaskChecklist).toHaveBeenCalled();
+
+      await service.validateCompletionRequirements('t1');
+      expect(mockChecklistOpsService.validateCompletionRequirements).toHaveBeenCalled();
+
+      await service.getValidationErrors('t1');
+      expect(mockChecklistOpsService.getValidationErrors).toHaveBeenCalled();
     });
 
-    it('deve rejeitar conclusão com checklist incompleto (50%)', async () => {
-      const taskId = new Types.ObjectId();
-      const mockTaskFind = jest.fn<any>().mockResolvedValue({
-        _id: taskId,
-        checklist: [
-          { item: 'item1', completed: true },
-          { item: 'item2', completed: false },
-        ],
-      });
-      taskModelMock.findById = jest.fn().mockReturnValue({ exec: mockTaskFind });
+    it('should delegate completion, feedback & deviation calls', async () => {
+      const concluded = await service.markAsConcluded('t1');
+      expect(concluded).toBeDefined();
+      expect(mockCompletionService.handleTaskCompletion).toHaveBeenCalledWith('t1');
 
-      // Nota: Isso é um teste simplificado. Para teste completo, seria necessário
-      // mockear corretamente o taskModel do service
-      const result = await service.validateCompletionRequirements(taskId.toString());
+      await service.incrementPomodorosDid('t1');
+      expect(mockCompletionService.incrementPomodorosDid).toHaveBeenCalled();
 
-      expect(result.isValid).toBe(false);
-      expect(result.reason || '').toContain('incompleto');
+      await service.handleTaskSkipped('t1');
+      expect(mockCompletionService.handleTaskSkipped).toHaveBeenCalled();
+
+      await service.handleTaskDeferred('t1', new Date());
+      expect(mockCompletionService.handleTaskDeferred).toHaveBeenCalled();
+
+      await service.checkDeviationAndCreateAlert('t1');
+      expect(mockCompletionService.createDeviationAlertForTask).toHaveBeenCalled();
+
+      await service.generateCompletionFeedback('t1');
+      expect(mockFeedbackService.generateCompletionFeedback).toHaveBeenCalled();
+
+      await service.getCompletionFeedback('t1');
+      expect(mockFeedbackService.getCompletionFeedback).toHaveBeenCalled();
     });
 
-    it('deve rejeitar ID inválido', async () => {
-      const result = await service.validateCompletionRequirements('invalid-id');
+    it('should delegate recurring, habits, and AI suggestions calls', async () => {
+      await service.updateRecurringRule('t1', {} as any);
+      expect(mockRecurringService.updateRecurringRule).toHaveBeenCalled();
 
-      expect(result.isValid).toBe(false);
-      expect(result.reason).toContain('ID inválido');
-    });
-  });
+      await service.generateNextOccurrence('t1');
+      expect(mockRecurringService.generateNextOccurrence).toHaveBeenCalled();
 
-  describe('updateChecklistItem', () => {
-    it('deve atualizar um item específico do checklist', () => {
-      const mockTask = {
-        checklist: [
-          { item: 'item1', completed: false, order: 0 },
-          { item: 'item2', completed: false, order: 1 },
-        ],
-        save: jest.fn<any>().mockResolvedValue({
-          checklist: [
-            { item: 'item1', completed: true, order: 0 },
-            { item: 'item2', completed: false, order: 1 },
-          ],
-        }),
-      };
+      await service.findRecurringSeries('p1');
+      expect(mockRecurringService.findRecurringSeries).toHaveBeenCalled();
 
-      const execFind = jest.fn<any>().mockResolvedValue(mockTask);
-      taskModelMock.findById = jest.fn().mockReturnValue({ exec: execFind });
+      await service.deleteRecurringSeries('p1');
+      expect(mockRecurringService.deleteRecurringSeries).toHaveBeenCalled();
 
-      // Nota: Este é um teste estrutural. Para teste completo, seria necessário
-      // configurar completamente o service com mocks de dependências Sprint 2
-    });
+      await service.getStreakData('p1');
+      expect(mockHabitsService.getStreakData).toHaveBeenCalled();
 
-    it('deve rejeitar item index inválido', async () => {
-      await expect(
-        service.updateChecklistItem({
-          taskId: new Types.ObjectId().toString(),
-          itemIndex: 'invalid',
-          completed: true,
-        }),
-      ).rejects.toThrow(BadRequestException);
-    });
+      await service.getHabitsDashboard();
+      expect(mockHabitsService.getHabitsDashboard).toHaveBeenCalled();
 
-    it('deve rejeitar index fora do range', () => {
-      const taskId = new Types.ObjectId();
-      const mockTaskFind = jest.fn<any>().mockResolvedValue({
-        _id: taskId,
-        checklist: [{ item: 'item1', completed: false }],
-      });
+      await service.generateAiSuggestions({ projectName: 'P1' } as any);
+      expect(mockAiSuggestionsService.generateAiSuggestions).toHaveBeenCalled();
 
-      taskModelMock.findById = jest.fn().mockReturnValue({ exec: mockTaskFind });
-
-      // Este teste valida a lógica de validação de bounds
+      await service.generateAiSuggestionsWithProgress({} as any);
+      expect(mockAiSuggestionsService.generateAiSuggestionsWithProgress).toHaveBeenCalled();
     });
   });
 });

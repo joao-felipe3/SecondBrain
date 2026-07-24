@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { WbsValidationService } from '../../../../../../src/projects/services/wbs/core/wbs-validation.service';
-import { WbsAiService } from '../../../../../../src/ai/services/projects/wbs-ai.service';
+import { WbsValidationService } from '@src/projects/services/wbs/core/wbs-validation.service';
+import { WbsAiService } from '@src/ai/services/projects/wbs-ai.service';
 
 describe('WbsValidationService', () => {
   let service: WbsValidationService;
@@ -73,13 +73,15 @@ describe('WbsValidationService', () => {
   describe('validateBudget', () => {
     it('deve calcular utilizacao e indicar estouro de orcamento', () => {
       const nodes = [{ name: 'Task 1', estimatedHours: 60 }, { name: 'Task 2', estimatedHours: 60 }];
-      const summary = service.validateBudget(nodes as any, 100);
+      const summary = service.validateBudget(nodes as any, 100, { weeklyHours: 40, weeksAvailable: 4 });
 
       expect(summary.budgetHours).toBe(100);
       expect(summary.totalLeafHours).toBe(120);
       expect(summary.overBudget).toBe(true);
       expect(summary.deltaHours).toBe(20);
       expect(summary.utilizationPct).toBe(120);
+      expect(summary.weeklyHours).toBe(40);
+      expect(summary.weeksAvailable).toBe(4);
     });
   });
 
@@ -91,6 +93,29 @@ describe('WbsValidationService', () => {
       expect(normalized).toBeDefined();
       const totalHours = normalized.reduce((sum, n) => sum + n.estimatedHours, 0);
       expect(totalHours).toBeCloseTo(50, 0);
+    });
+
+    it('deve retornar a arvore inalterada quando o orcamento for invalido', () => {
+      const nodes = [{ name: 'Task 1', estimatedHours: 40 }];
+      const normalized = service.normalizeTreeToBudget(nodes as any, 0);
+      expect(normalized[0].name).toBe('Task 1');
+      expect(normalized[0].estimatedHours).toBe(40);
+    });
+
+    it('deve ajustar folhas iterativamente quando o orcamento for maior que o total atual', () => {
+      const nodes = [
+        {
+          name: 'Pai',
+          estimatedHours: 20,
+          children: [
+            { name: 'Leaf 1', estimatedHours: 10 },
+            { name: 'Leaf 2', estimatedHours: 10 },
+          ],
+        },
+      ];
+
+      const normalized = service.normalizeTreeToBudget(nodes as any, 40);
+      expect(normalized[0].estimatedHours).toBeGreaterThan(20);
     });
   });
 

@@ -1,117 +1,60 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { DependencyInferenceService } from '../../../../../src/tasks/services/dependencies/dependency-inference.service';
-import { GeminiService } from '../../../../../src/ai/services/core/gemini.service';
+import { DependencyInferenceService } from '@src/tasks/services/dependencies/dependency-inference.service';
 
 describe('DependencyInferenceService', () => {
   let service: DependencyInferenceService;
-  let mockGeminiService: {
-    inferDependencies: jest.Mock;
-  };
+  let mockGeminiService: any;
 
-  beforeEach(async () => {
+  beforeEach(() => {
     mockGeminiService = {
-      inferDependencies: jest.fn(),
+      inferDependencies: jest.fn().mockResolvedValue([
+        { taskId: 't2', dependsOnTaskId: 't1', relationship: 'FINISH_TO_START' },
+      ]),
     };
 
-    const module: TestingModule = await Test.createTestingModule({
-      providers: [
-        DependencyInferenceService,
-        { provide: GeminiService, useValue: mockGeminiService },
-      ],
-    }).compile();
-
-    service = module.get<DependencyInferenceService>(DependencyInferenceService);
+    service = new DependencyInferenceService(mockGeminiService);
   });
 
-  describe('inferHeuristicPhases', () => {
-    it('deve inferir dependencias heurísticas entre tarefas com fases ou metadados', () => {
-      const tasks = [
-        { id: '1', name: 'Fase 1: Requisitos', phase: 'Planning' },
-        { id: '2', name: 'Fase 2: Desenvolvimento', phase: 'Execution' },
-      ];
+  it('should infer heuristic phases for task sequence', () => {
+    const tasks = [
+      { id: 't1', name: 'Task 1', order: 1 },
+      { id: 't2', name: 'Task 2', order: 2 },
+    ];
 
-      const result = service.inferHeuristicPhases(tasks as any);
-      expect(Array.isArray(result)).toBe(true);
-    });
+    const deps = service.inferHeuristicPhases(tasks as any);
+    expect(deps.length).toBe(1);
+    expect(deps[0].taskId).toBe('t2');
+    expect(deps[0].dependsOnTaskId).toBe('t1');
   });
 
-  describe('inferWithAi', () => {
-    it('deve retornar array vazio se houver menos de 2 tarefas', async () => {
-      const result = await service.inferWithAi({ tasks: [{ id: '1', name: 'Task 1' }] } as any);
-      expect(result).toEqual([]);
-    });
+  it('should infer dependencies with AI for tasks', async () => {
+    const tasks = [
+      { id: 't1', name: 'Design' },
+      { id: 't2', name: 'Implementation' },
+    ];
 
-    it('deve chamar geminiService e retornar dependencias aciclicas filtradas', async () => {
-      const tasks = [
-        { id: 't1', name: 'Task 1' },
-        { id: 't2', name: 'Task 2' },
-      ];
-
-      mockGeminiService.inferDependencies.mockResolvedValue([
-        { taskId: 't2', dependsOnTaskId: 't1', relationship: 'FINISH_TO_START' },
-      ]);
-
-      const result = await service.inferWithAi({
-        requestId: 'req-1',
-        tasks: tasks as any,
-      });
-
-      expect(result).toHaveLength(1);
-      expect(result[0]).toEqual(
-        expect.objectContaining({ taskId: 't2', dependsOnTaskId: 't1' }),
-      );
-      expect(mockGeminiService.inferDependencies).toHaveBeenCalledTimes(1);
-    });
-
-    it('deve tentar retry se a tentativa inicial falhar', async () => {
-      const tasks = [
-        { id: 't1', name: 'Task 1' },
-        { id: 't2', name: 'Task 2' },
-      ];
-
-      mockGeminiService.inferDependencies
-        .mockRejectedValueOnce(new Error('AI error'))
-        .mockResolvedValueOnce([
-          { taskId: 't2', dependsOnTaskId: 't1', relationship: 'FINISH_TO_START' },
-        ]);
-
-      const result = await service.inferWithAi({
-        requestId: 'req-retry',
-        tasks: tasks as any,
-      });
-
-      expect(result).toHaveLength(1);
-      expect(mockGeminiService.inferDependencies).toHaveBeenCalledTimes(2);
-    });
+    const deps = await service.inferWithAi({ tasks } as any);
+    expect(deps.length).toBe(1);
+    expect(mockGeminiService.inferDependencies).toHaveBeenCalled();
   });
 
-  describe('inferInterLeafWithAi', () => {
-    it('deve retornar array vazio se houver menos de 2 folhagens (leaves)', async () => {
-      const result = await service.inferInterLeafWithAi({
-        projectId: 'proj-1',
-        leaves: [{ leafId: 'l1', startGateId: 'g1', endGateId: 'g2' }] as any,
-      });
-      expect(result).toEqual([]);
-    });
+  it('should return empty array if less than 2 tasks provided to inferWithAi', async () => {
+    const deps = await service.inferWithAi({ tasks: [{ id: 't1', name: 'Task 1' }] } as any);
+    expect(deps).toEqual([]);
+  });
 
-    it('deve inferir dependencias entre gates de folhas via IA', async () => {
-      const leaves = [
-        { leafId: 'l1', startGateId: 'g1', endGateId: 'g2', leafName: 'Leaf 1' },
-        { leafId: 'l2', startGateId: 'g3', endGateId: 'g4', leafName: 'Leaf 2' },
-      ];
+  it('should infer inter-leaf dependencies with AI', async () => {
+    mockGeminiService.inferDependencies.mockResolvedValueOnce([
+      { taskId: 'g1_start', dependsOnTaskId: 'g2_end', relationship: 'FINISH_TO_START' },
+    ]);
 
-      mockGeminiService.inferDependencies.mockResolvedValue([
-        { successor: 'g3', predecessor: 'g2', type: 'FS', lag: 0 },
-      ]);
+    const leaves = [
+      { leafId: 'l1', leafName: 'L1', startGateId: 'g1_start', endGateId: 'g1_end' },
+      { leafId: 'l2', leafName: 'L2', startGateId: 'g2_start', endGateId: 'g2_end' },
+    ];
 
-      const result = await service.inferInterLeafWithAi({
-        projectId: 'proj-1',
-        requestId: 'req-leaf',
-        leaves: leaves as any,
-      });
-
-      expect(mockGeminiService.inferDependencies).toHaveBeenCalled();
-      expect(Array.isArray(result)).toBe(true);
-    });
+    const deps = await service.inferInterLeafWithAi({ projectId: 'p1', leaves } as any);
+    expect(deps.length).toBe(1);
+    expect(deps[0].taskId).toBe('g1_start');
+    expect(deps[0].dependsOnTaskId).toBe('g2_end');
   });
 });

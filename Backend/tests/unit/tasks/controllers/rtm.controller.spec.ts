@@ -1,174 +1,127 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { RTMController } from '../../../../src/tasks/controllers/rtm.controller';
-import { RTMService } from '../../../../src/tasks/services/traceability';
-import { TasksService } from '../../../../src/tasks/tasks.service';
+import { Types } from 'mongoose';
+import { RTMController } from '@src/tasks/controllers/rtm.controller';
 
 describe('RTMController', () => {
   let controller: RTMController;
-  let rtmServiceMock: any;
-  let tasksServiceMock: any;
+  let mockRtmService: any;
+  let mockTasksService: any;
 
-  beforeEach(async () => {
-    rtmServiceMock = {
-      generateRequirements: jest.fn().mockResolvedValue([
-        { description: 'Req 1', type: 'functional' },
-      ]),
-      saveRequirements: jest.fn().mockResolvedValue([
-        { _id: 'req-1', description: 'Req 1', type: 'functional' },
-      ]),
+  const validProjId = new Types.ObjectId().toHexString();
+  const validReqId = new Types.ObjectId().toHexString();
+  const validTaskId = new Types.ObjectId().toHexString();
+
+  beforeEach(() => {
+    mockRtmService = {
+      generateRequirements: jest.fn().mockResolvedValue([{ description: 'Req 1', type: 'FUNCTIONAL', kind: 'action', ref: 'R1' }]),
+      saveRequirements: jest.fn().mockResolvedValue([{ id: validReqId, description: 'Req 1', kind: 'action', hierarchyLevel: 1, status: 'UNMAPPED' }]),
+      validateRTM: jest.fn().mockResolvedValue({ isValid: true, coverage: 100, unmappedRequirements: [], risks: [] }),
       getRTMMatrix: jest.fn().mockResolvedValue({
-        requirements: [{ id: 'req-1', description: 'Req 1' }],
-        tasks: [{ id: 'task-1', name: 'Task 1' }],
-        matrix: new Map(),
+        requirements: [{ id: validReqId }],
+        tasks: [{ id: validTaskId }],
+        matrix: new Map([[validReqId, new Set([validTaskId])]]),
+        validation: { isValid: true, coverage: 100 },
       }),
-      mapRequirementToTask: jest.fn().mockResolvedValue({
-        _id: 'req-1',
-        traceableItems: ['task-1'],
-      }),
-      unmapRequirementFromTask: jest.fn().mockResolvedValue({
-        _id: 'req-1',
-        traceableItems: [],
-      }),
-      validateRTM: jest.fn().mockResolvedValue({
-        isValid: true,
-        coverage: 100,
-        unmappedRequirements: [],
-        risks: [],
-      }),
+      mapRequirementToTask: jest.fn().mockResolvedValue({ id: validReqId, description: 'Req 1', kind: 'action', hierarchyLevel: 1, status: 'MAPPED' }),
+      unmapRequirementFromTask: jest.fn().mockResolvedValue({ id: validReqId, description: 'Req 1', kind: 'action', hierarchyLevel: 1, status: 'UNMAPPED' }),
       deleteRequirement: jest.fn().mockResolvedValue(true),
-      autoMapRequirementsToTasks: jest.fn().mockResolvedValue({
-        success: true,
-        mappedCount: 1,
-        createdRequirementsCount: 0,
-        coverage: 100,
-        validation: { isValid: true, coverage: 100, unmappedRequirements: [], risks: [] },
-        timestamp: new Date().toISOString(),
-      }),
-      generateTasksForUnmappedRequirements: jest.fn().mockResolvedValue({
-        success: true,
-        createdTasksCount: 2,
-        coverage: 100,
-        validation: { isValid: true, coverage: 100, unmappedRequirements: [], risks: [] },
-        timestamp: new Date().toISOString(),
-      }),
+      deleteAllRequirements: jest.fn().mockResolvedValue(3),
+      getRequirements: jest.fn().mockResolvedValue([{ id: validReqId, description: 'Req 1' }]),
+      autoMapRequirementsToTasks: jest.fn().mockResolvedValue({ success: true, mappedCount: 2, createdRequirementsCount: 0, coverage: 100 }),
+      generateTasksForUnmappedRequirements: jest.fn().mockResolvedValue({ success: true, createdTasksCount: 1, coverage: 100 }),
     };
 
-    tasksServiceMock = {
-      findByProjectId: jest.fn().mockResolvedValue([
-        { id: 'task-1', name: 'Task 1' },
-      ]),
+    mockTasksService = {
+      findByProjectId: jest.fn().mockResolvedValue([{ _id: validTaskId, name: 'Task 1' }]),
     };
 
-    const module: TestingModule = await Test.createTestingModule({
-      controllers: [RTMController],
-      providers: [
-        { provide: RTMService, useValue: rtmServiceMock },
-        { provide: TasksService, useValue: tasksServiceMock },
-      ],
-    }).compile();
-
-    controller = module.get<RTMController>(RTMController);
+    controller = new RTMController(mockRtmService, mockTasksService);
   });
 
-  it('should be defined', () => {
-    expect(controller).toBeDefined();
-  });
-
-  describe('autoGenerateRequirements', () => {
-    it('deve gerar e salvar requisitos com sucesso', async () => {
-      const body = { smartObjective: { objective: 'Aumentar vendas' } };
-      const result = await controller.autoGenerateRequirements('p-1', body);
-
-      expect(result.success).toBe(true);
-      expect(result.count).toBe(1);
-      expect(rtmServiceMock.generateRequirements).toHaveBeenCalledWith(body.smartObjective);
-      expect(rtmServiceMock.saveRequirements).toHaveBeenCalledWith(
-        'p-1',
-        expect.arrayContaining([expect.objectContaining({ description: 'Req 1', type: 'functional' })]),
-      );
+  describe('Requirements & RTM Matrix endpoints', () => {
+    it('should auto-generate requirements from SMART objective', async () => {
+      const res = await controller.autoGenerateRequirements(validProjId, { smartObjective: { specific: 'Build' } });
+      expect(res.success).toBe(true);
+      expect(res.count).toBe(1);
     });
 
-    it('deve retornar mensagem de aviso caso nenhum requisito seja gerado', async () => {
-      rtmServiceMock.generateRequirements.mockResolvedValueOnce([]);
-
-      const body = { smartObjective: { objective: 'Aumentar vendas' } };
-      const result = await controller.autoGenerateRequirements('p-1', body);
-
-      expect(result.success).toBe(false);
-      expect(result.message).toContain('Nenhum item da jornada foi gerado');
+    it('should handle auto-generate requirements returning empty list', async () => {
+      mockRtmService.generateRequirements.mockResolvedValueOnce([]);
+      const res = await controller.autoGenerateRequirements(validProjId, { smartObjective: {} });
+      expect(res.success).toBe(false);
     });
 
-    it('deve capturar erro e retornar formato estático de erro', async () => {
-      rtmServiceMock.generateRequirements.mockRejectedValueOnce(new Error('IA indisponível'));
-
-      const body = { smartObjective: { objective: 'Aumentar vendas' } };
-      const result = await controller.autoGenerateRequirements('p-1', body);
-
-      expect(result.success).toBe(false);
-      expect(result.error).toBe('IA indisponível');
+    it('should handle auto-generate requirements error', async () => {
+      mockRtmService.generateRequirements.mockRejectedValueOnce(new Error('AI generation failed'));
+      const res = await controller.autoGenerateRequirements(validProjId, { smartObjective: {} });
+      expect(res.success).toBe(false);
+      expect(res.error).toBe('AI generation failed');
     });
-  });
 
-  describe('getRTMMatrix', () => {
-    it('deve buscar a matriz RTM', async () => {
-      const result = await controller.getRTMMatrix('p-1');
-
-      expect(result.success).toBe(true);
-      expect(tasksServiceMock.findByProjectId).toHaveBeenCalledWith('p-1');
-      expect(rtmServiceMock.getRTMMatrix).toHaveBeenCalled();
+    it('should get RTM matrix', async () => {
+      const matrix = await controller.getRTMMatrix(validProjId);
+      expect(matrix.success).toBe(true);
+      expect(matrix.requirements?.length).toBe(1);
     });
-  });
 
-  describe('mapRequirementToTask', () => {
-    it('deve mapear requisito para tarefa', async () => {
-      const body = { requirementId: 'req-1', taskId: 'task-1' };
-      const result = await controller.mapRequirementToTask('p-1', body);
-
-      expect(result.success).toBe(true);
-      expect(rtmServiceMock.mapRequirementToTask).toHaveBeenCalledWith({
-        projectId: 'p-1',
-        requirementId: 'req-1',
-        taskId: 'task-1',
-      });
+    it('should handle get RTM matrix error', async () => {
+      mockRtmService.getRTMMatrix.mockRejectedValueOnce(new Error('Matrix failed'));
+      const res = await controller.getRTMMatrix(validProjId);
+      expect(res.success).toBe(false);
     });
-  });
 
-  describe('unmapRequirementFromTask', () => {
-    it('deve remover mapeamento entre requisito e tarefa', async () => {
-      const result = await controller.unmapRequirementFromTask('p-1', {
-        requirementId: 'req-1',
-        taskId: 'task-1',
-      });
+    it('should map and unmap requirement to task', async () => {
+      const mapped = await controller.mapRequirementToTask(validProjId, { requirementId: validReqId, taskId: validTaskId });
+      expect(mapped.success).toBe(true);
 
-      expect(result.success).toBe(true);
-      expect(rtmServiceMock.unmapRequirementFromTask).toHaveBeenCalledWith('req-1', 'task-1');
+      const unmapped = await controller.unmapRequirementFromTask(validProjId, { requirementId: validReqId, taskId: validTaskId });
+      expect(unmapped.success).toBe(true);
     });
-  });
 
-  describe('deleteRequirement', () => {
-    it('deve deletar requisito', async () => {
-      const result = await controller.deleteRequirement('req-1');
+    it('should handle requirement not found during mapping or unmapping', async () => {
+      mockRtmService.mapRequirementToTask.mockResolvedValueOnce(null);
+      const mapped = await controller.mapRequirementToTask(validProjId, { requirementId: 'invalid', taskId: validTaskId });
+      expect(mapped.success).toBe(false);
 
-      expect(result.success).toBe(true);
-      expect(rtmServiceMock.deleteRequirement).toHaveBeenCalledWith('req-1');
+      mockRtmService.unmapRequirementFromTask.mockResolvedValueOnce(null);
+      const unmapped = await controller.unmapRequirementFromTask(validProjId, { requirementId: 'invalid', taskId: validTaskId });
+      expect(unmapped.success).toBe(false);
     });
-  });
 
-  describe('autoMapRequirements', () => {
-    it('deve mapear automaticamente requisitos para tarefas', async () => {
-      const result = await controller.autoMapRequirementsToTasks('p-1');
-
-      expect(result.success).toBe(true);
-      expect(rtmServiceMock.autoMapRequirementsToTasks).toHaveBeenCalled();
+    it('should handle error during mapping or unmapping', async () => {
+      mockRtmService.mapRequirementToTask.mockRejectedValueOnce(new Error('Map err'));
+      const mapped = await controller.mapRequirementToTask(validProjId, { requirementId: validReqId, taskId: validTaskId });
+      expect(mapped.success).toBe(false);
     });
-  });
 
-  describe('generateTasksForUnmappedRequirements', () => {
-    it('deve gerar tarefas a partir de requisitos', async () => {
-      const result = await controller.generateTasksForUnmappedRequirements('p-1');
+    it('should list and delete requirements', async () => {
+      const list = await controller.getRequirements(validProjId);
+      expect(list.success).toBe(true);
 
-      expect(result.success).toBe(true);
-      expect(rtmServiceMock.generateTasksForUnmappedRequirements).toHaveBeenCalled();
+      const del = await controller.deleteRequirement(validReqId);
+      expect(del.success).toBe(true);
+
+      const delAll = await controller.deleteAllRequirements(validProjId);
+      expect(delAll.count).toBe(3);
+    });
+
+    it('should handle delete requirement not found or error', async () => {
+      mockRtmService.deleteRequirement.mockResolvedValueOnce(false);
+      const del = await controller.deleteRequirement('invalid-id');
+      expect(del.success).toBe(false);
+    });
+
+    it('should auto-map requirements and generate tasks for unmapped', async () => {
+      const autoMap = await controller.autoMapRequirementsToTasks(validProjId);
+      expect(autoMap.success).toBe(true);
+
+      const genTasks = await controller.generateTasksForUnmappedRequirements(validProjId);
+      expect(genTasks.success).toBe(true);
+    });
+
+    it('should handle auto-map when no tasks exist in project', async () => {
+      mockTasksService.findByProjectId.mockResolvedValueOnce([]);
+      const autoMap = await controller.autoMapRequirementsToTasks(validProjId);
+      expect(autoMap.success).toBe(false);
     });
   });
 });

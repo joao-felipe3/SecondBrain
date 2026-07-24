@@ -11,7 +11,7 @@ describe('WbsConversionOrchestrationService', () => {
     mockConfigService = {
       getNowIso: jest.fn().mockReturnValue('2026-01-01T00:00:00.000Z'),
       logIfTimingDebug: jest.fn(),
-      isVerboseTaskLogsEnabled: jest.fn().mockReturnValue(false),
+      isVerboseTaskLogsEnabled: jest.fn().mockReturnValue(true),
     };
     mockDraftGenerationService = {
       generateMicroTasksPlanForLeaf: jest.fn().mockResolvedValue({ focus: 'Test plan' }),
@@ -47,7 +47,7 @@ describe('WbsConversionOrchestrationService', () => {
         node,
         project,
         path: 'root > Node 1',
-        options: { strategy: 'two-phase' },
+        options: { strategy: 'two-phase', autoAudit: true, logVerbose: true },
       });
 
       expect(result.success).toBe(true);
@@ -90,10 +90,67 @@ describe('WbsConversionOrchestrationService', () => {
       expect(result.error?.stage).toBe('draft-generation');
       expect(result.error?.message).toBe('Draft AI failure');
     });
+
+    it('should set error on result when stage1 fails with throwOnError', async () => {
+      mockDraftGenerationService.generateMicroTasksPlanForLeaf.mockRejectedValueOnce(
+        new Error('Draft AI failure'),
+      );
+
+      const node: any = { _id: 'n1', name: 'Node 1' };
+      const project: any = { id: 'p1' };
+
+      const result = await service.convertWbsToTasks({
+        node,
+        project,
+        path: 'path',
+        options: { throwOnError: true },
+      });
+
+      expect(result.success).toBe(false);
+      expect(result.error?.message).toBe('Draft AI failure');
+    });
+
+    it('should handle stage2 draft processing errors gracefully', async () => {
+      mockDraftProcessingService.applyThemeWorkflowAndProgression.mockImplementationOnce(() => {
+        throw new Error('Processing failure');
+      });
+
+      const node: any = { _id: 'n1', name: 'Node 1' };
+      const project: any = { id: 'p1' };
+
+      const result = await service.convertWbsToTasks({
+        node,
+        project,
+        path: 'path',
+        options: { throwOnError: false },
+      });
+
+      expect(result.success).toBe(false);
+      expect(result.error?.stage).toBe('draft-processing');
+    });
+
+    it('should handle stage3 task conversion errors gracefully', async () => {
+      mockTaskConversionService.convertDraftsToTasks.mockRejectedValueOnce(
+        new Error('Task conversion failure'),
+      );
+
+      const node: any = { _id: 'n1', name: 'Node 1' };
+      const project: any = { id: 'p1' };
+
+      const result = await service.convertWbsToTasks({
+        node,
+        project,
+        path: 'path',
+        options: { throwOnError: false },
+      });
+
+      expect(result.success).toBe(false);
+      expect(result.error?.stage).toBe('task-conversion');
+    });
   });
 
   describe('generateTasksForSingleLeaf', () => {
-    it('should orchestrate single leaf conversion and save tasks when requested', async () => {
+    it('should orchestrate single leaf conversion and save tasks when requested via createMany', async () => {
       const mockTasksService: any = {
         createMany: jest
           .fn()
@@ -115,6 +172,46 @@ describe('WbsConversionOrchestrationService', () => {
       expect(res.pomodorosGenerated).toBe(4);
       expect(res.generatedHours).toBe(2);
       expect(mockTasksService.createMany).toHaveBeenCalled();
+    });
+
+    it('should save tasks using single create fallback when createMany is missing', async () => {
+      const mockTasksService: any = {
+        create: jest.fn().mockResolvedValue({ title: 'Single Created Task', pomodorosPlanned: 2 }),
+      };
+
+      const leafNode: any = { _id: 'leaf1', name: 'Leaf 1', estimatedHours: 2 };
+
+      const res = await service.generateTasksForSingleLeaf({
+        leafNode,
+        nodePath: 'path',
+        projectId: 'proj123',
+        project: {},
+        tasksService: mockTasksService,
+        saveTasks: true,
+      });
+
+      expect(res.tasks.length).toBe(1);
+      expect(mockTasksService.create).toHaveBeenCalled();
+    });
+
+    it('should throw when single leaf conversion fails with error', async () => {
+      mockDraftGenerationService.generateMicroTasksPlanForLeaf.mockRejectedValueOnce(
+        new Error('Leaf conversion exception'),
+      );
+
+      const leafNode: any = { _id: 'leaf1', name: 'Leaf 1' };
+      const mockTasksService: any = {};
+
+      await expect(
+        service.generateTasksForSingleLeaf({
+          leafNode,
+          nodePath: 'path',
+          projectId: 'proj123',
+          project: {},
+          tasksService: mockTasksService,
+          saveTasks: false,
+        }),
+      ).rejects.toThrow('Leaf conversion exception');
     });
   });
 });
