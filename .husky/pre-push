@@ -1,0 +1,6 @@
+echo "🧪 Running quick smoke tests before push..."
+cd Backend && npm run test -- --passWithNoTests --testPathPattern="unit" --ci 2>/dev/null || {
+  echo "⚠️  Tests failed or skipped — proceeding with push."
+  exit 0
+}
+echo "✅ Tests passed!"

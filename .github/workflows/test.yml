@@ -46,7 +46,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
-          cache: 'npm'
+          cache: "npm"
 
       - name: 📚 Install dependencies
         run: npm ci
@@ -70,8 +70,8 @@ jobs:
         run: |
           COVERAGE=$(cat coverage/coverage-summary.json | grep -o '"lines":{[^}]*}' | grep -o '"pct":[^,]*' | head -1 | grep -o '[0-9]*\.[0-9]*')
           echo "Overall coverage: ${COVERAGE}%"
-          if (( $(echo "$COVERAGE < 70" | bc -l) )); then
-            echo "❌ Coverage below 70% threshold!"
+          if (( $(echo "$COVERAGE < 80" | bc -l) )); then
+            echo "❌ Coverage below 80% threshold!"
             exit 1
           fi
           echo "✅ Coverage check passed!"
@@ -87,9 +87,9 @@ jobs:
             const branches = coverage.total.branches.pct;
             const functions = coverage.total.functions.pct;
             const statements = coverage.total.statements.pct;
-            
+
             const comment = `## 📊 Coverage Report
-            
+
             | Metric | Coverage |
             |--------|----------|
             | Lines | ${lines}% |
@@ -97,7 +97,7 @@ jobs:
             | Functions | ${functions}% |
             | Statements | ${statements}% |
             `;
-            
+
             github.rest.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,

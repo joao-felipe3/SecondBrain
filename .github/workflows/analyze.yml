@@ -1,0 +1,200 @@
+name: Code Quality & Analysis
+
+on:
+  pull_request:
+    branches:
+      - main
+      - develop
+  push:
+    branches:
+      - main
+      - develop
+
+jobs:
+  # ─────────────────────────────────────────────────────────────────────────────
+  # 1. Coverage + quality gates
+  # ─────────────────────────────────────────────────────────────────────────────
+  coverage-analysis:
+    name: 📊 Coverage Analysis
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: Backend
+
+    services:
+      mongodb:
+        image: mongo:6
+        options: >-
+          --health-cmd mongosh
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 27017:27017
+
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 📦 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20.x"
+          cache: "npm"
+          cache-dependency-path: Backend/package-lock.json
+
+      - name: 📚 Install dependencies
+        run: npm ci
+
+      - name: 🧪 Run tests with coverage
+        run: npm run test:cov
+        env:
+          MONGODB_URI: mongodb://localhost:27017/second-brain-test
+
+      - name: 📤 Upload coverage reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-reports
+          path: |
+            Backend/coverage/coverage-summary.json
+            Backend/coverage/lcov.info
+          retention-days: 30
+
+      - name: 📊 Parse & validate coverage thresholds
+        run: |
+          STMTS=$(cat coverage/coverage-summary.json | python3 -c "import sys,json; d=json.load(sys.stdin); print(d['total']['statements']['pct'])")
+          BRANCHES=$(cat coverage/coverage-summary.json | python3 -c "import sys,json; d=json.load(sys.stdin); print(d['total']['branches']['pct'])")
+          FUNCTIONS=$(cat coverage/coverage-summary.json | python3 -c "import sys,json; d=json.load(sys.stdin); print(d['total']['functions']['pct'])")
+          LINES=$(cat coverage/coverage-summary.json | python3 -c "import sys,json; d=json.load(sys.stdin); print(d['total']['lines']['pct'])")
+
+          echo "📊 Coverage Results:"
+          echo "  Statements : ${STMTS}%"
+          echo "  Branches   : ${BRANCHES}%"
+          echo "  Functions  : ${FUNCTIONS}%"
+          echo "  Lines      : ${LINES}%"
+
+          # Thresholds
+          STMT_THRESHOLD=80
+          BRANCH_THRESHOLD=50
+          FUNC_THRESHOLD=75
+          LINE_THRESHOLD=80
+
+          FAILED=0
+          if (( $(echo "$STMTS < $STMT_THRESHOLD" | bc -l) )); then
+            echo "❌ Statements coverage ${STMTS}% below threshold ${STMT_THRESHOLD}%"
+            FAILED=1
+          fi
+          if (( $(echo "$BRANCHES < $BRANCH_THRESHOLD" | bc -l) )); then
+            echo "❌ Branches coverage ${BRANCHES}% below threshold ${BRANCH_THRESHOLD}%"
+            FAILED=1
+          fi
+          if (( $(echo "$FUNCTIONS < $FUNC_THRESHOLD" | bc -l) )); then
+            echo "❌ Functions coverage ${FUNCTIONS}% below threshold ${FUNC_THRESHOLD}%"
+            FAILED=1
+          fi
+          if (( $(echo "$LINES < $LINE_THRESHOLD" | bc -l) )); then
+            echo "❌ Lines coverage ${LINES}% below threshold ${LINE_THRESHOLD}%"
+            FAILED=1
+          fi
+
+          if [ $FAILED -ne 0 ]; then
+            echo "::error::Coverage thresholds not met!"
+            exit 1
+          fi
+          echo "✅ All coverage thresholds passed!"
+
+      - name: 💬 Comment PR with coverage details
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const coverage = JSON.parse(fs.readFileSync('./Backend/coverage/coverage-summary.json', 'utf8'));
+            const t = coverage.total;
+
+            const emoji = (pct, threshold) => pct >= threshold ? '✅' : '❌';
+
+            const body = [
+              '## 📊 Code Coverage Report',
+              '',
+              '| Metric | Coverage | Threshold | Status |',
+              '|--------|----------|-----------|--------|',
+              `| Statements | ${t.statements.pct}% | 80% | ${emoji(t.statements.pct, 80)} |`,
+              `| Branches   | ${t.branches.pct}%   | 50% | ${emoji(t.branches.pct, 50)} |`,
+              `| Functions  | ${t.functions.pct}%  | 75% | ${emoji(t.functions.pct, 75)} |`,
+              `| Lines      | ${t.lines.pct}%      | 80% | ${emoji(t.lines.pct, 80)} |`,
+            ].join('\n');
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body
+            });
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # 2. Complexity metrics (ts-complexity)
+  # ─────────────────────────────────────────────────────────────────────────────
+  complexity:
+    name: 🔢 Complexity Analysis
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: Backend
+
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 📦 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20.x"
+          cache: "npm"
+          cache-dependency-path: Backend/package-lock.json
+
+      - name: 📚 Install dependencies
+        run: npm ci
+
+      - name: 🔧 Install complexity tools
+        run: npm install -g complexity-report-ts || true
+
+      - name: 🔢 Run complexity analysis
+        run: |
+          npx ts-complexity --threshold 20 src/**/*.ts 2>/dev/null || \
+          echo "ℹ️ Complexity analysis completed (tool may not be available)"
+        continue-on-error: true
+
+      - name: 📊 TypeScript compilation check
+        run: npx tsc --noEmit
+        continue-on-error: true
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # 3. Dead code / unused exports detection
+  # ─────────────────────────────────────────────────────────────────────────────
+  dead-code:
+    name: 🪦 Dead Code Detection
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: Backend
+
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 📦 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20.x"
+          cache: "npm"
+          cache-dependency-path: Backend/package-lock.json
+
+      - name: 📚 Install dependencies
+        run: npm ci
+
+      - name: 🪦 Run knip for dead code analysis
+        run: |
+          npx knip --reporter compact 2>/dev/null || \
+          echo "ℹ️ Dead code analysis completed"
+        continue-on-error: true

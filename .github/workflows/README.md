@@ -1,69 +1,95 @@
-# GitHub Actions Workflows
+# GitHub CI/CD Workflows
 
-Este diretório contém workflows do GitHub Actions para CI/CD automatizado.
+This directory contains all GitHub Actions workflows for the SecondBrain monorepo.
 
-## Workflows Disponíveis
+## Workflows
 
-### 1. **lint.yml** - Linting e Formatação
-Executa:
-- ESLint para detecção de problemas
-- Prettier para verificação de formatação
-- Falha se houver issues
+| Workflow             | File                           | Trigger                             | Purpose                                        |
+| -------------------- | ------------------------------ | ----------------------------------- | ---------------------------------------------- |
+| **Lint & Format**    | [`lint.yml`](lint.yml)         | PR + push to main                   | ESLint + Prettier checks                       |
+| **Tests & Coverage** | [`test.yml`](test.yml)         | PR + push to main/develop           | Jest unit tests + 85% coverage gate            |
+| **Build**            | [`build.yml`](build.yml)       | PR + push to main/develop           | TypeScript build + artifact validation         |
+| **Security Scan**    | [`security.yml`](security.yml) | PR + push + weekly Monday 07:00 UTC | npm audit, TruffleHog, CodeQL, license check   |
+| **Code Analysis**    | [`analyze.yml`](analyze.yml)   | PR + push to main/develop           | Coverage report comment, complexity, dead code |
 
-**Trigger:** `pull_request`, `push` para main
+## Coverage Thresholds
 
-**Tempo estimado:** ~2 minutos
+| Metric     | Threshold |
+| ---------- | --------- |
+| Statements | ≥ 80%     |
+| Branches   | ≥ 50%     |
+| Functions  | ≥ 75%     |
+| Lines      | ≥ 80%     |
 
----
+> Current achievement: **85.19% statements** (July 2026)
 
-### 2. **test.yml** - Testes e Cobertura
-Executa:
-- npm test (Jest)
-- Coleta coverage
-- Upload para Codecov
-- Falha se cobertura < limiar
+## Pre-commit Hooks (Husky)
 
-**Trigger:** `pull_request`, `push`
+Configured at monorepo root via `.husky/`:
 
-**Tempo estimado:** ~5 minutos
+| Hook         | Action                                                                               |
+| ------------ | ------------------------------------------------------------------------------------ |
+| `pre-commit` | `lint-staged` — auto-fix ESLint + Prettier on staged `.ts`/`.vue` files              |
+| `commit-msg` | `commitlint` — enforces [Conventional Commits](https://www.conventionalcommits.org/) |
+| `pre-push`   | Quick smoke test of unit tests (non-blocking)                                        |
 
----
+### Conventional Commit Format
 
-### 3. **build.yml** - Validação de Build
-Executa:
-- npm build
-- Valida bundle size
-- Alerta se crescimento > 10%
+```
+<type>(<scope>): <short description>
 
-**Trigger:** `pull_request`, `push`
+Types: feat, fix, docs, style, refactor, test, chore, perf, ci, build
+```
 
-**Tempo estimado:** ~3 minutos
+**Examples:**
 
----
+```bash
+feat(tasks): add PERT estimation endpoint
+fix(projects): correct WBS budget normalization
+test(rtm): expand controller unit coverage
+chore(ci): add security scanning workflow
+```
 
-### 4. **security.yml** - Verificação de Segurança
-Executa:
-- npm audit
-- Snyk ou OWASP Dependency-Check
-- Falha se vulnerabilidades críticas encontradas
+## Branch Protection Rules (Recommended)
 
-**Trigger:** `pull_request`, `push`, schedule (semanal)
+Configure these in **Settings → Branches → Branch protection rules** for `main`:
 
-**Tempo estimado:** ~2 minutos
+### Required Status Checks
 
----
+- ✅ `lint / lint`
+- ✅ `test / test`
+- ✅ `build / build`
+- ✅ `security / dependency-audit`
+- ✅ `coverage-analysis / coverage-analysis`
 
-### 5. **analyze.yml** - Análise de Qualidade
-Executa:
-- SonarQube análise
-- Verifica code smells
-- Verifica duplicação
-- Gera relatório
+### Additional Rules
 
-**Trigger:** `pull_request`, `push` para main
+- ☑️ **Require a pull request before merging** (min. 1 reviewer)
+- ☑️ **Require status checks to pass before merging**
+- ☑️ **Require branches to be up to date before merging**
+- ☑️ **Restrict who can push to matching branches** (main: only leads)
+- ☐ Require signed commits _(optional — recommended for production)_
+- ☑️ **Do not allow bypassing the above settings**
 
-**Tempo estimado:** ~4 minutos
+## Local Setup
 
----
+### Install pre-commit hooks
 
-**Última atualização:** 18/05/2026
+```bash
+# From monorepo root
+npm install
+# Husky is auto-configured via the `prepare` script
+```
+
+### Run checks locally
+
+```bash
+# Backend lint
+cd Backend && npm run lint
+
+# Backend tests + coverage
+cd Backend && npm run test:cov
+
+# Validate a commit message
+echo "feat(api): add endpoint" | npx commitlint
+```

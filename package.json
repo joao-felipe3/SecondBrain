@@ -1,0 +1,34 @@
+{
+  "name": "secondbrain-monorepo",
+  "version": "1.0.0",
+  "description": "SecondBrain monorepo — NestJS backend + Nuxt frontend",
+  "private": true,
+  "scripts": {
+    "prepare": "husky",
+    "lint:backend": "cd Backend && npm run lint",
+    "test:backend": "cd Backend && npm run test",
+    "test:cov:backend": "cd Backend && npm run test:cov"
+  },
+  "devDependencies": {
+    "husky": "^9.1.7",
+    "lint-staged": "^15.2.11",
+    "@commitlint/cli": "^19.6.1",
+    "@commitlint/config-conventional": "^19.6.0"
+  },
+  "lint-staged": {
+    "Backend/src/**/*.ts": [
+      "cd Backend && npx eslint --fix",
+      "cd Backend && npx prettier --write"
+    ],
+    "Backend/tests/**/*.ts": [
+      "cd Backend && npx prettier --write"
+    ],
+    "Frontend/**/*.{ts,vue}": [
+      "cd Frontend && npx eslint --fix",
+      "cd Frontend && npx prettier --write"
+    ],
+    "**/*.{json,yml,yaml,md}": [
+      "npx prettier --write"
+    ]
+  }
+}
