@@ -72,7 +72,11 @@ describe('DependencyInferenceUtils', () => {
 
       const normalized = normalizeDependencies(raw);
       expect(normalized.length).toBe(2);
-      expect(normalized[0]).toEqual({ taskId: 't2', dependsOnTaskId: 't1', relationship: 'FINISH_TO_START' });
+      expect(normalized[0]).toEqual({
+        taskId: 't2',
+        dependsOnTaskId: 't1',
+        relationship: 'FINISH_TO_START',
+      });
       expect(normalized[1].reason).toBe('Sequential');
     });
   });

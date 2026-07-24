@@ -65,9 +65,11 @@ describe('CacheService', () => {
 
   it('should handle Redis operations when redisClient is attached', async () => {
     const mockRedis: any = {
-      get: jest.fn().mockImplementation((key) =>
-        Promise.resolve(key === 'redisKey' ? JSON.stringify({ redis: true }) : null),
-      ),
+      get: jest
+        .fn()
+        .mockImplementation((key) =>
+          Promise.resolve(key === 'redisKey' ? JSON.stringify({ redis: true }) : null),
+        ),
       set: jest.fn().mockResolvedValue('OK'),
       scan: jest
         .fn()

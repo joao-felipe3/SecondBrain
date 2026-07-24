@@ -59,7 +59,7 @@ describe('json-parser.util', () => {
     });
 
     it('should repair and parse slightly malformed JSON array', () => {
-      const input = '[{ id: 1, name: \'task\', }]';
+      const input = "[{ id: 1, name: 'task', }]";
       const result = extractJsonArray<{ id: number; name: string }>(input);
       expect(result).toEqual([{ id: 1, name: 'task' }]);
     });
@@ -94,7 +94,7 @@ describe('json-parser.util', () => {
     });
 
     it('should repair unquoted keys and single quotes in object', () => {
-      const input = '{ status: \'ok\', count: 10, }';
+      const input = "{ status: 'ok', count: 10, }";
       const result = extractJsonObject<{ status: string; count: number }>(input);
       expect(result).toEqual({ status: 'ok', count: 10 });
     });

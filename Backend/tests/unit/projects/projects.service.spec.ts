@@ -69,8 +69,8 @@ describe('ProjectsService', () => {
     };
 
     service = new ProjectsService(
-      mockProjectModel as any,
-      mockTaskModel as any,
+      mockProjectModel,
+      mockTaskModel,
       mockXMatrixService,
       mockGanttService,
       mockPertDiagramService,
@@ -134,9 +134,7 @@ describe('ProjectsService', () => {
       mockProjectModel.findById.mockReturnValueOnce({
         exec: jest.fn().mockResolvedValue(null),
       });
-      await expect(service.incrementHoursWorked(validProjId, 2)).rejects.toThrow(
-        NotFoundException,
-      );
+      await expect(service.incrementHoursWorked(validProjId, 2)).rejects.toThrow(NotFoundException);
     });
 
     it('should delegate XMatrix methods and tasks management', async () => {

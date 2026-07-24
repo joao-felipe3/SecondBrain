@@ -29,23 +29,25 @@ describe('RollingWavePlanningService', () => {
     waveModelMock.bulkWrite = jest.fn().mockResolvedValue({});
     waveModelMock.find = jest.fn().mockReturnValue({
       sort: jest.fn().mockReturnValue({
-        exec: jest.fn().mockResolvedValue([
-          { waveNumber: 1, taskIds: ['t-1'], startDate: new Date(), endDate: new Date() },
-        ]),
+        exec: jest
+          .fn()
+          .mockResolvedValue([
+            { waveNumber: 1, taskIds: ['t-1'], startDate: new Date(), endDate: new Date() },
+          ]),
       }),
     });
 
     projectsServiceMock = {
-      getTasksForProject: jest.fn().mockResolvedValue([
-        { _id: '507f1f77bcf86cd799439011', id: 't-1', name: 'Task 1', pomodorosPlanned: 2 },
-      ]),
+      getTasksForProject: jest
+        .fn()
+        .mockResolvedValue([
+          { _id: '507f1f77bcf86cd799439011', id: 't-1', name: 'Task 1', pomodorosPlanned: 2 },
+        ]),
       update: jest.fn().mockResolvedValue({}),
     };
 
     wbsServiceMock = {
-      getWBS: jest.fn().mockResolvedValue([
-        { name: 'Fase 1', children: [] },
-      ]),
+      getWBS: jest.fn().mockResolvedValue([{ name: 'Fase 1', children: [] }]),
     };
 
     rollingWaveAiServiceMock = {
@@ -55,7 +57,11 @@ describe('RollingWavePlanningService', () => {
       }),
       planWaveGrouping: jest.fn().mockResolvedValue({
         waves: [
-          { waveNumber: 1, taskIds: ['507f1f77bcf86cd799439011', 'invalid-id-or-missing'], durationDays: 15 },
+          {
+            waveNumber: 1,
+            taskIds: ['507f1f77bcf86cd799439011', 'invalid-id-or-missing'],
+            durationDays: 15,
+          },
         ],
       }),
     };
@@ -96,7 +102,11 @@ describe('RollingWavePlanningService', () => {
     it('deve usar o modo determinístico quando o plano de estrutura de ondas for nulo', async () => {
       rollingWaveAiServiceMock.planWaveStructure.mockResolvedValueOnce(null);
 
-      const project: any = { name: 'Projeto', deadline: new Date(), smartObjective: { deadline: new Date() } };
+      const project: any = {
+        name: 'Projeto',
+        deadline: new Date(),
+        smartObjective: { deadline: new Date() },
+      };
       const result = await service.createInitialWaves(validProjId, project, 28);
 
       expect(result).toBeDefined();
@@ -106,7 +116,11 @@ describe('RollingWavePlanningService', () => {
     it('deve usar o modo determinístico quando o agrupamento de ondas for nulo', async () => {
       rollingWaveAiServiceMock.planWaveGrouping.mockResolvedValueOnce(null);
 
-      const project: any = { name: 'Projeto', deadline: new Date(), smartObjective: { deadline: new Date() } };
+      const project: any = {
+        name: 'Projeto',
+        deadline: new Date(),
+        smartObjective: { deadline: new Date() },
+      };
       const result = await service.createInitialWaves(validProjId, project, 28);
 
       expect(result).toBeDefined();

@@ -30,18 +30,14 @@ describe('ProjectsXMatrixService', () => {
 
     taskModelMock = {
       find: jest.fn().mockReturnValue({
-        exec: jest.fn().mockResolvedValue([
-          { _id: 't-1', name: 'Task 1', isConcluded: false },
-        ]),
+        exec: jest.fn().mockResolvedValue([{ _id: 't-1', name: 'Task 1', isConcluded: false }]),
       }),
     };
 
     waveModelMock = {
       find: jest.fn().mockReturnValue({
         sort: jest.fn().mockReturnValue({
-          exec: jest.fn().mockResolvedValue([
-            { waveNumber: 1, taskIds: ['t-1'] },
-          ]),
+          exec: jest.fn().mockResolvedValue([{ waveNumber: 1, taskIds: ['t-1'] }]),
         }),
       }),
     };

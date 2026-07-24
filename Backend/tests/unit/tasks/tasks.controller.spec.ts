@@ -28,7 +28,9 @@ describe('TasksController', () => {
       handleTaskSkipped: jest.fn().mockResolvedValue({ _id: validTaskId }),
       getStreakData: jest.fn().mockResolvedValue({ currentStreak: 5 }),
       deleteRecurringSeries: jest.fn().mockResolvedValue({ deletedCount: 1 }),
-      suggestPertEstimates: jest.fn().mockResolvedValue({ optimistic: 30, mostLikely: 60, pessimistic: 120 }),
+      suggestPertEstimates: jest
+        .fn()
+        .mockResolvedValue({ optimistic: 30, mostLikely: 60, pessimistic: 120 }),
       updatePert: jest.fn().mockResolvedValue({ _id: validTaskId }),
       savePertEstimate: jest.fn().mockResolvedValue({ taskId: validTaskId }),
       generateAiSuggestions: jest.fn().mockResolvedValue({ suggestions: [] }),
@@ -56,7 +58,10 @@ describe('TasksController', () => {
   describe('Bulk & CRUD operations', () => {
     it('should create bulk tasks with auto dependencies', async () => {
       const result = await controller.createBulk({
-        tasks: [{ name: 'Task 1', parentWbsNodeId: 'wbs1' }, { name: 'Task 2', parentWbsNodeId: 'wbs1' }] as any,
+        tasks: [
+          { name: 'Task 1', parentWbsNodeId: 'wbs1' },
+          { name: 'Task 2', parentWbsNodeId: 'wbs1' },
+        ] as any,
         autoDependencies: { mode: 'within-leaf' } as any,
       });
 
@@ -92,13 +97,20 @@ describe('TasksController', () => {
     });
 
     it('should handle PERT and feedback methods', async () => {
-      const suggestions = await controller.suggestPertEstimates({ taskType: 'code' as any, description: 'desc' });
+      const suggestions = await controller.suggestPertEstimates({
+        taskType: 'code' as any,
+        description: 'desc',
+      });
       expect(suggestions.optimistic).toBe(30);
 
       const feedback = await controller.generateCompletionFeedback(validTaskId, {} as any);
       expect(feedback.feedback).toBe('Feedback AI');
 
-      const savedPert = await controller.savePertEstimate(validTaskId, { optimisticMinutes: 10, mostLikelyMinutes: 20, pessimisticMinutes: 40 } as any);
+      const savedPert = await controller.savePertEstimate(validTaskId, {
+        optimisticMinutes: 10,
+        mostLikelyMinutes: 20,
+        pessimisticMinutes: 40,
+      } as any);
       expect(savedPert).toBeDefined();
     });
 
@@ -109,7 +121,9 @@ describe('TasksController', () => {
       await controller.updateMicroTaskChecklist(validTaskId, { checklist: ['item 1'] } as any);
       expect(mockTasksService.updateMicroTaskChecklist).toHaveBeenCalled();
 
-      await controller.updateRecurringRuleCompat(validTaskId, { recurringRule: { frequency: 'daily' } as any });
+      await controller.updateRecurringRuleCompat(validTaskId, {
+        recurringRule: { frequency: 'daily' } as any,
+      });
       expect(mockTasksService.updateRecurringRule).toHaveBeenCalled();
 
       const streak = await controller.getRecurringStreak('parent1');

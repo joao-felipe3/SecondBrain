@@ -19,9 +19,9 @@ describe('TaskConversionHelperService', () => {
     };
 
     draftGenerationServiceMock = {
-      generateMicroTasksDraftsForLeafWithPlan: jest.fn().mockResolvedValue([
-        { name: 'Draft 1', description: 'Desc 1', pomodorosPlanned: 2 },
-      ]),
+      generateMicroTasksDraftsForLeafWithPlan: jest
+        .fn()
+        .mockResolvedValue([{ name: 'Draft 1', description: 'Desc 1', pomodorosPlanned: 2 }]),
     };
 
     cacheServiceMock = {

@@ -13,10 +13,7 @@ describe('WbsValidationService', () => {
     };
 
     const module: TestingModule = await Test.createTestingModule({
-      providers: [
-        WbsValidationService,
-        { provide: WbsAiService, useValue: mockWbsAiService },
-      ],
+      providers: [WbsValidationService, { provide: WbsAiService, useValue: mockWbsAiService }],
     }).compile();
 
     service = module.get<WbsValidationService>(WbsValidationService);

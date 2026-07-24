@@ -16,18 +16,28 @@ describe('RTMMappingService', () => {
   beforeEach(async () => {
     requirementModelMock = {
       find: jest.fn().mockResolvedValue([
-        { _id: '507f1f77bcf86cd799439012', projectId: validObjectId, title: 'Ação 1', kind: 'action', type: 'action' },
+        {
+          _id: '507f1f77bcf86cd799439012',
+          projectId: validObjectId,
+          title: 'Ação 1',
+          kind: 'action',
+          type: 'action',
+        },
       ]),
       create: jest.fn().mockResolvedValue({ _id: '507f1f77bcf86cd799439013' }),
       updateOne: jest.fn().mockResolvedValue({ modifiedCount: 1 }),
     };
 
     geminiServiceMock = {
-      generateContent: jest.fn().mockResolvedValue(JSON.stringify([{ taskId: 't-1', actionId: '507f1f77bcf86cd799439012' }])),
+      generateContent: jest
+        .fn()
+        .mockResolvedValue(JSON.stringify([{ taskId: 't-1', actionId: '507f1f77bcf86cd799439012' }])),
     };
 
     validationServiceMock = {
-      validateRTM: jest.fn().mockResolvedValue({ coverage: 100, isValid: true, unmappedRequirements: [], risks: [] }),
+      validateRTM: jest
+        .fn()
+        .mockResolvedValue({ coverage: 100, isValid: true, unmappedRequirements: [], risks: [] }),
     };
 
     const module: TestingModule = await Test.createTestingModule({

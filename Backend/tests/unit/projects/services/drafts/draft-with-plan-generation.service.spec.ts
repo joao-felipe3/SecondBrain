@@ -15,9 +15,9 @@ describe('DraftWithPlanGenerationService', () => {
           pomodorosPlanned: 3,
         },
       ]),
-      generateOutlineWithPlan: jest.fn().mockResolvedValue([
-        { name: 'Outline Plan 1', pomodorosPlanned: 3 },
-      ]),
+      generateOutlineWithPlan: jest
+        .fn()
+        .mockResolvedValue([{ name: 'Outline Plan 1', pomodorosPlanned: 3 }]),
     };
 
     mockCacheService = {
@@ -26,16 +26,12 @@ describe('DraftWithPlanGenerationService', () => {
     };
 
     mockDetailsEnrichment = {
-      enrichOutlinesWithDetails: jest.fn().mockResolvedValue([
-        { name: 'Enriched Draft Plan 1', pomodorosPlanned: 3 },
-      ]),
+      enrichOutlinesWithDetails: jest
+        .fn()
+        .mockResolvedValue([{ name: 'Enriched Draft Plan 1', pomodorosPlanned: 3 }]),
     };
 
-    service = new DraftWithPlanGenerationService(
-      mockDraftsAi,
-      mockCacheService,
-      mockDetailsEnrichment,
-    );
+    service = new DraftWithPlanGenerationService(mockDraftsAi, mockCacheService, mockDetailsEnrichment);
   });
 
   it('should generate drafts with plan in single-pass mode when cache misses', async () => {

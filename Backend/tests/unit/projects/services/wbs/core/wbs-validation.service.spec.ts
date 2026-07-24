@@ -14,10 +14,7 @@ describe('WbsValidationService', () => {
     };
 
     const module: TestingModule = await Test.createTestingModule({
-      providers: [
-        WbsValidationService,
-        { provide: WbsAiService, useValue: mockWbsAiService },
-      ],
+      providers: [WbsValidationService, { provide: WbsAiService, useValue: mockWbsAiService }],
     }).compile();
 
     service = module.get<WbsValidationService>(WbsValidationService);
@@ -72,7 +69,10 @@ describe('WbsValidationService', () => {
 
   describe('validateBudget', () => {
     it('deve calcular utilizacao e indicar estouro de orcamento', () => {
-      const nodes = [{ name: 'Task 1', estimatedHours: 60 }, { name: 'Task 2', estimatedHours: 60 }];
+      const nodes = [
+        { name: 'Task 1', estimatedHours: 60 },
+        { name: 'Task 2', estimatedHours: 60 },
+      ];
       const summary = service.validateBudget(nodes as any, 100, { weeklyHours: 40, weeksAvailable: 4 });
 
       expect(summary.budgetHours).toBe(100);
@@ -87,7 +87,10 @@ describe('WbsValidationService', () => {
 
   describe('normalizeTreeToBudget', () => {
     it('deve escalar folhas para caber no orcamento', () => {
-      const nodes = [{ name: 'Task 1', estimatedHours: 40 }, { name: 'Task 2', estimatedHours: 60 }];
+      const nodes = [
+        { name: 'Task 1', estimatedHours: 40 },
+        { name: 'Task 2', estimatedHours: 60 },
+      ];
       const normalized = service.normalizeTreeToBudget(nodes as any, 50);
 
       expect(normalized).toBeDefined();

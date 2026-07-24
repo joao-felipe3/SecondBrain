@@ -48,11 +48,7 @@ describe('FeedbackService', () => {
       }),
     };
 
-    service = new FeedbackService(
-      mockGeminiService,
-      mockTaskModel as any,
-      mockFeedbackModel as any,
-    );
+    service = new FeedbackService(mockGeminiService, mockTaskModel, mockFeedbackModel);
   });
 
   describe('generateCompletionFeedback', () => {
@@ -64,18 +60,14 @@ describe('FeedbackService', () => {
 
     it('should throw NotFoundException if task is missing', async () => {
       mockTaskModel.findById.mockReturnValueOnce({ exec: jest.fn().mockResolvedValue(null) });
-      await expect(service.generateCompletionFeedback(validTaskId)).rejects.toThrow(
-        NotFoundException,
-      );
+      await expect(service.generateCompletionFeedback(validTaskId)).rejects.toThrow(NotFoundException);
     });
 
     it('should throw BadRequestException if task is not concluded', async () => {
       mockTaskModel.findById.mockReturnValueOnce({
         exec: jest.fn().mockResolvedValue({ _id: validTaskId, isConcluded: false }),
       });
-      await expect(service.generateCompletionFeedback(validTaskId)).rejects.toThrow(
-        BadRequestException,
-      );
+      await expect(service.generateCompletionFeedback(validTaskId)).rejects.toThrow(BadRequestException);
     });
 
     it('should generate structured feedback and persist it', async () => {

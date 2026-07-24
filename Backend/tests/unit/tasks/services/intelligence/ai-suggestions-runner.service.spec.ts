@@ -10,12 +10,14 @@ describe('TasksAiSuggestionsLoopRunner', () => {
     mockTaskModel = {};
     mockGeminiService = {
       getTaskSuggestions: jest.fn(),
-      generateMockSuggestions: jest.fn().mockReturnValue([
-        { name: 'Mock 1', pomodoros: 2, priority: 2, difficulty: 2, selected: false },
-      ]),
+      generateMockSuggestions: jest
+        .fn()
+        .mockReturnValue([
+          { name: 'Mock 1', pomodoros: 2, priority: 2, difficulty: 2, selected: false },
+        ]),
     };
 
-    runner = new TasksAiSuggestionsLoopRunner(mockTaskModel as any, mockGeminiService as any);
+    runner = new TasksAiSuggestionsLoopRunner(mockTaskModel, mockGeminiService);
   });
 
   describe('runMultiBatchGenerationLoop', () => {
@@ -48,32 +50,28 @@ describe('TasksAiSuggestionsLoopRunner', () => {
       expect(onProgress).toHaveBeenCalled();
     });
 
-    it(
-      'should break loop early if AI returns empty or duplicate suggestions',
-      async () => {
-        mockGeminiService.getTaskSuggestions.mockResolvedValue({
-          suggestions: [],
-          isFallback: false,
-        });
+    it('should break loop early if AI returns empty or duplicate suggestions', async () => {
+      mockGeminiService.getTaskSuggestions.mockResolvedValue({
+        suggestions: [],
+        isFallback: false,
+      });
 
-        const state: any = {
-          currentIteration: 0,
-          maxIterations: 3,
-          currentHours: 0,
-          allSuggestions: [],
-          existingTaskNames: [],
-        };
+      const state: any = {
+        currentIteration: 0,
+        maxIterations: 3,
+        currentHours: 0,
+        allSuggestions: [],
+        existingTaskNames: [],
+      };
 
-        await runner.runMultiBatchGenerationLoop({
-          dto: { projectName: 'Test' } as any,
-          state,
-          remainingHours: 10,
-        });
+      await runner.runMultiBatchGenerationLoop({
+        dto: { projectName: 'Test' } as any,
+        state,
+        remainingHours: 10,
+      });
 
-        expect(state.currentIteration).toBe(state.maxIterations);
-      },
-      15000,
-    );
+      expect(state.currentIteration).toBe(state.maxIterations);
+    }, 15000);
   });
 
   describe('handleSuggestionsError', () => {

@@ -27,7 +27,9 @@ describe('TasksService', () => {
     };
 
     mockGeminiService = {
-      suggestPertEstimates: jest.fn().mockResolvedValue({ optimistic: 30, mostLikely: 60, pessimistic: 120 }),
+      suggestPertEstimates: jest
+        .fn()
+        .mockResolvedValue({ optimistic: 30, mostLikely: 60, pessimistic: 120 }),
     };
 
     mockFeedbackService = {

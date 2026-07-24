@@ -89,6 +89,12 @@
       "src/**/*.(t|j)s"
     ],
     "coverageDirectory": "../coverage",
+    "coverageReporters": [
+      "text",
+      "lcov",
+      "json",
+      "json-summary"
+    ],
     "testEnvironment": "node"
   }
 }

@@ -49,7 +49,6 @@ jobs:
         run: npm run test:cov
         env:
           MONGODB_URI: mongodb://localhost:27017/second-brain-test
-          REDIS_URL: redis://localhost:6379
 
       - name: 📊 Upload coverage to Codecov
         uses: codecov/codecov-action@v3
@@ -62,8 +61,12 @@ jobs:
 
       - name: 📈 Check Coverage Thresholds
         run: |
-          COVERAGE=$(cat coverage/coverage-summary.json | grep -o '"lines":{[^}]*}' | grep -o '"pct":[^,]*' | head -1 | grep -o '[0-9]*\.[0-9]*')
-          echo "Overall coverage: ${COVERAGE}%"
+          # coverageDirectory is ../coverage (relative to Backend)
+          COVERAGE=$(node -e "
+            const cov = require('../coverage/coverage-summary.json');
+            process.stdout.write(String(cov.total.lines.pct));
+          ")
+          echo "Overall line coverage: ${COVERAGE}%"
           if (( $(echo "$COVERAGE < 80" | bc -l) )); then
             echo "❌ Coverage below 80% threshold!"
             exit 1
@@ -76,6 +79,7 @@ jobs:
         with:
           script: |
             const fs = require('fs');
+            // coverage/ is at repo root (coverageDirectory: ../coverage relative to Backend)
             const coverage = JSON.parse(fs.readFileSync('./coverage/coverage-summary.json', 'utf8'));
             const lines = coverage.total.lines.pct;
             const branches = coverage.total.branches.pct;

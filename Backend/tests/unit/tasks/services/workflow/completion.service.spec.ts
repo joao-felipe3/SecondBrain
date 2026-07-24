@@ -222,7 +222,9 @@ describe('TasksCompletionService', () => {
       const result = await service.handleTaskCompletion(validTaskId);
 
       expect(result).toEqual(mockTask);
-      expect(mockTasksRecurringService.normalizeRecurringRule).toHaveBeenCalledWith(mockTask.recurringRule);
+      expect(mockTasksRecurringService.normalizeRecurringRule).toHaveBeenCalledWith(
+        mockTask.recurringRule,
+      );
       expect(mockTasksWriteService.createTaskCore).toHaveBeenCalledWith({ name: 'Next Occurrence' });
     });
   });

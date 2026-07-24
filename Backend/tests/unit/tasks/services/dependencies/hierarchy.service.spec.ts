@@ -21,10 +21,7 @@ describe('TasksHierarchyService', () => {
     };
 
     const module: TestingModule = await Test.createTestingModule({
-      providers: [
-        TasksHierarchyService,
-        { provide: getModelToken('Task'), useValue: mockTaskModel },
-      ],
+      providers: [TasksHierarchyService, { provide: getModelToken('Task'), useValue: mockTaskModel }],
     }).compile();
 
     service = module.get<TasksHierarchyService>(TasksHierarchyService);
@@ -44,7 +41,12 @@ describe('TasksHierarchyService', () => {
     });
 
     it('deve retornar ancestrais e filhos da tarefa', async () => {
-      const mockParent = { _id: validParentId, name: 'Parent Task', status: 'doing', parentTaskId: null };
+      const mockParent = {
+        _id: validParentId,
+        name: 'Parent Task',
+        status: 'doing',
+        parentTaskId: null,
+      };
       const mockTask = { _id: validTaskId, name: 'Current Task', parentTaskId: validParentId };
       const mockChildren = [{ _id: 'child-1', name: 'Child Task', status: 'todo' }];
 
@@ -70,7 +72,13 @@ describe('TasksHierarchyService', () => {
   describe('getDescendants', () => {
     it('deve percorrer e retornar todos os descendentes', async () => {
       const mockTask = { _id: validTaskId, name: 'Root Task' };
-      const mockChild1 = { _id: 'c1', name: 'Child 1', status: 'done', experience: 50, isConcluded: true };
+      const mockChild1 = {
+        _id: 'c1',
+        name: 'Child 1',
+        status: 'done',
+        experience: 50,
+        isConcluded: true,
+      };
 
       mockTaskModel.findById.mockReturnValue({
         exec: jest.fn().mockResolvedValue(mockTask),

@@ -80,7 +80,7 @@ describe('WaveAndRiskController', () => {
       mockEvmProgressService,
       mockTasksService,
       mockCpmService,
-      mockProjectModel as any,
+      mockProjectModel,
     );
   });
 
@@ -131,7 +131,11 @@ describe('WaveAndRiskController', () => {
     });
 
     it('should handle EVM progress recording, fetching, deleting, and preferences', async () => {
-      const rec = await controller.recordProgress(validProjId, { completedHours: 10, plannedValue: 10, date: '2026-01-01' } as any);
+      const rec = await controller.recordProgress(validProjId, {
+        completedHours: 10,
+        plannedValue: 10,
+        date: '2026-01-01',
+      } as any);
       expect(rec).toBeDefined();
 
       const entries = await controller.getProgressEntries(validProjId);

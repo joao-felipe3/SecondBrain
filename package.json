@@ -12,23 +12,22 @@
   "devDependencies": {
     "husky": "^9.1.7",
     "lint-staged": "^15.2.11",
+    "prettier": "^3.4.2",
     "@commitlint/cli": "^19.6.1",
     "@commitlint/config-conventional": "^19.6.0"
   },
   "lint-staged": {
     "Backend/src/**/*.ts": [
-      "cd Backend && npx eslint --fix",
-      "cd Backend && npx prettier --write"
+      "prettier --write"
     ],
     "Backend/tests/**/*.ts": [
-      "cd Backend && npx prettier --write"
+      "prettier --write"
     ],
     "Frontend/**/*.{ts,vue}": [
-      "cd Frontend && npx eslint --fix",
-      "cd Frontend && npx prettier --write"
+      "prettier --write"
     ],
     "**/*.{json,yml,yaml,md}": [
-      "npx prettier --write"
+      "prettier --write"
     ]
   }
 }

@@ -17,10 +17,7 @@ describe('AuditService', () => {
     };
 
     const module: TestingModule = await Test.createTestingModule({
-      providers: [
-        AuditService,
-        { provide: WbsAiService, useValue: mockWbsAiService },
-      ],
+      providers: [AuditService, { provide: WbsAiService, useValue: mockWbsAiService }],
     }).compile();
 
     service = module.get<AuditService>(AuditService);

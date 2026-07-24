@@ -48,10 +48,10 @@ describe('ChecklistOperationsService', () => {
     };
 
     service = new ChecklistOperationsService(
-      mockTaskModel as any,
-      mockChecklistService as any,
-      mockInputService as any,
-      mockGeminiService as any,
+      mockTaskModel,
+      mockChecklistService,
+      mockInputService,
+      mockGeminiService,
     );
   });
 

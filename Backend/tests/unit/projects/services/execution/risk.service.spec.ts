@@ -60,7 +60,10 @@ describe('RiskService', () => {
       });
 
       mockGeminiService.generateContent.mockResolvedValue(llmResponse);
-      mockRiskModel.create.mockResolvedValue({ _id: validRiskId, description: 'Risco de Infraestrutura' });
+      mockRiskModel.create.mockResolvedValue({
+        _id: validRiskId,
+        description: 'Risco de Infraestrutura',
+      });
 
       const risks = await service.assessRisks(validProjectId, 'Projeto de E-commerce');
       expect(risks).toHaveLength(1);
@@ -140,7 +143,14 @@ describe('RiskService', () => {
 
     it('deve gerar recomendacoes de intervencoes de risco', async () => {
       const mockRisks = [
-        { _id: 'r1', description: 'Risco Critico', status: 'identificado', severity: 'alta', probability: 90, impact: 5 },
+        {
+          _id: 'r1',
+          description: 'Risco Critico',
+          status: 'identificado',
+          severity: 'alta',
+          probability: 90,
+          impact: 5,
+        },
       ];
 
       mockRiskModel.find.mockReturnValue({

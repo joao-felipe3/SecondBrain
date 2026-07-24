@@ -97,12 +97,21 @@ describe('CPMService', () => {
       });
 
       await service.removeDependency('t2', 't1');
-      expect(mockDependencyModel.deleteOne).toHaveBeenCalledWith({ taskId: 't2', dependsOnTaskId: 't1' });
+      expect(mockDependencyModel.deleteOne).toHaveBeenCalledWith({
+        taskId: 't2',
+        dependsOnTaskId: 't1',
+      });
     });
 
     it('deve buscar dependencias de um projeto', async () => {
       const mockDocs = [
-        { _id: 'dep-1', taskId: 't2', dependsOnTaskId: 't1', projectId, toObject: () => ({ _id: 'dep-1', taskId: 't2', dependsOnTaskId: 't1', projectId }) },
+        {
+          _id: 'dep-1',
+          taskId: 't2',
+          dependsOnTaskId: 't1',
+          projectId,
+          toObject: () => ({ _id: 'dep-1', taskId: 't2', dependsOnTaskId: 't1', projectId }),
+        },
       ];
 
       mockDependencyModel.find.mockReturnValue({

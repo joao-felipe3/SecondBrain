@@ -18,10 +18,7 @@ describe('TasksHabitsService', () => {
     };
 
     const module: TestingModule = await Test.createTestingModule({
-      providers: [
-        TasksHabitsService,
-        { provide: getModelToken('Task'), useValue: mockTaskModel },
-      ],
+      providers: [TasksHabitsService, { provide: getModelToken('Task'), useValue: mockTaskModel }],
     }).compile();
 
     service = module.get<TasksHabitsService>(TasksHabitsService);
@@ -50,8 +47,18 @@ describe('TasksHabitsService', () => {
 
     it('deve calcular streaks e taxa de adesao corretamente', async () => {
       const mockTasks = [
-        { _id: '1', isConcluded: true, recurringState: 'completed', statusUpdatedAt: new Date('2026-05-01') },
-        { _id: '2', isConcluded: true, recurringState: 'completed', statusUpdatedAt: new Date('2026-05-02') },
+        {
+          _id: '1',
+          isConcluded: true,
+          recurringState: 'completed',
+          statusUpdatedAt: new Date('2026-05-01'),
+        },
+        {
+          _id: '2',
+          isConcluded: true,
+          recurringState: 'completed',
+          statusUpdatedAt: new Date('2026-05-02'),
+        },
         { _id: '3', isConcluded: false, recurringState: 'pending', statusUpdatedAt: null },
       ];
 

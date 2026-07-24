@@ -6,9 +6,9 @@ describe('DependencyInferenceService', () => {
 
   beforeEach(() => {
     mockGeminiService = {
-      inferDependencies: jest.fn().mockResolvedValue([
-        { taskId: 't2', dependsOnTaskId: 't1', relationship: 'FINISH_TO_START' },
-      ]),
+      inferDependencies: jest
+        .fn()
+        .mockResolvedValue([{ taskId: 't2', dependsOnTaskId: 't1', relationship: 'FINISH_TO_START' }]),
     };
 
     service = new DependencyInferenceService(mockGeminiService);

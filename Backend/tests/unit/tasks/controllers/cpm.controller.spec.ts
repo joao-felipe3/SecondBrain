@@ -56,25 +56,51 @@ describe('CPMController', () => {
 
     mockTasksService = {
       findByProjectId: jest.fn().mockResolvedValue([
-        { _id: validTaskId1, name: 'Task 1', pertExpectedMinutes: 60, parentWbsNodeId: 'wbs1', wbsPath: '1.1' },
-        { _id: validTaskId2, name: 'Task 2', pertExpectedMinutes: 60, parentWbsNodeId: 'wbs1', wbsPath: '1.1' },
-        { _id: validTaskId3, name: 'Task 3', pertExpectedMinutes: 60, parentWbsNodeId: 'wbs2', wbsPath: '1.2' },
+        {
+          _id: validTaskId1,
+          name: 'Task 1',
+          pertExpectedMinutes: 60,
+          parentWbsNodeId: 'wbs1',
+          wbsPath: '1.1',
+        },
+        {
+          _id: validTaskId2,
+          name: 'Task 2',
+          pertExpectedMinutes: 60,
+          parentWbsNodeId: 'wbs1',
+          wbsPath: '1.1',
+        },
+        {
+          _id: validTaskId3,
+          name: 'Task 3',
+          pertExpectedMinutes: 60,
+          parentWbsNodeId: 'wbs2',
+          wbsPath: '1.2',
+        },
       ]),
-      findOne: jest.fn().mockImplementation((id: string) =>
-        Promise.resolve({ _id: id, name: id === validTaskId1 ? 'Task 1' : 'Task 2' }),
-      ),
+      findOne: jest
+        .fn()
+        .mockImplementation((id: string) =>
+          Promise.resolve({ _id: id, name: id === validTaskId1 ? 'Task 1' : 'Task 2' }),
+        ),
     };
 
     mockDependencyInference = {
-      inferHeuristicPhases: jest.fn().mockReturnValue([
-        { taskId: validTaskId2, dependsOnTaskId: validTaskId1, relationship: 'FINISH_TO_START' },
-      ]),
-      inferWithAi: jest.fn().mockResolvedValue([
-        { taskId: validTaskId2, dependsOnTaskId: validTaskId1, relationship: 'FINISH_TO_START' },
-      ]),
-      inferInterLeafWithAi: jest.fn().mockResolvedValue([
-        { taskId: validTaskId3, dependsOnTaskId: validTaskId2, relationship: 'FINISH_TO_START' },
-      ]),
+      inferHeuristicPhases: jest
+        .fn()
+        .mockReturnValue([
+          { taskId: validTaskId2, dependsOnTaskId: validTaskId1, relationship: 'FINISH_TO_START' },
+        ]),
+      inferWithAi: jest
+        .fn()
+        .mockResolvedValue([
+          { taskId: validTaskId2, dependsOnTaskId: validTaskId1, relationship: 'FINISH_TO_START' },
+        ]),
+      inferInterLeafWithAi: jest
+        .fn()
+        .mockResolvedValue([
+          { taskId: validTaskId3, dependsOnTaskId: validTaskId2, relationship: 'FINISH_TO_START' },
+        ]),
     };
 
     mockBufferService = {

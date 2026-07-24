@@ -34,10 +34,7 @@ describe('wbs-helpers.util', () => {
       ]);
 
       const bulletText = '- Item de checagem 1\n* Item de checagem 2';
-      expect(extractChecklistSteps(bulletText)).toEqual([
-        'Item de checagem 1',
-        'Item de checagem 2',
-      ]);
+      expect(extractChecklistSteps(bulletText)).toEqual(['Item de checagem 1', 'Item de checagem 2']);
 
       expect(extractChecklistSteps('Texto simples sem lista')).toBeUndefined();
     });

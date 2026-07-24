@@ -10,9 +10,9 @@ describe('EVMService', () => {
 
   beforeEach(() => {
     mockEvmProgressService = {
-      getProgressEntries: jest.fn().mockResolvedValue([
-        { date: '2026-01-01', completedHours: 4, plannedValue: 10 },
-      ]),
+      getProgressEntries: jest
+        .fn()
+        .mockResolvedValue([{ date: '2026-01-01', completedHours: 4, plannedValue: 10 }]),
       getDashboardPreferences: jest.fn().mockResolvedValue({ defaultView: 'personal' }),
     };
 
@@ -42,11 +42,7 @@ describe('EVMService', () => {
       }),
     };
 
-    service = new EVMService(
-      mockEvmProgressService,
-      mockProjectWaveModel as any,
-      mockProjectModel as any,
-    );
+    service = new EVMService(mockEvmProgressService, mockProjectWaveModel, mockProjectModel);
   });
 
   describe('validation', () => {

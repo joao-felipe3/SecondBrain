@@ -8,17 +8,14 @@ describe('TaskConversionService', () => {
 
   beforeEach(async () => {
     helperMock = {
-      generateTasksForLeafNode: jest.fn().mockResolvedValue([
-        { name: 'Micro-tarefa 1', pomodorosPlanned: 2 },
-      ]),
+      generateTasksForLeafNode: jest
+        .fn()
+        .mockResolvedValue([{ name: 'Micro-tarefa 1', pomodorosPlanned: 2 }]),
       createAndSaveLeaveTasks: jest.fn().mockResolvedValue([]),
     };
 
     const module: TestingModule = await Test.createTestingModule({
-      providers: [
-        TaskConversionService,
-        { provide: TaskConversionHelperService, useValue: helperMock },
-      ],
+      providers: [TaskConversionService, { provide: TaskConversionHelperService, useValue: helperMock }],
     }).compile();
 
     service = module.get<TaskConversionService>(TaskConversionService);
@@ -43,7 +40,9 @@ describe('TaskConversionService', () => {
   describe('convertWBSToTasksWithAI', () => {
     it('deve converter WBS em tarefas com enriquecimento de IA', async () => {
       const p: any = {
-        nodes: [{ name: 'Fase 1', children: [{ name: 'Pacote 1.1', estimatedHours: 10, children: [] }] }],
+        nodes: [
+          { name: 'Fase 1', children: [{ name: 'Pacote 1.1', estimatedHours: 10, children: [] }] },
+        ],
         projectId: 'p-1',
         project: { name: 'Projeto' },
         tasksService: {

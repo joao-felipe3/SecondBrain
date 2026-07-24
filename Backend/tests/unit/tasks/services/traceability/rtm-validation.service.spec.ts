@@ -13,10 +13,39 @@ describe('RTMValidationService', () => {
     requirementModelMock = {
       find: jest.fn().mockReturnValue({
         sort: jest.fn().mockResolvedValue([
-          { _id: 'r-obj', projectId: validProjId, title: 'Obj 1', description: 'Obj 1', kind: 'objective', type: 'objective' },
-          { _id: 'r-hab', projectId: validProjId, title: 'Hab 1', description: 'Hab 1', kind: 'habit', parentItemId: 'r-obj' },
-          { _id: 'r-stg', projectId: validProjId, title: 'Stg 1', description: 'Stg 1', kind: 'stage', parentItemId: 'r-hab' },
-          { _id: 'r-act', projectId: validProjId, title: 'Act 1', description: 'Act 1', kind: 'action', parentItemId: 'r-stg', traceableItems: ['t1'] },
+          {
+            _id: 'r-obj',
+            projectId: validProjId,
+            title: 'Obj 1',
+            description: 'Obj 1',
+            kind: 'objective',
+            type: 'objective',
+          },
+          {
+            _id: 'r-hab',
+            projectId: validProjId,
+            title: 'Hab 1',
+            description: 'Hab 1',
+            kind: 'habit',
+            parentItemId: 'r-obj',
+          },
+          {
+            _id: 'r-stg',
+            projectId: validProjId,
+            title: 'Stg 1',
+            description: 'Stg 1',
+            kind: 'stage',
+            parentItemId: 'r-hab',
+          },
+          {
+            _id: 'r-act',
+            projectId: validProjId,
+            title: 'Act 1',
+            description: 'Act 1',
+            kind: 'action',
+            parentItemId: 'r-stg',
+            traceableItems: ['t1'],
+          },
         ]),
       }),
     };
@@ -39,9 +68,28 @@ describe('RTMValidationService', () => {
     it('should validate RTM successfully for complete journey', async () => {
       requirementModelMock.find.mockResolvedValueOnce([
         { _id: 'r-obj', projectId: validProjId, description: 'Obj 1', kind: 'objective' },
-        { _id: 'r-hab', projectId: validProjId, description: 'Hab 1', kind: 'habit', parentItemId: 'r-obj' },
-        { _id: 'r-stg', projectId: validProjId, description: 'Stg 1', kind: 'stage', parentItemId: 'r-hab' },
-        { _id: 'r-act', projectId: validProjId, description: 'Act 1', kind: 'action', parentItemId: 'r-stg', traceableItems: ['t1'] },
+        {
+          _id: 'r-hab',
+          projectId: validProjId,
+          description: 'Hab 1',
+          kind: 'habit',
+          parentItemId: 'r-obj',
+        },
+        {
+          _id: 'r-stg',
+          projectId: validProjId,
+          description: 'Stg 1',
+          kind: 'stage',
+          parentItemId: 'r-hab',
+        },
+        {
+          _id: 'r-act',
+          projectId: validProjId,
+          description: 'Act 1',
+          kind: 'action',
+          parentItemId: 'r-stg',
+          traceableItems: ['t1'],
+        },
       ]);
 
       const result = await service.validateRTM(validProjId);
@@ -58,7 +106,14 @@ describe('RTMValidationService', () => {
 
     it('should report risks for orphan parents or unmapped actions', async () => {
       requirementModelMock.find.mockResolvedValueOnce([
-        { _id: 'r-act-unmapped', projectId: validProjId, description: 'Act 2', kind: 'action', parentItemId: 'non-existent', traceableItems: [] },
+        {
+          _id: 'r-act-unmapped',
+          projectId: validProjId,
+          description: 'Act 2',
+          kind: 'action',
+          parentItemId: 'non-existent',
+          traceableItems: [],
+        },
       ]);
 
       const result = await service.validateRTM(validProjId);
@@ -68,7 +123,13 @@ describe('RTMValidationService', () => {
 
     it('should report warning when action is linked to more than 3 tasks', async () => {
       requirementModelMock.find.mockResolvedValueOnce([
-        { _id: 'r-act-many', projectId: validProjId, description: 'Act 3', kind: 'action', traceableItems: ['t1', 't2', 't3', 't4'] },
+        {
+          _id: 'r-act-many',
+          projectId: validProjId,
+          description: 'Act 3',
+          kind: 'action',
+          traceableItems: ['t1', 't2', 't3', 't4'],
+        },
       ]);
 
       const result = await service.validateRTM(validProjId);

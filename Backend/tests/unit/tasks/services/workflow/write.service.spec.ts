@@ -118,7 +118,10 @@ describe('TasksWriteService', () => {
     });
 
     it('deve inserir tarefas em lote e recalcular estatisticas do projeto', async () => {
-      const dtos = [{ name: 'Task 1', project: validProjectId }, { name: 'Task 2', project: validProjectId }];
+      const dtos = [
+        { name: 'Task 1', project: validProjectId },
+        { name: 'Task 2', project: validProjectId },
+      ];
       const insertedDocs = dtos.map((d) => ({ ...d, _id: new Types.ObjectId() }));
 
       mockTaskModel.insertMany.mockResolvedValue(insertedDocs);

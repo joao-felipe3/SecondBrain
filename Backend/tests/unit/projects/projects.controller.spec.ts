@@ -42,7 +42,9 @@ describe('ProjectsController', () => {
       generateWBS: jest.fn().mockResolvedValue([{ name: 'Node 1', estimatedHours: 4 }]),
       saveWBS: jest.fn().mockResolvedValue([{ _id: 'n1' }]),
       getWBS: jest.fn().mockResolvedValue([{ name: 'Node 1' }]),
-      getLeafNodesWithPaths: jest.fn().mockReturnValue([{ node: { name: 'N1', estimatedHours: 2 }, path: 'N1' }]),
+      getLeafNodesWithPaths: jest
+        .fn()
+        .mockReturnValue([{ node: { name: 'N1', estimatedHours: 2 }, path: 'N1' }]),
       generateTasksForSingleLeaf: jest.fn().mockResolvedValue({ tasks: [{ name: 'T1' }] }),
     };
 
@@ -87,9 +89,9 @@ describe('ProjectsController', () => {
       mockValidation,
       mockTaskConversionService,
       mockAuditService,
-      mockTasksService as any,
+      mockTasksService,
       mockLeafBuffer,
-      mockTaskModel as any,
+      mockTaskModel,
     );
   });
 
@@ -149,7 +151,11 @@ describe('ProjectsController', () => {
     });
 
     it('should resolve WBS budget and suggest decomposition', async () => {
-      const res = await controller.resolveWBSBudget(validProjId, { budgetHours: 40, strategy: 'normalize', nodes: [] } as any);
+      const res = await controller.resolveWBSBudget(validProjId, {
+        budgetHours: 40,
+        strategy: 'normalize',
+        nodes: [],
+      } as any);
       expect(res.resolved).toBe(true);
 
       const decomp = await controller.suggestDecomposition(validProjId, {} as any);

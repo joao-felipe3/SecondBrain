@@ -18,16 +18,24 @@ describe('RTMTaskGeneratorService', () => {
   beforeEach(async () => {
     requirementModelMock = {
       find: jest.fn().mockResolvedValue([
-        { _id: validObjectId, projectId: validObjectId, title: 'Ação Órfã 1', description: 'Descrição da ação', kind: 'action' },
+        {
+          _id: validObjectId,
+          projectId: validObjectId,
+          title: 'Ação Órfã 1',
+          description: 'Descrição da ação',
+          kind: 'action',
+        },
       ]),
       updateOne: jest.fn().mockResolvedValue({}),
       updateMany: jest.fn().mockResolvedValue({}),
     };
 
     geminiServiceMock = {
-      generateContent: jest.fn().mockResolvedValue(
-        JSON.stringify([{ requirementId: 'r-1', name: 'Nova Tarefa', description: 'Desc' }]),
-      ),
+      generateContent: jest
+        .fn()
+        .mockResolvedValue(
+          JSON.stringify([{ requirementId: 'r-1', name: 'Nova Tarefa', description: 'Desc' }]),
+        ),
     };
 
     tasksServiceMock = {

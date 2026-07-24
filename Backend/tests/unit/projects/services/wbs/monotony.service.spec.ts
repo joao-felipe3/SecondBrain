@@ -23,10 +23,7 @@ describe('MonotonyService', () => {
     };
 
     const module: TestingModule = await Test.createTestingModule({
-      providers: [
-        MonotonyService,
-        { provide: WbsAiService, useValue: mockWbsAiService },
-      ],
+      providers: [MonotonyService, { provide: WbsAiService, useValue: mockWbsAiService }],
     }).compile();
 
     service = module.get<MonotonyService>(MonotonyService);

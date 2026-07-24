@@ -35,13 +35,13 @@ describe('BufferController', () => {
         isAlert: true,
       }),
       resetBufferConsumption: jest.fn().mockResolvedValue(true),
-      getBufferHistory: jest.fn().mockResolvedValue([{ date: new Date(), consumed: 2, percentageUsed: 20 }]),
+      getBufferHistory: jest
+        .fn()
+        .mockResolvedValue([{ date: new Date(), consumed: 2, percentageUsed: 20 }]),
     };
 
     cpmServiceMock = {
-      getDependencies: jest.fn().mockResolvedValue([
-        { taskId: 't-2', dependsOnTaskId: 't-1' },
-      ]),
+      getDependencies: jest.fn().mockResolvedValue([{ taskId: 't-2', dependsOnTaskId: 't-1' }]),
       calculateCriticalPath: jest.fn().mockReturnValue({
         criticalPath: ['t-1', 't-2'],
         tasksByImpact: [

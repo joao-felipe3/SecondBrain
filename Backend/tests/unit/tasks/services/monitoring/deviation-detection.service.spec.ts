@@ -47,7 +47,9 @@ describe('DeviationDetectionService', () => {
 
     it('deve retornar isDeviated: false se o desvio for inferior a 25%', async () => {
       mockTaskModel.findById.mockReturnValue({
-        exec: jest.fn().mockResolvedValue({ _id: validTaskId, pertExpectedMinutes: 60, pomodorosDid: 2 }), // 60m actual vs 60m expected
+        exec: jest
+          .fn()
+          .mockResolvedValue({ _id: validTaskId, pertExpectedMinutes: 60, pomodorosDid: 2 }), // 60m actual vs 60m expected
       });
 
       const result = await service.checkTimeDeviation(validTaskId);
@@ -56,7 +58,9 @@ describe('DeviationDetectionService', () => {
 
     it('deve retornar isDeviated: true com mensagem e recomendacao se o desvio for >= 25%', async () => {
       mockTaskModel.findById.mockReturnValue({
-        exec: jest.fn().mockResolvedValue({ _id: validTaskId, pertExpectedMinutes: 60, pomodorosDid: 4 }), // 120m actual vs 60m expected (100% over)
+        exec: jest
+          .fn()
+          .mockResolvedValue({ _id: validTaskId, pertExpectedMinutes: 60, pomodorosDid: 4 }), // 120m actual vs 60m expected (100% over)
       });
 
       const result = await service.checkTimeDeviation(validTaskId);
@@ -69,7 +73,9 @@ describe('DeviationDetectionService', () => {
   describe('generateDeviationAlert', () => {
     it('deve retornar null se nao houver desvio', async () => {
       mockTaskModel.findById.mockReturnValue({
-        exec: jest.fn().mockResolvedValue({ _id: validTaskId, pertExpectedMinutes: 60, pomodorosDid: 2 }),
+        exec: jest
+          .fn()
+          .mockResolvedValue({ _id: validTaskId, pertExpectedMinutes: 60, pomodorosDid: 2 }),
       });
 
       const alert = await service.generateDeviationAlert(validTaskId);
@@ -78,7 +84,9 @@ describe('DeviationDetectionService', () => {
 
     it('deve retornar o resultado de desvio se houver desvio >= 25%', async () => {
       mockTaskModel.findById.mockReturnValue({
-        exec: jest.fn().mockResolvedValue({ _id: validTaskId, pertExpectedMinutes: 60, pomodorosDid: 4 }),
+        exec: jest
+          .fn()
+          .mockResolvedValue({ _id: validTaskId, pertExpectedMinutes: 60, pomodorosDid: 4 }),
       });
 
       const alert = await service.generateDeviationAlert(validTaskId);

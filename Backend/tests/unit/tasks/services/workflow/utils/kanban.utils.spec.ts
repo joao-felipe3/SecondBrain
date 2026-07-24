@@ -43,9 +43,7 @@ describe('kanban.utils', () => {
         find: jest.fn().mockReturnValue({
           sort: jest.fn().mockReturnValue({
             select: jest.fn().mockReturnValue({
-              exec: jest
-                .fn()
-                .mockResolvedValue([{ kanbanOrder: 10 }, { kanbanOrder: 20 }]),
+              exec: jest.fn().mockResolvedValue([{ kanbanOrder: 10 }, { kanbanOrder: 20 }]),
             }),
           }),
         }),

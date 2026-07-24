@@ -79,12 +79,7 @@ describe('rolling-wave-helpers.util', () => {
     });
 
     it('should return goal-based deadline range key if no WBS parent', () => {
-      const keyShort = resolveGroupKey(
-        { deadline: new Date(100) },
-        new Map(),
-        0,
-        1000,
-      );
+      const keyShort = resolveGroupKey({ deadline: new Date(100) }, new Map(), 0, 1000);
       expect(keyShort).toBe('goal:Curto Prazo');
 
       const keyFallback = resolveGroupKey({}, new Map(), 0, 0);

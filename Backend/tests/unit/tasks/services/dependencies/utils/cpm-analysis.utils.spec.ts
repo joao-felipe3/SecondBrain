@@ -1,4 +1,7 @@
-import { calculateCriticalPath, getTaskMetrics } from '../../../../../../src/tasks/services/dependencies/utils/cpm-analysis.utils';
+import {
+  calculateCriticalPath,
+  getTaskMetrics,
+} from '../../../../../../src/tasks/services/dependencies/utils/cpm-analysis.utils';
 
 describe('cpm-analysis.utils', () => {
   describe('calculateCriticalPath', () => {

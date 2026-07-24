@@ -84,7 +84,10 @@ describe('TasksRecurringService', () => {
     });
 
     it('deve retornar tarefas pertencentes a serie', async () => {
-      const mockTasks = [{ _id: validParentId }, { _id: new Types.ObjectId(), parentRecurringId: validParentId }];
+      const mockTasks = [
+        { _id: validParentId },
+        { _id: new Types.ObjectId(), parentRecurringId: validParentId },
+      ];
       mockTaskModel.find.mockReturnValue({
         sort: jest.fn().mockReturnValue({
           exec: jest.fn().mockResolvedValue(mockTasks),
@@ -172,7 +175,10 @@ describe('TasksRecurringService', () => {
         exec: jest.fn().mockResolvedValue(mockTask),
       });
 
-      const result = await service.updateRecurringRule(validParentId, { frequency: 'daily', interval: 1 } as any);
+      const result = await service.updateRecurringRule(validParentId, {
+        frequency: 'daily',
+        interval: 1,
+      } as any);
       expect(result).toBe(mockTask);
     });
 

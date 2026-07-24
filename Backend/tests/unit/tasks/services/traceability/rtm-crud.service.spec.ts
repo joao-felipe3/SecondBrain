@@ -51,7 +51,7 @@ describe('RTMCrudService', () => {
       }),
     };
 
-    service = new RTMCrudService(mockRequirementModel as any);
+    service = new RTMCrudService(mockRequirementModel);
   });
 
   describe('getRequirements & saveRequirements', () => {

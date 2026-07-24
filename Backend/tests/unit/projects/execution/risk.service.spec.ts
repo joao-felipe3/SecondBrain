@@ -13,7 +13,13 @@ describe('RiskService', () => {
 
   beforeEach(async () => {
     riskModelMock = {
-      create: jest.fn().mockResolvedValue({ _id: 'r-1', description: 'Risco de prazo', probability: 50, impact: 4, severity: 'alta' }),
+      create: jest.fn().mockResolvedValue({
+        _id: 'r-1',
+        description: 'Risco de prazo',
+        probability: 50,
+        impact: 4,
+        severity: 'alta',
+      }),
       find: jest.fn().mockReturnValue({
         sort: jest.fn().mockReturnValue({
           exec: jest.fn().mockResolvedValue([{ _id: 'r-1', description: 'Risco 1' }]),
@@ -32,7 +38,13 @@ describe('RiskService', () => {
       generateContent: jest.fn().mockResolvedValue(
         JSON.stringify({
           risks: [
-            { description: 'Risco IA 1', probability: 40, impact: 3, severity: 'média', mitigationPlan: 'Mitigar' },
+            {
+              description: 'Risco IA 1',
+              probability: 40,
+              impact: 3,
+              severity: 'média',
+              mitigationPlan: 'Mitigar',
+            },
           ],
         }),
       ),

@@ -21,10 +21,7 @@ describe('AlertsService', () => {
     };
 
     const module: TestingModule = await Test.createTestingModule({
-      providers: [
-        AlertsService,
-        { provide: getModelToken('TaskAlert'), useValue: mockAlertModel },
-      ],
+      providers: [AlertsService, { provide: getModelToken('TaskAlert'), useValue: mockAlertModel }],
     }).compile();
 
     service = module.get<AlertsService>(AlertsService);

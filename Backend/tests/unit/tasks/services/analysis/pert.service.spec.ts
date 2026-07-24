@@ -249,11 +249,7 @@ describe('TasksPertService', () => {
     const { TasksPertService: TasksPertServiceClass } = jest.requireActual(
       '../../../../../src/tasks/services/analysis/pert.service',
     );
-    tasksPertService = new TasksPertServiceClass(
-      mockTaskModel,
-      mockPertService,
-      mockMetricsService,
-    );
+    tasksPertService = new TasksPertServiceClass(mockTaskModel, mockPertService, mockMetricsService);
   });
 
   it('should update PERT estimate for task', async () => {
@@ -275,4 +271,3 @@ describe('TasksPertService', () => {
     expect(mockTaskModel.findByIdAndUpdate).toHaveBeenCalled();
   });
 });
-

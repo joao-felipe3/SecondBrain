@@ -35,15 +35,8 @@ describe('evm-calculations.util', () => {
   });
 
   it('scopeEntriesByWindow & estimateCompletionDate', () => {
-    const entries: any[] = [
-      { date: new Date('2026-01-05') },
-      { date: new Date('2026-01-15') },
-    ];
-    const scoped = scopeEntriesByWindow(
-      entries,
-      new Date('2026-01-01'),
-      new Date('2026-01-10'),
-    );
+    const entries: any[] = [{ date: new Date('2026-01-05') }, { date: new Date('2026-01-15') }];
+    const scoped = scopeEntriesByWindow(entries, new Date('2026-01-01'), new Date('2026-01-10'));
     expect(scoped.length).toBe(1);
 
     const completionDate = estimateCompletionDate({

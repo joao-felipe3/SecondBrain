@@ -14,10 +14,7 @@ describe('WbsAiService', () => {
     };
 
     const module: TestingModule = await Test.createTestingModule({
-      providers: [
-        WbsAiService,
-        { provide: GeminiService, useValue: mockGeminiService },
-      ],
+      providers: [WbsAiService, { provide: GeminiService, useValue: mockGeminiService }],
     }).compile();
 
     service = module.get<WbsAiService>(WbsAiService);

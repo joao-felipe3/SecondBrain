@@ -25,9 +25,7 @@ describe('WbsConversionOrchestrationService', () => {
       applyGoldilocksAndMilestones: jest.fn((drafts) => drafts),
     };
     mockTaskConversionService = {
-      convertDraftsToTasks: jest
-        .fn()
-        .mockResolvedValue([{ title: 'Task 1', pomodorosPlanned: 2 }]),
+      convertDraftsToTasks: jest.fn().mockResolvedValue([{ title: 'Task 1', pomodorosPlanned: 2 }]),
     };
 
     service = new WbsConversionOrchestrationService(
@@ -152,9 +150,7 @@ describe('WbsConversionOrchestrationService', () => {
   describe('generateTasksForSingleLeaf', () => {
     it('should orchestrate single leaf conversion and save tasks when requested via createMany', async () => {
       const mockTasksService: any = {
-        createMany: jest
-          .fn()
-          .mockResolvedValue([{ title: 'Persisted Task', pomodorosPlanned: 4 }]),
+        createMany: jest.fn().mockResolvedValue([{ title: 'Persisted Task', pomodorosPlanned: 4 }]),
       };
 
       const leafNode: any = { _id: 'leaf1', name: 'Leaf 1', estimatedHours: 2 };

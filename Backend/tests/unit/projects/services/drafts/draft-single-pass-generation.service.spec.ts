@@ -16,9 +16,9 @@ describe('DraftSinglePassGenerationService', () => {
           priority: 2,
         },
       ]),
-      generateOutlineWithoutPlan: jest.fn().mockResolvedValue([
-        { name: 'Outline 1', pomodorosPlanned: 2 },
-      ]),
+      generateOutlineWithoutPlan: jest
+        .fn()
+        .mockResolvedValue([{ name: 'Outline 1', pomodorosPlanned: 2 }]),
     };
 
     mockCacheService = {
@@ -27,9 +27,9 @@ describe('DraftSinglePassGenerationService', () => {
     };
 
     mockDetailsEnrichment = {
-      enrichOutlinesWithDetails: jest.fn().mockResolvedValue([
-        { name: 'Enriched Draft 1', pomodorosPlanned: 2 },
-      ]),
+      enrichOutlinesWithDetails: jest
+        .fn()
+        .mockResolvedValue([{ name: 'Enriched Draft 1', pomodorosPlanned: 2 }]),
     };
 
     service = new DraftSinglePassGenerationService(

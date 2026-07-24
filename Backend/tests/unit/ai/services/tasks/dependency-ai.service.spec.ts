@@ -14,10 +14,7 @@ describe('DependencyAiService', () => {
     };
 
     const module: TestingModule = await Test.createTestingModule({
-      providers: [
-        DependencyAiService,
-        { provide: GeminiService, useValue: mockGeminiService },
-      ],
+      providers: [DependencyAiService, { provide: GeminiService, useValue: mockGeminiService }],
     }).compile();
 
     service = module.get<DependencyAiService>(DependencyAiService);

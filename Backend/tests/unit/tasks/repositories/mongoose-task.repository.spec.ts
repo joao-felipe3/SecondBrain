@@ -25,7 +25,7 @@ describe('MongooseTaskRepository', () => {
       }),
     };
 
-    repository = new MongooseTaskRepository(mockTaskModel as any);
+    repository = new MongooseTaskRepository(mockTaskModel);
   });
 
   it('findAll: should return array of Task domain entities', async () => {

@@ -19,12 +19,35 @@ describe('WbsPersistenceService', () => {
       sort: jest.fn().mockReturnValue({
         exec: jest.fn().mockResolvedValue([
           { _id: 'node-1', name: 'Root Node', level: 1, estimatedHours: 40, parentId: null, order: 1 },
-          { _id: 'node-2', name: 'Child Node', level: 2, estimatedHours: 40, parentId: 'node-1', order: 1 },
+          {
+            _id: 'node-2',
+            name: 'Child Node',
+            level: 2,
+            estimatedHours: 40,
+            parentId: 'node-1',
+            order: 1,
+          },
         ]),
       }),
       exec: jest.fn().mockResolvedValue([
-        { _id: 'node-1', name: 'Root Node', level: 1, estimatedHours: 40, parentId: null, order: 1, save: jest.fn().mockResolvedValue({}) },
-        { _id: 'node-2', name: 'Child Node', level: 2, estimatedHours: 40, parentId: 'node-1', order: 1, save: jest.fn().mockResolvedValue({}) },
+        {
+          _id: 'node-1',
+          name: 'Root Node',
+          level: 1,
+          estimatedHours: 40,
+          parentId: null,
+          order: 1,
+          save: jest.fn().mockResolvedValue({}),
+        },
+        {
+          _id: 'node-2',
+          name: 'Child Node',
+          level: 2,
+          estimatedHours: 40,
+          parentId: 'node-1',
+          order: 1,
+          save: jest.fn().mockResolvedValue({}),
+        },
       ]),
     });
 

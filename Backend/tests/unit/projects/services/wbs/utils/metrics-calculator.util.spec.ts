@@ -53,8 +53,18 @@ describe('MetricsCalculatorUtil', () => {
 
     it('should compute quality metrics for batch of tasks', () => {
       const tasks: any[] = [
-        { name: 'Criar API', description: 'Redigir endpoints', microTaskType: 'produce', themeTag: 'backend' },
-        { name: 'Testar API', description: 'Verificar respostas', microTaskType: 'test', themeTag: 'testing' },
+        {
+          name: 'Criar API',
+          description: 'Redigir endpoints',
+          microTaskType: 'produce',
+          themeTag: 'backend',
+        },
+        {
+          name: 'Testar API',
+          description: 'Verificar respostas',
+          microTaskType: 'test',
+          themeTag: 'testing',
+        },
         { name: 'Revisar codigo', description: 'Reler PR', microTaskType: 'review', themeTag: ['qa'] },
       ];
 
