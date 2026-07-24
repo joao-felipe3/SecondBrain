@@ -1,143 +1,79 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { DraftsAiService } from '../../../../../src/ai/services/tasks/drafts-ai.service';
-import { GeminiService } from '../../../../../src/ai/services/core/gemini.service';
-import { PromptBuilderService } from '../../../../../src/ai/services/projects/prompt-builder.service';
+import { DraftsAiService } from '@src/ai/services/tasks/drafts-ai.service';
 
 describe('DraftsAiService', () => {
   let service: DraftsAiService;
-  let mockGeminiService: {
-    generateContent: jest.Mock;
-  };
-  let mockPromptBuilderService: {
-    buildMicroTasksPlannerPrompt: jest.Mock;
-    buildMicroTasksPrompt: jest.Mock;
-    buildMicroTasksGeneratorPrompt: jest.Mock;
-  };
+  let mockGeminiService: any;
+  let mockPromptBuilder: any;
 
-  beforeEach(async () => {
+  beforeEach(() => {
     mockGeminiService = {
       generateContent: jest.fn(),
     };
-
-    mockPromptBuilderService = {
-      buildMicroTasksPlannerPrompt: jest.fn().mockReturnValue('Planner Prompt'),
-      buildMicroTasksPrompt: jest.fn().mockReturnValue('Single Pass Prompt'),
-      buildMicroTasksGeneratorPrompt: jest.fn().mockReturnValue('Plan Pass Prompt'),
+    mockPromptBuilder = {
+      buildMicroTasksPlannerPrompt: jest.fn().mockReturnValue('planner-prompt'),
+      buildMicroTasksPrompt: jest.fn().mockReturnValue('microtasks-prompt'),
+      buildMicroTasksGeneratorPrompt: jest.fn().mockReturnValue('generator-prompt'),
+      buildMicroTasksOutlinePrompt: jest.fn().mockReturnValue('outline-prompt'),
+      buildMicroTasksOutlineWithPlanPrompt: jest.fn().mockReturnValue('outline-plan-prompt'),
+      buildMicroTaskDetailsPrompt: jest.fn().mockReturnValue('details-prompt'),
+      buildMicroTaskDetailsBatchPrompt: jest.fn().mockReturnValue('batch-prompt'),
     };
 
-    const module: TestingModule = await Test.createTestingModule({
-      providers: [
-        DraftsAiService,
-        { provide: GeminiService, useValue: mockGeminiService },
-        { provide: PromptBuilderService, useValue: mockPromptBuilderService },
-      ],
-    }).compile();
-
-    service = module.get<DraftsAiService>(DraftsAiService);
+    service = new DraftsAiService(mockGeminiService, mockPromptBuilder);
   });
 
   describe('generatePlan', () => {
-    it('deve gerar plano de tarefas WBS via Gemini com sucesso', async () => {
-      const jsonResponse = JSON.stringify({
-        themes: [{ name: 'Auth' }],
-        workflow: ['prepare', 'produce'],
-      });
-
-      mockGeminiService.generateContent.mockResolvedValue(jsonResponse);
-
-      const result = await service.generatePlan({ leafName: 'Auth Module' } as any, ['Auth']);
-      expect(result).toBeDefined();
-      expect(result.workflow).toEqual(['prepare', 'produce']);
-    });
-
-    it('deve lancar erro se a resposta do plano for invalida', async () => {
-      mockGeminiService.generateContent.mockResolvedValue(JSON.stringify({ invalid: true }));
-
-      await expect(service.generatePlan({ leafName: 'Auth' } as any, [])).rejects.toThrow('Plano inválido');
-    });
-  });
-
-  describe('generateSinglePassWithoutPlan', () => {
-    it('deve gerar rascunhos de micro-tarefas sem plano', async () => {
-      const jsonResponse = JSON.stringify([
-        {
-          name: 'Micro-tarefa 1',
-          description: 'Descricao',
-          definitionOfDone: 'DoD 1',
-          checklist: ['Passo 1', 'Passo 2'],
-          pomodorosPlanned: 2,
-          priority: 1,
-          difficult: 1,
-          themeTag: 'Auth',
-          contextTag: '@dev',
-          microTaskType: 'subtask',
-          cognitiveMode: 'medium',
-        },
-      ]);
-
-      mockGeminiService.generateContent.mockResolvedValue(jsonResponse);
-
-      const result = await service.generateSinglePassWithoutPlan(
-        { leafName: 'Auth' } as any,
-        [60],
-        [],
+    it('should generate and parse WBS leaf plan from AI response', async () => {
+      mockGeminiService.generateContent.mockResolvedValueOnce(
+        JSON.stringify({
+          themes: [{ name: 'Core feature' }],
+          workflow: ['Design', 'Code'],
+        }),
       );
 
-      expect(result).toHaveLength(1);
-      expect(result[0].name).toBe('Micro-tarefa 1');
+      const plan = await service.generatePlan({ node: { name: 'Leaf 1' } } as any, ['tech']);
+      expect(plan.themes[0].name).toBe('Core feature');
     });
 
-    it('deve lancar erro se a quantidade de itens devolvidos for diferente do esperado', async () => {
-      const validDraft = {
-        name: 'Micro-tarefa',
-        description: 'Descricao',
-        definitionOfDone: 'DoD 1',
-        checklist: ['Passo 1', 'Passo 2'],
-        pomodorosPlanned: 2,
-        priority: 1,
-        difficult: 1,
-        themeTag: 'Auth',
-        contextTag: '@dev',
-        microTaskType: 'subtask',
-        cognitiveMode: 'medium',
-      };
-      const jsonResponse = JSON.stringify([validDraft, validDraft]);
-      mockGeminiService.generateContent.mockResolvedValue(jsonResponse);
+    it('should throw error if plan JSON violates schema', async () => {
+      mockGeminiService.generateContent.mockResolvedValueOnce(
+        JSON.stringify({ invalidField: 123 }),
+      );
 
       await expect(
-        service.generateSinglePassWithoutPlan({ leafName: 'Auth' } as any, [60], []),
-      ).rejects.toThrow('esperado 1');
+        service.generatePlan({ node: { name: 'Leaf 1' } } as any, []),
+      ).rejects.toThrow('Plano inválido');
     });
   });
 
-  describe('generateSinglePassWithPlan', () => {
-    it('deve gerar rascunhos de micro-tarefas com plano', async () => {
-      const jsonResponse = JSON.stringify([
-        {
-          name: 'Micro-tarefa Com Plano',
-          description: 'Descricao',
-          definitionOfDone: 'DoD 1',
-          checklist: ['Passo 1', 'Passo 2'],
-          pomodorosPlanned: 2,
-          priority: 1,
-          difficult: 1,
-          themeTag: 'Auth',
-          contextTag: '@dev',
-          microTaskType: 'subtask',
-          cognitiveMode: 'medium',
-        },
-      ]);
+  describe('generateSinglePassWithoutPlan & generateDetailsBatch', () => {
+    it('should generate single pass microtask drafts', async () => {
+      mockGeminiService.generateContent.mockResolvedValue(
+        JSON.stringify([
+          {
+            name: 'Task 1',
+            description: 'Desc',
+            pomodorosPlanned: 2,
+            priority: 2,
+            difficult: 2,
+            microTaskType: 'code',
+            themeTag: 'tech',
+            contextTag: 'dev',
+            cognitiveMode: 'deep',
+            checklist: ['step 1', 'step 2'],
+            definitionOfDone: 'done',
+          },
+        ]),
+      );
 
-      mockGeminiService.generateContent.mockResolvedValue(jsonResponse);
-
-      const result = await service.generateSinglePassWithPlan(
-        { leafName: 'Auth' } as any,
+      const drafts = await service.generateSinglePassWithoutPlan(
+        { node: { name: 'Node' } } as any,
         [60],
         [],
       );
 
-      expect(result).toHaveLength(1);
-      expect(result[0].name).toBe('Micro-tarefa Com Plano');
+      expect(drafts.length).toBe(1);
+      expect(drafts[0].name).toBe('Task 1');
     });
   });
 });

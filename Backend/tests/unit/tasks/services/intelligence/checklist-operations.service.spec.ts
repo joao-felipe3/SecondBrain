@@ -1,86 +1,94 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { getModelToken } from '@nestjs/mongoose';
-import { BadRequestException, NotFoundException } from '@nestjs/common';
-import { ChecklistOperationsService } from '../../../../../src/tasks/services/intelligence/checklist-operations.service';
-import { ChecklistService } from '../../../../../src/tasks/services/intelligence/checklist.service';
-import { TasksInputService } from '../../../../../src/tasks/services/workflow/input.service';
-import { GeminiService } from '../../../../../src/ai/services/core/gemini.service';
+import { BadRequestException } from '@nestjs/common';
+import { Types } from 'mongoose';
+import { ChecklistOperationsService } from '@src/tasks/services/intelligence/checklist-operations.service';
 
 describe('ChecklistOperationsService', () => {
   let service: ChecklistOperationsService;
   let mockTaskModel: any;
-  let checklistServiceMock: any;
-  let inputServiceMock: any;
-  let geminiServiceMock: any;
+  let mockChecklistService: any;
+  let mockInputService: any;
+  let mockGeminiService: any;
 
-  const validObjectId = '507f1f77bcf86cd799439011';
+  const validTaskId = new Types.ObjectId().toHexString();
 
-  beforeEach(async () => {
+  beforeEach(() => {
     mockTaskModel = {
-      findByIdAndUpdate: jest.fn().mockReturnValue({
-        exec: jest.fn().mockResolvedValue({ _id: validObjectId, checklist: [{ item: 'Step 1', completed: false }] }),
-      }),
       findById: jest.fn().mockReturnValue({
         exec: jest.fn().mockResolvedValue({
-          _id: validObjectId,
+          _id: validTaskId,
+          name: 'Task 1',
           checklist: [{ item: 'Step 1', completed: false }],
-          save: jest.fn().mockResolvedValue({ _id: validObjectId, checklist: [{ item: 'Step 1', completed: true }] }),
+          save: jest.fn().mockResolvedValue({
+            _id: validTaskId,
+            name: 'Task 1',
+            checklist: [{ item: 'Step 1', completed: true }],
+          }),
         }),
+      }),
+      findByIdAndUpdate: jest.fn().mockReturnValue({
+        exec: jest.fn().mockResolvedValue({ _id: validTaskId }),
       }),
     };
 
-    checklistServiceMock = {
+    mockChecklistService = {
       validateChecklistStructure: jest.fn().mockReturnValue({ isValid: true }),
       calculateCompletionPercentage: jest.fn().mockReturnValue(100),
+      validateChecklistCompletion: jest.fn().mockReturnValue({ isValid: true }),
+      findSimilarTasksInProject: jest.fn().mockResolvedValue([]),
+      enrichHistoryContext: jest.fn().mockReturnValue(''),
     };
 
-    inputServiceMock = {
-      normalizeChecklist: jest.fn().mockImplementation((list) => list.map((item: any) => ({ item: typeof item === 'string' ? item : item.item, completed: false }))),
+    mockInputService = {
+      normalizeChecklist: jest.fn((c) => c),
     };
 
-    geminiServiceMock = {
-      generateContent: jest.fn().mockResolvedValue(JSON.stringify({ checklist: ['Passo 1', 'Passo 2', 'Passo 3'] })),
+    mockGeminiService = {
+      generateChecklistForTask: jest.fn().mockResolvedValue(['Passo 1', 'Passo 2']),
+      generateChecklistWithHistory: jest.fn().mockResolvedValue(['Passo H1', 'Passo H2']),
     };
 
-    const module: TestingModule = await Test.createTestingModule({
-      providers: [
-        ChecklistOperationsService,
-        { provide: getModelToken('Task'), useValue: mockTaskModel },
-        { provide: ChecklistService, useValue: checklistServiceMock },
-        { provide: TasksInputService, useValue: inputServiceMock },
-        { provide: GeminiService, useValue: geminiServiceMock },
-      ],
-    }).compile();
-
-    service = module.get<ChecklistOperationsService>(ChecklistOperationsService);
+    service = new ChecklistOperationsService(
+      mockTaskModel as any,
+      mockChecklistService as any,
+      mockInputService as any,
+      mockGeminiService as any,
+    );
   });
 
-  it('should be defined', () => {
-    expect(service).toBeDefined();
-  });
-
-  describe('updateMicroTaskChecklist', () => {
-    it('deve lançar BadRequestException se o ID for inválido', async () => {
-      await expect(service.updateMicroTaskChecklist('invalid', ['Item 1'])).rejects.toThrow(BadRequestException);
+  describe('updateMicroTaskChecklist & updateChecklistItem', () => {
+    it('should throw BadRequestException for invalid task ObjectId', async () => {
+      await expect(service.updateMicroTaskChecklist('invalid-id', ['item 1'])).rejects.toThrow(
+        BadRequestException,
+      );
     });
 
-    it('deve atualizar o checklist da tarefa', async () => {
-      const result = await service.updateMicroTaskChecklist(validObjectId, ['Item 1', 'Item 2']);
-      expect(result).toBeDefined();
+    it('should update task checklist items', async () => {
+      const res = await service.updateMicroTaskChecklist(validTaskId, ['item 1']);
+      expect(res).toBeDefined();
       expect(mockTaskModel.findByIdAndUpdate).toHaveBeenCalled();
     });
-  });
 
-  describe('updateChecklistItem', () => {
-    it('deve marcar o item do checklist como concluído', async () => {
-      const result = await service.updateChecklistItem({
-        taskId: validObjectId,
+    it('should update individual checklist item completed state', async () => {
+      const res = await service.updateChecklistItem({
+        taskId: validTaskId,
         itemIndex: '0',
         completed: true,
       });
 
-      expect(result).toBeDefined();
-      expect(result.completionPercentage).toBe(100);
+      expect(res.completionPercentage).toBe(100);
+    });
+  });
+
+  describe('validateCompletionRequirements & getValidationErrors', () => {
+    it('should validate completion requirements for task', async () => {
+      const res = await service.validateCompletionRequirements(validTaskId);
+      expect(res.isValid).toBe(true);
+    });
+
+    it('should get validation errors for incomplete task checklist', async () => {
+      const res = await service.getValidationErrors(validTaskId);
+      expect(res.valid).toBe(true);
+      expect(res.errors.length).toBe(0);
     });
   });
 });

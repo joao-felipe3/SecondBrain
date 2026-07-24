@@ -207,3 +207,72 @@ describe('PertService', () => {
     });
   });
 });
+
+describe('TasksPertService', () => {
+  let tasksPertService: any;
+  let mockTaskModel: any;
+  let mockPertService: any;
+  let mockMetricsService: any;
+
+  const validId = '507f1f77bcf86cd799439011';
+
+  beforeEach(() => {
+    mockTaskModel = {
+      findById: jest.fn().mockReturnValue({
+        exec: jest.fn().mockResolvedValue({
+          _id: validId,
+          createdAt: new Date('2026-01-01'),
+        }),
+      }),
+      findByIdAndUpdate: jest.fn().mockReturnValue({
+        exec: jest.fn().mockResolvedValue({
+          _id: validId,
+          pertExpectedMinutes: 100,
+        }),
+      }),
+    };
+
+    mockPertService = {
+      calculatePertMetrics: jest.fn().mockReturnValue({
+        expectedTime: 100,
+        variance: 25,
+        standardDeviation: 5,
+        formula: '(O + 4M + P) / 6',
+        estimate: { optimistic: 80, mostLikely: 100, pessimistic: 120 },
+      }),
+    };
+
+    mockMetricsService = {
+      calculateDeadline: jest.fn().mockReturnValue(new Date('2026-01-02')),
+    };
+
+    const { TasksPertService: TasksPertServiceClass } = jest.requireActual(
+      '../../../../../src/tasks/services/analysis/pert.service',
+    );
+    tasksPertService = new TasksPertServiceClass(
+      mockTaskModel,
+      mockPertService,
+      mockMetricsService,
+    );
+  });
+
+  it('should update PERT estimate for task', async () => {
+    const res = await tasksPertService.updatePert(validId, {
+      pertOptimisticMinutes: 80,
+      pertMostLikelyMinutes: 100,
+      pertPessimisticMinutes: 120,
+    });
+
+    expect(res).toBeDefined();
+    expect(mockTaskModel.findByIdAndUpdate).toHaveBeenCalled();
+  });
+
+  it('should save PERT estimate directly', async () => {
+    const dto = { optimistic: 80, mostLikely: 100, pessimistic: 120 };
+    const res = await tasksPertService.savePertEstimate(validId, dto);
+
+    expect(res.expectedTime).toBe(100);
+    expect(mockTaskModel.findByIdAndUpdate).toHaveBeenCalled();
+  });
+});
+
