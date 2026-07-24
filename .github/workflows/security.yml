@@ -68,9 +68,12 @@ jobs:
         uses: trufflesecurity/trufflehog@main
         with:
           path: ./
-          base: ${{ github.event.repository.default_branch }}
-          head: HEAD
-          extra_args: --debug --only-verified
+          # For push events: scan only the new commits in this push
+          # For PRs: scan between base and head of the PR
+          # For schedule/dispatch: scan full repo (no base/head)
+          base: ${{ github.event_name == 'push' && github.event.before != '0000000000000000000000000000000000000000' && github.event.before || '' }}
+          head: ${{ github.event_name == 'push' && github.sha || '' }}
+          extra_args: --only-verified
 
   # ─────────────────────────────────────────────────────────────────────────────
   # 3. Static Application Security Testing (CodeQL)
