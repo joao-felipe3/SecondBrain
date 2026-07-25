@@ -24,6 +24,8 @@
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "lint:deps": "depcruise --config .dependency-cruiser.js src",
+    "wiki:index": "ts-node -r tsconfig-paths/register scripts/index-wiki.ts",
+    "wiki:visualize": "ts-node -r tsconfig-paths/register scripts/export-graph-html.ts",
     "agent:refactor": "ts-node -r tsconfig-paths/register scripts/refactor-agent.ts"
   },
   "overrides": {

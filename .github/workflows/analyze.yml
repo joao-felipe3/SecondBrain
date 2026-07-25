@@ -201,3 +201,66 @@ jobs:
           npx knip --reporter compact 2>/dev/null || \
           echo "ℹ️ Dead code analysis completed"
         continue-on-error: true
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # 4. Dependency Architecture & Guardrails (dependency-cruiser)
+  # ─────────────────────────────────────────────────────────────────────────────
+  dependency-architecture:
+    name: 🏗️ Dependency Architecture Guardrails
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: Backend
+
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 📦 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20.x"
+          cache: "npm"
+          cache-dependency-path: Backend/package-lock.json
+
+      - name: 📚 Install dependencies
+        run: npm ci
+
+      - name: 🏗️ Check Architecture Guardrails
+        run: npm run lint:deps
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # 5. Frontend Bundle Analytics (rollup-plugin-visualizer)
+  # ─────────────────────────────────────────────────────────────────────────────
+  bundle-analysis:
+    name: 📦 Bundle Analytics (Visualizer)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: Frontend
+
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 📦 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20.x"
+          cache: "npm"
+          cache-dependency-path: Frontend/package-lock.json
+
+      - name: 📚 Install dependencies
+        run: npm ci
+
+      - name: 🎨 Build Frontend with Bundle Analysis
+        run: npm run analyze
+        env:
+          ANALYZE: "true"
+
+      - name: 📤 Upload Bundle Stats Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: bundle-stats
+          path: Frontend/stats.html
+          retention-days: 30

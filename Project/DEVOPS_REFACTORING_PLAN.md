@@ -180,7 +180,7 @@ Reduzir `Backend/src/projects/projects.service.ts` de ~804 linhas para ~300 linh
 
 ---
 
-## Sprint 5: Patterns, Guardrails & Observabilidade (0/25h)
+## Sprint 5: Patterns, Guardrails & Observabilidade (25/25h) ✅ Concluído
 
 ### Arquitetura & Guardrails de Dependências (`dependency-cruiser`)
 
@@ -289,7 +289,7 @@ indent_size = 2
 
 ---
 
-## Sprint 6: LLM Wiki — Knowledge Base & Graph RAG (10/25h)
+## Sprint 6: LLM Wiki — Knowledge Base & Graph RAG (25/25h) ✅ Concluído
 
 ### Objetivo
 
@@ -344,9 +344,9 @@ Criar uma camada de consulta semântica e contextual avançada para a documenta�
 | ------------------------------ | ------------ | --------------------------------------------------- |
 | `tasks/services/workflow/`     | ✅ Concluído | `Backend/src/tasks/services/workflow/README.md`     |
 | `tasks/services/traceability/` | ✅ Concluído | `Backend/src/tasks/services/traceability/README.md` |
-| `tasks/services/analysis/`     | ⏳ Pendente  | —                                                   |
-| `tasks/services/intelligence/` | ⏳ Pendente  | —                                                   |
-| `tasks/services/monitoring/`   | ⏳ Pendente  | —                                                   |
+| `tasks/services/analysis/`     | ✅ Concluído | `Backend/src/tasks/services/analysis/README.md`     |
+| `tasks/services/intelligence/` | ✅ Concluído | `Backend/src/tasks/services/intelligence/README.md` |
+| `tasks/services/monitoring/`   | ✅ Concluído | `Backend/src/tasks/services/monitoring/README.md`   |
 
 ---
 
@@ -377,4 +377,4 @@ Estruturar ferramentas e automações sob demanda para investigar gargalos de CP
 
 **Última Atualização**: Julho 25, 2026  
 **Responsável**: DevOps Team  
-**Status**: 67% completo (130/195h) — Sprints 1-4 ✅ completos
+**Status**: 93% completo (180/195h) — Sprints 1-6 ✅ completos

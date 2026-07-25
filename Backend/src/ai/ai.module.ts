@@ -9,9 +9,12 @@ import { PromptBuilderService } from './services/projects/prompt-builder.service
 import { DraftsAiService } from './services/tasks/drafts-ai.service';
 import { RollingWaveAIService } from './services/projects/rolling-wave-ai.service';
 import { WbsAiService } from './services/projects/wbs-ai.service';
+import { AiWikiService } from './services/wiki/ai-wiki.service';
+import { AiWikiController } from './controllers/wiki/ai-wiki.controller';
 
 @Global()
 @Module({
+  controllers: [AiWikiController],
   providers: [
     GeminiService,
     GeminiExecutorService,
@@ -23,6 +26,7 @@ import { WbsAiService } from './services/projects/wbs-ai.service';
     DraftsAiService,
     RollingWaveAIService,
     WbsAiService,
+    AiWikiService,
   ],
   exports: [
     GeminiService,
@@ -35,6 +39,7 @@ import { WbsAiService } from './services/projects/wbs-ai.service';
     DraftsAiService,
     RollingWaveAIService,
     WbsAiService,
+    AiWikiService,
   ],
 })
 export class AIModule {}
