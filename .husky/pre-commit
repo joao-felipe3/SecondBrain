@@ -1,1 +1,8 @@
 npx lint-staged
+
+# Fast secret scan in staged files (non-blocking if gitleaks is not available)
+if command -v gitleaks >/dev/null 2>&1; then
+  gitleaks protect --staged --verbose
+elif npx --no-install gitleaks --help >/dev/null 2>&1; then
+  npx gitleaks protect --staged --verbose
+fi

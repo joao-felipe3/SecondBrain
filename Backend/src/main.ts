@@ -2,9 +2,20 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import * as express from 'express';
+import * as mongoose from 'mongoose';
+import { MongooseLoggerInterceptor } from './common/interceptors/mongoose-logger.interceptor';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+
+  // Enable Mongoose Debug mode dynamically when requested
+  if (process.env.MONGOOSE_DEBUG === 'true') {
+    mongoose.set('debug', true);
+    console.log('🔍 Mongoose Debug mode enabled');
+  }
+
+  // Register performance logger interceptor globally
+  app.useGlobalInterceptors(new MongooseLoggerInterceptor());
 
   // Increase body size limits to support bulk task saves (e.g. /tasks/bulk)
   // Default express/json limit (100kb) is too small for dozens/hundreds of tasks.
