@@ -16,7 +16,7 @@ module.exports = {
       comment: 'Find files that are not referenced by any other file',
       from: {
         orphan: true,
-        pathOutside: ['^src/main\\.ts$', '^src/app\\.module\\.ts$'],
+        pathNot: ['^src/main\\.ts$', '^src/app\\.module\\.ts$'],
       },
       to: {},
     },
@@ -41,14 +41,6 @@ module.exports = {
     enhancedResolveOptions: {
       exportsFields: ['exports'],
       conditionNames: ['import', 'require', 'node', 'default'],
-    },
-    reporterOptions: {
-      dot: {
-        collapsePattern: 'node_modules/[^/]+',
-      },
-      archi: {
-        collapsePattern: '^(packages|src|lib|app|bin|test|spec)/[^/]+|node_modules/[^/]+',
-      },
     },
   },
 };
