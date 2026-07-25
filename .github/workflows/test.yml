@@ -51,7 +51,7 @@ jobs:
           MONGODB_URI: mongodb://localhost:27017/second-brain-test
 
       - name: 📊 Upload coverage to Codecov
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v7
         with:
           files: ./coverage/coverage-final.json
           flags: unittests
