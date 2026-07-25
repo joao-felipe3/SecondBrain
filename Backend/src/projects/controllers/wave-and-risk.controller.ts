@@ -153,7 +153,7 @@ export class WaveAndRiskController {
     @Body() body: { totalDurationDays?: number; waveLengthDays?: number } = {},
   ): Promise<ProjectWave[]> {
     try {
-      console.log(`[WaveAndRiskController.generateWaves] projectId: ${projectId}, body:`, body);
+      console.log('[WaveAndRiskController.generateWaves] projectId:', String(projectId), 'body:', body);
 
       // Buscar projeto para obter deadline e smartObjective
       const project = await this.projectModel.findById(String(projectId)).populate('tasks');
@@ -258,7 +258,7 @@ export class WaveAndRiskController {
     @Body() body: { projectDescription?: string },
   ): Promise<Risk[]> {
     try {
-      console.log(`[WaveAndRiskController.assessRisks] projectId: ${projectId}, body:`, body);
+      console.log('[WaveAndRiskController.assessRisks] projectId:', String(projectId), 'body:', body);
       const projectDescription = body.projectDescription || 'Projeto sem descriÃ§Ã£o';
       const result = await this.riskService.assessRisks(String(projectId), projectDescription);
       console.log(`[WaveAndRiskController.assessRisks] Success, returned ${result.length} risks`);

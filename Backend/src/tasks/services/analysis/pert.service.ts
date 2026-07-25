@@ -172,11 +172,13 @@ export class TasksPertService {
       .findByIdAndUpdate(
         String(taskId),
         {
-          pertOptimisticMinutes: pertEstimateDto.optimistic,
-          pertMostLikelyMinutes: pertEstimateDto.mostLikely,
-          pertPessimisticMinutes: pertEstimateDto.pessimistic,
-          pertExpectedMinutes: Math.round(pertMetrics.expectedTime),
-          pertVariance: pertMetrics.variance,
+          $set: {
+            pertOptimisticMinutes: pertEstimateDto.optimistic,
+            pertMostLikelyMinutes: pertEstimateDto.mostLikely,
+            pertPessimisticMinutes: pertEstimateDto.pessimistic,
+            pertExpectedMinutes: Math.round(pertMetrics.expectedTime),
+            pertVariance: pertMetrics.variance,
+          },
         },
         { new: true },
       )

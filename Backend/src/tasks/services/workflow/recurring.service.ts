@@ -195,7 +195,7 @@ export class TasksRecurringService {
     }
 
     const updatedTask = await this.taskModel
-      .findByIdAndUpdate(String(id), { recurringRule: normalized }, { new: true })
+      .findByIdAndUpdate(String(id), { $set: { recurringRule: normalized } }, { new: true })
       .exec();
 
     if (!updatedTask) throw new NotFoundException(`Task with id ${id} not found`);

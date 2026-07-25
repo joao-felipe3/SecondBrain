@@ -18,13 +18,31 @@ export function normalizePreferredPomodoros(value?: number): number {
  */
 export function normalizeTitle(title?: string): string {
   if (!title) return '';
-  return title
-    .toLowerCase()
+  const withoutParens = stripParentheses(title.toLowerCase());
+  return withoutParens
     .replace(/[0-9]+/g, '')
-    .replace(/\([^)]*\)/g, '')
     .replace(/[^a-z\u00c0-\u017f\s]/gi, ' ')
     .replace(/\s+/g, ' ')
     .trim();
+}
+
+/**
+ * Remove parenthetical contents without regex (ReDoS safe)
+ */
+function stripParentheses(str: string): string {
+  let result = '';
+  let depth = 0;
+  for (let i = 0; i < str.length; i++) {
+    const char = str[i];
+    if (char === '(') {
+      depth++;
+    } else if (char === ')') {
+      if (depth > 0) depth--;
+    } else if (depth === 0) {
+      result += char;
+    }
+  }
+  return result;
 }
 
 /**
@@ -32,10 +50,9 @@ export function normalizeTitle(title?: string): string {
  */
 export function templateTitle(title?: string): string {
   if (!title) return '';
-  return title
-    .toLowerCase()
+  const withoutParens = stripParentheses(title.toLowerCase());
+  return withoutParens
     .replace(/[0-9]+/g, '')
-    .replace(/\([^)]*\)/g, '')
     .replace(/\b(micro[-\s]?tarefa|parte|modulo|módulo|tarefa|dia|semana)\b/gi, '')
     .replace(/[^a-z\u00c0-\u017f\s]/gi, ' ')
     .replace(/\s+/g, ' ')

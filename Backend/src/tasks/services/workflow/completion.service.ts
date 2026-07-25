@@ -209,9 +209,11 @@ export class TasksCompletionService {
       .findByIdAndUpdate(
         String(id),
         {
-          status: toStatus,
-          statusUpdatedAt: new Date(),
-          kanbanOrder: targetOrder,
+          $set: {
+            status: String(toStatus),
+            statusUpdatedAt: new Date(),
+            kanbanOrder: targetOrder,
+          },
         },
         { new: true },
       )

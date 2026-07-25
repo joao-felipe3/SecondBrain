@@ -89,7 +89,7 @@ export class TasksWriteService {
     this.applyDerivedFields(updateTaskDto);
 
     const updatedTask = await this.taskModel
-      .findByIdAndUpdate(String(id), updateTaskDto, { new: true })
+      .findByIdAndUpdate(String(id), { $set: updateTaskDto }, { new: true })
       .exec();
 
     if (updatedTask) {

@@ -37,7 +37,7 @@ export class ChecklistService {
       const similars = await this.taskModel
         .find({
           project: new Types.ObjectId(String(projectId)),
-          microTaskType: microTaskType,
+          microTaskType: String(microTaskType),
           status: 'completed',
           createdAt: { $gte: thirtyDaysAgo },
           checklist: { $exists: true, $ne: null, $type: 'array' },

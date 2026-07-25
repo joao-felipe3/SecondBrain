@@ -77,7 +77,7 @@ export class ProjectsService {
     if (!id || id === 'null' || id === 'undefined' || !Types.ObjectId.isValid(id)) {
       throw new BadRequestException(`ID inválido: ${id}`);
     }
-    return await this.projectModel.findByIdAndUpdate(String(id), dto, { new: true }).exec();
+    return await this.projectModel.findByIdAndUpdate(String(id), { $set: dto }, { new: true }).exec();
   }
 
   async remove(id: string): Promise<boolean> {

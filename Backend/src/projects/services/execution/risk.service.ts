@@ -124,7 +124,7 @@ export class RiskService {
       }
     }
 
-    return this.riskModel.findByIdAndUpdate(String(riskId), updates, { new: true }).exec();
+    return this.riskModel.findByIdAndUpdate(String(riskId), { $set: updates }, { new: true }).exec();
   }
 
   async getRisksByProject(projectId: string): Promise<RiskDocument[]> {

@@ -88,10 +88,14 @@ describe('SettingsService', () => {
 
       const result = await service.updateSettings(userId, updateDto);
       expect(result).toEqual(updatedSettings);
-      expect(mockModel.findOneAndUpdate).toHaveBeenCalledWith({ userId }, updateDto, {
-        new: true,
-        upsert: true,
-      });
+      expect(mockModel.findOneAndUpdate).toHaveBeenCalledWith(
+        { userId: String(userId) },
+        { $set: updateDto },
+        {
+          new: true,
+          upsert: true,
+        },
+      );
     });
 
     it('should update multiple settings fields', async () => {
