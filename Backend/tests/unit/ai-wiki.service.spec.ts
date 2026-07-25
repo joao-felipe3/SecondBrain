@@ -25,7 +25,7 @@ describe('AiWikiService', () => {
   });
 
   it('should return a response with sources and graph data', async () => {
-    const dto: WikiQueryDto = { query: 'example', topK: 2, maxDepth: 1 } as any;
+    const dto: WikiQueryDto = { query: 'example', topK: 2, maxDepth: 1 };
     const result = await service.queryWiki(dto);
     expect(result).toHaveProperty('answer');
     expect(result.sources).toBeDefined();

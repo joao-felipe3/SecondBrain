@@ -19,7 +19,7 @@
           <div class="header-content">
             <span class="task-emoji">🎉</span>
             <div class="header-text">
-              <h2>{{ feedback.celebration || 'Tarefa Concluída!' }}</h2>
+              <h2>{{ feedback.celebration || "Tarefa Concluída!" }}</h2>
               <p class="subtitle">{{ task?.name }}</p>
             </div>
           </div>
@@ -27,7 +27,10 @@
 
         <v-card-text class="modal-content">
           <!-- Validation Summary Section -->
-          <section v-if="feedback.validation" class="section validation-summary">
+          <section
+            v-if="feedback.validation"
+            class="section validation-summary"
+          >
             <div class="section-header">
               <span class="section-icon">✓</span>
               <h3>Validação</h3>
@@ -37,7 +40,9 @@
               <div v-if="validationMetrics" class="metrics-grid">
                 <div class="metric-card">
                   <span class="metric-label">Checklist</span>
-                  <span class="metric-value">{{ validationMetrics.checklistPercent }}%</span>
+                  <span class="metric-value"
+                    >{{ validationMetrics.checklistPercent }}%</span
+                  >
                   <v-progress-linear
                     :value="validationMetrics.checklistPercent"
                     color="success"
@@ -47,15 +52,22 @@
                 </div>
                 <div class="metric-card">
                   <span class="metric-label">Tempo Executado</span>
-                  <span class="metric-value">{{ validationMetrics.actualTimeFormatted }}</span>
+                  <span class="metric-value">{{
+                    validationMetrics.actualTimeFormatted
+                  }}</span>
                 </div>
                 <div class="metric-card">
                   <span class="metric-label">Tempo Esperado</span>
-                  <span class="metric-value">{{ validationMetrics.expectedTimeFormatted }}</span>
+                  <span class="metric-value">{{
+                    validationMetrics.expectedTimeFormatted
+                  }}</span>
                 </div>
                 <div class="metric-card">
                   <span class="metric-label">Desempenho</span>
-                  <span class="metric-value" :class="validationMetrics.performanceClass">
+                  <span
+                    class="metric-value"
+                    :class="validationMetrics.performanceClass"
+                  >
                     {{ validationMetrics.performance }}
                   </span>
                 </div>
@@ -92,7 +104,10 @@
           </section>
 
           <!-- Next Steps Suggestions Section -->
-          <section v-if="suggestedSteps.length > 0" class="section next-steps-section">
+          <section
+            v-if="suggestedSteps.length > 0"
+            class="section next-steps-section"
+          >
             <div class="section-header">
               <span class="section-icon">📋</span>
               <h3>Próximos Passos</h3>
@@ -122,16 +137,17 @@
 
         <!-- Loot Drop Animation -->
         <div v-if="showLootDrop" class="loot-drop-container">
-          <div v-for="i in 15" :key="i" class="loot-drop" :style="getLootDropStyle(i)" />
+          <div
+            v-for="i in 15"
+            :key="i"
+            class="loot-drop"
+            :style="getLootDropStyle(i)"
+          />
         </div>
 
         <!-- Action Buttons -->
         <v-card-actions class="modal-actions">
-          <v-btn
-            variant="text"
-            @click="handleClose"
-            :disabled="saving"
-          >
+          <v-btn variant="text" @click="handleClose" :disabled="saving">
             Fechar
           </v-btn>
           <v-spacer />
@@ -159,172 +175,190 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from 'vue'
-import { useApiFetch } from '~/composables/useApi'
+import { computed, onMounted, ref, watch } from "vue";
+import { useApiFetch } from "~/composables/useApiFetch";
 
 interface Props {
-  isOpen: boolean
-  task?: any
+  isOpen: boolean;
+  task?: any;
 }
 
 interface Feedback {
-  celebration: string
-  validation: string
-  question: string
-  suggestion?: string | SuggestedStep[]
+  celebration: string;
+  validation: string;
+  question: string;
+  suggestion?: string | SuggestedStep[];
 }
 
 interface SuggestedStep {
-  title: string
-  description: string
+  title: string;
+  description: string;
 }
 
-const props = defineProps<Props>()
-const emit = defineEmits(['close', 'confirmed'])
+const props = defineProps<Props>();
+const emit = defineEmits(["close", "confirmed"]);
 
-const feedback = ref<Feedback | null>(null)
-const suggestedSteps = ref<SuggestedStep[]>([])
-const impedimentsAnswer = ref('')
+const feedback = ref<Feedback | null>(null);
+const suggestedSteps = ref<SuggestedStep[]>([]);
+const impedimentsAnswer = ref("");
 const impedimentOptions = ref([
-  { key: 'none', label: 'Nenhum', text: 'Nenhum impedimento', action: null },
-  { key: 'technical', label: 'Técnico', text: 'Problema técnico durante a execução', action: 'raise-impediment' },
-  { key: 'dependency', label: 'Dependência', text: 'Aguardando dependência externa', action: 'notify-dependency' },
-  { key: 'other', label: 'Outro', text: '', action: null },
-])
-const selectedImpedimentIndex = ref<number | null>(null)
-const selectedSteps = ref<number[]>([])
-const includeLootDrop = ref(false)
-const showLootDrop = ref(false)
+  { key: "none", label: "Nenhum", text: "Nenhum impedimento", action: null },
+  {
+    key: "technical",
+    label: "Técnico",
+    text: "Problema técnico durante a execução",
+    action: "raise-impediment",
+  },
+  {
+    key: "dependency",
+    label: "Dependência",
+    text: "Aguardando dependência externa",
+    action: "notify-dependency",
+  },
+  { key: "other", label: "Outro", text: "", action: null },
+]);
+const selectedImpedimentIndex = ref<number | null>(null);
+const selectedSteps = ref<number[]>([]);
+const includeLootDrop = ref(false);
+const showLootDrop = ref(false);
 
 const loading = ref({
   feedback: false,
-})
+});
 
-const saving = ref(false)
-const error = ref('')
+const saving = ref(false);
+const error = ref("");
 
-const api = useApiFetch()
+const api = useApiFetch();
 
 function toFeedbackResponse(payload: unknown): Feedback | null {
-  if (!payload) return null
+  if (!payload) return null;
 
   // Unwrap possible wrapper { feedback: '...string or object...' }
-  let rawAny: unknown = payload
-  if (typeof payload === 'object' && payload !== null && 'feedback' in (payload as Record<string, unknown>)) {
+  let rawAny: unknown = payload;
+  if (
+    typeof payload === "object" &&
+    payload !== null &&
+    "feedback" in (payload as Record<string, unknown>)
+  ) {
     // @ts-ignore
-    rawAny = (payload as Record<string, unknown>).feedback
+    rawAny = (payload as Record<string, unknown>).feedback;
   }
 
   // If backend returned a JSON string (maybe double-encoded), try parsing up to 3 times
-  if (typeof rawAny === 'string') {
-    let p: unknown = rawAny
+  if (typeof rawAny === "string") {
+    let p: unknown = rawAny;
     for (let i = 0; i < 3; i++) {
       try {
-        const parsed = JSON.parse(p as string)
-        if (typeof parsed === 'string') {
+        const parsed = JSON.parse(p as string);
+        if (typeof parsed === "string") {
           // still a string -> try again
-          p = parsed
-          continue
+          p = parsed;
+          continue;
         }
-        return toFeedbackResponse(parsed)
+        return toFeedbackResponse(parsed);
       } catch {
         // if parse fails on first attempt, try to unescape common patterns
         try {
-          const unescaped = (p as string).replace(/\\"/g, '"')
-          const parsed2 = JSON.parse(unescaped)
-          if (typeof parsed2 === 'string') {
-            p = parsed2
-            continue
+          const unescaped = (p as string).replace(/\\"/g, '"');
+          const parsed2 = JSON.parse(unescaped);
+          if (typeof parsed2 === "string") {
+            p = parsed2;
+            continue;
           }
-          return toFeedbackResponse(parsed2)
+          return toFeedbackResponse(parsed2);
         } catch {
           // give up after attempts
         }
-        return null
+        return null;
       }
     }
-    return null
+    return null;
   }
 
-  if (!rawAny || typeof rawAny !== 'object') return null
+  if (!rawAny || typeof rawAny !== "object") return null;
 
-  const raw = rawAny as Record<string, unknown>
-  const celebration = typeof raw.celebration === 'string' ? raw.celebration : ''
-  const validation = typeof raw.validation === 'string' ? raw.validation : ''
-  const question = typeof raw.question === 'string' ? raw.question : ''
+  const raw = rawAny as Record<string, unknown>;
+  const celebration =
+    typeof raw.celebration === "string" ? raw.celebration : "";
+  const validation = typeof raw.validation === "string" ? raw.validation : "";
+  const question = typeof raw.question === "string" ? raw.question : "";
 
-  if (!celebration && !validation && !question) return null
+  if (!celebration && !validation && !question) return null;
 
   const normalized: Feedback = {
     celebration,
     validation,
     question,
-  }
+  };
 
-  if (typeof raw.suggestion === 'string') {
-    normalized.suggestion = raw.suggestion
+  if (typeof raw.suggestion === "string") {
+    normalized.suggestion = raw.suggestion;
   } else if (Array.isArray(raw.suggestion)) {
-    normalized.suggestion = raw.suggestion as SuggestedStep[]
+    normalized.suggestion = raw.suggestion as SuggestedStep[];
   }
 
   // Some responses may serialize inner JSON as a string in a single field (legacy). Try parse for main fields.
-  if (!normalized.celebration && typeof raw === 'object') {
-    const combined = Object.values(raw).find((v) => typeof v === 'string' && /\{\s*"celebration"/.test(v))
-    if (combined && typeof combined === 'string') {
+  if (!normalized.celebration && typeof raw === "object") {
+    const combined = Object.values(raw).find(
+      (v) => typeof v === "string" && /\{\s*"celebration"/.test(v),
+    );
+    if (combined && typeof combined === "string") {
       try {
-        const parsedInner = JSON.parse(combined)
-        return toFeedbackResponse(parsedInner)
+        const parsedInner = JSON.parse(combined);
+        return toFeedbackResponse(parsedInner);
       } catch {
         // ignore
       }
     }
   }
 
-  return normalized
+  return normalized;
 }
 
 // Calculate validation metrics
 const validationMetrics = computed(() => {
-  if (!props.task) return null
+  if (!props.task) return null;
 
-  const checklist = props.task.checklist || []
+  const checklist = props.task.checklist || [];
   const checklistPercent = Array.isArray(checklist)
     ? Math.round(
         (checklist.filter((item: any) =>
-          typeof item === 'object' ? item.completed : false
+          typeof item === "object" ? item.completed : false,
         ).length /
           checklist.length) *
-          100
+          100,
       ) || 0
-    : 0
+    : 0;
 
   // Get actual time spent (from task tracking) - fallback to 0 if not available
-  const actualTime = props.task.actualTimeSpent || 0
-  const expectedTime = props.task.pertExpectedMinutes || props.task.timeExpectedMinutes || 0
+  const actualTime = props.task.actualTimeSpent || 0;
+  const expectedTime =
+    props.task.pertExpectedMinutes || props.task.timeExpectedMinutes || 0;
 
   // Format times
   const formatMinutes = (minutes: number) => {
-    if (minutes < 60) return `${Math.round(minutes)}min`
-    const hours = Math.floor(minutes / 60)
-    const mins = Math.round(minutes % 60)
-    return mins > 0 ? `${hours}h ${mins}min` : `${hours}h`
-  }
+    if (minutes < 60) return `${Math.round(minutes)}min`;
+    const hours = Math.floor(minutes / 60);
+    const mins = Math.round(minutes % 60);
+    return mins > 0 ? `${hours}h ${mins}min` : `${hours}h`;
+  };
 
   // Determine performance
-  let performance = 'Excelente'
-  let performanceClass = 'performance-excellent'
+  let performance = "Excelente";
+  let performanceClass = "performance-excellent";
 
   if (expectedTime > 0) {
-    const ratio = actualTime / expectedTime
+    const ratio = actualTime / expectedTime;
     if (ratio > 1.5) {
-      performance = 'Acima do esperado'
-      performanceClass = 'performance-slow'
+      performance = "Acima do esperado";
+      performanceClass = "performance-slow";
     } else if (ratio > 1) {
-      performance = 'Um pouco acima'
-      performanceClass = 'performance-slightly-slow'
+      performance = "Um pouco acima";
+      performanceClass = "performance-slightly-slow";
     } else if (ratio < 0.7) {
-      performance = 'Muito rápido!'
-      performanceClass = 'performance-fast'
+      performance = "Muito rápido!";
+      performanceClass = "performance-fast";
     }
   }
 
@@ -334,112 +368,118 @@ const validationMetrics = computed(() => {
     expectedTimeFormatted: formatMinutes(expectedTime),
     performance,
     performanceClass,
-  }
-})
+  };
+});
 
 // Handle dialog open/close
 function handleDialogUpdate(value: boolean) {
   if (!value) {
-    emit('close')
+    emit("close");
   }
 }
 
 // Generate loot drop styles
 function getLootDropStyle(index: number) {
-  const angle = (index / 15) * Math.PI * 2
-  const distance = 100 + Math.random() * 150
-  const x = Math.cos(angle) * distance
-  const y = Math.sin(angle) * distance
-  const duration = 0.6 + Math.random() * 0.4
-  const delay = index * 0.05
+  const angle = (index / 15) * Math.PI * 2;
+  const distance = 100 + Math.random() * 150;
+  const x = Math.cos(angle) * distance;
+  const y = Math.sin(angle) * distance;
+  const duration = 0.6 + Math.random() * 0.4;
+  const delay = index * 0.05;
 
   return {
-    '--x': `${x}px`,
-    '--y': `${y}px`,
-    '--duration': `${duration}s`,
-    '--delay': `${delay}s`,
-  } as any
+    "--x": `${x}px`,
+    "--y": `${y}px`,
+    "--duration": `${duration}s`,
+    "--delay": `${delay}s`,
+  } as any;
 }
 
 // Load feedback data
 async function loadFeedback() {
-  if (!props.task?._id) return
+  if (!props.task?._id) return;
 
   try {
-    loading.value.feedback = true
-    error.value = ''
+    loading.value.feedback = true;
+    error.value = "";
 
     // Call backend to generate feedback
-    const response = await api.fetch<unknown>(`/tasks/${props.task._id}/completion-feedback`, {
-      method: 'POST',
-      body: {
-        checklistCompletion: validationMetrics.value?.checklistPercent || 0,
-        timeSpent: props.task.actualTimeSpent || 0,
+    const response = await api.fetch<unknown>(
+      `/tasks/${props.task._id}/completion-feedback`,
+      {
+        method: "POST",
+        body: {
+          checklistCompletion: validationMetrics.value?.checklistPercent || 0,
+          timeSpent: props.task.actualTimeSpent || 0,
+        },
       },
-    })
+    );
 
     // Debug raw response for troubleshooting formats
     // eslint-disable-next-line no-console
-    console.debug('[CompletionFeedbackModal] raw completion-feedback response:', response)
+    console.debug(
+      "[CompletionFeedbackModal] raw completion-feedback response:",
+      response,
+    );
 
-    const normalizedFeedback = toFeedbackResponse(response)
+    const normalizedFeedback = toFeedbackResponse(response);
 
     if (normalizedFeedback) {
-      feedback.value = normalizedFeedback
+      feedback.value = normalizedFeedback;
 
       // If suggestion is a string, parse it or use as is
       if (normalizedFeedback.suggestion) {
         try {
           suggestedSteps.value = Array.isArray(normalizedFeedback.suggestion)
             ? normalizedFeedback.suggestion
-            : typeof normalizedFeedback.suggestion === 'string'
+            : typeof normalizedFeedback.suggestion === "string"
               ? JSON.parse(normalizedFeedback.suggestion)
-              : []
+              : [];
         } catch {
-          suggestedSteps.value = []
+          suggestedSteps.value = [];
         }
       }
     } else {
-      error.value = 'Resposta de feedback em formato inválido.'
+      error.value = "Resposta de feedback em formato inválido.";
     }
   } catch (err) {
-    error.value = 'Erro ao gerar feedback. Tente novamente.'
-    console.error('[CompletionFeedbackModal] Error loading feedback:', err)
+    error.value = "Erro ao gerar feedback. Tente novamente.";
+    console.error("[CompletionFeedbackModal] Error loading feedback:", err);
   } finally {
-    loading.value.feedback = false
+    loading.value.feedback = false;
   }
 }
 
 // Toggle step selection
 function toggleStep(index: number) {
-  const idx = selectedSteps.value.indexOf(index)
+  const idx = selectedSteps.value.indexOf(index);
   if (idx > -1) {
-    selectedSteps.value.splice(idx, 1)
+    selectedSteps.value.splice(idx, 1);
   } else {
-    selectedSteps.value.push(index)
+    selectedSteps.value.push(index);
   }
 }
 
 function selectImpediment(index: number) {
-  selectedImpedimentIndex.value = index
-  const opt = impedimentOptions.value[index]
-  if (!opt) return
+  selectedImpedimentIndex.value = index;
+  const opt = impedimentOptions.value[index];
+  if (!opt) return;
   // If option has a predefined text, fill textarea; otherwise clear
-  impedimentsAnswer.value = opt.text || ''
+  impedimentsAnswer.value = opt.text || "";
 }
 
 // Handle close
 function handleClose() {
-  resetModal()
-  emit('close')
+  resetModal();
+  emit("close");
 }
 
 // Handle confirm
 async function handleConfirm() {
-  if (!props.task?._id) return
+  if (!props.task?._id) return;
 
   try {
-    saving.value = true
+    saving.value = true;
 
     // Persist feedback
     const feedbackPayload = {
@@ -447,42 +487,50 @@ async function handleConfirm() {
       validation: feedback.value?.validation,
       question: feedback.value?.question,
       impediments: impedimentsAnswer.value,
-      impedimentType: selectedImpedimentIndex.value !== null ? impedimentOptions.value[selectedImpedimentIndex.value].key : 'none',
-      action: selectedImpedimentIndex.value !== null ? impedimentOptions.value[selectedImpedimentIndex.value].action : null,
-      selectedSteps: suggestedSteps.value.filter((_, idx) => selectedSteps.value.includes(idx)),
-    }
+      impedimentType:
+        selectedImpedimentIndex.value !== null
+          ? impedimentOptions.value[selectedImpedimentIndex.value].key
+          : "none",
+      action:
+        selectedImpedimentIndex.value !== null
+          ? impedimentOptions.value[selectedImpedimentIndex.value].action
+          : null,
+      selectedSteps: suggestedSteps.value.filter((_, idx) =>
+        selectedSteps.value.includes(idx),
+      ),
+    };
 
     await api.fetch(`/tasks/${props.task._id}/completion-feedback`, {
-      method: 'POST',
+      method: "POST",
       body: feedbackPayload,
-    })
+    });
 
     // Show loot drop if enabled
     if (includeLootDrop.value) {
-      showLootDrop.value = true
-      await new Promise((resolve) => setTimeout(resolve, 2000))
+      showLootDrop.value = true;
+      await new Promise((resolve) => setTimeout(resolve, 2000));
     }
 
-    emit('confirmed', feedbackPayload)
-    resetModal()
+    emit("confirmed", feedbackPayload);
+    resetModal();
   } catch (err) {
-    error.value = 'Erro ao salvar feedback.'
-    console.error('[CompletionFeedbackModal] Error saving feedback:', err)
+    error.value = "Erro ao salvar feedback.";
+    console.error("[CompletionFeedbackModal] Error saving feedback:", err);
   } finally {
-    saving.value = false
+    saving.value = false;
   }
 }
 
 // Reset modal state
 function resetModal() {
-  feedback.value = null
-  suggestedSteps.value = []
-  impedimentsAnswer.value = ''
-  selectedSteps.value = []
-  includeLootDrop.value = false
-  showLootDrop.value = false
-  error.value = ''
-  loading.value.feedback = false
+  feedback.value = null;
+  suggestedSteps.value = [];
+  impedimentsAnswer.value = "";
+  selectedSteps.value = [];
+  includeLootDrop.value = false;
+  showLootDrop.value = false;
+  error.value = "";
+  loading.value.feedback = false;
 }
 
 // Watch for modal open
@@ -490,19 +538,19 @@ watch(
   () => props.isOpen,
   async (newVal) => {
     if (newVal) {
-      await loadFeedback()
+      await loadFeedback();
     } else {
-      resetModal()
+      resetModal();
     }
-  }
-)
+  },
+);
 
 // Initial load
 onMounted(() => {
   if (props.isOpen) {
-    loadFeedback()
+    loadFeedback();
   }
-})
+});
 </script>
 
 <style scoped>

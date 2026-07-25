@@ -1,7 +1,7 @@
 <template>
   <div class="pert-tab">
     <div v-if="task" class="pert-container">
-      <h1 class="text-center py-2" >Estimativas PERT</h1>
+      <h1 class="text-center py-2">Estimativas PERT</h1>
 
       <!-- Inputs -->
       <v-row dense class="pert-inputs">
@@ -88,14 +88,19 @@
       </div>
 
       <!-- Save Button -->
-      <v-btn color="success" variant="flat" @click="savePertEstimates" :disabled="!!validationError">
+      <v-btn
+        color="success"
+        variant="flat"
+        @click="savePertEstimates"
+        :disabled="!!validationError"
+      >
         💾 Salvar Estimativas
       </v-btn>
 
       <!-- Suggest via LLM -->
-      <v-btn 
-        color="info" 
-        variant="outlined" 
+      <v-btn
+        color="info"
+        variant="outlined"
         @click="suggestEstimates"
         :loading="suggestLoading"
         :disabled="suggestLoading || !(task?.name || task?.title)"
@@ -131,208 +136,205 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, toRefs } from 'vue'
-import { useTaskStore } from '~/stores/task'
-import { useApiFetch } from '~/composables/useApi'
+import { ref, computed, watch, toRefs } from "vue";
+import { useTaskStore } from "~/stores/task";
+import { useApiFetch } from "~/composables/useApiFetch";
 
 interface Props {
-  task?: any
-  projects?: any[]
+  task?: any;
+  projects?: any[];
 }
 
 interface PertSuggestionResponse {
-  optimistic: number
-  likely: number
-  pessimistic: number
-  expectedTime: number
-  standardDeviation: number
-  recommendation: string
-  fromLLM: boolean
+  optimistic: number;
+  likely: number;
+  pessimistic: number;
+  expectedTime: number;
+  standardDeviation: number;
+  recommendation: string;
+  fromLLM: boolean;
 }
 
-const props = defineProps<Props>()
-const { task, projects } = toRefs(props)
+const props = defineProps<Props>();
+const { task, projects } = toRefs(props);
 
-const taskStore = useTaskStore()
-const { fetch } = useApiFetch()
+const taskStore = useTaskStore();
+const { fetch } = useApiFetch();
 
-const taskId = computed(() => task.value?._id ?? task.value?.id)
+const taskId = computed(() => task.value?._id ?? task.value?.id);
 
 // Reactive data
-const optimistic = ref<number>(0)
-const likely = ref<number>(0)
-const pessimistic = ref<number>(0)
-const validationError = ref<string>('')
-const suggestLoading = ref(false)
-const suggestionError = ref<string>('')
-const suggestionSuccess = ref(false)
+const optimistic = ref<number>(0);
+const likely = ref<number>(0);
+const pessimistic = ref<number>(0);
+const validationError = ref<string>("");
+const suggestLoading = ref(false);
+const suggestionError = ref<string>("");
+const suggestionSuccess = ref(false);
 
 const toNumber = (value: unknown): number => {
-  if (value == null || value === '') return 0
-  const num = typeof value === 'number' ? value : Number(value)
-  return Number.isFinite(num) ? num : 0
-}
+  if (value == null || value === "") return 0;
+  const num = typeof value === "number" ? value : Number(value);
+  return Number.isFinite(num) ? num : 0;
+};
 
 // Initialize/sync from task
 watch(
   task,
   (t) => {
-    optimistic.value = t?.pertOptimisticMinutes || 0
-    likely.value = t?.pertMostLikelyMinutes || 0
-    pessimistic.value = t?.pertPessimisticMinutes || 0
-    validationError.value = ''
-    suggestionError.value = ''
-    suggestionSuccess.value = false
+    optimistic.value = t?.pertOptimisticMinutes || 0;
+    likely.value = t?.pertMostLikelyMinutes || 0;
+    pessimistic.value = t?.pertPessimisticMinutes || 0;
+    validationError.value = "";
+    suggestionError.value = "";
+    suggestionSuccess.value = false;
   },
   { immediate: true },
-)
+);
 
 watch([optimistic, likely, pessimistic], () => {
   // Mantém a validação responsiva enquanto digita
-  validateAndRecalculate()
+  validateAndRecalculate();
   // Limpa status de sucesso ao editar
   if (suggestionSuccess.value) {
-    suggestionSuccess.value = false
+    suggestionSuccess.value = false;
   }
-})
+});
 
 // Computed properties
 const pertExpected = computed(() => {
-  if (!optimistic.value || !likely.value || !pessimistic.value) return 0
+  if (!optimistic.value || !likely.value || !pessimistic.value) return 0;
   // TE = (O + 4M + P) / 6
-  const te = (optimistic.value + 4 * likely.value + pessimistic.value) / 6
-  return Math.round(te * 100) / 100
-})
+  const te = (optimistic.value + 4 * likely.value + pessimistic.value) / 6;
+  return Math.round(te * 100) / 100;
+});
 
 const pertVariance = computed(() => {
-  if (!optimistic.value || !likely.value || !pessimistic.value) return 0
+  if (!optimistic.value || !likely.value || !pessimistic.value) return 0;
   // σ² = [(P - O) / 6]²
-  const variance = Math.pow((pessimistic.value - optimistic.value) / 6, 2)
-  return Math.round(variance * 100) / 100
-})
+  const variance = Math.pow((pessimistic.value - optimistic.value) / 6, 2);
+  return Math.round(variance * 100) / 100;
+});
 
 const pertStdDev = computed(() => {
-  if (!optimistic.value || !likely.value || !pessimistic.value) return 0
+  if (!optimistic.value || !likely.value || !pessimistic.value) return 0;
   // σ = (P - O) / 6
-  const stdDev = (pessimistic.value - optimistic.value) / 6
-  return Math.round(stdDev * 100) / 100
-})
+  const stdDev = (pessimistic.value - optimistic.value) / 6;
+  return Math.round(stdDev * 100) / 100;
+});
 
 const suggestedDeadline = computed(() => {
-  if (!task.value?.deadline) return 'N/A'
+  if (!task.value?.deadline) return "N/A";
   try {
-    const deadline = new Date(task.value.deadline)
-    const teNdays = Math.ceil(pertExpected.value / 480) // Assuming 8h = 480min work day
-    const suggested = new Date(deadline)
-    suggested.setDate(suggested.getDate() + teNdays)
-    return suggested.toLocaleDateString('pt-BR')
+    const deadline = new Date(task.value.deadline);
+    const teNdays = Math.ceil(pertExpected.value / 480); // Assuming 8h = 480min work day
+    const suggested = new Date(deadline);
+    suggested.setDate(suggested.getDate() + teNdays);
+    return suggested.toLocaleDateString("pt-BR");
   } catch {
-    return 'N/A'
+    return "N/A";
   }
-})
+});
 
 // Methods
 const validateAndRecalculate = () => {
-  validationError.value = ''
+  validationError.value = "";
 
-  if (
-    optimistic.value <= 0 ||
-    likely.value <= 0 ||
-    pessimistic.value <= 0
-  ) {
-    validationError.value = 'Todos os valores devem ser maiores que 0'
-    return
+  if (optimistic.value <= 0 || likely.value <= 0 || pessimistic.value <= 0) {
+    validationError.value = "Todos os valores devem ser maiores que 0";
+    return;
   }
 
   if (optimistic.value >= likely.value) {
-    validationError.value = 'Otimista deve ser menor que Provável'
-    return
+    validationError.value = "Otimista deve ser menor que Provável";
+    return;
   }
 
   if (likely.value >= pessimistic.value) {
-    validationError.value = 'Provável deve ser menor que Pessimista'
-    return
+    validationError.value = "Provável deve ser menor que Pessimista";
+    return;
   }
-}
+};
 
 const savePertEstimates = async () => {
-  validateAndRecalculate()
-  const id = taskId.value
-  if (validationError.value || !id) return
+  validateAndRecalculate();
+  const id = taskId.value;
+  if (validationError.value || !id) return;
 
   await taskStore.updateTask(id, {
     pertOptimisticMinutes: optimistic.value,
     pertMostLikelyMinutes: likely.value,
     pertPessimisticMinutes: pessimistic.value,
-  })
+  });
 
   // Atualizar local
   if (task.value) {
-    task.value.pertOptimisticMinutes = optimistic.value
-    task.value.pertMostLikelyMinutes = likely.value
-    task.value.pertPessimisticMinutes = pessimistic.value
+    task.value.pertOptimisticMinutes = optimistic.value;
+    task.value.pertMostLikelyMinutes = likely.value;
+    task.value.pertPessimisticMinutes = pessimistic.value;
   }
-}
+};
 
 /**
  * Sprint 3: Sugerir estimativas via LLM (Gemini)
  * Chama POST /tasks/micro/suggest-estimates e preenche campos automaticamente
  */
 const suggestEstimates = async () => {
-  const taskTitle = task.value?.name || task.value?.title
+  const taskTitle = task.value?.name || task.value?.title;
   if (!taskTitle) {
-    suggestionError.value = 'Tarefa não possui título'
-    return
+    suggestionError.value = "Tarefa não possui título";
+    return;
   }
 
-  suggestLoading.value = true
-  suggestionError.value = ''
-  suggestionSuccess.value = false
+  suggestLoading.value = true;
+  suggestionError.value = "";
+  suggestionSuccess.value = false;
 
   try {
     // Determina o tipo de tarefa (micro-task type)
     // Pode ser enviado via props ou derivado do task.microTaskType
-    const taskType = task.value?.microTaskType || 'quick'
-    const projectName = projects.value?.find((p) => p._id === task.value?.project)?.name || ''
+    const taskType = task.value?.microTaskType || "quick";
+    const projectName =
+      projects.value?.find((p) => p._id === task.value?.project)?.name || "";
 
-    const response = (await fetch('/tasks/micro/suggest-estimates', {
-      method: 'POST',
+    const response = (await fetch("/tasks/micro/suggest-estimates", {
+      method: "POST",
       body: {
         taskType,
         description: taskTitle,
         projectContext: projectName,
       },
-    })) as PertSuggestionResponse
+    })) as PertSuggestionResponse;
 
     // Preenche os campos com as sugestões
-    optimistic.value = Math.round(response.optimistic)
-    likely.value = Math.round(response.likely)
-    pessimistic.value = Math.round(response.pessimistic)
+    optimistic.value = Math.round(response.optimistic);
+    likely.value = Math.round(response.likely);
+    pessimistic.value = Math.round(response.pessimistic);
 
-    suggestionSuccess.value = true
-    suggestionError.value = ''
+    suggestionSuccess.value = true;
+    suggestionError.value = "";
 
     // Auto-limpa sucesso após 5 segundos
     setTimeout(() => {
-      suggestionSuccess.value = false
-    }, 5000)
+      suggestionSuccess.value = false;
+    }, 5000);
   } catch (error: any) {
     suggestionError.value =
       error?.data?.message ||
       error?.message ||
-      'Erro ao gerar sugestões. Tente novamente.'
-    suggestionSuccess.value = false
+      "Erro ao gerar sugestões. Tente novamente.";
+    suggestionSuccess.value = false;
   } finally {
-    suggestLoading.value = false
+    suggestLoading.value = false;
   }
-}
+};
 </script>
 
 <style scoped>
 .pert-tab {
   width: 100%;
   height: 100%;
-  font-family: 'Irish Grover', cursive;
+  font-family: "Irish Grover", cursive;
   color: #3e2723;
   display: flex;
   flex-direction: column;
