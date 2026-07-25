@@ -1,6 +1,40 @@
-echo "🧪 Running quick smoke tests before push..."
-cd Backend && npm run test -- --passWithNoTests --testPathPattern="unit" --ci 2>/dev/null || {
-  echo "⚠️  Tests failed or skipped — proceeding with push."
-  exit 0
+#!/usr/bin/env sh
+echo "🛡️ Running pre-push verification suite (CI/CD Local Guardrails)..."
+
+# 1. Backend Linting
+echo "🔍 [1/5] Checking Backend ESLint..."
+cd Backend && npm run lint || {
+  echo "❌ Push blocked: ESLint errors found in Backend."
+  exit 1
 }
-echo "✅ Tests passed!"
+
+# 2. Backend Dependency Architecture Guardrails
+echo "🏗️ [2/5] Checking Backend Dependency Cruiser (Architecture Guardrails)..."
+npm run lint:deps || {
+  echo "❌ Push blocked: Architecture or circular dependency violation found."
+  exit 1
+}
+
+# 3. Backend Unit Tests
+echo "🧪 [3/5] Running Backend Unit Tests..."
+npm run test -- --passWithNoTests --ci || {
+  echo "❌ Push blocked: Unit tests failed in Backend."
+  exit 1
+}
+
+# 4. Backend Build
+echo "📦 [4/5] Verifying Backend Build..."
+npm run build || {
+  echo "❌ Push blocked: Backend build failed."
+  exit 1
+}
+
+# 5. Frontend Build
+echo "🎨 [5/5] Verifying Frontend Build..."
+cd ../Frontend && npm run build || {
+  echo "❌ Push blocked: Frontend build failed."
+  exit 1
+}
+
+cd ..
+echo "✅ All local CI checks passed! Push allowed."

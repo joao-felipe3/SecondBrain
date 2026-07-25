@@ -28,9 +28,9 @@
   },
   "overrides": {
     "fast-uri": "^3.0.3",
-    "js-yaml": "^4.1.0",
+    "js-yaml": "^5.2.2",
     "body-parser": "^2.2.3",
-    "file-type": "^19.6.0"
+    "file-type": "^21.3.1"
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
