@@ -178,7 +178,7 @@ export class TasksAiSuggestionsService {
     projectId: string,
   ): Promise<{ hours: number; names: string[] }> {
     const existingTasks = await this.taskModel
-      .find({ project: projectId })
+      .find({ project: String(projectId) })
       .select('name pomodorosPlanned')
       .exec();
     return calculateExistingTasksHoursAndNames(existingTasks);

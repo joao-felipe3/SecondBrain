@@ -39,7 +39,7 @@ export async function resolveTargetOrder(
 
   if (typeof move.toIndex === 'number' && projectId) {
     const destinationTasks = await taskModel
-      .find({ project: projectId, status })
+      .find({ project: String(projectId), status: String(status) })
       .sort({ kanbanOrder: 1 })
       .select('kanbanOrder')
       .exec();
@@ -49,7 +49,7 @@ export async function resolveTargetOrder(
   }
 
   const maxOrderDoc = await taskModel
-    .findOne({ project: projectId, status })
+    .findOne({ project: String(projectId), status: String(status) })
     .sort({ kanbanOrder: -1 })
     .select('kanbanOrder')
     .exec();

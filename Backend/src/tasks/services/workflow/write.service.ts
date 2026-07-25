@@ -81,14 +81,16 @@ export class TasksWriteService {
   public async update(id: string, updateTaskDto: Partial<CreateTaskDto>): Promise<TaskDocument | null> {
     this.assertValidObjectId(id);
 
-    const oldTask = await this.taskModel.findById(id).exec();
+    const oldTask = await this.taskModel.findById(String(id)).exec();
     const oldProjectId = oldTask?.project?.toString();
 
     await this.resolveProject(updateTaskDto as CreateTaskDto);
 
     this.applyDerivedFields(updateTaskDto);
 
-    const updatedTask = await this.taskModel.findByIdAndUpdate(id, updateTaskDto, { new: true }).exec();
+    const updatedTask = await this.taskModel
+      .findByIdAndUpdate(String(id), updateTaskDto, { new: true })
+      .exec();
 
     if (updatedTask) {
       const newProjectId = updatedTask.project?.toString();

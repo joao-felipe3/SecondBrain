@@ -99,7 +99,7 @@ export class CPMService {
 
   async getDependencies(projectId: string): Promise<TaskDependency[]> {
     try {
-      const docs = await this.dependencyModel.find({ projectId }).exec();
+      const docs = await this.dependencyModel.find({ projectId: String(projectId) }).exec();
       return docs.map((doc) => TaskDependencyMapper.toDomain(doc));
     } catch (error) {
       const stack = error instanceof Error ? error.stack : undefined;

@@ -124,12 +124,12 @@ export class RiskService {
       }
     }
 
-    return this.riskModel.findByIdAndUpdate(riskId, updates, { new: true }).exec();
+    return this.riskModel.findByIdAndUpdate(String(riskId), updates, { new: true }).exec();
   }
 
   async getRisksByProject(projectId: string): Promise<RiskDocument[]> {
     return this.riskModel
-      .find({ projectId: new Types.ObjectId(projectId) })
+      .find({ projectId: new Types.ObjectId(String(projectId)) })
       .sort({ createdAt: -1 })
       .exec();
   }

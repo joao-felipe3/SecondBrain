@@ -23,7 +23,7 @@ export class SettingsService {
   }
 
   async updateSettings(userId: string, updateDto: UpdateSettingsDto): Promise<Settings> {
-    const settings = await this.settingsModel.findOneAndUpdate({ userId }, updateDto, {
+    const settings = await this.settingsModel.findOneAndUpdate({ userId: String(userId) }, updateDto, {
       new: true,
       upsert: true,
     });

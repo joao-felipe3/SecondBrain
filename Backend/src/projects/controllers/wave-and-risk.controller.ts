@@ -156,7 +156,7 @@ export class WaveAndRiskController {
       console.log(`[WaveAndRiskController.generateWaves] projectId: ${projectId}, body:`, body);
 
       // Buscar projeto para obter deadline e smartObjective
-      const project = await this.projectModel.findById(projectId).populate('tasks');
+      const project = await this.projectModel.findById(String(projectId)).populate('tasks');
       if (!project) {
         throw new HttpException('Projeto nÃ£o encontrado', HttpStatus.NOT_FOUND);
       }
@@ -260,7 +260,7 @@ export class WaveAndRiskController {
     try {
       console.log(`[WaveAndRiskController.assessRisks] projectId: ${projectId}, body:`, body);
       const projectDescription = body.projectDescription || 'Projeto sem descriÃ§Ã£o';
-      const result = await this.riskService.assessRisks(projectId, projectDescription);
+      const result = await this.riskService.assessRisks(String(projectId), projectDescription);
       console.log(`[WaveAndRiskController.assessRisks] Success, returned ${result.length} risks`);
       return result;
     } catch (error) {

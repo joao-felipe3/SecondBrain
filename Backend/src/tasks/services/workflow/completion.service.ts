@@ -207,7 +207,7 @@ export class TasksCompletionService {
 
     const updatedTask = await this.taskModel
       .findByIdAndUpdate(
-        id,
+        String(id),
         {
           status: toStatus,
           statusUpdatedAt: new Date(),

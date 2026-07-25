@@ -24,11 +24,12 @@ export default defineNuxtConfig({
 
   build: {
     transpile: ["vuetify", "echarts", "vue-echarts"],
-    postcss: {
-      plugins: {
-        tailwindcss: {},
-        autoprefixer: {},
-      },
+  },
+
+  postcss: {
+    plugins: {
+      tailwindcss: {},
+      autoprefixer: {},
     },
   },
 

@@ -170,7 +170,7 @@ export class TasksPertService {
 
     await this.taskModel
       .findByIdAndUpdate(
-        taskId,
+        String(taskId),
         {
           pertOptimisticMinutes: pertEstimateDto.optimistic,
           pertMostLikelyMinutes: pertEstimateDto.mostLikely,

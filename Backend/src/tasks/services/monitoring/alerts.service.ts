@@ -46,9 +46,9 @@ export class AlertsService {
   }): Promise<TaskAlertDocument[]> {
     const query: FilterQuery<TaskAlertDocument> = {};
 
-    if (options?.userId) query.userId = options.userId;
+    if (options?.userId) query.userId = String(options.userId);
 
-    if (options?.projectId) query.project = options.projectId;
+    if (options?.projectId) query.project = String(options.projectId);
 
     if (options?.unreadOnly) query.isRead = false;
 
@@ -65,9 +65,9 @@ export class AlertsService {
   }
 
   async markRead(id: string, userId?: string): Promise<TaskAlertDocument | null> {
-    const query: FilterQuery<TaskAlertDocument> = { _id: id };
+    const query: FilterQuery<TaskAlertDocument> = { _id: String(id) };
     if (userId) {
-      query.userId = userId;
+      query.userId = String(userId);
     }
 
     return this.alertModel.findOneAndUpdate(query, { isRead: true }, { new: true }).exec();

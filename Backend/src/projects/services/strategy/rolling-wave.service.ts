@@ -50,12 +50,18 @@ export class RollingWaveService {
       );
     }
 
-    return this.waveModel.findByIdAndUpdate(waveId, { status }, { new: true }).exec();
+    return this.waveModel
+      .findByIdAndUpdate(String(waveId), { status: String(status) }, { new: true })
+      .exec();
   }
 
   async addTaskToWave(waveId: string, taskId: string): Promise<ProjectWave | null> {
     return this.waveModel
-      .findByIdAndUpdate(waveId, { $addToSet: { taskIds: new Types.ObjectId(taskId) } }, { new: true })
+      .findByIdAndUpdate(
+        String(waveId),
+        { $addToSet: { taskIds: new Types.ObjectId(String(taskId)) } },
+        { new: true },
+      )
       .exec();
   }
 

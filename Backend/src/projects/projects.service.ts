@@ -77,14 +77,14 @@ export class ProjectsService {
     if (!id || id === 'null' || id === 'undefined' || !Types.ObjectId.isValid(id)) {
       throw new BadRequestException(`ID inválido: ${id}`);
     }
-    return await this.projectModel.findByIdAndUpdate(id, dto, { new: true }).exec();
+    return await this.projectModel.findByIdAndUpdate(String(id), dto, { new: true }).exec();
   }
 
   async remove(id: string): Promise<boolean> {
     if (!id || id === 'null' || id === 'undefined' || !Types.ObjectId.isValid(id)) {
       throw new BadRequestException(`ID inválido: ${id}`);
     }
-    const result = await this.projectModel.findByIdAndDelete(id).exec();
+    const result = await this.projectModel.findByIdAndDelete(String(id)).exec();
     return result !== null;
   }
 

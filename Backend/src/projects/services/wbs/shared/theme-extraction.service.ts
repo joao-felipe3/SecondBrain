@@ -231,7 +231,7 @@ export class ThemeExtractionService {
     const parts = cleaned
       .split(/[\n;•]+/)
       .flatMap((p) => p.split(/[.!?]+/))
-      .flatMap((p) => p.split(/\s+-\s+|\s+—\s+|\s+–\s+/))
+      .flatMap((p) => p.split(/\s+[-—–]\s+/))
       .map((p) => p.replace(/\s+/g, ' ').trim())
       .filter((p) => p.length >= 20);
 

@@ -35,8 +35,8 @@ export function templateTitle(title?: string): string {
   return title
     .toLowerCase()
     .replace(/[0-9]+/g, '')
-    .replace(/\(.*?\)/g, '')
-    .replace(/\b(parte|modulo|módulo|tarefa|micro[-\s]?tarefa|dia|semana)\b/gi, '')
+    .replace(/\([^)]*\)/g, '')
+    .replace(/\b(micro[-\s]?tarefa|parte|modulo|módulo|tarefa|dia|semana)\b/gi, '')
     .replace(/[^a-z\u00c0-\u017f\s]/gi, ' ')
     .replace(/\s+/g, ' ')
     .trim();

@@ -231,11 +231,11 @@ export class RTMCrudService {
     this.logger.log(`Iniciando remoção de mapeamento: item ${requirementId} <- tarefa ${taskId}`);
     try {
       const requirement = await this.requirementModel.findByIdAndUpdate(
-        requirementId,
+        String(requirementId),
         {
           $pull: {
-            traceableActionItems: taskId,
-            traceableItems: taskId,
+            traceableActionItems: String(taskId),
+            traceableItems: String(taskId),
           },
         },
         { new: true },
