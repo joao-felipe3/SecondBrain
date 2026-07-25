@@ -31,7 +31,7 @@ describe('kanban.utils', () => {
 
     it('should resolve explicit toOrder if provided', async () => {
       const mockTaskModel: any = {};
-      const order = await resolveTargetOrder(mockTaskModel, 'p1', 'doing' as any, {
+      const order = await resolveTargetOrder(mockTaskModel, 'p1', 'doing', {
         status: 'doing',
         toOrder: 42,
       });
@@ -49,7 +49,7 @@ describe('kanban.utils', () => {
         }),
       };
 
-      const order = await resolveTargetOrder(mockTaskModel, 'p1', 'todo' as any, {
+      const order = await resolveTargetOrder(mockTaskModel, 'p1', 'todo', {
         status: 'todo',
         toIndex: 1,
       });

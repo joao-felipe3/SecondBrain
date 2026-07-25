@@ -22,7 +22,7 @@ describe('rolling-wave-helpers.util', () => {
           children: [{ _id: '2', parentId: '1', name: 'Child', level: 2 }],
         },
       ];
-      const flat = flattenWbsTree(tree as any);
+      const flat = flattenWbsTree(tree);
       expect(flat.length).toBe(2);
       expect(flat[0].name).toBe('Parent');
       expect(flat[1].name).toBe('Child');

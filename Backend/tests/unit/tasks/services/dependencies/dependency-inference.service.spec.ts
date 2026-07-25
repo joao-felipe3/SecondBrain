@@ -20,7 +20,7 @@ describe('DependencyInferenceService', () => {
       { id: 't2', name: 'Task 2', order: 2 },
     ];
 
-    const deps = service.inferHeuristicPhases(tasks as any);
+    const deps = service.inferHeuristicPhases(tasks);
     expect(deps.length).toBe(1);
     expect(deps[0].taskId).toBe('t2');
     expect(deps[0].dependsOnTaskId).toBe('t1');
@@ -32,13 +32,13 @@ describe('DependencyInferenceService', () => {
       { id: 't2', name: 'Implementation' },
     ];
 
-    const deps = await service.inferWithAi({ tasks } as any);
+    const deps = await service.inferWithAi({ tasks });
     expect(deps.length).toBe(1);
     expect(mockGeminiService.inferDependencies).toHaveBeenCalled();
   });
 
   it('should return empty array if less than 2 tasks provided to inferWithAi', async () => {
-    const deps = await service.inferWithAi({ tasks: [{ id: 't1', name: 'Task 1' }] } as any);
+    const deps = await service.inferWithAi({ tasks: [{ id: 't1', name: 'Task 1' }] });
     expect(deps).toEqual([]);
   });
 
@@ -52,7 +52,7 @@ describe('DependencyInferenceService', () => {
       { leafId: 'l2', leafName: 'L2', startGateId: 'g2_start', endGateId: 'g2_end' },
     ];
 
-    const deps = await service.inferInterLeafWithAi({ projectId: 'p1', leaves } as any);
+    const deps = await service.inferInterLeafWithAi({ projectId: 'p1', leaves });
     expect(deps.length).toBe(1);
     expect(deps[0].taskId).toBe('g1_start');
     expect(deps[0].dependsOnTaskId).toBe('g2_end');

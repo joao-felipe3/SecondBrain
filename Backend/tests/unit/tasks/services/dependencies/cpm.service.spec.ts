@@ -55,7 +55,7 @@ describe('CPMService', () => {
 
       mockDependencyModel.create.mockResolvedValue(mockDoc);
 
-      const result = await service.addDependency(dto as any);
+      const result = await service.addDependency(dto);
       expect(result).toBeDefined();
       expect(mockDependencyModel.create).toHaveBeenCalledWith(
         expect.objectContaining({ taskId: 't2', dependsOnTaskId: 't1' }),
@@ -81,7 +81,7 @@ describe('CPMService', () => {
         modifiedCount: 1,
       });
 
-      const count = await service.upsertDependencies(deps as any);
+      const count = await service.upsertDependencies(deps);
       expect(count).toBe(2);
       expect(mockDependencyModel.bulkWrite).toHaveBeenCalledTimes(1);
     });
@@ -145,7 +145,7 @@ describe('CPMService', () => {
         { id: 'C', name: 'Testes', duration: 120, dependencies: ['B'] },
       ];
 
-      const result = service.calculateCriticalPath(tasks as any);
+      const result = service.calculateCriticalPath(tasks);
       expect(result).toBeDefined();
       expect(result.criticalPath).toContain('A');
       expect(result.criticalPath).toContain('B');
@@ -154,7 +154,7 @@ describe('CPMService', () => {
 
     it('deve calcular métricas de uma tarefa individual', () => {
       const task: TaskNode = { id: 'A', name: 'Design', duration: 120, dependencies: [] };
-      const metrics = service.getTaskMetrics(task as any);
+      const metrics = service.getTaskMetrics(task);
       expect(metrics).toBeDefined();
     });
   });

@@ -12,7 +12,6 @@ import {
   EnrichOutlinesParamsDto,
   MicroTaskDetails,
   MicroTaskDraft,
-  DraftBatchResult,
   SingleDetailsParamsDto,
   MultipleDetailsParamsDto,
 } from '../../interfaces/drafts.interface';
@@ -45,7 +44,7 @@ export class DraftDetailsEnrichmentService {
         params,
         detailsModelOverride,
       });
-      return { ...outline, ...details[0] } as MicroTaskDraft;
+      return { ...outline, ...details[0] };
     });
   }
 
@@ -64,7 +63,7 @@ export class DraftDetailsEnrichmentService {
         params,
         detailsModelOverride,
       });
-      return { start: b.start, detailsList } as DraftBatchResult;
+      return { start: b.start, detailsList };
     });
 
     return assembleEnrichedBatches(outlines, batchResults);

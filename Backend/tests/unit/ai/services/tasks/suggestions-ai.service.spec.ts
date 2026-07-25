@@ -15,7 +15,7 @@ describe('SuggestionsAiService', () => {
   describe('generateTaskSuggestions & generateCompletionFeedback', () => {
     it('should call generateTaskSuggestions directly', async () => {
       mockGeminiService.generateContent.mockResolvedValueOnce('ai raw suggestions');
-      const raw = await service.generateTaskSuggestions({ projectName: 'P1' } as any);
+      const raw = await service.generateTaskSuggestions({ projectName: 'P1' });
       expect(raw).toBe('ai raw suggestions');
     });
 
@@ -28,7 +28,7 @@ describe('SuggestionsAiService', () => {
         }),
       );
 
-      const feedback = await service.generateCompletionFeedback({ taskName: 'Task 1' } as any);
+      const feedback = await service.generateCompletionFeedback({ taskName: 'Task 1' });
       const parsed = JSON.parse(feedback);
 
       expect(parsed.praise).toBe('Great job!');
@@ -38,7 +38,7 @@ describe('SuggestionsAiService', () => {
     it('should handle generateCompletionFeedback when JSON parsing fails', async () => {
       mockGeminiService.generateContent.mockResolvedValueOnce('Non-JSON text feedback');
 
-      const feedback = await service.generateCompletionFeedback({ taskName: 'Task 1' } as any);
+      const feedback = await service.generateCompletionFeedback({ taskName: 'Task 1' });
       const parsed = JSON.parse(feedback);
 
       expect(parsed.finalText).toBe('Non-JSON text feedback');
@@ -64,7 +64,7 @@ describe('SuggestionsAiService', () => {
         JSON.stringify([{ title: 'Next 1', description: 'Desc 1' }]),
       );
 
-      const steps = await service.generateNextSteps({ taskName: 'Task 1' } as any);
+      const steps = await service.generateNextSteps({ taskName: 'Task 1' });
       expect(steps.length).toBe(1);
       expect(steps[0].title).toBe('Next 1');
     });
@@ -72,7 +72,7 @@ describe('SuggestionsAiService', () => {
     it('should return fallback next steps when AI fails', async () => {
       mockGeminiService.generateContent.mockRejectedValueOnce(new Error('Next steps AI fail'));
 
-      const steps = await service.generateNextSteps({ taskName: 'Task Fallback' } as any);
+      const steps = await service.generateNextSteps({ taskName: 'Task Fallback' });
       expect(steps.length).toBe(1);
       expect(steps[0].title).toContain('Task Fallback');
     });

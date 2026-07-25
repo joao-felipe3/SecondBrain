@@ -464,7 +464,7 @@ export class ProjectsController {
       id,
       dto.leafNode as unknown as Record<string, unknown>,
       dto.nodePath,
-      preferences as Record<string, unknown>,
+      preferences,
     );
 
     // Start prefetch for upcoming leaves in parallel (buffer).
@@ -477,7 +477,7 @@ export class ProjectsController {
         id,
         p.leafNode as unknown as Record<string, unknown>,
         p.nodePath,
-        preferences as Record<string, unknown>,
+        preferences,
       );
       this.leafBuffer.prefetch(key, id, async () => {
         return this.wbsService.generateTasksForSingleLeaf({
@@ -511,7 +511,7 @@ export class ProjectsController {
 
     let result: { tasks: unknown[] };
     try {
-      result = (await this.wbsService.generateTasksForSingleLeaf({
+      result = await this.wbsService.generateTasksForSingleLeaf({
         leafNode: dto.leafNode,
         nodePath: dto.nodePath,
         projectId: id,
@@ -519,7 +519,7 @@ export class ProjectsController {
         tasksService: this.tasksService,
         preferences,
         saveTasks: dto.saveTasks || false,
-      })) as { tasks: unknown[] };
+      });
     } catch (err: unknown) {
       const errorObj = err as {
         code?: string;

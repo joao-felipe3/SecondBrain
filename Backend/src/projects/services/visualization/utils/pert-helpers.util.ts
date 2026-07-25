@@ -147,10 +147,7 @@ export function mapEdges(params: MapPertEdgesParams): PertDiagramEdge[] {
       id: dep?.id || `${source}-${target}`,
       source,
       target,
-      relationship: (dep?.relationship || 'finish-to-start') as
-        | 'finish-to-start'
-        | 'start-to-start'
-        | 'finish-to-finish',
+      relationship: dep?.relationship || 'finish-to-start',
       reason: dep?.reason ? String(dep.reason) : undefined,
       isAutoIdentified: Boolean(dep?.isAutoIdentified),
       isCriticalEdge: criticalSet.has(source) && criticalSet.has(target),

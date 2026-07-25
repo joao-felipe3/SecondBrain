@@ -48,7 +48,7 @@ describe('SettingsController', () => {
 
   describe('updateSettings', () => {
     it('deve atualizar as configurações do usuário', async () => {
-      const updateDto: UpdateSettingsDto = { darkMode: true } as any;
+      const updateDto: UpdateSettingsDto = { darkMode: true };
       const result = await controller.updateSettings('user-123', updateDto);
       expect(result.darkMode).toBe(true);
       expect(service.updateSettings).toHaveBeenCalledWith('user-123', updateDto);

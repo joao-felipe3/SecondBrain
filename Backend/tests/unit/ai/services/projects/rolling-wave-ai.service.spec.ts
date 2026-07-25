@@ -23,7 +23,7 @@ describe('RollingWaveAIService', () => {
       );
 
       const res = await service.planWaveStructure({
-        project: { name: 'Proj', deadline: new Date('2026-02-01') } as any,
+        project: { name: 'Proj', deadline: new Date('2026-02-01') },
         tasks: [{ estimatedHours: 10 }] as any,
         dailyCapacityHours: 8,
       });
@@ -36,7 +36,7 @@ describe('RollingWaveAIService', () => {
       mockGeminiService.generateContent.mockResolvedValueOnce('Invalid non-json text');
 
       const res = await service.planWaveStructure({
-        project: { name: 'Proj', deadline: new Date('2026-02-01') } as any,
+        project: { name: 'Proj', deadline: new Date('2026-02-01') },
         tasks: [],
         dailyCapacityHours: 8,
       });
@@ -63,7 +63,7 @@ describe('RollingWaveAIService', () => {
       ];
 
       const plan = await service.planWaveGrouping({
-        project: { name: 'Proj', deadline: new Date('2026-01-20') } as any,
+        project: { name: 'Proj', deadline: new Date('2026-01-20') },
         tasks,
         wbsTree: [],
         dailyCapacityHours: 8,

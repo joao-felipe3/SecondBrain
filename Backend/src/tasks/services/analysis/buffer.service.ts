@@ -190,6 +190,6 @@ export class BufferService {
       consumed: 0,
       threshold: 75,
       taskVariances: [],
-    } as ProjectBuffer;
+    };
   }
 }

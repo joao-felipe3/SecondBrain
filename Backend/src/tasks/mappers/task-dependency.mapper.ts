@@ -20,8 +20,8 @@ export class TaskDependencyMapper {
     entity.reason = document.reason;
     entity.projectId = document.projectId ? document.projectId.toString() : '';
     entity.isAutoIdentified = document.isAutoIdentified;
-    entity.createdAt = docRecord.createdAt as Date;
-    entity.updatedAt = docRecord.updatedAt as Date;
+    entity.createdAt = docRecord.createdAt;
+    entity.updatedAt = docRecord.updatedAt;
 
     return entity;
   }

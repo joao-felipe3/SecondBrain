@@ -138,7 +138,7 @@ describe('ProjectsService', () => {
     });
 
     it('should delegate XMatrix methods and tasks management', async () => {
-      await service.createXMatrix(validProjId, {} as any);
+      await service.createXMatrix(validProjId, {});
       expect(mockXMatrixService.createXMatrix).toHaveBeenCalled();
 
       await service.getSavedXMatrix(validProjId);

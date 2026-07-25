@@ -391,18 +391,18 @@ export class TasksController {
           await this.tasksService.generateAiSuggestionsWithProgress({
             dto: generateDto,
             onProgress: (progress) => {
-              observer.next({ data: progress } as MessageEvent);
+              observer.next({ data: progress });
             },
             onComplete: (result) => {
               observer.next({
                 data: { type: 'complete', result },
-              } as MessageEvent);
+              });
               observer.complete();
             },
             onError: (error) => {
               observer.next({
                 data: { type: 'error', error: error.message },
-              } as MessageEvent);
+              });
               observer.error(error);
             },
           });

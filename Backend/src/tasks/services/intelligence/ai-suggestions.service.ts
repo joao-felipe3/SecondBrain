@@ -5,7 +5,6 @@ import {
   GenerateAiSuggestionsDto,
   AiSuggestionsResponseDto,
   AiSuggestionsProgressDto,
-  AiTaskSuggestionDto,
 } from '../../dto/intelligence/generate-ai-suggestions.dto';
 import { TaskDocument } from '../../schemas/task.schema';
 import { GeminiService } from '../../../ai/services/core/gemini.service';
@@ -114,11 +113,12 @@ export class TasksAiSuggestionsService {
   }): Promise<AiSuggestionsResponseDto> {
     const { dto, state, onProgress } = params;
     this.emitProgress({ state, status: 'loading', message: 'Gerando sugestoes...', onProgress });
-    const { suggestions, isFallback } = (await this.geminiService.getTaskSuggestions({
+    const { suggestions, isFallback } = await this.geminiService.getTaskSuggestions({
       ...dto,
       existingTaskNames: state.existingTaskNames,
-    })) as { suggestions: AiTaskSuggestionDto[]; isFallback: boolean };
-    state.allSuggestions.push(...suggestions);
+    });
+    const typedSuggestions = (suggestions || []) as SuggestionState['allSuggestions'];
+    state.allSuggestions.push(...typedSuggestions);
     state.currentHours = calculateSuggestionsHours(state.allSuggestions);
 
     return buildSuggestionsResponse({

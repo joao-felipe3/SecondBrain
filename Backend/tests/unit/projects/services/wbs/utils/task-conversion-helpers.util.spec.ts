@@ -87,7 +87,7 @@ describe('TaskConversionHelpersUtil', () => {
         { name: 'Draft 1', pomodorosPlanned: 2, priority: 1, microTaskType: 'code' },
       ];
 
-      const tasks = convertDraftsToTasks(drafts, { project: { _id: 'p1' } } as any);
+      const tasks = convertDraftsToTasks(drafts, { project: { _id: 'p1' } });
       expect(tasks.length).toBe(1);
       expect(tasks[0].name).toBe('Draft 1');
     });

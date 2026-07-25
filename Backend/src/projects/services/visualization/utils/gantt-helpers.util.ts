@@ -225,10 +225,7 @@ export function mapDependencyItems(dependencies: TaskDependency[]): GanttDepende
       id: dep?.id || `${dep.taskId}-${dep.dependsOnTaskId}`,
       fromTaskId: String(dep?.dependsOnTaskId || ''),
       toTaskId: String(dep?.taskId || ''),
-      relationship: (dep?.relationship || 'finish-to-start') as
-        | 'finish-to-start'
-        | 'start-to-start'
-        | 'finish-to-finish',
+      relationship: dep?.relationship || 'finish-to-start',
       reason: dep?.reason ? String(dep.reason) : undefined,
       isAutoIdentified: Boolean(dep?.isAutoIdentified),
     }))

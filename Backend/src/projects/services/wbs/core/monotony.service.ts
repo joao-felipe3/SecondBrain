@@ -115,7 +115,7 @@ export class MonotonyService {
 
         let items: FixedMonotonyItem[];
         try {
-          items = (await this.wbsAiService.fixMonotonyBatch({
+          items = await this.wbsAiService.fixMonotonyBatch({
             project: params.project,
             node: params.node,
             currentPath: params.currentPath,
@@ -124,7 +124,7 @@ export class MonotonyService {
             indices,
             round,
             modelOverride: params.modelOverride,
-          })) as FixedMonotonyItem[];
+          });
         } catch (err: unknown) {
           const errMsg = err instanceof Error ? err.message : String(err);
           console.warn(`[WBS-Monotony] AI regeneration failed for round ${round}: ${errMsg}`);

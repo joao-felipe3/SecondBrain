@@ -135,7 +135,7 @@ describe('WaveAndRiskController', () => {
         completedHours: 10,
         plannedValue: 10,
         date: '2026-01-01',
-      } as any);
+      });
       expect(rec).toBeDefined();
 
       const entries = await controller.getProgressEntries(validProjId);

@@ -617,14 +617,11 @@ export class CPMController {
       );
       const existingDeps = await this.cpmService.getDependencies(projectId);
 
-      const existingCycle = this.findCycleInDependenciesScoped(
-        existingDeps as unknown as TaskDependency[],
-        taskIds,
-      );
+      const existingCycle = this.findCycleInDependenciesScoped(existingDeps, taskIds);
 
       const edgeKey = (taskId: string, dependsOnTaskId: string) => `${taskId}<-${dependsOnTaskId}`;
       const existingKeys = new Set<string>();
-      for (const d of existingDeps as unknown as TaskDependency[]) {
+      for (const d of existingDeps) {
         const taskId = String(d?.taskId ?? '').trim();
         const depId = String(d?.dependsOnTaskId ?? '').trim();
         if (!taskId || !depId) continue;
@@ -634,7 +631,7 @@ export class CPMController {
       // precedence adjacency: dependsOn -> task
       const adj = new Map<string, Set<string>>();
       for (const id of taskIds) adj.set(id, new Set());
-      for (const d of existingDeps as unknown as TaskDependency[]) {
+      for (const d of existingDeps) {
         const taskId = String(d?.taskId ?? '').trim();
         const depId = String(d?.dependsOnTaskId ?? '').trim();
         if (!taskId || !depId) continue;
@@ -692,7 +689,7 @@ export class CPMController {
           relationship: String(d?.relationship ?? 'FINISH_TO_START'),
           reason: String(d?.reason ?? ''),
           isAutoIdentified: true,
-        } as UpsertDependencyDto);
+        });
       }
 
       const upserted = accepted.length > 0 ? await this.cpmService.upsertDependencies(accepted) : 0;
@@ -876,7 +873,7 @@ export class CPMController {
         .filter(Boolean),
     );
     const deps = await this.cpmService.getDependencies(projectId);
-    const cycle = this.findCycleInDependenciesScoped(deps as unknown as TaskDependency[], validTaskIds);
+    const cycle = this.findCycleInDependenciesScoped(deps, validTaskIds);
     return {
       projectId,
       hasCycle: cycle.hasCycle,
@@ -909,7 +906,7 @@ export class CPMController {
         .filter(Boolean),
     );
 
-    let deps = (await this.cpmService.getDependencies(projectId)) as unknown as TaskDependency[];
+    let deps = await this.cpmService.getDependencies(projectId);
     const removedEdges: Array<{
       id?: string;
       taskId: string;
@@ -992,10 +989,7 @@ export class CPMController {
 
     // Max removals reached
     const finalDeps = await this.cpmService.getDependencies(projectId);
-    const finalCycle = this.findCycleInDependenciesScoped(
-      finalDeps as unknown as TaskDependency[],
-      validTaskIds,
-    );
+    const finalCycle = this.findCycleInDependenciesScoped(finalDeps, validTaskIds);
     const durationMs = Date.now() - startedAt;
     return {
       projectId,
@@ -1195,7 +1189,7 @@ export class CPMController {
           estimatedHours: Number(minutes ?? 0),
           variance: Number(task.pertVariance ?? task.variance ?? 0),
           isCritical: analysis.criticalPath.includes(String(id ?? '')),
-        } as BufferTaskMetrics;
+        };
       });
 
       // Diagnóstico: contar tarefas com variança > 0

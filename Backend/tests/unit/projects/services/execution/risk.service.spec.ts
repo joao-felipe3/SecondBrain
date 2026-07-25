@@ -87,7 +87,7 @@ describe('RiskService', () => {
 
       mockRiskModel.create.mockImplementation((obj) => Promise.resolve({ _id: validRiskId, ...obj }));
 
-      const risk = await service.createRisk(validProjectId, dto as any);
+      const risk = await service.createRisk(validProjectId, dto);
       expect(risk).toBeDefined();
       expect(mockRiskModel.create).toHaveBeenCalledWith(
         expect.objectContaining({

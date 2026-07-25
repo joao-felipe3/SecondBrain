@@ -127,7 +127,8 @@ export class PlanningService {
       const first = cleanResponse[0];
       if (first !== '{' && first !== '[') return null;
 
-      return JSON.parse(cleanResponse) as unknown as T;
+      const parsed: T = JSON.parse(cleanResponse) as T;
+      return parsed;
     } catch {
       return null;
     }

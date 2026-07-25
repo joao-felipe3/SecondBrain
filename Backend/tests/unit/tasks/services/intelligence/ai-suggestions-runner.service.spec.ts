@@ -40,7 +40,7 @@ describe('TasksAiSuggestionsLoopRunner', () => {
       const onProgress = jest.fn();
 
       await runner.runMultiBatchGenerationLoop({
-        dto: { projectName: 'Test' } as any,
+        dto: { projectName: 'Test' },
         state,
         remainingHours: 4,
         onProgress,
@@ -65,7 +65,7 @@ describe('TasksAiSuggestionsLoopRunner', () => {
       };
 
       await runner.runMultiBatchGenerationLoop({
-        dto: { projectName: 'Test' } as any,
+        dto: { projectName: 'Test' },
         state,
         remainingHours: 10,
       });
@@ -81,7 +81,7 @@ describe('TasksAiSuggestionsLoopRunner', () => {
       };
       const res = runner.handleSuggestionsError({
         error: new Error('API Error'),
-        dto: { projectName: 'Test' } as any,
+        dto: { projectName: 'Test' },
         state,
       });
 
@@ -95,7 +95,7 @@ describe('TasksAiSuggestionsLoopRunner', () => {
       };
       const res = runner.handleSuggestionsError({
         error: new Error('API Error'),
-        dto: { projectName: 'Test' } as any,
+        dto: { projectName: 'Test' },
         state,
       });
 

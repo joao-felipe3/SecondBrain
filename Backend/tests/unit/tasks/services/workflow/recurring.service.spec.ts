@@ -58,7 +58,7 @@ describe('TasksRecurringService', () => {
   describe('Utility Methods', () => {
     it('deve normalizar a regra de recorrencia', () => {
       const rule = { frequency: 'daily', interval: 2 };
-      const normalized = service.normalizeRecurringRule(rule as any);
+      const normalized = service.normalizeRecurringRule(rule);
       expect(normalized).toBeDefined();
       expect(normalized.frequency).toBe('daily');
     });
@@ -66,14 +66,14 @@ describe('TasksRecurringService', () => {
     it('deve calcular a proxima data recorrente', () => {
       const baseDate = new Date('2026-05-01');
       const rule = { frequency: 'daily', interval: 1 };
-      const nextDate = service.calculateNextRecurringDate(baseDate, rule as any);
+      const nextDate = service.calculateNextRecurringDate(baseDate, rule);
       expect(nextDate).toBeDefined();
     });
 
     it('deve calcular a primeira data recorrente', () => {
       const startDate = new Date('2026-05-01');
       const rule = { frequency: 'weekly', interval: 1, daysOfWeek: [1] };
-      const firstDate = service.calculateFirstRecurringDate(startDate, rule as any);
+      const firstDate = service.calculateFirstRecurringDate(startDate, rule);
       expect(firstDate).toBeDefined();
     });
   });
@@ -126,7 +126,7 @@ describe('TasksRecurringService', () => {
     it('deve chamar createMicroTask com payload normalizado', async () => {
       const dto: Partial<CreateMicroTaskDto> = {
         name: 'Template Task',
-        recurringRule: { frequency: 'daily', interval: 1 } as any,
+        recurringRule: { frequency: 'daily', interval: 1 },
       };
 
       const mockTemplate = { _id: 'template-id', ...dto };
@@ -148,7 +148,7 @@ describe('TasksRecurringService', () => {
       const dto: Partial<CreateMicroTaskDto> = {
         name: 'Micro Task Recorrente',
         deadline: new Date('2026-05-01'),
-        recurringRule: { frequency: 'daily', interval: 1 } as any,
+        recurringRule: { frequency: 'daily', interval: 1 },
       };
 
       const mockTemplate = { _id: 'template-id', ...dto, createdAt: new Date() };
@@ -178,7 +178,7 @@ describe('TasksRecurringService', () => {
       const result = await service.updateRecurringRule(validParentId, {
         frequency: 'daily',
         interval: 1,
-      } as any);
+      });
       expect(result).toBe(mockTask);
     });
 

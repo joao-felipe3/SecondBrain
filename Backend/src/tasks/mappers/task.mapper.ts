@@ -120,6 +120,6 @@ export class TaskMapper {
     if (entity.themeTag !== undefined) document.themeTag = entity.themeTag;
     if (entity.createdAt !== undefined) document.createdAt = entity.createdAt;
 
-    return document as Partial<TaskDocument>;
+    return document;
   }
 }

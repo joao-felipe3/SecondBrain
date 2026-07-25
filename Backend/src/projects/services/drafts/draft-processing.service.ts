@@ -181,7 +181,7 @@ export class DraftProcessingService {
       return {
         ...d,
         milestoneIndex,
-      } as MicroTaskOutline;
+      };
     });
   }
 

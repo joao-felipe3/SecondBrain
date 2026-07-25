@@ -119,12 +119,12 @@ describe('ProjectsController', () => {
       const wbs = await controller.generateWBS(validProjId, { weeklyHours: 20 } as any);
       expect(wbs.nodes.length).toBe(1);
 
-      const saved = await controller.saveWBS(validProjId, { nodes: [] } as any);
+      const saved = await controller.saveWBS(validProjId, { nodes: [] });
       expect(saved.message).toBeDefined();
     });
 
     it('should convert WBS to tasks', async () => {
-      const res = await controller.convertWBSToTasks(validProjId, { nodes: [] } as any);
+      const res = await controller.convertWBSToTasks(validProjId, { nodes: [] });
       expect(res.tasks.length).toBe(1);
     });
 
@@ -143,7 +143,7 @@ describe('ProjectsController', () => {
     });
 
     it('should handle X-Matrix generation and lookup', async () => {
-      const created = await controller.createXMatrix(validProjId, {} as any);
+      const created = await controller.createXMatrix(validProjId, {});
       expect(created.projectId).toBe(validProjId);
 
       const fetched = await controller.getSavedXMatrix(validProjId);
@@ -163,7 +163,7 @@ describe('ProjectsController', () => {
     });
 
     it('should get leaf nodes and generate tasks for leaf', async () => {
-      const leaves = controller.getLeafNodes(validProjId, { nodes: [] } as any);
+      const leaves = controller.getLeafNodes(validProjId, { nodes: [] });
       expect(leaves.total).toBe(1);
 
       const taskGen = await controller.generateTasksForLeaf(validProjId, {

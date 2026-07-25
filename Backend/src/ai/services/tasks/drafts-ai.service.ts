@@ -369,7 +369,7 @@ export class DraftsAiService {
         .join('; ');
       throw new Error(`Details inválidos: ${issues}`);
     }
-    return [parsed.data as MicroTaskDetails];
+    return [parsed.data];
   }
 
   async generateDetailsBatch(
@@ -411,7 +411,7 @@ export class DraftsAiService {
           .join('; ');
         throw new Error(`Details inválidos no lote: ${issues}`);
       }
-      return parsed.data as MicroTaskDetails;
+      return parsed.data;
     });
   }
 }

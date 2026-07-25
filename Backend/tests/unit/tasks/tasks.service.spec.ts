@@ -146,10 +146,10 @@ describe('TasksService', () => {
     });
 
     it('should delegate checklist & copilot calls', async () => {
-      await service.generateChecklistViaCopilot({ taskName: 'T1' } as any);
+      await service.generateChecklistViaCopilot({ taskName: 'T1' });
       expect(mockChecklistOpsService.generateChecklistForTask).toHaveBeenCalled();
 
-      await service.generateChecklistViaCopilotWithHistory({ taskName: 'T1' } as any);
+      await service.generateChecklistViaCopilotWithHistory({ taskName: 'T1' });
       expect(mockChecklistOpsService.generateChecklistWithHistory).toHaveBeenCalled();
 
       await service.updateChecklistItem({ taskId: 't1', itemIndex: '0', completed: true });
@@ -208,7 +208,7 @@ describe('TasksService', () => {
       await service.getHabitsDashboard();
       expect(mockHabitsService.getHabitsDashboard).toHaveBeenCalled();
 
-      await service.generateAiSuggestions({ projectName: 'P1' } as any);
+      await service.generateAiSuggestions({ projectName: 'P1' });
       expect(mockAiSuggestionsService.generateAiSuggestions).toHaveBeenCalled();
 
       await service.generateAiSuggestionsWithProgress({} as any);

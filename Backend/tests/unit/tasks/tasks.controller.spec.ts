@@ -103,7 +103,7 @@ describe('TasksController', () => {
       });
       expect(suggestions.optimistic).toBe(30);
 
-      const feedback = await controller.generateCompletionFeedback(validTaskId, {} as any);
+      const feedback = await controller.generateCompletionFeedback(validTaskId, {});
       expect(feedback.feedback).toBe('Feedback AI');
 
       const savedPert = await controller.savePertEstimate(validTaskId, {
@@ -118,7 +118,7 @@ describe('TasksController', () => {
       await controller.updateChecklistItem(validTaskId, '0', { completed: true });
       expect(mockTasksService.updateChecklistItem).toHaveBeenCalled();
 
-      await controller.updateMicroTaskChecklist(validTaskId, { checklist: ['item 1'] } as any);
+      await controller.updateMicroTaskChecklist(validTaskId, { checklist: ['item 1'] });
       expect(mockTasksService.updateMicroTaskChecklist).toHaveBeenCalled();
 
       await controller.updateRecurringRuleCompat(validTaskId, {

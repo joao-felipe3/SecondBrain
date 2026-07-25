@@ -206,7 +206,7 @@ export function assembleEnrichedBatches(
   for (const r of batchResults) {
     for (let j = 0; j < r.detailsList.length; j++) {
       const idx = r.start + j;
-      enriched[idx] = { ...outlines[idx], ...r.detailsList[j] } as MicroTaskDraft;
+      enriched[idx] = { ...outlines[idx], ...r.detailsList[j] };
     }
   }
   return enriched;

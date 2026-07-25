@@ -53,7 +53,7 @@ describe('rolling-wave-deterministic-helpers.util', () => {
 
     const result = partitionTasksDeterministically({
       project,
-      tasks: [taskWithDeadline, taskWithoutDeadline] as any,
+      tasks: [taskWithDeadline, taskWithoutDeadline],
       wbsTree: [],
       dailyCapacityHours: 8,
       waveLengthDays: 7,
@@ -74,7 +74,7 @@ describe('rolling-wave-deterministic-helpers.util', () => {
 
     const result = partitionTasksDeterministically({
       project,
-      tasks: [heavyTask] as any,
+      tasks: [heavyTask],
       wbsTree: [],
       dailyCapacityHours: 8,
       waveLengthDays: 7,
