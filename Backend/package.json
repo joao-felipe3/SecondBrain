@@ -28,7 +28,6 @@
   },
   "overrides": {
     "brace-expansion": "^2.0.1",
-    "minimatch": "^9.0.5",
     "fast-uri": "^3.0.3",
     "js-yaml": "^4.1.0",
     "body-parser": "^2.2.3",
