@@ -26,7 +26,10 @@
     "lint:deps": "depcruise --config .dependency-cruiser.js src",
     "wiki:index": "ts-node -r tsconfig-paths/register scripts/index-wiki.ts",
     "wiki:visualize": "ts-node -r tsconfig-paths/register scripts/export-graph-html.ts",
-    "agent:refactor": "ts-node -r tsconfig-paths/register scripts/refactor-agent.ts"
+    "agent:refactor": "ts-node -r tsconfig-paths/register scripts/refactor-agent.ts",
+    "profile:doctor": "clinic doctor --on-port \"autocannon -c 10 -d 10 http://localhost:3000/api\" -- node dist/main",
+    "profile:flame": "clinic flame --on-port \"autocannon -c 10 -d 10 http://localhost:3000/api\" -- node dist/main",
+    "profile:bubbleprof": "clinic bubbleprof --on-port \"autocannon -c 10 -d 10 http://localhost:3000/api\" -- node dist/main"
   },
   "overrides": {
     "fast-uri": "^3.0.3",
@@ -65,6 +68,8 @@
     "@types/jest": "^29.5.14",
     "@types/node": "^22.10.7",
     "@types/supertest": "^6.0.2",
+    "autocannon": "^8.0.0",
+    "clinic": "^13.0.0",
     "dependency-cruiser": "^16.9.0",
     "eslint": "^10.8.0",
     "eslint-config-prettier": "^10.0.1",
