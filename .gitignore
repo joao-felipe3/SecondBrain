@@ -140,3 +140,10 @@ HOOKS.md
 GEMINI.md
 skills-lock.json
 .aider*
+
+# Graphify internal cache and temporary files
+graphify-out/.graphify_*
+graphify-out/*.py
+graphify-out/cache
+
+Frontend/imagens-geradas
