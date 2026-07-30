@@ -43,7 +43,7 @@
 </template>
 
 <script setup>
-import { GoalIcon, CalendarDaysIcon, ChartNoAxesCombinedIcon } from 'lucide-vue-next'
+import { GoalIcon, CalendarDaysIcon, ChartNoAxesCombinedIcon, CastleIcon } from 'lucide-vue-next'
 import { useRouter } from 'vue-router'
 import SvgIconButton from '../ui/svg/IconButton.vue'
 
@@ -58,6 +58,7 @@ const emit = defineEmits(['update:activeIcon'])
 const router = useRouter()
 
 const sidebarIcons = [
+  { icon: CastleIcon, name: 'hall', route: '/' },
   { icon: GoalIcon, name: 'goal', route: '/task' },
   { icon: CalendarDaysIcon, name: 'calendar', route: '/projects' },
   { icon: ChartNoAxesCombinedIcon, name: 'graph', route: null }

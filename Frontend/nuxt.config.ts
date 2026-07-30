@@ -17,6 +17,7 @@ export default defineNuxtConfig({
 
   css: [
     "vuetify/styles",
+    "~/assets/css/tokens.css",
     "~/assets/css/tailwind.css",
     "~/assets/main.scss",
     "~/assets/styles/custom-input.css",
