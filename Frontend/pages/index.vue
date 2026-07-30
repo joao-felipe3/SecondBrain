@@ -1,9 +1,22 @@
 <template>
   <div class="guild-hall-fullscreen" :class="{ 'is-mobile-view': isMobile }">
-    <!-- IMAGEM DE FUNDO DIEGÉTICA PANORÂMICA (100vw x 100vh) -->
+    <!-- OVERLAY DE TRANSIÇÃO DE LUZ (FADE DIEGÉTICO DURANTE CAMERA ZOOM) -->
     <div
-      class="guild-background-canvas"
-      :style="{ backgroundImage: `url(${backgroundImageUrl})` }"
+      class="light-transition-overlay"
+      :class="{ 'is-active': isTransitioning }"
+    ></div>
+
+    <!-- PALCO DIEGÉTICO PANORÂMICO 16:9 COM ACELERAÇÃO DE GPU -->
+    <div
+      class="guild-stage-container"
+      :class="{
+        'is-camera-hovering': isLeftArchHovered && !isTransitioning,
+        'is-camera-zooming': isTransitioning,
+      }"
+      :style="{
+        backgroundImage: `url(${backgroundImageUrl})`,
+        transformOrigin: zoomTransformOrigin,
+      }"
     >
       <!-- CANVAS DE PARTÍCULAS & VFX (LAREIRA E POEIRA DOURADA 60 FPS) -->
       <GuildParticlesCanvas />
@@ -21,7 +34,9 @@
           <span class="banner-icon">🏰</span>
           <div class="banner-text-group">
             <h1 class="banner-title">SAGUÃO CENTRAL DA GUILDA</h1>
-            <span class="banner-subtitle">Recepção de Aventureiros & Mural de Missões</span>
+            <span class="banner-subtitle"
+              >Recepção de Aventureiros & Mural de Missões</span
+            >
           </div>
 
           <!-- Botão Mute / Unmute Diegético -->
@@ -29,9 +44,11 @@
             class="audio-toggle-btn"
             :class="{ 'is-muted': isMuted }"
             @click="toggleMute"
-            :title="isMuted ? 'Ativar Efeitos Sonoros' : 'Silenciar Efeitos Sonoros'"
+            :title="
+              isMuted ? 'Ativar Efeitos Sonoros' : 'Silenciar Efeitos Sonoros'
+            "
           >
-            <span>{{ isMuted ? '🔇' : '🔊' }}</span>
+            <span>{{ isMuted ? "🔇" : "🔊" }}</span>
           </button>
         </div>
       </header>
@@ -39,30 +56,76 @@
       <!-- ESTANDARTE DE STREAK NA PAREDE (CENTRO) -->
       <GuildStreakBanner v-if="!isMobile" />
 
-      <!-- NPCS VIVOS & BALÕES DE FALA (Dwarf & Elf no Centro) -->
+      <!-- NPCS VIVOS & BALÕES DE FALA -->
       <GuildNpcSpeechBubble v-if="!isMobile" />
 
-      <!-- HOTSPOTS DIEGÉTICOS PRECISAMENTE POSICIONADOS (DESKTOP >= 960px) -->
-      <div v-if="!isMobile" class="diegetic-hotspots-layer">
-        <!-- 1. HOTSPOT ESQUERDO: MURAL DE CONTRATOS DA GUILDA (/task) -->
-        <NuxtLink
-          to="/task"
-          class="hotspot-area arch-contracts-area"
-          @mouseenter="onArchHover('📜 Acessar Mural de Contratos e Missões')"
-          @mouseleave="hoverTooltip = null"
-        >
-          <div class="hotspot-arch-glow glow-rune-gold"></div>
-          <div class="hotspot-diegetic-label">
-            <UiWaxSeal color="red" size="sm" icon="📜" />
-            <span class="label-title">Mural de Contratos</span>
-          </div>
-        </NuxtLink>
+      <!-- CAMADA DE OVERLAY SVG PARA ALINHAMENTO PRECISO (VIEWBOX 1000 x 562.5) -->
+      <svg
+        v-if="!isMobile"
+        class="guild-svg-overlay"
+        viewBox="0 0 1000 562.5"
+        preserveAspectRatio="none"
+      >
+        <defs>
+          <!-- ClipPath do Arco da Esquerda (Posicionado no Vão Esquerdo do Saguão) -->
+          <clipPath id="left-arch-clip">
+            <path
+              d="M 30 550 L 30 240 Q 30 90 160 90 Q 290 90 290 240 L 290 550 Z"
+            />
+          </clipPath>
 
-        <!-- 2. HOTSPOT DIREITO: BIBLIOTECA DE ARQUIVOS DE PROJETOS (/projects) -->
+          <!-- Gradiente Radial para Luz Interna Pulsante -->
+          <radialGradient id="portal-glow-gradient" cx="16%" cy="45%" r="35%">
+            <stop offset="0%" stop-color="#ffe082" stop-opacity="0.9" />
+            <stop offset="50%" stop-color="#ffb74d" stop-opacity="0.5" />
+            <stop offset="100%" stop-color="#f57c00" stop-opacity="0" />
+          </radialGradient>
+        </defs>
+
+        <!-- LUZ INTERNA MOVIMENTADA (COLOR-DODGE CLIPADO NO PERFIL DO ARCO) -->
+        <g clip-path="url(#left-arch-clip)">
+          <rect
+            x="0"
+            y="0"
+            width="1000"
+            height="562.5"
+            fill="url(#portal-glow-gradient)"
+            class="arch-internal-glow"
+            :class="{ 'is-hovered': isLeftArchHovered }"
+          />
+        </g>
+
+        <!-- PATH INTERATIVO DO ARCO DA ESQUERDA (NO PALCO PANORÂMICO) -->
+        <path
+          class="portal-arch-left"
+          d="M 30 550 L 30 240 Q 30 90 160 90 Q 290 90 290 240 L 290 550 Z"
+          @click="handleLeftArchClick"
+          @mouseenter="onLeftArchHover"
+          @mouseleave="onLeftArchLeave"
+        />
+      </svg>
+
+      <!-- ETIQUETA FLUTUANTE DINÂMICA (⚔️ Mural de Missões) -->
+      <div
+        v-if="!isMobile"
+        class="floating-arch-tag left-arch-tag"
+        :class="{ 'is-visible': isLeftArchHovered }"
+      >
+        <div class="arch-tag-content">
+          <UiWaxSeal color="red" size="sm" icon="⚔️" />
+          <span class="arch-tag-text">Mural de Missões</span>
+        </div>
+      </div>
+
+      <!-- HOTSPOTS DIEGÉTICOS (DIREITO, MESA E EASTER EGGS) -->
+      <div v-if="!isMobile" class="diegetic-hotspots-layer">
+        <!-- HOTSPOT DIREITO: BIBLIOTECA DE ARQUIVOS DE PROJETOS (/projects) -->
         <NuxtLink
           to="/projects"
           class="hotspot-area arch-library-area"
-          @mouseenter="onArchHover('📚 Acessar Biblioteca de Arquivos e Projetos')"
+          @mouseenter="
+            hoverTooltip = '📚 Acessar Biblioteca de Arquivos e Projetos'
+          "
           @mouseleave="hoverTooltip = null"
         >
           <div class="hotspot-arch-glow glow-rune-blue"></div>
@@ -72,17 +135,19 @@
           </div>
         </NuxtLink>
 
-        <!-- 3. WIDGET DO LIVRO ABERTO INTEGRADO À ARTE DO BALCÃO -->
+        <!-- WIDGET DO LIVRO ABERTO -->
         <div
           class="desk-book-widget-container"
           @click="openReception"
-          @mouseenter="hoverTooltip = '📖 Clique para abrir Grimório Completo da Guilda'"
+          @mouseenter="
+            hoverTooltip = '📖 Clique para abrir Grimório Completo da Guilda'
+          "
           @mouseleave="hoverTooltip = null"
         >
           <GuildDeskBookWidget />
         </div>
 
-        <!-- 4. EASTER EGG: ADAGA FINCADA NA MADEIRA (SOBRE A ARTE DA MESA) -->
+        <!-- EASTER EGG: ADAGA FINCADA NA MADEIRA -->
         <div
           class="hotspot-area dagger-easter-egg-area"
           :class="{ 'animate-dagger-shake': isDaggerShaking }"
@@ -94,7 +159,7 @@
           <span v-if="isDaggerShaking" class="dagger-sparks">✨</span>
         </div>
 
-        <!-- 5. EASTER EGG: PILHA DE MOEDAS DE OURO (SOBRE A ARTE DA MESA) -->
+        <!-- EASTER EGG: PILHA DE MOEDAS DE OURO -->
         <div
           class="hotspot-area coins-easter-egg-area"
           @click="triggerCoinsInteraction"
@@ -102,7 +167,6 @@
           @mouseleave="hoverTooltip = null"
         >
           <div class="coins-highlight-aura"></div>
-          <!-- Partículas de Gold Flutuante subindo -->
           <div
             v-for="pop in goldPopups"
             :key="pop.id"
@@ -116,26 +180,37 @@
 
       <!-- TOOLTIP DIEGÉTICO FLUTUANTE (DESKTOP) -->
       <Transition name="fade-tooltip">
-        <div v-if="hoverTooltip && !isMobile" class="diegetic-tooltip-container">
+        <div
+          v-if="hoverTooltip && !isMobile && !isLeftArchHovered"
+          class="diegetic-tooltip-container"
+        >
           <UiParchmentCard class="tooltip-parchment-box">
             <span class="tooltip-text">{{ hoverTooltip }}</span>
           </UiParchmentCard>
         </div>
       </Transition>
 
-      <!-- BARRA DE COMPACTAÇÃO E NAVEGAÇÃO DIÁRIA (MOBILE < 960px) -->
+      <!-- BARRA FLUTUANTE DE NAVEGAÇÃO DIÁRIA (MOBILE < 960px) -->
       <div v-if="isMobile" class="mobile-bottom-journal">
         <UiParchmentCard variant="scroll" class="journal-card-container">
           <div class="journal-header">
             <span>📜 Diário de Navegação da Guilda</span>
           </div>
           <div class="journal-buttons-grid">
-            <NuxtLink to="/task" class="journal-btn" @click="playDoorOpenSound">
-              <UiWaxSeal color="red" size="sm" icon="📜" />
-              <span>Contratos</span>
+            <NuxtLink
+              to="/tasks"
+              class="journal-btn"
+              @click="playDoorOpenSound"
+            >
+              <UiWaxSeal color="red" size="sm" icon="⚔️" />
+              <span>Missões</span>
             </NuxtLink>
 
-            <NuxtLink to="/projects" class="journal-btn" @click="playDoorOpenSound">
+            <NuxtLink
+              to="/projects"
+              class="journal-btn"
+              @click="playDoorOpenSound"
+            >
               <UiWaxSeal color="blue" size="sm" icon="📚" />
               <span>Arquivos</span>
             </NuxtLink>
@@ -155,92 +230,127 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
-import { useResponsive } from '~/composables/ui/useResponsive'
-import { useUiGuildStore } from '~/stores/uiGuild'
-import { useTaskStore } from '~/stores/task'
-import { useProjectStore } from '~/stores/project'
-import { useGuildAudio } from '~/composables/ui/useGuildAudio'
-import UiParchmentCard from '~/components/ui/diegetic/UiParchmentCard.vue'
-import UiWaxSeal from '~/components/ui/diegetic/UiWaxSeal.vue'
-import GuildReceptionDesk from '~/components/features/hall/GuildReceptionDesk.vue'
-import GuildParticlesCanvas from '~/components/features/hall/GuildParticlesCanvas.vue'
-import GuildNpcSpeechBubble from '~/components/features/hall/GuildNpcSpeechBubble.vue'
-import GuildDeskBookWidget from '~/components/features/hall/GuildDeskBookWidget.vue'
-import GuildStreakBanner from '~/components/features/hall/GuildStreakBanner.vue'
+import { ref, computed, onMounted } from "vue";
+import { useRouter } from "vue-router";
+import { useResponsive } from "~/composables/ui/useResponsive";
+import { useUiGuildStore } from "~/stores/uiGuild";
+import { useTaskStore } from "~/stores/task";
+import { useProjectStore } from "~/stores/project";
+import { useGuildAudio } from "~/composables/ui/useGuildAudio";
+import UiParchmentCard from "~/components/ui/diegetic/UiParchmentCard.vue";
+import UiWaxSeal from "~/components/ui/diegetic/UiWaxSeal.vue";
+import GuildReceptionDesk from "~/components/features/hall/GuildReceptionDesk.vue";
+import GuildParticlesCanvas from "~/components/features/hall/GuildParticlesCanvas.vue";
+import GuildNpcSpeechBubble from "~/components/features/hall/GuildNpcSpeechBubble.vue";
+import GuildDeskBookWidget from "~/components/features/hall/GuildDeskBookWidget.vue";
+import GuildStreakBanner from "~/components/features/hall/GuildStreakBanner.vue";
 
 definePageMeta({
-  layout: false
-})
+  layout: false,
+});
 
-const { isMobile } = useResponsive()
-const uiGuildStore = useUiGuildStore()
-const taskStore = useTaskStore()
-const projectStore = useProjectStore()
+const router = useRouter();
+const { isMobile } = useResponsive();
+const uiGuildStore = useUiGuildStore();
+const taskStore = useTaskStore();
+const projectStore = useProjectStore();
 const {
   isMuted,
   toggleMute,
+  playSFX,
   playCoinsSound,
   playDaggerSound,
-  playDoorOpenSound
-} = useGuildAudio()
+  playDoorOpenSound,
+} = useGuildAudio();
 
-const hoverTooltip = ref<string | null>(null)
-const isDaggerShaking = ref(false)
+// Estado da Animação de Transição (Camera Zoom)
+const isTransitioning = ref(false);
+const zoomTransformOrigin = ref("16% 45%");
+
+// Estado de Hover do Arco da Esquerda (SVG Path)
+const isLeftArchHovered = ref(false);
+
+const hoverTooltip = ref<string | null>(null);
+const isDaggerShaking = ref(false);
 
 interface GoldPopup {
-  id: number
-  x: number
-  y: number
+  id: number;
+  x: number;
+  y: number;
 }
-const goldPopups = ref<GoldPopup[]>([])
-let goldIdCounter = 0
+const goldPopups = ref<GoldPopup[]>([]);
+let goldIdCounter = 0;
 
+// Fundo limpo conforme especificação (/public/imagens/entrada-bg-clean.png)
 const backgroundImageUrl = computed(() => {
   return isMobile.value
-    ? '/images/guild/Entrada-mobile.png'
-    : '/images/guild/Entrada-web.png'
-})
+    ? "/images/guild/Entrada-mobile.png"
+    : "/imagens/entrada-bg-clean.png";
+});
 
-function onArchHover(tooltip: string) {
-  hoverTooltip.value = tooltip
+// Eventos do Arco da Esquerda (Mural de Missões)
+function onLeftArchHover() {
+  isLeftArchHovered.value = true;
+  if (!isTransitioning.value) {
+    zoomTransformOrigin.value = "16% 45%";
+  }
+}
+
+function onLeftArchLeave() {
+  isLeftArchHovered.value = false;
+}
+
+// Clique no Arco da Esquerda -> Camera Zoom + SFX + Redirecionamento para /tasks
+function handleLeftArchClick() {
+  if (isTransitioning.value) return;
+
+  isTransitioning.value = true;
+  zoomTransformOrigin.value = "16% 45%";
+
+  // SFX diegético de passos na pedra
+  playSFX("footsteps-stone");
+
+  // Timeline de 500ms antes da transição de rota
+  setTimeout(() => {
+    router.push("/tasks");
+  }, 500);
 }
 
 function openReception() {
-  playDoorOpenSound()
-  uiGuildStore.openReceptionModal()
+  playDoorOpenSound();
+  uiGuildStore.openReceptionModal();
 }
 
 // Easter Egg: Adaga na Madeira
 function triggerDaggerInteraction() {
-  playDaggerSound()
-  isDaggerShaking.value = true
+  playDaggerSound();
+  isDaggerShaking.value = true;
   setTimeout(() => {
-    isDaggerShaking.value = false
-  }, 400)
+    isDaggerShaking.value = false;
+  }, 400);
 }
 
 // Easter Egg: Pilha de Moedas
 function triggerCoinsInteraction(event: MouseEvent) {
-  playCoinsSound()
+  playCoinsSound();
 
-  const id = ++goldIdCounter
-  const rect = (event.currentTarget as HTMLElement).getBoundingClientRect()
-  const x = event.clientX - rect.left - 20
-  const y = event.clientY - rect.top - 20
+  const id = ++goldIdCounter;
+  const rect = (event.currentTarget as HTMLElement).getBoundingClientRect();
+  const x = event.clientX - rect.left - 20;
+  const y = event.clientY - rect.top - 20;
 
-  goldPopups.value.push({ id, x, y })
+  goldPopups.value.push({ id, x, y });
 
   setTimeout(() => {
-    goldPopups.value = goldPopups.value.filter((p) => p.id !== id)
-  }, 1200)
+    goldPopups.value = goldPopups.value.filter((p) => p.id !== id);
+  }, 1200);
 }
 
 onMounted(() => {
-  uiGuildStore.setActiveRoom('hall')
-  taskStore.loadTasks?.()
-  projectStore.loadProjects?.()
-})
+  uiGuildStore.setActiveRoom("hall");
+  taskStore.loadTasks?.();
+  projectStore.loadProjects?.();
+});
 </script>
 
 <style scoped>
@@ -253,17 +363,63 @@ onMounted(() => {
   right: 0;
   bottom: 0;
   overflow: hidden;
-  background-color: var(--guild-wood-dark);
+  background-color: var(--guild-wood-dark, #1c140e);
   z-index: 100;
+  perspective: 1200px;
+  perspective-origin: 50% 50%;
 }
 
-.guild-background-canvas {
+/* PALCO DIEGÉTICO 16:9 COM SUPORTE A ACCELERATION GPU & PERSPECTIVA 3D */
+.guild-stage-container {
   width: 100%;
   height: 100%;
   background-size: cover;
   background-position: center center;
   background-repeat: no-repeat;
   position: relative;
+  transform-style: preserve-3d;
+  will-change: transform, filter;
+  transition:
+    transform 0.6s cubic-bezier(0.25, 1, 0.5, 1),
+    filter 0.6s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+/* PRÉVIA DO GIRO DE CÂMERA 3D À DIREITA NO HOVER */
+.guild-stage-container.is-camera-hovering {
+  transform: scale(1.05) rotateY(-5deg) rotateX(1deg) rotateZ(0.2deg)
+    translateZ(10px) translateX(-10px);
+  filter: brightness(1.06) contrast(1.03);
+}
+
+/* ESTADO DE ZOOM E GIRO DE CÂMERA ESPACIAL 3D À DIREITA NO CLIQUE */
+.guild-stage-container.is-camera-zooming {
+  transform: scale(3.2) rotateY(-12deg) rotateX(3deg) rotateZ(1.5deg)
+    translateZ(140px);
+  filter: blur(5px) brightness(1.25);
+  transition:
+    transform 0.5s cubic-bezier(0.4, 0, 0.2, 1),
+    filter 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* OVERLAY DE ILUMINAÇÃO TRANSIÇÃO DE TELA (WHITE/GOLD FLASH FADE-IN) */
+.light-transition-overlay {
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(
+    circle at 16% 45%,
+    rgba(255, 235, 175, 0.95) 0%,
+    rgba(255, 170, 60, 0.85) 50%,
+    rgba(20, 10, 5, 0.95) 100%
+  );
+  opacity: 0;
+  pointer-events: none;
+  z-index: 99;
+  transition: opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.light-transition-overlay.is-active {
+  opacity: 1;
+  pointer-events: auto;
 }
 
 /* OVERLAYS DE ILUMINAÇÃO AMBIENTAL */
@@ -329,10 +485,10 @@ onMounted(() => {
 .diegetic-banner-box {
   background: radial-gradient(
     circle at 50% 50%,
-    var(--guild-parchment-base) 0%,
-    var(--guild-parchment-dark) 100%
+    var(--guild-parchment-base, #f4e4bc) 0%,
+    var(--guild-parchment-dark, #d8bc82) 100%
   );
-  border: 2.5px solid var(--guild-wood-mid);
+  border: 2.5px solid var(--guild-wood-mid, #5c3a1e);
   border-radius: 30px;
   padding: 0.5rem 1.6rem;
   display: flex;
@@ -354,9 +510,9 @@ onMounted(() => {
 }
 
 .banner-title {
-  font-family: var(--font-guild-title);
+  font-family: var(--font-guild-title, serif);
   font-size: 1.25rem;
-  color: var(--guild-wood-dark);
+  color: var(--guild-wood-dark, #2b1810);
   margin: 0;
   line-height: 1.1;
   letter-spacing: 0.5px;
@@ -370,7 +526,7 @@ onMounted(() => {
 
 .audio-toggle-btn {
   background: rgba(140, 95, 50, 0.2);
-  border: 1.5px solid var(--guild-wood-mid);
+  border: 1.5px solid var(--guild-wood-mid, #5c3a1e);
   border-radius: 50%;
   width: 34px;
   height: 34px;
@@ -379,7 +535,9 @@ onMounted(() => {
   justify-content: center;
   cursor: pointer;
   font-size: 1rem;
-  transition: transform 0.2s ease, background 0.2s ease;
+  transition:
+    transform 0.2s ease,
+    background 0.2s ease;
 }
 
 .audio-toggle-btn:hover {
@@ -391,7 +549,97 @@ onMounted(() => {
   opacity: 0.6;
 }
 
-/* CAMADA DE HOTSPOTS DIEGÉTICOS */
+/* CAMADA SVG OVERLAY 16:9 PARA PRECISÃO NO VÃO DE PEDRA */
+.guild-svg-overlay {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 6;
+}
+
+/* PATH INTERATIVO DO ARCO ESQUERDO (SEM DEBUG RÓTULOS/BORDAS) */
+.portal-arch-left {
+  pointer-events: auto;
+  fill: transparent;
+  stroke: transparent;
+  cursor: pointer;
+}
+
+/* LUZ INTERNA DIEGÉTICA NO ARCO DA ESQUERDA (COLOR-DODGE PULSANTE) */
+.arch-internal-glow {
+  opacity: 0;
+  mix-blend-mode: color-dodge;
+  transition: opacity 0.35s ease;
+  pointer-events: none;
+}
+
+.arch-internal-glow.is-hovered {
+  opacity: 0.55;
+  animation: hoverGlowPulse 2.4s ease-in-out infinite alternate;
+}
+
+@keyframes hoverGlowPulse {
+  0% {
+    opacity: 0.35;
+    transform: translateY(0px);
+  }
+  50% {
+    opacity: 0.65;
+    transform: translateY(-4px);
+  }
+  100% {
+    opacity: 0.4;
+    transform: translateY(2px);
+  }
+}
+
+/* ETIQUETA FLUTUANTE DIEGÉTICA DO ARCO DA ESQUERDA (⚔️ Mural de Missões) */
+.floating-arch-tag.left-arch-tag {
+  position: absolute;
+  top: 48%;
+  left: 16%;
+  transform: translate(-50%, calc(-50% + 12px));
+  opacity: 0;
+  pointer-events: none;
+  z-index: 8;
+  transition:
+    opacity 0.35s cubic-bezier(0.34, 1.56, 0.64, 1),
+    transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.floating-arch-tag.left-arch-tag.is-visible {
+  opacity: 1;
+  transform: translate(-50%, -50%);
+}
+
+.arch-tag-content {
+  background: radial-gradient(
+    circle at 50% 50%,
+    var(--guild-parchment-base, #f4e4bc) 0%,
+    var(--guild-parchment-dark, #d8bc82) 100%
+  );
+  border: 2px solid var(--guild-gold-glow, #d4af37);
+  border-radius: 12px;
+  padding: 0.5rem 1.1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  box-shadow:
+    0 8px 24px rgba(0, 0, 0, 0.7),
+    0 0 16px rgba(255, 180, 50, 0.4);
+}
+
+.arch-tag-text {
+  font-family: var(--font-guild-title, serif);
+  font-weight: bold;
+  color: var(--guild-wood-dark, #2b1810);
+  font-size: 1.05rem;
+  white-space: nowrap;
+}
+
+/* CAMADA DE HOTSPOTS DIEGÉTICOS ADICIONAIS */
 .diegetic-hotspots-layer {
   position: absolute;
   inset: 0;
@@ -409,15 +657,7 @@ onMounted(() => {
   transition: all 0.3s ease;
 }
 
-/* 1. MURAL DE CONTRATOS (ARCO ESQUERDO DA ARTE) */
-.arch-contracts-area {
-  top: 25%;
-  left: 3%;
-  width: 25%;
-  height: 70%;
-}
-
-/* 2. BIBLIOTECA DE ARQUIVOS (PORTA DIREITA DA ARTE) */
+/* BIBLIOTECA DE ARQUIVOS (PORTA DIREITA DA ARTE) */
 .arch-library-area {
   top: 25%;
   right: 3%;
@@ -425,7 +665,7 @@ onMounted(() => {
   height: 60%;
 }
 
-/* 3. WIDGET DO LIVRO ABERTO (POSICIONADO EXATAMENTE SOBRE O LIVRO DO BALCÃO NO CANTO INFERIOR DIREITO) */
+/* WIDGET DO LIVRO ABERTO (BALCÃO) */
 .desk-book-widget-container {
   position: absolute;
   bottom: 19%;
@@ -436,7 +676,7 @@ onMounted(() => {
   z-index: 8;
 }
 
-/* 4. EASTER EGG: ADAGA FINCADA NA MADEIRA (POSICIONADO EXATAMENTE SOBRE A ADAGA DA MESA NO CANTO INFERIOR DIREITO) */
+/* EASTER EGG: ADAGA FINCADA */
 .dagger-easter-egg-area {
   bottom: 7%;
   left: 76%;
@@ -474,11 +714,17 @@ onMounted(() => {
 }
 
 @keyframes spark-fade {
-  0% { opacity: 1; transform: scale(0.8) translateY(0); }
-  100% { opacity: 0; transform: scale(1.5) translateY(-20px); }
+  0% {
+    opacity: 1;
+    transform: scale(0.8) translateY(0);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.5) translateY(-20px);
+  }
 }
 
-/* 5. EASTER EGG: PILHA DE MOEDAS DE OURO (POSICIONADO EXATAMENTE SOBRE AS MOEDAS DO BALCÃO NO CANTO INFERIOR DIREITO) */
+/* EASTER EGG: PILHA DE MOEDAS DE OURO */
 .coins-easter-egg-area {
   bottom: 1%;
   left: 79.5%;
@@ -509,7 +755,7 @@ onMounted(() => {
   opacity: 1;
 }
 
-/* EFEITOS E ANIMAÇÕES */
+/* EFEITOS E ANIMAÇÕES DOS OUTROS HOTSPOTS */
 .hotspot-arch-glow {
   position: absolute;
   inset: 0;
@@ -519,7 +765,6 @@ onMounted(() => {
   pointer-events: none;
 }
 
-.arch-contracts-area:hover .hotspot-arch-glow,
 .arch-library-area:hover .hotspot-arch-glow {
   opacity: 1;
 }
@@ -527,46 +772,53 @@ onMounted(() => {
 .hotspot-diegetic-label {
   background: radial-gradient(
     circle at 50% 50%,
-    var(--guild-parchment-base) 0%,
-    var(--guild-parchment-dark) 100%
+    var(--guild-parchment-base, #f4e4bc) 0%,
+    var(--guild-parchment-dark, #d8bc82) 100%
   );
-  border: 2px solid var(--guild-wood-mid);
+  border: 2px solid var(--guild-wood-mid, #5c3a1e);
   border-radius: 8px;
   padding: 0.5rem 1rem;
   display: flex;
   align-items: center;
   gap: 0.5rem;
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.6);
-  transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+  transition:
+    transform 0.25s ease,
+    border-color 0.25s ease,
+    box-shadow 0.25s ease;
   z-index: 2;
-}
-
-.arch-contracts-area:hover .hotspot-diegetic-label {
-  transform: translateY(-6px) scale(1.06);
-  border-color: var(--guild-gold-glow);
-  box-shadow: 0 10px 24px rgba(230, 170, 40, 0.5);
 }
 
 .arch-library-area:hover .hotspot-diegetic-label {
   transform: translateY(-6px) scale(1.06);
-  border-color: var(--guild-blue-glow);
+  border-color: var(--guild-blue-glow, #4fc3f7);
   box-shadow: 0 10px 24px rgba(40, 160, 230, 0.5);
 }
 
 .label-title {
-  font-family: var(--font-guild-title);
+  font-family: var(--font-guild-title, serif);
   font-weight: bold;
-  color: var(--guild-wood-dark);
+  color: var(--guild-wood-dark, #2b1810);
   font-size: 0.95rem;
 }
 
 /* ANIMAÇÃO SHAKE DE ADAGA */
 @keyframes dagger-shake {
-  0% { transform: rotate(0deg); }
-  25% { transform: rotate(-10deg) scale(1.1); }
-  50% { transform: rotate(10deg) scale(1.1); }
-  75% { transform: rotate(-5deg); }
-  100% { transform: rotate(0deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+  25% {
+    transform: rotate(-10deg) scale(1.1);
+  }
+  50% {
+    transform: rotate(10deg) scale(1.1);
+  }
+  75% {
+    transform: rotate(-5deg);
+  }
+  100% {
+    transform: rotate(0deg);
+  }
 }
 
 .animate-dagger-shake {
@@ -588,7 +840,7 @@ onMounted(() => {
 .floating-gold-popup {
   position: absolute;
   pointer-events: none;
-  font-family: var(--font-guild-title);
+  font-family: var(--font-guild-title, serif);
   font-weight: bold;
   font-size: 0.95rem;
   color: #fbbf24;
@@ -609,15 +861,15 @@ onMounted(() => {
 }
 
 .tooltip-parchment-box {
-  background: var(--guild-wood-dark) !important;
-  color: var(--guild-parchment-base) !important;
-  border: 1.5px solid var(--guild-gold-glow) !important;
+  background: var(--guild-wood-dark, #1c140e) !important;
+  color: var(--guild-parchment-base, #f4e4bc) !important;
+  border: 1.5px solid var(--guild-gold-glow, #d4af37) !important;
   padding: 0.5rem 1.5rem !important;
   border-radius: 8px !important;
 }
 
 .tooltip-text {
-  font-family: var(--font-guild-title);
+  font-family: var(--font-guild-title, serif);
   font-size: 0.95rem;
   font-weight: bold;
 }
@@ -633,15 +885,15 @@ onMounted(() => {
 
 .journal-card-container {
   padding: 0.75rem !important;
-  border: 2px solid var(--guild-wood-mid) !important;
+  border: 2px solid var(--guild-wood-mid, #5c3a1e) !important;
 }
 
 .journal-header {
   text-align: center;
-  font-family: var(--font-guild-title);
+  font-family: var(--font-guild-title, serif);
   font-size: 0.85rem;
   font-weight: bold;
-  color: var(--guild-wood-dark);
+  color: var(--guild-wood-dark, #2b1810);
   margin-bottom: 0.5rem;
 }
 
@@ -661,8 +913,8 @@ onMounted(() => {
   border: 1px solid rgba(130, 85, 45, 0.3);
   border-radius: 6px;
   text-decoration: none;
-  color: var(--guild-wood-dark);
-  font-family: var(--font-guild-title);
+  color: var(--guild-wood-dark, #2b1810);
+  font-family: var(--font-guild-title, serif);
   font-size: 0.75rem;
   font-weight: bold;
   cursor: pointer;
@@ -675,7 +927,9 @@ onMounted(() => {
 
 .fade-tooltip-enter-active,
 .fade-tooltip-leave-active {
-  transition: opacity 0.2s ease, transform 0.2s ease;
+  transition:
+    opacity 0.2s ease,
+    transform 0.2s ease;
 }
 
 .fade-tooltip-enter-from,
