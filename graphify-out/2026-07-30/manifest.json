@@ -2325,8 +2325,8 @@
     "semantic_hash": ""
   },
   "Frontend/components/layout/Sidebar.vue": {
-    "mtime": 1785348080.350391,
-    "ast_hash": "13645aa359cf13218309d100c34945ad",
+    "mtime": 1780519839.8283298,
+    "ast_hash": "219891ba60a7de4cdfabb74e539aac53",
     "semantic_hash": ""
   },
   "Frontend/components/shared/dialogs/DeleteProjectDialog.vue": {
@@ -2715,8 +2715,8 @@
     "semantic_hash": ""
   },
   "Frontend/nuxt.config.ts": {
-    "mtime": 1785348013.4653187,
-    "ast_hash": "ce2733ddeb5641ce94e3b92eb94f11c5",
+    "mtime": 1784999855.753759,
+    "ast_hash": "ade591886084f415290121dc3641c8fd",
     "semantic_hash": ""
   },
   "Frontend/package.json": {
@@ -2730,8 +2730,8 @@
     "semantic_hash": ""
   },
   "Frontend/pages/index.vue": {
-    "mtime": 1785354825.1958961,
-    "ast_hash": "a020c30401a1106b8ef5098f82133c56",
+    "mtime": 1780519823.776936,
+    "ast_hash": "97e086c7c79cc14a43029b1dc7f0ac63",
     "semantic_hash": ""
   },
   "Frontend/pages/projects/index.vue": {
@@ -3010,8 +3010,8 @@
     "semantic_hash": ""
   },
   "Project/REQUISITOS.md": {
-    "mtime": 1785346507.1110342,
-    "ast_hash": "124f57d08eeda5bdce9f41991c1f49fa",
+    "mtime": 1785345819.4504158,
+    "ast_hash": "8e971a95bec89d7d3dbadafdbc888ea8",
     "semantic_hash": ""
   },
   "Project/adr/001-why-nestjs-mongoose.md": {
@@ -3152,151 +3152,6 @@
   "Frontend/public/svg/wooden3.svg": {
     "mtime": 1774578713.5751095,
     "ast_hash": "a005e88564bc537fea6b8d87de30b33c",
-    "semantic_hash": ""
-  },
-  "Frontend/components/features/hall/GuildDeskBookWidget.vue": {
-    "mtime": 1785353995.9894137,
-    "ast_hash": "3a98c0031dbb014f1a726cb527b48012",
-    "semantic_hash": ""
-  },
-  "Frontend/components/features/hall/GuildNpcSpeechBubble.vue": {
-    "mtime": 1785352433.4719975,
-    "ast_hash": "78cc946d6614a14a3930e519a6bb0eea",
-    "semantic_hash": ""
-  },
-  "Frontend/components/features/hall/GuildParticlesCanvas.vue": {
-    "mtime": 1785354456.611592,
-    "ast_hash": "7de5e2f747a7923e857ece961a17c5ba",
-    "semantic_hash": ""
-  },
-  "Frontend/components/features/hall/GuildReceptionDesk.vue": {
-    "mtime": 1785348054.9982927,
-    "ast_hash": "e59448fa7edf621bb1a8fdae1150cb5d",
-    "semantic_hash": ""
-  },
-  "Frontend/components/features/hall/GuildStreakBanner.vue": {
-    "mtime": 1785350622.678838,
-    "ast_hash": "ac0323936bed74a39cd418bec3a1003a",
-    "semantic_hash": ""
-  },
-  "Frontend/components/ui/diegetic/UiParchmentCard.vue": {
-    "mtime": 1785348034.600397,
-    "ast_hash": "45235c86855629db92dc5f19f190bbf0",
-    "semantic_hash": ""
-  },
-  "Frontend/components/ui/diegetic/UiWaxSeal.vue": {
-    "mtime": 1785348041.7958288,
-    "ast_hash": "170378c4b6f66506382e18a361c24cd8",
-    "semantic_hash": ""
-  },
-  "Frontend/components/ui/diegetic/index.ts": {
-    "mtime": 1785348046.815629,
-    "ast_hash": "a3c458c5774e11361dc60faa19059cde",
-    "semantic_hash": ""
-  },
-  "Frontend/composables/ui/useGuildAudio.ts": {
-    "mtime": 1785350322.891848,
-    "ast_hash": "15d02e9151efa069e050401acf0ed683",
-    "semantic_hash": ""
-  },
-  "Frontend/composables/ui/useResponsive.ts": {
-    "mtime": 1785348021.6476853,
-    "ast_hash": "cea4956e346c318555df74f178b3a2a9",
-    "semantic_hash": ""
-  },
-  "Frontend/stores/uiGuild.ts": {
-    "mtime": 1785348028.1121907,
-    "ast_hash": "c840f6d111b7923fcc7f6606207533e7",
-    "semantic_hash": ""
-  },
-  "Frontend/public/imagens-geradas/Entrada-mobile.png": {
-    "mtime": 1785123315.6973095,
-    "ast_hash": "6e0c8c16cf2bc5abdd84e3ea4b94e962",
-    "semantic_hash": ""
-  },
-  "Frontend/public/imagens-geradas/Entrada-web.png": {
-    "mtime": 1785108297.1650317,
-    "ast_hash": "fddde4700e9e05f852dc83fcfe38831a",
-    "semantic_hash": ""
-  },
-  "Frontend/public/imagens-geradas/calendar-mobile.png": {
-    "mtime": 1785238501.4569893,
-    "ast_hash": "08c1e05b85612608558d067f6655d1bb",
-    "semantic_hash": ""
-  },
-  "Frontend/public/imagens-geradas/calendar-web.png": {
-    "mtime": 1785119561.046277,
-    "ast_hash": "167769f466305b09a5a49c3c4feabc9f",
-    "semantic_hash": ""
-  },
-  "Frontend/public/imagens-geradas/projects-mobile.png": {
-    "mtime": 1785237931.5320826,
-    "ast_hash": "8946f8e4b4ec3338f983c7d0a2ad4fb9",
-    "semantic_hash": ""
-  },
-  "Frontend/public/imagens-geradas/projects-web.png": {
-    "mtime": 1785118926.2873614,
-    "ast_hash": "e0385cf2ce7be1c2d6768739f529b29e",
-    "semantic_hash": ""
-  },
-  "Frontend/public/imagens-geradas/tasks-mobile.png": {
-    "mtime": 1785208698.4564936,
-    "ast_hash": "16d8fbbdbec2b206547a61eba12b31a2",
-    "semantic_hash": ""
-  },
-  "Frontend/public/imagens-geradas/tasks-web.png": {
-    "mtime": 1785113468.42907,
-    "ast_hash": "c03aab959a5756283d6335dbc05f91b3",
-    "semantic_hash": ""
-  },
-  "Frontend/public/images/guild/Entrada-mobile.png": {
-    "mtime": 1785123315.6973095,
-    "ast_hash": "6e0c8c16cf2bc5abdd84e3ea4b94e962",
-    "semantic_hash": ""
-  },
-  "Frontend/public/images/guild/Entrada-web.png": {
-    "mtime": 1785108297.1650317,
-    "ast_hash": "fddde4700e9e05f852dc83fcfe38831a",
-    "semantic_hash": ""
-  },
-  "Frontend/public/images/guild/calendar-mobile.png": {
-    "mtime": 1785238501.4569893,
-    "ast_hash": "08c1e05b85612608558d067f6655d1bb",
-    "semantic_hash": ""
-  },
-  "Frontend/public/images/guild/calendar-web.png": {
-    "mtime": 1785119561.046277,
-    "ast_hash": "167769f466305b09a5a49c3c4feabc9f",
-    "semantic_hash": ""
-  },
-  "Frontend/public/images/guild/dagger-sprite.png": {
-    "mtime": 1785352862.7296631,
-    "ast_hash": "02491aa15f5162369bde6405105d4ca2",
-    "semantic_hash": ""
-  },
-  "Frontend/public/images/guild/gold-coins-sprite.png": {
-    "mtime": 1785352800.2936037,
-    "ast_hash": "c13f56a765f47ef6a8ea5595e7a6c9aa",
-    "semantic_hash": ""
-  },
-  "Frontend/public/images/guild/projects-mobile.png": {
-    "mtime": 1785237931.5320826,
-    "ast_hash": "8946f8e4b4ec3338f983c7d0a2ad4fb9",
-    "semantic_hash": ""
-  },
-  "Frontend/public/images/guild/projects-web.png": {
-    "mtime": 1785118926.2873614,
-    "ast_hash": "e0385cf2ce7be1c2d6768739f529b29e",
-    "semantic_hash": ""
-  },
-  "Frontend/public/images/guild/tasks-mobile.png": {
-    "mtime": 1785208698.4564936,
-    "ast_hash": "16d8fbbdbec2b206547a61eba12b31a2",
-    "semantic_hash": ""
-  },
-  "Frontend/public/images/guild/tasks-web.png": {
-    "mtime": 1785113468.42907,
-    "ast_hash": "c03aab959a5756283d6335dbc05f91b3",
     "semantic_hash": ""
   }
 }
