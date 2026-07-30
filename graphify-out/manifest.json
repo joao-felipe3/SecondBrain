@@ -2730,8 +2730,8 @@
     "semantic_hash": ""
   },
   "Frontend/pages/index.vue": {
-    "mtime": 1785354825.1958961,
-    "ast_hash": "a020c30401a1106b8ef5098f82133c56",
+    "mtime": 1785437185.7133863,
+    "ast_hash": "c53c1dd215fc7b0aaf2fd105802fe66c",
     "semantic_hash": ""
   },
   "Frontend/pages/projects/index.vue": {
@@ -3195,8 +3195,8 @@
     "semantic_hash": ""
   },
   "Frontend/composables/ui/useGuildAudio.ts": {
-    "mtime": 1785350322.891848,
-    "ast_hash": "15d02e9151efa069e050401acf0ed683",
+    "mtime": 1785437184.8627336,
+    "ast_hash": "0b7e41932287dc31439abd178f5a2f1b",
     "semantic_hash": ""
   },
   "Frontend/composables/ui/useResponsive.ts": {
@@ -3297,6 +3297,16 @@
   "Frontend/public/images/guild/tasks-web.png": {
     "mtime": 1785113468.42907,
     "ast_hash": "c03aab959a5756283d6335dbc05f91b3",
+    "semantic_hash": ""
+  },
+  "Frontend/public/imagens/entrada-bg-clean.png": {
+    "mtime": 1785381369.2752376,
+    "ast_hash": "2bfabf53e6ba9c43df0664b42fe0c045",
+    "semantic_hash": ""
+  },
+  "Frontend/public/images/guild/entrada-bg-clean.png": {
+    "mtime": 1785381369.2752376,
+    "ast_hash": "2bfabf53e6ba9c43df0664b42fe0c045",
     "semantic_hash": ""
   }
 }
