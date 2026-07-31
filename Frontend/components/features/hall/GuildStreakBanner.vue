@@ -16,25 +16,30 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
-import { useTaskStore } from '~/stores/task'
+import { computed } from "vue";
+import { useTaskStore } from "~/stores/task";
 
-const taskStore = useTaskStore()
+const taskStore = useTaskStore();
 
 const completedTasksCount = computed(() => {
-  return taskStore.tasks.filter((t) => t.status === 'done' || t.status === 'completed').length
-})
+  return taskStore.tasks.filter(
+    (t) => t.status === "done" || t.status === "completed",
+  ).length;
+});
 
 const streakDays = computed(() => {
-  return taskStore.habitsDashboard?.streaksOver7Days || (completedTasksCount.value > 0 ? 5 : 1)
-})
+  return (
+    taskStore.habitsDashboard?.streaksOver7Days ||
+    (completedTasksCount.value > 0 ? 5 : 1)
+  );
+});
 </script>
 
 <style scoped>
 .guild-streak-banner {
   position: absolute;
-  top: 25%;
-  left: 48.5%;
+  top: 28.5%;
+  left: 51%;
   transform: translateX(-50%);
   z-index: 6;
   display: flex;
@@ -65,12 +70,7 @@ const streakDays = computed(() => {
 }
 
 .banner-cloth {
-  background: linear-gradient(
-    180deg,
-    #7f1d1d 0%,
-    #991b1b 50%,
-    #450a0a 100%
-  );
+  background: linear-gradient(180deg, #7f1d1d 0%, #991b1b 50%, #450a0a 100%);
   border: 1.5px solid var(--guild-gold-glow);
   border-top: none;
   width: 44px;

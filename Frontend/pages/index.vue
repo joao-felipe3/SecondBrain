@@ -21,11 +21,73 @@
       <!-- CANVAS DE PARTÍCULAS & VFX (LAREIRA E POEIRA DOURADA 60 FPS) -->
       <GuildParticlesCanvas />
 
-      <!-- CAMADA DE ILUMINAÇÃO AMBIENTAL -->
-      <div class="ambient-overlay">
-        <div class="fireplace-glow torch-flicker-effect"></div>
-        <div class="wall-torch-glow torch-left torch-flicker-effect"></div>
-        <div class="desk-candle-glow torch-flicker-effect"></div>
+      <!-- CAMADA DE EFEITOS VISUAIS DE ILUMINAÇÃO & LABAREDAS 2D (VFX LAYER) -->
+      <div class="vfx-layer">
+        <!-- Tocha 1 (Parede Esquerda) -->
+        <div class="torch-container torch-1">
+          <div class="torch-light-glow"></div>
+          <div class="fire-sprite"></div>
+        </div>
+
+        <!-- Tocha 2 (Mural Interno / Quadro de Missões) -->
+        <div class="torch-container torch-2">
+          <div class="torch-light-glow"></div>
+          <div class="fire-sprite"></div>
+        </div>
+
+        <!-- Tocha 3 (Pilastra Centro-Esquerda) -->
+        <div class="torch-container torch-3">
+          <div class="torch-light-glow"></div>
+          <div class="fire-sprite"></div>
+        </div>
+
+        <!-- Tocha 4 (Pilastra Centro-Direita) -->
+        <div class="torch-container torch-4">
+          <div class="torch-light-glow"></div>
+          <div class="fire-sprite"></div>
+        </div>
+
+        <!-- Tocha 5 (Mezanino Superior Esquerdo) -->
+        <div class="torch-container torch-5">
+          <div class="torch-light-glow"></div>
+          <div class="fire-sprite"></div>
+        </div>
+
+        <!-- Tocha 6 (Mezanino Superior Direito) -->
+        <div class="torch-container torch-6">
+          <div class="torch-light-glow"></div>
+          <div class="fire-sprite"></div>
+        </div>
+
+        <!-- Tocha 7 (Térreo Fundo Esquerdo) -->
+        <div class="torch-container torch-7">
+          <div class="torch-light-glow"></div>
+          <div class="fire-sprite"></div>
+        </div>
+
+        <!-- Tocha 8 (Térreo Fundo Direito) -->
+        <div class="torch-container torch-8">
+          <div class="torch-light-glow"></div>
+          <div class="fire-sprite"></div>
+        </div>
+
+        <!-- Tocha 9 (Mezanino Esquerdo Extremo - Parede Escada) -->
+        <div class="torch-container torch-9">
+          <div class="torch-light-glow"></div>
+          <div class="fire-sprite"></div>
+        </div>
+
+        <!-- Lareira ao Fundo + Labaredas + Fagulhas (.hearth-flames) -->
+        <div class="hearth-area hearth-flames">
+          <div class="hearth-fire-glow"></div>
+          <div class="hearth-flame-mask">
+            <div class="fire-sprite hearth-sprite"></div>
+          </div>
+          <span class="spark spark-1"></span>
+          <span class="spark spark-2"></span>
+          <span class="spark spark-3"></span>
+          <span class="spark spark-4"></span>
+        </div>
       </div>
 
       <!-- BANNER SUPERIOR DE BOAS-VINDAS À GUILDA + MUTE CONTROL -->
@@ -422,55 +484,443 @@ onMounted(() => {
   pointer-events: auto;
 }
 
-/* OVERLAYS DE ILUMINAÇÃO AMBIENTAL */
-.ambient-overlay {
+/* CAMADA DE EFEITOS VISUAIS DE ILUMINAÇÃO & LABAREDAS 2D (VFX LAYER) */
+.vfx-layer {
   position: absolute;
   inset: 0;
   pointer-events: none;
-  z-index: 1;
+  z-index: 2;
 }
 
-.fireplace-glow {
+/* CONTAINER DAS TOCHAS */
+.torch-container {
   position: absolute;
-  top: 35%;
-  left: 60%;
-  width: 260px;
-  height: 260px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  transform-origin: center bottom;
+}
+
+/* LABAREDAS ANIMADAS EM FLIPBOOK NO LOCAL (16 FRAMES) */
+.fire-sprite {
+  width: 100%;
+  height: 100%;
+  background-image: url("/vfx/fire-spritesheet-16.png");
+  background-repeat: no-repeat;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+  border-radius: 50% 50% 40% 40%;
+  -webkit-mask-image: linear-gradient(
+    to top,
+    rgba(0, 0, 0, 0.2) 0%,
+    rgba(0, 0, 0, 1) 18%,
+    rgba(0, 0, 0, 1) 100%
+  );
+  mask-image: linear-gradient(
+    to top,
+    rgba(0, 0, 0, 0.2) 0%,
+    rgba(0, 0, 0, 1) 18%,
+    rgba(0, 0, 0, 1) 100%
+  );
+  will-change: background-position, transform;
+}
+
+/* GLOW INTERNO DE LUZ SUAVE DAS TOCHAS (ATMOSFÉRICO) */
+.torch-light-glow {
+  position: absolute;
+  inset: -100%;
   border-radius: 50%;
   background: radial-gradient(
-    circle,
-    rgba(255, 120, 20, 0.32) 0%,
-    rgba(255, 60, 0, 0.14) 50%,
-    transparent 75%
+    ellipse at center,
+    rgba(255, 185, 50, 0.45) 0%,
+    rgba(255, 110, 20, 0.22) 40%,
+    rgba(200, 60, 0, 0.05) 75%,
+    transparent 100%
+  );
+  filter: blur(14px);
+  mix-blend-mode: screen;
+  transform-origin: center;
+  will-change: opacity, transform;
+  pointer-events: none;
+}
+
+/* POSICIONAMENTO EXATO DOS SPRITES DE LABAREDA SOBRE AS TOCHAS (% DO PALCO 16:9) */
+
+/* Tocha 1 (Parede Esquerda) */
+.torch-1 {
+  top: 31.5%;
+  left: 6.4%;
+  width: 72px;
+  height: 108px;
+}
+.torch-1 .fire-sprite {
+  background-size: 1152px 100%; /* 16 frames x 72px */
+  animation: playFire72 1s steps(16) infinite;
+  animation-delay: 0s;
+}
+.torch-1 .torch-light-glow {
+  animation: lightPulse 1.4s ease-in-out infinite alternate;
+  animation-delay: 0s;
+}
+
+/* Tocha 2 (Mural Interno / Quadro de Missões) */
+.torch-2 {
+  top: 40%;
+  left: 22.9%;
+  width: 26px;
+  height: 39px;
+}
+.torch-2 .fire-sprite {
+  background-size: 416px 100%; /* 16 frames x 26px */
+  animation: playFire26 1.2s steps(16) infinite;
+  animation-delay: 0.3s;
+}
+.torch-2 .torch-light-glow {
+  animation: lightPulse 1.7s ease-in-out infinite alternate;
+  animation-delay: 0.3s;
+}
+
+/* Tocha 3 (Pilastra Centro-Esquerda) */
+.torch-3 {
+  top: 33.3%;
+  left: 34.9%;
+  width: 46px;
+  height: 68px;
+}
+.torch-3 .fire-sprite {
+  background-size: 736px 100%; /* 16 frames x 46px */
+  animation: playFire46 0.95s steps(16) infinite;
+  animation-delay: 0.15s;
+}
+.torch-3 .torch-light-glow {
+  animation: lightPulse 1.3s ease-in-out infinite alternate;
+  animation-delay: 0.15s;
+}
+
+/* Tocha 4 (Pilastra Centro-Direita) */
+.torch-4 {
+  top: 33.2%;
+  left: 65.5%;
+  width: 48px;
+  height: 72px;
+}
+.torch-4 .fire-sprite {
+  background-size: 768px 100%; /* 16 frames x 48px */
+  animation: playFire48 1.15s steps(16) infinite;
+  animation-delay: 0.5s;
+}
+.torch-4 .torch-light-glow {
+  animation: lightPulse 1.9s ease-in-out infinite alternate;
+  animation-delay: 0.5s;
+}
+
+/* Tocha 5 (Mezanino Superior Esquerdo - Arco Superior Micro) */
+.torch-5 {
+  top: 23.3%;
+  left: 46.65%;
+  width: 14px;
+  height: 21px;
+}
+.torch-5 .fire-sprite {
+  background-size: 224px 100%; /* 16 frames x 14px */
+  animation: playFire14 1.1s steps(16) infinite;
+  animation-delay: 0.2s;
+}
+.torch-5 .torch-light-glow {
+  animation: lightPulse 1.6s ease-in-out infinite alternate;
+  animation-delay: 0.2s;
+}
+
+/* Tocha 6 (Mezanino Superior Direito - Arco Superior Micro) */
+.torch-6 {
+  top: 23.3%;
+  left: 54.65%;
+  width: 14px;
+  height: 21px;
+}
+.torch-6 .fire-sprite {
+  background-size: 224px 100%; /* 16 frames x 14px */
+  animation: playFire14 1.25s steps(16) infinite;
+  animation-delay: 0.4s;
+}
+.torch-6 .torch-light-glow {
+  animation: lightPulse 1.8s ease-in-out infinite alternate;
+  animation-delay: 0.4s;
+}
+
+/* Tocha 7 (Térreo Fundo Esquerdo - Arco Inferior Micro) */
+.torch-7 {
+  top: 39.8%;
+  left: 46.5%;
+  width: 14px;
+  height: 21px;
+}
+.torch-7 .fire-sprite {
+  background-size: 224px 100%; /* 16 frames x 14px */
+  animation: playFire14 1.15s steps(16) infinite;
+  animation-delay: 0.35s;
+}
+.torch-7 .torch-light-glow {
+  animation: lightPulse 1.5s ease-in-out infinite alternate;
+  animation-delay: 0.35s;
+}
+
+/* Tocha 8 (Térreo Fundo Direito - Arco Inferior Micro) */
+.torch-8 {
+  top: 40%;
+  left: 54.25%;
+  width: 14px;
+  height: 21px;
+}
+.torch-8 .fire-sprite {
+  background-size: 224px 100%; /* 16 frames x 14px */
+  animation: playFire14 1.3s steps(16) infinite;
+  animation-delay: 0.6s;
+}
+.torch-8 .torch-light-glow {
+  animation: lightPulse 1.75s ease-in-out infinite alternate;
+  animation-delay: 0.6s;
+}
+
+/* Tocha 9 (Mezanino Esquerdo Extremo - Parede Escada) */
+.torch-9 {
+  top: 21%;
+  left: 40.4%;
+  width: 14px;
+  height: 21px;
+}
+.torch-9 .fire-sprite {
+  background-size: 224px 100%; /* 16 frames x 14px */
+  animation: playFire14 1.05s steps(16) infinite;
+  animation-delay: 0.1s;
+}
+.torch-9 .torch-light-glow {
+  animation: lightPulse 1.45s ease-in-out infinite alternate;
+  animation-delay: 0.1s;
+}
+
+/* LAREIRA AO FUNDO + LABAREDAS (.hearth-flames) */
+.hearth-area.hearth-flames {
+  position: absolute;
+  top: 45.5%;
+  left: 61%;
+  width: 72px;
+  height: 72px;
+  pointer-events: none;
+}
+
+/* MÁSCARA CAVITÁRIA PARA CONTER O FOGO NAS LATERAIS E ACOMPANHAR O ARCO DA LAREIRA */
+.hearth-flame-mask {
+  position: absolute;
+  top: -8px;
+  left: 15px;
+  width: 42px;
+  height: 72px;
+  overflow: hidden;
+  border-radius: 20px 20px 0 0;
+  -webkit-mask-image: linear-gradient(
+    to top,
+    rgba(0, 0, 0, 0.2) 0%,
+    rgba(0, 0, 0, 1) 12%,
+    rgba(0, 0, 0, 1) 80%,
+    rgba(0, 0, 0, 0) 100%
+  );
+  mask-image: linear-gradient(
+    to top,
+    rgba(0, 0, 0, 0.2) 0%,
+    rgba(0, 0, 0, 1) 12%,
+    rgba(0, 0, 0, 1) 80%,
+    rgba(0, 0, 0, 0) 100%
   );
 }
 
-.wall-torch-glow.torch-left {
-  position: absolute;
-  top: 30%;
-  left: 4%;
-  width: 220px;
-  height: 220px;
-  border-radius: 50%;
-  background: radial-gradient(
-    circle,
-    rgba(255, 150, 30, 0.35) 0%,
-    transparent 70%
-  );
+.hearth-flames .fire-sprite {
+  width: 72px;
+  height: 72px;
+  margin-left: -15px;
+  margin-top: 0px;
+  background-size: 1152px 100%; /* 16 frames x 72px */
+  animation: playFire72 0.85s steps(16) infinite;
+  animation-delay: 0.2s;
 }
 
-.desk-candle-glow {
+/* BRILHO AMBIENTE QUENTE DA LAREIRA AO FUNDO (ATMOSFÉRICO) */
+.hearth-fire-glow {
   position: absolute;
-  bottom: 8%;
-  right: 12%;
-  width: 300px;
-  height: 300px;
+  inset: -140%;
   border-radius: 50%;
   background: radial-gradient(
-    circle,
-    rgba(255, 180, 50, 0.28) 0%,
-    transparent 70%
+    ellipse at center,
+    rgba(255, 160, 30, 0.5) 0%,
+    rgba(255, 90, 10, 0.25) 42%,
+    rgba(210, 50, 0, 0.06) 75%,
+    transparent 100%
   );
+  filter: blur(24px);
+  mix-blend-mode: screen;
+  will-change: opacity, transform;
+  animation: hearthPulse 1.4s ease-in-out infinite alternate;
+}
+
+/* KEYFRAMES DAS LABAREDAS EM FLIPBOOK NO LOCAL (16 FRAMES) */
+@keyframes playFire14 {
+  from {
+    background-position: 0px 0;
+  }
+  to {
+    background-position: -224px 0;
+  }
+}
+
+@keyframes playFire22 {
+  from {
+    background-position: 0px 0;
+  }
+  to {
+    background-position: -352px 0;
+  }
+}
+
+@keyframes playFire36 {
+  from {
+    background-position: 0px 0;
+  }
+  to {
+    background-position: -576px 0;
+  }
+}
+
+@keyframes playFire42 {
+  from {
+    background-position: 0px 0;
+  }
+  to {
+    background-position: -672px 0;
+  }
+}
+
+@keyframes playFire46 {
+  from {
+    background-position: 0px 0;
+  }
+  to {
+    background-position: -736px 0;
+  }
+}
+
+@keyframes playFire48 {
+  from {
+    background-position: 0px 0;
+  }
+  to {
+    background-position: -768px 0;
+  }
+}
+
+@keyframes playFire54 {
+  from {
+    background-position: 0px 0;
+  }
+  to {
+    background-position: -864px 0;
+  }
+}
+
+@keyframes playFire26 {
+  from {
+    background-position: 0px 0;
+  }
+  to {
+    background-position: -416px 0;
+  }
+}
+
+@keyframes playFire72 {
+  from {
+    background-position: 0px 0;
+  }
+  to {
+    background-position: -1152px 0;
+  }
+}
+
+/* KEYFRAMES DO PULSO DE LUZ DAS TOCHAS */
+@keyframes lightPulse {
+  0% {
+    opacity: 0.55;
+    transform: scale(0.95);
+  }
+  50% {
+    opacity: 0.88;
+    transform: scale(1.06);
+  }
+  100% {
+    opacity: 0.6;
+    transform: scale(0.98);
+  }
+}
+
+/* KEYFRAMES DA LAREIRA DO FUNDO */
+@keyframes hearthPulse {
+  0% {
+    opacity: 0.65;
+    transform: scale(0.95);
+  }
+  100% {
+    opacity: 0.98;
+    transform: scale(1.08);
+  }
+}
+
+/* FAGULHAS (EMBERS) SUBINDO EM LOOP DA LAREIRA */
+.spark {
+  position: absolute;
+  bottom: 15%;
+  width: 2px;
+  height: 2px;
+  background: #ffea70;
+  border-radius: 50%;
+  box-shadow:
+    0 0 3px #ffaa00,
+    0 0 5px #ff4400;
+  will-change: opacity, transform;
+  animation: sparkRise 1.6s ease-out infinite;
+}
+
+.spark-1 {
+  left: 20%;
+  animation-delay: 0s;
+  --drift: -8px;
+}
+
+.spark-2 {
+  left: 45%;
+  animation-delay: 0.4s;
+  --drift: 6px;
+}
+
+.spark-3 {
+  left: 70%;
+  animation-delay: 0.8s;
+  --drift: -4px;
+}
+
+.spark-4 {
+  left: 85%;
+  animation-delay: 1.2s;
+  --drift: 10px;
+}
+
+@keyframes sparkRise {
+  0% {
+    opacity: 1;
+    transform: translateY(0) translateX(0) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-35px) translateX(var(--drift, 6px)) scale(0.3);
+  }
 }
 
 /* BANNER DIEGÉTICO NO TOPO */
