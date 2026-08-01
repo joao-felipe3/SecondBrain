@@ -6,90 +6,238 @@
       :class="{ 'is-active': isTransitioning }"
     ></div>
 
-    <!-- PALCO DIEGÉTICO PANORÂMICO 16:9 COM ACELERAÇÃO DE GPU -->
+    <!-- CAMADA 1: FUNDO ELÁSTICO BLEED & VIGNETTE (100vw x 100vh) -->
     <div
-      class="guild-stage-container"
-      :class="{
-        'is-camera-hovering': isLeftArchHovered && !isTransitioning,
-        'is-camera-zooming': isTransitioning,
-      }"
-      :style="{
-        backgroundImage: `url(${backgroundImageUrl})`,
-        transformOrigin: zoomTransformOrigin,
-      }"
-    >
-      <!-- CANVAS DE PARTÍCULAS & VFX (LAREIRA E POEIRA DOURADA 60 FPS) -->
-      <GuildParticlesCanvas />
+      class="guild-bg-bleed"
+      :style="{ backgroundImage: `url(${backgroundImageUrl})` }"
+    ></div>
 
-      <!-- CAMADA DE EFEITOS VISUAIS DE ILUMINAÇÃO & LABAREDAS 2D (VFX LAYER) -->
-      <div class="vfx-layer">
-        <!-- Tocha 1 (Parede Esquerda) -->
-        <div class="torch-container torch-1">
-          <div class="torch-light-glow"></div>
-          <div class="fire-sprite"></div>
-        </div>
+    <!-- CAMADA 2: PALCO CENTRAL DIEGÉTICO 16:9 (WORLD SPACE - PROPORÇÃO TRAVADA 16:9) -->
+    <div class="guild-stage-viewport">
+      <div
+        class="guild-stage-container"
+        :class="{
+          'is-camera-hovering': isLeftArchHovered && !isTransitioning,
+          'is-camera-zooming': isTransitioning,
+        }"
+        :style="{
+          backgroundImage: `url(${backgroundImageUrl})`,
+          transformOrigin: zoomTransformOrigin,
+        }"
+      >
+        <!-- CANVAS DE PARTÍCULAS & VFX (LAREIRA E POEIRA DOURADA 60 FPS) -->
+        <GuildParticlesCanvas />
 
-        <!-- Tocha 2 (Mural Interno / Quadro de Missões) -->
-        <div class="torch-container torch-2">
-          <div class="torch-light-glow"></div>
-          <div class="fire-sprite"></div>
-        </div>
-
-        <!-- Tocha 3 (Pilastra Centro-Esquerda) -->
-        <div class="torch-container torch-3">
-          <div class="torch-light-glow"></div>
-          <div class="fire-sprite"></div>
-        </div>
-
-        <!-- Tocha 4 (Pilastra Centro-Direita) -->
-        <div class="torch-container torch-4">
-          <div class="torch-light-glow"></div>
-          <div class="fire-sprite"></div>
-        </div>
-
-        <!-- Tocha 5 (Mezanino Superior Esquerdo) -->
-        <div class="torch-container torch-5">
-          <div class="torch-light-glow"></div>
-          <div class="fire-sprite"></div>
-        </div>
-
-        <!-- Tocha 6 (Mezanino Superior Direito) -->
-        <div class="torch-container torch-6">
-          <div class="torch-light-glow"></div>
-          <div class="fire-sprite"></div>
-        </div>
-
-        <!-- Tocha 7 (Térreo Fundo Esquerdo) -->
-        <div class="torch-container torch-7">
-          <div class="torch-light-glow"></div>
-          <div class="fire-sprite"></div>
-        </div>
-
-        <!-- Tocha 8 (Térreo Fundo Direito) -->
-        <div class="torch-container torch-8">
-          <div class="torch-light-glow"></div>
-          <div class="fire-sprite"></div>
-        </div>
-
-        <!-- Tocha 9 (Mezanino Esquerdo Extremo - Parede Escada) -->
-        <div class="torch-container torch-9">
-          <div class="torch-light-glow"></div>
-          <div class="fire-sprite"></div>
-        </div>
-
-        <!-- Lareira ao Fundo + Labaredas + Fagulhas (.hearth-flames) -->
-        <div class="hearth-area hearth-flames">
-          <div class="hearth-fire-glow"></div>
-          <div class="hearth-flame-mask">
-            <div class="fire-sprite hearth-sprite"></div>
+        <!-- CAMADA DE EFEITOS VISUAIS DE ILUMINAÇÃO & LABAREDAS 2D (VFX LAYER) -->
+        <div class="vfx-layer">
+          <!-- Tocha 1 (Parede Esquerda) -->
+          <div class="torch-container torch-1">
+            <div class="torch-light-glow"></div>
+            <div class="fire-sprite"></div>
           </div>
-          <span class="spark spark-1"></span>
-          <span class="spark spark-2"></span>
-          <span class="spark spark-3"></span>
-          <span class="spark spark-4"></span>
-        </div>
-      </div>
 
+          <!-- Tocha 2 (Mural Interno / Quadro de Missões) -->
+          <div class="torch-container torch-2">
+            <div class="torch-light-glow"></div>
+            <div class="fire-sprite"></div>
+          </div>
+
+          <!-- Tocha 3 (Pilastra Centro-Esquerda) -->
+          <div class="torch-container torch-3">
+            <div class="torch-light-glow"></div>
+            <div class="fire-sprite"></div>
+          </div>
+
+          <!-- Tocha 4 (Pilastra Centro-Direita) -->
+          <div class="torch-container torch-4">
+            <div class="torch-light-glow"></div>
+            <div class="fire-sprite"></div>
+          </div>
+
+          <!-- Tocha 5 (Mezanino Superior Esquerdo) -->
+          <div class="torch-container torch-5">
+            <div class="torch-light-glow"></div>
+            <div class="fire-sprite"></div>
+          </div>
+
+          <!-- Tocha 6 (Mezanino Superior Direito) -->
+          <div class="torch-container torch-6">
+            <div class="torch-light-glow"></div>
+            <div class="fire-sprite"></div>
+          </div>
+
+          <!-- Tocha 7 (Térreo Fundo Esquerdo) -->
+          <div class="torch-container torch-7">
+            <div class="torch-light-glow"></div>
+            <div class="fire-sprite"></div>
+          </div>
+
+          <!-- Tocha 8 (Térreo Fundo Direito) -->
+          <div class="torch-container torch-8">
+            <div class="torch-light-glow"></div>
+            <div class="fire-sprite"></div>
+          </div>
+
+          <!-- Tocha 9 (Mezanino Esquerdo Extremo - Parede Escada) -->
+          <div class="torch-container torch-9">
+            <div class="torch-light-glow"></div>
+            <div class="fire-sprite"></div>
+          </div>
+
+          <!-- Lareira ao Fundo + Labaredas + Fagulhas (.hearth-flames) -->
+          <div class="hearth-area hearth-flames">
+            <div class="hearth-fire-glow"></div>
+            <div class="hearth-flame-mask">
+              <div class="fire-sprite hearth-sprite"></div>
+            </div>
+            <span class="spark spark-1"></span>
+            <span class="spark spark-2"></span>
+            <span class="spark spark-3"></span>
+            <span class="spark spark-4"></span>
+          </div>
+        </div>
+
+        <!-- ESTANDARTE DE STREAK NA PAREDE (CENTRO) -->
+        <GuildStreakBanner v-if="!isMobile" />
+
+        <!-- NPCS VIVOS & BALÕES DE FALA -->
+        <GuildNpcSpeechBubble v-if="!isMobile" />
+
+        <!-- CAMADA DE OVERLAY SVG PARA ALINHAMENTO PRECISO (VIEWBOX 1000 x 562.5) -->
+        <svg
+          v-if="!isMobile"
+          class="guild-svg-overlay"
+          viewBox="0 0 1000 562.5"
+          preserveAspectRatio="none"
+        >
+          <defs>
+            <!-- ClipPath do Arco da Esquerda (Posicionado no Vão Esquerdo do Saguão) -->
+            <clipPath id="left-arch-clip">
+              <path
+                d="M 30 550 L 30 240 Q 30 90 160 90 Q 290 90 290 240 L 290 550 Z"
+              />
+            </clipPath>
+
+            <!-- Gradiente Radial para Luz Interna Pulsante -->
+            <radialGradient id="portal-glow-gradient" cx="16%" cy="45%" r="35%">
+              <stop offset="0%" stop-color="#ffe082" stop-opacity="0.9" />
+              <stop offset="50%" stop-color="#ffb74d" stop-opacity="0.5" />
+              <stop offset="100%" stop-color="#f57c00" stop-opacity="0" />
+            </radialGradient>
+          </defs>
+
+          <!-- LUZ INTERNA MOVIMENTADA (COLOR-DODGE CLIPADO NO PERFIL DO ARCO) -->
+          <g clip-path="url(#left-arch-clip)">
+            <rect
+              x="0"
+              y="0"
+              width="1000"
+              height="562.5"
+              fill="url(#portal-glow-gradient)"
+              class="arch-internal-glow"
+              :class="{ 'is-hovered': isLeftArchHovered }"
+            />
+          </g>
+
+          <!-- PATH INTERATIVO DO ARCO DA ESQUERDA (NO PALCO PANORÂMICO) -->
+          <path
+            class="portal-arch-left"
+            d="M 30 550 L 30 240 Q 30 90 160 90 Q 290 90 290 240 L 290 550 Z"
+            @click="handleLeftArchClick"
+            @mouseenter="onLeftArchHover"
+            @mouseleave="onLeftArchLeave"
+          />
+        </svg>
+
+        <!-- ETIQUETA FLUTUANTE DINÂMICA (⚔️ Mural de Missões) -->
+        <div
+          v-if="!isMobile"
+          class="floating-arch-tag left-arch-tag"
+          :class="{ 'is-visible': isLeftArchHovered }"
+        >
+          <div class="arch-tag-content">
+            <UiWaxSeal color="red" size="sm" icon="⚔️" />
+            <span class="arch-tag-text">Mural de Missões</span>
+          </div>
+        </div>
+
+        <!-- HOTSPOTS DIEGÉTICOS (DIREITO, MESA E EASTER EGGS) -->
+        <div v-if="!isMobile" class="diegetic-hotspots-layer">
+          <!-- HOTSPOT DIREITO: BIBLIOTECA DE ARQUIVOS DE PROJETOS (/projects) -->
+          <NuxtLink
+            to="/projects"
+            class="hotspot-area arch-library-area"
+            @mouseenter="
+              hoverTooltip = '📚 Acessar Biblioteca de Arquivos e Projetos'
+            "
+            @mouseleave="hoverTooltip = null"
+          >
+            <div class="hotspot-arch-glow glow-rune-blue"></div>
+            <div class="hotspot-diegetic-label">
+              <UiWaxSeal color="blue" size="sm" icon="📚" />
+              <span class="label-title">Biblioteca de Arquivos</span>
+            </div>
+          </NuxtLink>
+
+          <!-- WIDGET DO LIVRO ABERTO -->
+          <div
+            class="desk-book-widget-container"
+            @click="openReception"
+            @mouseenter="
+              hoverTooltip = '📖 Clique para abrir Grimório Completo da Guilda'
+            "
+            @mouseleave="hoverTooltip = null"
+          >
+            <GuildDeskBookWidget />
+          </div>
+
+          <!-- EASTER EGG: ADAGA FINCADA NA MADEIRA -->
+          <div
+            class="hotspot-area dagger-easter-egg-area"
+            :class="{ 'animate-dagger-shake': isDaggerShaking }"
+            @click="triggerDaggerInteraction"
+            @mouseenter="hoverTooltip = '🗡️ Testar a lâmina da adaga fincada'"
+            @mouseleave="hoverTooltip = null"
+          >
+            <div class="dagger-highlight-aura"></div>
+            <span v-if="isDaggerShaking" class="dagger-sparks">✨</span>
+          </div>
+
+          <!-- EASTER EGG: PILHA DE MOEDAS DE OURO -->
+          <div
+            class="hotspot-area coins-easter-egg-area"
+            @click="triggerCoinsInteraction"
+            @mouseenter="hoverTooltip = '🪙 Tocar moedas de ouro da guilda'"
+            @mouseleave="hoverTooltip = null"
+          >
+            <div class="coins-highlight-aura"></div>
+            <div
+              v-for="pop in goldPopups"
+              :key="pop.id"
+              class="floating-gold-popup"
+              :style="{ left: `${pop.x}px`, top: `${pop.y}px` }"
+            >
+              <span>+100 XP 🪙</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- TOOLTIP DIEGÉTICO FLUTUANTE (DESKTOP) -->
+        <Transition name="fade-tooltip">
+          <div
+            v-if="hoverTooltip && !isMobile && !isLeftArchHovered"
+            class="diegetic-tooltip-container"
+          >
+            <UiParchmentCard class="tooltip-parchment-box">
+              <span class="tooltip-text">{{ hoverTooltip }}</span>
+            </UiParchmentCard>
+          </div>
+        </Transition>
+      </div>
+    </div>
+
+    <!-- CAMADA 3: HUD ANCORADO NA TELA FÍSICA (SCREEN SPACE - ANCHORS NOS 4 CANTOS) -->
+    <div class="guild-hud-layer">
       <!-- BANNER SUPERIOR DE BOAS-VINDAS À GUILDA + MUTE CONTROL -->
       <header class="guild-top-banner">
         <div class="diegetic-banner-box">
@@ -114,143 +262,6 @@
           </button>
         </div>
       </header>
-
-      <!-- ESTANDARTE DE STREAK NA PAREDE (CENTRO) -->
-      <GuildStreakBanner v-if="!isMobile" />
-
-      <!-- NPCS VIVOS & BALÕES DE FALA -->
-      <GuildNpcSpeechBubble v-if="!isMobile" />
-
-      <!-- CAMADA DE OVERLAY SVG PARA ALINHAMENTO PRECISO (VIEWBOX 1000 x 562.5) -->
-      <svg
-        v-if="!isMobile"
-        class="guild-svg-overlay"
-        viewBox="0 0 1000 562.5"
-        preserveAspectRatio="none"
-      >
-        <defs>
-          <!-- ClipPath do Arco da Esquerda (Posicionado no Vão Esquerdo do Saguão) -->
-          <clipPath id="left-arch-clip">
-            <path
-              d="M 30 550 L 30 240 Q 30 90 160 90 Q 290 90 290 240 L 290 550 Z"
-            />
-          </clipPath>
-
-          <!-- Gradiente Radial para Luz Interna Pulsante -->
-          <radialGradient id="portal-glow-gradient" cx="16%" cy="45%" r="35%">
-            <stop offset="0%" stop-color="#ffe082" stop-opacity="0.9" />
-            <stop offset="50%" stop-color="#ffb74d" stop-opacity="0.5" />
-            <stop offset="100%" stop-color="#f57c00" stop-opacity="0" />
-          </radialGradient>
-        </defs>
-
-        <!-- LUZ INTERNA MOVIMENTADA (COLOR-DODGE CLIPADO NO PERFIL DO ARCO) -->
-        <g clip-path="url(#left-arch-clip)">
-          <rect
-            x="0"
-            y="0"
-            width="1000"
-            height="562.5"
-            fill="url(#portal-glow-gradient)"
-            class="arch-internal-glow"
-            :class="{ 'is-hovered': isLeftArchHovered }"
-          />
-        </g>
-
-        <!-- PATH INTERATIVO DO ARCO DA ESQUERDA (NO PALCO PANORÂMICO) -->
-        <path
-          class="portal-arch-left"
-          d="M 30 550 L 30 240 Q 30 90 160 90 Q 290 90 290 240 L 290 550 Z"
-          @click="handleLeftArchClick"
-          @mouseenter="onLeftArchHover"
-          @mouseleave="onLeftArchLeave"
-        />
-      </svg>
-
-      <!-- ETIQUETA FLUTUANTE DINÂMICA (⚔️ Mural de Missões) -->
-      <div
-        v-if="!isMobile"
-        class="floating-arch-tag left-arch-tag"
-        :class="{ 'is-visible': isLeftArchHovered }"
-      >
-        <div class="arch-tag-content">
-          <UiWaxSeal color="red" size="sm" icon="⚔️" />
-          <span class="arch-tag-text">Mural de Missões</span>
-        </div>
-      </div>
-
-      <!-- HOTSPOTS DIEGÉTICOS (DIREITO, MESA E EASTER EGGS) -->
-      <div v-if="!isMobile" class="diegetic-hotspots-layer">
-        <!-- HOTSPOT DIREITO: BIBLIOTECA DE ARQUIVOS DE PROJETOS (/projects) -->
-        <NuxtLink
-          to="/projects"
-          class="hotspot-area arch-library-area"
-          @mouseenter="
-            hoverTooltip = '📚 Acessar Biblioteca de Arquivos e Projetos'
-          "
-          @mouseleave="hoverTooltip = null"
-        >
-          <div class="hotspot-arch-glow glow-rune-blue"></div>
-          <div class="hotspot-diegetic-label">
-            <UiWaxSeal color="blue" size="sm" icon="📚" />
-            <span class="label-title">Biblioteca de Arquivos</span>
-          </div>
-        </NuxtLink>
-
-        <!-- WIDGET DO LIVRO ABERTO -->
-        <div
-          class="desk-book-widget-container"
-          @click="openReception"
-          @mouseenter="
-            hoverTooltip = '📖 Clique para abrir Grimório Completo da Guilda'
-          "
-          @mouseleave="hoverTooltip = null"
-        >
-          <GuildDeskBookWidget />
-        </div>
-
-        <!-- EASTER EGG: ADAGA FINCADA NA MADEIRA -->
-        <div
-          class="hotspot-area dagger-easter-egg-area"
-          :class="{ 'animate-dagger-shake': isDaggerShaking }"
-          @click="triggerDaggerInteraction"
-          @mouseenter="hoverTooltip = '🗡️ Testar a lâmina da adaga fincada'"
-          @mouseleave="hoverTooltip = null"
-        >
-          <div class="dagger-highlight-aura"></div>
-          <span v-if="isDaggerShaking" class="dagger-sparks">✨</span>
-        </div>
-
-        <!-- EASTER EGG: PILHA DE MOEDAS DE OURO -->
-        <div
-          class="hotspot-area coins-easter-egg-area"
-          @click="triggerCoinsInteraction"
-          @mouseenter="hoverTooltip = '🪙 Tocar moedas de ouro da guilda'"
-          @mouseleave="hoverTooltip = null"
-        >
-          <div class="coins-highlight-aura"></div>
-          <div
-            v-for="pop in goldPopups"
-            :key="pop.id"
-            class="floating-gold-popup"
-            :style="{ left: `${pop.x}px`, top: `${pop.y}px` }"
-          >
-            <span>+100 XP 🪙</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- TOOLTIP DIEGÉTICO FLUTUANTE (DESKTOP) -->
-      <Transition name="fade-tooltip">
-        <div
-          v-if="hoverTooltip && !isMobile && !isLeftArchHovered"
-          class="diegetic-tooltip-container"
-        >
-          <UiParchmentCard class="tooltip-parchment-box">
-            <span class="tooltip-text">{{ hoverTooltip }}</span>
-          </UiParchmentCard>
-        </div>
-      </Transition>
 
       <!-- BARRA FLUTUANTE DE NAVEGAÇÃO DIÁRIA (MOBILE < 960px) -->
       <div v-if="isMobile" class="mobile-bottom-journal">
@@ -427,6 +438,36 @@ onMounted(() => {
   overflow: hidden;
   background-color: var(--guild-wood-dark, #1c140e);
   z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* CAMADA 1: FUNDO ELÁSTICO BLEED & VIGNETTE (100vw x 100vh) */
+.guild-bg-bleed {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center center;
+  background-repeat: no-repeat;
+  filter: blur(14px) brightness(0.35) contrast(1.1);
+  transform: scale(1.08);
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* CAMADA 2: PALCO CENTRAL DIEGÉTICO 16:9 (WORLD SPACE - PROPORÇÃO TRAVADA 16:9) */
+.guild-stage-viewport {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  max-width: 100vw;
+  max-height: 100vh;
+  aspect-ratio: 16 / 9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
   perspective: 1200px;
   perspective-origin: 50% 50%;
 }
@@ -435,7 +476,7 @@ onMounted(() => {
 .guild-stage-container {
   width: 100%;
   height: 100%;
-  background-size: cover;
+  background-size: 100% 100%;
   background-position: center center;
   background-repeat: no-repeat;
   position: relative;
@@ -444,6 +485,19 @@ onMounted(() => {
   transition:
     transform 0.6s cubic-bezier(0.25, 1, 0.5, 1),
     filter 0.6s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+/* CAMADA 3: HUD ANCORADO NA TELA FÍSICA (SCREEN SPACE - ANCHORS NOS 4 CANTOS) */
+.guild-hud-layer {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px)
+    env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px);
 }
 
 /* PRÉVIA DO GIRO DE CÂMERA 3D À DIREITA NO HOVER */
@@ -566,7 +620,7 @@ onMounted(() => {
 
 /* Tocha 2 (Mural Interno / Quadro de Missões) */
 .torch-2 {
-  top: 40%;
+  top: 40.5%;
   left: 22.9%;
   width: 26px;
   height: 39px;
@@ -583,7 +637,7 @@ onMounted(() => {
 
 /* Tocha 3 (Pilastra Centro-Esquerda) */
 .torch-3 {
-  top: 33.3%;
+  top: 34.2%;
   left: 34.9%;
   width: 46px;
   height: 68px;
@@ -600,7 +654,7 @@ onMounted(() => {
 
 /* Tocha 4 (Pilastra Centro-Direita) */
 .torch-4 {
-  top: 33.2%;
+  top: 34.2%;
   left: 65.5%;
   width: 48px;
   height: 72px;
@@ -617,8 +671,8 @@ onMounted(() => {
 
 /* Tocha 5 (Mezanino Superior Esquerdo - Arco Superior Micro) */
 .torch-5 {
-  top: 23.3%;
-  left: 46.65%;
+  top: 25.8%;
+  left: 46.7%;
   width: 14px;
   height: 21px;
 }
@@ -634,7 +688,7 @@ onMounted(() => {
 
 /* Tocha 6 (Mezanino Superior Direito - Arco Superior Micro) */
 .torch-6 {
-  top: 23.3%;
+  top: 25.8%;
   left: 54.65%;
   width: 14px;
   height: 21px;
@@ -651,7 +705,7 @@ onMounted(() => {
 
 /* Tocha 7 (Térreo Fundo Esquerdo - Arco Inferior Micro) */
 .torch-7 {
-  top: 39.8%;
+  top: 40.8%;
   left: 46.5%;
   width: 14px;
   height: 21px;
@@ -668,7 +722,7 @@ onMounted(() => {
 
 /* Tocha 8 (Térreo Fundo Direito - Arco Inferior Micro) */
 .torch-8 {
-  top: 40%;
+  top: 40.8%;
   left: 54.25%;
   width: 14px;
   height: 21px;
@@ -685,7 +739,7 @@ onMounted(() => {
 
 /* Tocha 9 (Mezanino Esquerdo Extremo - Parede Escada) */
 .torch-9 {
-  top: 21%;
+  top: 23.7%;
   left: 40.4%;
   width: 14px;
   height: 21px;
@@ -923,13 +977,14 @@ onMounted(() => {
   }
 }
 
-/* BANNER DIEGÉTICO NO TOPO */
+/* BANNER DIEGÉTICO NO TOPO (HUD LAYER) */
 .guild-top-banner {
   position: absolute;
   top: 1.25rem;
   left: 50%;
   transform: translateX(-50%);
   z-index: 10;
+  pointer-events: auto;
 }
 
 .diegetic-banner-box {

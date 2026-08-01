@@ -2,18 +2,18 @@
 
 ## Corpus Check
 
-- 608 files · ~5,855,431 words
+- 608 files · ~5,860,088 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
 
-- 4721 nodes · 10316 edges · 256 communities (221 shown, 35 thin omitted)
+- 4721 nodes · 10316 edges · 257 communities (221 shown, 36 thin omitted)
 - Extraction: 100% EXTRACTED · 0% INFERRED · 0% AMBIGUOUS · INFERRED: 35 edges (avg confidence: 0.6)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
 
-- Built from commit: `9923c410`
+- Built from commit: `d0a0d27d`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -182,7 +182,7 @@
 - scripts
 - GitHub Copilot Instructions
 - 🧠 Fase 10 - IA Autônoma, Memória Semântica e Guardião do OS
-- projects.service.ts
+- ConvertWBSToTasksDto
 - Tasks Analysis Services
 - PrivatePertAiService
 - confirm
@@ -258,6 +258,7 @@
 - typescript
 - typescript-eslint
 - formdata-polyfill
+- WaveAssignerInterface
 
 ## God Nodes (most connected - your core abstractions)
 
@@ -287,26 +288,26 @@
 
 ## Import Cycles
 
-- 4-file cycle: `Backend/src/projects/services/drafts/draft-plan-generation.service.ts -> Backend/src/projects/services/wbs/index.ts -> Backend/src/projects/services/wbs/conversion/task-conversion-helper.service.ts -> Backend/src/projects/services/drafts/index.ts -> Backend/src/projects/services/drafts/draft-plan-generation.service.ts`
-- 4-file cycle: `Backend/src/projects/services/drafts/draft-single-pass-generation.service.ts -> Backend/src/projects/services/wbs/index.ts -> Backend/src/projects/services/wbs/conversion/task-conversion-helper.service.ts -> Backend/src/projects/services/drafts/index.ts -> Backend/src/projects/services/drafts/draft-single-pass-generation.service.ts`
 - 4-file cycle: `Backend/src/projects/services/drafts/draft-with-plan-generation.service.ts -> Backend/src/projects/services/wbs/index.ts -> Backend/src/projects/services/wbs/conversion/task-conversion-helper.service.ts -> Backend/src/projects/services/drafts/index.ts -> Backend/src/projects/services/drafts/draft-with-plan-generation.service.ts`
-- 4-file cycle: `Backend/src/projects/services/drafts/draft-plan-generation.service.ts -> Backend/src/projects/services/wbs/index.ts -> Backend/src/projects/services/wbs/conversion/wbs-conversion-orchestrator.service.ts -> Backend/src/projects/services/drafts/index.ts -> Backend/src/projects/services/drafts/draft-plan-generation.service.ts`
-- 4-file cycle: `Backend/src/projects/services/drafts/draft-single-pass-generation.service.ts -> Backend/src/projects/services/wbs/index.ts -> Backend/src/projects/services/wbs/conversion/wbs-conversion-orchestrator.service.ts -> Backend/src/projects/services/drafts/index.ts -> Backend/src/projects/services/drafts/draft-single-pass-generation.service.ts`
 - 4-file cycle: `Backend/src/projects/services/drafts/draft-with-plan-generation.service.ts -> Backend/src/projects/services/wbs/index.ts -> Backend/src/projects/services/wbs/conversion/wbs-conversion-orchestrator.service.ts -> Backend/src/projects/services/drafts/index.ts -> Backend/src/projects/services/drafts/draft-with-plan-generation.service.ts`
-- 5-file cycle: `Backend/src/projects/services/drafts/draft-generation.service.ts -> Backend/src/projects/services/drafts/draft-plan-generation.service.ts -> Backend/src/projects/services/wbs/index.ts -> Backend/src/projects/services/wbs/conversion/task-conversion-helper.service.ts -> Backend/src/projects/services/drafts/index.ts -> Backend/src/projects/services/drafts/draft-generation.service.ts`
-- 5-file cycle: `Backend/src/projects/services/drafts/draft-generation.service.ts -> Backend/src/projects/services/drafts/draft-single-pass-generation.service.ts -> Backend/src/projects/services/wbs/index.ts -> Backend/src/projects/services/wbs/conversion/task-conversion-helper.service.ts -> Backend/src/projects/services/drafts/index.ts -> Backend/src/projects/services/drafts/draft-generation.service.ts`
-- 5-file cycle: `Backend/src/projects/services/drafts/draft-generation.service.ts -> Backend/src/projects/services/drafts/draft-with-plan-generation.service.ts -> Backend/src/projects/services/wbs/index.ts -> Backend/src/projects/services/wbs/conversion/task-conversion-helper.service.ts -> Backend/src/projects/services/drafts/index.ts -> Backend/src/projects/services/drafts/draft-generation.service.ts`
-- 5-file cycle: `Backend/src/projects/services/drafts/draft-plan-generation.service.ts -> Backend/src/projects/services/wbs/index.ts -> Backend/src/projects/services/wbs/conversion/task-conversion.service.ts -> Backend/src/projects/services/wbs/conversion/task-conversion-helper.service.ts -> Backend/src/projects/services/drafts/index.ts -> Backend/src/projects/services/drafts/draft-plan-generation.service.ts`
-- 5-file cycle: `Backend/src/projects/services/drafts/draft-single-pass-generation.service.ts -> Backend/src/projects/services/wbs/index.ts -> Backend/src/projects/services/wbs/conversion/task-conversion.service.ts -> Backend/src/projects/services/wbs/conversion/task-conversion-helper.service.ts -> Backend/src/projects/services/drafts/index.ts -> Backend/src/projects/services/drafts/draft-single-pass-generation.service.ts`
-- 5-file cycle: `Backend/src/projects/services/drafts/draft-with-plan-generation.service.ts -> Backend/src/projects/services/wbs/index.ts -> Backend/src/projects/services/wbs/conversion/task-conversion.service.ts -> Backend/src/projects/services/wbs/conversion/task-conversion-helper.service.ts -> Backend/src/projects/services/drafts/index.ts -> Backend/src/projects/services/drafts/draft-with-plan-generation.service.ts`
-- 5-file cycle: `Backend/src/projects/services/drafts/draft-generation.service.ts -> Backend/src/projects/services/drafts/draft-plan-generation.service.ts -> Backend/src/projects/services/wbs/index.ts -> Backend/src/projects/services/wbs/conversion/wbs-conversion-orchestrator.service.ts -> Backend/src/projects/services/drafts/index.ts -> Backend/src/projects/services/drafts/draft-generation.service.ts`
-- 5-file cycle: `Backend/src/projects/services/drafts/draft-generation.service.ts -> Backend/src/projects/services/drafts/draft-single-pass-generation.service.ts -> Backend/src/projects/services/wbs/index.ts -> Backend/src/projects/services/wbs/conversion/wbs-conversion-orchestrator.service.ts -> Backend/src/projects/services/drafts/index.ts -> Backend/src/projects/services/drafts/draft-generation.service.ts`
-- 5-file cycle: `Backend/src/projects/services/drafts/draft-generation.service.ts -> Backend/src/projects/services/drafts/draft-with-plan-generation.service.ts -> Backend/src/projects/services/wbs/index.ts -> Backend/src/projects/services/wbs/conversion/wbs-conversion-orchestrator.service.ts -> Backend/src/projects/services/drafts/index.ts -> Backend/src/projects/services/drafts/draft-generation.service.ts`
+- 4-file cycle: `Backend/src/projects/services/drafts/draft-single-pass-generation.service.ts -> Backend/src/projects/services/wbs/index.ts -> Backend/src/projects/services/wbs/conversion/task-conversion-helper.service.ts -> Backend/src/projects/services/drafts/index.ts -> Backend/src/projects/services/drafts/draft-single-pass-generation.service.ts`
+- 4-file cycle: `Backend/src/projects/services/drafts/draft-single-pass-generation.service.ts -> Backend/src/projects/services/wbs/index.ts -> Backend/src/projects/services/wbs/conversion/wbs-conversion-orchestrator.service.ts -> Backend/src/projects/services/drafts/index.ts -> Backend/src/projects/services/drafts/draft-single-pass-generation.service.ts`
+- 4-file cycle: `Backend/src/projects/services/drafts/draft-plan-generation.service.ts -> Backend/src/projects/services/wbs/index.ts -> Backend/src/projects/services/wbs/conversion/task-conversion-helper.service.ts -> Backend/src/projects/services/drafts/index.ts -> Backend/src/projects/services/drafts/draft-plan-generation.service.ts`
+- 4-file cycle: `Backend/src/projects/services/drafts/draft-plan-generation.service.ts -> Backend/src/projects/services/wbs/index.ts -> Backend/src/projects/services/wbs/conversion/wbs-conversion-orchestrator.service.ts -> Backend/src/projects/services/drafts/index.ts -> Backend/src/projects/services/drafts/draft-plan-generation.service.ts`
 - 5-file cycle: `Backend/src/projects/services/drafts/draft-plan-generation.service.ts -> Backend/src/projects/services/wbs/index.ts -> Backend/src/projects/services/wbs/core/wbs.service.ts -> Backend/src/projects/services/wbs/conversion/wbs-conversion-orchestrator.service.ts -> Backend/src/projects/services/drafts/index.ts -> Backend/src/projects/services/drafts/draft-plan-generation.service.ts`
 - 5-file cycle: `Backend/src/projects/services/drafts/draft-single-pass-generation.service.ts -> Backend/src/projects/services/wbs/index.ts -> Backend/src/projects/services/wbs/core/wbs.service.ts -> Backend/src/projects/services/wbs/conversion/wbs-conversion-orchestrator.service.ts -> Backend/src/projects/services/drafts/index.ts -> Backend/src/projects/services/drafts/draft-single-pass-generation.service.ts`
 - 5-file cycle: `Backend/src/projects/services/drafts/draft-with-plan-generation.service.ts -> Backend/src/projects/services/wbs/index.ts -> Backend/src/projects/services/wbs/core/wbs.service.ts -> Backend/src/projects/services/wbs/conversion/wbs-conversion-orchestrator.service.ts -> Backend/src/projects/services/drafts/index.ts -> Backend/src/projects/services/drafts/draft-with-plan-generation.service.ts`
+- 5-file cycle: `Backend/src/projects/services/drafts/draft-plan-generation.service.ts -> Backend/src/projects/services/wbs/index.ts -> Backend/src/projects/services/wbs/conversion/task-conversion.service.ts -> Backend/src/projects/services/wbs/conversion/task-conversion-helper.service.ts -> Backend/src/projects/services/drafts/index.ts -> Backend/src/projects/services/drafts/draft-plan-generation.service.ts`
+- 5-file cycle: `Backend/src/projects/services/drafts/draft-single-pass-generation.service.ts -> Backend/src/projects/services/wbs/index.ts -> Backend/src/projects/services/wbs/conversion/task-conversion.service.ts -> Backend/src/projects/services/wbs/conversion/task-conversion-helper.service.ts -> Backend/src/projects/services/drafts/index.ts -> Backend/src/projects/services/drafts/draft-single-pass-generation.service.ts`
+- 5-file cycle: `Backend/src/projects/services/drafts/draft-with-plan-generation.service.ts -> Backend/src/projects/services/wbs/index.ts -> Backend/src/projects/services/wbs/conversion/task-conversion.service.ts -> Backend/src/projects/services/wbs/conversion/task-conversion-helper.service.ts -> Backend/src/projects/services/drafts/index.ts -> Backend/src/projects/services/drafts/draft-with-plan-generation.service.ts`
+- 5-file cycle: `Backend/src/projects/services/drafts/draft-generation.service.ts -> Backend/src/projects/services/drafts/draft-with-plan-generation.service.ts -> Backend/src/projects/services/wbs/index.ts -> Backend/src/projects/services/wbs/conversion/task-conversion-helper.service.ts -> Backend/src/projects/services/drafts/index.ts -> Backend/src/projects/services/drafts/draft-generation.service.ts`
+- 5-file cycle: `Backend/src/projects/services/drafts/draft-generation.service.ts -> Backend/src/projects/services/drafts/draft-with-plan-generation.service.ts -> Backend/src/projects/services/wbs/index.ts -> Backend/src/projects/services/wbs/conversion/wbs-conversion-orchestrator.service.ts -> Backend/src/projects/services/drafts/index.ts -> Backend/src/projects/services/drafts/draft-generation.service.ts`
+- 5-file cycle: `Backend/src/projects/services/drafts/draft-generation.service.ts -> Backend/src/projects/services/drafts/draft-plan-generation.service.ts -> Backend/src/projects/services/wbs/index.ts -> Backend/src/projects/services/wbs/conversion/task-conversion-helper.service.ts -> Backend/src/projects/services/drafts/index.ts -> Backend/src/projects/services/drafts/draft-generation.service.ts`
+- 5-file cycle: `Backend/src/projects/services/drafts/draft-generation.service.ts -> Backend/src/projects/services/drafts/draft-plan-generation.service.ts -> Backend/src/projects/services/wbs/index.ts -> Backend/src/projects/services/wbs/conversion/wbs-conversion-orchestrator.service.ts -> Backend/src/projects/services/drafts/index.ts -> Backend/src/projects/services/drafts/draft-generation.service.ts`
+- 5-file cycle: `Backend/src/projects/services/drafts/draft-generation.service.ts -> Backend/src/projects/services/drafts/draft-single-pass-generation.service.ts -> Backend/src/projects/services/wbs/index.ts -> Backend/src/projects/services/wbs/conversion/task-conversion-helper.service.ts -> Backend/src/projects/services/drafts/index.ts -> Backend/src/projects/services/drafts/draft-generation.service.ts`
+- 5-file cycle: `Backend/src/projects/services/drafts/draft-generation.service.ts -> Backend/src/projects/services/drafts/draft-single-pass-generation.service.ts -> Backend/src/projects/services/wbs/index.ts -> Backend/src/projects/services/wbs/conversion/wbs-conversion-orchestrator.service.ts -> Backend/src/projects/services/drafts/index.ts -> Backend/src/projects/services/drafts/draft-generation.service.ts`
 
-## Communities (256 total, 35 thin omitted)
+## Communities (257 total, 36 thin omitted)
 
 ### Community 0 - "wbs-conversion.interface.ts"
 
@@ -315,8 +316,8 @@ Nodes (36): ApplyRebaselineFixParams, ApplySimplifyFixParams, AuditLeafDiscrepan
 
 ### Community 1 - "projects.module.ts"
 
-Cohesion: 0.09
-Nodes (16): InjectModel, DashboardMetricPreferences, ProjectSchema, SmartObjective, ProjectWaveSchema, WBSNodeSchema, XMatrixSnapshotSchema, ProjectStatsService (+8 more)
+Cohesion: 0.12
+Nodes (15): CreateProjectDto, UpdateProjectDto, InjectModel, DashboardMetricPreferences, ProjectSchema, SmartObjective, ProjectWaveSchema, WBSNodeSchema (+7 more)
 
 ### Community 2 - "x-matrix-helpers.util.ts"
 
@@ -325,8 +326,8 @@ Nodes (35): XMatrixAxisItemDto, XMatrixCellDto, XMatrixDiagnosticsDto, XMatrixSt
 
 ### Community 3 - "rtm-mapping.service.ts"
 
-Cohesion: 0.19
-Nodes (16): RequirementMapper, Requirement, RequirementDocument, Prop, Schema, JourneyDraft, normalizeGeneratedItems(), processMappingResponse() (+8 more)
+Cohesion: 0.16
+Nodes (20): RequirementMapper, JourneyKind, Requirement, RequirementDocument, RequirementType, Prop, Schema, RTMJourneyService (+12 more)
 
 ### Community 4 - "CreateTaskDto"
 
@@ -416,7 +417,7 @@ Nodes (21): CreateDependencyDto, ApiProperty, IsBoolean, IsNotEmpty, IsOptional,
 ### Community 21 - "PertDiagramVisualization.vue"
 
 Cohesion: 0.04
-Nodes (57): activeImpactNodeId, applyGraph(), applyImpactSimulationForNode(), applyImpactSummaryToGraph(), {
+Nodes (56): activeImpactNodeId, applyGraph(), applyImpactSimulationForNode(), applyImpactSummaryToGraph(), {
 applyLayoutPass,
 }, {
 applyRenderFailureState,
@@ -424,7 +425,7 @@ applyRenderFailureState,
 bindPertGraphEvents,
 }, {
 buildElements,
-} (+49 more)
+} (+48 more)
 
 ### Community 22 - "ChecklistOperationsService"
 
@@ -493,8 +494,8 @@ Nodes (43): TaskDependencyEdgeDto, AlertDiagnosticsInput, BackwardPassMaps, Back
 
 ### Community 35 - "Requirement"
 
-Cohesion: 0.10
-Nodes (16): MapRequirementToTaskDto, PreparedRequirementDataDto, ProcessSingleRequirementDto, RTMValidationDto, SaveRequirementDto, ApiProperty, ApiPropertyOptional, IsNotEmpty (+8 more)
+Cohesion: 0.13
+Nodes (8): PreparedRequirementDataDto, ProcessSingleRequirementDto, Requirement, RTMCrudService, Injectable, InjectModel, RTMService, Injectable
 
 ### Community 36 - "PertDiagramPage.vue"
 
@@ -583,8 +584,8 @@ Nodes (14): TaskDescendantQueryDto, TaskLineageQueryDto, ApiProperty, IsNumber, 
 
 ### Community 54 - "dto/index.ts"
 
-Cohesion: 0.16
-Nodes (9): buildAutoMapBatchPrompt(), buildGenerateRequirementsPrompt(), buildGenerateTasksPrompt(), JourneyKind, RequirementType, RTMAiService, Injectable, RTMJourneyService (+1 more)
+Cohesion: 0.14
+Nodes (11): GenerateTasksResponseDto, MapRequirementToTaskDto, RTMValidationDto, SaveRequirementDto, ApiProperty, ApiPropertyOptional, IsNotEmpty, IsOptional (+3 more)
 
 ### Community 55 - "EVMDashboard.vue"
 
@@ -638,8 +639,8 @@ Nodes (26): @commitlint/cli, @commitlint/config-conventional, husky, lint-staged
 
 ### Community 65 - "rolling-wave-helpers.util.ts"
 
-Cohesion: 0.23
-Nodes (13): AIPlanWave, DeterministicTaskInput, DeterministicWbsNodeInput, WbsNodeFlat, balanceWaveTasksOverflow(), balanceWaveTasksUnderflow(), distributeMissingTasks(), findBestDonorIndex() (+5 more)
+Cohesion: 0.20
+Nodes (15): AIPlanWave, DeterministicTaskInput, DeterministicWbsNodeInput, WbsNodeFlat, balanceWaveTasksOverflow(), balanceWaveTasksUnderflow(), distributeMissingTasks(), findBestDonorIndex() (+7 more)
 
 ### Community 66 - "WBSTreeNode.vue"
 
@@ -658,8 +659,8 @@ Nodes (22): api, emit, error, Feedback, handleClose(), handleConfirm(), handleDi
 
 ### Community 69 - "pert/index.ts"
 
-Cohesion: 0.09
-Nodes (28): buildPertGraphStyles(), CytoscapeFactory, usePertCytoscapeBootstrap(), PertDiagramDataResponse, PertDiagramEdge, PertDiagramNode, PertDiagramStatistics, usePertDiagramData() (+20 more)
+Cohesion: 0.08
+Nodes (29): buildPertGraphStyles(), CytoscapeFactory, usePertCytoscapeBootstrap(), PertDiagramDataResponse, PertDiagramEdge, PertDiagramNode, PertDiagramStatistics, usePertDiagramData() (+21 more)
 
 ### Community 70 - "scripts"
 
@@ -668,8 +669,8 @@ Nodes (25): scripts, agent:refactor, build, format, format:check, lint, lint:dep
 
 ### Community 71 - "rolling-wave-deterministic-helpers.util.ts"
 
-Cohesion: 0.10
-Nodes (19): AllocateTasksWithDeadlineOptions, BuildWavesOptions, DeterministicPartitionResult, DeterministicWaveResult, NormalizeTasksOptions, PartitionTasksDeterministicDto, TimelineMetrics, TimelineMetricsOptions (+11 more)
+Cohesion: 0.13
+Nodes (17): AllocateTasksWithDeadlineOptions, BuildWavesOptions, DeterministicPartitionResult, DeterministicWaveResult, NormalizeTasksOptions, PartitionTasksDeterministicDto, TimelineMetrics, TimelineMetricsOptions (+9 more)
 
 ### Community 72 - "compilerOptions"
 
@@ -718,12 +719,12 @@ Nodes (5): BudgetValidationSummary, BufferEntry, ValidationResult, LeafTasksBuff
 
 ### Community 81 - "ProjectDocument"
 
-Cohesion: 0.15
-Nodes (25): GanttDependencyItem, GanttQueryOptions, GanttTaskItem, GanttTimeWindow, AdjustWindowBoundsParams, BuildTaskNodesParams, EffectiveEndParams, MapSingleTaskItemParams (+17 more)
+Cohesion: 0.12
+Nodes (28): GanttDependencyItem, GanttQueryOptions, GanttTaskItem, GanttTimeWindow, AdjustWindowBoundsParams, BuildTaskNodesParams, EffectiveEndParams, MapSingleTaskItemParams (+20 more)
 
 ### Community 82 - "RTMController"
 
-Cohesion: 0.23
+Cohesion: 0.26
 Nodes (11): RTMController, ApiBearerAuth, ApiOperation, ApiResponse, ApiTags, Body, Controller, Delete (+3 more)
 
 ### Community 83 - "XMatrix.vue"
@@ -783,8 +784,8 @@ Nodes (16): PackageCriticalityDto, PertDiagramDataResponse, PertDiagramEdge, Per
 
 ### Community 94 - "rolling-wave.interface.ts"
 
-Cohesion: 0.19
-Nodes (17): BuildTaskUpdateOpOptions, BuildWaveSummaryOptions, CalculateEffectiveWaveDatesOptions, CalculateReplannedDeadlinesDto, GenerateBulkOpsForPendingTasksOptions, PendingTasksResult, ProcessWaveReplanOptions, ReplanCalculationResult (+9 more)
+Cohesion: 0.21
+Nodes (15): BuildTaskUpdateOpOptions, BuildWaveSummaryOptions, CalculateEffectiveWaveDatesOptions, CalculateReplannedDeadlinesDto, GenerateBulkOpsForPendingTasksOptions, PendingTasksResult, ProcessWaveReplanOptions, ReplanCalculationResult (+7 more)
 
 ### Community 95 - "PERTEstimationCard.vue"
 
@@ -868,8 +869,8 @@ Nodes (13): clearError(), computedLabel, emit, error, errorMessage, formatDate()
 
 ### Community 111 - "RTMTaskGeneratorService"
 
-Cohesion: 0.23
-Nodes (6): GenerateTasksResponseDto, RTMTaskGeneratorService, safeStringify(), Inject, Injectable, InjectModel
+Cohesion: 0.18
+Nodes (8): buildAutoMapBatchPrompt(), buildGenerateRequirementsPrompt(), buildGenerateTasksPrompt(), RTMTaskGeneratorService, safeStringify(), Inject, Injectable, InjectModel
 
 ### Community 112 - "useConversionHelpers.ts"
 
@@ -893,8 +894,8 @@ Nodes (6): author, description, license, name, private, version
 
 ### Community 116 - "RTMMappingService"
 
-Cohesion: 0.22
-Nodes (5): AutoMapRequirementsResponseDto, RTMMappingService, Injectable, applyFallbackMapping(), formatTasksForPrompt()
+Cohesion: 0.18
+Nodes (6): AutoMapRequirementsResponseDto, RTMMappingService, Injectable, InjectModel, applyFallbackMapping(), formatTasksForPrompt()
 
 ### Community 117 - "RiskPage.vue"
 
@@ -1018,8 +1019,8 @@ Nodes (11): Analytics de Bundle Frontend (`rollup-plugin-visualizer`), Arquitetu
 
 ### Community 141 - "rolling-wave-helpers.util.spec.ts"
 
-Cohesion: 0.25
-Nodes (12): addDays(), buildTaskScheduleMetrics(), endOfDay(), resolveGroupKey(), startOfDay(), toDateOrNull(), buildUpdateOperationForTask(), buildWaveSummary() (+4 more)
+Cohesion: 0.24
+Nodes (13): addDays(), buildTaskScheduleMetrics(), endOfDay(), estimateTaskHours(), startOfDay(), buildUpdateOperationForTask(), buildWaveSummary(), calculateEffectiveWaveDates() (+5 more)
 
 ### Community 142 - "usePertRenderFinalizer.ts"
 
@@ -1126,10 +1127,10 @@ Nodes (7): Backend, Contexto do projeto, Estrutura de apoio, Frontend, GitHub Co
 Cohesion: 0.25
 Nodes (8): A “Alma”: Memória Semântica e RAG (Hybrid Search), 🧠 Fase 10 - IA Autônoma, Memória Semântica e Guardião do OS, “Implementation Intentions” Agent: Guardião do OS (Cliente Desktop), Novos requisitos propostos (diagnóstico, PTI e playbook), Novos requisitos propostos (Relatório analítico: state-driven generation, knowledge graph e agendamento procedural), Novos requisitos propostos (RL e nivelamento dinâmico de metas), O “Cérebro”: Agentes Autônomos de Planejamento (Agentic Workflows), RLHF Pessoal: “Game Master” Adaptativo (Personalização por Recompensa)
 
-### Community 163 - "projects.service.ts"
+### Community 163 - "ConvertWBSToTasksDto"
 
-Cohesion: 0.23
-Nodes (19): CreateProjectDto, UpdateProjectDto, AuditLeafDiscrepancyDto, ConvertWBSToTasksDto, GenerateTasksForLeafDto, GenerateWBSDto, GetLeafNodesDto, ResolveWBSBudgetDto (+11 more)
+Cohesion: 0.29
+Nodes (17): AuditLeafDiscrepancyDto, ConvertWBSToTasksDto, GenerateTasksForLeafDto, GenerateWBSDto, GetLeafNodesDto, ResolveWBSBudgetDto, SaveWBSDto, SuggestDecompositionDto (+9 more)
 
 ### Community 164 - "Tasks Analysis Services"
 
@@ -1298,8 +1299,8 @@ Nodes (17): IDepRecord, ITaskRecord, GanttDataResponse, ProjectsService, Injecta
 
 ### Community 209 - "RTMValidationService"
 
-Cohesion: 0.15
-Nodes (10): RequirementMaps, RTMMatrixData, RTMRequirementData, RTMTaskData, RTMValidation, ValidationIssues, InjectModel, RTMValidationService (+2 more)
+Cohesion: 0.16
+Nodes (9): RequirementMaps, RTMMatrixData, RTMRequirementData, RTMTaskData, RTMValidation, ValidationIssues, RTMValidationService, Injectable (+1 more)
 
 ### Community 210 - "GuildNpcSpeechBubble.vue"
 
@@ -1334,29 +1335,29 @@ Nodes (19): activeTasksCount, completedTasksCount, isOpen, projectStore, streakD
 ### Community 250 - "usePertRetryCoordinator.ts"
 
 Cohesion: 0.19
-Nodes (7): HandleEmptyGraphParams, PertResolvedLayoutMode, usePertEmptyGraphHandler(), HandleHiddenContainerRetryParams, HandleInvalidGeometryRetryParams, ScheduleTokenRetryParams, usePertRetryCoordinator()
+Nodes (7): ApplyRenderFailureStateParams, PertResolvedLayoutMode, usePertRenderFailureState(), HandleHiddenContainerRetryParams, HandleInvalidGeometryRetryParams, ScheduleTokenRetryParams, usePertRetryCoordinator()
 
 ## Knowledge Gaps
 
 - **1411 isolated node(s):** `$schema`, `collection`, `sourceRoot`, `deleteOutDir`, `name` (+1406 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **35 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **36 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `GeminiService` connect `GeminiService` to `rtm-mapping.service.ts`, `drafts-ai.service.ts`, `ChecklistAiService`, `draft-generation-helpers.util.ts`, `ProjectsController`, `wbs.dto.ts`, `tasks.service.ts`, `tasks-service-test-providers.ts`, `DependencyInferenceService`, `ChecklistOperationsService`, `ai-suggestions-runner.service.ts`, `feedback.service.ts`, `risk.service.ts`, `dto/index.ts`, `GeminiExecutorService`, `normalizers.util.ts`, `RTMValidationService`, `WBSNodeDto`, `PertAiService`, `rolling-wave-ai.service.ts`, `RTMTaskGeneratorService`?**
+- **Why does `GeminiService` connect `GeminiService` to `rtm-mapping.service.ts`, `drafts-ai.service.ts`, `ChecklistAiService`, `draft-generation-helpers.util.ts`, `ProjectsController`, `wbs.dto.ts`, `tasks.service.ts`, `tasks-service-test-providers.ts`, `DependencyInferenceService`, `ChecklistOperationsService`, `ai-suggestions-runner.service.ts`, `feedback.service.ts`, `risk.service.ts`, `GeminiExecutorService`, `normalizers.util.ts`, `WBSNodeDto`, `PertAiService`, `rolling-wave-ai.service.ts`, `RTMTaskGeneratorService`, `RTMMappingService`?**
   _High betweenness centrality (0.031) - this node is a cross-community bridge._
-- **Why does `TaskDocument` connect `TaskDocument` to `projects.module.ts`, `x-matrix-helpers.util.ts`, `CreateTaskDto`, `tasks.controller.ts`, `ProjectsController`, `tasks.service.ts`, `tasks-service-test-providers.ts`, `ChecklistOperationsService`, `ai-suggestions-runner.service.ts`, `TasksController`, `tasks.module.ts`, `projects.service.ts`, `feedback.service.ts`, `TasksRecurringService`, `PertEstimateDto`, `TasksHierarchyService`, `GeminiService`, `ProjectsService`, `ProjectDocument`, `pert-helpers.util.ts`, `rolling-wave.interface.ts`, `RollingWavePlanningService`, `projects-x-matrix.service.ts`?**
+- **Why does `TaskDocument` connect `TaskDocument` to `projects.module.ts`, `x-matrix-helpers.util.ts`, `CreateTaskDto`, `tasks.controller.ts`, `ProjectsController`, `tasks.service.ts`, `tasks-service-test-providers.ts`, `ChecklistOperationsService`, `ai-suggestions-runner.service.ts`, `TasksController`, `tasks.module.ts`, `feedback.service.ts`, `TasksRecurringService`, `PertEstimateDto`, `TasksHierarchyService`, `GeminiService`, `ProjectsService`, `ProjectDocument`, `pert-helpers.util.ts`, `rolling-wave.interface.ts`, `RollingWavePlanningService`, `projects-x-matrix.service.ts`?**
   _High betweenness centrality (0.026) - this node is a cross-community bridge._
-- **Why does `Task` connect `tasks.module.ts` to `wbs-conversion.interface.ts`, `projects.service.ts`, `rtm-mapping.service.ts`, `MicroTaskDraft`, `BufferService`, `CPMService`, `tasks.service.ts`, `RTMValidationService`, `RTMMappingService`, `dto/index.ts`?**
+- **Why does `Task` connect `tasks.module.ts` to `wbs-conversion.interface.ts`, `projects.module.ts`, `rtm-mapping.service.ts`, `MicroTaskDraft`, `BufferService`, `CPMService`, `tasks.service.ts`, `RTMValidationService`, `RTMMappingService`, `dto/index.ts`?**
   _High betweenness centrality (0.020) - this node is a cross-community bridge._
 - **What connects `$schema`, `collection`, `sourceRoot` to the rest of the system?**
   _1411 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `wbs-conversion.interface.ts` be split into smaller, more focused modules?**
   _Cohesion score 0.08646616541353383 - nodes in this community are weakly interconnected._
 - **Should `projects.module.ts` be split into smaller, more focused modules?**
-  _Cohesion score 0.09425287356321839 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.12298387096774194 - nodes in this community are weakly interconnected._
 - **Should `x-matrix-helpers.util.ts` be split into smaller, more focused modules?**
   _Cohesion score 0.11794871794871795 - nodes in this community are weakly interconnected._

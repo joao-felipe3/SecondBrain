@@ -2730,8 +2730,8 @@
     "semantic_hash": ""
   },
   "Frontend/pages/index.vue": {
-    "mtime": 1785437185.7133863,
-    "ast_hash": "c53c1dd215fc7b0aaf2fd105802fe66c",
+    "mtime": 1785464653.7690935,
+    "ast_hash": "35d023f40a96b4278ce2d104ccb924ae",
     "semantic_hash": ""
   },
   "Frontend/pages/projects/index.vue": {
@@ -3165,8 +3165,8 @@
     "semantic_hash": ""
   },
   "Frontend/components/features/hall/GuildParticlesCanvas.vue": {
-    "mtime": 1785354456.611592,
-    "ast_hash": "7de5e2f747a7923e857ece961a17c5ba",
+    "mtime": 1785464653.2956712,
+    "ast_hash": "6f033b772beed87bdb10cc9aa1d8ba0f",
     "semantic_hash": ""
   },
   "Frontend/components/features/hall/GuildReceptionDesk.vue": {
@@ -3175,8 +3175,8 @@
     "semantic_hash": ""
   },
   "Frontend/components/features/hall/GuildStreakBanner.vue": {
-    "mtime": 1785350622.678838,
-    "ast_hash": "ac0323936bed74a39cd418bec3a1003a",
+    "mtime": 1785464653.3965516,
+    "ast_hash": "1e91de79886dfbe2a8f05bd4628fae11",
     "semantic_hash": ""
   },
   "Frontend/components/ui/diegetic/UiParchmentCard.vue": {
@@ -3307,6 +3307,26 @@
   "Frontend/public/images/guild/entrada-bg-clean.png": {
     "mtime": 1785381369.2752376,
     "ast_hash": "2bfabf53e6ba9c43df0664b42fe0c045",
+    "semantic_hash": ""
+  },
+  "Frontend/public/images/guild/fire-spritesheet-16.png": {
+    "mtime": 1785443154.4040775,
+    "ast_hash": "b87db2b87655cd10bb213b1d8cb5115f",
+    "semantic_hash": ""
+  },
+  "Frontend/public/images/guild/fire-spritesheet.png": {
+    "mtime": 1785440203.3045514,
+    "ast_hash": "3bbb25e688dfaffa916e07517ab5f9a0",
+    "semantic_hash": ""
+  },
+  "Frontend/public/vfx/fire-spritesheet-16.png": {
+    "mtime": 1785443154.3880763,
+    "ast_hash": "b87db2b87655cd10bb213b1d8cb5115f",
+    "semantic_hash": ""
+  },
+  "Frontend/public/vfx/fire-spritesheet.png": {
+    "mtime": 1785440203.299956,
+    "ast_hash": "3bbb25e688dfaffa916e07517ab5f9a0",
     "semantic_hash": ""
   }
 }
