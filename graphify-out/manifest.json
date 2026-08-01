@@ -2730,8 +2730,8 @@
     "semantic_hash": ""
   },
   "Frontend/pages/index.vue": {
-    "mtime": 1785464653.7690935,
-    "ast_hash": "35d023f40a96b4278ce2d104ccb924ae",
+    "mtime": 1785552260.2199752,
+    "ast_hash": "a9c389e11cba1ec44081a0cc2b801fb5",
     "semantic_hash": ""
   },
   "Frontend/pages/projects/index.vue": {
@@ -3174,11 +3174,6 @@
     "ast_hash": "e59448fa7edf621bb1a8fdae1150cb5d",
     "semantic_hash": ""
   },
-  "Frontend/components/features/hall/GuildStreakBanner.vue": {
-    "mtime": 1785464653.3965516,
-    "ast_hash": "1e91de79886dfbe2a8f05bd4628fae11",
-    "semantic_hash": ""
-  },
   "Frontend/components/ui/diegetic/UiParchmentCard.vue": {
     "mtime": 1785348034.600397,
     "ast_hash": "45235c86855629db92dc5f19f190bbf0",
@@ -3327,6 +3322,16 @@
   "Frontend/public/vfx/fire-spritesheet.png": {
     "mtime": 1785440203.299956,
     "ast_hash": "3bbb25e688dfaffa916e07517ab5f9a0",
+    "semantic_hash": ""
+  },
+  "Frontend/public/imagens/Entrada-21-9.png": {
+    "mtime": 1785515980.5510132,
+    "ast_hash": "63b632369ac365914dd5facaa53b25cf",
+    "semantic_hash": ""
+  },
+  "Frontend/public/imagens/Entrada-4-3.png": {
+    "mtime": 1785517956.6115084,
+    "ast_hash": "6f6d56030788a785e957a5d495ad3e20",
     "semantic_hash": ""
   }
 }
