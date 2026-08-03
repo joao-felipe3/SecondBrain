@@ -17,9 +17,9 @@
         transformOrigin: zoomTransformOrigin,
       }"
     >
-      <!-- IMAGEM DE FUNDO MASTER (5056x3392) ANCORADA NA SAFE-ZONE -->
+      <!-- IMAGEM DE FUNDO MASTER (DESKTOP 16:9 / MOBILE PORTRAIT) -->
       <img
-        src="/imagens/Entrada-expandida.png"
+        :src="backgroundImageUrl"
         alt="Saguão da Guilda Master Background"
         class="master-bg"
       />
@@ -28,7 +28,7 @@
       <GuildParticlesCanvas />
 
       <!-- CAMADA DE EFEITOS VISUAIS DE ILUMINAÇÃO & LABAREDAS 2D (VFX LAYER) -->
-      <div class="vfx-layer">
+      <div v-if="!isMobile" class="vfx-layer">
         <!-- Tocha 1 (Parede Esquerda) -->
         <div class="torch-container torch-1">
           <div class="torch-light-glow"></div>
@@ -317,7 +317,7 @@ definePageMeta({
 });
 
 const router = useRouter();
-const { isMobile } = useResponsive();
+const { isMobile, isPortrait } = useResponsive();
 const uiGuildStore = useUiGuildStore();
 const taskStore = useTaskStore();
 const projectStore = useProjectStore();
@@ -348,10 +348,10 @@ interface GoldPopup {
 const goldPopups = ref<GoldPopup[]>([]);
 let goldIdCounter = 0;
 
-// Fundo limpo conforme especificação (/public/imagens/Entrada-expandida.png)
+// Fundo limpo conforme orientação (Retrato -> Entrada-mobile.png, Horizontal -> Entrada-expandida.png)
 const backgroundImageUrl = computed(() => {
-  return isMobile.value
-    ? "/images/guild/Entrada-mobile.png"
+  return isPortrait.value
+    ? "/imagens/Entrada-mobile.png"
     : "/imagens/Entrada-expandida.png";
 });
 
@@ -473,10 +473,49 @@ onMounted(() => {
   transition: transform 0.3s ease;
 }
 
-/* Em telas mais altas/quadradas (4:3, Tablet, iPad - max-aspect-ratio: 1.5/1), reduz o zoom para 1.25x para conter a Safe Zone 16:9 sem cortes */
-@media (max-aspect-ratio: 1.5/1) {
+/* VISÃO INTERMEDIÁRIA (Tablet Landscape / iPad 4:3 Horizontal): Aplica-se se a tela for maior que 768px E estiver em modo Widescreen/Horizontal (aspect-ratio >= 1.0 e <= 1.5) */
+@media (min-width: 769px) and (min-aspect-ratio: 1) and (max-aspect-ratio: 1.5/1) {
   .master-bg {
     transform: translate(-50%, -50%) scale(1.55);
+  }
+}
+
+/* SUPER ULTRAWIDE (32:9, 5120x1440 e superior - min-aspect-ratio: 2.4/1): Zoom maior para preencher a largura extrema com alinhamento vertical centralizado */
+@media (min-aspect-ratio: 2.4/1) {
+  .master-bg {
+    transform: translate(-50%, -50%) scale(2.3);
+    transform-origin: 50% 50%;
+    object-position: 50% 50%;
+  }
+}
+
+/* MODO MOBILE E PORTRAIT: EXPANDE A SAFE-ZONE PARA PREENCHER A TELA RETRATO E AJUSTA O BACKGROUND MOBILE */
+.viewport.is-mobile-view .master-bg {
+  transform: translate(-50%, -50%) scale(1);
+  transform-origin: center center;
+  object-position: center center;
+}
+
+.viewport.is-mobile-view .safe-zone {
+  width: 100vw;
+  height: 100vh;
+  max-width: 100vw;
+  max-height: 100vh;
+  aspect-ratio: auto;
+}
+
+@media (orientation: portrait) {
+  .master-bg {
+    transform: translate(-50%, -50%) scale(1);
+    transform-origin: center center;
+    object-position: center center;
+  }
+  .safe-zone {
+    width: 100vw;
+    height: 100vh;
+    max-width: 100vw;
+    max-height: 100vh;
+    aspect-ratio: auto;
   }
 }
 

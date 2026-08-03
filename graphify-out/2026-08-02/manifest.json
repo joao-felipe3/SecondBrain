@@ -2730,8 +2730,8 @@
     "semantic_hash": ""
   },
   "Frontend/pages/index.vue": {
-    "mtime": 1785701729.7257116,
-    "ast_hash": "2982d0686a6f87332a063f409e31d527",
+    "mtime": 1785624213.6064596,
+    "ast_hash": "b3527bdb6ed56b8641e170b5b08bc947",
     "semantic_hash": ""
   },
   "Frontend/pages/projects/index.vue": {
@@ -3165,8 +3165,8 @@
     "semantic_hash": ""
   },
   "Frontend/components/features/hall/GuildParticlesCanvas.vue": {
-    "mtime": 1785723242.0493195,
-    "ast_hash": "66cd37a02f64f9c566bf90fa76424e2f",
+    "mtime": 1785604998.9678655,
+    "ast_hash": "6f033b772beed87bdb10cc9aa1d8ba0f",
     "semantic_hash": ""
   },
   "Frontend/components/features/hall/GuildReceptionDesk.vue": {
@@ -3195,8 +3195,8 @@
     "semantic_hash": ""
   },
   "Frontend/composables/ui/useResponsive.ts": {
-    "mtime": 1785701729.723024,
-    "ast_hash": "87bda367ef50aa773f08d7b39e614fc6",
+    "mtime": 1785348021.6476853,
+    "ast_hash": "cea4956e346c318555df74f178b3a2a9",
     "semantic_hash": ""
   },
   "Frontend/stores/uiGuild.ts": {
@@ -3332,36 +3332,6 @@
   "Frontend/public/imagens/Entrada-expandida.png": {
     "mtime": 1785597682.130661,
     "ast_hash": "154bd6301d37f898eb7e85f71dbeba2b",
-    "semantic_hash": ""
-  },
-  "Frontend/components/features/hall/GuildArchPortal.vue": {
-    "mtime": 1785701073.6481388,
-    "ast_hash": "48c842bc4beb0d8c6a77ab93b027ed51",
-    "semantic_hash": ""
-  },
-  "Frontend/components/features/hall/GuildDiegeticHotspots.vue": {
-    "mtime": 1785723241.9464648,
-    "ast_hash": "53c281e68189c30079e63c4cf041c799",
-    "semantic_hash": ""
-  },
-  "Frontend/components/features/hall/GuildMobileJournal.vue": {
-    "mtime": 1785723241.9815624,
-    "ast_hash": "dde0285aaf636a4e1ba52a8dce972012",
-    "semantic_hash": ""
-  },
-  "Frontend/components/features/hall/GuildTopBanner.vue": {
-    "mtime": 1785671795.9540565,
-    "ast_hash": "07c10ebde3bbc55950a213f23591f3d0",
-    "semantic_hash": ""
-  },
-  "Frontend/components/features/hall/GuildVfxLayer.vue": {
-    "mtime": 1785723242.1810825,
-    "ast_hash": "e27af9f4863213805af5ef45dd71c011",
-    "semantic_hash": ""
-  },
-  "Frontend/public/imagens/Entrada-mobile.png": {
-    "mtime": 1785629933.4702091,
-    "ast_hash": "61cf68218cdf7e41b5add2ffe700d377",
     "semantic_hash": ""
   }
 }

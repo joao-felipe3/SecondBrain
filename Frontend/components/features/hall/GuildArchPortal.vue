@@ -11,7 +11,7 @@
         <!-- ClipPath do Arco da Esquerda (Posicionado no Vão Esquerdo do Saguão) -->
         <clipPath id="left-arch-clip">
           <path
-            d="M 10 550 L 10 220 Q 65 55 175 55 Q 200 55 200 220 L 200 560 Z"
+            d="M 30 550 L 30 240 Q 30 90 160 90 Q 290 90 290 240 L 290 550 Z"
           />
         </clipPath>
 
@@ -39,7 +39,7 @@
       <!-- PATH INTERATIVO DO ARCO DA ESQUERDA (NO PALCO PANORÂMICO) -->
       <path
         class="portal-arch-left"
-        d="M 65 560 L 65 220 Q 65 55 175 55 Q 285 55 285 220 L 285 560 Z"
+        d="M 30 550 L 30 240 Q 30 90 160 90 Q 290 90 290 240 L 290 550 Z"
         @click="emit('click')"
         @mouseenter="emit('hover')"
         @mouseleave="emit('leave')"
