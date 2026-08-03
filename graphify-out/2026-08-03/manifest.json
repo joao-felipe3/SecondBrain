@@ -1,4 +1,9 @@
 {
+  ".husky/post-commit": {
+    "mtime": 1785340858.9563506,
+    "ast_hash": "f9bd0be6639a8eda2129679943ee2c00",
+    "semantic_hash": ""
+  },
   ".husky/pre-push": {
     "mtime": 1784998367.6624143,
     "ast_hash": "e835a5440288e3a634cb2b67b0b553ad",
