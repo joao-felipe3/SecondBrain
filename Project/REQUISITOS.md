@@ -8,13 +8,14 @@
 ## 📊 Resumo do Progresso
 
 | Fase | Total | Prototipado | Frontend | Backend | QA | Progresso |
-|------|-------|-------------|----------|---------|-----|-----------|
+| ------ | ------- | ------------- | ---------- | --------- | ----- | ----------- |
 | Fase 0 - MVP | 14 | 14/14 ✅ | 14/14 ✅ | 14/14 ✅ | 14/14 ✅ | 🟢 100% |
 | Fase 1 - Eficiência | 29 | 29/29 ✅ | 29/29 ✅ | 29/29 ✅ | 29/29 ✅ | 🟢 100% |
 | Fase 2 - Micro-Tarefas | 22 | 22/22 ✅ | 22/22 ✅ | 22/22 ✅ | 22/22 ✅ | 🟢 100% |
 | Fase 2.5 - DevOps & Refactoring | 38 | 0/38 | Docs | 0/38 | 0/38 | ⬜ 0% |
 | Fase 3 - Produtividade Avançada | 22 | 0/22 | 0/22 | 0/22 | 0/22 | ⬜ 0% |
 | Fase 4 - Gamificação Essencial | 25 | 0/25 | 0/25 | 0/25 | 0/25 | ⬜ 0% |
+| Fase 4.5 - Feature Freeze II (EDA, DDD & CQRS) | 14 | 0/14 | 0/14 | 0/14 | 0/14 | ⬜ 0% |
 | Fase 5 - Criação de Projetos com Agente | 9 | 0/9 | 0/9 | 0/9 | 0/9 | ⬜ 0% |
 | Fase 6 - Rotina Invisível, Âncoras e Desligamento | 31 | 0/31 | 0/31 | 0/31 | 0/31 | ⬜ 0% |
 | Fase 7 - Narrativa e Motor RPG | 42 | 0/42 | 0/42 | 0/42 | 0/42 | ⬜ 0% |
@@ -25,8 +26,6 @@
 | Fase 12 - Polimento e Segurança | 10 | 0/10 | 0/10 | 0/10 | 0/10 | ⬜ 0% |
 | Fase 13 - Agentes Tutores e Aprendizado Acelerado | 15 | 0/15 | 0/15 | 0/15 | 0/15 | ⬜ 0% |
 
-
-
 ---
 
 ## 🚀 MVP - Funcionalidades Essenciais
@@ -34,7 +33,7 @@
 ### Gestão de Tarefas
 
 | # | Requisito | Tipo | Protótipo | Frontend | Backend | QA |
-|---|-----------|------|:---------:|:--------:|:-------:|:--:|
+| --- | ----------- | ------ | :---------: | :--------: | :-------: | :--: |
 | 1 | Criar tarefas com nome, descrição, prazo, prioridade e dificuldade | Funcional | ✅ | ✅ | ✅ | ✅ |
 | 2 | Visualizar tarefas | Funcional | ✅ | ✅ | ✅ | ✅ |
 | 3 | Atualizar tarefas | Funcional | ✅ | ✅ | ✅ | ✅ |
@@ -44,7 +43,7 @@
 ### Gestão de Projetos
 
 | # | Requisito | Tipo | Protótipo | Frontend | Backend | QA |
-|---|-----------|------|:---------:|:--------:|:-------:|:--:|
+| --- | ----------- | ------ | :---------: | :--------: | :-------: | :--: |
 | 6 | Criar projetos com nome e descrição | Funcional | ✅ | ✅ | ✅ | ✅ |
 | 7 | Associar tarefas a projetos | Funcional | ✅ | ✅ | ✅ | ✅ |
 | 8 | Visualizar detalhes de um projeto e suas tarefas | Funcional | ✅ | ✅ | ✅ | ✅ |
@@ -54,7 +53,7 @@
 ### Integração com IA
 
 | # | Requisito | Tipo | Protótipo | Frontend | Backend | QA |
-|---|-----------|------|:---------:|:--------:|:-------:|:--:|
+| --- | ----------- | ------ | :---------: | :--------: | :-------: | :--: |
 | 11 | Gerar automaticamente tarefas para um projeto com auxílio de IA | Funcional | ✅ | ✅ | ✅ | ✅ |
 | 12 | Visualizar sugestões de tarefas geradas pela IA antes de confirmar | Funcional | ✅ | ✅ | ✅ | ✅ |
 | 13 | Editar sugestões de tarefas geradas pela IA | Funcional | ✅ | ✅ | ✅ | ✅ |
@@ -73,7 +72,7 @@
 ### Definição e Clarificação de Projetos (Catchball via Chat)
 
 | # | Requisito | Tipo | Protótipo | Frontend | Backend | QA |
-|---|-----------|------|:---------:|:--------:|:-------:|:--:|
+| --- | ----------- | ------ | :---------: | :--------: | :-------: | :--: |
 | 1 | Chat interativo de Catchball para refinar objetivos do projeto | Funcional | ✅ | ✅ | ✅ | ✅ |
 | 2 | LLM deve fazer perguntas estratégicas para validar clareza do projeto | Funcional | ✅ | ✅ | ✅ | ✅ |
 | 3 | Geração automática de Objetivos SMART baseado no conversa | Funcional | ✅ | ✅ | ✅ | ✅ |
@@ -82,7 +81,7 @@
 ### Estrutura Analítica do Projeto (WBS/EAP)
 
 | # | Requisito | Tipo | Protótipo | Frontend | Backend | QA |
-|---|-----------|------|:---------:|:--------:|:-------:|:--:|
+| --- | ----------- | ------ | :---------: | :--------: | :-------: | :--: |
 | 5 | Geração automática de WBS (Estrutura Analítica do Projeto) via LLM | Funcional | ✅ | ✅ | ✅ | ✅ |
 | 6 | Visualização hierárquica da WBS (tree view com expansão/colapso) | Funcional | ✅ | ✅ | ✅ | ✅ |
 | 7 | Aplicação da Regra dos 8/80 - validar que pacotes tenham entre 8-80 horas | Funcional | ✅ | ✅ | ✅ | ✅ |
@@ -92,7 +91,7 @@
 ### Planejamento de Etapas, Prazos e Dependências
 
 | # | Requisito | Tipo | Protótipo | Frontend | Backend | QA |
-|---|-----------|------|:---------:|:--------:|:-------:|:--:|
+| --- | ----------- | ------ | :---------: | :--------: | :-------: | :--: |
 | 10 | Capturar três estimativas (otimista, provável e pessimista) para cada etapa relevante da jornada | Funcional | ✅ | ✅ | ✅ | ✅ |
 | 11 | Calcular automaticamente o tempo esperado da etapa usando PERT: TE = (O + 4M + P) / 6 | Funcional | ✅ | ✅ | ✅ | ✅ |
 | 12 | Identificar dependências lógicas entre etapas, hábitos ou subtarefas via LLM | Funcional | ✅ | ✅ | ✅ | ✅ |
@@ -102,7 +101,7 @@
 ### Gestão de Incerteza e Margem de Segurança
 
 | # | Requisito | Tipo | Protótipo | Frontend | Backend | QA |
-|---|-----------|------|:---------:|:--------:|:-------:|:--:|
+| --- | ----------- | ------ | :---------: | :--------: | :-------: | :--: |
 | 15 | Consolidar margem de segurança no fim da sequência para absorver variações do dia a dia | Funcional | ✅ | ✅ | ✅ | ✅ |
 | 16 | Calcular automaticamente a margem com base na variabilidade das estimativas das etapas | Funcional | ✅ | ✅ | ✅ | ✅ |
 | 17 | Exibir um painel de consumo da margem do projeto pessoal (quanto foi usado vs. disponível) | Funcional | ✅ | ✅ | ✅ | ✅ |
@@ -117,7 +116,7 @@
 ### Planejamento em Ondas e Gestão de Riscos
 
 | # | Requisito | Tipo | Protótipo | Frontend | Backend | QA |
-|---|-----------|------|:---------:|:--------:|:-------:|:--:|
+| --- | ----------- | ------ | :---------: | :--------: | :-------: | :--: |
 | 20 | Planejar as próximas semanas em detalhe e deixar o horizonte distante em marcos | Funcional | ✅ | ✅ | ✅ | ✅ |
 | 21 | Escanear a descrição da meta e sugerir riscos práticos de execução, adesão e abandono | Funcional | ✅ | ✅ | ✅ | ✅ |
 | 22 | Transformar riscos em ações concretas de mitigação, com decisão explícita do usuário | Funcional | ✅ | ✅ | ✅ | ✅ |
@@ -125,7 +124,7 @@
 ### Acompanhamento de Progresso e Valor
 
 | # | Requisito | Tipo | Protótipo | Frontend | Backend | QA |
-|---|-----------|------|:---------:|:--------:|:-------:|:--:|
+| --- | ----------- | ------ | :---------: | :--------: | :-------: | :--: |
 | 23 | Calcular índices de aderência e velocidade quando o usuário registrar progresso | Funcional | ✅ | ✅ | ✅ | ✅ |
 | 24 | Prever atraso ou sobrecarga se o ritmo atual continuar, em linguagem simples | Funcional | ✅ | ✅ | ✅ | ✅ |
 | 25 | Mostrar um dashboard de progresso com planejado vs. realizado e tendência de conclusão | Funcional | ✅ | ✅ | ✅ | ✅ |
@@ -133,11 +132,10 @@
 ### Visualizações Avançadas
 
 | # | Requisito | Tipo | Protótipo | Frontend | Backend | QA |
-|---|-----------|------|:---------:|:--------:|:-------:|:--:|
+| --- | ----------- | ------ | :---------: | :--------: | :-------: | :--: |
 | 26 | Gráfico de Gantt interativo - mostrar timeline, duração das tarefas e dependências | Funcional | ✅ | ✅ | ✅ | ✅ |
 | 27 | Diagrama de Rede (PERT/CPM) - visualizar lógica de conexão entre tarefas | Funcional | ✅ | ✅ | ✅ | ✅ |
 | 28 | X-Matrix (Hoshin Kanri) - conectar objetivos de longo prazo com metas anuais e tarefas táticas | Funcional | ✅ | ✅ | ✅ | ✅ |
-
 
 ### Antes da próxima fase
 
@@ -154,7 +152,7 @@
 ### Gold Standard Checklists
 
 | # | Requisito | Tipo | Protótipo | Frontend | Backend | QA |
-|---|-----------|------|:---------:|:--------:|:-------:|:--:|
+| --- | ----------- | ------ | :---------: | :--------: | :-------: | :--: |
 | 1 | Geração automática de checklist padrão ouro via LLM ao criar micro-tarefa | Funcional | ✅ | ✅ | ✅ | ✅ |
 | 2 | Checklist deve conter passos críticos, critérios de sucesso e validações baseados em histórico/padrões | Funcional | ✅ | ✅ | ✅ | ✅ |
 | 3 | Visualizar e editar checklist antes de iniciar tarefa | Funcional | ✅ | ✅ | ✅ | ✅ |
@@ -164,7 +162,7 @@
 ### Estimativa PERT em Micro-Escala
 
 | # | Requisito | Tipo | Protótipo | Frontend | Backend | QA |
-|---|-----------|------|:---------:|:--------:|:-------:|:--:|
+| --- | ----------- | ------ | :---------: | :--------: | :-------: | :--: |
 | 6 | Captura de três estimativas em minutos: Otimista, Provável e Pessimista para micro-tarefas | Funcional | ✅ | ✅ | ✅ | ✅ |
 | 7 | Cálculo automático de TE (Tempo Esperado) em minutos usando fórmula PERT: TE = (O + 4M + P) / 6 | Funcional | ✅ | ✅ | ✅ | ✅ |
 | 8 | Exibir deadline realista baseado em TE calculado | Funcional | ✅ | ✅ | ✅ | ✅ |
@@ -173,7 +171,7 @@
 ### Rastreabilidade e Linhagem Visual (RTM Simplificada)
 
 | # | Requisito | Tipo | Protótipo | Frontend | Backend | QA |
-|---|-----------|------|:---------:|:--------:|:-------:|:--:|
+| --- | ----------- | ------ | :---------: | :--------: | :-------: | :--: |
 | 10 | Vincular visualmente cada micro-tarefa ao seu "Requisito Pai" ou "Objetivo Estratégico" | Funcional | ✅ | ✅ | ✅ | ✅ |
 | 11 | Visualização de linhagem: ao clicar na tarefa, mostrar a cadeia de rastreabilidade até o objetivo | Funcional | ✅ | ✅ | ✅ | ✅ |
 | 12 | Rastreabilidade bidirecional: alertar sobre impactos "rio abaixo" ao deletar ou adiar tarefa | Funcional | ✅ | ✅ | ✅ | ✅ |
@@ -182,7 +180,7 @@
 ### Kanban Pessoal com Catchball Visual
 
 | # | Requisito | Tipo | Protótipo | Frontend | Backend | QA |
-|---|-----------|------|:---------:|:--------:|:-------:|:--:|
+| --- | ----------- | ------ | :---------: | :--------: | :-------: | :--: |
 | 14 | Interface Kanban para fluxo diário de micro-tarefas (ToDo, Fazendo, Revisão, Concluído) | Funcional | ✅ | ✅ | ✅ | ✅ |
 | 15 | Arrastar e soltar tarefas entre colunas do Kanban | Funcional | ✅ | ✅ | ✅ | ✅ |
 | 16 | Ao mover tarefa para "Concluído", LLM actua como "receptor da bola" com feedback automático | Funcional | ✅ | ✅ | ✅ | ✅ |
@@ -197,7 +195,7 @@
 ### Hábitos e Recorrência
 
 | # | Requisito | Tipo | Protótipo | Frontend | Backend | QA |
-|---|-----------|------|:---------:|:--------:|:-------:|:--:|
+| --- | ----------- | ------ | :---------: | :--------: | :-------: | :--: |
 | 19 | Permitir criar micro-tarefas como hábitos recorrentes com regra estruturada de recorrência (frequência, intervalo, dias da semana, data final e exceções) | Funcional | ✅ | ✅ | ✅ | ✅ |
 | 20 | Gerar automaticamente a próxima ocorrência do hábito ao concluir, adiar ou pular uma instância, sem duplicação manual | Funcional | ✅ | ✅ | ✅ | ✅ |
 | 21 | Permitir editar apenas uma ocorrência ou toda a série recorrente e encerrar a recorrência sem apagar histórico | Funcional | ✅ | ✅ | ✅ | ✅ |
@@ -215,7 +213,7 @@
 ### 📚 Documentação de Arquitetura
 
 | # | Requisito | Tipo | Protótipo | Frontend | Backend | QA |
-|---|-----------|------|:---------:|:--------:|:-------:|:--:|
+| --- | ----------- | ------ | :---------: | :--------: | :-------: | :--: |
 | 1 | Criar ARCHITECTURE.md com overview do sistema e diagrama C4 | Doc | ⬜ | ⬜ | ⬜ | ⬜ |
 | 2 | Criar README.md para cada módulo principal (tasks, projects, settings) | Doc | ⬜ | ⬜ | ⬜ | ⬜ |
 | 3 | Escrever 5-7 Architecture Decision Records (ADRs) explicando decisões-chave | Doc | ⬜ | ⬜ | ⬜ | ⬜ |
@@ -228,7 +226,7 @@
 ### 🔨 Refactoring - TasksService (2067 linhas → 5+ serviços)
 
 | # | Requisito | Tipo | Protótipo | Frontend | Backend | QA |
-|---|-----------|------|:---------:|:--------:|:-------:|:--:|
+| --- | ----------- | ------ | :---------: | :--------: | :-------: | :--: |
 | 9 | Criar TasksRecurringService e mover lógica de recorrência | Refactoring | ⬜ | ⬜ | ⬜ | ⬜ |
 | 10 | Criar TasksPertService e mover cálculos PERT | Refactoring | ⬜ | ⬜ | ⬜ | ⬜ |
 | 11 | Criar TasksValidatorService com validações centralizadas | Refactoring | ⬜ | ⬜ | ⬜ | ⬜ |
@@ -241,7 +239,7 @@
 ### 🏗️ Refactoring - ProjectsService & Controllers (804 linhas → componentes menores)
 
 | # | Requisito | Tipo | Protótipo | Frontend | Backend | QA |
-|---|-----------|------|:---------:|:--------:|:-------:|:--:|
+| --- | ----------- | ------ | :---------: | :--------: | :-------: | :--: |
 | 17 | Criar ProjectsWbsService e extrair lógica WBS | Refactoring | ⬜ | ⬜ | ⬜ | ⬜ |
 | 18 | Criar ProjectsPertService e extrair lógica PERT | Refactoring | ⬜ | ⬜ | ⬜ | ⬜ |
 | 19 | Criar ProjectsXMatrixService e extrair lógica X-Matrix | Refactoring | ⬜ | ⬜ | ⬜ | ⬜ |
@@ -254,7 +252,7 @@
 ### 🤖 Automações CI/CD com GitHub + Copilot
 
 | # | Requisito | Tipo | Protótipo | Frontend | Backend | QA |
-|---|-----------|------|:---------:|:--------:|:-------:|:--:|
+| --- | ----------- | ------ | :---------: | :--------: | :-------: | :--: |
 | 25 | Criar GitHub Actions workflow para lint (ESLint + Prettier) | Automação | ⬜ | ⬜ | ⬜ | ⬜ |
 | 26 | Criar GitHub Actions workflow para testes (Jest + Codecov) | Automação | ⬜ | ⬜ | ⬜ | ⬜ |
 | 27 | Criar GitHub Actions workflow para build validation | Automação | ⬜ | ⬜ | ⬜ | ⬜ |
@@ -265,7 +263,7 @@
 ### 📖 Padrões, Convenções e Documentação
 
 | # | Requisito | Tipo | Protótipo | Frontend | Backend | QA |
-|---|-----------|------|:---------:|:--------:|:-------:|:--:|
+| --- | ----------- | ------ | :---------: | :--------: | :-------: | :--: |
 | 31 | Finalizar .editorconfig (indentação, line endings, charset) | Configuração | ⬜ | ⬜ | ⬜ | ⬜ |
 | 32 | Finalizar .prettierrc e .eslintrc.json com regras claras | Configuração | ⬜ | ⬜ | ⬜ | ⬜ |
 | 33 | Documentar estrutura de pastas e propósito de cada uma | Doc | ⬜ | ⬜ | ⬜ | ⬜ |
@@ -273,7 +271,7 @@
 ### 🧪 Testes e Cobertura
 
 | # | Requisito | Tipo | Protótipo | Frontend | Backend | QA |
-|---|-----------|------|:---------:|:--------:|:-------:|:--:|
+| --- | ----------- | ------ | :---------: | :--------: | :-------: | :--: |
 | 34 | Alcançar 80%+ cobertura em TasksService e dependências | Testing | ⬜ | ⬜ | ⬜ | ⬜ |
 | 35 | Alcançar 75%+ cobertura em ProjectsService e dependências | Testing | ⬜ | ⬜ | ⬜ | ⬜ |
 | 36 | Criar testes de integração para fluxos críticos (WBS → Tasks, PERT calc) | Testing | ⬜ | ⬜ | ⬜ | ⬜ |
@@ -289,7 +287,7 @@
 ### Planejamento Visual (Calendário/Agenda)
 
 | # | Requisito | Tipo | Protótipo | Frontend | Backend | QA |
-|---|-----------|------|:---------:|:--------:|:-------:|:--:|
+| --- | ----------- | ------ | :---------: | :--------: | :-------: | :--: |
 | 1 | Visualizar tarefas com prazo em formato de calendário (mês/semana/dia) | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
 | 2 | Reagendar prazo diretamente no calendário (drag & drop ou edição rápida) | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
 | 3 | Visualizar “Hoje” e “Próximos 7 dias” como lista/agenda para execução rápida | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
@@ -297,7 +295,7 @@
 ### Captura Rápida e Templates (Velocidade)
 
 | # | Requisito | Tipo | Protótipo | Frontend | Backend | QA |
-|---|-----------|------|:---------:|:--------:|:-------:|:--:|
+| --- | ----------- | ------ | :---------: | :--------: | :-------: | :--: |
 | 4 | Criar tarefa em 1 linha (Quick Add) com preenchimento automático de campos padrão | Não Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
 | 5 | Interpretar texto do Quick Add (ex.: data “amanhã”, prioridade “alta”) e sugerir valores | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
 | 6 | Templates de tarefas/projetos/hábitos (campos e subtarefas padrão) para repetir rotinas | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
@@ -305,7 +303,7 @@
 ### Busca, Filtros e Organização
 
 | # | Requisito | Tipo | Protótipo | Frontend | Backend | QA |
-|---|-----------|------|:---------:|:--------:|:-------:|:--:|
+| --- | ----------- | ------ | :---------: | :--------: | :-------: | :--: |
 | 7 | Busca full-text em tarefas e projetos (nome e descrição) | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
 | 8 | Filtros e ordenação por prazo, prioridade, status, dificuldade e projeto | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
 | 9 | “Visões salvas” (filtros favoritos) para rotinas (ex.: “Hoje”, “Esta semana”, “Backlog”) | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
@@ -313,7 +311,7 @@
 ### Priorização e Planejamento Assistidos (Inteligência)
 
 | # | Requisito | Tipo | Protótipo | Frontend | Backend | QA |
-|---|-----------|------|:---------:|:--------:|:-------:|:--:|
+| --- | ----------- | ------ | :---------: | :--------: | :-------: | :--: |
 | 10 | Gerar sugestão de “Top tarefas do dia” considerando prazos, urgência e esforço | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
 | 11 | Identificar tarefas em risco (prazo próximo/atrasadas) e sugerir replanejamento | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
 | 12 | Aplicar limite de WIP (trabalho em progresso) com alerta quando exceder o foco do dia | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
@@ -328,7 +326,7 @@
 ### Notificações e Rotinas
 
 | # | Requisito | Tipo | Protótipo | Frontend | Backend | QA |
-|---|-----------|------|:---------:|:--------:|:-------:|:--:|
+| --- | ----------- | ------ | :---------: | :--------: | :-------: | :--: |
 | 15 | Notificações para tarefas próximas do prazo (configurável) | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
 | 16 | Detectar inatividade prolongada e sugerir retomada do foco (configurável) | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
 | 17 | Rotina de revisão semanal: checklist de revisão (limpar backlog, reagendar, encerrar pendências) | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
@@ -342,7 +340,7 @@
 ### Novos requisitos propostos (cognição e produtividade)
 
 | # | Requisito | Tipo | Protótipo | Frontend | Backend | QA |
-|---|-----------|------|:---------:|:--------:|:-------:|:--:|
+| --- | ----------- | ------ | :---------: | :--------: | :-------: | :--: |
 | 19 | Ao trocar a tarefa ativa, exigir “razão de troca” (dropdown: urgência real, bloqueio, energia caiu, interrupção externa) e registrar como dado de metacognição/analytics | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
 | 20 | Botão “Começar em 2 minutos”: criar automaticamente um micro-passinho (≤2 min) e iniciar um timer curto para reduzir fricção de início | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
 | 21 | “Modo hoje minimalista”: limitar a lista “Hoje” a no máximo 7 itens, com overflow colapsado | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
@@ -377,7 +375,7 @@
 ### Sistema de Recompensas
 
 | # | Requisito | Tipo | Protótipo | Frontend | Backend | QA |
-|---|-----------|------|:---------:|:--------:|:-------:|:--:|
+| --- | ----------- | ------ | :---------: | :--------: | :-------: | :--: |
 | 6 | CRUD de Recompensas | Gamificação | ⬜ | ⬜ | ⬜ | ⬜ |
 | 7 | Loja para trocar moedas por recompensas | Gamificação | ⬜ | ⬜ | ⬜ | ⬜ |
 | 8 | Sistema de conquistas | Gamificação | ⬜ | ⬜ | ⬜ | ⬜ |
@@ -394,7 +392,7 @@
 ### Gestão da Frustração (Mecânica Roguelike para Falhas)
 
 | # | Requisito | Tipo | Protótipo | Frontend | Backend | QA |
-|---|-----------|------|:---------:|:--------:|:-------:|:--:|
+| --- | ----------- | ------ | :---------: | :--------: | :-------: | :--: |
 | 13 | Implementar “Permadeath de Ciclo”: se um sprint/projeto falhar criticamente, encerrar a instância e iniciar um novo ciclo | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
 | 14 | Gerar Relatório de “Legado” ao Game Over (o que foi feito, decisões, causas de falha, aprendizados) | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
 | 15 | Preservar agência na falha: manter XP/recursos (“loot”) e bônus acumulados para o próximo ciclo (configurável/opt-in) | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
@@ -409,7 +407,7 @@
 ### Novos requisitos propostos (reforço, hábitos e consistência)
 
 | # | Requisito | Tipo | Protótipo | Frontend | Backend | QA |
-|---|-----------|------|:---------:|:--------:|:-------:|:--:|
+| --- | ----------- | ------ | :---------: | :--------: | :-------: | :--: |
 | 18 | Permitir configurar “recompensa variável” por faixa (leve/média/alta) e mostrar transparência (“você ativou recompensas aleatórias”) | Gamificação | ⬜ | ⬜ | ⬜ | ⬜ |
 | 19 | Limitar mecânicas de streak com “streak congelável” (1–2 freezes/mês) para reduzir efeito all-or-nothing após quebra | Gamificação | ⬜ | ⬜ | ⬜ | ⬜ |
 | 20 | Ao detectar 3 dias seguidos de baixa conclusão, oferecer (opt-in) “modo vitórias pequenas” por 24–72h (missões muito fáceis com reforço aumentado) | Gamificação | ⬜ | ⬜ | ⬜ | ⬜ |
@@ -417,12 +415,59 @@
 ### Novos requisitos propostos (Relatório analítico: Octalysis e anti-gaming)
 
 | # | Requisito | Tipo | Protótipo | Frontend | Backend | QA |
-|---|-----------|------|:---------:|:--------:|:-------:|:--:|
+| --- | ----------- | ------ | :---------: | :--------: | :-------: | :--: |
 | 21 | Mapear as mecânicas do app para os 8 Core Drives do Octalysis (White/Black Hat, Left/Right Brain), mantendo um “mapa de motivação” por feature para guiar decisões de design | Gamificação | ⬜ | ⬜ | ⬜ | ⬜ |
 | 22 | Ancorar o sistema prioritariamente em White Hat (significado, desenvolvimento, criatividade) e limitar o uso de Black Hat (escassez/evitação) com controles por usuário: intensidade, janelas e opção de desligar | Não Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
 | 23 | Anti-“gaming the system”: recompensas e progressão devem ser ponderadas por impacto (dificuldade/custo estimado, tempo em foco, conclusão de itens-chave) e não por volume de micro-tarefas | Gamificação | ⬜ | ⬜ | ⬜ | ⬜ |
 | 24 | Detectar padrão de exploração (ex.: excesso de tarefas triviais em sequência) e aplicar contramedidas: retornos decrescentes, aviso “isso está virando ruído” e sugestão de 1 Quest profunda (opt-in) | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
 | 25 | Multiplicador de recompensa por “Trabalho Profundo/Flow”: concluir uma Quest profunda (ou bloco de foco) deve render mais do que múltiplas micro-tarefas; regra e pesos configuráveis e transparentes | Gamificação | ⬜ | ⬜ | ⬜ | ⬜ |
+
+---
+
+## 🛠️ Fase 4.5 - Feature Freeze II: Arquitetura de Eventos, Desacoplamento DDD e CQRS
+
+> **Status:** Planejado para execução após Fase 4  
+> **Objetivo:** Interromper temporariamente a inclusão de novas funcionalidades para desacoplar a arquitetura monolítica acumulada. Implementar Arquitetura Orientada a Eventos (EDA), segmentação de Bounded Contexts nos schemas de dados e projeções de leitura otimizadas (CQRS) antes de iniciar os Agentes Autônomos das Fases 5+.  
+> **Duração Estimada:** 3-4 sprints (~140h)
+
+### Arquitetura Orientada a Eventos (EDA)
+
+| # | Requisito | Tipo | Protótipo | Frontend | Backend | QA |
+| --- | ----------- | ------ | :---------: | :--------: | :-------: | :--: |
+| 1 | Implementar barramento de eventos interno (`EventEmitter2` / Redis PubSub) para desacoplar ciclo de vida de tarefas (`TaskCreated`, `TaskCompleted`, `TaskMoved`) | Arquitetura | ⬜ | ⬜ | ⬜ | ⬜ |
+| 2 | Migrar recálculos secundários (Gamificação, XP, Streaks) para listeners assíncronos desacoplados do `TasksService` | Refactoring | ⬜ | ⬜ | ⬜ | ⬜ |
+| 3 | Migrar alertas de desvio (EVM preditivo) e histórico de Hábitos para listeners de eventos de domínio | Refactoring | ⬜ | ⬜ | ⬜ | ⬜ |
+
+### Bounded Contexts & Desacoplamento de Schemas (DDD)
+
+| # | Requisito | Tipo | Protótipo | Frontend | Backend | QA |
+| --- | ----------- | ------ | :---------: | :--------: | :-------: | :--: |
+| 4 | Segmentar `TaskDocument` em sub-contextos isolados por domínio (`TaskCore`, `TaskPlanningContext`, `TaskGamificationContext`) | Arquitetura | ⬜ | ⬜ | ⬜ | ⬜ |
+| 5 | Segmentar `ProjectDocument` em sub-contextos isolados por domínio (`ProjectCore`, `ProjectPlanningContext`, `ProjectAnalyticsContext`) | Arquitetura | ⬜ | ⬜ | ⬜ | ⬜ |
+| 6 | Implementar repositórios de domínio e mapeadores estritos isolando a camada de persistência Mongoose da regra de negócio | Refactoring | ⬜ | ⬜ | ⬜ | ⬜ |
+
+### CQRS & Projeções de Leitura Otimizadas
+
+| # | Requisito | Tipo | Protótipo | Frontend | Backend | QA |
+|---|-----------|------|:---------:|:--------:|:-------:|:--:|
+| 7 | Criar projeções de leitura assíncronas denormalizadas para Dashboards (Gantt, PERT, X-Matrix, Gamificação) eliminando cálculos síncronos em requisições GET | Performance | ⬜ | ⬜ | ⬜ | ⬜ |
+| 8 | Implementar invalidação de cache seletivo via Redis e streaming de visões atualizadas via Server-Sent Events (SSE) | Arquitetura | ⬜ | ⬜ | ⬜ | ⬜ |
+
+### Pipeline de Agentes de IA & Guardrails (Preparação para Fase 5)
+
+| # | Requisito | Tipo | Protótipo | Frontend | Backend | QA |
+| --- | ----------- | ------ | :---------: | :--------: | :-------: | :--: |
+| 9 | Centralizar e versionar prompts em um `PromptRegistry` unificado para todas as integrações com Gemini | Infraestrutura | ⬜ | ⬜ | ⬜ | ⬜ |
+| 10 | Implementar pipeline de validação estrita (Zod Guardrails) garantindo formato e saneamento das saídas de IA | Segurança | ⬜ | ⬜ | ⬜ | ⬜ |
+| 11 | Criar `ContextWindowManager` para gerenciar truncamento de histórico e controle de janela de tokens com segurança | Infraestrutura | ⬜ | ⬜ | ⬜ | ⬜ |
+
+### Qualidade e Resiliência
+
+| # | Requisito | Tipo | Protótipo | Frontend | Backend | QA |
+| --- | ----------- | ------ | :---------: | :--------: | :-------: | :--: |
+| 12 | Expandir cobertura de testes de integração e unitários para 85%+ no Backend | Testing | ⬜ | ⬜ | ⬜ | ⬜ |
+| 13 | Executar testes de carga e concorrência para o barramento de eventos e projeções de leitura | Testing | ⬜ | ⬜ | ⬜ | ⬜ |
+| 14 | Atualizar documentação arquitetural (`ARCHITECTURE.md`) com diagramas C4 atualizados de Eventos e Bounded Contexts | Doc | ⬜ | ⬜ | ⬜ | ⬜ |
 
 ---
 
@@ -433,7 +478,7 @@
 ### Curadoria de Rotas Pessoais (Deep Research Pro)
 
 | # | Requisito | Tipo | Protótipo | Frontend | Backend | QA |
-|---|-----------|------|:---------:|:--------:|:-------:|:--:|
+| --- | ----------- | ------ | :---------: | :--------: | :-------: | :--: |
 | 1 | Iniciar a Concepção de Projeto em modo "Pesquisa Autônoma" | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
 | 2 | **Curriculum Builder (Trilhas de Aprendizado):** Varredura autônoma na web (Reddit, cursos, fóruns) para propor os pilares e marcos cruciais sugeridos pelo consenso de especialistas no momento da geração da WBS | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
 | 3 | **Estimativas Guiadas a Dados (Fallacy Guard):** Pesquisar quanto tempo executores reais levam para concluir metas similares, calibrando as estimativas Otimista/Pessimista (PERT) contra o viés natural do usuário ou do LLM | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
@@ -448,7 +493,7 @@
 ### Pre-Mortem Autônomo e Checklists
 
 | # | Requisito | Tipo | Protótipo | Frontend | Backend | QA |
-|---|-----------|------|:---------:|:--------:|:-------:|:--:|
+| --- | ----------- | ------ | :---------: | :--------: | :-------: | :--: |
 | 6 | **Pre-Mortem Orientado a Riscos Reais:** A IA realiza pesquisa direcionada em fóruns sobre "motivos mais comuns de falência/lesão/desistência" no domínio da meta do projeto | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
 | 7 | **Injeção Pró-ativa de Mitigação:** Transformar cada gatilho de falha relevante em tarefas corretivas dentro da árvore do projeto com *Loot Drops* de prevenção | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
 | 8 | **Gold Standard Checklists Normativos:** Busca profunda de requisitos legais atualizados (visto, exigências governamentais, processos ou custos logísticos) e transformação automática em checklists estritos nas tarefas folha | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
@@ -463,7 +508,7 @@
 ### Orçamento Real do Dia (Capacidade e Rotina Invisível)
 
 | # | Requisito | Tipo | Protótipo | Frontend | Backend | QA |
-|---|-----------|------|:---------:|:--------:|:-------:|:--:|
+| --- | ----------- | ------ | :---------: | :--------: | :-------: | :--: |
 | 1 | Permitir cadastrar a “Rotina Invisível” como compromissos recorrentes (ex.: aulas, deslocamento, refeições, sono) com repetição semanal e exceções | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
 | 2 | Exibir no início do dia um “Orçamento de Capacidade” (horas e/ou energia) já **descontando** a Rotina Invisível, evitando tela vazia por padrão | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
 | 3 | Ao planejar/ancorar tarefas, validar conflito com o orçamento restante e sinalizar “overcommit” (ex.: ultrapassou horas/energia disponíveis) | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
@@ -473,7 +518,7 @@
 ### Habit Stacking: Tarefas Ancoradas (Disponibilidade por Evento)
 
 | # | Requisito | Tipo | Protótipo | Frontend | Backend | QA |
-|---|-----------|------|:---------:|:--------:|:-------:|:--:|
+| --- | ----------- | ------ | :---------: | :--------: | :-------: | :--: |
 | 6 | Definir “Âncoras” como eventos fortes da rotina (ex.: Almoço, Chegar em casa, Pós-aula), derivadas da Rotina Invisível ou criadas manualmente | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
 | 7 | Permitir criar “Tarefas Ancoradas” que só ficam **disponíveis** imediatamente após a âncora (ex.: concluir evento “Almoço” → destrava Quest “Leitura”) | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
 | 8 | UI deve mostrar estado **bloqueado** antes da âncora (ex.: cadeado + “Disponível após Almoço”) e estado “pronto” após concluir a âncora | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
@@ -484,7 +529,7 @@
 ### Maker’s Schedule: Timeboxing (Blocos Longos e Ininterruptos)
 
 | # | Requisito | Tipo | Protótipo | Frontend | Backend | QA |
-|---|-----------|------|:---------:|:--------:|:-------:|:--:|
+| --- | ----------- | ------ | :---------: | :--------: | :-------: | :--: |
 | 12 | Criar “Bloco Maker” como uma sessão de execução com **timebox** (ex.: 60/90/120 min) vinculada a **1 tarefa** | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
 | 13 | Durante o Bloco Maker, desencorajar alternância: trocar a tarefa ativa deve exigir confirmação (custo de troca/Resíduo de Atenção) | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
 | 14 | Registrar interrupções (manual-first, com integração opcional ao Guardião do OS da Fase 10) e aplicar uma regra de “Custo da Interrupção” (ex.: cooldown sugerido de 25 min para retomar fluxo) | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
@@ -494,7 +539,7 @@
 ### Boundary Management: “A Taverna” e o Ritual de Save (Shutdown)
 
 | # | Requisito | Tipo | Protótipo | Frontend | Backend | QA |
-|---|-----------|------|:---------:|:--------:|:-------:|:--:|
+| --- | ----------- | ------ | :---------: | :--------: | :-------: | :--: |
 | 17 | Implementar o ponto de encerramento do dia (“Taverna”) acionado por horário configurável e/ou por âncora (ex.: “Chegar em casa”) | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
 | 18 | Na Taverna, executar micro-interação: “O dia lá fora foi duro. Guarde suas armas. O que você quer deixar preparado para o seu ‘Eu’ de amanhã?” | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
 | 19 | No ritual, permitir selecionar até 3 itens para preparar (ex.: próximas Quests, material necessário, primeira ação) e ancorar automaticamente no dia seguinte | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
@@ -503,7 +548,7 @@
 ### Manutenção de Infraestrutura: Durabilidade e Base Building (Valor do Invisível)
 
 | # | Requisito | Tipo | Protótipo | Frontend | Backend | QA |
-|---|-----------|------|:---------:|:--------:|:-------:|:--:|
+| --- | ----------- | ------ | :---------: | :--------: | :-------: | :--: |
 | 21 | Introduzir “Durabilidade” (0–100) como métrica agregada de manutenção (sono, alimentação, ordem/ambiente) e expor de forma clara para o usuário | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
 | 22 | Tarefas Upkeep devem restaurar Durabilidade (ex.: “Dormir 8h”, “Preparar marmitas”), com regras simples e configuráveis | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
 | 23 | Se Durabilidade cair abaixo de um limiar (ex.: <40), aplicar consequência explícita no loop (ex.: progresso/dano reduzido em 50% em tarefas profundas) e sugerir recuperação | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
@@ -512,7 +557,7 @@
 ### Novos requisitos propostos (âncoras, shutdown e dívida)
 
 | # | Requisito | Tipo | Protótipo | Frontend | Backend | QA |
-|---|-----------|------|:---------:|:--------:|:-------:|:--:|
+| --- | ----------- | ------ | :---------: | :--------: | :-------: | :--: |
 | 25 | Âncoras podem ter “contexto” (local, horário, energia) e o sistema recomenda âncoras alternativas quando a rotina quebra (ex.: “sem almoço hoje → usar âncora ‘fim da reunião’”) | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
 | 26 | No ritual da Taverna, exigir escolher destino para pendências: (a) ancorar amanhã, (b) parking lot (sem notificação), (c) arquivar, (d) quebrar em micro-passos | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
 | 27 | “Dívida de manutenção”: se Durabilidade ficar baixa por X dias, gerar plano de recuperação com 2–3 Upkeeps mínimos e bloquear sugestão de Quests pesadas (com bypass) | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
@@ -530,7 +575,7 @@
 ### 1) O "Gerador de Masmorras" (LLM Procedural Generation)
 
 | # | Requisito | Tipo | Protótipo | Frontend | Backend | QA |
-|---|-----------|------|:---------:|:--------:|:-------:|:--:|
+| --- | ----------- | ------ | :---------: | :--------: | :-------: | :--: |
 | 1 | Ao receber `POST /tasks`, salvar a tarefa base e enfileirar um Job de "Geração de Entidade" (Dungeon/Boss) sem bloquear a resposta | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
 | 2 | A geração deve rodar em *Asynchronous Worker Queue* (fila + worker) com retries, backoff e idempotência por `taskId` | Não Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
 | 3 | O LLM deve retornar JSON estrito conforme schema validado (Zod/TypeScript); respostas inválidas devem ser rejeitadas e reprocessadas | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
@@ -541,7 +586,7 @@
 ### 2) Sistema de Batalha (FSM + WebSockets)
 
 | # | Requisito | Tipo | Protótipo | Frontend | Backend | QA |
-|---|-----------|------|:---------:|:--------:|:-------:|:--:|
+| --- | ----------- | ------ | :---------: | :--------: | :-------: | :--: |
 | 7 | Implementar um canal WebSocket (ex.: Socket.io no NestJS) para sincronizar estado de combate em tempo real (boss HP, avatar state, eventos) | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
 | 8 | Motor de combate deve ser uma *Finite State Machine (FSM)* com estados mínimos: `IDLE`, `CHARGING`, `FLOW_STATE`, `INTERRUPTED` | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
 | 9 | Regras-base: `IDLE` DPS=0; `CHARGING` (0–15 min) DPS=1; `FLOW_STATE` (16+ min) DPS=5x; `INTERRUPTED` interrompe DPS e habilita penalidades | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
@@ -552,7 +597,7 @@
 ### 3) Mecânica de Procrastinação (Workers, Cron e Decaimento)
 
 | # | Requisito | Tipo | Protótipo | Frontend | Backend | QA |
-|---|-----------|------|:---------:|:--------:|:-------:|:--:|
+| --- | ----------- | ------ | :---------: | :--------: | :-------: | :--: |
 | 13 | Se a FSM permanecer em `INTERRUPTED` por mais de 10 minutos, aplicar buff de `REGEN` ao boss (regeneração) | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
 | 14 | Regra de HP Regen: `Current_HP = min(Max_HP, Current_HP + (Max_HP * 0.05 * Horas_Inativas))` | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
 | 15 | Rodar Cron Job a cada hora cheia para varrer tarefas "Em Aberto" e calcular `Threat_Level = 1 / Dias_Para_Deadline` | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
@@ -562,7 +607,7 @@
 ### 4) Integração com Energia do Personagem (dependência da Fase 11)
 
 | # | Requisito | Tipo | Protótipo | Frontend | Backend | QA |
-|---|-----------|------|:---------:|:--------:|:-------:|:--:|
+| --- | ----------- | ------ | :---------: | :--------: | :-------: | :--: |
 | 18 | O motor RPG deve **consumir** (read-only) o estado de Energia/Mana/Sanidade calculado na Fase 11, sem reimplementar ingestão biométrica nesta fase | Não Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
 | 19 | A Energia/Stamina deve influenciar o combate: stamina baixa reduz janela de `FLOW_STATE`, aumenta chance de `INTERRUPTED` e sugere pausa/recuperação | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
 | 20 | Fallback sem biometria: quando o usuário definir energia manualmente (Fase 11), o combate deve continuar funcional sem degradar para "travado" | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
@@ -571,7 +616,7 @@
 ### 5) Classes de Personagem (Design Patterns no Backend)
 
 | # | Requisito | Tipo | Protótipo | Frontend | Backend | QA |
-|---|-----------|------|:---------:|:--------:|:-------:|:--:|
+| --- | ----------- | ------ | :---------: | :--------: | :-------: | :--: |
 | 22 | Modelar "classe do personagem" por usuário e permitir troca (ex.: Mago, Ladino) de forma configurável | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
 | 23 | Implementar Strategy Pattern (ou Decorator) com interface `CharacterClass` para calcular DPS e drenagem de Sanidade | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
 | 24 | O motor de combate deve depender apenas da interface (injeção da estratégia), evitando regras espalhadas em `if/else` | Não Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
@@ -580,7 +625,7 @@
 ### Narrativa Medieval (Agentes Narrativos)
 
 | # | Requisito | Tipo | Protótipo | Frontend | Backend | QA |
-|---|-----------|------|:---------:|:--------:|:-------:|:--:|
+| --- | ----------- | ------ | :---------: | :--------: | :-------: | :--: |
 | 26 | Reescrever título da tarefa para contexto medieval via IA | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
 | 27 | Barra de progresso em 4 atos: Chamado, Provações, Transformação, Resultado | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
 | 28 | Tarefas críticas como "Chefes de Fase" que bloqueiam progresso | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
@@ -594,7 +639,7 @@
 ### Novos requisitos propostos (arcos, gates e cenas)
 
 | # | Requisito | Tipo | Protótipo | Frontend | Backend | QA |
-|---|-----------|------|:---------:|:--------:|:-------:|:--:|
+| --- | ----------- | ------ | :---------: | :--------: | :-------: | :--: |
 | 35 | **Training Arcs (3 atos)**: Ato 1 base (rotina + drills fáceis), Ato 2 intensificação (sprints/boss gates/skill checks), Ato 3 prova (desafio final real) | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
 | 36 | **Boss com pré-requisitos (gates)**: chefe só é enfrentável se cumprir 2–3 critérios (ex.: X sessões, Y drills, durabilidade mínima) | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
 | 37 | **Cenas com o Mestre (eventos semanais)**: 1×/semana, conversa curta guiada (“o que aprendeu?”, “o que ajustar?”) que atualiza o PTI | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
@@ -602,7 +647,7 @@
 ### Novos requisitos propostos (Relatório analítico: skill trees utilitárias e meta-progressão)
 
 | # | Requisito | Tipo | Protótipo | Frontend | Backend | QA |
-|---|-----------|------|:---------:|:--------:|:-------:|:--:|
+| --- | ----------- | ------ | :---------: | :--------: | :-------: | :--: |
 | 38 | Implementar Árvores de Habilidades (Skill Trees) em que os nós desbloqueiam **utilidades reais do app** (features/algoritmos/buffs) e não apenas cosméticos (ex.: ordenação, breakdown, congelar streak) | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
 | 39 | Definir classes metodológicas em que cada classe altera o comportamento do motor (regras, bônus e ferramentas), mantendo o motor desacoplado (Strategy/Decorator) | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
 | 40 | Meta-progressão “Roguelite”: em “Game Over” diário/por projeto, preservar skills/itens essenciais e perder apenas bônus de curto prazo (ex.: combos), com configuração e explicação clara | Gamificação | ⬜ | ⬜ | ⬜ | ⬜ |
@@ -610,6 +655,7 @@
 | 42 | A geração narrativa deve consumir **contexto estruturado** (entidades e vínculos entre projetos/tarefas) em vez de depender de histórico longo, preservando consistência de “reinos/facções” e evitando deriva | Não Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
 
 ---
+
 ## 📡 Fase 8 - Monitoramento e Interpretação Assistida (IA)
 
 > **Objetivo:** Adicionar monitoramento (manual + automatizável), classificação assistida por IA e intervenções leves — **sem** tornar o sistema dependente do desktop/OS. Integrações com Guardião do OS (Fase 10) entram como fonte opcional de sinais.
@@ -630,7 +676,7 @@
 ### Interpretação por IA (Classificação) + Feedback
 
 | # | Requisito | Tipo | Protótipo | Frontend | Backend | QA |
-|---|-----------|------|:---------:|:--------:|:-------:|:--:|
+| --- | ----------- | ------ | :---------: | :--------: | :-------: | :--: |
 | 4 | Consultar IA para determinar se o contexto atual é produtivo ou não (com texto sanitizado) | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
 | 5 | Exibir classificação com confiança e justificativa curta (“por que foi distração?”) | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
 | 6 | Permitir o usuário corrigir a classificação (feedback) para melhorar regras/modelo | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
@@ -658,7 +704,7 @@
 ### Gerenciamento de Atenção e Capacidade Mental (Teoria da Carga Cognitiva)
 
 | # | Requisito | Tipo | Protótipo | Frontend | Backend | QA |
-|---|-----------|------|:---------:|:--------:|:-------:|:--:|
+| --- | ----------- | ------ | :---------: | :--------: | :-------: | :--: |
 | 1 | Limitar a quantidade de itens simultâneos na tela (padrão: 7±2) e priorizar exibição do “próximo passo” | Não Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
 | 2 | Aplicar *Chunking* automaticamente em projetos grandes: agrupar tarefas em sub-etapas e usar disclosure progressivo | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
 | 3 | Evoluir o “Modo foco” da Fase 3 para um “Modo execução” minimalista (livre de distrações) para uma tarefa ativa, com foco no essencial | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
@@ -668,7 +714,7 @@
 ### Motivação Sustentável (Teoria da Autodeterminação - Competência/Autonomia)
 
 | # | Requisito | Tipo | Protótipo | Frontend | Backend | QA |
-|---|-----------|------|:---------:|:--------:|:-------:|:--:|
+| --- | ----------- | ------ | :---------: | :--------: | :-------: | :--: |
 | 6 | Feedback imediato e positivo ao concluir tarefas (micro-celebração visual/sonora opcional) | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
 | 7 | Mostrar progresso de forma significativa (ex.: consistência semanal, tarefas finalizadas, projetos avançando) | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
 | 8 | Autonomia: permitir personalização do fluxo (habilitar/desabilitar módulos, escolher visualizações padrão) | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
@@ -677,7 +723,7 @@
 ### Engajamento e Retenção Saudáveis (Hook Model, Zeigarnik, Investimento)
 
 | # | Requisito | Tipo | Protótipo | Frontend | Backend | QA |
-|---|-----------|------|:---------:|:--------:|:-------:|:--:|
+| --- | ----------- | ------ | :---------: | :--------: | :-------: | :--: |
 | 10 | “Tarefas Ativas”: tarefas em andamento devem permanecer visíveis até resolução, com status claro | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
 | 11 | Aplicar o Efeito Zeigarnik de forma útil: destacar pendências iniciadas/interrompidas e sugerir fechamento | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
 | 12 | Recompensa variável ao concluir tarefas (magnitude/celebração/pontos), preferencialmente utilizando o sistema de recompensas da Fase 4, com opção de desativar | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
@@ -687,7 +733,7 @@
 ### Foco e Produtividade (Teoria do Flow)
 
 | # | Requisito | Tipo | Protótipo | Frontend | Backend | QA |
-|---|-----------|------|:---------:|:--------:|:-------:|:--:|
+| --- | ----------- | ------ | :---------: | :--------: | :-------: | :--: |
 | 15 | Detectar tarefas “ansiosas” (muito difíceis/grandes) e sugerir decomposição em passos menores com metas claras | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
 | 16 | Detectar tarefas “entediantes” (muito triviais) e sugerir agrupamento/batch ou micro-recompensas | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
 | 17 | Metas claras e feedback rápido: cada tarefa pode ter critérios de sucesso visíveis durante a execução | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
@@ -696,7 +742,7 @@
 ### Ferramentas de Foco
 
 | # | Requisito | Tipo | Protótipo | Frontend | Backend | QA |
-|---|-----------|------|:---------:|:--------:|:-------:|:--:|
+| --- | ----------- | ------ | :---------: | :--------: | :-------: | :--: |
 | 19 | Ferramenta de "foco visual" pré-sessão (30-60s) | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
 | 20 | Campo para anotar pensamentos intrusivos durante sessão | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
 | 21 | "Placar de Deep Work" com alerta ao atingir 4h/dia | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
@@ -706,13 +752,12 @@
 ### Novos requisitos propostos (recomeço, WOOP, offloading e viés)
 
 | # | Requisito | Tipo | Protótipo | Frontend | Backend | QA |
-|---|-----------|------|:---------:|:--------:|:-------:|:--:|
+| --- | ----------- | ------ | :---------: | :--------: | :-------: | :--: |
 | 24 | Criar “marcos de recomeço” (segunda, 1º do mês, pós-feriado e manual) que permitem: arquivar backlog antigo, definir 1–3 focos e reiniciar loops “gentis” sem punição | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
 | 25 | Template WOOP (Desejo → Resultado → Obstáculo → Plano Se-Então) gerado/assistido por LLM e linkado ao projeto/tarefas | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
 | 26 | “Caixa de descarga” (brain dump) sempre acessível para capturar pensamentos e converter em tarefa/nota/parking-lot com 1 clique | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
 | 27 | Para tarefas do tipo “Quest profunda”, exigir campo curto de “critério observável de concluído” antes de permitir iniciar Bloco Maker | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
 | 28 | Relatório de viés pessoal: comparar estimado vs real por categoria/tag e sugerir multiplicador automático (ex.: “tarefas de escrita ×1.4”) | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
-
 
 ---
 
@@ -723,7 +768,7 @@
 ### O “Cérebro”: Agentes Autônomos de Planejamento (Agentic Workflows)
 
 | # | Requisito | Tipo | Protótipo | Frontend | Backend | QA |
-|---|-----------|------|:---------:|:--------:|:-------:|:--:|
+| --- | ----------- | ------ | :---------: | :--------: | :-------: | :--: |
 | 1 | Implementar agente de planejamento com padrão ReAct (Reason + Act) chamando funções do backend | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
 | 2 | Rotina de planejamento noturno assíncrona (cron `@nestjs/schedule` → job em fila → worker) | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
 | 3 | Usar fila/worker (BullMQ/Redis ou RabbitMQ) com retries, backoff e *dead-letter* para falhas | Não Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
@@ -735,7 +780,7 @@
 ### A “Alma”: Memória Semântica e RAG (Hybrid Search)
 
 | # | Requisito | Tipo | Protótipo | Frontend | Backend | QA |
-|---|-----------|------|:---------:|:--------:|:-------:|:--:|
+| --- | ----------- | ------ | :---------: | :--------: | :-------: | :--: |
 | 8 | Gerar embeddings ao salvar anotações e ao concluir tarefas (via fila para não bloquear requisições) | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
 | 9 | Armazenar embeddings e metadados no MongoDB Atlas Vector Search (documento transacional + vetor) | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
 | 10 | Implementar busca híbrida (vetorial k-NN + keyword/BM25 + filtros por metadata) | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
@@ -746,7 +791,7 @@
 ### RLHF Pessoal: “Game Master” Adaptativo (Personalização por Recompensa)
 
 | # | Requisito | Tipo | Protótipo | Frontend | Backend | QA |
-|---|-----------|------|:---------:|:--------:|:-------:|:--:|
+| --- | ----------- | ------ | :---------: | :--------: | :-------: | :--: |
 | 14 | Coletar sinais de experiência (Estado, Ação, Recompensa, Próximo Estado) a partir de ações do usuário | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
 | 15 | Microserviço Python (FastAPI) para treinar/servir política (ex.: PPO/RLlib) consumindo eventos do NestJS | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
 | 16 | Função de recompensa configurável (ex.: concluir no dia, adiar, ignorar notificação) com *feature flags* | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
@@ -755,7 +800,7 @@
 ### “Implementation Intentions” Agent: Guardião do OS (Cliente Desktop)
 
 | # | Requisito | Tipo | Protótipo | Frontend | Backend | QA |
-|---|-----------|------|:---------:|:--------:|:-------:|:--:|
+| --- | ----------- | ------ | :---------: | :--------: | :-------: | :--: |
 | 18 | Extrair regras “Se-Então” via chat (trigger + ação) e salvar em schema estruturado no backend | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
 | 19 | Cliente desktop (Tauri) sincroniza regras ativas e roda daemon leve em background | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
 | 20 | Active Window Polling (ex.: 1s): detectar processo/título e aplicar regex para match de distração | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
@@ -765,7 +810,7 @@
 ### Novos requisitos propostos (diagnóstico, PTI e playbook)
 
 | # | Requisito | Tipo | Protótipo | Frontend | Backend | QA |
-|---|-----------|------|:---------:|:--------:|:-------:|:--:|
+| --- | ----------- | ------ | :---------: | :--------: | :-------: | :--: |
 | 23 | **Diagnóstico inicial (baseline)**: onboarding mede rotina invisível, energia, objetivos, restrições e estilo (manhã/noite). Saída: perfil + “scouting report” | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
 | 24 | **Plano de Treino Individual (PTI) em ciclos (4–8 semanas)**: 1 skill principal, 1 skill de suporte, 1 rotina de manutenção + métricas (consistência, deep work, taxa de conclusão, qualidade subjetiva) | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
 | 25 | **Playbook de técnicas pessoais**: repositório de protocolos do tipo “quando eu travo, eu faço X” (5-min start, ugly draft, decomposição, respiração, revisão rápida) | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
@@ -774,7 +819,7 @@
 ### Novos requisitos propostos (RL e nivelamento dinâmico de metas)
 
 | # | Requisito | Tipo | Protótipo | Frontend | Backend | QA |
-|---|-----------|------|:---------:|:--------:|:-------:|:--:|
+| --- | ----------- | ------ | :---------: | :--------: | :-------: | :--: |
 | 27 | **Nivelamento dinâmico para Flow**: manter desafio adaptativo (nem tédio, nem ansiedade) calibrando dificuldade/meta por tarefa e por dia | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
 | 28 | **Definir o agente de RL**: modelar espaço de estado (fadiga inferida, complexidade, prazo, histórico), ações (decompor, reduzir/elevar desafio, sugerir apoio, mudar prazo) e recompensa (engajamento + conclusão com qualidade) | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
 | 29 | **Treino/serving de política com segurança**: registrar eventos, treinar política (ex.: DQN/multi-objetivo) com limites e rollback; operar inicialmente em modo “somente sugestão” | Não Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
@@ -783,7 +828,7 @@
 ### Novos requisitos propostos (Relatório analítico: state-driven generation, knowledge graph e agendamento procedural)
 
 | # | Requisito | Tipo | Protótipo | Frontend | Backend | QA |
-|---|-----------|------|:---------:|:--------:|:-------:|:--:|
+| --- | ----------- | ------ | :---------: | :--------: | :-------: | :--: |
 | 31 | Adotar arquitetura “State Authority” vs “Semantic Generator”: o banco mantém o estado lógico real; o LLM gera apenas semântica dentro de restrições e **não altera** estado/números sem validação | Não Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
 | 32 | Implementar um Orquestrador/Controller que monta contexto mínimo e estrito para o LLM (sem histórico longo), registra inputs/constraints/seed e reduz risco de deriva narrativa | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
 | 33 | Aplicar “Schema Validation Gate” a toda saída do LLM que vira entidade/UI: validar, rejeitar e reprocessar; fallback determinístico quando exceder tentativas | Não Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
@@ -793,7 +838,6 @@
 
 ---
 
-
 ## 🧠 Fase 11 - Espelho Metacognitivo, Energia Biológica e Game Master Preditivo
 
 > **Objetivo:** Substituir o “app-capataz” por um sistema que **investiga gargalos**, **calibra energia** (HRV/Sono/Estresse + RPE) e **ajusta o plano** para evitar esgotamento — com gamificação (Mana/Rested XP) e privacidade por padrão.
@@ -801,7 +845,7 @@
 ### O Espelho Metacognitivo (Debriefing Agent)
 
 | # | Requisito | Tipo | Protótipo | Frontend | Backend | QA |
-|---|-----------|------|:---------:|:--------:|:-------:|:--:|
+| --- | ----------- | ------ | :---------: | :--------: | :-------: | :--: |
 | 1 | Ao concluir tarefa, executar um debriefing curto (perguntas metacognitivas) quando houver desvio relevante (ex.: 2x do planejado, adiamentos repetidos) | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
 | 2 | Usar logs/timestamps do usuário (criação, início, pausas, adiamentos, conclusão) como contexto do debriefing | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
 | 3 | O output do agente deve ser **estrutura** (categorias de gargalo) e não texto livre | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
@@ -813,7 +857,7 @@
 ### Energia Biológica (HRV/Sono/Estresse) como Orçamento Inicial
 
 | # | Requisito | Tipo | Protótipo | Frontend | Backend | QA |
-|---|-----------|------|:---------:|:--------:|:-------:|:--:|
+| --- | ----------- | ------ | :---------: | :--------: | :-------: | :--: |
 | 8 | Integração mobile para leitura de métricas via Health Connect (Android) e/ou HealthKit (iOS), com consentimento explícito | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
 | 9 | Ao acordar (ou ao abrir o app), calcular o “Orçamento de Energia/Mana” do dia com base em HRV/Sleep Score | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
 | 10 | Regra base: HRV > média + 10% → modo “Berserk” (120%); HRV < média - 10% → modo “Survival” (60%) | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
@@ -827,7 +871,7 @@
 ### RPE (Percepção Subjetiva de Esforço) e Calibração do Custo
 
 | # | Requisito | Tipo | Protótipo | Frontend | Backend | QA |
-|---|-----------|------|:---------:|:--------:|:-------:|:--:|
+| --- | ----------- | ------ | :---------: | :--------: | :-------: | :--: |
 | 17 | Pós-tarefa: coletar RPE (escala 1–10) perguntando “O quanto isso drenou sua barra?” | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
 | 18 | Aprender custo por tarefa/contexto: usar (tipo/tag/horário/duração) + RPE para estimar custo futuro | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
 | 19 | Chronotype mapping: custo previsto deve variar por horário (ex.: manhã vs noite) e ajustar recomendações | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
@@ -837,7 +881,7 @@
 ### Quests de Recuperação (Active Rest)
 
 | # | Requisito | Tipo | Protótipo | Frontend | Backend | QA |
-|---|-----------|------|:---------:|:--------:|:-------:|:--:|
+| --- | ----------- | ------ | :---------: | :--------: | :-------: | :--: |
 | 22 | Quando Sanidade/Estresse atingir limiar crítico, sugerir e priorizar “Quests de Recuperação” no lugar de trabalho pesado | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
 | 23 | Quest “Caminhada de Fluxo Óptico”: validar por passos + zona de batimento (Zona 1) para recompensar com item/buff | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
 | 24 | Quest “Suspiro Fisiológico”: guia visual de 2 min e validar sucesso por queda aguda de FC (quando disponível) | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
@@ -846,7 +890,7 @@
 ### Game Master Preditivo (Ritmo Ultradiano)
 
 | # | Requisito | Tipo | Protótipo | Frontend | Backend | QA |
-|---|-----------|------|:---------:|:--------:|:-------:|:--:|
+| --- | ----------- | ------ | :---------: | :--------: | :-------: | :--: |
 | 26 | Aprender o ritmo ultradiano do usuário usando logs de sessões (ex.: >90 min sem pausa correlaciona com estresse/sono ruim) | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
 | 27 | Intervenção preditiva: emitir evento de pausa por volta de 80 min de foco (configurável) para evitar pico de estresse | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
 | 28 | Mensagem narrativa de intervenção (“portal fecha em 5 min…”) com opção de bypass/adiar (controle do usuário) | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
@@ -855,7 +899,7 @@
 ### Novos requisitos propostos (intervenções leves e calibração)
 
 | # | Requisito | Tipo | Protótipo | Frontend | Backend | QA |
-|---|-----------|------|:---------:|:--------:|:-------:|:--:|
+| --- | ----------- | ------ | :---------: | :--------: | :-------: | :--: |
 | 30 | Se o gargalo for “Ansiedade/Evitação”, sugerir 1 intervenção guiada: próximo passo ridiculamente pequeno, pré-visualização de 2 min, ou WOOP do obstáculo (e registrar qual funcionou) | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
 | 31 | Ao identificar padrão recorrente (ex.: interrupções à noite), gerar plano de coping “Se X, então Y” e pedir confirmação para virar regra ativa | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
 | 32 | Após concluir tarefa muito acima/abaixo do TE, perguntar “o que enganou a estimativa?” (opções) e salvar o motivo para melhorar previsões | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
@@ -863,7 +907,7 @@
 ### Novos requisitos propostos (treino, carga e procrastinação)
 
 | # | Requisito | Tipo | Protótipo | Frontend | Backend | QA |
-|---|-----------|------|:---------:|:--------:|:-------:|:--:|
+| --- | ----------- | ------ | :---------: | :--------: | :-------: | :--: |
 | 33 | **Periodização automática**: semanas pesadas/médias/leves (deload) + dias de recuperação deliberada integrando Blocos Maker e Quests de Recuperação | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
 | 34 | **Replanejamento por evidência**: se aderência cair ou energia cair, ajustar o plano (reduz volume, troca exercícios, muda horários) sem culpa, com justificativa e bypass | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
 | 35 | **Debriefing pós-treino (padrão esportivo)**: após sessão/quest importante registrar o que funcionou, onde travou, obstáculo real e 1 correção | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
@@ -874,7 +918,7 @@
 ### Novos requisitos propostos (periodização da produtividade e autorregulação)
 
 | # | Requisito | Tipo | Protótipo | Frontend | Backend | QA |
-|---|-----------|------|:---------:|:--------:|:-------:|:--:|
+| --- | ----------- | ------ | :---------: | :--------: | :-------: | :--: |
 | 39 | **Periodização do trabalho (macro/meso/microciclos)**: suportar ciclos de preparação, intensificação e recuperação para diferentes “atributos cognitivos” (ex.: escrita, estudo, execução, manutenção) | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
 | 40 | **Periodização conjugada**: planejar blocos focando 1–2 atributos principais enquanto outros ficam em manutenção, com regras explícitas de volume/intensidade | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
 | 41 | **Readiness (prontidão) diária**: calcular prontidão combinando biometria (HRV/sono/atividade) + sinais do app (RPE, logs, interrupções) com consentimento e fallback manual | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
@@ -882,13 +926,12 @@
 | 43 | **CTL/ATL/TSB (analogia cognitiva)**: modelar carga crônica, fadiga aguda e balanço de estresse para prever risco de burnout e recomendar substituições (work-heavy → recuperação ativa) | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
 | 44 | **Detecção de estresse multimodal (opt-in)**: usar padrões de sono/biometria e sinais semânticos (ex.: tags/diário/check-ins) para rebaixar carga sugerida e priorizar manutenção/recuperação com transparência e bypass | Não Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
 
-
 ## 🏰 Fase 12 - Polimento e Segurança
 
 ### Usabilidade
 
 | # | Requisito | Tipo | Protótipo | Frontend | Backend | QA |
-|---|-----------|------|:---------:|:--------:|:-------:|:--:|
+| --- | ----------- | ------ | :---------: | :--------: | :-------: | :--: |
 | 1 | Tema dark/light | Usabilidade | ⬜ | ⬜ | ⬜ | ⬜ |
 | 2 | Interface com mapa ou cidade interativa | Usabilidade | ⬜ | ⬜ | ⬜ | ⬜ |
 | 3 | Gráficos e estatísticas de progresso | Usabilidade | ⬜ | ⬜ | ⬜ | ⬜ |
@@ -903,7 +946,7 @@
 ### Segurança
 
 | # | Requisito | Tipo | Protótipo | Frontend | Backend | QA |
-|---|-----------|------|:---------:|:--------:|:-------:|:--:|
+| --- | ----------- | ------ | :---------: | :--------: | :-------: | :--: |
 | 6 | Backup e recuperação de dados | Não Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
 | 7 | Proteção contra acessos não autorizados | Não Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
 | 8 | Segurança contra XSS, SQL Injection, etc. | Não Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
@@ -915,7 +958,6 @@
 | 9 | Painel “Por que o app sugeriu isso?” com explicações curtas e toggles para desligar cada heurística (nudges, defaults, intervenções) | Usabilidade | ⬜ | ⬜ | ⬜ | ⬜ |
 | 10 | Modo “privado”: esconder texto de tarefas/notas em notificações e telas de lock, mantendo apenas contagens e âncoras | Não Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
 
-
 ---
 
 ## 📚 Fase 13 - Agentes Tutores e Aprendizado Acelerado (Estudos Sem Fricção)
@@ -925,7 +967,7 @@
 ### Agentes de Tutoria e Aprendizado
 
 | # | Requisito | Tipo | Protótipo | Frontend | Backend | QA |
-|---|-----------|------|:---------:|:--------:|:-------:|:--:|
+| --- | ----------- | ------ | :---------: | :--------: | :-------: | :--: |
 | 1 | **Inicialização de Tutores de Estudo**: Criar e configurar agentes tutores especializados para projetos ou tarefas do tipo "Estudo" (definindo tom do tutor, complexidade e objetivos) | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
 | 2 | **Pesquisa Profunda Autônoma (Deep Research)**: O agente tutor pesquisa de forma autônoma na web (Wikipedia, documentações oficiais, comunidades de especialistas) para trazer bases de conhecimento atualizadas sobre o tema | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
 | 3 | **Geração de Roadmap de Aprendizagem**: Gerar roteiros de estudo sequenciais divididos em módulos lógicos, estimando o tempo necessário para cada etapa de aprendizado de forma personalizada | Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
@@ -942,13 +984,12 @@
 | 14 | **Modo de Estudo Minimalista (Foco Livre de Distrações)**: Interface dedicada de leitura/estudo que oculta o resto do sistema e exibe apenas o texto de estudo, o cronômetro (Pomodoro) e a caixa de notas rápidas | Usabilidade | ⬜ | ⬜ | ⬜ | ⬜ |
 | 15 | **Privacidade e Funcionamento Local**: Permitir ao usuário exportar seu histórico de estudos e logs de tutoria em Markdown e escolher quais dados de pesquisa e biografia de estudos enviar para a IA | Não Funcional | ⬜ | ⬜ | ⬜ | ⬜ |
 
-
 ---
 
 ## 📅 Histórico de Atualizações
 
 | Data | Descrição |
-|------|-----------|
+| ------ | ----------- |
 | 06/07/2026 | Adicionada Fase 13 - Agentes Tutores e Aprendizado Acelerado (Estudos Sem Fricção) contendo 15 requisitos detalhados para tutoria inteligente baseada em IA e redução de fricção. |
 | 18/05/2026 | Requisitos do relatório analítico convertidos e inseridos nas fases 4 (Octalysis/anti-gaming), 7 (skill trees/meta-progressão) e 10 (state-driven generation/knowledge graph/agendamento procedural) + atualização dos totais no resumo. |
 | 13/05/2026 | Adicionados requisitos de Periodização da Produtividade/Autorregulação (readiness, DAPRE, CTL/ATL/TSB) na Fase 11 e de RL/Nivelamento Dinâmico (Flow) na Fase 10. |
@@ -956,7 +997,8 @@
 | 28/01/2026 | Documento criado com status atual do MVP |
 | 22/02/2026 | Reorganização das fases: dividir a antiga Fase 4 em Fase 4 (Gamificação Manual-First) + Fase 5 (Monitoramento/IA) e renumerar fases seguintes até Fase 9 |
 | 07/05/2026 | Reordenar roadmap: mover “Rotina Invisível/Âncoras/Desligamento” para logo após a Fase 5 e renumerar fases subsequentes |
-| 04/03/2026 | Adicionar nova Fase 9 (Rotina Invisível/Âncoras/Timeboxing/Taverna/Durabilidade) e renumerar “Polimento e Segurança” para Fase 10 || 06/03/2026 | Reposicionar Fase 9 "Narrativa e Motor RPG" para Fase 5 (logo após Gamificação Essencial) para consolidar gamificação; renumerar fases subsequentes: Fase 5 Monitoramento→Fase 6, Fase 6 Arquitetura→Fase 7, Fase 7 IA/Guardião→Fase 8, Fase 8 Metacognição→Fase 9, Fase 10 Rotina Invisível permanece, Fase 11 Polimento permanece |
+| 04/03/2026 | Adicionar nova Fase 9 (Rotina Invisível/Âncoras/Timeboxing/Taverna/Durabilidade) e renumerar “Polimento e Segurança” para Fase 10 | | 06/03/2026 | Reposicionar Fase 9 "Narrativa e Motor RPG" para Fase 5 (logo após Gamificação Essencial) para consolidar gamificação; renumerar fases subsequentes: Fase 5 Monitoramento→Fase 6, Fase 6 Arquitetura→Fase 7, Fase 7 IA/Guardião→Fase 8, Fase 8 Metacognição→Fase 9, Fase 10 Rotina Invisível permanece, Fase 11 Polimento permanece |
+
 ---
 
 ## 🔗 Links Úteis

@@ -1,9 +1,4 @@
 {
-  ".husky/post-commit": {
-    "mtime": 1785340858.9563506,
-    "ast_hash": "f9bd0be6639a8eda2129679943ee2c00",
-    "semantic_hash": ""
-  },
   ".husky/pre-push": {
     "mtime": 1784998367.6624143,
     "ast_hash": "e835a5440288e3a634cb2b67b0b553ad",
@@ -2325,8 +2320,8 @@
     "semantic_hash": ""
   },
   "Frontend/components/layout/Sidebar.vue": {
-    "mtime": 1780519839.8283298,
-    "ast_hash": "219891ba60a7de4cdfabb74e539aac53",
+    "mtime": 1785348080.350391,
+    "ast_hash": "13645aa359cf13218309d100c34945ad",
     "semantic_hash": ""
   },
   "Frontend/components/shared/dialogs/DeleteProjectDialog.vue": {
@@ -2715,8 +2710,8 @@
     "semantic_hash": ""
   },
   "Frontend/nuxt.config.ts": {
-    "mtime": 1784999855.753759,
-    "ast_hash": "ade591886084f415290121dc3641c8fd",
+    "mtime": 1785348013.4653187,
+    "ast_hash": "ce2733ddeb5641ce94e3b92eb94f11c5",
     "semantic_hash": ""
   },
   "Frontend/package.json": {
@@ -2730,8 +2725,8 @@
     "semantic_hash": ""
   },
   "Frontend/pages/index.vue": {
-    "mtime": 1780519823.776936,
-    "ast_hash": "97e086c7c79cc14a43029b1dc7f0ac63",
+    "mtime": 1785781146.8263917,
+    "ast_hash": "f36d3a42d28799a06bb2705ec3df8188",
     "semantic_hash": ""
   },
   "Frontend/pages/projects/index.vue": {
@@ -3010,8 +3005,8 @@
     "semantic_hash": ""
   },
   "Project/REQUISITOS.md": {
-    "mtime": 1783393145.3087351,
-    "ast_hash": "ffc7d08d17221419e427b416ba0f692b",
+    "mtime": 1785346507.1110342,
+    "ast_hash": "124f57d08eeda5bdce9f41991c1f49fa",
     "semantic_hash": ""
   },
   "Project/adr/001-why-nestjs-mongoose.md": {
@@ -3052,46 +3047,6 @@
   "Frontend/assets/img/logo.png": {
     "mtime": 1774578713.3926175,
     "ast_hash": "9c8d531734903da64e374a8d47ca3304",
-    "semantic_hash": ""
-  },
-  "Frontend/imagens-geradas/Entrada-mobile.png": {
-    "mtime": 1785123315.6973095,
-    "ast_hash": "6e0c8c16cf2bc5abdd84e3ea4b94e962",
-    "semantic_hash": ""
-  },
-  "Frontend/imagens-geradas/Entrada-web.png": {
-    "mtime": 1785108297.1650317,
-    "ast_hash": "fddde4700e9e05f852dc83fcfe38831a",
-    "semantic_hash": ""
-  },
-  "Frontend/imagens-geradas/calendar-mobile.png": {
-    "mtime": 1785238501.4569893,
-    "ast_hash": "08c1e05b85612608558d067f6655d1bb",
-    "semantic_hash": ""
-  },
-  "Frontend/imagens-geradas/calendar-web.png": {
-    "mtime": 1785119561.046277,
-    "ast_hash": "167769f466305b09a5a49c3c4feabc9f",
-    "semantic_hash": ""
-  },
-  "Frontend/imagens-geradas/projects-mobile.png": {
-    "mtime": 1785237931.5320826,
-    "ast_hash": "8946f8e4b4ec3338f983c7d0a2ad4fb9",
-    "semantic_hash": ""
-  },
-  "Frontend/imagens-geradas/projects-web.png": {
-    "mtime": 1785118926.2873614,
-    "ast_hash": "e0385cf2ce7be1c2d6768739f529b29e",
-    "semantic_hash": ""
-  },
-  "Frontend/imagens-geradas/tasks-mobile.png": {
-    "mtime": 1785208698.4564936,
-    "ast_hash": "16d8fbbdbec2b206547a61eba12b31a2",
-    "semantic_hash": ""
-  },
-  "Frontend/imagens-geradas/tasks-web.png": {
-    "mtime": 1785113468.42907,
-    "ast_hash": "c03aab959a5756283d6335dbc05f91b3",
     "semantic_hash": ""
   },
   "Frontend/public/logo.svg": {
@@ -3192,6 +3147,216 @@
   "Frontend/public/svg/wooden3.svg": {
     "mtime": 1774578713.5751095,
     "ast_hash": "a005e88564bc537fea6b8d87de30b33c",
+    "semantic_hash": ""
+  },
+  "Frontend/components/features/hall/GuildDeskBookWidget.vue": {
+    "mtime": 1785353995.9894137,
+    "ast_hash": "3a98c0031dbb014f1a726cb527b48012",
+    "semantic_hash": ""
+  },
+  "Frontend/components/features/hall/GuildNpcSpeechBubble.vue": {
+    "mtime": 1785352433.4719975,
+    "ast_hash": "78cc946d6614a14a3930e519a6bb0eea",
+    "semantic_hash": ""
+  },
+  "Frontend/components/features/hall/GuildParticlesCanvas.vue": {
+    "mtime": 1785723242.0493195,
+    "ast_hash": "66cd37a02f64f9c566bf90fa76424e2f",
+    "semantic_hash": ""
+  },
+  "Frontend/components/features/hall/GuildReceptionDesk.vue": {
+    "mtime": 1785348054.9982927,
+    "ast_hash": "e59448fa7edf621bb1a8fdae1150cb5d",
+    "semantic_hash": ""
+  },
+  "Frontend/components/ui/diegetic/UiParchmentCard.vue": {
+    "mtime": 1785348034.600397,
+    "ast_hash": "45235c86855629db92dc5f19f190bbf0",
+    "semantic_hash": ""
+  },
+  "Frontend/components/ui/diegetic/UiWaxSeal.vue": {
+    "mtime": 1785348041.7958288,
+    "ast_hash": "170378c4b6f66506382e18a361c24cd8",
+    "semantic_hash": ""
+  },
+  "Frontend/components/ui/diegetic/index.ts": {
+    "mtime": 1785348046.815629,
+    "ast_hash": "a3c458c5774e11361dc60faa19059cde",
+    "semantic_hash": ""
+  },
+  "Frontend/composables/ui/useGuildAudio.ts": {
+    "mtime": 1785437184.8627336,
+    "ast_hash": "0b7e41932287dc31439abd178f5a2f1b",
+    "semantic_hash": ""
+  },
+  "Frontend/composables/ui/useResponsive.ts": {
+    "mtime": 1785781146.048023,
+    "ast_hash": "fe89d9bc81e28b0c8223f72dd7995cd4",
+    "semantic_hash": ""
+  },
+  "Frontend/stores/uiGuild.ts": {
+    "mtime": 1785348028.1121907,
+    "ast_hash": "c840f6d111b7923fcc7f6606207533e7",
+    "semantic_hash": ""
+  },
+  "Frontend/public/imagens-geradas/Entrada-mobile.png": {
+    "mtime": 1785123315.6973095,
+    "ast_hash": "6e0c8c16cf2bc5abdd84e3ea4b94e962",
+    "semantic_hash": ""
+  },
+  "Frontend/public/imagens-geradas/Entrada-web.png": {
+    "mtime": 1785108297.1650317,
+    "ast_hash": "fddde4700e9e05f852dc83fcfe38831a",
+    "semantic_hash": ""
+  },
+  "Frontend/public/imagens-geradas/calendar-mobile.png": {
+    "mtime": 1785238501.4569893,
+    "ast_hash": "08c1e05b85612608558d067f6655d1bb",
+    "semantic_hash": ""
+  },
+  "Frontend/public/imagens-geradas/calendar-web.png": {
+    "mtime": 1785119561.046277,
+    "ast_hash": "167769f466305b09a5a49c3c4feabc9f",
+    "semantic_hash": ""
+  },
+  "Frontend/public/imagens-geradas/projects-mobile.png": {
+    "mtime": 1785237931.5320826,
+    "ast_hash": "8946f8e4b4ec3338f983c7d0a2ad4fb9",
+    "semantic_hash": ""
+  },
+  "Frontend/public/imagens-geradas/projects-web.png": {
+    "mtime": 1785118926.2873614,
+    "ast_hash": "e0385cf2ce7be1c2d6768739f529b29e",
+    "semantic_hash": ""
+  },
+  "Frontend/public/imagens-geradas/tasks-mobile.png": {
+    "mtime": 1785208698.4564936,
+    "ast_hash": "16d8fbbdbec2b206547a61eba12b31a2",
+    "semantic_hash": ""
+  },
+  "Frontend/public/imagens-geradas/tasks-web.png": {
+    "mtime": 1785113468.42907,
+    "ast_hash": "c03aab959a5756283d6335dbc05f91b3",
+    "semantic_hash": ""
+  },
+  "Frontend/public/images/guild/Entrada-mobile.png": {
+    "mtime": 1785123315.6973095,
+    "ast_hash": "6e0c8c16cf2bc5abdd84e3ea4b94e962",
+    "semantic_hash": ""
+  },
+  "Frontend/public/images/guild/Entrada-web.png": {
+    "mtime": 1785108297.1650317,
+    "ast_hash": "fddde4700e9e05f852dc83fcfe38831a",
+    "semantic_hash": ""
+  },
+  "Frontend/public/images/guild/calendar-mobile.png": {
+    "mtime": 1785238501.4569893,
+    "ast_hash": "08c1e05b85612608558d067f6655d1bb",
+    "semantic_hash": ""
+  },
+  "Frontend/public/images/guild/calendar-web.png": {
+    "mtime": 1785119561.046277,
+    "ast_hash": "167769f466305b09a5a49c3c4feabc9f",
+    "semantic_hash": ""
+  },
+  "Frontend/public/images/guild/dagger-sprite.png": {
+    "mtime": 1785352862.7296631,
+    "ast_hash": "02491aa15f5162369bde6405105d4ca2",
+    "semantic_hash": ""
+  },
+  "Frontend/public/images/guild/gold-coins-sprite.png": {
+    "mtime": 1785352800.2936037,
+    "ast_hash": "c13f56a765f47ef6a8ea5595e7a6c9aa",
+    "semantic_hash": ""
+  },
+  "Frontend/public/images/guild/projects-mobile.png": {
+    "mtime": 1785237931.5320826,
+    "ast_hash": "8946f8e4b4ec3338f983c7d0a2ad4fb9",
+    "semantic_hash": ""
+  },
+  "Frontend/public/images/guild/projects-web.png": {
+    "mtime": 1785118926.2873614,
+    "ast_hash": "e0385cf2ce7be1c2d6768739f529b29e",
+    "semantic_hash": ""
+  },
+  "Frontend/public/images/guild/tasks-mobile.png": {
+    "mtime": 1785208698.4564936,
+    "ast_hash": "16d8fbbdbec2b206547a61eba12b31a2",
+    "semantic_hash": ""
+  },
+  "Frontend/public/images/guild/tasks-web.png": {
+    "mtime": 1785113468.42907,
+    "ast_hash": "c03aab959a5756283d6335dbc05f91b3",
+    "semantic_hash": ""
+  },
+  "Frontend/public/imagens/entrada-bg-clean.png": {
+    "mtime": 1785381369.2752376,
+    "ast_hash": "2bfabf53e6ba9c43df0664b42fe0c045",
+    "semantic_hash": ""
+  },
+  "Frontend/public/images/guild/entrada-bg-clean.png": {
+    "mtime": 1785381369.2752376,
+    "ast_hash": "2bfabf53e6ba9c43df0664b42fe0c045",
+    "semantic_hash": ""
+  },
+  "Frontend/public/images/guild/fire-spritesheet-16.png": {
+    "mtime": 1785443154.4040775,
+    "ast_hash": "b87db2b87655cd10bb213b1d8cb5115f",
+    "semantic_hash": ""
+  },
+  "Frontend/public/images/guild/fire-spritesheet.png": {
+    "mtime": 1785440203.3045514,
+    "ast_hash": "3bbb25e688dfaffa916e07517ab5f9a0",
+    "semantic_hash": ""
+  },
+  "Frontend/public/vfx/fire-spritesheet-16.png": {
+    "mtime": 1785443154.3880763,
+    "ast_hash": "b87db2b87655cd10bb213b1d8cb5115f",
+    "semantic_hash": ""
+  },
+  "Frontend/public/vfx/fire-spritesheet.png": {
+    "mtime": 1785440203.299956,
+    "ast_hash": "3bbb25e688dfaffa916e07517ab5f9a0",
+    "semantic_hash": ""
+  },
+  "Frontend/assets/img/fire-spritesheet-16.png": {
+    "mtime": 1785443154.3880763,
+    "ast_hash": "b87db2b87655cd10bb213b1d8cb5115f",
+    "semantic_hash": ""
+  },
+  "Frontend/public/imagens/Entrada-expandida.png": {
+    "mtime": 1785597682.130661,
+    "ast_hash": "154bd6301d37f898eb7e85f71dbeba2b",
+    "semantic_hash": ""
+  },
+  "Frontend/components/features/hall/GuildArchPortal.vue": {
+    "mtime": 1785765937.6794357,
+    "ast_hash": "bca2f1db0b68e0b96c6c3c8e2dfd806c",
+    "semantic_hash": ""
+  },
+  "Frontend/components/features/hall/GuildDiegeticHotspots.vue": {
+    "mtime": 1785723241.9464648,
+    "ast_hash": "53c281e68189c30079e63c4cf041c799",
+    "semantic_hash": ""
+  },
+  "Frontend/components/features/hall/GuildMobileJournal.vue": {
+    "mtime": 1785723241.9815624,
+    "ast_hash": "dde0285aaf636a4e1ba52a8dce972012",
+    "semantic_hash": ""
+  },
+  "Frontend/components/features/hall/GuildTopBanner.vue": {
+    "mtime": 1785671795.9540565,
+    "ast_hash": "07c10ebde3bbc55950a213f23591f3d0",
+    "semantic_hash": ""
+  },
+  "Frontend/components/features/hall/GuildVfxLayer.vue": {
+    "mtime": 1785723242.1810825,
+    "ast_hash": "e27af9f4863213805af5ef45dd71c011",
+    "semantic_hash": ""
+  },
+  "Frontend/public/imagens/Entrada-mobile.png": {
+    "mtime": 1785629933.4702091,
+    "ast_hash": "61cf68218cdf7e41b5add2ffe700d377",
     "semantic_hash": ""
   }
 }

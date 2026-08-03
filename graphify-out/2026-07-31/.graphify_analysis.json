@@ -1,0 +1,344 @@
+{
+  "communities": {
+    "0": [
+      "backend_src_projects_dto_wbs_dto_wbsnodedto",
+      "backend_src_projects_interfaces_drafts_interface_microtaskdetails",
+      "backend_src_projects_interfaces_drafts_interface_microtaskdraft",
+      "backend_src_projects_interfaces_drafts_interface_microtaskoutline",
+      "backend_src_projects_interfaces_drafts_interface_wbsleafgenerationcontext",
+      "backend_src_projects_interfaces_drafts_interface_wbsleafplanparamsdto",
+      "backend_src_projects_interfaces_drafts_interface_wbsleafprojectcontext",
+      "backend_src_projects_interfaces_drafts_interface_wbsleafwithplangenerationcontext",
+      "backend_src_projects_interfaces_wbs_conversion_interface_applyrebaselinefixparams",
+      "backend_src_projects_interfaces_wbs_conversion_interface_applysimplifyfixparams",
+      "backend_src_projects_interfaces_wbs_conversion_interface_auditleafdiscrepancyinput",
+      "backend_src_projects_interfaces_wbs_conversion_interface_auditleafdiscrepancyparams",
+      "backend_src_projects_interfaces_wbs_conversion_interface_autofixmonotonyparams",
+      "backend_src_projects_interfaces_wbs_conversion_interface_convertwbstotasksparams",
+      "backend_src_projects_interfaces_wbs_conversion_interface_convertwbstotaskswithaiparams",
+      "backend_src_projects_interfaces_wbs_conversion_interface_draftswithplancacheparams",
+      "backend_src_projects_interfaces_wbs_conversion_interface_drafttotaskcontext",
+      "backend_src_projects_interfaces_wbs_conversion_interface_fixmonotonybatchparams",
+      "backend_src_projects_interfaces_wbs_conversion_interface_generatefallbacktasksparams",
+      "backend_src_projects_interfaces_wbs_conversion_interface_generatetasksforleafparams",
+      "backend_src_projects_interfaces_wbs_conversion_interface_generatetasksforsingleleafparams",
+      "backend_src_projects_interfaces_wbs_conversion_interface_generatetasksforsingleleafresult",
+      "backend_src_projects_interfaces_wbs_conversion_interface_mapdraftstotasksparams",
+      "backend_src_projects_interfaces_wbs_conversion_interface_processleafnodeparams"
+    ],
+    "1": [
+      "backend_src_projects_dto_evm_dto_estimatecompletiondateparamsdto",
+      "backend_src_projects_dto_x_matrix_dto_createxmatrixdto",
+      "backend_src_projects_interfaces_gantt_interface_buildtasknodesparams",
+      "backend_src_projects_interfaces_gantt_interface_mapsingletaskitemparams",
+      "backend_src_projects_interfaces_gantt_interface_maptaskitemsparams",
+      "backend_src_projects_interfaces_gantt_interface_resolvewindowparams",
+      "backend_src_projects_interfaces_pert_interface_buildperttasknodesparams",
+      "backend_src_projects_interfaces_pert_interface_mappertedgesparams",
+      "backend_src_projects_interfaces_pert_interface_mappertnodesparams",
+      "backend_src_projects_interfaces_rolling_wave_interface_pendingtasksresult",
+      "backend_src_projects_interfaces_rolling_wave_interface_replancalculationresult",
+      "backend_src_projects_interfaces_rolling_wave_interface_wavereplanresult",
+      "backend_src_projects_interfaces_x_matrix_interface_buildtacticalitemsoptions",
+      "backend_src_projects_interfaces_x_matrix_interface_generatexmatrixdataoptions",
+      "backend_src_projects_schemas_project_schema_projectdocument",
+      "backend_src_projects_schemas_project_wave_schema_projectwavedocument",
+      "backend_src_tasks_dto_dependencies_cpm_dto_tasknoderesponsedto",
+      "backend_src_tasks_dto_intelligence_feedback_dto_saveerrorfeedbackoncompletiondto",
+      "backend_src_tasks_dto_intelligence_feedback_dto_savesuccessfeedbackdto",
+      "backend_src_tasks_entities_task_dependency_entity_taskdependency",
+      "backend_src_tasks_interfaces_cpm_interface_tasknode",
+      "backend_src_tasks_interfaces_db_errors_insertmanyerror",
+      "backend_src_tasks_schemas_task_schema_taskdocument"
+    ],
+    "2": [
+      "backend_src_projects_dto_x_matrix_dto_xmatrixaxisitemdto",
+      "backend_src_projects_dto_x_matrix_dto_xmatrixcelldto",
+      "backend_src_projects_interfaces_x_matrix_interface_applyfractalfilteroptions",
+      "backend_src_projects_interfaces_x_matrix_interface_calculatecorrelationsoptions",
+      "backend_src_projects_interfaces_x_matrix_interface_filtereddata",
+      "backend_src_projects_interfaces_x_matrix_interface_generatewarningsoptions"
+    ],
+    "3": [
+      "backend_src_tasks_dto_traceability_rtm_dto_preparedrequirementdatadto",
+      "backend_src_tasks_entities_requirement_entity_requirement",
+      "backend_src_tasks_interfaces_rtm_interface_requirementmaps",
+      "backend_src_tasks_interfaces_rtm_interface_rtmrequirementdata",
+      "backend_src_tasks_schemas_requirement_schema_journeykind",
+      "backend_src_tasks_schemas_requirement_schema_requirementtype"
+    ],
+    "4": [
+      "backend_src_tasks_dto_analysis_metrics_calculation_dto_calculateprogressdto",
+      "backend_src_tasks_dto_task_create_bulk_tasks_dto_createbulktasksdto",
+      "backend_src_tasks_dto_task_create_micro_task_dto_createmicrotaskdto",
+      "backend_src_tasks_dto_task_create_task_dto_createtaskdto",
+      "backend_src_tasks_dto_task_create_task_dto_recurringtaskoccurrencedto"
+    ],
+    "5": [
+      "backend_src_projects_dto_create_project_dto_createprojectdto",
+      "backend_src_projects_entities_project_entity_project",
+      "backend_src_projects_interfaces_wbs_conversion_interface_conversionresult",
+      "backend_src_tasks_entities_task_entity_task"
+    ],
+    "6": [
+      "backend_src_tasks_dto_analysis_buffer_dto_calculatebufferdto",
+      "backend_src_tasks_dto_analysis_buffer_dto_updateorcreatebufferdto",
+      "backend_src_tasks_interfaces_buffer_interface_buffercalculationresult",
+      "backend_src_tasks_interfaces_buffer_interface_buffertaskmetrics"
+    ],
+    "7": [
+      "backend_src_tasks_dto_dependencies_cpm_diagnostics_dto_cpmdiagnosticsdto",
+      "backend_src_tasks_dto_dependencies_cpm_dto_cpmanalysisresponsedto",
+      "backend_src_tasks_interfaces_cpm_interface_cpmanalysis",
+      "backend_src_tasks_interfaces_cpm_interface_cpmdiagnostics"
+    ],
+    "8": [
+      "backend_src_projects_dto_evm_dto_buildevmcurvepointsparamsdto",
+      "backend_src_projects_dto_evm_dto_buildpersonalmetricsparamsdto",
+      "backend_src_projects_schemas_project_progress_schema_projectprogress"
+    ],
+    "9": [
+      "backend_src_tasks_dto_checklist_update_checklist_dto_updatechecklistdto",
+      "backend_src_tasks_dto_intelligence_feedback_dto_generatefeedbackoncompletiondto",
+      "backend_src_tasks_dto_task_create_task_dto_checklistitemdto"
+    ],
+    "10": [
+      "backend_src_ai_interfaces_gemini_prompts_interface_checklistpromptparams",
+      "backend_src_ai_interfaces_gemini_prompts_interface_checklistwithhistorypromptparams"
+    ],
+    "11": [
+      "backend_src_projects_dto_evm_dto_evmdashboardmanualvisibility",
+      "backend_src_projects_services_evm_evm_progress_service_evmprogressservice"
+    ],
+    "12": [
+      "backend_src_projects_dto_smart_objective_dto_smartobjectivedto",
+      "backend_src_projects_dto_update_project_dto_updateprojectdto"
+    ],
+    "13": [
+      "backend_src_projects_interfaces_wbs_conversion_interface_applyguardrailsparams",
+      "backend_src_projects_interfaces_wbs_metrics_interface_batchmetricsresult"
+    ],
+    "14": [
+      "backend_src_tasks_dto_dependencies_cpm_diagnostics_dto_cpmvalidationdto",
+      "backend_src_tasks_interfaces_cpm_interface_cpmvalidation"
+    ],
+    "15": [
+      "backend_src_tasks_dto_dependencies_cpm_diagnostics_dto_missingdependencysampledto",
+      "backend_src_tasks_interfaces_cpm_interface_missingdependencysample"
+    ],
+    "16": [
+      "backend_src_tasks_dto_dependencies_cpm_diagnostics_dto_slackbucketsdto",
+      "backend_src_tasks_interfaces_cpm_interface_slackbuckets"
+    ],
+    "17": [
+      "backend_src_tasks_dto_dependencies_cpm_diagnostics_dto_topbottleneckdto",
+      "backend_src_tasks_interfaces_cpm_interface_topbottleneck"
+    ],
+    "18": [
+      "backend_src_tasks_dto_dependencies_cpm_diagnostics_dto_topunlockerdto",
+      "backend_src_tasks_interfaces_cpm_interface_topunlocker"
+    ],
+    "19": [
+      "backend_src_tasks_dto_dependencies_cpm_dto_packagecriticalityresponsedto",
+      "backend_src_tasks_interfaces_cpm_interface_packagecriticality"
+    ],
+    "20": [
+      "backend_src_tasks_dto_dependencies_cpm_dto_taskdependencyedgedto",
+      "backend_src_tasks_interfaces_cpm_interface_taskdependencyedge"
+    ],
+    "21": [
+      "backend_src_tasks_dto_dependencies_cpm_dto_taskmetricsresponsedto",
+      "backend_src_tasks_interfaces_cpm_interface_taskmetrics"
+    ],
+    "22": [
+      "backend_src_tasks_dto_intelligence_checklist_dto_generatechecklistwithhistorydto",
+      "backend_src_tasks_interfaces_checklist_interface_checklisthistoryprojectref"
+    ],
+    "23": [
+      "backend_src_tasks_dto_intelligence_generate_ai_suggestions_dto_aitasksuggestiondto",
+      "backend_src_tasks_interfaces_ai_suggestions_interface_suggestionstate"
+    ],
+    "24": [
+      "backend_src_tasks_dto_intelligence_generate_ai_suggestions_dto_generateaisuggestionsdto",
+      "backend_src_tasks_interfaces_ai_suggestions_interface_fetchsuggestionsparams"
+    ],
+    "25": [
+      "backend_src_tasks_dto_recurring_update_recurring_rule_dto_updaterecurringruledto",
+      "backend_src_tasks_dto_task_create_task_dto_recurringruledto"
+    ],
+    "26": [
+      "backend_src_tasks_interfaces_task_repository_interface_taskrepository",
+      "backend_src_tasks_repositories_mongoose_task_repository_mongoosetaskrepository"
+    ],
+    "27": [
+      "frontend_composables_features_useprojectediting_useprojecteditingresult",
+      "frontend_models_project_project"
+    ]
+  },
+  "cohesion": {
+    "0": 0.09420289855072464,
+    "1": 0.13043478260869565,
+    "2": 0.4,
+    "3": 0.3333333333333333,
+    "4": 0.4,
+    "5": 0.5,
+    "6": 0.5,
+    "7": 0.5,
+    "8": 0.6666666666666666,
+    "9": 0.6666666666666666,
+    "10": 1.0,
+    "11": 1.0,
+    "12": 1.0,
+    "13": 1.0,
+    "14": 1.0,
+    "15": 1.0,
+    "16": 1.0,
+    "17": 1.0,
+    "18": 1.0,
+    "19": 1.0,
+    "20": 1.0,
+    "21": 1.0,
+    "22": 1.0,
+    "23": 1.0,
+    "24": 1.0,
+    "25": 1.0,
+    "26": 1.0,
+    "27": 1.0
+  },
+  "gods": [
+    {
+      "id": "backend_src_projects_dto_wbs_dto_wbsnodedto",
+      "label": "WBSNodeDto",
+      "degree": 18
+    },
+    {
+      "id": "backend_src_tasks_schemas_task_schema_taskdocument",
+      "label": "TaskDocument",
+      "degree": 16
+    },
+    {
+      "id": "backend_src_projects_schemas_project_schema_projectdocument",
+      "label": "ProjectDocument",
+      "degree": 6
+    },
+    {
+      "id": "backend_src_projects_interfaces_drafts_interface_microtaskdraft",
+      "label": "MicroTaskDraft",
+      "degree": 5
+    },
+    {
+      "id": "backend_src_projects_schemas_project_wave_schema_projectwavedocument",
+      "label": "ProjectWaveDocument",
+      "degree": 5
+    },
+    {
+      "id": "backend_src_tasks_interfaces_cpm_interface_tasknode",
+      "label": "TaskNode",
+      "degree": 5
+    },
+    {
+      "id": "backend_src_projects_dto_x_matrix_dto_xmatrixaxisitemdto",
+      "label": "XMatrixAxisItemDto",
+      "degree": 4
+    },
+    {
+      "id": "backend_src_projects_interfaces_gantt_interface_mapsingletaskitemparams",
+      "label": "MapSingleTaskItemParams",
+      "degree": 4
+    },
+    {
+      "id": "backend_src_projects_interfaces_gantt_interface_maptaskitemsparams",
+      "label": "MapTaskItemsParams",
+      "degree": 4
+    },
+    {
+      "id": "backend_src_projects_interfaces_x_matrix_interface_generatexmatrixdataoptions",
+      "label": "GenerateXMatrixDataOptions",
+      "degree": 4
+    }
+  ],
+  "surprises": [
+    {
+      "source": "GenerateWarningsOptions",
+      "target": "ProjectDocument",
+      "source_files": [
+        "Backend/src/projects/interfaces/x-matrix.interface.ts",
+        "Backend/src/projects/schemas/project.schema.ts"
+      ],
+      "confidence": "EXTRACTED",
+      "relation": "references",
+      "why": "bridges separate communities; peripheral node `GenerateWarningsOptions` unexpectedly reaches hub `ProjectDocument`"
+    },
+    {
+      "source": "CalculateProgressDto",
+      "target": "TaskDocument",
+      "source_files": [
+        "Backend/src/tasks/dto/analysis/metrics-calculation.dto.ts",
+        "Backend/src/tasks/schemas/task.schema.ts"
+      ],
+      "confidence": "EXTRACTED",
+      "relation": "references",
+      "why": "bridges separate communities; peripheral node `CalculateProgressDto` unexpectedly reaches hub `TaskDocument`"
+    },
+    {
+      "source": "GenerateFeedbackOnCompletionDto",
+      "target": "TaskDocument",
+      "source_files": [
+        "Backend/src/tasks/dto/intelligence/feedback.dto.ts",
+        "Backend/src/tasks/schemas/task.schema.ts"
+      ],
+      "confidence": "EXTRACTED",
+      "relation": "references",
+      "why": "bridges separate communities; peripheral node `GenerateFeedbackOnCompletionDto` unexpectedly reaches hub `TaskDocument`"
+    },
+    {
+      "source": "EstimateCompletionDateParamsDto",
+      "target": "ProjectDocument",
+      "source_files": [
+        "Backend/src/projects/dto/evm.dto.ts",
+        "Backend/src/projects/schemas/project.schema.ts"
+      ],
+      "confidence": "EXTRACTED",
+      "relation": "references",
+      "why": "peripheral node `EstimateCompletionDateParamsDto` unexpectedly reaches hub `ProjectDocument`"
+    },
+    {
+      "source": "WBSLeafGenerationContext",
+      "target": "WBSNodeDto",
+      "source_files": [
+        "Backend/src/projects/interfaces/drafts.interface.ts",
+        "Backend/src/projects/dto/wbs.dto.ts"
+      ],
+      "confidence": "EXTRACTED",
+      "relation": "references",
+      "why": "peripheral node `WBSLeafGenerationContext` unexpectedly reaches hub `WBSNodeDto`"
+    }
+  ],
+  "questions": [
+    {
+      "type": "bridge_node",
+      "question": "Why does `TaskDocument` connect `Modulo 1` to `Modulo 9`, `Modulo 4`?",
+      "why": "High betweenness centrality (0.068) - this node is a cross-community bridge."
+    },
+    {
+      "type": "bridge_node",
+      "question": "Why does `ProjectDocument` connect `Modulo 1` to `Modulo 2`?",
+      "why": "High betweenness centrality (0.032) - this node is a cross-community bridge."
+    },
+    {
+      "type": "isolated_nodes",
+      "question": "What connects `ChecklistPromptParams`, `ChecklistWithHistoryPromptParams`, `CreateProjectDto` to the rest of the system?",
+      "why": "80 weakly-connected nodes found - possible documentation gaps or missing edges."
+    },
+    {
+      "type": "low_cohesion",
+      "question": "Should `Modulo 0` be split into smaller, more focused modules?",
+      "why": "Cohesion score 0.09420289855072464 - nodes in this community are weakly interconnected."
+    },
+    {
+      "type": "low_cohesion",
+      "question": "Should `Modulo 1` be split into smaller, more focused modules?",
+      "why": "Cohesion score 0.13043478260869565 - nodes in this community are weakly interconnected."
+    }
+  ]
+}
