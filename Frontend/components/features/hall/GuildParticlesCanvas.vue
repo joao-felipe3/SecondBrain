@@ -27,9 +27,10 @@ const MAX_EMBERS = 50;
 const MAX_DUST = 70;
 
 function createEmber(width: number, height: number): Particle {
-  // Lareira na arte (região da lareira ao fundo ~64% X, ~48% Y)
-  const baseX = width * 0.62 + (Math.random() * 70 - 35);
-  const baseY = height * 0.48 + (Math.random() * 30 - 15);
+  // Lareira na arte (região da lareira ao fundo ~59.3% X, ~49.5% Y em relação à safe-zone)
+  const baseX = width * 0.593 + (Math.random() * (width * 0.02) - width * 0.01);
+  const baseY =
+    height * 0.495 + (Math.random() * (height * 0.015) - height * 0.0075);
 
   const colors = ["#ffaa00", "#ff5500", "#ff2200", "#ffd700", "#ff8800"];
   const color = colors[Math.floor(Math.random() * colors.length)];
@@ -162,8 +163,8 @@ onBeforeUnmount(() => {
   position: absolute;
   top: 0;
   left: 0;
-  width: 100vw;
-  height: 100vh;
+  width: 100%;
+  height: 100%;
   pointer-events: none;
   z-index: 15;
 }

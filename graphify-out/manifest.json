@@ -2730,8 +2730,8 @@
     "semantic_hash": ""
   },
   "Frontend/pages/index.vue": {
-    "mtime": 1785552260.2199752,
-    "ast_hash": "a9c389e11cba1ec44081a0cc2b801fb5",
+    "mtime": 1785624213.6064596,
+    "ast_hash": "b3527bdb6ed56b8641e170b5b08bc947",
     "semantic_hash": ""
   },
   "Frontend/pages/projects/index.vue": {
@@ -3165,7 +3165,7 @@
     "semantic_hash": ""
   },
   "Frontend/components/features/hall/GuildParticlesCanvas.vue": {
-    "mtime": 1785464653.2956712,
+    "mtime": 1785604998.9678655,
     "ast_hash": "6f033b772beed87bdb10cc9aa1d8ba0f",
     "semantic_hash": ""
   },
@@ -3324,14 +3324,14 @@
     "ast_hash": "3bbb25e688dfaffa916e07517ab5f9a0",
     "semantic_hash": ""
   },
-  "Frontend/public/imagens/Entrada-21-9.png": {
-    "mtime": 1785515980.5510132,
-    "ast_hash": "63b632369ac365914dd5facaa53b25cf",
+  "Frontend/assets/img/fire-spritesheet-16.png": {
+    "mtime": 1785443154.3880763,
+    "ast_hash": "b87db2b87655cd10bb213b1d8cb5115f",
     "semantic_hash": ""
   },
-  "Frontend/public/imagens/Entrada-4-3.png": {
-    "mtime": 1785517956.6115084,
-    "ast_hash": "6f6d56030788a785e957a5d495ad3e20",
+  "Frontend/public/imagens/Entrada-expandida.png": {
+    "mtime": 1785597682.130661,
+    "ast_hash": "154bd6301d37f898eb7e85f71dbeba2b",
     "semantic_hash": ""
   }
 }
