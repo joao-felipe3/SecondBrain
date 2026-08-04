@@ -11,7 +11,7 @@
         <!-- ClipPath do Arco da Esquerda (Posicionado no Vão Esquerdo do Saguão) -->
         <clipPath id="left-arch-clip">
           <path
-            d="M 30 550 L 30 240 Q 30 90 160 90 Q 290 90 290 240 L 290 550 Z"
+            d="M 10 550 L 10 220 Q 65 55 175 55 Q 200 55 200 220 L 200 560 Z"
           />
         </clipPath>
 
@@ -84,6 +84,15 @@ const emit = defineEmits<{
   height: 100%;
   pointer-events: none;
   z-index: 6;
+  transition: transform 0.3s ease;
+}
+
+/* SUPER ULTRAWIDE (32:9, 5120x1440 e superior - min-aspect-ratio: 2.4/1): Sincroniza o portal com ancoragem 50% 50% e compensação de object-position */
+@media (min-aspect-ratio: 2.4/1) {
+  .guild-svg-overlay {
+    transform: translate(9%, 22.5%) scale(1.353);
+    transform-origin: 50% 50%;
+  }
 }
 
 /* PATH INTERATIVO DO ARCO ESQUERDO (SEM DEBUG RÓTULOS/BORDAS) */

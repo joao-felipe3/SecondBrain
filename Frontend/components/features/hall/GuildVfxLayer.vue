@@ -72,6 +72,12 @@
       <div class="fire-sprite"></div>
     </div>
 
+    <!-- Tocha 13 (Parede Esquerda fora da safe zone) -->
+    <div class="torch-container torch-13">
+      <div class="torch-light-glow"></div>
+      <div class="fire-sprite"></div>
+    </div>
+
     <!-- Lareira ao Fundo + Labaredas + Fagulhas (.hearth-flames) -->
     <div class="hearth-area hearth-flames">
       <div class="hearth-fire-glow"></div>
@@ -99,6 +105,15 @@
   height: 100%;
   pointer-events: none;
   z-index: 2;
+  transition: transform 0.3s ease;
+}
+
+/* SUPER ULTRAWIDE (32:9, 5120x1440 e superior - min-aspect-ratio: 2.4/1): Sincroniza as tochas com ancoragem 50% 50% e compensação de object-position */
+@media (min-aspect-ratio: 2.4/1) {
+  .vfx-layer {
+    transform: translate(9%, 22.5%) scale(1.353);
+    transform-origin: 50% 50%;
+  }
 }
 
 /* CONTAINER DAS TOCHAS */
@@ -335,6 +350,22 @@
 .torch-12 .torch-light-glow {
   animation: lightPulse 1.6s ease-in-out infinite alternate;
   animation-delay: 0.3s;
+}
+
+/* Tocha 13 (Parede Esquerda fora da safe zone) */
+.torch-13 {
+  top: 31.5%;
+  left: -3.2%;
+  width: 4%;
+  aspect-ratio: 84 / 108;
+}
+.torch-13 .fire-sprite {
+  animation-duration: 1.3s;
+  animation-delay: 0.6s;
+}
+.torch-13 .torch-light-glow {
+  animation: lightPulse 1.75s ease-in-out infinite alternate;
+  animation-delay: 0.6s;
 }
 
 /* LAREIRA AO FUNDO + LABAREDAS (.hearth-flames) */

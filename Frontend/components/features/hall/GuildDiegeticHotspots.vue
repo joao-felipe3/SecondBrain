@@ -124,6 +124,15 @@ function triggerCoinsInteraction(event: MouseEvent) {
   width: 100%;
   height: 100%;
   z-index: 5;
+  transition: transform 0.3s ease;
+}
+
+/* SUPER ULTRAWIDE (32:9, 5120x1440 e superior - min-aspect-ratio: 2.4/1): Sincroniza os hotspots com ancoragem 50% 50% e compensação de object-position */
+@media (min-aspect-ratio: 2.4/1) {
+  .diegetic-hotspots-layer {
+    transform: translate(9%, 22.5%) scale(1.353);
+    transform-origin: 50% 50%;
+  }
 }
 
 .hotspot-area {

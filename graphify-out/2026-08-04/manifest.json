@@ -2725,8 +2725,8 @@
     "semantic_hash": ""
   },
   "Frontend/pages/index.vue": {
-    "mtime": 1785821188.917522,
-    "ast_hash": "c4aabe2e3583f102937dfcfc830dedaa",
+    "mtime": 1785781146.8263917,
+    "ast_hash": "f36d3a42d28799a06bb2705ec3df8188",
     "semantic_hash": ""
   },
   "Frontend/pages/projects/index.vue": {
@@ -3185,7 +3185,7 @@
     "semantic_hash": ""
   },
   "Frontend/composables/ui/useGuildAudio.ts": {
-    "mtime": 1785821188.7620952,
+    "mtime": 1785437184.8627336,
     "ast_hash": "0b7e41932287dc31439abd178f5a2f1b",
     "semantic_hash": ""
   },
@@ -3330,13 +3330,13 @@
     "semantic_hash": ""
   },
   "Frontend/components/features/hall/GuildArchPortal.vue": {
-    "mtime": 1785804324.7215285,
-    "ast_hash": "c3434ef3c5c4c522bafb4f6fd689e48e",
+    "mtime": 1785765937.6794357,
+    "ast_hash": "bca2f1db0b68e0b96c6c3c8e2dfd806c",
     "semantic_hash": ""
   },
   "Frontend/components/features/hall/GuildDiegeticHotspots.vue": {
-    "mtime": 1785796476.2955265,
-    "ast_hash": "e7c9ffafe1638e32795a8b9ea7f3562b",
+    "mtime": 1785723241.9464648,
+    "ast_hash": "53c281e68189c30079e63c4cf041c799",
     "semantic_hash": ""
   },
   "Frontend/components/features/hall/GuildMobileJournal.vue": {
@@ -3350,8 +3350,8 @@
     "semantic_hash": ""
   },
   "Frontend/components/features/hall/GuildVfxLayer.vue": {
-    "mtime": 1785821188.5968683,
-    "ast_hash": "9bd2a49e20f57cefd6f68251607de679",
+    "mtime": 1785723242.1810825,
+    "ast_hash": "e27af9f4863213805af5ef45dd71c011",
     "semantic_hash": ""
   },
   "Frontend/public/imagens/Entrada-mobile.png": {
