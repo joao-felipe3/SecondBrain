@@ -2725,8 +2725,8 @@
     "semantic_hash": ""
   },
   "Frontend/pages/index.vue": {
-    "mtime": 1785821188.917522,
-    "ast_hash": "c4aabe2e3583f102937dfcfc830dedaa",
+    "mtime": 1786070382.49657,
+    "ast_hash": "87fde34dcfbcfc8a5d12a25e7d60787e",
     "semantic_hash": ""
   },
   "Frontend/pages/projects/index.vue": {
@@ -3185,8 +3185,8 @@
     "semantic_hash": ""
   },
   "Frontend/composables/ui/useGuildAudio.ts": {
-    "mtime": 1785821188.7620952,
-    "ast_hash": "0b7e41932287dc31439abd178f5a2f1b",
+    "mtime": 1786070382.4950087,
+    "ast_hash": "2dadb41b1a36102912a2bbf48189925a",
     "semantic_hash": ""
   },
   "Frontend/composables/ui/useResponsive.ts": {
@@ -3335,8 +3335,8 @@
     "semantic_hash": ""
   },
   "Frontend/components/features/hall/GuildDiegeticHotspots.vue": {
-    "mtime": 1785796476.2955265,
-    "ast_hash": "e7c9ffafe1638e32795a8b9ea7f3562b",
+    "mtime": 1786070382.49346,
+    "ast_hash": "7a733ebd44ffaaded0fa762c6a131eb7",
     "semantic_hash": ""
   },
   "Frontend/components/features/hall/GuildMobileJournal.vue": {
@@ -3357,6 +3357,11 @@
   "Frontend/public/imagens/Entrada-mobile.png": {
     "mtime": 1785629933.4702091,
     "ast_hash": "61cf68218cdf7e41b5add2ffe700d377",
+    "semantic_hash": ""
+  },
+  "Frontend/public/assets/props/door-closed.png": {
+    "mtime": 1785943199.1428642,
+    "ast_hash": "72d6bd05e1d4347c2914629bc00689d9",
     "semantic_hash": ""
   }
 }
