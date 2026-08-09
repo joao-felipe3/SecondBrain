@@ -10,7 +10,8 @@
     <div
       class="safe-zone"
       :class="{
-        'is-camera-hovering': isLeftArchHovered && !isTransitioning,
+        'is-camera-hovering':
+          (isLeftArchHovered || isRightDoorHovered) && !isTransitioning,
         'is-camera-zooming': isTransitioning,
       }"
       :style="{
@@ -45,7 +46,11 @@
       <!-- HOTSPOTS DIEGÉTICOS (BIBLIOTECA, WIDGET DO LIVRO, EASTER EGGS) -->
       <GuildDiegeticHotspots
         :is-mobile="isMobile"
+        :is-transitioning="isTransitioning"
         @open-reception="openReception"
+        @right-door-hover="onRightDoorHover"
+        @right-door-leave="onRightDoorLeave"
+        @right-door-click="handleRightDoorClick"
         @update-tooltip="(msg) => (hoverTooltip = msg)"
       />
 
@@ -116,6 +121,8 @@ const zoomTransformOrigin = ref("16% 45%");
 
 // Estado de Hover do Arco da Esquerda (SVG Path)
 const isLeftArchHovered = ref(false);
+// Estado de Hover do Portal da Direita (Biblioteca)
+const isRightDoorHovered = ref(false);
 const hoverTooltip = ref<string | null>(null);
 
 // Fundo limpo conforme orientação (Retrato -> Entrada-mobile.png, Horizontal -> Entrada-expandida.png)
@@ -150,6 +157,33 @@ function handleLeftArchClick() {
   // Timeline de 500ms antes da transição de rota
   setTimeout(() => {
     router.push("/tasks");
+  }, 500);
+}
+
+// Eventos da Porta da Direita (Biblioteca de Arquivos & Projetos)
+function onRightDoorHover() {
+  isRightDoorHovered.value = true;
+  if (!isTransitioning.value) {
+    zoomTransformOrigin.value = "85% 45%";
+  }
+}
+
+function onRightDoorLeave() {
+  isRightDoorHovered.value = false;
+}
+
+function handleRightDoorClick() {
+  if (isTransitioning.value) return;
+
+  isTransitioning.value = true;
+  zoomTransformOrigin.value = "85% 45%";
+
+  // SFX diegético de passos e porta de madeira
+  playSFX("footsteps-stone");
+
+  // Timeline de 500ms para a animação do sprite + camera zoom antes de redirecionar para /projects
+  setTimeout(() => {
+    router.push("/projects");
   }, 500);
 }
 

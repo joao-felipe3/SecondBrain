@@ -133,28 +133,85 @@ export function useGuildAudio() {
     whiteNoise.start(now);
   }
 
-  // 4. SOM DE PORTA DE MADEIRA (Door Thud)
-  function playDoorOpenSound() {
-    if (isMuted.value) return;
-    const ctx = getAudioContext();
-    if (!ctx) return;
+  // 4. SOM DIEGÉTICO DE RANGER DE PORTA (Carrega .wav ou .wav com ajuste dinâmico de duração)
+  let activeDoorAudio: HTMLAudioElement | null = null;
+  let activeDoorTimeout: any = null;
 
-    const now = ctx.currentTime;
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
+  function stopDoorSound() {
+    if (activeDoorAudio) {
+      try {
+        activeDoorAudio.pause();
+        activeDoorAudio.currentTime = 0;
+      } catch (e) {}
+      activeDoorAudio = null;
+    }
+    if (activeDoorTimeout) {
+      clearTimeout(activeDoorTimeout);
+      activeDoorTimeout = null;
+    }
+  }
 
-    osc.type = "sine";
-    osc.frequency.setValueAtTime(150, now);
-    osc.frequency.exponentialRampToValueAtTime(50, now + 0.25);
+  function playDoorSound(
+    baseName: string,
+    targetDurationMs: number = 600,
+    volume: number = 0.6,
+  ) {
+    if (isMuted.value || typeof window === "undefined") return;
 
-    gain.gain.setValueAtTime(0.25, now);
-    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
+    stopDoorSound();
 
-    osc.connect(gain);
-    gain.connect(ctx.destination);
+    // Tenta carregar .wav primeiro, depois .wav
+    const formats = [`/vfx/${baseName}.wav`, `/vfx/${baseName}.wav`];
+    let audio: HTMLAudioElement | null = null;
 
-    osc.start(now);
-    osc.stop(now + 0.25);
+    const targetSec = targetDurationMs / 1000;
+
+    for (const src of formats) {
+      try {
+        const a = new Audio(src);
+        audio = a;
+        break;
+      } catch (e) {}
+    }
+
+    if (!audio) return;
+
+    audio.volume = volume;
+
+    const applyPlaybackRate = () => {
+      if (
+        audio &&
+        audio.duration &&
+        isFinite(audio.duration) &&
+        audio.duration > 0
+      ) {
+        // Adapta a velocidade para coincidir exatamente com a duração da animação (0.5x a 3.0x)
+        const rate = audio.duration / targetSec;
+        audio.playbackRate = Math.max(0.4, Math.min(3.5, rate));
+      }
+    };
+
+    audio.addEventListener("loadedmetadata", applyPlaybackRate);
+    if (audio.readyState >= 1) {
+      applyPlaybackRate();
+    }
+
+    activeDoorAudio = audio;
+
+    audio.play().catch(() => {});
+
+    // Interrompe o som exatamente quando a animação termina
+    activeDoorTimeout = setTimeout(() => {
+      stopDoorSound();
+    }, targetDurationMs);
+  }
+
+  function playDoorOpenSound(targetDurationMs: number = 600) {
+    playDoorSound("door-open", targetDurationMs, 0.6);
+  }
+
+  function playDoorCloseSound(targetDurationMs: number = 400) {
+    playDoorSound("door-close", targetDurationMs, 0.5);
   }
 
   // 5. SOM DE PASSOS NA PEDRA (Footsteps on Stone)
@@ -271,6 +328,7 @@ export function useGuildAudio() {
     playDaggerSound,
     playPaperFlipSound,
     playDoorOpenSound,
+    playDoorCloseSound,
     playFootstepsStoneSound,
     toggleAmbientSound,
     startAmbientSound,
