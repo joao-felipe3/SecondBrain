@@ -112,19 +112,19 @@ describe('TasksService', () => {
 
   describe('CRUD & delegate calls', () => {
     it('should delegate create calls properly', async () => {
-      await service.create({ name: 'Task' } as any);
+      await service.create({ name: 'Task' });
       expect(mockWriteService.createTaskCore).toHaveBeenCalled();
 
-      await service.create({ name: 'MicroTask', microTaskType: 'code' } as any);
+      await service.create({ name: 'MicroTask', microTaskType: 'code' });
       expect(mockWriteService.createMicroTask).toHaveBeenCalled();
 
-      await service.createMany([{ name: 'Task' }] as any);
+      await service.createMany([{ name: 'Task' }]);
       expect(mockWriteService.createMany).toHaveBeenCalled();
 
-      await service.createRecurringTemplate({ name: 'Rec' } as any);
+      await service.createRecurringTemplate({ name: 'Rec' });
       expect(mockRecurringService.createRecurringTemplate).toHaveBeenCalled();
 
-      await service.createRecurringMicroTask({ name: 'RecMicro' } as any);
+      await service.createRecurringMicroTask({ name: 'RecMicro' });
       expect(mockRecurringService.createRecurringMicroTask).toHaveBeenCalled();
     });
 

@@ -126,7 +126,7 @@ describe('TasksWriteService', () => {
 
       mockTaskModel.insertMany.mockResolvedValue(insertedDocs);
 
-      const result = await service.createMany(dtos as any, { recalculateProjectStats: true });
+      const result = await service.createMany(dtos, { recalculateProjectStats: true });
 
       expect(result).toEqual(insertedDocs);
       expect(mockProjectStatsService.recalculateProjectStats).toHaveBeenCalledWith(validProjectId);
@@ -141,7 +141,7 @@ describe('TasksWriteService', () => {
         autoGenerateChecklist: true,
       };
 
-      const result = await service.createMicroTask(dto as any);
+      const result = await service.createMicroTask(dto);
       expect(result).toBeDefined();
       expect(mockTasksInputService.validatePertInput).toHaveBeenCalledWith(dto);
       expect(mockChecklistOperationsService.generateChecklistWithHistory).toHaveBeenCalled();

@@ -8,23 +8,47 @@
       preserveAspectRatio="none"
     >
       <defs>
-        <!-- ClipPath do Arco da Esquerda (Posicionado no Vão Esquerdo do Saguão) -->
+        <!-- ClipPath do Arco da Esquerda (Ajustado estritamente ao vão de pedra) -->
         <clipPath id="left-arch-clip">
           <path
-            d="M 10 550 L 10 220 Q 65 55 175 55 Q 200 55 200 220 L 200 560 Z"
+            d="M 10 550 L 52 240 Q 52 116 144 116 Q 236 116 236 240 L 236 550 Z"
           />
         </clipPath>
 
-        <!-- Gradiente Radial para Luz Interna Pulsante -->
-        <radialGradient id="portal-glow-gradient" cx="17.5%" cy="45%" r="35%">
-          <stop offset="0%" stop-color="#ffe082" stop-opacity="0.9" />
-          <stop offset="50%" stop-color="#ffb74d" stop-opacity="0.5" />
+        <!-- Gradiente Radial para Luz Interna Pulsante Suave -->
+        <radialGradient id="portal-glow-gradient" cx="14.4%" cy="40%" r="30%">
+          <stop offset="0%" stop-color="#ffe082" stop-opacity="0.7" />
+          <stop offset="50%" stop-color="#ffb74d" stop-opacity="0.3" />
           <stop offset="100%" stop-color="#f57c00" stop-opacity="0" />
         </radialGradient>
+
+        <!-- Gradiente de Névoa Mágica Rúnica Suave -->
+        <radialGradient id="portal-mist-gradient" cx="14.4%" cy="45%" r="35%">
+          <stop offset="0%" stop-color="#ffd54f" stop-opacity="0.5" />
+          <stop offset="45%" stop-color="#ff8f00" stop-opacity="0.25" />
+          <stop offset="85%" stop-color="#bf360c" stop-opacity="0.1" />
+          <stop offset="100%" stop-color="#000000" stop-opacity="0" />
+        </radialGradient>
+
+        <!-- Filter Nitido para Brilho Mágico de Runas (Blur Reduzido) -->
+        <filter
+          id="rune-glow-filter"
+          x="-10%"
+          y="-10%"
+          width="120%"
+          height="120%"
+        >
+          <feGaussianBlur stdDeviation="0.8" result="blur" />
+          <feMerge>
+            <feMergeNode in="blur" />
+            <feMergeNode in="SourceGraphic" />
+          </feMerge>
+        </filter>
       </defs>
 
-      <!-- LUZ INTERNA MOVIMENTADA (COLOR-DODGE CLIPADO NO PERFIL DO ARCO) -->
+      <!-- LUZ INTERNA & NÉVOA RÚNICA ANIMADA (CLIPADO NO PERFIL DO ARCO) -->
       <g clip-path="url(#left-arch-clip)">
+        <!-- Luz Base Interna -->
         <rect
           x="0"
           y="0"
@@ -34,14 +58,45 @@
           class="arch-internal-glow"
           :class="{ 'is-hovered': isHovered }"
         />
+
+        <!-- VÓRTICE DE NÉVOA RÚNICA (ATIVADO NO HOVER DO ARCO) -->
+        <g class="runic-fog-group" :class="{ 'is-active': isHovered }">
+          <ellipse
+            cx="144"
+            cy="320"
+            rx="90"
+            ry="160"
+            fill="url(#portal-mist-gradient)"
+            class="mist-layer mist-layer-1"
+          />
+          <ellipse
+            cx="144"
+            cy="280"
+            rx="80"
+            ry="140"
+            fill="url(#portal-glow-gradient)"
+            class="mist-layer mist-layer-2"
+          />
+        </g>
       </g>
 
-      <!-- PATH INTERATIVO DO ARCO DA ESQUERDA (NO PALCO PANORÂMICO) -->
+      <!-- CONTORNO DE ENERGIA RÚNICA NÍTIDO NO PERFIL DA PEDRA -->
+      <path
+        class="portal-energy-contour"
+        :class="{ 'is-active': isHovered }"
+        d="M 44 460 L 40 240 Q 52 114 128 114 Q 200 128 200 240 L 200 390"
+        fill="none"
+        stroke="#ffe082"
+        stroke-width="2"
+        filter="url(#rune-glow-filter)"
+      />
+
+      <!-- PATH INTERATIVO DO ARCO DA ESQUERDA (ALINHADO AO VÃO) -->
       <path
         class="portal-arch-left"
-        d="M 30 550 L 30 240 Q 30 90 160 90 Q 290 90 290 240 L 290 550 Z"
+        d="M 52 550 L 52 240 Q 52 116 144 116 Q 236 116 236 240 L 236 550 Z"
         @click="emit('click')"
-        @mouseenter="emit('hover')"
+        @mouseenter="handleMouseEnter"
         @mouseleave="emit('leave')"
       />
     </svg>
@@ -62,6 +117,7 @@
 
 <script setup lang="ts">
 import UiWaxSeal from "~/components/ui/diegetic/UiWaxSeal.vue";
+import { useGuildAudio } from "~/composables/ui/useGuildAudio";
 
 defineProps<{
   isMobile: boolean;
@@ -73,6 +129,13 @@ const emit = defineEmits<{
   (e: "hover"): void;
   (e: "leave"): void;
 }>();
+
+const { playPortalHumSound } = useGuildAudio();
+
+function handleMouseEnter() {
+  playPortalHumSound();
+  emit("hover");
+}
 </script>
 
 <style scoped>
@@ -95,7 +158,7 @@ const emit = defineEmits<{
   }
 }
 
-/* PATH INTERATIVO DO ARCO ESQUERDO (SEM DEBUG RÓTULOS/BORDAS) */
+/* PATH INTERATIVO DO ARCO ESQUERDO */
 .portal-arch-left {
   pointer-events: auto;
   fill: transparent;
@@ -103,31 +166,113 @@ const emit = defineEmits<{
   cursor: pointer;
 }
 
-/* LUZ INTERNA DIEGÉTICA NO ARCO DA ESQUERDA (COLOR-DODGE PULSANTE) */
+/* LUZ INTERNA DIEGÉTICA NO ARCO DA ESQUERDA (SUAVE E SEM NEVOEIRO DENSE) */
 .arch-internal-glow {
   opacity: 0;
-  mix-blend-mode: color-dodge;
+  mix-blend-mode: screen;
   transition: opacity 0.35s ease;
   pointer-events: none;
 }
 
 .arch-internal-glow.is-hovered {
-  opacity: 0.55;
+  opacity: 0.28;
   animation: hoverGlowPulse 2.4s ease-in-out infinite alternate;
 }
 
 @keyframes hoverGlowPulse {
   0% {
-    opacity: 0.35;
+    opacity: 0.2;
     transform: translateY(0px);
   }
   50% {
-    opacity: 0.65;
-    transform: translateY(-4px);
+    opacity: 0.35;
+    transform: translateY(-2px);
   }
   100% {
+    opacity: 0.25;
+    transform: translateY(1px);
+  }
+}
+
+/* CAMADA DE NÉVOA RÚNICA / PORTAL MÁGICO */
+.runic-fog-group {
+  opacity: 0;
+  mix-blend-mode: screen;
+  transition: opacity 0.45s ease-in-out;
+  pointer-events: none;
+}
+
+.runic-fog-group.is-active {
+  opacity: 0.45;
+}
+
+.mist-layer {
+  transform-origin: 144px 320px;
+}
+
+.runic-fog-group.is-active .mist-layer-1 {
+  animation: mistSwirlOne 6s ease-in-out infinite alternate;
+}
+
+.runic-fog-group.is-active .mist-layer-2 {
+  animation: mistSwirlTwo 4.5s ease-in-out infinite alternate;
+}
+
+@keyframes mistSwirlOne {
+  0% {
+    transform: scale(0.96) rotate(-2deg) translateY(0px);
     opacity: 0.4;
-    transform: translateY(2px);
+  }
+  50% {
+    transform: scale(1.05) rotate(3deg) translateY(-4px);
+    opacity: 0.65;
+  }
+  100% {
+    transform: scale(1.01) rotate(-1deg) translateY(2px);
+    opacity: 0.45;
+  }
+}
+
+@keyframes mistSwirlTwo {
+  0% {
+    transform: scale(1.02) rotate(2deg) translateY(2px);
+    opacity: 0.3;
+  }
+  50% {
+    transform: scale(0.95) rotate(-3deg) translateY(-3px);
+    opacity: 0.6;
+  }
+  100% {
+    transform: scale(1.04) rotate(1deg) translateY(-1px);
+    opacity: 0.35;
+  }
+}
+
+/* CONTORNO DE ENERGIA RÚNICA NÍTIDO E FINO */
+.portal-energy-contour {
+  opacity: 0;
+  stroke-dasharray: 800;
+  stroke-dashoffset: 800;
+  transition:
+    opacity 0.4s ease,
+    stroke-dashoffset 0.8s ease-in-out;
+  pointer-events: none;
+}
+
+.portal-energy-contour.is-active {
+  opacity: 0.9;
+  stroke-dashoffset: 0;
+  animation: contourPulse 2s ease-in-out infinite alternate;
+}
+
+@keyframes contourPulse {
+  0% {
+    stroke: #ffe082;
+    stroke-width: 2;
+  }
+  100% {
+    stroke: #ffd54f;
+    stroke-width: 3;
   }
 }
 
@@ -135,7 +280,7 @@ const emit = defineEmits<{
 .floating-arch-tag.left-arch-tag {
   position: absolute;
   top: 48%;
-  left: 17.5%;
+  left: 14.4%;
   transform: translate(-50%, calc(-50% + 12px));
   opacity: 0;
   pointer-events: none;

@@ -79,7 +79,7 @@
   - [x] Aplicar iluminação interna suave no `:hover` (`mix-blend-mode: color-dodge`).
   - [x] Exibir tag flutuante (`⚔️ Mural de Missões`) com animação de subida suave.
   - [x] Disparar animação de Camera Zoom (`scale(2.8)`, origin: `11% 50%`) + SFX de passos na pedra ao clicar.
-  - [ ] Spritesheet de névoa rúnica/portal mágico ativando no hover do Arco de Missões.
+  - [x] Spritesheet de névoa rúnica/portal mágico ativando no hover do Arco de Missões.
 
 - [x] **Porta da Direita (Biblioteca & Arquivos -> `/projects`):**
   - [x] Implementar Sprite Sheet de 9 frames da porta abrindo (`GuildLibraryPortal.vue`).

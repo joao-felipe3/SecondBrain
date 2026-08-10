@@ -33,7 +33,7 @@ describe('ProjectsCoreController', () => {
   });
 
   it('should create, list, and find project', async () => {
-    const created = await controller.create({ name: 'Proj 1' } as any);
+    const created = await controller.create({ name: 'Proj 1' });
     expect(created._id).toBe(validProjId);
 
     const all = await controller.findAll();

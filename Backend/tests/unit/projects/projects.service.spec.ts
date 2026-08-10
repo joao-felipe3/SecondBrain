@@ -80,7 +80,7 @@ describe('ProjectsService', () => {
 
   describe('CRUD & visualization methods', () => {
     it('should create project', async () => {
-      const proj = await service.create({ name: 'New Proj' } as any);
+      const proj = await service.create({ name: 'New Proj' });
       expect(proj._id).toBe(validProjId);
     });
 

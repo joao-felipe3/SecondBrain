@@ -345,8 +345,8 @@
     "semantic_hash": ""
   },
   "Backend/src/projects/projects.module.ts": {
-    "mtime": 1786383157.3402784,
-    "ast_hash": "9f0a4de609d29e36f8c0e8e8251cc471",
+    "mtime": 1786390056.582903,
+    "ast_hash": "bf4b10a5d13ef38e211cad42aa23c136",
     "semantic_hash": ""
   },
   "Backend/src/projects/projects.service.ts": {
@@ -1255,8 +1255,8 @@
     "semantic_hash": ""
   },
   "Backend/src/tasks/services/workflow/utils/recurring.utils.ts": {
-    "mtime": 1784391628.7781646,
-    "ast_hash": "732664fe59c1f02986535a18c20cf3d2",
+    "mtime": 1786390780.1035604,
+    "ast_hash": "07367db40b855363df12a496225a114c",
     "semantic_hash": ""
   },
   "Backend/src/tasks/services/workflow/write.service.ts": {
@@ -1270,8 +1270,8 @@
     "semantic_hash": ""
   },
   "Backend/src/tasks/tasks.module.ts": {
-    "mtime": 1786383148.3900573,
-    "ast_hash": "98ad78ba0b91cc7406881b26aaf33f94",
+    "mtime": 1786390056.7317696,
+    "ast_hash": "64eebb93f497db4b0e8d0662a2cdd2c7",
     "semantic_hash": ""
   },
   "Backend/src/tasks/tasks.service.ts": {
@@ -1415,8 +1415,8 @@
     "semantic_hash": ""
   },
   "Backend/tests/unit/projects/projects.service.spec.ts": {
-    "mtime": 1784988360.699576,
-    "ast_hash": "61ca141370ef058731a612336c3b63c5",
+    "mtime": 1786390780.1035604,
+    "ast_hash": "d1b39be18f9c51dcaa2df7f704356ce0",
     "semantic_hash": ""
   },
   "Backend/tests/unit/projects/services/drafts/draft-details-enrichment.service.spec.ts": {
@@ -1840,13 +1840,13 @@
     "semantic_hash": ""
   },
   "Backend/tests/unit/tasks/services/workflow/write.service.spec.ts": {
-    "mtime": 1786329556.6139243,
-    "ast_hash": "99d9f5dccc483fdc1ba34263911be383",
+    "mtime": 1786390780.1035604,
+    "ast_hash": "e4a1512373e407508ff5caf77bf09348",
     "semantic_hash": ""
   },
   "Backend/tests/unit/tasks/tasks.controller.spec.ts": {
-    "mtime": 1784988360.70458,
-    "ast_hash": "049dc69581848152f979f75c4513367a",
+    "mtime": 1786390780.1035604,
+    "ast_hash": "d85c897e9cdc6bf80d9395ff3e99883b",
     "semantic_hash": ""
   },
   "Backend/tests/unit/tasks/tasks.module.spec.ts": {
@@ -1855,8 +1855,8 @@
     "semantic_hash": ""
   },
   "Backend/tests/unit/tasks/tasks.service.spec.ts": {
-    "mtime": 1786329574.1544957,
-    "ast_hash": "b8e7a7640696a55676dfbd53cdc71ab8",
+    "mtime": 1786390780.1035604,
+    "ast_hash": "cf3a23f8a9de0f6bd4e33718982c0f9a",
     "semantic_hash": ""
   },
   "Backend/tsconfig.build.json": {
@@ -2770,8 +2770,8 @@
     "semantic_hash": ""
   },
   "Frontend/stores/task.ts": {
-    "mtime": 1786384657.9830406,
-    "ast_hash": "354f6e13229bca1ccc55a55957cc89b4",
+    "mtime": 1786390056.893843,
+    "ast_hash": "dcb07636d883afe83bfa24ed92764fc8",
     "semantic_hash": ""
   },
   "Frontend/tailwind.config.js": {
@@ -3165,8 +3165,8 @@
     "semantic_hash": ""
   },
   "Frontend/composables/ui/useGuildAudio.ts": {
-    "mtime": 1786315693.9845848,
-    "ast_hash": "29d0b86bc3363723138164d82c6ee5f4",
+    "mtime": 1786398602.917907,
+    "ast_hash": "b4affa802299ba8fb7f1858619dda5e8",
     "semantic_hash": ""
   },
   "Frontend/composables/ui/useResponsive.ts": {
@@ -3310,8 +3310,8 @@
     "semantic_hash": ""
   },
   "Frontend/components/features/hall/GuildArchPortal.vue": {
-    "mtime": 1785804324.7215285,
-    "ast_hash": "c3434ef3c5c4c522bafb4f6fd689e48e",
+    "mtime": 1786398619.7442532,
+    "ast_hash": "d72cdece552651be3ef0278cb7a1f0ee",
     "semantic_hash": ""
   },
   "Frontend/components/features/hall/GuildDiegeticHotspots.vue": {
@@ -3370,8 +3370,8 @@
     "semantic_hash": ""
   },
   "Project/FRONTEND_REFACTORING_PLAN.md": {
-    "mtime": 1786326891.3201187,
-    "ast_hash": "9b43191ea7276ac56a7affd8865f1207",
+    "mtime": 1786395744.3881817,
+    "ast_hash": "88bd77dde62adb6db856c55369d1ae2c",
     "semantic_hash": ""
   },
   "Project/adr/004-validation-strategy.md": {
@@ -3460,8 +3460,8 @@
     "semantic_hash": ""
   },
   "Backend/tests/unit/projects/controllers/projects-core.controller.spec.ts": {
-    "mtime": 1786331265.0022223,
-    "ast_hash": "abf08c0b54470fc48a6661ac47ce4d48",
+    "mtime": 1786390780.1035604,
+    "ast_hash": "5cd236e419f32addc4200430bc678de2",
     "semantic_hash": ""
   },
   "Backend/tests/unit/projects/controllers/projects-planning.controller.spec.ts": {
