@@ -32,6 +32,27 @@ export const useTasksApi = () => {
     return post({ context });
   };
 
+  const createMicroTask = async (payload: any) => {
+    const { post } = useApi("/tasks/micro");
+    return post(payload);
+  };
+
+  const moveTaskStatus = async (
+    taskId: string,
+    payload: { targetStatus: string; newOrder?: number },
+  ) => {
+    const { patch } = useApi(`/tasks/${taskId}/move`);
+    return patch(payload);
+  };
+
+  const fetchHabitsDashboard = async (projectId?: string) => {
+    const endpoint = projectId
+      ? `/habits/dashboard?projectId=${encodeURIComponent(projectId)}`
+      : "/habits/dashboard";
+    const { get } = useApi(endpoint);
+    return get();
+  };
+
   return {
     ...resource,
     concludeTask,
@@ -39,5 +60,8 @@ export const useTasksApi = () => {
     updatePertEstimate,
     createBulkTasks,
     fetchAiSuggestions,
+    createMicroTask,
+    moveTaskStatus,
+    fetchHabitsDashboard,
   };
 };

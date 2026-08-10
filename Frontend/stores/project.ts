@@ -40,20 +40,22 @@ export const useProjectStore = defineStore("project", {
 
     async loadTaskCounts() {
       const api = useProjectsApi();
-      for (const project of this.projects) {
-        try {
+      await Promise.allSettled(
+        this.projects.map(async (project) => {
           const id = project._id ?? project.id;
-          if (!id) continue;
-          const { data, error } = await api.fetchProjectTasks(String(id));
-          project.taskCount = !error && Array.isArray(data) ? data.length : 0;
-        } catch (error) {
-          console.error(
-            `Failed to load task count for project ${project._id}`,
-            error,
-          );
-          project.taskCount = 0;
-        }
-      }
+          if (!id) return;
+          try {
+            const { data, error } = await api.fetchProjectTasks(String(id));
+            project.taskCount = !error && Array.isArray(data) ? data.length : 0;
+          } catch (error) {
+            console.error(
+              `Failed to load task count for project ${project._id}`,
+              error,
+            );
+            project.taskCount = 0;
+          }
+        }),
+      );
     },
 
     async createProject(newProject: Partial<Project>) {

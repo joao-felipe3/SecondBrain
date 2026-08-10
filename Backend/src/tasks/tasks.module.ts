@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { TasksService } from './tasks.service';
 import { ChecklistService } from './services/intelligence';
 import { PertService, BufferService } from './services/analysis';
@@ -21,8 +21,6 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { TaskSchema } from './schemas/task.schema';
 import { Task } from './entities/task.entity';
 import { MongooseTaskRepository } from './repositories/mongoose-task.repository';
-import { ProjectSchema } from '../projects/schemas/project.schema';
-import { Project } from '../projects/entities/project.entity';
 import { TaskDependencySchema } from './schemas/task-dependency.schema';
 import { TaskDependency } from './schemas/task-dependency.schema';
 import { ProjectBufferSchema, ProjectBuffer } from './schemas/project-buffer.schema';
@@ -42,23 +40,23 @@ import {
 } from './services/intelligence';
 import { TasksHabitsService } from './services/monitoring';
 import { TasksMetricsService, TasksPertService } from './services/analysis';
-import { ProjectStatsService } from '../projects/services/execution/project-stats.service';
+import { ProjectsModule } from '../projects/projects.module';
 import { TaskAlertSchema } from './schemas/task-alert.schema';
 import { AlertsService, DeviationDetectionService } from './services/monitoring';
 import { AlertsController } from './controllers/alerts.controller';
 
+const mongooseFeature = MongooseModule.forFeature([
+  { name: Task.name, schema: TaskSchema },
+  { name: 'Task', schema: TaskSchema },
+  { name: TaskDependency.name, schema: TaskDependencySchema },
+  { name: ProjectBuffer.name, schema: ProjectBufferSchema },
+  { name: Requirement.name, schema: RequirementSchema },
+  { name: 'TaskCompletionFeedback', schema: TaskCompletionFeedbackSchema },
+  { name: 'TaskAlert', schema: TaskAlertSchema },
+]);
+
 @Module({
-  imports: [
-    MongooseModule.forFeature([
-      { name: Task.name, schema: TaskSchema },
-      { name: Project.name, schema: ProjectSchema },
-      { name: TaskDependency.name, schema: TaskDependencySchema },
-      { name: ProjectBuffer.name, schema: ProjectBufferSchema },
-      { name: Requirement.name, schema: RequirementSchema },
-      { name: 'TaskCompletionFeedback', schema: TaskCompletionFeedbackSchema },
-      { name: 'TaskAlert', schema: TaskAlertSchema },
-    ]),
-  ],
+  imports: [forwardRef(() => ProjectsModule), mongooseFeature],
   controllers: [
     TasksController,
     CPMController,
@@ -69,7 +67,6 @@ import { AlertsController } from './controllers/alerts.controller';
   ],
   providers: [
     TasksService,
-    ProjectStatsService,
     ChecklistService,
     TasksInputService,
     TasksAiSuggestionsService,
@@ -102,8 +99,8 @@ import { AlertsController } from './controllers/alerts.controller';
     },
   ],
   exports: [
+    mongooseFeature,
     TasksService,
-    ProjectStatsService,
     ChecklistService,
     TasksInputService,
     TasksAiSuggestionsService,
