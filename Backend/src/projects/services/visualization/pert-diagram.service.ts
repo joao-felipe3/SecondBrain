@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, BadRequestException, Inject, forwardRef } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types, FilterQuery } from 'mongoose';
 import { ProjectDocument } from '../../schemas/project.schema';
@@ -14,7 +14,6 @@ export class PertDiagramService {
     private readonly projectModel: Model<ProjectDocument>,
     @InjectModel('Task')
     private readonly taskModel: Model<TaskDocument>,
-    @Inject(forwardRef(() => CPMService))
     private readonly cpmService: CPMService,
   ) {}
 

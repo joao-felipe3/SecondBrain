@@ -1,5 +1,5 @@
-import { Injectable, Inject, forwardRef } from '@nestjs/common';
-import { GeminiService } from '../core/gemini.service';
+import { Injectable } from '@nestjs/common';
+import { GeminiExecutorService } from '../core/gemini-executor.service';
 import { PromptBuilderService } from '../projects/prompt-builder.service';
 import {
   extractJsonArray,
@@ -30,8 +30,7 @@ import {
 @Injectable()
 export class DraftsAiService {
   constructor(
-    @Inject(forwardRef(() => GeminiService))
-    private readonly geminiService: GeminiService,
+    private readonly geminiExecutor: GeminiExecutorService,
     private readonly promptBuilder: PromptBuilderService,
   ) {}
 
@@ -45,7 +44,7 @@ export class DraftsAiService {
       themeHints,
     });
 
-    const rawResponse = await this.geminiService.generateContent(prompt, {
+    const rawResponse = await this.geminiExecutor.generateContent(prompt, {
       model: modelOverride,
       responseMimeType: 'application/json',
       temperature: 0.25,
@@ -80,7 +79,7 @@ export class DraftsAiService {
         avoidTaskTitles,
       });
 
-      const response = await this.geminiService.generateContent(prompt, {
+      const response = await this.geminiExecutor.generateContent(prompt, {
         model: modelOverride,
         responseMimeType: 'application/json',
         maxOutputTokens: tokens,
@@ -150,7 +149,7 @@ export class DraftsAiService {
         avoidTaskTitles,
       });
 
-      const response = await this.geminiService.generateContent(prompt, {
+      const response = await this.geminiExecutor.generateContent(prompt, {
         model: modelOverride,
         responseMimeType: 'application/json',
         maxOutputTokens: tokens,
@@ -220,7 +219,7 @@ export class DraftsAiService {
         avoidTaskTitles,
       });
 
-      const response = await this.geminiService.generateContent(prompt, {
+      const response = await this.geminiExecutor.generateContent(prompt, {
         model: modelOverride,
         responseMimeType: 'application/json',
         maxOutputTokens: tokens,
@@ -290,7 +289,7 @@ export class DraftsAiService {
         avoidTaskTitles,
       });
 
-      const response = await this.geminiService.generateContent(prompt, {
+      const response = await this.geminiExecutor.generateContent(prompt, {
         model: modelOverride,
         responseMimeType: 'application/json',
         maxOutputTokens: tokens,
@@ -354,7 +353,7 @@ export class DraftsAiService {
       outline,
     });
 
-    const response = await this.geminiService.generateContent(detailsPrompt, {
+    const response = await this.geminiExecutor.generateContent(detailsPrompt, {
       model: detailsModelOverride,
       responseMimeType: 'application/json',
       maxOutputTokens: maxTokens,
@@ -388,7 +387,7 @@ export class DraftsAiService {
       })),
     });
 
-    const response = await this.geminiService.generateContent(batchPrompt, {
+    const response = await this.geminiExecutor.generateContent(batchPrompt, {
       model: detailsModelOverride,
       responseMimeType: 'application/json',
       maxOutputTokens: maxTokens,

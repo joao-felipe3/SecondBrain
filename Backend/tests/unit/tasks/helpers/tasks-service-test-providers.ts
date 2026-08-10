@@ -12,7 +12,7 @@ import { TasksPertService } from '../../../../src/tasks/services/analysis/pert.s
 import { TasksWriteService } from '../../../../src/tasks/services/workflow/write.service';
 import { TaskDocument } from '../../../../src/tasks/schemas/task.schema';
 import { ProjectDocument } from '../../../../src/projects/schemas/project.schema';
-import { ProjectsService } from '../../../../src/projects/projects.service';
+import { ProjectStatsService } from '../../../../src/projects/services/execution/project-stats.service';
 import { GeminiService } from '../../../../src/ai/services/core/gemini.service';
 import { ChecklistService } from '../../../../src/tasks/services/intelligence/checklist.service';
 import { PertService } from '../../../../src/tasks/services/analysis/pert.service';
@@ -23,7 +23,7 @@ import { DeviationDetectionService } from '../../../../src/tasks/services/monito
 type TasksServiceTestDeps = {
   taskModel: unknown;
   projectModel: unknown;
-  projectsService: unknown;
+  projectStatsService?: unknown;
   geminiService: unknown;
   checklistService: unknown;
   pertService: unknown;
@@ -35,7 +35,10 @@ type TasksServiceTestDeps = {
 export function createTasksServiceTestProviders(deps: TasksServiceTestDeps) {
   const taskModel = deps.taskModel as Model<TaskDocument>;
   const projectModel = deps.projectModel as Model<ProjectDocument>;
-  const projectsService = deps.projectsService as ProjectsService;
+  const projectStatsService = (deps.projectStatsService || {
+    recalculateProjectStats: jest.fn(),
+    incrementHoursWorked: jest.fn(),
+  }) as ProjectStatsService;
   const geminiService = deps.geminiService as GeminiService;
   const checklistService = deps.checklistService as ChecklistService;
   const pertService = deps.pertService as PertService;
@@ -45,7 +48,7 @@ export function createTasksServiceTestProviders(deps: TasksServiceTestDeps) {
 
   const inputService = new TasksInputService();
   const metricsService = new TasksMetricsService();
-  const recurringService = new TasksRecurringService(taskModel, projectsService);
+  const recurringService = new TasksRecurringService(taskModel, projectStatsService);
   let completionService!: TasksCompletionService;
   let writeService!: TasksWriteService;
 
@@ -118,7 +121,7 @@ export function createTasksServiceTestProviders(deps: TasksServiceTestDeps) {
       useFactory: () => {
         completionService = new TasksCompletionService(
           taskModel,
-          projectsService,
+          projectStatsService,
           evmProgressService,
           metricsService,
           deviationDetectionService,
@@ -140,7 +143,7 @@ export function createTasksServiceTestProviders(deps: TasksServiceTestDeps) {
         writeService = new TasksWriteService(
           taskModel,
           projectModel,
-          projectsService,
+          projectStatsService,
           metricsService,
           inputService,
           new ChecklistOperationsService(taskModel, checklistService, inputService, geminiService),

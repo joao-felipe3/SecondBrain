@@ -5,7 +5,7 @@ import { CreateTaskDto } from '../../dto/task/create-task.dto';
 import { CreateMicroTaskDto } from '../../dto/task/create-micro-task.dto';
 import { TaskDocument } from '../../schemas/task.schema';
 import { ProjectDocument } from '../../../projects/schemas/project.schema';
-import { ProjectsService } from '../../../projects/projects.service';
+import { ProjectStatsService } from '../../../projects/services/execution/project-stats.service';
 import { TasksMetricsService } from '../analysis/metrics.service';
 import { CreateManyTasksOptionsDto } from '../../dto/task/create-many-tasks-options.dto';
 import { TasksInputService } from './input.service';
@@ -18,7 +18,7 @@ export class TasksWriteService {
     @InjectModel('Task') private readonly taskModel: Model<TaskDocument>,
     @InjectModel('Project')
     private readonly projectModel: Model<ProjectDocument>,
-    private readonly projectsService: ProjectsService,
+    private readonly projectStatsService: ProjectStatsService,
     private readonly metricsService: TasksMetricsService,
     private readonly tasksInputService: TasksInputService,
     private readonly checklistOperationsService: ChecklistOperationsService,
@@ -68,7 +68,7 @@ export class TasksWriteService {
     const savedTask = await createdTask.save();
 
     if (savedTask.project) {
-      await this.projectsService.recalculateProjectStats(savedTask.project.toString());
+      await this.projectStatsService.recalculateProjectStats(savedTask.project.toString());
     }
 
     return savedTask;
@@ -96,10 +96,10 @@ export class TasksWriteService {
       const newProjectId = updatedTask.project?.toString();
 
       if (oldProjectId && oldProjectId !== newProjectId) {
-        await this.projectsService.recalculateProjectStats(oldProjectId);
+        await this.projectStatsService.recalculateProjectStats(oldProjectId);
       }
       if (newProjectId) {
-        await this.projectsService.recalculateProjectStats(newProjectId);
+        await this.projectStatsService.recalculateProjectStats(newProjectId);
       }
     }
 
@@ -119,7 +119,7 @@ export class TasksWriteService {
     const result = await this.taskModel.findByIdAndDelete(id).exec();
 
     if (result && projectId) {
-      await this.projectsService.recalculateProjectStats(projectId);
+      await this.projectStatsService.recalculateProjectStats(projectId);
     }
 
     return result !== null;
@@ -180,7 +180,7 @@ export class TasksWriteService {
     );
 
     for (const pid of uniqueProjectIds) {
-      await this.projectsService.recalculateProjectStats(String(pid));
+      await this.projectStatsService.recalculateProjectStats(String(pid));
     }
   }
 

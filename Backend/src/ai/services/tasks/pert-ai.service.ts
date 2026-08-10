@@ -1,7 +1,7 @@
-import { Injectable, Inject, forwardRef } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import Redis from 'ioredis';
-import { GeminiService } from '../core/gemini.service';
+import { GeminiExecutorService } from '../core/gemini-executor.service';
 import { buildPertEstimatePrompt } from '../../prompts';
 import { PertEstimatePromptParams } from '../../interfaces';
 
@@ -13,8 +13,7 @@ export class PertAiService {
 
   constructor(
     private readonly configService: ConfigService,
-    @Inject(forwardRef(() => GeminiService))
-    private readonly geminiService: GeminiService,
+    private readonly geminiExecutor: GeminiExecutorService,
   ) {
     this.initializeChecklistRedis();
   }
@@ -168,7 +167,7 @@ export class PertAiService {
     const prompt = buildPertEstimatePrompt(params);
 
     try {
-      const response = await this.geminiService.generateContent(prompt, {
+      const response = await this.geminiExecutor.generateContent(prompt, {
         responseMimeType: 'application/json',
         maxOutputTokens: 200,
         temperature: 0.3,

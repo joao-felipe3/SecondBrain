@@ -3,7 +3,7 @@ import { TasksService } from '@src/tasks/tasks.service';
 describe('TasksService', () => {
   let service: TasksService;
   let mockTaskRepo: any;
-  let mockProjectsService: any;
+  let mockProjectStatsService: any;
   let mockGeminiService: any;
   let mockFeedbackService: any;
   let mockPertService: any;
@@ -22,7 +22,7 @@ describe('TasksService', () => {
       findById: jest.fn().mockResolvedValue({ id: 't1' }),
     };
 
-    mockProjectsService = {
+    mockProjectStatsService = {
       recalculateProjectStats: jest.fn().mockResolvedValue(undefined),
     };
 
@@ -96,7 +96,7 @@ describe('TasksService', () => {
 
     service = new TasksService(
       mockTaskRepo,
-      mockProjectsService,
+      mockProjectStatsService,
       mockGeminiService,
       mockFeedbackService,
       mockPertService,
@@ -130,7 +130,7 @@ describe('TasksService', () => {
 
     it('should delegate read & project stats calls', async () => {
       await service.recalculateProjectStats('p1');
-      expect(mockProjectsService.recalculateProjectStats).toHaveBeenCalledWith('p1');
+      expect(mockProjectStatsService.recalculateProjectStats).toHaveBeenCalledWith('p1');
 
       const all = await service.findAll();
       expect(all.length).toBe(1);

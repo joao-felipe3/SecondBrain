@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, BadRequestException, Inject, forwardRef } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types, FilterQuery } from 'mongoose';
 import { ProjectDocument } from '../../schemas/project.schema';
@@ -18,7 +18,6 @@ export class GanttService {
     private readonly taskModel: Model<TaskDocument>,
     @InjectModel(ProjectWave.name)
     private readonly waveModel: Model<ProjectWaveDocument>,
-    @Inject(forwardRef(() => CPMService))
     private readonly cpmService: CPMService,
   ) {}
 

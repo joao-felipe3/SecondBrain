@@ -5,7 +5,6 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { ProjectSchema } from './schemas/project.schema';
 import { Project } from './entities/project.entity';
 import { TaskSchema } from '../tasks/schemas/task.schema';
-import { forwardRef } from '@nestjs/common';
 import { TasksModule } from '../tasks/tasks.module';
 import { ProjectWaveSchema } from './schemas/project-wave.schema';
 import { ProjectWave } from './schemas/project-wave.schema';
@@ -55,7 +54,7 @@ import {
       { name: XMatrixSnapshot.name, schema: XMatrixSnapshotSchema },
       { name: 'WBSNode', schema: WBSNodeSchema },
     ]),
-    forwardRef(() => TasksModule),
+    TasksModule,
   ],
   controllers: [ProjectsController, WaveAndRiskController],
   providers: [

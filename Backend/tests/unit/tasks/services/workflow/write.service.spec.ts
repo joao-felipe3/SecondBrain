@@ -3,7 +3,7 @@ import { getModelToken } from '@nestjs/mongoose';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { Types } from 'mongoose';
 import { TasksWriteService } from '../../../../../src/tasks/services/workflow/write.service';
-import { ProjectsService } from '../../../../../src/projects/projects.service';
+import { ProjectStatsService } from '../../../../../src/projects/services/execution/project-stats.service';
 import { TasksMetricsService } from '../../../../../src/tasks/services/analysis/metrics.service';
 import { TasksInputService } from '../../../../../src/tasks/services/workflow/input.service';
 import { ChecklistOperationsService } from '../../../../../src/tasks/services/intelligence/checklist-operations.service';
@@ -15,7 +15,7 @@ describe('TasksWriteService', () => {
     findById: jest.Mock;
     findOne: jest.Mock;
   };
-  let mockProjectsService: {
+  let mockProjectStatsService: {
     recalculateProjectStats: jest.Mock;
   };
   let mockMetricsService: {
@@ -61,7 +61,7 @@ describe('TasksWriteService', () => {
       }),
     };
 
-    mockProjectsService = {
+    mockProjectStatsService = {
       recalculateProjectStats: jest.fn().mockResolvedValue(undefined),
     };
 
@@ -87,7 +87,7 @@ describe('TasksWriteService', () => {
         TasksWriteService,
         { provide: getModelToken('Task'), useValue: mockTaskModel },
         { provide: getModelToken('Project'), useValue: mockProjectModel },
-        { provide: ProjectsService, useValue: mockProjectsService },
+        { provide: ProjectStatsService, useValue: mockProjectStatsService },
         { provide: TasksMetricsService, useValue: mockMetricsService },
         { provide: TasksInputService, useValue: mockTasksInputService },
         { provide: ChecklistOperationsService, useValue: mockChecklistOperationsService },
@@ -107,7 +107,7 @@ describe('TasksWriteService', () => {
       const result = await service.createTaskCore(dto);
 
       expect(result).toBeDefined();
-      expect(mockProjectsService.recalculateProjectStats).toHaveBeenCalledWith(validProjectId);
+      expect(mockProjectStatsService.recalculateProjectStats).toHaveBeenCalledWith(validProjectId);
     });
   });
 
@@ -129,7 +129,7 @@ describe('TasksWriteService', () => {
       const result = await service.createMany(dtos as any, { recalculateProjectStats: true });
 
       expect(result).toEqual(insertedDocs);
-      expect(mockProjectsService.recalculateProjectStats).toHaveBeenCalledWith(validProjectId);
+      expect(mockProjectStatsService.recalculateProjectStats).toHaveBeenCalledWith(validProjectId);
     });
   });
 
@@ -183,8 +183,8 @@ describe('TasksWriteService', () => {
       const result = await service.update(validTaskId, { project: newProjectId });
 
       expect(result).toEqual(updatedTask);
-      expect(mockProjectsService.recalculateProjectStats).toHaveBeenCalledWith(oldProjectId);
-      expect(mockProjectsService.recalculateProjectStats).toHaveBeenCalledWith(newProjectId);
+      expect(mockProjectStatsService.recalculateProjectStats).toHaveBeenCalledWith(oldProjectId);
+      expect(mockProjectStatsService.recalculateProjectStats).toHaveBeenCalledWith(newProjectId);
     });
   });
 
@@ -212,7 +212,7 @@ describe('TasksWriteService', () => {
 
       const success = await service.remove(validTaskId);
       expect(success).toBe(true);
-      expect(mockProjectsService.recalculateProjectStats).toHaveBeenCalledWith(validProjectId);
+      expect(mockProjectStatsService.recalculateProjectStats).toHaveBeenCalledWith(validProjectId);
     });
   });
 });

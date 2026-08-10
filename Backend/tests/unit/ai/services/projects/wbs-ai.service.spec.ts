@@ -1,20 +1,20 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { WbsAiService } from '../../../../../src/ai/services/projects/wbs-ai.service';
-import { GeminiService } from '../../../../../src/ai/services/core/gemini.service';
+import { GeminiExecutorService } from '../../../../../src/ai/services/core/gemini-executor.service';
 
 describe('WbsAiService', () => {
   let service: WbsAiService;
-  let mockGeminiService: {
+  let mockGeminiExecutor: {
     generateContent: jest.Mock;
   };
 
   beforeEach(async () => {
-    mockGeminiService = {
+    mockGeminiExecutor = {
       generateContent: jest.fn(),
     };
 
     const module: TestingModule = await Test.createTestingModule({
-      providers: [WbsAiService, { provide: GeminiService, useValue: mockGeminiService }],
+      providers: [WbsAiService, { provide: GeminiExecutorService, useValue: mockGeminiExecutor }],
     }).compile();
 
     service = module.get<WbsAiService>(WbsAiService);
@@ -23,7 +23,7 @@ describe('WbsAiService', () => {
   describe('generateWbs', () => {
     it('deve gerar nós WBS a partir de um objetivo SMART', async () => {
       const responseJson = '```json\n[{"name": "Fase 1", "estimatedHours": 20}]\n```';
-      mockGeminiService.generateContent.mockResolvedValue(responseJson);
+      mockGeminiExecutor.generateContent.mockResolvedValue(responseJson);
 
       const nodes = await service.generateWbs({ title: 'Novo Sistema' } as any);
       expect(nodes).toHaveLength(1);
@@ -31,7 +31,7 @@ describe('WbsAiService', () => {
     });
 
     it('deve lancar erro se o retorno nao for um array JSON', async () => {
-      mockGeminiService.generateContent.mockResolvedValue('{"not": "an array"}');
+      mockGeminiExecutor.generateContent.mockResolvedValue('{"not": "an array"}');
       await expect(service.generateWbs({ title: 'Novo Sistema' } as any)).rejects.toThrow(
         'Não foi possível gerar a WBS com IA',
       );
@@ -40,7 +40,7 @@ describe('WbsAiService', () => {
 
   describe('suggestDecomposition', () => {
     it('deve gerar sugestao de decomposicao', async () => {
-      mockGeminiService.generateContent.mockResolvedValue('Sugestao: dividir em 2 nos de 40h');
+      mockGeminiExecutor.generateContent.mockResolvedValue('Sugestao: dividir em 2 nos de 40h');
 
       const result = await service.suggestDecomposition({
         name: 'Node Grande',
@@ -60,7 +60,7 @@ describe('WbsAiService', () => {
         suggestedEstimatedHours: '15.5h',
       });
 
-      mockGeminiService.generateContent.mockResolvedValue(jsonResponse);
+      mockGeminiExecutor.generateContent.mockResolvedValue(jsonResponse);
 
       const audit = await service.auditLeafDiscrepancy({
         leafNodeName: 'Leaf 1',
@@ -84,7 +84,7 @@ describe('WbsAiService', () => {
   describe('fixMonotonyBatch', () => {
     it('deve corrigir lote de tarefas monotonas', async () => {
       const jsonResponse = JSON.stringify([{ name: 'Task Diversificada' }]);
-      mockGeminiService.generateContent.mockResolvedValue(jsonResponse);
+      mockGeminiExecutor.generateContent.mockResolvedValue(jsonResponse);
 
       const result = await service.fixMonotonyBatch({
         node: { name: 'Leaf 1', description: 'Desc' },

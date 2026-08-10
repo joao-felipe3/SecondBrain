@@ -42,8 +42,7 @@ import {
 } from './services/intelligence';
 import { TasksHabitsService } from './services/monitoring';
 import { TasksMetricsService, TasksPertService } from './services/analysis';
-import { forwardRef } from '@nestjs/common';
-import { ProjectsModule } from '../projects/projects.module';
+import { ProjectStatsService } from '../projects/services/execution/project-stats.service';
 import { TaskAlertSchema } from './schemas/task-alert.schema';
 import { AlertsService, DeviationDetectionService } from './services/monitoring';
 import { AlertsController } from './controllers/alerts.controller';
@@ -59,7 +58,6 @@ import { AlertsController } from './controllers/alerts.controller';
       { name: 'TaskCompletionFeedback', schema: TaskCompletionFeedbackSchema },
       { name: 'TaskAlert', schema: TaskAlertSchema },
     ]),
-    forwardRef(() => ProjectsModule),
   ],
   controllers: [
     TasksController,
@@ -71,6 +69,7 @@ import { AlertsController } from './controllers/alerts.controller';
   ],
   providers: [
     TasksService,
+    ProjectStatsService,
     ChecklistService,
     TasksInputService,
     TasksAiSuggestionsService,
@@ -104,6 +103,7 @@ import { AlertsController } from './controllers/alerts.controller';
   ],
   exports: [
     TasksService,
+    ProjectStatsService,
     ChecklistService,
     TasksInputService,
     TasksAiSuggestionsService,

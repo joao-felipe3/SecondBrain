@@ -1,4 +1,4 @@
-import { Injectable, Inject, forwardRef } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { AuditService, CacheService } from '../index';
 import { DraftGenerationService } from '../../drafts';
 import { computeChunkMinutes } from '../utils/metrics-calculator.util';
@@ -23,9 +23,7 @@ import { MicroTaskDraft } from '../../../interfaces/drafts.interface';
 @Injectable()
 export class TaskConversionHelperService {
   constructor(
-    @Inject(forwardRef(() => AuditService))
     private readonly auditService: AuditService,
-    @Inject(forwardRef(() => DraftGenerationService))
     private readonly draftGenerationService: DraftGenerationService,
     private readonly cacheService: CacheService,
   ) {}

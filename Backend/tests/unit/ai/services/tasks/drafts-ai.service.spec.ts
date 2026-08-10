@@ -2,11 +2,11 @@ import { DraftsAiService } from '@src/ai/services/tasks/drafts-ai.service';
 
 describe('DraftsAiService', () => {
   let service: DraftsAiService;
-  let mockGeminiService: any;
+  let mockGeminiExecutor: any;
   let mockPromptBuilder: any;
 
   beforeEach(() => {
-    mockGeminiService = {
+    mockGeminiExecutor = {
       generateContent: jest.fn(),
     };
     mockPromptBuilder = {
@@ -19,12 +19,12 @@ describe('DraftsAiService', () => {
       buildMicroTaskDetailsBatchPrompt: jest.fn().mockReturnValue('batch details prompt'),
     };
 
-    service = new DraftsAiService(mockGeminiService, mockPromptBuilder);
+    service = new DraftsAiService(mockGeminiExecutor, mockPromptBuilder);
   });
 
   describe('generatePlan', () => {
     it('should generate plan successfully', async () => {
-      mockGeminiService.generateContent.mockResolvedValueOnce(
+      mockGeminiExecutor.generateContent.mockResolvedValueOnce(
         JSON.stringify({
           themes: [{ name: 'dev' }],
           workflow: ['dev'],
@@ -38,7 +38,7 @@ describe('DraftsAiService', () => {
     });
 
     it('should throw error when plan validation fails', async () => {
-      mockGeminiService.generateContent.mockResolvedValueOnce(JSON.stringify({ invalid: true }));
+      mockGeminiExecutor.generateContent.mockResolvedValueOnce(JSON.stringify({ invalid: true }));
       await expect(service.generatePlan({ node: { name: 'N1' } } as any, [])).rejects.toThrow(
         'Plano inválido',
       );
@@ -47,7 +47,7 @@ describe('DraftsAiService', () => {
 
   describe('generateSinglePassWithoutPlan & generateSinglePassWithPlan', () => {
     it('should generate microtask drafts without plan context', async () => {
-      mockGeminiService.generateContent.mockResolvedValue(
+      mockGeminiExecutor.generateContent.mockResolvedValue(
         JSON.stringify([
           {
             name: 'Task No Plan 1',
@@ -76,7 +76,7 @@ describe('DraftsAiService', () => {
     });
 
     it('should generate microtask drafts with plan context', async () => {
-      mockGeminiService.generateContent.mockResolvedValue(
+      mockGeminiExecutor.generateContent.mockResolvedValue(
         JSON.stringify([
           {
             name: 'Task Plan 1',
@@ -107,7 +107,7 @@ describe('DraftsAiService', () => {
 
   describe('generateOutlineWithoutPlan & generateOutlineWithPlan', () => {
     it('should generate outlines without plan', async () => {
-      mockGeminiService.generateContent.mockResolvedValue(
+      mockGeminiExecutor.generateContent.mockResolvedValue(
         JSON.stringify([
           {
             name: 'Outline 1',
@@ -133,7 +133,7 @@ describe('DraftsAiService', () => {
     });
 
     it('should generate outlines with plan', async () => {
-      mockGeminiService.generateContent.mockResolvedValue(
+      mockGeminiExecutor.generateContent.mockResolvedValue(
         JSON.stringify([
           {
             name: 'Outline Plan 1',
@@ -161,7 +161,7 @@ describe('DraftsAiService', () => {
 
   describe('generateDetails & generateDetailsBatch', () => {
     it('should generate single task details', async () => {
-      mockGeminiService.generateContent.mockResolvedValueOnce(
+      mockGeminiExecutor.generateContent.mockResolvedValueOnce(
         JSON.stringify({
           description: 'Detailed desc',
           checklist: ['s1', 's2'],
@@ -186,7 +186,7 @@ describe('DraftsAiService', () => {
     });
 
     it('should generate details batch for multiple outlines', async () => {
-      mockGeminiService.generateContent.mockResolvedValueOnce(
+      mockGeminiExecutor.generateContent.mockResolvedValueOnce(
         JSON.stringify([
           { description: 'd1', checklist: ['s1', 's2'], definitionOfDone: 'dod1' },
           { description: 'd2', checklist: ['s3', 's4'], definitionOfDone: 'dod2' },

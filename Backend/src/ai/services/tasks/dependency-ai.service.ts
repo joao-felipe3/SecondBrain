@@ -1,14 +1,11 @@
-import { Injectable, Inject, forwardRef } from '@nestjs/common';
-import { GeminiService } from '../core/gemini.service';
+import { Injectable } from '@nestjs/common';
+import { GeminiExecutorService } from '../core/gemini-executor.service';
 import { z } from 'zod';
 import { extractJsonObject } from '../../../projects/services/wbs/utils/json-parser.util';
 
 @Injectable()
 export class DependencyAiService {
-  constructor(
-    @Inject(forwardRef(() => GeminiService))
-    private readonly geminiService: GeminiService,
-  ) {}
+  constructor(private readonly geminiExecutor: GeminiExecutorService) {}
 
   async inferDependencies(params: {
     prompt: string;
@@ -16,7 +13,7 @@ export class DependencyAiService {
     model?: string;
   }): Promise<any[]> {
     const { prompt, maxOutputTokens, model } = params;
-    const response = await this.geminiService.generateContent(prompt, {
+    const response = await this.geminiExecutor.generateContent(prompt, {
       model,
       responseMimeType: 'application/json',
       maxOutputTokens,

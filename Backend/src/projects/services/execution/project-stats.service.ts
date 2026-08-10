@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { ProjectDocument } from '../../schemas/project.schema';
@@ -12,6 +12,19 @@ export class ProjectStatsService {
     @InjectModel('Task')
     private readonly taskModel: Model<TaskDocument>,
   ) {}
+
+  async incrementHoursWorked(id: string, hours: number): Promise<ProjectDocument> {
+    const project = await this.projectModel.findById(id);
+    if (!project) {
+      throw new NotFoundException(`Project with id ${id} not found`);
+    }
+    project.totalHoursWorked = (project.totalHoursWorked || 0) + hours;
+    if (project.plannedHours > 0) {
+      const pct = (project.totalHoursWorked / project.plannedHours) * 100;
+      project.progressPercentage = Math.min(100, +pct.toFixed(2));
+    }
+    return await project.save();
+  }
 
   async recalculateProjectStats(projectId: string): Promise<ProjectDocument | null> {
     if (

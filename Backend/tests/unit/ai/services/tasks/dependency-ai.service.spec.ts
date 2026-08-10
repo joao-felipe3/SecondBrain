@@ -1,20 +1,20 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { DependencyAiService } from '../../../../../src/ai/services/tasks/dependency-ai.service';
-import { GeminiService } from '../../../../../src/ai/services/core/gemini.service';
+import { GeminiExecutorService } from '../../../../../src/ai/services/core/gemini-executor.service';
 
 describe('DependencyAiService', () => {
   let service: DependencyAiService;
-  let mockGeminiService: {
+  let mockGeminiExecutor: {
     generateContent: jest.Mock;
   };
 
   beforeEach(async () => {
-    mockGeminiService = {
+    mockGeminiExecutor = {
       generateContent: jest.fn(),
     };
 
     const module: TestingModule = await Test.createTestingModule({
-      providers: [DependencyAiService, { provide: GeminiService, useValue: mockGeminiService }],
+      providers: [DependencyAiService, { provide: GeminiExecutorService, useValue: mockGeminiExecutor }],
     }).compile();
 
     service = module.get<DependencyAiService>(DependencyAiService);
@@ -34,7 +34,7 @@ describe('DependencyAiService', () => {
         ],
       });
 
-      mockGeminiService.generateContent.mockResolvedValue(jsonResponse);
+      mockGeminiExecutor.generateContent.mockResolvedValue(jsonResponse);
 
       const result = await service.inferDependencies({
         prompt: 'Inspecionar dependencias',
@@ -52,7 +52,7 @@ describe('DependencyAiService', () => {
         dependencies: [['task-3', 'task-2', 'START_TO_START']],
       });
 
-      mockGeminiService.generateContent.mockResolvedValue(jsonResponse);
+      mockGeminiExecutor.generateContent.mockResolvedValue(jsonResponse);
 
       const result = await service.inferDependencies({
         prompt: 'Inspecionar tuplas',

@@ -1,16 +1,9 @@
-import {
-  BadRequestException,
-  Injectable,
-  Inject,
-  Optional,
-  forwardRef,
-  NotFoundException,
-} from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { RecurringRuleDto, RecurringTaskOccurrenceDto } from '../../dto/task/create-task.dto';
 import { CreateMicroTaskDto } from '../../dto/task/create-micro-task.dto';
-import { ProjectsService } from '../../../projects/projects.service';
+import { ProjectStatsService } from '../../../projects/services/execution/project-stats.service';
 import { TaskDocument } from '../../schemas/task.schema';
 import {
   normalizeChecklistFromTask,
@@ -26,9 +19,7 @@ import { TasksWriteService } from './write.service';
 export class TasksRecurringService {
   constructor(
     @InjectModel('Task') private readonly taskModel?: Model<TaskDocument>,
-    @Inject(forwardRef(() => ProjectsService))
-    @Optional()
-    private readonly projectsService?: ProjectsService,
+    private readonly projectStatsService?: ProjectStatsService,
     private readonly tasksWriteService?: TasksWriteService,
   ) {}
 
@@ -88,9 +79,9 @@ export class TasksRecurringService {
       if (removed) deletedCount += 1;
     }
 
-    if (this.projectsService) {
+    if (this.projectStatsService) {
       for (const projectId of affectedProjects) {
-        await this.projectsService.recalculateProjectStats(projectId);
+        await this.projectStatsService.recalculateProjectStats(projectId);
       }
     }
 
