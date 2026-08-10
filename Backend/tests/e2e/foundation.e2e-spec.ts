@@ -1,12 +1,14 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import request from 'supertest';
 import { App } from 'supertest/types';
 import { TasksController } from '../../src/tasks/tasks.controller';
 import { TasksService } from '../../src/tasks/tasks.service';
-import { GeminiService } from '../../src/ai/services/core/gemini.service';
-import { ProjectsService } from '../../src/projects/projects.service';
+import { TasksModule } from '../../src/tasks/tasks.module';
+import { ProjectsModule } from '../../src/projects/projects.module';
+import { AIModule } from '../../src/ai/ai.module';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import { Types } from 'mongoose';
 
@@ -31,22 +33,6 @@ interface TaskResponse {
   message?: string;
 }
 
-/**
- * Sprint 1 E2E Tests: Foundation Backend + Schema
- *
- * SETUP REQUIRED:
- * Install mongodb-memory-server for in-memory MongoDB testing:
- * $ npm install --save-dev mongodb-memory-server
- *
- * Run tests with:
- * $ npm run test:e2e
- *
- * Scenarios covered:
- * 1. Create micro-task with valid PERT → checklist auto-generated
- * 2. Reject micro-task with invalid PERT (optimistic >= likely)
- * 3. Generate and persist checklist → retrieve and verify structure
- * 4. Bulk insert 100 micro-tasks + measure performance
- */
 describe('Sprint 1: Foundation Backend + Schema (E2E)', () => {
   let app: INestApplication;
   let mongoServer: MongoMemoryServer;
@@ -58,9 +44,13 @@ describe('Sprint 1: Foundation Backend + Schema (E2E)', () => {
     const mongoUri = mongoServer.getUri();
 
     const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [MongooseModule.forRoot(mongoUri)],
-      controllers: [TasksController],
-      providers: [TasksService, GeminiService, ProjectsService],
+      imports: [
+        ConfigModule.forRoot({ isGlobal: true }),
+        MongooseModule.forRoot(mongoUri),
+        TasksModule,
+        ProjectsModule,
+        AIModule,
+      ],
     }).compile();
 
     app = moduleFixture.createNestApplication();

@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
-import { AuditService, CacheService } from '../index';
-import { DraftGenerationService } from '../../drafts';
+import { AuditService } from '../core/audit.service';
+import { CacheService } from '../shared/cache.service';
+import { DraftGenerationService } from '../../drafts/draft-generation.service';
 import { computeChunkMinutes } from '../utils/metrics-calculator.util';
 import { computeLeafHours } from '../utils/wbs-helpers.util';
 import {

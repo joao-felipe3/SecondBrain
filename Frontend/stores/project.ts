@@ -1,130 +1,139 @@
-import { defineStore } from 'pinia'
-import type { Project } from '~/models/Project'
+import { defineStore } from "pinia";
+import { useProjectsApi } from "~/composables/api/useProjectsApi";
+import type { Project } from "~/models/Project";
 
-export const useProjectStore = defineStore('project', {
+export const useProjectStore = defineStore("project", {
   state: () => ({
     projects: [] as Project[],
     isLoading: false,
   }),
 
   getters: {
-    projectColors: (state) => state.projects.map((p: Project) => p.color || '#D2B48C'),
-    
-    getProjectById: (state) => (id: string) => 
+    projectColors: (state) =>
+      state.projects.map((p: Project) => p.color || "#D2B48C"),
+
+    getProjectById: (state) => (id: string) =>
       state.projects.find((p: Project) => (p._id ?? p.id) === id),
-    
+
     projectCount: (state) => state.projects.length,
   },
 
   actions: {
     async loadProjects() {
-      this.isLoading = true
-      
+      this.isLoading = true;
+      const api = useProjectsApi();
+
       try {
-        const response = await fetch('http://localhost:3000/projects')
-        const data = await response.json()
-        this.projects = Array.isArray(data) ? data : []
-        await this.loadTaskCounts()
+        const { data, error } = await api.list();
+        if (error) {
+          console.error("Failed to load projects", error);
+        } else {
+          this.projects = Array.isArray(data) ? data : [];
+          await this.loadTaskCounts();
+        }
       } catch (error) {
-        console.error('Failed to load projects', error)
+        console.error("Failed to load projects", error);
       }
-      
-      this.isLoading = false
+
+      this.isLoading = false;
     },
 
     async loadTaskCounts() {
+      const api = useProjectsApi();
       for (const project of this.projects) {
         try {
-          const response = await fetch(`http://localhost:3000/projects/${project._id}/tasks`)
-          const tasks = await response.json()
-          project.taskCount = tasks.length
+          const id = project._id ?? project.id;
+          if (!id) continue;
+          const { data, error } = await api.fetchProjectTasks(String(id));
+          project.taskCount = !error && Array.isArray(data) ? data.length : 0;
         } catch (error) {
-          console.error(`Failed to load task count for project ${project._id}`, error)
-          project.taskCount = 0
+          console.error(
+            `Failed to load task count for project ${project._id}`,
+            error,
+          );
+          project.taskCount = 0;
         }
       }
     },
 
     async createProject(newProject: Partial<Project>) {
+      const api = useProjectsApi();
       try {
-        const response = await fetch('http://localhost:3000/projects', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(newProject)
-        })
-        const data = await response.json()
-        
-        if (response.ok) {
-          this.projects.push(data)
-          return data
+        const { data, error } = await api.create(newProject);
+
+        if (!error && data) {
+          this.projects.push(data);
+          return data;
         } else {
-          console.error('Error creating project:', data)
-          return null
+          console.error("Error creating project:", error);
+          return null;
         }
       } catch (error) {
-        console.error('Error creating project:', error)
-        return null
+        console.error("Error creating project:", error);
+        return null;
       }
     },
 
     async updateProject(id: string, updates: Partial<Project>) {
+      const api = useProjectsApi();
       try {
-        const response = await fetch(`http://localhost:3000/projects/${id}`, {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(updates)
-        })
-        const data = await response.json()
-        
-        if (response.ok) {
-          const idx = this.projects.findIndex((p: Project) => (p._id ?? p.id) === id)
+        const { data, error } = await api.update(id, updates);
+
+        if (!error && data) {
+          const idx = this.projects.findIndex(
+            (p: Project) => (p._id ?? p.id) === id,
+          );
           if (idx >= 0) {
-            this.projects[idx] = { ...this.projects[idx], ...data }
+            this.projects[idx] = { ...this.projects[idx], ...data };
           }
-          return data
+          return data;
         } else {
-          console.error('Error updating project:', data)
-          return null
+          console.error("Error updating project:", error);
+          return null;
         }
       } catch (error) {
-        console.error('Error updating project:', error)
-        return null
+        console.error("Error updating project:", error);
+        return null;
       }
     },
 
     addOrUpdateProject(project: Project) {
-      if (!project) return
-      const id = project._id ?? project.id
-      const idx = this.projects.findIndex((p: Project) => (p._id ?? p.id) === id)
-      
+      if (!project) return;
+      const id = project._id ?? project.id;
+      const idx = this.projects.findIndex(
+        (p: Project) => (p._id ?? p.id) === id,
+      );
+
       if (idx >= 0) {
-        this.projects[idx] = { ...this.projects[idx], ...project }
+        this.projects[idx] = { ...this.projects[idx], ...project };
       } else {
-        this.projects.push(project)
+        this.projects.push(project);
       }
     },
 
-    async deleteProject(projectId: string, deleteTasks: boolean = false) {
+    async deleteProject(projectId: string, _deleteTasks: boolean = false) {
+      const api = useProjectsApi();
       try {
-        const response = await fetch(
-          `http://localhost:3000/projects/${projectId}?deleteTasks=${deleteTasks}`,
-          { method: 'DELETE' }
-        )
+        const { data, error } = await api.remove(projectId);
 
-        if (!response.ok) {
-          throw new Error('Failed to delete project')
+        if (error) {
+          throw new Error("Failed to delete project");
         }
 
-        this.projects = this.projects.filter((p: Project) => p._id !== projectId)
-        return await response.json()
+        this.projects = this.projects.filter(
+          (p: Project) => (p._id ?? p.id) !== projectId,
+        );
+        return data;
       } catch (error) {
-        console.error('Error deleting project:', error)
-        throw error
+        console.error("Error deleting project:", error);
+        throw error;
       }
     },
 
     removeProjectById(projectId: string) {
-      this.projects = this.projects.filter((p: Project) => p._id !== projectId)
+      this.projects = this.projects.filter(
+        (p: Project) => (p._id ?? p.id) !== projectId,
+      );
     },
-  }
-})
+  },
+});
