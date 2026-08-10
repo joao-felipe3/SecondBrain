@@ -1,5 +1,4 @@
 import { Module } from '@nestjs/common';
-import { ProjectsController } from './projects.controller';
 import { ProjectsService } from './projects.service';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ProjectSchema } from './schemas/project.schema';
@@ -12,6 +11,10 @@ import { RiskSchema } from './schemas/risk.schema';
 import { Risk } from './schemas/risk.schema';
 import { ProjectProgress, ProjectProgressSchema } from './schemas/project-progress.schema';
 import { WaveAndRiskController } from './controllers/wave-and-risk.controller';
+import { ProjectsCoreController } from './controllers/projects-core.controller';
+import { ProjectsPlanningController } from './controllers/projects-planning.controller';
+import { ProjectsWbsController } from './controllers/projects-wbs.controller';
+import { ProjectsVisualizationController } from './controllers/projects-visualization.controller';
 import { XMatrixSnapshot, XMatrixSnapshotSchema } from './schemas/x-matrix-snapshot.schema';
 import { WBSNodeSchema } from './schemas/wbs-node.schema';
 
@@ -56,7 +59,13 @@ import {
     ]),
     TasksModule,
   ],
-  controllers: [ProjectsController, WaveAndRiskController],
+  controllers: [
+    ProjectsCoreController,
+    ProjectsPlanningController,
+    ProjectsWbsController,
+    ProjectsVisualizationController,
+    WaveAndRiskController,
+  ],
   providers: [
     ProjectsService,
     PlanningService,

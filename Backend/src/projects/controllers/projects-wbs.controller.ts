@@ -1,27 +1,16 @@
-import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
-import { TaskDocument } from '../tasks/schemas/task.schema';
 import {
   Controller,
   Get,
   Post,
   Body,
-  Patch,
   Param,
-  Delete,
   NotFoundException,
-  Query,
+  BadRequestException,
   HttpException,
   HttpStatus,
-  BadRequestException,
 } from '@nestjs/common';
-import { ProjectsService } from './projects.service';
-import { CreateProjectDto } from './dto/create-project.dto';
-import { UpdateProjectDto } from './dto/update-project.dto';
-import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
-import { PlanningService } from './services/strategy';
-import { CatchballRequestDto, RefineObjectiveDto, SuggestAnswerDto } from './dto/smart-objective.dto';
-import { WBSService, WbsValidationService, TaskConversionService, AuditService } from './services/wbs';
+import { ProjectsService } from '../projects.service';
+import { WBSService, WbsValidationService, TaskConversionService, AuditService } from '../services/wbs';
 import {
   GenerateWBSDto,
   SaveWBSDto,
@@ -31,26 +20,23 @@ import {
   GenerateTasksForLeafDto,
   AuditLeafDiscrepancyDto,
   ResolveWBSBudgetDto,
-} from './dto/wbs.dto';
-import { TasksService } from '../tasks/tasks.service';
-import { LeafTasksBufferService } from './services/execution';
-
+} from '../dto/wbs.dto';
+import { TasksService } from '../../tasks/tasks.service';
+import { LeafTasksBufferService } from '../services/execution';
+import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { createHash } from 'crypto';
-import { CreateXMatrixDto } from './dto/x-matrix.dto';
 
 @ApiTags('projects')
 @Controller('projects')
-export class ProjectsController {
+export class ProjectsWbsController {
   constructor(
     private readonly projectsService: ProjectsService,
-    private readonly planningService: PlanningService,
     private readonly wbsService: WBSService,
     private readonly validation: WbsValidationService,
     private readonly taskConversionService: TaskConversionService,
     private readonly auditService: AuditService,
     private readonly tasksService: TasksService,
     private readonly leafBuffer: LeafTasksBufferService,
-    @InjectModel('Task') private readonly taskModel: Model<TaskDocument>,
   ) {}
 
   private hashKey(input: any): string {
@@ -132,132 +118,6 @@ export class ProjectsController {
     return { budgetHours, weeksAvailable };
   }
 
-  @Get(':id/tasks')
-  async getTasksForProject(@Param('id') id: string) {
-    // Option 1: Use service method
-    return this.projectsService.getTasksForProject(id);
-    // Option 2: Directly use model (uncomment if you prefer)
-    // return this.taskModel.find({ project: id }).exec();
-  }
-
-  @Get(':id/micro-tasks')
-  @ApiOperation({
-    summary: 'Get micro-tasks for project, optionally filtered by status and ordered for Kanban',
-  })
-  @ApiResponse({ status: 200, description: 'Micro-tasks returned.' })
-  async getMicroTasks(@Param('id') id: string, @Query('status') status?: string) {
-    const query: Record<string, unknown> = { project: id };
-    if (status) query.status = String(status);
-    // Primary: kanbanOrder asc, Secondary: priority desc, Tertiary: deadline asc
-    return this.taskModel.find(query).sort({ kanbanOrder: 1, priority: -1, deadline: 1 }).exec();
-  }
-
-  @Get(':id/gantt-data')
-  @ApiOperation({ summary: 'Get timeline data for Gantt chart visualization' })
-  @ApiResponse({
-    status: 200,
-    description: 'Gantt data retrieved successfully.',
-  })
-  async getGanttData(@Param('id') id: string, @Query('includeCompleted') includeCompleted?: string) {
-    const include =
-      includeCompleted === undefined
-        ? true
-        : !['false', '0', 'no'].includes(String(includeCompleted).toLowerCase());
-
-    return this.projectsService.getGanttData(id, {
-      includeCompleted: include,
-    });
-  }
-
-  @Get(':id/pert-diagram-data')
-  @ApiOperation({
-    summary: 'Get PERT/CPM network data for diagram visualization',
-  })
-  @ApiResponse({
-    status: 200,
-    description: 'PERT diagram data retrieved successfully.',
-  })
-  async getPertDiagramData(
-    @Param('id') id: string,
-    @Query('includeCompleted') includeCompleted?: string,
-  ) {
-    const include =
-      includeCompleted === undefined
-        ? true
-        : !['false', '0', 'no'].includes(String(includeCompleted).toLowerCase());
-
-    return this.projectsService.getPertDiagramData(id, {
-      includeCompleted: include,
-    });
-  }
-
-  @Post(':id/create-x-matrix')
-  @ApiOperation({
-    summary: 'Create fractal X-Matrix (Norte/Estrategico/Tatico) using WBS L1/L2 initiatives and waves',
-  })
-  @ApiResponse({ status: 200, description: 'X-Matrix generated successfully.' })
-  async createXMatrix(@Param('id') id: string, @Body() dto: CreateXMatrixDto) {
-    return this.projectsService.createXMatrix(id, dto || {});
-  }
-
-  @Get(':id/x-matrix')
-  @ApiOperation({ summary: 'Get saved X-Matrix snapshot for project' })
-  @ApiResponse({
-    status: 200,
-    description: 'X-Matrix snapshot returned (or null when not generated yet).',
-  })
-  async getSavedXMatrix(@Param('id') id: string) {
-    return this.projectsService.getSavedXMatrix(id);
-  }
-
-  @Post(':id/plan-with-ai')
-  @ApiOperation({
-    summary: 'Start AI-assisted project planning with Catchball',
-  })
-  @ApiResponse({ status: 200, description: 'Catchball questions generated.' })
-  async planProjectWithAI(@Param('id') id: string, @Body() dto: CatchballRequestDto) {
-    const project = await this.projectsService.findOne(id);
-    if (!project) throw new NotFoundException('Project not found');
-
-    return this.planningService.startCatchball(dto);
-  }
-
-  @Post(':id/suggest-answer')
-  @ApiOperation({
-    summary: 'Generate suggested answer for a Catchball question',
-  })
-  @ApiResponse({ status: 200, description: 'Suggested answer generated.' })
-  async suggestAnswer(@Param('id') id: string, @Body() dto: SuggestAnswerDto) {
-    const project = await this.projectsService.findOne(id);
-    if (!project) throw new NotFoundException('Project not found');
-
-    const suggestedAnswer = await this.planningService.suggestAnswer(dto);
-
-    return { suggestedAnswer };
-  }
-
-  @Post(':id/refine-objective')
-  @ApiOperation({ summary: 'Generate SMART objectives from Catchball answers' })
-  @ApiResponse({ status: 200, description: 'SMART objectives generated.' })
-  async refineObjective(@Param('id') id: string, @Body() dto: RefineObjectiveDto) {
-    const project = await this.projectsService.findOne(id);
-    if (!project) throw new NotFoundException('Project not found');
-
-    const smart = await this.planningService.generateSmartObjective(dto);
-
-    // Atualiza o projeto com os objetivos SMART
-    await this.projectsService.update(id, {
-      smartObjective: smart,
-    });
-
-    return {
-      smart,
-      nextPhase: 'wbs-generation',
-    };
-  }
-
-  // ── WBS Endpoints ──────────────────────────────────────
-
   @Post(':id/generate-wbs')
   @ApiOperation({ summary: 'Generate WBS from SMART objective using AI' })
   @ApiResponse({ status: 200, description: 'WBS generated successfully.' })
@@ -306,8 +166,6 @@ export class ProjectsController {
   async saveWBS(@Param('id') id: string, @Body() dto: SaveWBSDto) {
     const project = await this.projectsService.findOne(id);
     if (!project) throw new NotFoundException('Project not found');
-
-    console.log('📥 WBS recebida do frontend:', JSON.stringify(dto.nodes.slice(0, 2), null, 2));
 
     const saved = await this.wbsService.saveWBS(id, dto.nodes);
     return { saved: saved.length, message: 'WBS salva com sucesso' };
@@ -375,7 +233,7 @@ export class ProjectsController {
     summary: 'Suggest decomposition for a WBS node violating 8/80',
   })
   @ApiResponse({ status: 200, description: 'Decomposition suggestion.' })
-  async suggestDecomposition(@Param('id') id: string, @Body() dto: SuggestDecompositionDto) {
+  async suggestDecomposition(@Param('id') _id: string, @Body() dto: SuggestDecompositionDto) {
     const suggestion = await this.validation.suggestDecomposition(dto);
     return { suggestion };
   }
@@ -400,8 +258,6 @@ export class ProjectsController {
         autoAuditThresholdPct: dto.autoAuditThresholdPct,
       },
     });
-
-    console.log(`✅ ${result.createdTasks.length} micro-tarefas criadas com sucesso`);
 
     return {
       message:
@@ -457,8 +313,6 @@ export class ProjectsController {
     const project = await this.projectsService.findOne(id);
     if (!project) throw new NotFoundException('Project not found');
 
-    console.log(`🔄 Gerando tasks para leaf: "${dto.leafNode.name}"...`);
-
     const preferences = dto.preferences || {};
     const currentKey = this.buildLeafBufferKey(
       id,
@@ -467,11 +321,9 @@ export class ProjectsController {
       preferences,
     );
 
-    // Start prefetch for upcoming leaves in parallel (buffer).
     const prefetchLeafs = Array.isArray(dto.prefetchLeafs) ? dto.prefetchLeafs : [];
     for (const p of prefetchLeafs) {
       if (!p?.leafNode || !p?.nodePath) continue;
-      // Skip if user accidentally included current leaf.
       if (String(p.nodePath) === String(dto.nodePath)) continue;
       const key = this.buildLeafBufferKey(
         id,
@@ -492,15 +344,11 @@ export class ProjectsController {
       });
     }
 
-    // If current leaf is already prefetched, consume it instantly.
-    // Safety: only do this for interactive preview (saveTasks=false), so we never skip persistence.
     const shouldUseBuffer = !(dto.saveTasks || false);
     const buffered = shouldUseBuffer
       ? await this.leafBuffer.consume<{ tasks?: unknown[] }>(currentKey)
       : null;
     if (buffered) {
-      console.log(`⚡ Buffer hit for leaf: "${dto.leafNode.name}"`);
-      console.log(`✅ ${buffered.tasks?.length || 0} tasks preparadas`);
       return {
         ...buffered,
         message: dto.saveTasks
@@ -545,8 +393,6 @@ export class ProjectsController {
       throw err;
     }
 
-    console.log(`✅ ${result.tasks.length} tasks ${dto.saveTasks ? 'criadas' : 'preparadas'}`);
-
     return {
       ...result,
       message: dto.saveTasks
@@ -568,109 +414,5 @@ export class ProjectsController {
     if (!project) throw new NotFoundException('Project not found');
 
     return this.auditService.auditLeafDiscrepancy(project, dto);
-  }
-
-  @Post()
-  @ApiOperation({ summary: 'Create a new project' })
-  @ApiResponse({ status: 201, description: 'Project created successfully.' })
-  create(@Body() dto: CreateProjectDto) {
-    return this.projectsService.create(dto);
-  }
-
-  @Get()
-  @ApiOperation({ summary: 'List all projects' })
-  findAll() {
-    return this.projectsService.findAll();
-  }
-
-  @Get(':id')
-  @ApiOperation({ summary: 'Get a project by id' })
-  async findOne(@Param('id') id: string) {
-    const project = await this.projectsService.findOne(id);
-    if (!project) throw new NotFoundException('Project not found');
-    return project;
-  }
-
-  @Patch(':id')
-  @ApiOperation({ summary: 'Update a project by id' })
-  async update(@Param('id') id: string, @Body() dto: UpdateProjectDto) {
-    const project = await this.projectsService.update(id, dto);
-    if (!project) throw new NotFoundException('Project not found');
-    return project;
-  }
-
-  @Delete(':id')
-  @ApiOperation({
-    summary:
-      'Delete a project by id. Use ?deleteTasks=true to delete associated tasks, or ?deleteTasks=false to just unlink them.',
-  })
-  async remove(@Param('id') id: string, @Query('deleteTasks') deleteTasks?: string) {
-    // If deleteTasks parameter is provided, use removeWithOptions
-    if (deleteTasks !== undefined) {
-      const shouldDeleteTasks = deleteTasks === 'true';
-      const result = await this.projectsService.removeWithOptions(id, shouldDeleteTasks);
-      if (!result.deleted) throw new NotFoundException('Project not found');
-      return {
-        message: `Project removed successfully. ${shouldDeleteTasks ? 'Deleted' : 'Unlinked'} ${result.tasksAffected} task(s).`,
-        tasksAffected: result.tasksAffected,
-        tasksDeleted: shouldDeleteTasks,
-      };
-    }
-
-    // Default behavior: just delete project
-    const removed = await this.projectsService.remove(id);
-    if (!removed) throw new NotFoundException('Project not found');
-    return { message: 'Project removed successfully' };
-  }
-
-  @Patch(':id/increment-hours')
-  @ApiOperation({ summary: 'Increment totalHoursWorked and update progress' })
-  incrementHours(@Param('id') id: string, @Query('hours') hours: string) {
-    const h = parseFloat(hours);
-    return this.projectsService.incrementHoursWorked(id, isNaN(h) ? 0 : h);
-  }
-
-  @Post(':id/recalculate-stats')
-  @ApiOperation({
-    summary: 'Recalculate plannedHours, experience, and reward based on tasks',
-  })
-  @ApiResponse({
-    status: 200,
-    description: 'Project stats recalculated successfully.',
-  })
-  async recalculateStats(@Param('id') id: string) {
-    const result = await this.projectsService.recalculateProjectStats(id);
-    if (!result) throw new NotFoundException('Project not found');
-    return result;
-  }
-
-  @Post('recalculate-all-stats')
-  @ApiOperation({ summary: 'Recalculate stats for all projects' })
-  @ApiResponse({
-    status: 200,
-    description: 'All project stats recalculated successfully.',
-  })
-  async recalculateAllStats() {
-    const projects = await this.projectsService.findAll();
-    const results: Record<string, unknown>[] = [];
-    for (const project of projects) {
-      const projectId = String(project._id);
-      const updated = await this.projectsService.recalculateProjectStats(projectId);
-      // Skip if project was deleted during the loop
-      if (updated) {
-        results.push({
-          id: updated._id,
-          name: updated.name,
-          plannedHours: updated.plannedHours,
-          experience: updated.experience,
-          reward: updated.reward,
-        });
-      }
-    }
-    return {
-      message: 'All projects recalculated',
-      count: results.length,
-      projects: results,
-    };
   }
 }
