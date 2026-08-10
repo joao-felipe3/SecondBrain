@@ -2994,34 +2994,24 @@
     "ast_hash": "12b8ae76647887c594216d0ad8b92740",
     "semantic_hash": ""
   },
-  "Project/DEVOPS_REFACTORING_PLAN.md": {
-    "mtime": 1785036129.7398212,
-    "ast_hash": "2080136149502c1644fdddfaceaaa75f",
-    "semantic_hash": ""
-  },
-  "Project/FRONTEND_GUILD_REFACTORING_PLAN.md": {
-    "mtime": 1785293162.470732,
-    "ast_hash": "3357f256751186268f32a174604b7e13",
-    "semantic_hash": ""
-  },
   "Project/REQUISITOS.md": {
-    "mtime": 1785346507.1110342,
-    "ast_hash": "124f57d08eeda5bdce9f41991c1f49fa",
+    "mtime": 1786326891.9777305,
+    "ast_hash": "662876f3f4cc4aa3e073f62188531c04",
     "semantic_hash": ""
   },
   "Project/adr/001-why-nestjs-mongoose.md": {
-    "mtime": 1780519839.8738766,
-    "ast_hash": "f42f3b4b7431f7dfdc556d9fe8f88ca2",
+    "mtime": 1786326892.0281482,
+    "ast_hash": "4a891db02a7fb96552107f9a10ed0b3f",
     "semantic_hash": ""
   },
   "Project/adr/002-module-separation.md": {
-    "mtime": 1780519839.8749871,
-    "ast_hash": "6959c43cefe580124dc872bc650d7895",
+    "mtime": 1786326892.0546355,
+    "ast_hash": "d257d24133844ead9c4a7ba96b9aaeee",
     "semantic_hash": ""
   },
   "Project/adr/003-gemini-integration.md": {
-    "mtime": 1780519839.875986,
-    "ast_hash": "689a9a13f0e3f72eccf40a5ddc83685b",
+    "mtime": 1786326892.0876412,
+    "ast_hash": "0a078a0bb54478f1b12df6795dc2f0cd",
     "semantic_hash": ""
   },
   "README.md": {
@@ -3387,6 +3377,51 @@
   "Frontend/public/vfx/door-open.wav": {
     "mtime": 1786314102.4429162,
     "ast_hash": "3764c896b9626be2656976d6143025fb",
+    "semantic_hash": ""
+  },
+  "Project/FRONTEND_REFACTORING_PLAN.md": {
+    "mtime": 1786326891.3201187,
+    "ast_hash": "9b43191ea7276ac56a7affd8865f1207",
+    "semantic_hash": ""
+  },
+  "Project/adr/004-validation-strategy.md": {
+    "mtime": 1786326892.2002802,
+    "ast_hash": "da15fbe93a897fd7d3af7f6f02ac99f1",
+    "semantic_hash": ""
+  },
+  "Project/adr/005-visualization-engine.md": {
+    "mtime": 1786326892.2532833,
+    "ast_hash": "d53cfa95e39bbbcf5d7ee9f591ff3079",
+    "semantic_hash": ""
+  },
+  "Project/adr/006-diegetic-ui-architecture.md": {
+    "mtime": 1786326892.323059,
+    "ast_hash": "47191bc68cc65308adecca033f5578fc",
+    "semantic_hash": ""
+  },
+  "Project/adr/007-frontend-state-management.md": {
+    "mtime": 1786326892.3665643,
+    "ast_hash": "8bf578f371c63bf5a76b3310a73fe0e8",
+    "semantic_hash": ""
+  },
+  "Project/adr/008-cicd-quality-guardrails.md": {
+    "mtime": 1786326892.3906815,
+    "ast_hash": "b7eb8c8d15ffafc7edf3ca024ce73c1d",
+    "semantic_hash": ""
+  },
+  "Project/adr/009-database-observability-logger.md": {
+    "mtime": 1786326892.4326665,
+    "ast_hash": "44bbfa8480b3766893186e26acce54e2",
+    "semantic_hash": ""
+  },
+  "Project/adr/010-graph-rag-llm-wiki.md": {
+    "mtime": 1786326892.4666855,
+    "ast_hash": "2eb42f6aaef1cf03befb8dac116a1525",
+    "semantic_hash": ""
+  },
+  "Project/adr/README.md": {
+    "mtime": 1786326892.4874258,
+    "ast_hash": "7c2160dd1f848218ed7a9be5ca711f3e",
     "semantic_hash": ""
   }
 }

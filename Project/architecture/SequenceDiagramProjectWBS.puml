@@ -1,0 +1,56 @@
+@startuml SequenceDiagramProjectWBS
+' Sequence Diagram: Full WBS Planning & Task Conversion Flow
+
+autonumber
+actor User
+participant "Nuxt Frontend\n(BookModal / WBS UI)" as FE
+participant "ProjectsController" as PC
+participant "PlanningService" as PS
+participant "WBSService" as WS
+participant "WbsValidationService" as VS
+participant "TaskConversionService" as CS
+participant "TasksService" as TS
+participant "GeminiService" as GS
+database "MongoDB" as DB
+
+== 1. Catchball & SMART Objective ==
+User -> FE : Start Project AI Assistant
+FE -> PC : POST /projects/:id/plan-with-ai
+PC -> PS : planWithAi(projectId, userContext)
+PS -> GS : generateCatchballQuestions(context)
+GS --> PS : Return Strategic Questions
+PS --> FE : Prompt User for Clarifications
+
+User -> FE : Submit Responses
+FE -> PC : POST /projects/:id/refine-objective
+PC -> PS : refineObjective(projectId, answers)
+PS -> GS : generateSmartObjective(answers)
+GS --> PS : SMART Objective JSON
+PS -> DB : Update Project Document
+PS --> FE : Return SMART Objective
+
+== 2. WBS Tree Generation & Validation ==
+User -> FE : Generate WBS Tree
+FE -> PC : POST /projects/:id/generate-wbs
+PC -> WS : generateWbs(projectId)
+WS -> GS : promptWbsDecomposition(smartObjective)
+GS --> WS : Raw WBS Hierarchy JSON
+WS -> VS : validateAndNormalizeWbs(rawWbs)
+VS -> VS : Check 8/80 Hours Rule & Budget Cap
+VS --> WS : Validated WBS Tree
+WS -> DB : Save WBS to Project
+WS --> FE : Return Interactive WBS Tree
+
+== 3. WBS Conversion to Tasks ==
+User -> FE : Approve WBS & Convert to Tasks
+FE -> PC : POST /projects/:id/wbs/convert-to-tasks
+PC -> CS : convertWbsToTasks(projectId)
+CS -> GS : enrichLeafNodesWithPertAndChecklist(leafNodes)
+GS --> CS : Enriched Task Payloads
+CS -> TS : createMany(tasksPayload, options)
+TS -> TS : Calculate PERT Expected Time & CPM Critical Path
+TS -> DB : Bulk Insert Task Documents
+TS --> CS : Confirmation
+CS --> FE : Return Created Tasks & CPM Critical Path Summary
+
+@enduml

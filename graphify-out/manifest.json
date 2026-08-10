@@ -2995,8 +2995,8 @@
     "semantic_hash": ""
   },
   "Project/REQUISITOS.md": {
-    "mtime": 1786326891.9777305,
-    "ast_hash": "662876f3f4cc4aa3e073f62188531c04",
+    "mtime": 1786327906.3951457,
+    "ast_hash": "6f382b47b698e4223b5331cc499b7a98",
     "semantic_hash": ""
   },
   "Project/adr/001-why-nestjs-mongoose.md": {
@@ -3422,6 +3422,11 @@
   "Project/adr/README.md": {
     "mtime": 1786326892.4874258,
     "ast_hash": "7c2160dd1f848218ed7a9be5ca711f3e",
+    "semantic_hash": ""
+  },
+  "Project/architecture/README.md": {
+    "mtime": 1786327906.4390717,
+    "ast_hash": "a9a327f21b35a8548652e94e00ea5cc5",
     "semantic_hash": ""
   }
 }

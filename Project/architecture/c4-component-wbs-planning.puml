@@ -1,0 +1,59 @@
+@startuml c4-component-wbs-planning
+' C4 Component Diagram: Project Planning & WBS Engine (SecondBrain)
+
+left to right direction
+
+skinparam backgroundColor #FFFFFF
+skinparam rectangleBorderColor #333333
+skinparam rectangleFontColor #111111
+
+skinparam rectangle {
+    RoundCorner 8
+}
+
+package "ProjectsModule (NestJS)" {
+    component "ProjectsController" as ctrl
+    component "PlanningService\n(Catchball & SMART)" as planSvc
+    component "WBSService\n(Tree Structure & Nodes)" as wbsSvc
+    component "WbsValidationService\n(8/80 Rule & Budget)" as valSvc
+    component "TaskConversionService\n(WBS Leaf -> Tasks)" as convSvc
+    component "LeafTasksBufferService\n(Prefetch & Redis Buffer)" as bufSvc
+    component "AuditService\n(Package Discrepancy)" as auditSvc
+}
+
+package "TasksModule (NestJS)" {
+    component "TasksService\n(Bulk Insert & CPM recalculation)" as taskSvc
+}
+
+package "AI Module" {
+    component "GeminiService\n(JSON Mode & Prompts)" as gemSvc
+}
+
+database "MongoDB" {
+    component "Project Document\n(WBS, SMART, Waves)" as projDoc
+    component "Task Documents\n(PERT, EVM, WBS Path)" as taskDoc
+}
+
+component "Google Gemini API" as geminiApi
+
+' Interactions
+ctrl --> planSvc : POST /projects/:id/plan-with-ai
+ctrl --> wbsSvc : POST /projects/:id/generate-wbs
+ctrl --> valSvc : POST /projects/:id/wbs/validate
+ctrl --> convSvc : POST /projects/:id/wbs/convert-to-tasks
+
+planSvc --> gemSvc : Prompts Catchball & SMART
+wbsSvc --> gemSvc : Prompts WBS Decomposition
+valSvc --> wbsSvc : Checks 8/80 hours rule
+
+convSvc --> gemSvc : Prompts Leaf -> Task details
+convSvc --> taskSvc : Calls createMany() bulk insert
+convSvc --> bufSvc : Prefetches leaf tasks
+
+taskSvc --> taskDoc : Bulk Writes Tasks
+wbsSvc --> projDoc : Saves WBS Tree
+planSvc --> projDoc : Saves SMART Objective
+
+gemSvc --> geminiApi : HTTPS SDK (text-embedding-004 / gemini-2.5)
+
+@enduml

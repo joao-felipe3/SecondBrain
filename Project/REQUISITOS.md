@@ -14,6 +14,7 @@
 | Fase 2 - Micro-Tarefas                              | 22    | 22/22 ✅    | 22/22 ✅ | 22/22 ✅ | 22/22 ✅ | 🟢 100%   |
 | Fase 2.5 - DevOps & Refactoring                     | 38    | 38/38 ✅    | Docs ✅  | 38/38 ✅ | 38/38 ✅ | 🟢 100%   |
 | Fase 3 - Produtividade Avançada                     | 22    | 0/22        | 0/22     | 0/22     | 0/22     | ⬜ 0%     |
+| Fase 3.5 - Refatoração & Interface RPG (Frontend)   | 95    | 33/95       | 33/95 ✅ | UI/VFX   | 33/95    | 🟡 34.7%  |
 | Fase 4 - Gamificação Essencial                      | 25    | 0/25        | 0/25     | 0/25     | 0/25     | ⬜ 0%     |
 | Fase 4.5 - Feature Freeze II (EDA, DDD & CQRS)      | 14    | 0/14        | 0/14     | 0/14     | 0/14     | ⬜ 0%     |
 | Fase 5 - Criação de Projetos com Agente             | 9     | 0/9         | 0/9      | 0/9      | 0/9      | ⬜ 0%     |
@@ -346,6 +347,154 @@
 | 20  | Botão “Começar em 2 minutos”: criar automaticamente um micro-passinho (≤2 min) e iniciar um timer curto para reduzir fricção de início                                   | Funcional |    ⬜     |    ⬜    |   ⬜    | ⬜  |
 | 21  | “Modo hoje minimalista”: limitar a lista “Hoje” a no máximo 7 itens, com overflow colapsado                                                                              | Funcional |    ⬜     |    ⬜    |   ⬜    | ⬜  |
 | 22  | Ao abrir a agenda do dia, sugerir automaticamente 1–3 blocos de execução (timebox) baseado em energia/carga (sem auto-agendar rígido)                                    | Funcional |    ⬜     |    ⬜    |   ⬜    | ⬜  |
+
+---
+
+## 🛡️ Fase 3.5 - Refatoração & Interface RPG Diegética (Frontend)
+
+> **Status:** 🟡 34.7% Em Progresso (33/95 concluídos)  
+> **Objetivo:** Refatorar a interface do SecondBrain para uma experiência diegética imersiva de RPG Medieval Fantástico ("Guilda de Aventureiros"), com suporte a 3 camadas de UI (_Depth Stacking_), responsividade fluida (<960px), componentes físicos atomic e efeitos visuais/sonoros em 60 FPS.  
+> **📄 Documentação Detalhada:** Ver `FRONTEND_REFACTORING_PLAN.md`
+
+### 🏛️ 1. Infraestrutura & Atomic Design Diegético (`components/ui/diegetic/`)
+
+| #   | Requisito                                                                                                                    | Tipo     | Protótipo | Frontend | Backend | QA  |
+| --- | ---------------------------------------------------------------------------------------------------------------------------- | -------- | :-------: | :------: | :-----: | :-: |
+| 1   | Configurar container de palco com aspect-ratio 16:9 travado e centralizado na tela (`pages/index.vue` `.safe-zone`)          | Frontend |    ✅     |    ✅    |   ✅    | ✅  |
+| 2   | Implementar sistema de ancoragem de UI (`HUD Layer`) com `pointer-events: none` (`.guild-hud-layer`)                         | Frontend |    ✅     |    ✅    |   ✅    | ✅  |
+| 3   | Criar composable de áudio `useGuildAudio()` (gerenciamento de SFX, volume, mutar e variação de tom/pitch com Web Audio API)  | Frontend |    ✅     |    ✅    |   ✅    | ✅  |
+| 4   | Construir `UiParchmentCard.vue` utilizando HSL CSS puro e gradientes orgânicos em substituição a SVGs estáticos              | Frontend |    ✅     |    ✅    |   ✅    | ✅  |
+| 5   | Criar a pasta `components/ui/diegetic/` para isolamento dos componentes físicos e arquivo de exportação unificado `index.ts` | Frontend |    ⬜     |    ⬜    |   ⬜    | ⬜  |
+| 6   | Construir `UiWaxSeal.vue` com suporte a variações de cores (Vermelho, Azul, Verde, Âmbar) e sombras 3D                       | Frontend |    ⬜     |    ⬜    |   ⬜    | ⬜  |
+| 7   | Construir `UiIronDagger.vue` e `UiIronNail.vue` utilizando `drop-shadow` CSS para fixar tarefas urgentes e atrasadas         | Frontend |    ⬜     |    ⬜    |   ⬜    | ⬜  |
+| 8   | Construir `UiWoodenFrame.vue` com grid flexível e textura rústica para containers do Kanban e tabelas                        | Frontend |    ⬜     |    ⬜    |   ⬜    | ⬜  |
+| 9   | Construir `UiRunicTile.vue` para placas de cabeçalho das 3 colunas Kanban e dos 7 dias da semana no Calendário               | Frontend |    ⬜     |    ⬜    |   ⬜    | ⬜  |
+| 10  | Construir `UiHourglass.vue` para visualização animada de Pomodoro e tarefas ativas em tempo real                             | Frontend |    ⬜     |    ⬜    |   ⬜    | ⬜  |
+| 11  | Construir `UiRibbonMedal.vue` para medalha de fita e cera em tarefas concluídas                                              | Frontend |    ⬜     |    ⬜    |   ⬜    | ⬜  |
+| 12  | Construir `UiGrimoireBook.vue` com suporte a cor de capa, lombada e insígnia baseadas nos metadados do projeto               | Frontend |    ⬜     |    ⬜    |   ⬜    | ⬜  |
+
+### 🎨 2. Tokens CSS, HSL & Responsividade Dinâmica (<960px)
+
+| #   | Requisito                                                                                                                   | Tipo     | Protótipo | Frontend | Backend | QA  |
+| --- | --------------------------------------------------------------------------------------------------------------------------- | -------- | :-------: | :------: | :-----: | :-: |
+| 13  | Centralizar detecção de breakpoint no composable `useResponsive.ts` usando `@vueuse/core` (`useBreakpoints`)                | Frontend |    ✅     |    ✅    |   ✅    | ✅  |
+| 14  | Definir o breakpoint `960px` como divisor oficial entre visões Web (`*-web.webp`) e Mobile (`*-mobile.webp`)                | Frontend |    ✅     |    ✅    |   ✅    | ✅  |
+| 15  | Criar `assets/css/tokens.css` com paleta HSL da guilda (madeiras carvalho, pergaminhos, selos, pedra e fontes)              | Frontend |    ✅     |    ✅    |   ✅    | ✅  |
+| 16  | Carregar as fontes do Google Fonts (`Cinzel`, `MedievalSharp`, `Inter`) no `nuxt.config.ts`                                 | Frontend |    ✅     |    ✅    |   ✅    | ✅  |
+| 17  | Criar `assets/css/diegetic-containers.css` com estilos reutilizáveis para pergaminhos, molduras e livros sem SVGs estáticos | Frontend |    ⬜     |    ⬜    |   ⬜    | ⬜  |
+| 18  | Criar o componente `FieldJournalMobile.vue` para encapsular o Kanban em diário vertical com abas de topo no mobile          | Frontend |    ⬜     |    ⬜    |   ⬜    | ⬜  |
+| 19  | Criar o componente `GrimoireGridMobile.vue` para organizar a estante de projetos em grade vertical scrollável 3x5           | Frontend |    ⬜     |    ⬜    |   ⬜    | ⬜  |
+| 20  | Criar o componente `CalendarDrawerMobile.vue` para exibir tarefas do dia em bottom-sheet deslizável com gestos touch        | Frontend |    ⬜     |    ⬜    |   ⬜    | ⬜  |
+
+### 🏰 3. Tela: Saguão Central da Guilda (`/`)
+
+| #   | Requisito                                                                                                             | Tipo     | Protótipo | Frontend | Backend | QA  |
+| --- | --------------------------------------------------------------------------------------------------------------------- | -------- | :-------: | :------: | :-----: | :-: |
+| 21  | Carregar imagem base limpa otimizada (`entrada-bg-clean.webp`)                                                        | Frontend |    ✅     |    ✅    |   ✅    | ✅  |
+| 22  | Posicionar a imagem do overlay da cadeira (`/vfx/chair.png`) em `z-index: 5` sobre o vão da biblioteca                | Frontend |    ✅     |    ✅    |   ✅    | ✅  |
+| 23  | Spritesheet das labaredas das tochas em loop (`GuildVfxLayer.vue`)                                                    | Frontend |    ✅     |    ✅    |   ✅    | ✅  |
+| 24  | Dessincronização de brilhos com `radial-gradient` + `mix-blend-mode: color-dodge` com `animation-delay` em cada tocha | Frontend |    ✅     |    ✅    |   ✅    | ✅  |
+| 25  | Lareira ao fundo: animação de pulso do fogo + emissão de fagulhas em loop (`GuildParticlesCanvas.vue`)                | Frontend |    ✅     |    ✅    |   ✅    | ✅  |
+| 26  | Banners nas colunas com balanço suave de vento (`@keyframes bannerSway`)                                              | Frontend |    ✅     |    ✅    |   ✅    | ✅  |
+| 27  | Velas & candelabros secundários com Spritesheet de chama variante                                                     | Frontend |    ⬜     |    ⬜    |   ⬜    | ⬜  |
+| 28  | Partículas interativas de poeira dourada com repulsão sutil ao movimento do cursor                                    | Frontend |    ⬜     |    ⬜    |   ⬜    | ⬜  |
+| 29  | Mapear vão do Arco da Esquerda com SVG Path/Hitbox (`GuildArchPortal.vue`)                                            | Frontend |    ✅     |    ✅    |   ✅    | ✅  |
+| 30  | Iluminação interna suave no `:hover` do Arco da Esquerda (`mix-blend-mode: color-dodge`)                              | Frontend |    ✅     |    ✅    |   ✅    | ✅  |
+| 31  | Tag flutuante (`⚔️ Mural de Missões`) com animação de subida suave                                                    | Frontend |    ✅     |    ✅    |   ✅    | ✅  |
+| 32  | Camera Zoom (`scale(2.8)`, `11% 50%`) + SFX de passos na pedra ao clicar no Arco de Missões                           | Frontend |    ✅     |    ✅    |   ✅    | ✅  |
+| 33  | Spritesheet de névoa rúnica/portal mágico ativando no hover do Arco de Missões                                        | Frontend |    ⬜     |    ⬜    |   ⬜    | ⬜  |
+| 34  | Sprite Sheet de 9 frames da porta da biblioteca abrindo (`GuildLibraryPortal.vue`)                                    | Frontend |    ✅     |    ✅    |   ✅    | ✅  |
+| 35  | Transição de sprite no `:hover` passando por trás de `chair.png`                                                      | Frontend |    ✅     |    ✅    |   ✅    | ✅  |
+| 36  | Áudio de ranger de porta no hover e fecho ao sair (`playDoorOpenSound` / `playDoorCloseSound`)                        | Frontend |    ✅     |    ✅    |   ✅    | ✅  |
+| 37  | Camera Zoom (`scale(2.8)`, `88% 50%`) + transição de rota ao clicar na Porta da Direita                               | Frontend |    ✅     |    ✅    |   ✅    | ✅  |
+| 38  | Efeito de vazamento de luz dourada entre as frestas da porta da biblioteca ao entreabrir                              | Frontend |    ⬜     |    ⬜    |   ⬜    | ⬜  |
+| 39  | Mapear hitbox da Escadaria Central no topo do mezanino com zoom e navegação (`GuildDiegeticHotspots.vue`)             | Frontend |    ✅     |    ✅    |   ✅    | ✅  |
+| 40  | Animação de flâmula pendurada balançando ao focar a escadaria                                                         | Frontend |    ⬜     |    ⬜    |   ⬜    | ⬜  |
+| 41  | NPCs estáticos em `GuildNpcSpeechBubble.vue` com balão de fala e frases dinâmicas                                     | Frontend |    ✅     |    ✅    |   ✅    | ✅  |
+
+### ⚔️ 4. Mural de Contratos / Kanban (`/tasks`)
+
+| #   | Requisito                                                                                                       | Tipo     | Protótipo | Frontend | Backend | QA  |
+| --- | --------------------------------------------------------------------------------------------------------------- | -------- | :-------: | :------: | :-----: | :-: |
+| 42  | Refatorar `pages/Task/index.vue` e `KanbanBoard.vue` para moldura de madeira e pedra rústica (`tasks-web.webp`) | Frontend |    ⬜     |    ⬜    |   ⬜    | ⬜  |
+| 43  | Divisão em 3 colunas rúnicas (`display: grid; grid-template-columns: repeat(3, 1fr)`)                           | Frontend |    ⬜     |    ⬜    |   ⬜    | ⬜  |
+| 44  | Coluna "A Fazer" com pergaminhos `UiParchmentCard.vue` e selos de cera vermelhos                                | Frontend |    ⬜     |    ⬜    |   ⬜    | ⬜  |
+| 45  | Coluna "Em Andamento" com selos azuis e ampulheta animada `UiHourglass.vue` em tarefas ativas                   | Frontend |    ⬜     |    ⬜    |   ⬜    | ⬜  |
+| 46  | Coluna "Concluídas" com selos verdes, medalhas `UiRibbonMedal.vue` e carimbo "CUMPRIDO"                         | Frontend |    ⬜     |    ⬜    |   ⬜    | ⬜  |
+| 47  | Fixação de tarefas atrasadas com adagas `UiIronDagger.vue`                                                      | Frontend |    ⬜     |    ⬜    |   ⬜    | ⬜  |
+| 48  | Spritesheet da animação do selo de cera pressionando ao concluir tarefa                                         | Frontend |    ⬜     |    ⬜    |   ⬜    | ⬜  |
+| 49  | Spritesheet de pergaminho desenrolando ao expandir modal de detalhes                                            | Frontend |    ⬜     |    ⬜    |   ⬜    | ⬜  |
+| 50  | Drag and Drop 3D Tilt com inclinação sutil e SFX de textura de papel/rascunho                                   | Frontend |    ⬜     |    ⬜    |   ⬜    | ⬜  |
+| 51  | Abas superiores rústicas no `FieldJournalMobile.vue` para navegação mobile                                      | Frontend |    ⬜     |    ⬜    |   ⬜    | ⬜  |
+| 52  | SFX dedicados: pena de ganso (edição), martelo de cera (conclusão) e papel rasgando (exclusão)                  | Frontend |    ⬜     |    ⬜    |   ⬜    | ⬜  |
+| 53  | Botão de retorno ao saguão integrado à UI ancorada                                                              | Frontend |    ⬜     |    ⬜    |   ⬜    | ⬜  |
+
+### 📜 5. Sala de Arquivos & Grimórios (`/projects`)
+
+| #   | Requisito                                                                                                                    | Tipo        | Protótipo | Frontend | Backend | QA  |
+| --- | ---------------------------------------------------------------------------------------------------------------------------- | ----------- | :-------: | :------: | :-----: | :-: |
+| 54  | Eliminar SVGs estáticos pesados legados `BookShelf.vue` e `WoodenTable.vue`                                                  | Refactoring |    ⬜     |    ⬜    |   ⬜    | ⬜  |
+| 55  | Container fluido `GrimoireShelf.vue` baseado em CSS Grid responsivo com estante de carvalho (`projects-web.webp`)            | Frontend    |    ⬜     |    ⬜    |   ⬜    | ⬜  |
+| 56  | Renderizar cada projeto como um livro de couro `UiGrimoireBook.vue` refletindo a cor do projeto                              | Frontend    |    ⬜     |    ⬜    |   ⬜    | ⬜  |
+| 57  | Livros com fecho de correntes e cadeados para projetos estratégicos de longo prazo                                           | Frontend    |    ⬜     |    ⬜    |   ⬜    | ⬜  |
+| 58  | Spritesheet de livro abrindo com páginas folheando ao selecionar projeto                                                     | Frontend    |    ⬜     |    ⬜    |   ⬜    | ⬜  |
+| 59  | VFX de aura rúnica pulsante no hover da lombada e poeira flutuante nas estantes                                              | Frontend    |    ⬜     |    ⬜    |   ⬜    | ⬜  |
+| 60  | Modal `BookModal.vue` refatorado para exibição de Tomo Aberto em Página Dupla (SMART/WBS na esquerda, Gantt/PERT na direita) | Frontend    |    ⬜     |    ⬜    |   ⬜    | ⬜  |
+| 61  | Frascos de poções e ampulhetas na prateleira como indicadores visuais de saúde do projeto (EVM)                              | Frontend    |    ⬜     |    ⬜    |   ⬜    | ⬜  |
+| 62  | Estante vertical 3x5 scrollável para mobile (`GrimoireGridMobile.vue`)                                                       | Frontend    |    ⬜     |    ⬜    |   ⬜    | ⬜  |
+| 63  | Suporte à abertura direta de projetos via query params (`/projects?projectId=...`)                                           | Frontend    |    ⬜     |    ⬜    |   ⬜    | ⬜  |
+
+### 🗺️ 6. Sala do Astrolábio & Cartografia (`/calendar`)
+
+| #   | Requisito                                                                                                   | Tipo     | Protótipo | Frontend | Backend | QA  |
+| --- | ----------------------------------------------------------------------------------------------------------- | -------- | :-------: | :------: | :-----: | :-: |
+| 64  | Criar a rota Nuxt `pages/calendar.vue` registrada na navegação panorâmica da guilda                         | Frontend |    ⬜     |    ⬜    |   ⬜    | ⬜  |
+| 65  | Componente `AstrolabeBoard.vue` para renderizar o quadro de pergaminho 7x5 em madeira (`calendar-web.webp`) | Frontend |    ⬜     |    ⬜    |   ⬜    | ⬜  |
+| 66  | Cabeçalhos rúnicos para os 7 dias da semana usando `UiRunicTile.vue`                                        | Frontend |    ⬜     |    ⬜    |   ⬜    | ⬜  |
+| 67  | Renderizar 35 quadros de pergaminho do mês conectando os prazos do `taskStore`                              | Frontend |    ⬜     |    ⬜    |   ⬜    | ⬜  |
+| 68  | Spritesheet do Astrolábio/Bússola rúnica animada girando no canto da mesa de cartografia                    | Frontend |    ⬜     |    ⬜    |   ⬜    | ⬜  |
+| 69  | Animação de desenrolar mapa ao entrar na tela de Cartografia                                                | Frontend |    ⬜     |    ⬜    |   ⬜    | ⬜  |
+| 70  | Marcadores de data em miniatura de acampamento e flâmulas com física de balanço                             | Frontend |    ⬜     |    ⬜    |   ⬜    | ⬜  |
+| 71  | VFX de linhas de rota rúnicas brilhantes conectando marcos PERT                                             | Frontend |    ⬜     |    ⬜    |   ⬜    | ⬜  |
+| 72  | Painel lateral em pergaminho para listar obrigações do dia selecionado                                      | Frontend |    ⬜     |    ⬜    |   ⬜    | ⬜  |
+| 73  | Versão adaptativa mobile (`CalendarDrawerMobile.vue`) com bottom-sheet deslizável e gestos touch            | Frontend |    ⬜     |    ⬜    |   ⬜    | ⬜  |
+
+### 📋 7. Modais & Overlays Globais Diegéticos
+
+| #   | Requisito                                                                                   | Tipo     | Protótipo | Frontend | Backend | QA  |
+| --- | ------------------------------------------------------------------------------------------- | -------- | :-------: | :------: | :-----: | :-: |
+| 74  | Modal de Tarefas Diárias base no livro do balcão (`GuildReceptionDesk.vue`)                 | Frontend |    ✅     |    ✅    |   ✅    | ✅  |
+| 75  | HUD Superior base com Nível, XP, Streak e Mute (`GuildTopBanner.vue`)                       | Frontend |    ✅     |    ✅    |   ✅    | ✅  |
+| 76  | Widget do livro do balcão para visualização rápida (`GuildDeskBookWidget.vue`)              | Frontend |    ✅     |    ✅    |   ✅    | ✅  |
+| 77  | Spritesheet da capa do Grimório abrindo/fechando ao clicar no livro do balcão               | Frontend |    ⬜     |    ⬜    |   ⬜    | ⬜  |
+| 78  | Partículas e brilho interno de luz mágica saindo de dentro das páginas do Grimório aberto   | Frontend |    ⬜     |    ⬜    |   ⬜    | ⬜  |
+| 79  | Polimento de `.light-transition-overlay` com vinheta diegética e controle de framerate      | Frontend |    ⬜     |    ⬜    |   ⬜    | ⬜  |
+| 80  | Notificações diegéticas estilo pergaminho caindo ou carta selada no HUD                     | Frontend |    ⬜     |    ⬜    |   ⬜    | ⬜  |
+| 81  | Adaptação pixel-perfect do Grimório e HUD para telas mobile ultra-narrow                    | Frontend |    ⬜     |    ⬜    |   ⬜    | ⬜  |
+| 82  | Refinar `GuildMobileJournal.vue` para alternar telas via bottom journal rústico             | Frontend |    ⬜     |    ⬜    |   ⬜    | ⬜  |
+| 83  | Persistir preferência de áudio Mute/Unmute no `localStorage` com indicação rúnica no banner | Frontend |    ⬜     |    ⬜    |   ⬜    | ⬜  |
+
+### ⚙️ 8. Pinia Stores & Data Mapping RPG
+
+| #   | Requisito                                                                                                             | Tipo     | Protótipo | Frontend | Backend | QA  |
+| --- | --------------------------------------------------------------------------------------------------------------------- | -------- | :-------: | :------: | :-----: | :-: |
+| 84  | Store `stores/uiGuild.ts` (`activeRoom`, `mobileTaskTab`, `selectedCalendarDate`, `isGrimoireOpen`, `cameraPosition`) | Frontend |    ✅     |    ✅    |   ✅    | ✅  |
+| 85  | Store `stores/task.ts` com getters de tarefas por status e data                                                       | Frontend |    ✅     |    ✅    |   ✅    | ✅  |
+| 86  | Store `stores/project.ts` com metadados visuais (`leatherColor`, `emblemIcon`, `runicCategory`)                       | Frontend |    ✅     |    ✅    |   ✅    | ✅  |
+| 87  | Mapear livro de registro com métricas acumuladas (XP, missões ativas, hábitos do dia)                                 | Frontend |    ⬜     |    ⬜    |   ⬜    | ⬜  |
+| 88  | Conectar indicadores visuais EVM/PERT às poções e ampulhetas na sala de arquivos                                      | Frontend |    ⬜     |    ⬜    |   ⬜    | ⬜  |
+| 89  | Suporte a navegação por Deep Links diegéticos (`/projects?projectId=...` e `/Task?taskId=...`)                        | Frontend |    ⬜     |    ⬜    |   ⬜    | ⬜  |
+
+### ⚡ 9. Otimização & Asset Pipeline
+
+| #   | Requisito                                                                                       | Tipo     | Protótipo | Frontend | Backend | QA  |
+| --- | ----------------------------------------------------------------------------------------------- | -------- | :-------: | :------: | :-----: | :-: |
+| 90  | Converter imagens estáticas de fundo para o formato `.webp`                                     | Frontend |    ✅     |    ✅    |   ✅    | ✅  |
+| 91  | Comprimir Sprite Sheets em PNG 8-bit sem perda de transparência                                 | Frontend |    ✅     |    ✅    |   ✅    | ✅  |
+| 92  | Aplicar `will-change: transform, filter, background-position` em elementos animados             | Frontend |    ✅     |    ✅    |   ✅    | ✅  |
+| 93  | Pré-carregamento (_preload_) das imagens e sons das telas principais                            | Frontend |    ✅     |    ✅    |   ✅    | ✅  |
+| 94  | Atlas de Spritesheets (Sprite Packer) para agrupar múltiplos sprites e reduzir requisições HTTP | Frontend |    ⬜     |    ⬜    |   ⬜    | ⬜  |
+| 95  | Profiling de performance GPU/CPU no Chrome DevTools garantindo 60 FPS em mobile                 | QA       |    ⬜     |    ⬜    |   ⬜    | ⬜  |
 
 ---
 
