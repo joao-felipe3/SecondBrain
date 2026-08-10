@@ -4,8 +4,6 @@ import { ConfigModule } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import request from 'supertest';
 import { App } from 'supertest/types';
-import { TasksController } from '../../src/tasks/tasks.controller';
-import { TasksService } from '../../src/tasks/tasks.service';
 import { TasksModule } from '../../src/tasks/tasks.module';
 import { ProjectsModule } from '../../src/projects/projects.module';
 import { AIModule } from '../../src/ai/ai.module';

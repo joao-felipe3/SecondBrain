@@ -20,8 +20,8 @@
     "semantic_hash": ""
   },
   "Backend/package.json": {
-    "mtime": 1785336720.2872193,
-    "ast_hash": "e6162893edc81cb92e76f1e4d55e1451",
+    "mtime": 1786367021.6332378,
+    "ast_hash": "6109d1910b7f5191a4bcc917d4e1bfae",
     "semantic_hash": ""
   },
   "Backend/scripts/export-graph-html.ts": {
@@ -400,8 +400,8 @@
     "semantic_hash": ""
   },
   "Backend/src/projects/services/drafts/draft-plan-generation.service.ts": {
-    "mtime": 1784433281.180633,
-    "ast_hash": "9f5ac20079c447fd6e4a4a5fa080590d",
+    "mtime": 1786366859.3950915,
+    "ast_hash": "bbedbc46498460a31a8a05f9f70615a1",
     "semantic_hash": ""
   },
   "Backend/src/projects/services/drafts/draft-processing.service.ts": {
@@ -410,13 +410,13 @@
     "semantic_hash": ""
   },
   "Backend/src/projects/services/drafts/draft-single-pass-generation.service.ts": {
-    "mtime": 1784433794.784204,
-    "ast_hash": "13407b43dfc06df1db42421031b95b21",
+    "mtime": 1786366852.3029556,
+    "ast_hash": "32bcb3ba44eb0b2cad836eeabb8db23d",
     "semantic_hash": ""
   },
   "Backend/src/projects/services/drafts/draft-with-plan-generation.service.ts": {
-    "mtime": 1784433799.1013258,
-    "ast_hash": "ba1369f3342e18e67796d0e791d85348",
+    "mtime": 1786366866.0481753,
+    "ast_hash": "6e1d76751c9af33db46696300f7af6a2",
     "semantic_hash": ""
   },
   "Backend/src/projects/services/drafts/index.ts": {
@@ -490,8 +490,8 @@
     "semantic_hash": ""
   },
   "Backend/src/projects/services/strategy/rolling-wave-planning.service.ts": {
-    "mtime": 1784471286.0947878,
-    "ast_hash": "a21161cf08ecc68890aa2b99e5745f18",
+    "mtime": 1786366872.8627622,
+    "ast_hash": "26a59ac83ab8c573da8c3925b70c1d61",
     "semantic_hash": ""
   },
   "Backend/src/projects/services/strategy/rolling-wave.service.ts": {
@@ -575,8 +575,8 @@
     "semantic_hash": ""
   },
   "Backend/src/projects/services/wbs/conversion/task-conversion-helper.service.ts": {
-    "mtime": 1786330031.1038437,
-    "ast_hash": "2165767f5f15b381b252be2d0bdfb793",
+    "mtime": 1786366837.5242703,
+    "ast_hash": "b97339a45ff7e93de77a4523b6e078bd",
     "semantic_hash": ""
   },
   "Backend/src/projects/services/wbs/conversion/task-conversion.service.ts": {
@@ -585,8 +585,8 @@
     "semantic_hash": ""
   },
   "Backend/src/projects/services/wbs/conversion/wbs-conversion-orchestrator.service.ts": {
-    "mtime": 1784517725.2362137,
-    "ast_hash": "00014ddc495648e508f5c4c302cc27a7",
+    "mtime": 1786366845.2539656,
+    "ast_hash": "73b9d5a4c0d39f8cdb8bf5d6dedddada",
     "semantic_hash": ""
   },
   "Backend/src/projects/services/wbs/core/audit.service.ts": {
@@ -1285,13 +1285,13 @@
     "semantic_hash": ""
   },
   "Backend/tests/e2e/checklist.e2e-spec.ts": {
-    "mtime": 1784606410.294392,
-    "ast_hash": "853c89b0ece1259df7904ec5b352078e",
+    "mtime": 1786371969.4202533,
+    "ast_hash": "2be5ad0f4b5c09df82be6ecaf6dfd8f3",
     "semantic_hash": ""
   },
   "Backend/tests/e2e/foundation.e2e-spec.ts": {
-    "mtime": 1784606540.8422856,
-    "ast_hash": "3d0e9154656ba3cdcdbae85c9fd9c71c",
+    "mtime": 1786367215.6608949,
+    "ast_hash": "7491cef21f7ecfc7b2444feb12e72b72",
     "semantic_hash": ""
   },
   "Backend/tests/e2e/jest-e2e.json": {
@@ -2080,8 +2080,8 @@
     "semantic_hash": ""
   },
   "Frontend/components/features/projects/sections/XMatrix.vue": {
-    "mtime": 1776094583.2093384,
-    "ast_hash": "1d410f206b9a4743f1f959894f85ded3",
+    "mtime": 1786372198.6303835,
+    "ast_hash": "e62ea76e6fd92fbad41bddb9ea567f99",
     "semantic_hash": ""
   },
   "Frontend/components/features/projects/sections/index.ts": {
@@ -2420,8 +2420,8 @@
     "semantic_hash": ""
   },
   "Frontend/composables/api/index.ts": {
-    "mtime": 1774578713.5089414,
-    "ast_hash": "b5b4277dbe37f55ad65b78ae3bb7fcc4",
+    "mtime": 1786372198.6704712,
+    "ast_hash": "48b88095a410daab0f1122cea9ac7ea8",
     "semantic_hash": ""
   },
   "Frontend/composables/api/useApi.ts": {
@@ -2445,8 +2445,8 @@
     "semantic_hash": ""
   },
   "Frontend/composables/features/pert/usePertDiagramData.ts": {
-    "mtime": 1776094583.2199297,
-    "ast_hash": "e80f27bab2fb3368c9860e177dd85f68",
+    "mtime": 1786372198.8198283,
+    "ast_hash": "39a7d74626eac79efec0af9c12ab0c90",
     "semantic_hash": ""
   },
   "Frontend/composables/features/pert/usePertDiagramState.ts": {
@@ -2550,8 +2550,8 @@
     "semantic_hash": ""
   },
   "Frontend/composables/features/useGanttData.ts": {
-    "mtime": 1776094583.2369995,
-    "ast_hash": "e3486fa22dd6cd37810ef6fe7a087cfd",
+    "mtime": 1786372198.8632834,
+    "ast_hash": "ee17b761d9a1dd35fa9da7e2388dcaed",
     "semantic_hash": ""
   },
   "Frontend/composables/features/usePertDiagramData.ts": {
@@ -2760,8 +2760,8 @@
     "semantic_hash": ""
   },
   "Frontend/stores/project.ts": {
-    "mtime": 1774578713.5778556,
-    "ast_hash": "523b3656cc05a2a0145a7d2361db309c",
+    "mtime": 1786372198.9000745,
+    "ast_hash": "7ccebc73d20e719dc5fc8d7c02fa5426",
     "semantic_hash": ""
   },
   "Frontend/stores/task.spec.ts": {
@@ -3419,11 +3419,6 @@
     "ast_hash": "a9a327f21b35a8548652e94e00ea5cc5",
     "semantic_hash": ""
   },
-  "Project/BACKEND_REFACTORING_PLAN.md": {
-    "mtime": 1786331421.9898238,
-    "ast_hash": "5662c5c3373624602e5b5bc116397bab",
-    "semantic_hash": ""
-  },
   "Backend/src/projects/controllers/projects-core.controller.ts": {
     "mtime": 1786331219.2818835,
     "ast_hash": "a276ab7ec6db2d4bcfb225fc036987e4",
@@ -3482,6 +3477,26 @@
   "Backend/tests/unit/projects/controllers/projects-wbs.controller.spec.ts": {
     "mtime": 1786331277.4430559,
     "ast_hash": "c0cfa4c8dd252ab8a4119d1ee074315a",
+    "semantic_hash": ""
+  },
+  "Frontend/composables/api/useProjectsApi.ts": {
+    "mtime": 1786372198.7160003,
+    "ast_hash": "a09254e41eb3564a7ee690010c775606",
+    "semantic_hash": ""
+  },
+  "Frontend/composables/api/useTasksApi.ts": {
+    "mtime": 1786372198.742,
+    "ast_hash": "21c783918d18b0588cdb39eb2b5f5996",
+    "semantic_hash": ""
+  },
+  "Frontend/composables/api/useVisualizationApi.ts": {
+    "mtime": 1786372198.7590764,
+    "ast_hash": "d2007e0e8713d0d5bed5c42c4cea09ef",
+    "semantic_hash": ""
+  },
+  "Frontend/composables/api/useWbsApi.ts": {
+    "mtime": 1786372198.786337,
+    "ast_hash": "21a0d763af7a0365865ca2435fabf034",
     "semantic_hash": ""
   }
 }
