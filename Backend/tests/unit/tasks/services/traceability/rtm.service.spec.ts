@@ -9,7 +9,6 @@ import { RTMValidationService } from '../../../../../src/tasks/services/traceabi
 import { RTMTaskGeneratorService } from '../../../../../src/tasks/services/traceability/rtm-task-generator.service';
 import { Requirement } from '../../../../../src/tasks/schemas/requirement.schema';
 import { GeminiService } from '../../../../../src/ai/services/core/gemini.service';
-import { TasksService } from '../../../../../src/tasks/tasks.service';
 import { TasksWriteService } from '../../../../../src/tasks/services/workflow/write.service';
 import { Types } from 'mongoose';
 

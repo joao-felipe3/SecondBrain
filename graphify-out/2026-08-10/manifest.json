@@ -344,14 +344,9 @@
     "ast_hash": "0466d648bf1f95ce4c5d1f5c3e3d8909",
     "semantic_hash": ""
   },
-  "Backend/src/projects/projects.controller.ts": {
-    "mtime": 1784988360.6985755,
-    "ast_hash": "9989d35ad0cc2d057ae0636c759df456",
-    "semantic_hash": ""
-  },
   "Backend/src/projects/projects.module.ts": {
-    "mtime": 1786329147.6987503,
-    "ast_hash": "7568262996ed287221e99141d45bcef3",
+    "mtime": 1786332848.797064,
+    "ast_hash": "4e73f114cdde4ad2d8d0308c7f8e6167",
     "semantic_hash": ""
   },
   "Backend/src/projects/projects.service.ts": {
@@ -1417,11 +1412,6 @@
   "Backend/tests/unit/projects/execution/risk.service.spec.ts": {
     "mtime": 1784936495.2684193,
     "ast_hash": "6a104c4256884b3febb91ed7f59b7407",
-    "semantic_hash": ""
-  },
-  "Backend/tests/unit/projects/projects.controller.spec.ts": {
-    "mtime": 1784988360.699576,
-    "ast_hash": "e2d8e2f8880167bf90ac5240d73084f7",
     "semantic_hash": ""
   },
   "Backend/tests/unit/projects/projects.service.spec.ts": {
@@ -3430,8 +3420,68 @@
     "semantic_hash": ""
   },
   "Project/BACKEND_REFACTORING_PLAN.md": {
-    "mtime": 1786328831.8799803,
-    "ast_hash": "df12cb726f72ce23b90150aa21df24be",
+    "mtime": 1786331421.9898238,
+    "ast_hash": "5662c5c3373624602e5b5bc116397bab",
+    "semantic_hash": ""
+  },
+  "Backend/src/projects/controllers/projects-core.controller.ts": {
+    "mtime": 1786331219.2818835,
+    "ast_hash": "a276ab7ec6db2d4bcfb225fc036987e4",
+    "semantic_hash": ""
+  },
+  "Backend/src/projects/controllers/projects-planning.controller.ts": {
+    "mtime": 1786331225.3797083,
+    "ast_hash": "67846c2bf65b964094c9cc3ced59c678",
+    "semantic_hash": ""
+  },
+  "Backend/src/projects/controllers/projects-visualization.controller.ts": {
+    "mtime": 1786331240.5796137,
+    "ast_hash": "398ec8519f1e140c6f6f00bd67a84603",
+    "semantic_hash": ""
+  },
+  "Backend/src/projects/controllers/projects-wbs.controller.ts": {
+    "mtime": 1786331234.357952,
+    "ast_hash": "ffb97d77b876f5b9eb35174cb0f5845b",
+    "semantic_hash": ""
+  },
+  "Backend/src/shared/domain/interfaces/index.ts": {
+    "mtime": 1786331407.501581,
+    "ast_hash": "74e28ba0271d8de874ffaa1877d31560",
+    "semantic_hash": ""
+  },
+  "Backend/src/shared/domain/interfaces/project.interface.ts": {
+    "mtime": 1786331395.4346848,
+    "ast_hash": "3ef0379e93574f402c9b13cef55edbb0",
+    "semantic_hash": ""
+  },
+  "Backend/src/shared/domain/interfaces/task.interface.ts": {
+    "mtime": 1786331389.2399955,
+    "ast_hash": "12281c1ac7f0092b95e78ea3909e797b",
+    "semantic_hash": ""
+  },
+  "Backend/src/shared/domain/interfaces/wbs-node.interface.ts": {
+    "mtime": 1786331401.6641414,
+    "ast_hash": "fdeb4b6a6584523eb353d2d2c42ec722",
+    "semantic_hash": ""
+  },
+  "Backend/tests/unit/projects/controllers/projects-core.controller.spec.ts": {
+    "mtime": 1786331265.0022223,
+    "ast_hash": "abf08c0b54470fc48a6661ac47ce4d48",
+    "semantic_hash": ""
+  },
+  "Backend/tests/unit/projects/controllers/projects-planning.controller.spec.ts": {
+    "mtime": 1786331270.9263978,
+    "ast_hash": "5611bb4c9a73dd0c247a298b5878b0aa",
+    "semantic_hash": ""
+  },
+  "Backend/tests/unit/projects/controllers/projects-visualization.controller.spec.ts": {
+    "mtime": 1786333162.400624,
+    "ast_hash": "ea4336869d45215a611ffcf586f163ea",
+    "semantic_hash": ""
+  },
+  "Backend/tests/unit/projects/controllers/projects-wbs.controller.spec.ts": {
+    "mtime": 1786331277.4430559,
+    "ast_hash": "c0cfa4c8dd252ab8a4119d1ee074315a",
     "semantic_hash": ""
   }
 }
