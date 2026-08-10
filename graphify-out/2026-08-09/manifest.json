@@ -2725,8 +2725,8 @@
     "semantic_hash": ""
   },
   "Frontend/pages/index.vue": {
-    "mtime": 1786070382.49657,
-    "ast_hash": "87fde34dcfbcfc8a5d12a25e7d60787e",
+    "mtime": 1786315694.2417684,
+    "ast_hash": "cb7c8413d6d5048c3810eca1f06e859a",
     "semantic_hash": ""
   },
   "Frontend/pages/projects/index.vue": {
@@ -3185,8 +3185,8 @@
     "semantic_hash": ""
   },
   "Frontend/composables/ui/useGuildAudio.ts": {
-    "mtime": 1786070382.4950087,
-    "ast_hash": "2dadb41b1a36102912a2bbf48189925a",
+    "mtime": 1786315693.9845848,
+    "ast_hash": "29d0b86bc3363723138164d82c6ee5f4",
     "semantic_hash": ""
   },
   "Frontend/composables/ui/useResponsive.ts": {
@@ -3325,8 +3325,8 @@
     "semantic_hash": ""
   },
   "Frontend/public/imagens/Entrada-expandida.png": {
-    "mtime": 1785597682.130661,
-    "ast_hash": "154bd6301d37f898eb7e85f71dbeba2b",
+    "mtime": 1786250659.8932512,
+    "ast_hash": "1ca8775ea7407582aa26476998b3a15e",
     "semantic_hash": ""
   },
   "Frontend/components/features/hall/GuildArchPortal.vue": {
@@ -3335,8 +3335,8 @@
     "semantic_hash": ""
   },
   "Frontend/components/features/hall/GuildDiegeticHotspots.vue": {
-    "mtime": 1786070382.49346,
-    "ast_hash": "7a733ebd44ffaaded0fa762c6a131eb7",
+    "mtime": 1786315693.3260758,
+    "ast_hash": "166931ab2301e7351067118aceb4894e",
     "semantic_hash": ""
   },
   "Frontend/components/features/hall/GuildMobileJournal.vue": {
@@ -3362,6 +3362,31 @@
   "Frontend/public/assets/props/door-closed.png": {
     "mtime": 1785943199.1428642,
     "ast_hash": "72d6bd05e1d4347c2914629bc00689d9",
+    "semantic_hash": ""
+  },
+  "Frontend/components/features/hall/GuildLibraryPortal.vue": {
+    "mtime": 1786315693.7035184,
+    "ast_hash": "b553112e5ea46f9ebe1014d64d1da136",
+    "semantic_hash": ""
+  },
+  "Frontend/public/vfx/chair.png": {
+    "mtime": 1786303160.37528,
+    "ast_hash": "95215495f016aa68034d4f6875ce40eb",
+    "semantic_hash": ""
+  },
+  "Frontend/public/vfx/door-spritesheet.png": {
+    "mtime": 1786292328.8652244,
+    "ast_hash": "574e8c5b57645c6e44f3e452d8dbbd93",
+    "semantic_hash": ""
+  },
+  "Frontend/public/vfx/door-close.wav": {
+    "mtime": 1786314259.9370954,
+    "ast_hash": "1c57fb43c945cbd5b112823da6768f64",
+    "semantic_hash": ""
+  },
+  "Frontend/public/vfx/door-open.wav": {
+    "mtime": 1786314102.4429162,
+    "ast_hash": "3764c896b9626be2656976d6143025fb",
     "semantic_hash": ""
   }
 }
