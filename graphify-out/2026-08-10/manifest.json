@@ -3310,8 +3310,8 @@
     "semantic_hash": ""
   },
   "Frontend/components/features/hall/GuildArchPortal.vue": {
-    "mtime": 1786398619.7442532,
-    "ast_hash": "d72cdece552651be3ef0278cb7a1f0ee",
+    "mtime": 1786398893.5979693,
+    "ast_hash": "d87cf41161690709aa5f2180e14c3727",
     "semantic_hash": ""
   },
   "Frontend/components/features/hall/GuildDiegeticHotspots.vue": {
@@ -3345,8 +3345,8 @@
     "semantic_hash": ""
   },
   "Frontend/components/features/hall/GuildLibraryPortal.vue": {
-    "mtime": 1786315693.7035184,
-    "ast_hash": "b553112e5ea46f9ebe1014d64d1da136",
+    "mtime": 1786416121.7394373,
+    "ast_hash": "efa7adb7a1f38fc3139de1c09ec20ee6",
     "semantic_hash": ""
   },
   "Frontend/public/vfx/chair.png": {
@@ -3370,8 +3370,8 @@
     "semantic_hash": ""
   },
   "Project/FRONTEND_REFACTORING_PLAN.md": {
-    "mtime": 1786395744.3881817,
-    "ast_hash": "88bd77dde62adb6db856c55369d1ae2c",
+    "mtime": 1786400231.9248178,
+    "ast_hash": "b202f7ffe31339616980e34d4441f77d",
     "semantic_hash": ""
   },
   "Project/adr/004-validation-strategy.md": {

@@ -86,7 +86,7 @@
   - [x] Configurar transição de sprite no `:hover` com `SPRITE_FRAMES` (passando por trás do `chair.png`).
   - [x] Integrar áudio de ranger de porta no hover e fecho ao sair (`playDoorOpenSound` / `playDoorCloseSound`).
   - [x] Disparar animação de Camera Zoom (`scale(2.8)`, origin: `88% 50%`) + transição de rota ao clicar.
-  - [ ] Efeito de vazamento de luz dourada entre as frestas da porta da biblioteca ao entreabrir.
+  - [x] Efeito de vazamento de luz dourada entre as frestas da porta da biblioteca ao entreabrir.
 
 - [x] **Escadaria Central (Cartografia / Calendário -> `/calendar`):**
   - [x] Mapear hitbox no topo do mezanino (`GuildDiegeticHotspots.vue`).

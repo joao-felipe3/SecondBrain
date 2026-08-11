@@ -3310,8 +3310,8 @@
     "semantic_hash": ""
   },
   "Frontend/components/features/hall/GuildArchPortal.vue": {
-    "mtime": 1786418307.9655266,
-    "ast_hash": "e309977aed4f9bccc9154b34b5c7a5bf",
+    "mtime": 1786418061.829793,
+    "ast_hash": "c1dfa1172619a874b3fa4b7758e58d92",
     "semantic_hash": ""
   },
   "Frontend/components/features/hall/GuildDiegeticHotspots.vue": {
@@ -3345,8 +3345,8 @@
     "semantic_hash": ""
   },
   "Frontend/components/features/hall/GuildLibraryPortal.vue": {
-    "mtime": 1786453698.2106283,
-    "ast_hash": "fb159dc1460c23bbba8293d273e0bdd2",
+    "mtime": 1786417506.6339555,
+    "ast_hash": "8766606c955f1aeb5bb6d262eebda7ef",
     "semantic_hash": ""
   },
   "Frontend/public/vfx/chair.png": {

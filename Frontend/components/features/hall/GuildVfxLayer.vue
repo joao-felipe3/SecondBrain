@@ -104,7 +104,7 @@
   width: 100%;
   height: 100%;
   pointer-events: none;
-  z-index: 2;
+  z-index: 5;
   transition: transform 0.3s ease;
 }
 

@@ -90,7 +90,15 @@
         stroke-width="2"
         filter="url(#rune-glow-filter)"
       />
+    </svg>
 
+    <!-- CAMADA HITBOX INTERATIVA SVG (Z-INDEX: 10 - GARANTE CLIQUE E HOVER 100% FUNCIONAL) -->
+    <svg
+      v-if="!isMobile"
+      class="guild-arch-hitbox-overlay"
+      viewBox="0 0 1000 562.5"
+      preserveAspectRatio="none"
+    >
       <!-- PATH INTERATIVO DO ARCO DA ESQUERDA (ALINHADO AO VÃO) -->
       <path
         class="portal-arch-left"
@@ -146,13 +154,25 @@ function handleMouseEnter() {
   width: 100%;
   height: 100%;
   pointer-events: none;
-  z-index: 6;
+  z-index: 3;
+  transition: transform 0.3s ease;
+}
+
+/* CAMADA HITBOX INTERATIVA PARA CLIQUE E HOVER DE ALTA PRIORIDADE (Z-INDEX: 10) */
+.guild-arch-hitbox-overlay {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 10;
   transition: transform 0.3s ease;
 }
 
 /* SUPER ULTRAWIDE (32:9, 5120x1440 e superior - min-aspect-ratio: 2.4/1): Sincroniza o portal com ancoragem 50% 50% e compensação de object-position */
 @media (min-aspect-ratio: 2.4/1) {
-  .guild-svg-overlay {
+  .guild-svg-overlay,
+  .guild-arch-hitbox-overlay {
     transform: translate(9%, 22.5%) scale(1.353);
     transform-origin: 50% 50%;
   }
@@ -257,6 +277,7 @@ function handleMouseEnter() {
     opacity 0.4s ease,
     stroke-dashoffset 0.8s ease-in-out;
   pointer-events: none;
+  z-index: 1;
 }
 
 .portal-energy-contour.is-active {
