@@ -1,4 +1,4 @@
-import { Injectable, Logger, Inject, forwardRef } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { Requirement as RequirementSchema, RequirementDocument } from '../../schemas/requirement.schema';
@@ -6,7 +6,7 @@ import { Requirement } from '../../entities/requirement.entity';
 import { RequirementMapper } from '../../mappers/requirement.mapper';
 import { CreateTaskDto } from '../../dto/task/create-task.dto';
 import { GeminiService } from '../../../ai/services/core/gemini.service';
-import { TasksService } from '../../tasks.service';
+import { TasksWriteService } from '../workflow/write.service';
 import { RTMValidationService } from './rtm-validation.service';
 import { GenerateTasksResponseDto } from '../../dto';
 import { normalizeKind, parseJsonArray } from './utils/rtm.utils';
@@ -20,8 +20,7 @@ export class RTMTaskGeneratorService {
     @InjectModel(RequirementSchema.name)
     private readonly requirementModel: Model<RequirementDocument>,
     private readonly geminiService: GeminiService,
-    @Inject(forwardRef(() => TasksService))
-    private readonly tasksService: TasksService,
+    private readonly tasksWriteService: TasksWriteService,
     private readonly validationService: RTMValidationService,
   ) {}
 
@@ -173,7 +172,7 @@ export class RTMTaskGeneratorService {
           journeyItemIds: [String(req.id)],
         };
 
-        const newTask = await this.tasksService.create(createDto);
+        const newTask = await this.tasksWriteService.createTaskCore(createDto);
         taskIds.push(String(newTask._id));
       } catch (taskError: unknown) {
         const err = taskError as Error;

@@ -99,7 +99,7 @@ export class AiWikiService implements OnModuleInit {
   }
 
   private generateQueryEmbedding(query: string, dim = 64): number[] {
-    const embedding = new Array(dim).fill(0);
+    const embedding: number[] = new Array<number>(dim).fill(0);
     const clean = query.toLowerCase().replace(/[^a-z0-9]/g, ' ');
     const words = clean.split(/\s+/).filter(Boolean);
 
@@ -112,9 +112,9 @@ export class AiWikiService implements OnModuleInit {
       }
     }
 
-    const norm =
-      Math.sqrt(embedding.reduce((sum: number, val: number) => sum + Number(val) * Number(val), 0)) || 1;
-    return (embedding as number[]).map((val: number): number => val / norm);
+    const sumSq = embedding.reduce((acc: number, val: number) => acc + val * val, 0);
+    const norm = Math.sqrt(sumSq) || 1;
+    return embedding.map((val: number): number => val / norm);
   }
 
   async queryWiki(dto: WikiQueryDto): Promise<WikiQueryResponseDto> {

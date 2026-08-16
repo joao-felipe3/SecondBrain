@@ -1,0 +1,46 @@
+@startuml c4-component-graph-rag
+' C4 Component Diagram: Graph RAG & Semantic LLM Wiki Architecture
+
+left to right direction
+
+skinparam backgroundColor #FFFFFF
+skinparam rectangleBorderColor #333333
+skinparam rectangleFontColor #111111
+
+skinparam rectangle {
+    RoundCorner 8
+}
+
+package "Indexing Pipeline (CLI / CI/CD)" {
+    component "index-wiki.ts\n(Indexer Script)" as indexer
+    component "Graphify Engine\n(AST & Knowledge Graph)" as graphify
+}
+
+package "Backend API (NestJS)" {
+    component "AiWikiController\n(POST /ai/wiki-query)" as wikiCtrl
+    component "AiWikiService\n(Hybrid RAG Coordinator)" as wikiSvc
+    component "GeminiService\n(Embedding & Synthesis)" as gemSvc
+}
+
+database "Vector & Knowledge Storage" {
+    component "graphify-out/graph.json\n(Node/Edge Subgraphs)" as graphJson
+    component "Chroma Vector DB\n(Document Chunks)" as vectorDb
+}
+
+component "Google Gemini API\n(text-embedding-004 & Gemini 2.5)" as geminiApi
+
+' Flow
+indexer --> graphify : Parses AST & Markdown Docs
+graphify --> graphJson : Exports Graph & GRAPH_REPORT.md
+indexer --> gemSvc : Generates Embeddings
+gemSvc --> vectorDb : Stores Vector Chunks
+
+wikiCtrl --> wikiSvc : Query Request
+wikiSvc --> vectorDb : 1. Vector Search (k-NN)
+wikiSvc --> graphJson : 2. Subgraph Traversal
+wikiSvc --> gemSvc : 3. Construct Augmented Prompt
+gemSvc --> geminiApi : 4. Gemini LLM Synthesis
+wikiSvc <-- gemSvc : Returns Response + Citations
+wikiCtrl <-- wikiSvc : Returns WikiQueryResponse
+
+@enduml

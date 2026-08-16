@@ -61,7 +61,7 @@ describe('TasksController', () => {
         tasks: [
           { name: 'Task 1', parentWbsNodeId: 'wbs1' },
           { name: 'Task 2', parentWbsNodeId: 'wbs1' },
-        ] as any,
+        ],
         autoDependencies: { mode: 'within-leaf' } as any,
       });
 
@@ -70,10 +70,10 @@ describe('TasksController', () => {
     });
 
     it('should create single task and microtask', async () => {
-      const task = await controller.create({ name: 'Task' } as any);
+      const task = await controller.create({ name: 'Task' });
       expect(task).toBeDefined();
 
-      const micro = await controller.createMicroTask({ name: 'Micro' } as any);
+      const micro = await controller.createMicroTask({ name: 'Micro' });
       expect(micro).toBeDefined();
     });
 

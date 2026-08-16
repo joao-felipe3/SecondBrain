@@ -70,21 +70,25 @@ export class ProjectsService {
     if (!id || id === 'null' || id === 'undefined' || !Types.ObjectId.isValid(id)) {
       throw new BadRequestException(`ID inválido: ${id}`);
     }
-    return await this.projectModel.findById(id).exec();
+    return await this.projectModel.findById(new Types.ObjectId(id)).exec();
   }
 
   async update(id: string, dto: UpdateProjectDto): Promise<ProjectDocument | null> {
     if (!id || id === 'null' || id === 'undefined' || !Types.ObjectId.isValid(id)) {
       throw new BadRequestException(`ID inválido: ${id}`);
     }
-    return await this.projectModel.findByIdAndUpdate(String(id), { $set: dto }, { new: true }).exec();
+    const project = await this.projectModel.findById(new Types.ObjectId(id)).exec();
+    if (!project) return null;
+
+    Object.assign(project, dto);
+    return await project.save();
   }
 
   async remove(id: string): Promise<boolean> {
     if (!id || id === 'null' || id === 'undefined' || !Types.ObjectId.isValid(id)) {
       throw new BadRequestException(`ID inválido: ${id}`);
     }
-    const result = await this.projectModel.findByIdAndDelete(String(id)).exec();
+    const result = await this.projectModel.findByIdAndDelete(new Types.ObjectId(id)).exec();
     return result !== null;
   }
 
@@ -96,24 +100,28 @@ export class ProjectsService {
       throw new BadRequestException(`ID inválido: ${id}`);
     }
 
-    const project = await this.projectModel.findById(id).exec();
+    const projectObjectId = new Types.ObjectId(id);
+    const project = await this.projectModel.findById(projectObjectId).exec();
     if (!project) return { deleted: false, tasksAffected: 0 };
 
-    const tasks = await this.taskModel.find({ project: id }).exec();
+    const tasks = await this.taskModel.find({ project: projectObjectId }).exec();
     const tasksAffected = tasks.length;
 
     if (deleteTasks) {
-      await this.taskModel.deleteMany({ project: id }).exec();
+      await this.taskModel.deleteMany({ project: projectObjectId }).exec();
     } else {
-      await this.taskModel.updateMany({ project: id }, { $unset: { project: '' } }).exec();
+      await this.taskModel.updateMany({ project: projectObjectId }, { $unset: { project: '' } }).exec();
     }
 
-    const result = await this.projectModel.findByIdAndDelete(id).exec();
+    const result = await this.projectModel.findByIdAndDelete(projectObjectId).exec();
     return { deleted: result !== null, tasksAffected };
   }
 
   async incrementHoursWorked(id: string, hours: number): Promise<ProjectDocument> {
-    const project = await this.projectModel.findById(id).exec();
+    if (!id || id === 'null' || id === 'undefined' || !Types.ObjectId.isValid(id)) {
+      throw new BadRequestException(`ID inválido: ${id}`);
+    }
+    const project = await this.projectModel.findById(new Types.ObjectId(id)).exec();
     if (!project) throw new NotFoundException('Project not found');
     project.totalHoursWorked = (project.totalHoursWorked || 0) + hours;
     // optionally recompute progress if plannedHours exists
@@ -125,15 +133,17 @@ export class ProjectsService {
   }
 
   async addTaskToProject(projectId: string, taskId: string): Promise<void> {
+    const projId = Types.ObjectId.isValid(projectId) ? new Types.ObjectId(projectId) : projectId;
+    const tId = Types.ObjectId.isValid(taskId) ? new Types.ObjectId(taskId) : taskId;
     await this.projectModel
-      .findByIdAndUpdate(projectId, { $addToSet: { tasks: taskId } }, { new: true })
+      .findByIdAndUpdate(projId, { $addToSet: { tasks: tId } }, { new: true })
       .exec();
   }
 
   async removeTaskFromProject(projectId: string, taskId: string): Promise<void> {
-    await this.projectModel
-      .findByIdAndUpdate(projectId, { $pull: { tasks: taskId } }, { new: true })
-      .exec();
+    const projId = Types.ObjectId.isValid(projectId) ? new Types.ObjectId(projectId) : projectId;
+    const tId = Types.ObjectId.isValid(taskId) ? new Types.ObjectId(taskId) : taskId;
+    await this.projectModel.findByIdAndUpdate(projId, { $pull: { tasks: tId } }, { new: true }).exec();
   }
 
   async moveTaskToProject(taskId: string, oldProjectId: string, newProjectId: string): Promise<void> {

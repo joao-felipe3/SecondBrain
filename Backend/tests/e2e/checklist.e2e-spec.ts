@@ -1,17 +1,14 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import request from 'supertest';
 import { App } from 'supertest/types';
-import { TasksController } from '../../src/tasks/tasks.controller';
-import { TasksService } from '../../src/tasks/tasks.service';
-import { GeminiService } from '../../src/ai/services/core/gemini.service';
-import { ChecklistService } from '../../src/tasks/services/intelligence/checklist.service';
-import { ProjectsService } from '../../src/projects/projects.service';
-import { PertService } from '../../src/tasks/services/analysis/pert.service';
-import { EVMService, EVMProgressService } from '../../src/projects/services/evm';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import { Types } from 'mongoose';
+import { TasksModule } from '../../src/tasks/tasks.module';
+import { ProjectsModule } from '../../src/projects/projects.module';
+import { AIModule } from '../../src/ai/ai.module';
 
 interface ChecklistItemResponse {
   item: string;
@@ -49,19 +46,11 @@ describe('Sprint 2: Checklist Validation & Historical Context (E2E)', () => {
 
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [
+        ConfigModule.forRoot({ isGlobal: true }),
         MongooseModule.forRoot(mongoUri),
-        // ... other imports
-      ],
-      controllers: [TasksController],
-      providers: [
-        TasksService,
-        GeminiService,
-        ChecklistService,
-        ProjectsService,
-        PertService,
-        EVMService,
-        EVMProgressService,
-        // ... other providers
+        TasksModule,
+        ProjectsModule,
+        AIModule,
       ],
     }).compile();
 

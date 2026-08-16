@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { CacheService, ThemeExtractionService } from '../wbs';
+import { CacheService } from '../wbs/shared/cache.service';
+import { ThemeExtractionService } from '../wbs/shared/theme-extraction.service';
 import {
   isCacheDebugEnabled,
   getProjectId,

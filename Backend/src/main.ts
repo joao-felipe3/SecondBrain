@@ -1,4 +1,5 @@
 import { NestFactory } from '@nestjs/core';
+import { ValidationPipe } from '@nestjs/common';
 import { AppModule } from './app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import * as express from 'express';
@@ -7,6 +8,15 @@ import { MongooseLoggerInterceptor } from './common/interceptors/mongoose-logger
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+
+  // Enable global DTO validation & transformation
+  app.useGlobalPipes(
+    new ValidationPipe({
+      transform: true,
+      whitelist: true,
+      forbidNonWhitelisted: false,
+    }),
+  );
 
   // Enable Mongoose Debug mode dynamically when requested
   if (process.env.MONGOOSE_DEBUG === 'true') {

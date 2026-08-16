@@ -3,7 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { ProjectWave, ProjectWaveDocument } from '../../schemas/project-wave.schema';
 import { ProjectsService } from '../../projects.service';
-import { WBSService } from '../wbs';
+import { WBSService } from '../wbs/core/wbs.service';
 import { RollingWaveAIService } from '../../../ai/services/projects/rolling-wave-ai.service';
 import { AIPlan, DeterministicProjectInput } from '../../interfaces/rolling-wave.interface';
 import { UpdateProjectDto } from '../../dto/update-project.dto';

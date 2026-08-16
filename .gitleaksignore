@@ -1,0 +1,5 @@
+# Gitleaks ignore list
+# Format: <fingerprint>
+
+# False positive: NestJS starter template boilerplate CircleCI token in historical commit
+310068def283c75b07a7bf05d01016fd6d7f81e6:Backend/README.md:generic-api-key:5

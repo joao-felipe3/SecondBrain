@@ -1,20 +1,12 @@
 <template>
   <div v-if="!isMobile" class="diegetic-hotspots-layer">
-    <!-- HOTSPOT DIREITO: BIBLIOTECA DE ARQUIVOS DE PROJETOS (/projects) -->
-    <NuxtLink
-      to="/projects"
-      class="hotspot-area arch-library-area"
-      @mouseenter="
-        emit('updateTooltip', '📚 Acessar Biblioteca de Arquivos e Projetos')
-      "
-      @mouseleave="emit('updateTooltip', null)"
-    >
-      <div class="hotspot-arch-glow glow-rune-blue"></div>
-      <div class="hotspot-diegetic-label">
-        <UiWaxSeal color="blue" size="sm" icon="📚" />
-        <span class="label-title">Biblioteca de Arquivos</span>
-      </div>
-    </NuxtLink>
+    <!-- HOTSPOT DIREITO: PORTAL ANIMADO DA BIBLIOTECA DA GUILDA (/projects) -->
+    <GuildLibraryPortal
+      :is-transitioning="isTransitioning"
+      @hover="onLibraryHover"
+      @leave="onLibraryLeave"
+      @door-click="onLibraryClick"
+    />
 
     <!-- WIDGET DO LIVRO ABERTO -->
     <div
@@ -67,18 +59,37 @@
 import { ref } from "vue";
 import UiWaxSeal from "~/components/ui/diegetic/UiWaxSeal.vue";
 import GuildDeskBookWidget from "~/components/features/hall/GuildDeskBookWidget.vue";
+import GuildLibraryPortal from "~/components/features/hall/GuildLibraryPortal.vue";
 import { useGuildAudio } from "~/composables/ui/useGuildAudio";
 
 defineProps<{
   isMobile: boolean;
+  isTransitioning?: boolean;
 }>();
 
 const emit = defineEmits<{
   (e: "openReception"): void;
   (e: "updateTooltip", tooltip: string | null): void;
+  (e: "rightDoorHover"): void;
+  (e: "rightDoorLeave"): void;
+  (e: "rightDoorClick"): void;
 }>();
 
 const { playCoinsSound, playDaggerSound } = useGuildAudio();
+
+function onLibraryHover() {
+  emit("updateTooltip", "📜 Acessar Biblioteca de Arquivos e Projetos");
+  emit("rightDoorHover");
+}
+
+function onLibraryLeave() {
+  emit("updateTooltip", null);
+  emit("rightDoorLeave");
+}
+
+function onLibraryClick() {
+  emit("rightDoorClick");
+}
 
 const isDaggerShaking = ref(false);
 
@@ -124,6 +135,15 @@ function triggerCoinsInteraction(event: MouseEvent) {
   width: 100%;
   height: 100%;
   z-index: 5;
+  transition: transform 0.3s ease;
+}
+
+/* SUPER ULTRAWIDE (32:9, 5120x1440 e superior - min-aspect-ratio: 2.4/1): Sincroniza os hotspots com ancoragem 50% 50% e compensação de object-position */
+@media (min-aspect-ratio: 2.4/1) {
+  .diegetic-hotspots-layer {
+    transform: translate(9%, 22.5%) scale(1.353);
+    transform-origin: 50% 50%;
+  }
 }
 
 .hotspot-area {

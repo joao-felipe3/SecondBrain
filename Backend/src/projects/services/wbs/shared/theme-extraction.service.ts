@@ -1,4 +1,4 @@
-import { Injectable, Inject, forwardRef } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { GeminiService } from '../../../../ai/services/core/gemini.service';
 import { WBSNodeDto } from '../../../dto/wbs.dto';
 import { WBSLeafProjectContext } from '../../../interfaces/drafts.interface';
@@ -15,10 +15,7 @@ import { normalizeVector, kMeansClusters, cosineSimilarity } from '../utils/metr
  */
 @Injectable()
 export class ThemeExtractionService {
-  constructor(
-    @Inject(forwardRef(() => GeminiService))
-    private readonly geminiService: GeminiService,
-  ) {}
+  constructor(private readonly geminiService: GeminiService) {}
 
   /**
    * Get theme suggestions using heuristics and keyword matching (fallback)

@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '../shared/config.service';
-import { DraftGenerationService, DraftProcessingService } from '../../drafts';
+import { DraftGenerationService } from '../../drafts/draft-generation.service';
+import { DraftProcessingService } from '../../drafts/draft-processing.service';
 import { TaskConversionService } from './task-conversion.service';
 import { WBSNodeDto } from '../../../dto/wbs.dto';
 import { computeChunkMinutes } from '../utils/metrics-calculator.util';

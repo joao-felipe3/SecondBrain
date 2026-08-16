@@ -1,19 +1,76 @@
-import { Task } from '../../tasks/entities/task.entity';
+import { IsString, IsOptional, IsNumber, IsDate } from 'class-validator';
+import { Type } from 'class-transformer';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class CreateProjectDto {
+  @ApiProperty({ description: 'Project name' })
+  @IsString()
   name!: string;
-  description!: string;
-  color!: string;
-  tasks?: Task[];
-  startDate!: Date;
-  deadline!: Date;
-  totalHoursWorked!: number;
-  plannedHours!: number;
-  shortTermGoal!: string;
-  midTermGoal!: string;
-  longTermGoal!: string;
-  status!: string;
-  progressPercentage!: number;
-  experience!: number;
-  reward!: number;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  description?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  color?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @Type(() => Date)
+  @IsDate()
+  startDate?: Date;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @Type(() => Date)
+  @IsDate()
+  deadline?: Date;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsNumber()
+  totalHoursWorked?: number;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsNumber()
+  plannedHours?: number;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  shortTermGoal?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  midTermGoal?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  longTermGoal?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  status?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsNumber()
+  progressPercentage?: number;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsNumber()
+  experience?: number;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsNumber()
+  reward?: number;
 }

@@ -4,8 +4,8 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { TaskDocument } from '../../schemas/task.schema';
 import { TaskAlertDocument } from '../../schemas/task-alert.schema';
-import { ProjectsService } from '../../../projects/projects.service';
 import { EVMProgressService } from '../../../projects/services/evm';
+import { ProjectStatsService } from '../../../projects/services/execution/project-stats.service';
 import { TasksMetricsService } from '../analysis/metrics.service';
 import { DeviationDetectionService, AlertsService } from '../monitoring';
 import { TasksRecurringService } from './recurring.service';
@@ -16,7 +16,7 @@ import { resolveTargetOrder } from './utils/kanban.utils';
 export class TasksCompletionService {
   constructor(
     @InjectModel('Task') private readonly taskModel: Model<TaskDocument>,
-    private readonly projectsService: ProjectsService,
+    private readonly projectStatsService: ProjectStatsService,
     private readonly evmProgressService: EVMProgressService,
     private readonly metricsService: TasksMetricsService,
     private readonly deviationDetectionService: DeviationDetectionService,
@@ -289,7 +289,7 @@ export class TasksCompletionService {
     remainingHours: number;
   }): Promise<void> {
     const { projectId, taskId, remainingHours } = params;
-    await this.projectsService.incrementHoursWorked(projectId, remainingHours);
+    await this.projectStatsService.incrementHoursWorked(projectId, remainingHours);
     await this.registerAutoEvmProgress({
       projectId,
       taskId,
@@ -299,7 +299,7 @@ export class TasksCompletionService {
   }
 
   private async updateProjectMetricsAfterPomodoro(projectId: string, taskId: string): Promise<void> {
-    await this.projectsService.incrementHoursWorked(projectId, 0.5);
+    await this.projectStatsService.incrementHoursWorked(projectId, 0.5);
     await this.registerAutoEvmProgress({
       projectId,
       taskId,

@@ -1,19 +1,36 @@
 <template>
   <v-card elevation="1" class="xmatrix-card">
-    <v-card-title class="d-flex align-center justify-space-between ga-2 flex-wrap">
+    <v-card-title
+      class="d-flex align-center justify-space-between ga-2 flex-wrap"
+    >
       <span class="text-subtitle-1">X-Matrix (Hoshin Kanri)</span>
-      <v-btn size="small" variant="tonal" color="primary" :loading="loading" @click="generate">
+      <v-btn
+        size="small"
+        variant="tonal"
+        color="primary"
+        :loading="loading"
+        @click="generate"
+      >
         Gerar matriz
       </v-btn>
     </v-card-title>
 
     <v-card-text>
-      <div v-if="loading" class="text-caption text-medium-emphasis">Gerando matriz...</div>
-      <v-alert v-else-if="error" type="error" variant="tonal" density="compact">{{ error }}</v-alert>
-      <div v-else-if="!data" class="text-caption text-medium-emphasis">Sem dados de matriz para este projeto.</div>
+      <div v-if="loading" class="text-caption text-medium-emphasis">
+        Gerando matriz...
+      </div>
+      <v-alert
+        v-else-if="error"
+        type="error"
+        variant="tonal"
+        density="compact"
+        >{{ error }}</v-alert
+      >
+      <div v-else-if="!data" class="text-caption text-medium-emphasis">
+        Sem dados de matriz para este projeto.
+      </div>
       <template v-else>
-        <div class="meta-line ">
-
+        <div class="meta-line">
           <v-btn
             v-if="isTaskTruncated"
             size="x-small"
@@ -31,21 +48,42 @@
             <thead>
               <tr>
                 <th>Estratégia \ Anual</th>
-                <th v-for="annual in data.annualGoals" :key="annual.id" class="text-center col-fixed">
-                  <span class="header-text" :title="annual.label">{{ annual.label }}</span>
+                <th
+                  v-for="annual in data.annualGoals"
+                  :key="annual.id"
+                  class="text-center col-fixed"
+                >
+                  <span class="header-text" :title="annual.label">{{
+                    annual.label
+                  }}</span>
                 </th>
               </tr>
             </thead>
             <tbody>
               <tr v-for="strategy in data.strategyGoals" :key="strategy.id">
-                <td class="row-header"><span class="header-text" :title="strategy.label">{{ strategy.label }}</span></td>
+                <td class="row-header">
+                  <span class="header-text" :title="strategy.label">{{
+                    strategy.label
+                  }}</span>
+                </td>
                 <td
                   v-for="annual in data.annualGoals"
                   :key="`${strategy.id}-${annual.id}`"
                   class="text-center"
                 >
-                  <span class="strength-pill" :class="strengthClass(getStrategyAnnualStrength(strategy.id, annual.id))">
-                    {{ strengthLabel(getStrategyAnnualStrength(strategy.id, annual.id)) }}
+                  <span
+                    class="strength-pill"
+                    :class="
+                      strengthClass(
+                        getStrategyAnnualStrength(strategy.id, annual.id),
+                      )
+                    "
+                  >
+                    {{
+                      strengthLabel(
+                        getStrategyAnnualStrength(strategy.id, annual.id),
+                      )
+                    }}
                   </span>
                 </td>
               </tr>
@@ -54,26 +92,45 @@
         </div>
 
         <div class="matrix-scroll">
-          <div class="text-caption font-weight-bold">Estratégico × Tático (Iniciativas WBS)</div>
+          <div class="text-caption font-weight-bold">
+            Estratégico × Tático (Iniciativas WBS)
+          </div>
           <v-table density="compact" class="matrix-table">
             <thead>
               <tr>
                 <th>Estratégico \ Tático</th>
-                <th v-for="task in visibleTasks" :key="task.id" class="text-center col-fixed">
-                  <span class="header-text" :title="task.label">{{ task.label }}</span>
+                <th
+                  v-for="task in visibleTasks"
+                  :key="task.id"
+                  class="text-center col-fixed"
+                >
+                  <span class="header-text" :title="task.label">{{
+                    task.label
+                  }}</span>
                 </th>
               </tr>
             </thead>
             <tbody>
               <tr v-for="annual in data.annualGoals" :key="annual.id">
-                <td class="row-header"><span class="header-text" :title="annual.label">{{ annual.label }}</span></td>
+                <td class="row-header">
+                  <span class="header-text" :title="annual.label">{{
+                    annual.label
+                  }}</span>
+                </td>
                 <td
                   v-for="task in visibleTasks"
                   :key="`${annual.id}-${task.id}`"
                   class="text-center"
                 >
-                  <span class="strength-pill" :class="strengthClass(getAnnualTaskStrength(annual.id, task.id))">
-                    {{ strengthLabel(getAnnualTaskStrength(annual.id, task.id)) }}
+                  <span
+                    class="strength-pill"
+                    :class="
+                      strengthClass(getAnnualTaskStrength(annual.id, task.id))
+                    "
+                  >
+                    {{
+                      strengthLabel(getAnnualTaskStrength(annual.id, task.id))
+                    }}
                   </span>
                 </td>
               </tr>
@@ -86,155 +143,163 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
-import { useApi } from '~/composables/api'
+import { computed, onMounted, ref } from "vue";
+import { useVisualizationApi } from "~/composables/api";
 
-type Strength = 'strong' | 'medium' | 'weak' | 'none'
+type Strength = "strong" | "medium" | "weak" | "none";
 
 interface AxisItem {
-  id: string
-  label: string
+  id: string;
+  label: string;
 }
 
 interface Cell {
-  fromId: string
-  toId: string
-  strength: Strength
-  score: number
-  rationale: string
+  fromId: string;
+  toId: string;
+  strength: Strength;
+  score: number;
+  rationale: string;
 }
 
 interface XMatrixData {
-  projectId: string
-  projectName: string
-  strategyGoals: AxisItem[]
-  annualGoals: AxisItem[]
-  tacticalItems?: AxisItem[]
-  tasks: AxisItem[]
-  strategyToAnnual: Cell[]
-  annualToTactical?: Cell[]
-  annualToTasks: Cell[]
+  projectId: string;
+  projectName: string;
+  strategyGoals: AxisItem[];
+  annualGoals: AxisItem[];
+  tacticalItems?: AxisItem[];
+  tasks: AxisItem[];
+  strategyToAnnual: Cell[];
+  annualToTactical?: Cell[];
+  annualToTasks: Cell[];
   diagnostics: {
-    generatedAt: string
-    strategyCount: number
-    annualCount: number
-    tacticalCount?: number
-    taskCount: number
-    warnings: string[]
-  }
+    generatedAt: string;
+    strategyCount: number;
+    annualCount: number;
+    tacticalCount?: number;
+    taskCount: number;
+    warnings: string[];
+  };
 }
 
 const props = defineProps<{
-  projectId: string
-}>()
+  projectId: string;
+}>();
 
-const loading = ref(false)
-const error = ref<string | null>(null)
-const data = ref<XMatrixData | null>(null)
-const showAllTasks = ref(false)
+const { createXMatrix, fetchXMatrix } = useVisualizationApi();
+
+const loading = ref(false);
+const error = ref<string | null>(null);
+const data = ref<XMatrixData | null>(null);
+const showAllTasks = ref(false);
 
 const tacticalItems = computed(() => {
-  if (!data.value) return [] as AxisItem[]
-  return data.value.tacticalItems?.length ? data.value.tacticalItems : data.value.tasks
-})
+  if (!data.value) return [] as AxisItem[];
+  return data.value.tacticalItems?.length
+    ? data.value.tacticalItems
+    : data.value.tasks;
+});
 
 const annualToTacticalCells = computed(() => {
-  if (!data.value) return [] as Cell[]
-  return data.value.annualToTactical?.length ? data.value.annualToTactical : data.value.annualToTasks
-})
+  if (!data.value) return [] as Cell[];
+  return data.value.annualToTactical?.length
+    ? data.value.annualToTactical
+    : data.value.annualToTasks;
+});
 
-const MAX_VISIBLE_TASKS = 120
+const MAX_VISIBLE_TASKS = 120;
 
 const isTaskTruncated = computed(() => {
-  if (!data.value) return false
-  return tacticalItems.value.length > MAX_VISIBLE_TASKS && !showAllTasks.value
-})
+  if (!data.value) return false;
+  return tacticalItems.value.length > MAX_VISIBLE_TASKS && !showAllTasks.value;
+});
 
 const visibleTasks = computed(() => {
-  if (showAllTasks.value) return tacticalItems.value
-  return tacticalItems.value.slice(0, MAX_VISIBLE_TASKS)
-})
+  if (showAllTasks.value) return tacticalItems.value;
+  return tacticalItems.value.slice(0, MAX_VISIBLE_TASKS);
+});
 
 const strategyAnnualLookup = computed(() => {
-  const map = new Map<string, Strength>()
-  const cells = data.value?.strategyToAnnual ?? []
+  const map = new Map<string, Strength>();
+  const cells = data.value?.strategyToAnnual ?? [];
   for (const cell of cells) {
-    map.set(`${cell.fromId}::${cell.toId}`, cell.strength)
+    map.set(`${cell.fromId}::${cell.toId}`, cell.strength);
   }
-  return map
-})
+  return map;
+});
 
 const annualTaskLookup = computed(() => {
-  const map = new Map<string, Strength>()
-  const cells = annualToTacticalCells.value
+  const map = new Map<string, Strength>();
+  const cells = annualToTacticalCells.value;
   for (const cell of cells) {
-    map.set(`${cell.fromId}::${cell.toId}`, cell.strength)
+    map.set(`${cell.fromId}::${cell.toId}`, cell.strength);
   }
-  return map
-})
+  return map;
+});
 
 const getStrategyAnnualStrength = (fromId: string, toId: string): Strength => {
-  return strategyAnnualLookup.value.get(`${fromId}::${toId}`) || 'none'
-}
+  return strategyAnnualLookup.value.get(`${fromId}::${toId}`) || "none";
+};
 
 const getAnnualTaskStrength = (fromId: string, toId: string): Strength => {
-  return annualTaskLookup.value.get(`${fromId}::${toId}`) || 'none'
-}
+  return annualTaskLookup.value.get(`${fromId}::${toId}`) || "none";
+};
 
 const strengthLabel = (value: Strength) => {
-  if (value === 'strong') return 'Forte'
-  if (value === 'medium') return 'Media'
-  if (value === 'weak') return 'Fraca'
-  return 'Nenhuma'
-}
+  if (value === "strong") return "Forte";
+  if (value === "medium") return "Media";
+  if (value === "weak") return "Fraca";
+  return "Nenhuma";
+};
 
 const strengthClass = (value: Strength) => {
-  if (value === 'strong') return 'is-strong'
-  if (value === 'medium') return 'is-medium'
-  if (value === 'weak') return 'is-weak'
-  return 'is-none'
-}
+  if (value === "strong") return "is-strong";
+  if (value === "medium") return "is-medium";
+  if (value === "weak") return "is-weak";
+  return "is-none";
+};
 
 const generate = async () => {
-  if (!props.projectId) return
-  loading.value = true
-  error.value = null
+  if (!props.projectId) return;
+  loading.value = true;
+  error.value = null;
 
   try {
-    const { post } = useApi(`/projects/${props.projectId}/create-x-matrix`)
-    const result = await post({ includeCompleted: false, wbsLevels: [1, 2], maxTacticalItems: 80 })
-    if (result.error) throw result.error
-    data.value = result.data as XMatrixData
-    showAllTasks.value = false
+    const result = await createXMatrix(props.projectId, {
+      includeCompleted: false,
+      wbsLevels: [1, 2],
+      maxTacticalItems: 80,
+    });
+    if (result.error) throw result.error;
+    data.value = result.data as XMatrixData;
+    showAllTasks.value = false;
   } catch (err: any) {
-    error.value = err?.message || 'Falha ao gerar X-Matrix.'
+    error.value = err?.message || "Falha ao gerar X-Matrix.";
   } finally {
-    loading.value = false
+    loading.value = false;
   }
-}
+};
 
 const loadSaved = async () => {
-  if (!props.projectId) return
-  loading.value = true
-  error.value = null
+  if (!props.projectId) return;
+  loading.value = true;
+  error.value = null;
 
   try {
-    const { get } = useApi(`/projects/${props.projectId}/x-matrix`)
-    const result = await get()
-    if (result.error) throw result.error
+    const result = await fetchXMatrix(props.projectId);
+    if (result.error) throw result.error;
 
     if (result.data) {
-      data.value = result.data as XMatrixData
-      showAllTasks.value = false
+      data.value = result.data as XMatrixData;
+      showAllTasks.value = false;
     }
   } catch (err: any) {
-    error.value = err?.message || 'Falha ao carregar X-Matrix salva.'
+    error.value = err?.message || "Falha ao carregar X-Matrix salva.";
   } finally {
-    loading.value = false
+    loading.value = false;
   }
-}
+};
 
-onMounted(loadSaved)
+onMounted(loadSaved);
 </script>
 
 <style scoped>

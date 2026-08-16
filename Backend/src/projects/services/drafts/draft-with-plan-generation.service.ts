@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { CacheService } from '../wbs';
+import { CacheService } from '../wbs/shared/cache.service';
 import {
   WBSLeafWithPlanGenerationContext,
   MicroTaskDraft,

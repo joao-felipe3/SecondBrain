@@ -1,0 +1,42 @@
+@startuml c4-deployment
+' C4 Deployment Diagram: SecondBrain Environment Architecture
+
+left to right direction
+
+skinparam backgroundColor #FFFFFF
+skinparam nodeBorderColor #333333
+skinparam nodeFontColor #111111
+
+node "User Device (Desktop / Mobile)" {
+    node "Web Browser (Chrome / Firefox / Safari)" {
+        artifact "Nuxt 3 SPA / Hydrated App\n(HTML5, Web Audio API, Canvas 2D)" as browserApp
+    }
+}
+
+node "Production Application Server (Docker / Host)" {
+    node "Node.js Environment (v18+)" {
+        artifact "Nuxt 3 Nitro Server\n(SSR / Static Proxy)" as nitroServer
+        artifact "NestJS Application Server\n(Port 3000 / REST API)" as nestServer
+    }
+    
+    node "Redis Container (Docker Compose)" {
+        database "Redis 7.0\n(Buffer / Queue / Prefetch Cache)" as redis
+    }
+}
+
+node "Database Tier (MongoDB Cloud / Local)" {
+    database "MongoDB Database\n(Projects, Tasks, Snapshots)" as mongo
+}
+
+node "Google Cloud Platform (External SaaS)" {
+    artifact "Google Gemini AI API\n(Gemini 2.5 Pro/Flash, Embeddings)" as geminiCloud
+}
+
+' Connections
+browserApp --> nitroServer : HTTPS / Port 80/443
+nitroServer --> nestServer : Internal Proxy / Port 3000
+nestServer --> mongo : Mongoose Driver / Mongo Wire Protocol
+nestServer --> redis : ioredis / Port 6379
+nestServer --> geminiCloud : HTTPS REST / SDK (@google/generative-ai)
+
+@enduml

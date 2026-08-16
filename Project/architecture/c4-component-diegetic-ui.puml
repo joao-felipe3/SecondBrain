@@ -1,0 +1,61 @@
+@startuml c4-component-diegetic-ui
+' C4 Component Diagram: Diegetic UI 3-Layer Architecture (Nuxt 3)
+
+top to bottom direction
+
+skinparam backgroundColor #FFFFFF
+skinparam rectangleBorderColor #333333
+skinparam rectangleFontColor #111111
+
+skinparam rectangle {
+    RoundCorner 8
+}
+
+package "Nuxt 3 Frontend Client" {
+    
+    package "Layer 1: Viewport & Environment (Background)" {
+        component "GuildEnvironment.vue\n(Panoramic Stage)" as env
+        component "GuildVfxLayer.vue\n(Torch Flames & Fog)" as vfx
+        component "GuildParticlesCanvas.vue\n(Fireplace Sparks & Dust)" as particles
+    }
+
+    package "Layer 2: Interactive Diegetic World (Hotspots)" {
+        component "GuildArchPortal.vue\n(Tasks Arch Portal)" as arch
+        component "GuildLibraryPortal.vue\n(Library Door 9-frame Sprite)" as door
+        component "GuildDiegeticHotspots.vue\n(Mezzanine & Desk Hotspots)" as hotspots
+        component "GuildNpcSpeechBubble.vue\n(Interactive Guild NPCs)" as npcs
+    }
+
+    package "Layer 3: Screen-Space HUD & Modals (Anchored)" {
+        component "GuildTopBanner.vue\n(Level, XP, Streak, Mute)" as topHud
+        component "GuildMobileJournal.vue\n(Mobile Bottom Journal <960px)" as mobileHud
+        component "GuildReceptionDesk.vue\n(Daily Tasks Book Modal)" as deskModal
+        component "BookModal.vue\n(Double-Page Grimoire Modal)" as bookModal
+    }
+
+    package "State & Audio Composables" {
+        component "uiGuildStore (Pinia)\n(Active Room, Camera, Camera Zoom)" as uiStore
+        component "useGuildAudio (Composable)\n(Web Audio API SFX & Pitch Shift)" as audioComp
+        component "useResponsive (Composable)\n(Breakpoints & Orientation)" as respComp
+    }
+}
+
+' Relationships
+env --> vfx : Render VFX
+env --> particles : Render Particles
+
+arch --> uiStore : setRoom('tasks') + cameraZoom()
+arch --> audioComp : playFootsteps()
+
+door --> uiStore : setRoom('projects') + openDoor()
+door --> audioComp : playDoorOpenSound() / playDoorCloseSound()
+
+topHud --> audioComp : toggleMute()
+topHud --> uiStore : persistAudioSettings()
+
+deskModal --> uiStore : toggleGrimoire()
+bookModal --> uiStore : selectProject()
+
+respComp --> mobileHud : triggerMobileView(<960px)
+
+@enduml

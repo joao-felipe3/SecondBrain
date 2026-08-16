@@ -2,7 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { getModelToken } from '@nestjs/mongoose';
 import { RTMTaskGeneratorService } from '../../../../../src/tasks/services/traceability/rtm-task-generator.service';
 import { GeminiService } from '../../../../../src/ai/services/core/gemini.service';
-import { TasksService } from '../../../../../src/tasks/tasks.service';
+import { TasksWriteService } from '../../../../../src/tasks/services/workflow/write.service';
 import { RTMValidationService } from '../../../../../src/tasks/services/traceability/rtm-validation.service';
 import { Requirement as RequirementSchema } from '../../../../../src/tasks/schemas/requirement.schema';
 
@@ -10,7 +10,7 @@ describe('RTMTaskGeneratorService', () => {
   let service: RTMTaskGeneratorService;
   let requirementModelMock: any;
   let geminiServiceMock: any;
-  let tasksServiceMock: any;
+  let tasksWriteServiceMock: any;
   let validationServiceMock: any;
 
   const validObjectId = '507f1f77bcf86cd799439011';
@@ -38,9 +38,8 @@ describe('RTMTaskGeneratorService', () => {
         ),
     };
 
-    tasksServiceMock = {
-      create: jest.fn().mockResolvedValue({ _id: 't-1' }),
-      createMany: jest.fn().mockResolvedValue([{ _id: 't-1' }]),
+    tasksWriteServiceMock = {
+      createTaskCore: jest.fn().mockResolvedValue({ _id: 't-1' }),
     };
 
     validationServiceMock = {
@@ -55,7 +54,7 @@ describe('RTMTaskGeneratorService', () => {
         RTMTaskGeneratorService,
         { provide: getModelToken(RequirementSchema.name), useValue: requirementModelMock },
         { provide: GeminiService, useValue: geminiServiceMock },
-        { provide: TasksService, useValue: tasksServiceMock },
+        { provide: TasksWriteService, useValue: tasksWriteServiceMock },
         { provide: RTMValidationService, useValue: validationServiceMock },
       ],
     }).compile();
@@ -73,7 +72,7 @@ describe('RTMTaskGeneratorService', () => {
 
       expect(result).toBeDefined();
       expect(result.success).toBe(true);
-      expect(tasksServiceMock.create).toHaveBeenCalled();
+      expect(tasksWriteServiceMock.createTaskCore).toHaveBeenCalled();
     });
   });
 });

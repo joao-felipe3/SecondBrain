@@ -3,7 +3,7 @@ import { ChecklistAiService } from '@src/ai/services/tasks/checklist-ai.service'
 describe('ChecklistAiService', () => {
   let service: ChecklistAiService;
   let mockConfigService: any;
-  let mockGeminiService: any;
+  let mockGeminiExecutor: any;
 
   beforeEach(() => {
     mockConfigService = {
@@ -12,16 +12,16 @@ describe('ChecklistAiService', () => {
         return undefined;
       }),
     };
-    mockGeminiService = {
+    mockGeminiExecutor = {
       generateContent: jest.fn(),
     };
 
-    service = new ChecklistAiService(mockConfigService, mockGeminiService);
+    service = new ChecklistAiService(mockConfigService, mockGeminiExecutor);
   });
 
   describe('generateChecklistForTask & generateChecklistWithHistory', () => {
     it('should generate checklist items using Gemini and cache them in memory', async () => {
-      mockGeminiService.generateContent.mockResolvedValueOnce(
+      mockGeminiExecutor.generateContent.mockResolvedValueOnce(
         JSON.stringify(['Passo 1', 'Passo 2', 'Passo 3']),
       );
 
@@ -38,11 +38,11 @@ describe('ChecklistAiService', () => {
         microTaskType: 'code',
       });
       expect(cachedItems).toEqual(['Passo 1', 'Passo 2', 'Passo 3']);
-      expect(mockGeminiService.generateContent).toHaveBeenCalledTimes(1);
+      expect(mockGeminiExecutor.generateContent).toHaveBeenCalledTimes(1);
     });
 
     it('should parse object array format from Gemini response', async () => {
-      mockGeminiService.generateContent.mockResolvedValueOnce(
+      mockGeminiExecutor.generateContent.mockResolvedValueOnce(
         JSON.stringify([{ item: 'Passo A' }, { item: 'Passo B' }, { item: 'Passo C' }]),
       );
 
@@ -55,7 +55,7 @@ describe('ChecklistAiService', () => {
     });
 
     it('should parse markdown code block response from Gemini', async () => {
-      mockGeminiService.generateContent.mockResolvedValueOnce(
+      mockGeminiExecutor.generateContent.mockResolvedValueOnce(
         '```json\n["Step 1", "Step 2", "Step 3"]\n```',
       );
 
@@ -68,7 +68,7 @@ describe('ChecklistAiService', () => {
     });
 
     it('should return fallback checklist when AI throws error', async () => {
-      mockGeminiService.generateContent.mockRejectedValueOnce(new Error('AI Failure'));
+      mockGeminiExecutor.generateContent.mockRejectedValueOnce(new Error('AI Failure'));
 
       const items = await service.generateChecklistForTask({
         taskName: 'Tarefa Habito',
@@ -80,7 +80,7 @@ describe('ChecklistAiService', () => {
     });
 
     it('should return fallback for complex task type on error', async () => {
-      mockGeminiService.generateContent.mockRejectedValueOnce(new Error('AI Failure'));
+      mockGeminiExecutor.generateContent.mockRejectedValueOnce(new Error('AI Failure'));
 
       const items = await service.generateChecklistForTask({
         taskName: 'Tarefa Complexa',
@@ -92,7 +92,7 @@ describe('ChecklistAiService', () => {
     });
 
     it('should handle generateChecklistWithHistory with valid history', async () => {
-      mockGeminiService.generateContent.mockResolvedValueOnce(
+      mockGeminiExecutor.generateContent.mockResolvedValueOnce(
         JSON.stringify(['Passo H1', 'Passo H2', 'Passo H3']),
       );
 
@@ -106,7 +106,7 @@ describe('ChecklistAiService', () => {
     });
 
     it('should handle generateChecklistWithHistory fallback when history is missing', async () => {
-      mockGeminiService.generateContent.mockResolvedValueOnce(
+      mockGeminiExecutor.generateContent.mockResolvedValueOnce(
         JSON.stringify(['Passo H1', 'Passo H2', 'Passo H3']),
       );
 

@@ -3,7 +3,7 @@ import { getModelToken } from '@nestjs/mongoose';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { Types } from 'mongoose';
 import { TasksRecurringService } from '../../../../../src/tasks/services/workflow/recurring.service';
-import { ProjectsService } from '../../../../../src/projects/projects.service';
+import { ProjectStatsService } from '../../../../../src/projects/services/execution/project-stats.service';
 import { TasksWriteService } from '../../../../../src/tasks/services/workflow/write.service';
 import { CreateMicroTaskDto } from '../../../../../src/tasks/dto/task/create-micro-task.dto';
 
@@ -15,7 +15,7 @@ describe('TasksRecurringService', () => {
     findByIdAndDelete: jest.Mock;
     findByIdAndUpdate: jest.Mock;
   };
-  let mockProjectsService: {
+  let mockProjectStatsService: {
     recalculateProjectStats: jest.Mock;
   };
   let mockTasksWriteService: {
@@ -34,7 +34,7 @@ describe('TasksRecurringService', () => {
       findByIdAndUpdate: jest.fn(),
     };
 
-    mockProjectsService = {
+    mockProjectStatsService = {
       recalculateProjectStats: jest.fn().mockResolvedValue(undefined),
     };
 
@@ -47,7 +47,7 @@ describe('TasksRecurringService', () => {
       providers: [
         TasksRecurringService,
         { provide: getModelToken('Task'), useValue: mockTaskModel },
-        { provide: ProjectsService, useValue: mockProjectsService },
+        { provide: ProjectStatsService, useValue: mockProjectStatsService },
         { provide: TasksWriteService, useValue: mockTasksWriteService },
       ],
     }).compile();
@@ -118,7 +118,7 @@ describe('TasksRecurringService', () => {
 
       const result = await service.deleteRecurringSeries(validParentId);
       expect(result.deletedCount).toBe(2);
-      expect(mockProjectsService.recalculateProjectStats).toHaveBeenCalledWith(validProjectId);
+      expect(mockProjectStatsService.recalculateProjectStats).toHaveBeenCalledWith(validProjectId);
     });
   });
 

@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, Inject, forwardRef, BadRequestException } from '@nestjs/common';
+import { Injectable, NotFoundException, Inject, BadRequestException } from '@nestjs/common';
 
 // DTOs
 import { CreateTaskDto, ChecklistItemDto, RecurringRuleDto } from './dto/task/create-task.dto';
@@ -31,7 +31,6 @@ import { TaskRepository } from './interfaces/task-repository.interface';
 import { Task } from './entities/task.entity';
 
 // Services
-import { ProjectsService } from '../projects/projects.service';
 import { GeminiService } from '../ai/services/core/gemini.service';
 import {
   CompletionFeedbackPayload,
@@ -42,15 +41,14 @@ import { TasksRecurringService, TasksCompletionService, TasksWriteService } from
 import { TasksAiSuggestionsService, ChecklistOperationsService } from './services/intelligence';
 import { TasksHabitsService } from './services/monitoring';
 import { TasksPertService } from './services/analysis';
+import { ProjectStatsService } from '../projects/services/execution/project-stats.service';
 import { TasksHierarchyService, TaskDescendantNode, TaskLineageResult } from './services/dependencies';
 
 @Injectable()
 export class TasksService {
   constructor(
     @Inject('TaskRepository') private readonly taskRepository: TaskRepository,
-    @Inject(forwardRef(() => ProjectsService))
-    private readonly projectsService: ProjectsService,
-    @Inject(forwardRef(() => GeminiService))
+    private readonly projectStatsService: ProjectStatsService,
     private readonly geminiService: GeminiService,
     private readonly feedbackService: FeedbackService,
     private readonly tasksPertService: TasksPertService,
@@ -64,7 +62,7 @@ export class TasksService {
   ) {}
 
   public async recalculateProjectStats(projectId: string): Promise<void> {
-    await this.projectsService.recalculateProjectStats(projectId);
+    await this.projectStatsService.recalculateProjectStats(projectId);
   }
 
   // ---------------------------------------- Creation / Write operations ----------------------------------------

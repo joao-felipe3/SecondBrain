@@ -1,5 +1,5 @@
-import { Injectable, Inject, forwardRef } from '@nestjs/common';
-import { GeminiService } from '../core/gemini.service';
+import { Injectable } from '@nestjs/common';
+import { GeminiExecutorService } from '../core/gemini-executor.service';
 import { extractJsonObject } from '../../../projects/services/wbs/utils/json-parser.util';
 import {
   buildTaskSuggestionsPrompt,
@@ -14,15 +14,12 @@ import {
 
 @Injectable()
 export class SuggestionsAiService {
-  constructor(
-    @Inject(forwardRef(() => GeminiService))
-    private readonly geminiService: GeminiService,
-  ) {}
+  constructor(private readonly geminiExecutor: GeminiExecutorService) {}
 
   async generateTaskSuggestions(params: TaskSuggestionsPromptParams): Promise<string> {
     const prompt = buildTaskSuggestionsPrompt(params);
 
-    return this.geminiService.generateContent(prompt, {
+    return this.geminiExecutor.generateContent(prompt, {
       temperature: 0.8,
       topK: 1,
       topP: 1,
@@ -34,7 +31,7 @@ export class SuggestionsAiService {
   async generateCompletionFeedback(params: CompletionFeedbackPromptParams): Promise<string> {
     const prompt = buildCompletionFeedbackPrompt(params);
 
-    const raw = await this.geminiService.generateContent(prompt, {
+    const raw = await this.geminiExecutor.generateContent(prompt, {
       responseMimeType: 'application/json',
       temperature: 0.4,
       topK: 1,
@@ -70,8 +67,8 @@ export class SuggestionsAiService {
     question: string;
     suggestion: string;
   }> {
-    const raw = await this.geminiService.generateContent(prompt, {
-      responseMimeType: this.geminiService.supportsJsonMode() ? 'application/json' : undefined,
+    const raw = await this.geminiExecutor.generateContent(prompt, {
+      responseMimeType: this.geminiExecutor.supportsJsonMode() ? 'application/json' : undefined,
       temperature: 0.3,
       maxOutputTokens: 400,
     });
@@ -94,8 +91,8 @@ export class SuggestionsAiService {
     const prompt = buildGeminiNextStepsPrompt(params);
 
     try {
-      const raw = await this.geminiService.generateContent(prompt, {
-        responseMimeType: this.geminiService.supportsJsonMode() ? 'application/json' : undefined,
+      const raw = await this.geminiExecutor.generateContent(prompt, {
+        responseMimeType: this.geminiExecutor.supportsJsonMode() ? 'application/json' : undefined,
         temperature: 0.4,
         maxOutputTokens: 600,
       });

@@ -23,6 +23,7 @@ interface PrivatePertAiService {
 
 describe('GeminiService', () => {
   let service: GeminiService;
+  let geminiExecutor: GeminiExecutorService;
   let pertAiService: PertAiService;
   let privateHelper: PrivatePertAiService;
 
@@ -53,12 +54,19 @@ describe('GeminiService', () => {
     }).compile();
 
     service = module.get<GeminiService>(GeminiService);
+    geminiExecutor = module.get<GeminiExecutorService>(GeminiExecutorService);
     pertAiService = module.get<PertAiService>(PertAiService);
     privateHelper = pertAiService as unknown as PrivatePertAiService;
   });
 
+  it('deve estar definido', () => {
+    expect(service).toBeDefined();
+  });
+
   it('retorna fallback quando a chamada ao LLM falha', async () => {
-    jest.spyOn(service as any, 'generateContent').mockRejectedValue(new Error('LLM indisponível'));
+    jest
+      .spyOn(geminiExecutor as any, 'generateContent')
+      .mockRejectedValue(new Error('LLM indisponível'));
 
     const checklist = await service.generateChecklistForTask({
       taskName: 'Preparar revisão de código',
@@ -71,7 +79,7 @@ describe('GeminiService', () => {
 
   it('usa cache e evita nova chamada ao LLM para a mesma chave', async () => {
     const generateContentSpy = jest
-      .spyOn(service as any, 'generateContent')
+      .spyOn(geminiExecutor as any, 'generateContent')
       .mockResolvedValue(JSON.stringify(['Abrir branch', 'Implementar endpoint', 'Validar resposta']));
 
     const first = await service.generateChecklistForTask({

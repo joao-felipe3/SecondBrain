@@ -1,4 +1,4 @@
-import { Injectable, Inject, forwardRef, Logger } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { GeminiService } from '../../../ai/services/core/gemini.service';
 import {
   SmartObjectiveDto,
@@ -22,10 +22,7 @@ export class PlanningService {
   private readonly logger = new Logger(PlanningService.name);
   private conversationHistory = new Map<string, ConversationContext>();
 
-  constructor(
-    @Inject(forwardRef(() => GeminiService))
-    private readonly geminiService: GeminiService,
-  ) {}
+  constructor(private readonly geminiService: GeminiService) {}
 
   async startCatchball(projectData: CatchballRequestDto): Promise<CatchballResponseDto> {
     const conversationId = this.generateConversationId();

@@ -94,7 +94,7 @@ export function assembleOccurrencePayload(params: {
     status: 'todo',
     statusUpdatedAt: new Date(),
     kanbanOrder: 0,
-  } as RecurringTaskOccurrenceDto;
+  };
 
   return payload;
 }

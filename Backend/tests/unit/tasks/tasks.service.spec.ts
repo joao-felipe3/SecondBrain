@@ -3,7 +3,7 @@ import { TasksService } from '@src/tasks/tasks.service';
 describe('TasksService', () => {
   let service: TasksService;
   let mockTaskRepo: any;
-  let mockProjectsService: any;
+  let mockProjectStatsService: any;
   let mockGeminiService: any;
   let mockFeedbackService: any;
   let mockPertService: any;
@@ -22,7 +22,7 @@ describe('TasksService', () => {
       findById: jest.fn().mockResolvedValue({ id: 't1' }),
     };
 
-    mockProjectsService = {
+    mockProjectStatsService = {
       recalculateProjectStats: jest.fn().mockResolvedValue(undefined),
     };
 
@@ -96,7 +96,7 @@ describe('TasksService', () => {
 
     service = new TasksService(
       mockTaskRepo,
-      mockProjectsService,
+      mockProjectStatsService,
       mockGeminiService,
       mockFeedbackService,
       mockPertService,
@@ -112,25 +112,25 @@ describe('TasksService', () => {
 
   describe('CRUD & delegate calls', () => {
     it('should delegate create calls properly', async () => {
-      await service.create({ name: 'Task' } as any);
+      await service.create({ name: 'Task' });
       expect(mockWriteService.createTaskCore).toHaveBeenCalled();
 
-      await service.create({ name: 'MicroTask', microTaskType: 'code' } as any);
+      await service.create({ name: 'MicroTask', microTaskType: 'code' });
       expect(mockWriteService.createMicroTask).toHaveBeenCalled();
 
-      await service.createMany([{ name: 'Task' }] as any);
+      await service.createMany([{ name: 'Task' }]);
       expect(mockWriteService.createMany).toHaveBeenCalled();
 
-      await service.createRecurringTemplate({ name: 'Rec' } as any);
+      await service.createRecurringTemplate({ name: 'Rec' });
       expect(mockRecurringService.createRecurringTemplate).toHaveBeenCalled();
 
-      await service.createRecurringMicroTask({ name: 'RecMicro' } as any);
+      await service.createRecurringMicroTask({ name: 'RecMicro' });
       expect(mockRecurringService.createRecurringMicroTask).toHaveBeenCalled();
     });
 
     it('should delegate read & project stats calls', async () => {
       await service.recalculateProjectStats('p1');
-      expect(mockProjectsService.recalculateProjectStats).toHaveBeenCalledWith('p1');
+      expect(mockProjectStatsService.recalculateProjectStats).toHaveBeenCalledWith('p1');
 
       const all = await service.findAll();
       expect(all.length).toBe(1);

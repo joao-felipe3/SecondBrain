@@ -1,0 +1,38 @@
+@startuml SequenceDiagramDiegeticUI
+' Sequence Diagram: Diegetic UI Navigation, Depth Stacking & Audio Flow
+
+autonumber
+actor User
+participant "GuildEnvironment.vue\n(Stage)" as Stage
+participant "GuildArchPortal.vue\n(Hotspot)" as Hotspot
+participant "GuildLibraryPortal.vue\n(Spritesheet)" as LibraryDoor
+participant "uiGuildStore (Pinia)" as Store
+participant "useGuildAudio (Web Audio API)" as Audio
+participant "Nuxt Router" as Router
+
+== 1. User Hovers Interactive Hotspot ==
+User -> LibraryDoor : Hover sobre Porta da Biblioteca
+LibraryDoor -> LibraryDoor : Avana Sprite (Frames 0 -> 9)
+LibraryDoor -> Audio : playDoorOpenSound()
+Audio -> Audio : Trigger Oscillator / Buffer (Pitch Shift)
+
+== 2. User Clicks Hotspot / Portal ==
+User -> Hotspot : Click no Arco das Misses
+Hotspot -> Audio : playFootsteps()
+Hotspot -> Store : triggerCameraZoom({ scale: 2.8, x: '11%', y: '50%' })
+Store -> Stage : Apply CSS transform: scale(2.8) translate(...)
+Store -> Store : setRoom('tasks')
+
+== 3. Page Transition & Layout Mount ==
+Store -> Router : navigateTo('/tasks')
+Router -> Stage : Load Tasks Route (/tasks)
+Stage -> Stage : Render Layer 1 (tasks-web.webp background)
+Stage -> Stage : Mount Layer 3 (Anchored HUD + Wooden Kanban)
+
+== 4. Mute Preference Sync ==
+User -> Stage : Toggle Mute Button on Top Banner
+Stage -> Audio : setMuteState(isMuted)
+Audio -> Store : persistAudioSettings({ muted: true })
+Store -> Store : Write to localStorage('guild_audio_mute')
+
+@enduml

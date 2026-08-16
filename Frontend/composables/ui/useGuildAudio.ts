@@ -133,28 +133,85 @@ export function useGuildAudio() {
     whiteNoise.start(now);
   }
 
-  // 4. SOM DE PORTA DE MADEIRA (Door Thud)
-  function playDoorOpenSound() {
-    if (isMuted.value) return;
-    const ctx = getAudioContext();
-    if (!ctx) return;
+  // 4. SOM DIEGÉTICO DE RANGER DE PORTA (Carrega .wav ou .wav com ajuste dinâmico de duração)
+  let activeDoorAudio: HTMLAudioElement | null = null;
+  let activeDoorTimeout: any = null;
 
-    const now = ctx.currentTime;
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
+  function stopDoorSound() {
+    if (activeDoorAudio) {
+      try {
+        activeDoorAudio.pause();
+        activeDoorAudio.currentTime = 0;
+      } catch (e) {}
+      activeDoorAudio = null;
+    }
+    if (activeDoorTimeout) {
+      clearTimeout(activeDoorTimeout);
+      activeDoorTimeout = null;
+    }
+  }
 
-    osc.type = "sine";
-    osc.frequency.setValueAtTime(150, now);
-    osc.frequency.exponentialRampToValueAtTime(50, now + 0.25);
+  function playDoorSound(
+    baseName: string,
+    targetDurationMs: number = 600,
+    volume: number = 0.6,
+  ) {
+    if (isMuted.value || typeof window === "undefined") return;
 
-    gain.gain.setValueAtTime(0.25, now);
-    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
+    stopDoorSound();
 
-    osc.connect(gain);
-    gain.connect(ctx.destination);
+    // Tenta carregar .wav primeiro, depois .wav
+    const formats = [`/vfx/${baseName}.wav`, `/vfx/${baseName}.wav`];
+    let audio: HTMLAudioElement | null = null;
 
-    osc.start(now);
-    osc.stop(now + 0.25);
+    const targetSec = targetDurationMs / 1000;
+
+    for (const src of formats) {
+      try {
+        const a = new Audio(src);
+        audio = a;
+        break;
+      } catch (e) {}
+    }
+
+    if (!audio) return;
+
+    audio.volume = volume;
+
+    const applyPlaybackRate = () => {
+      if (
+        audio &&
+        audio.duration &&
+        isFinite(audio.duration) &&
+        audio.duration > 0
+      ) {
+        // Adapta a velocidade para coincidir exatamente com a duração da animação (0.5x a 3.0x)
+        const rate = audio.duration / targetSec;
+        audio.playbackRate = Math.max(0.4, Math.min(3.5, rate));
+      }
+    };
+
+    audio.addEventListener("loadedmetadata", applyPlaybackRate);
+    if (audio.readyState >= 1) {
+      applyPlaybackRate();
+    }
+
+    activeDoorAudio = audio;
+
+    audio.play().catch(() => {});
+
+    // Interrompe o som exatamente quando a animação termina
+    activeDoorTimeout = setTimeout(() => {
+      stopDoorSound();
+    }, targetDurationMs);
+  }
+
+  function playDoorOpenSound(targetDurationMs: number = 600) {
+    playDoorSound("door-open", targetDurationMs, 0.6);
+  }
+
+  function playDoorCloseSound(targetDurationMs: number = 400) {
+    playDoorSound("door-close", targetDurationMs, 0.5);
   }
 
   // 5. SOM DE PASSOS NA PEDRA (Footsteps on Stone)
@@ -210,6 +267,62 @@ export function useGuildAudio() {
     });
   }
 
+  // 6. SOM DIEGÉTICO DE ZUMBIDO MÁGICO DO PORTAL (Magic Portal Hover SFX)
+  function playPortalHumSound() {
+    if (isMuted.value) return;
+    const ctx = getAudioContext();
+    if (!ctx) return;
+
+    const now = ctx.currentTime;
+
+    // Ressonância harmônica mística (Warm portal hum)
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+
+    osc.type = "sine";
+    osc.frequency.setValueAtTime(140, now);
+    osc.frequency.exponentialRampToValueAtTime(220, now + 0.25);
+    osc.frequency.exponentialRampToValueAtTime(160, now + 0.5);
+
+    gain.gain.setValueAtTime(0, now);
+    gain.gain.linearRampToValueAtTime(0.12, now + 0.08);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.55);
+
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+
+    osc.start(now);
+    osc.stop(now + 0.55);
+
+    // Shimmer etéreo de névoa (Bruma mágica)
+    const bufferSize = ctx.sampleRate * 0.4;
+    const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+    const output = buffer.getChannelData(0);
+    for (let i = 0; i < bufferSize; i++) {
+      output[i] = Math.random() * 2 - 1;
+    }
+
+    const noise = ctx.createBufferSource();
+    noise.buffer = buffer;
+
+    const filter = ctx.createBiquadFilter();
+    filter.type = "bandpass";
+    filter.frequency.setValueAtTime(800, now);
+    filter.frequency.exponentialRampToValueAtTime(1600, now + 0.2);
+    filter.Q.setValueAtTime(3, now);
+
+    const noiseGain = ctx.createGain();
+    noiseGain.gain.setValueAtTime(0, now);
+    noiseGain.gain.linearRampToValueAtTime(0.06, now + 0.06);
+    noiseGain.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
+
+    noise.connect(filter);
+    filter.connect(noiseGain);
+    noiseGain.connect(ctx.destination);
+
+    noise.start(now);
+  }
+
   // DISPATCHER GERAL DE EFEITOS SONOROS (playSFX)
   function playSFX(sfxName: string) {
     switch (sfxName) {
@@ -227,6 +340,9 @@ export function useGuildAudio() {
         break;
       case "door":
         playDoorOpenSound();
+        break;
+      case "portal-hum":
+        playPortalHumSound();
         break;
       default:
         playFootstepsStoneSound();
@@ -271,6 +387,8 @@ export function useGuildAudio() {
     playDaggerSound,
     playPaperFlipSound,
     playDoorOpenSound,
+    playDoorCloseSound,
+    playPortalHumSound,
     playFootstepsStoneSound,
     toggleAmbientSound,
     startAmbientSound,

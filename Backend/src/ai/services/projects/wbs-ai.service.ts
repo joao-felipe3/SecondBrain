@@ -1,5 +1,5 @@
-import { Injectable, Inject, forwardRef } from '@nestjs/common';
-import { GeminiService } from '../core/gemini.service';
+import { Injectable } from '@nestjs/common';
+import { GeminiExecutorService } from '../core/gemini-executor.service';
 import {
   buildWbsGenerationPrompt,
   buildWbsDecompositionPrompt,
@@ -19,16 +19,13 @@ import {
 
 @Injectable()
 export class WbsAiService {
-  constructor(
-    @Inject(forwardRef(() => GeminiService))
-    private readonly geminiService: GeminiService,
-  ) {}
+  constructor(private readonly geminiExecutor: GeminiExecutorService) {}
 
   // Generate WBS nodes from a SMART objective
   async generateWbs(smartObjective: GenerateWbsInput): Promise<Record<string, unknown>[]> {
     const prompt = buildWbsGenerationPrompt(smartObjective);
     try {
-      const response = await this.geminiService.generateContent(prompt);
+      const response = await this.geminiExecutor.generateContent(prompt);
       let cleanResponse = response.trim();
 
       // Remove markdown JSON code blocks
@@ -58,7 +55,7 @@ export class WbsAiService {
   }): Promise<string> {
     const prompt = buildWbsDecompositionPrompt(node);
     try {
-      return await this.geminiService.generateContent(prompt);
+      return await this.geminiExecutor.generateContent(prompt);
     } catch (error) {
       console.error('[WbsAiService] Erro ao gerar sugestão de decomposição:', error);
       throw new Error('Não foi possível gerar sugestão de decomposição');
@@ -71,7 +68,7 @@ export class WbsAiService {
   ): Promise<AuditLeafDiscrepancyAiResult> {
     const prompt = buildAuditPrompt(params);
     const attemptCall = async (maxOutputTokens: number, temperature: number): Promise<string> => {
-      return this.geminiService.generateContent(prompt, {
+      return this.geminiExecutor.generateContent(prompt, {
         model: params.modelOverride,
         responseMimeType: 'application/json',
         maxOutputTokens,
@@ -136,7 +133,7 @@ export class WbsAiService {
     };
 
     const attempt = async (opts: { maxOutputTokens: number; temperature: number }) => {
-      const response = await this.geminiService.generateContent(prompt, {
+      const response = await this.geminiExecutor.generateContent(prompt, {
         responseMimeType: 'application/json',
         maxOutputTokens: opts.maxOutputTokens,
         temperature: opts.temperature,

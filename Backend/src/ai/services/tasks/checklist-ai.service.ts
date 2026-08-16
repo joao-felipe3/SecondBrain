@@ -1,7 +1,7 @@
-import { Injectable, Inject, forwardRef } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import Redis from 'ioredis';
-import { GeminiService } from '../core/gemini.service';
+import { GeminiExecutorService } from '../core/gemini-executor.service';
 import { buildChecklistGenerationPrompt, buildChecklistWithHistoryPrompt } from '../../prompts';
 import { ChecklistPromptParams, ChecklistWithHistoryPromptParams } from '../../interfaces';
 
@@ -13,8 +13,7 @@ export class ChecklistAiService {
 
   constructor(
     private readonly configService: ConfigService,
-    @Inject(forwardRef(() => GeminiService))
-    private readonly geminiService: GeminiService,
+    private readonly geminiExecutor: GeminiExecutorService,
   ) {
     this.initializeChecklistRedis();
   }
@@ -177,7 +176,7 @@ export class ChecklistAiService {
     const prompt = buildChecklistGenerationPrompt(params);
 
     try {
-      const response = await this.geminiService.generateContent(prompt, {
+      const response = await this.geminiExecutor.generateContent(prompt, {
         responseMimeType: 'application/json',
         maxOutputTokens: 500,
         temperature: 0.3,
@@ -207,7 +206,7 @@ export class ChecklistAiService {
     const prompt = buildChecklistWithHistoryPrompt(params);
 
     try {
-      const response = await this.geminiService.generateContent(prompt, {
+      const response = await this.geminiExecutor.generateContent(prompt, {
         responseMimeType: 'application/json',
         maxOutputTokens: 500,
         temperature: 0.3,
