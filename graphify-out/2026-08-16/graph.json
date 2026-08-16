@@ -2978,7 +2978,7 @@
       "_origin": "ast",
       "id": "backend_src_ai_prompts_tasks_risk_prompts",
       "community": 36,
-      "community_name": "wave-and-risk.controller.ts",
+      "community_name": "projects.module.ts",
       "norm_label": "risk.prompts.ts"
     },
     {
@@ -2989,7 +2989,7 @@
       "_origin": "ast",
       "id": "backend_src_ai_prompts_tasks_risk_prompts_buildriskassessmentprompt",
       "community": 36,
-      "community_name": "wave-and-risk.controller.ts",
+      "community_name": "projects.module.ts",
       "norm_label": "buildriskassessmentprompt()"
     },
     {
@@ -5101,7 +5101,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_controllers_projects_visualization_controller",
       "community": 95,
-      "community_name": "pert-diagram.service.ts",
+      "community_name": "projects-x-matrix.service.ts",
       "norm_label": "projects-visualization.controller.ts"
     },
     {
@@ -5112,7 +5112,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_controllers_projects_visualization_controller_projectsvisualizationcontroller",
       "community": 95,
-      "community_name": "pert-diagram.service.ts",
+      "community_name": "projects-x-matrix.service.ts",
       "norm_label": "projectsvisualizationcontroller"
     },
     {
@@ -5123,7 +5123,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_controllers_projects_visualization_controller_ts_apitags",
       "community": 95,
-      "community_name": "pert-diagram.service.ts",
+      "community_name": "projects-x-matrix.service.ts",
       "norm_label": "apitags"
     },
     {
@@ -5134,7 +5134,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_controllers_projects_visualization_controller_ts_controller",
       "community": 95,
-      "community_name": "pert-diagram.service.ts",
+      "community_name": "projects-x-matrix.service.ts",
       "norm_label": "controller"
     },
     {
@@ -5145,7 +5145,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_controllers_projects_visualization_controller_ts_get",
       "community": 95,
-      "community_name": "pert-diagram.service.ts",
+      "community_name": "projects-x-matrix.service.ts",
       "norm_label": "get"
     },
     {
@@ -5156,7 +5156,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_controllers_projects_visualization_controller_ts_apioperation",
       "community": 95,
-      "community_name": "pert-diagram.service.ts",
+      "community_name": "projects-x-matrix.service.ts",
       "norm_label": "apioperation"
     },
     {
@@ -5167,7 +5167,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_controllers_projects_visualization_controller_ts_apiresponse",
       "community": 95,
-      "community_name": "pert-diagram.service.ts",
+      "community_name": "projects-x-matrix.service.ts",
       "norm_label": "apiresponse"
     },
     {
@@ -5178,7 +5178,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_controllers_projects_visualization_controller_ts_param",
       "community": 95,
-      "community_name": "pert-diagram.service.ts",
+      "community_name": "projects-x-matrix.service.ts",
       "norm_label": "param"
     },
     {
@@ -5189,7 +5189,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_controllers_projects_visualization_controller_ts_query",
       "community": 95,
-      "community_name": "pert-diagram.service.ts",
+      "community_name": "projects-x-matrix.service.ts",
       "norm_label": "query"
     },
     {
@@ -5200,7 +5200,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_controllers_projects_visualization_controller_ts_post",
       "community": 95,
-      "community_name": "pert-diagram.service.ts",
+      "community_name": "projects-x-matrix.service.ts",
       "norm_label": "post"
     },
     {
@@ -5211,7 +5211,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_controllers_projects_visualization_controller_ts_body",
       "community": 95,
-      "community_name": "pert-diagram.service.ts",
+      "community_name": "projects-x-matrix.service.ts",
       "norm_label": "body"
     },
     {
@@ -5222,7 +5222,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_controllers_projects_visualization_controller_projectsvisualizationcontroller_constructor",
       "community": 95,
-      "community_name": "pert-diagram.service.ts",
+      "community_name": "projects-x-matrix.service.ts",
       "norm_label": ".constructor()"
     },
     {
@@ -5233,7 +5233,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_controllers_projects_visualization_controller_projectsvisualizationcontroller_getganttdata",
       "community": 95,
-      "community_name": "pert-diagram.service.ts",
+      "community_name": "projects-x-matrix.service.ts",
       "norm_label": ".getganttdata()"
     },
     {
@@ -5244,7 +5244,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_controllers_projects_visualization_controller_projectsvisualizationcontroller_getpertdiagramdata",
       "community": 95,
-      "community_name": "pert-diagram.service.ts",
+      "community_name": "projects-x-matrix.service.ts",
       "norm_label": ".getpertdiagramdata()"
     },
     {
@@ -5255,7 +5255,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_controllers_projects_visualization_controller_projectsvisualizationcontroller_createxmatrix",
       "community": 95,
-      "community_name": "pert-diagram.service.ts",
+      "community_name": "projects-x-matrix.service.ts",
       "norm_label": ".createxmatrix()"
     },
     {
@@ -5266,7 +5266,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_controllers_projects_visualization_controller_projectsvisualizationcontroller_getsavedxmatrix",
       "community": 95,
-      "community_name": "pert-diagram.service.ts",
+      "community_name": "projects-x-matrix.service.ts",
       "norm_label": ".getsavedxmatrix()"
     },
     {
@@ -5277,7 +5277,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_controllers_projects_wbs_controller",
       "community": 62,
-      "community_name": "projects-wbs.controller.ts",
+      "community_name": "wbs.dto.ts",
       "norm_label": "projects-wbs.controller.ts"
     },
     {
@@ -5552,7 +5552,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_controllers_wave_and_risk_controller",
       "community": 36,
-      "community_name": "wave-and-risk.controller.ts",
+      "community_name": "projects.module.ts",
       "norm_label": "wave-and-risk.controller.ts"
     },
     {
@@ -5563,7 +5563,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_controllers_wave_and_risk_controller_itaskrecord",
       "community": 36,
-      "community_name": "wave-and-risk.controller.ts",
+      "community_name": "projects.module.ts",
       "norm_label": "itaskrecord"
     },
     {
@@ -5574,7 +5574,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_controllers_wave_and_risk_controller_tostring",
       "community": 36,
-      "community_name": "wave-and-risk.controller.ts",
+      "community_name": "projects.module.ts",
       "norm_label": "tostring()"
     },
     {
@@ -5585,7 +5585,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_controllers_wave_and_risk_controller_ideprecord",
       "community": 36,
-      "community_name": "wave-and-risk.controller.ts",
+      "community_name": "projects.module.ts",
       "norm_label": "ideprecord"
     },
     {
@@ -6113,7 +6113,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_dto_evm_dto_recordprojectprogressdto",
       "community": 36,
-      "community_name": "wave-and-risk.controller.ts",
+      "community_name": "projects.module.ts",
       "norm_label": "recordprojectprogressdto"
     },
     {
@@ -6124,7 +6124,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_dto_evm_dto_ts_isoptional",
       "community": 36,
-      "community_name": "wave-and-risk.controller.ts",
+      "community_name": "projects.module.ts",
       "norm_label": "isoptional"
     },
     {
@@ -6135,7 +6135,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_dto_evm_dto_ts_isdatestring",
       "community": 36,
-      "community_name": "wave-and-risk.controller.ts",
+      "community_name": "projects.module.ts",
       "norm_label": "isdatestring"
     },
     {
@@ -6146,7 +6146,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_dto_evm_dto_ts_isnumber",
       "community": 36,
-      "community_name": "wave-and-risk.controller.ts",
+      "community_name": "projects.module.ts",
       "norm_label": "isnumber"
     },
     {
@@ -6498,7 +6498,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_dto_risk_dto",
       "community": 36,
-      "community_name": "wave-and-risk.controller.ts",
+      "community_name": "projects.module.ts",
       "norm_label": "risk.dto.ts"
     },
     {
@@ -6509,7 +6509,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_dto_risk_dto_createriskdto",
       "community": 36,
-      "community_name": "wave-and-risk.controller.ts",
+      "community_name": "projects.module.ts",
       "norm_label": "createriskdto"
     },
     {
@@ -6520,7 +6520,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_dto_risk_dto_ts_isstring",
       "community": 36,
-      "community_name": "wave-and-risk.controller.ts",
+      "community_name": "projects.module.ts",
       "norm_label": "isstring"
     },
     {
@@ -6531,7 +6531,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_dto_risk_dto_ts_isnumber",
       "community": 36,
-      "community_name": "wave-and-risk.controller.ts",
+      "community_name": "projects.module.ts",
       "norm_label": "isnumber"
     },
     {
@@ -6542,7 +6542,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_dto_risk_dto_ts_isenum",
       "community": 36,
-      "community_name": "wave-and-risk.controller.ts",
+      "community_name": "projects.module.ts",
       "norm_label": "isenum"
     },
     {
@@ -6553,7 +6553,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_dto_risk_dto_ts_isoptional",
       "community": 36,
-      "community_name": "wave-and-risk.controller.ts",
+      "community_name": "projects.module.ts",
       "norm_label": "isoptional"
     },
     {
@@ -6564,7 +6564,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_dto_risk_dto_updateriskdto",
       "community": 36,
-      "community_name": "wave-and-risk.controller.ts",
+      "community_name": "projects.module.ts",
       "norm_label": "updateriskdto"
     },
     {
@@ -6575,7 +6575,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_dto_risk_dto_assessrisksdto",
       "community": 36,
-      "community_name": "wave-and-risk.controller.ts",
+      "community_name": "projects.module.ts",
       "norm_label": "assessrisksdto"
     },
     {
@@ -6783,7 +6783,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_src_projects_dto_wbs_dto",
-      "community": 141,
+      "community": 62,
       "community_name": "wbs.dto.ts",
       "norm_label": "wbs.dto.ts"
     },
@@ -6806,7 +6806,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_dto_wbs_dto_ts_apipropertyoptional",
       "community": 62,
-      "community_name": "projects-wbs.controller.ts",
+      "community_name": "wbs.dto.ts",
       "norm_label": "apipropertyoptional"
     },
     {
@@ -6817,7 +6817,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_dto_wbs_dto_ts_isoptional",
       "community": 62,
-      "community_name": "projects-wbs.controller.ts",
+      "community_name": "wbs.dto.ts",
       "norm_label": "isoptional"
     },
     {
@@ -6828,7 +6828,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_dto_wbs_dto_ts_isstring",
       "community": 62,
-      "community_name": "projects-wbs.controller.ts",
+      "community_name": "wbs.dto.ts",
       "norm_label": "isstring"
     },
     {
@@ -6839,7 +6839,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_dto_wbs_dto_ts_apiproperty",
       "community": 62,
-      "community_name": "projects-wbs.controller.ts",
+      "community_name": "wbs.dto.ts",
       "norm_label": "apiproperty"
     },
     {
@@ -6850,7 +6850,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_dto_wbs_dto_ts_isnumber",
       "community": 62,
-      "community_name": "projects-wbs.controller.ts",
+      "community_name": "wbs.dto.ts",
       "norm_label": "isnumber"
     },
     {
@@ -6861,7 +6861,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_dto_wbs_dto_ts_isarray",
       "community": 62,
-      "community_name": "projects-wbs.controller.ts",
+      "community_name": "wbs.dto.ts",
       "norm_label": "isarray"
     },
     {
@@ -6872,7 +6872,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_dto_wbs_dto_ts_type",
       "community": 62,
-      "community_name": "projects-wbs.controller.ts",
+      "community_name": "wbs.dto.ts",
       "norm_label": "type"
     },
     {
@@ -6883,7 +6883,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_dto_wbs_dto_generatewbsdto",
       "community": 62,
-      "community_name": "projects-wbs.controller.ts",
+      "community_name": "wbs.dto.ts",
       "norm_label": "generatewbsdto"
     },
     {
@@ -6893,8 +6893,8 @@
       "source_location": "L86",
       "_origin": "ast",
       "id": "backend_src_projects_dto_wbs_dto_savewbsdto",
-      "community": 44,
-      "community_name": "WbsValidationService",
+      "community": 62,
+      "community_name": "wbs.dto.ts",
       "norm_label": "savewbsdto"
     },
     {
@@ -6905,7 +6905,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_dto_wbs_dto_suggestdecompositiondto",
       "community": 62,
-      "community_name": "projects-wbs.controller.ts",
+      "community_name": "wbs.dto.ts",
       "norm_label": "suggestdecompositiondto"
     },
     {
@@ -6927,7 +6927,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_dto_wbs_dto_convertwbstotasksdto",
       "community": 62,
-      "community_name": "projects-wbs.controller.ts",
+      "community_name": "wbs.dto.ts",
       "norm_label": "convertwbstotasksdto"
     },
     {
@@ -6938,7 +6938,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_dto_wbs_dto_ts_isboolean",
       "community": 62,
-      "community_name": "projects-wbs.controller.ts",
+      "community_name": "wbs.dto.ts",
       "norm_label": "isboolean"
     },
     {
@@ -6949,7 +6949,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_dto_wbs_dto_getleafnodesdto",
       "community": 62,
-      "community_name": "projects-wbs.controller.ts",
+      "community_name": "wbs.dto.ts",
       "norm_label": "getleafnodesdto"
     },
     {
@@ -6960,7 +6960,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_dto_wbs_dto_generatetasksforleafdto",
       "community": 62,
-      "community_name": "projects-wbs.controller.ts",
+      "community_name": "wbs.dto.ts",
       "norm_label": "generatetasksforleafdto"
     },
     {
@@ -6971,7 +6971,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_dto_wbs_dto_auditleafdiscrepancydto",
       "community": 62,
-      "community_name": "projects-wbs.controller.ts",
+      "community_name": "wbs.dto.ts",
       "norm_label": "auditleafdiscrepancydto"
     },
     {
@@ -6982,7 +6982,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_dto_wbs_dto_resolvewbsbudgetdto",
       "community": 62,
-      "community_name": "projects-wbs.controller.ts",
+      "community_name": "wbs.dto.ts",
       "norm_label": "resolvewbsbudgetdto"
     },
     {
@@ -6993,7 +6993,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_dto_wbs_dto_ts_isin",
       "community": 62,
-      "community_name": "projects-wbs.controller.ts",
+      "community_name": "wbs.dto.ts",
       "norm_label": "isin"
     },
     {
@@ -7070,7 +7070,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_dto_x_matrix_dto_xmatrixresponsedto",
       "community": 95,
-      "community_name": "pert-diagram.service.ts",
+      "community_name": "projects-x-matrix.service.ts",
       "norm_label": "xmatrixresponsedto"
     },
     {
@@ -7080,7 +7080,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_src_projects_entities_project_entity",
-      "community": 75,
+      "community": 36,
       "community_name": "projects.module.ts",
       "norm_label": "project.entity.ts"
     },
@@ -7091,7 +7091,7 @@
       "source_location": "L3",
       "_origin": "ast",
       "id": "backend_src_projects_entities_project_entity_project",
-      "community": 75,
+      "community": 36,
       "community_name": "projects.module.ts",
       "norm_label": "project"
     },
@@ -7433,7 +7433,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_interfaces_risk_interface",
       "community": 36,
-      "community_name": "wave-and-risk.controller.ts",
+      "community_name": "projects.module.ts",
       "norm_label": "risk.interface.ts"
     },
     {
@@ -7444,7 +7444,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_interfaces_risk_interface_riskseverity",
       "community": 36,
-      "community_name": "wave-and-risk.controller.ts",
+      "community_name": "projects.module.ts",
       "norm_label": "riskseverity"
     },
     {
@@ -7455,7 +7455,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_interfaces_risk_interface_riskstatus",
       "community": 36,
-      "community_name": "wave-and-risk.controller.ts",
+      "community_name": "projects.module.ts",
       "norm_label": "riskstatus"
     },
     {
@@ -7466,7 +7466,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_interfaces_risk_interface_riskrecommendedaction",
       "community": 36,
-      "community_name": "wave-and-risk.controller.ts",
+      "community_name": "projects.module.ts",
       "norm_label": "riskrecommendedaction"
     },
     {
@@ -7477,7 +7477,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_interfaces_risk_interface_generatedrisk",
       "community": 36,
-      "community_name": "wave-and-risk.controller.ts",
+      "community_name": "projects.module.ts",
       "norm_label": "generatedrisk"
     },
     {
@@ -7488,7 +7488,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_interfaces_risk_interface_llmriskassessmentresponse",
       "community": 36,
-      "community_name": "wave-and-risk.controller.ts",
+      "community_name": "projects.module.ts",
       "norm_label": "llmriskassessmentresponse"
     },
     {
@@ -7499,7 +7499,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_interfaces_risk_interface_riskintervention",
       "community": 36,
-      "community_name": "wave-and-risk.controller.ts",
+      "community_name": "projects.module.ts",
       "norm_label": "riskintervention"
     },
     {
@@ -7510,7 +7510,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_interfaces_risk_interface_riskstatistics",
       "community": 36,
-      "community_name": "wave-and-risk.controller.ts",
+      "community_name": "projects.module.ts",
       "norm_label": "riskstatistics"
     },
     {
@@ -7521,7 +7521,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_interfaces_risk_interface_riskinterventionsresponse",
       "community": 36,
-      "community_name": "wave-and-risk.controller.ts",
+      "community_name": "projects.module.ts",
       "norm_label": "riskinterventionsresponse"
     },
     {
@@ -8037,8 +8037,8 @@
       "source_location": "L39",
       "_origin": "ast",
       "id": "backend_src_projects_interfaces_wbs_conversion_interface_leafauditresult",
-      "community": 10,
-      "community_name": "metrics-calculator.util.ts",
+      "community": 61,
+      "community_name": "AuditService",
       "norm_label": "leafauditresult"
     },
     {
@@ -8169,8 +8169,8 @@
       "source_location": "L162",
       "_origin": "ast",
       "id": "backend_src_projects_interfaces_wbs_conversion_interface_auditleafdiscrepancyinput",
-      "community": 10,
-      "community_name": "metrics-calculator.util.ts",
+      "community": 61,
+      "community_name": "AuditService",
       "norm_label": "auditleafdiscrepancyinput"
     },
     {
@@ -8587,7 +8587,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_src_projects_projects_module",
-      "community": 75,
+      "community": 36,
       "community_name": "projects.module.ts",
       "norm_label": "projects.module.ts"
     },
@@ -8598,7 +8598,7 @@
       "source_location": "L48",
       "_origin": "ast",
       "id": "backend_src_projects_projects_module_projectmongoosefeature",
-      "community": 75,
+      "community": 36,
       "community_name": "projects.module.ts",
       "norm_label": "projectmongoosefeature"
     },
@@ -8665,7 +8665,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_projects_service_ts_injectmodel",
       "community": 95,
-      "community_name": "pert-diagram.service.ts",
+      "community_name": "projects-x-matrix.service.ts",
       "norm_label": "injectmodel"
     },
     {
@@ -8676,7 +8676,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_projects_service_projectsservice_constructor",
       "community": 95,
-      "community_name": "pert-diagram.service.ts",
+      "community_name": "projects-x-matrix.service.ts",
       "norm_label": ".constructor()"
     },
     {
@@ -8687,7 +8687,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_projects_service_projectsservice_createxmatrix",
       "community": 95,
-      "community_name": "pert-diagram.service.ts",
+      "community_name": "projects-x-matrix.service.ts",
       "norm_label": ".createxmatrix()"
     },
     {
@@ -8698,7 +8698,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_projects_service_projectsservice_getsavedxmatrix",
       "community": 95,
-      "community_name": "pert-diagram.service.ts",
+      "community_name": "projects-x-matrix.service.ts",
       "norm_label": ".getsavedxmatrix()"
     },
     {
@@ -8782,7 +8782,7 @@
       "label": ".remove()",
       "file_type": "code",
       "source_file": "Backend/src/projects/projects.service.ts",
-      "source_location": "L83",
+      "source_location": "L86",
       "_origin": "ast",
       "id": "backend_src_projects_projects_service_projectsservice_remove",
       "community": 18,
@@ -8793,7 +8793,7 @@
       "label": ".removeWithOptions()",
       "file_type": "code",
       "source_file": "Backend/src/projects/projects.service.ts",
-      "source_location": "L91",
+      "source_location": "L94",
       "_origin": "ast",
       "id": "backend_src_projects_projects_service_projectsservice_removewithoptions",
       "community": 18,
@@ -8804,7 +8804,7 @@
       "label": ".incrementHoursWorked()",
       "file_type": "code",
       "source_file": "Backend/src/projects/projects.service.ts",
-      "source_location": "L115",
+      "source_location": "L119",
       "_origin": "ast",
       "id": "backend_src_projects_projects_service_projectsservice_incrementhoursworked",
       "community": 18,
@@ -8815,7 +8815,7 @@
       "label": ".addTaskToProject()",
       "file_type": "code",
       "source_file": "Backend/src/projects/projects.service.ts",
-      "source_location": "L127",
+      "source_location": "L134",
       "_origin": "ast",
       "id": "backend_src_projects_projects_service_projectsservice_addtasktoproject",
       "community": 2,
@@ -8826,7 +8826,7 @@
       "label": ".removeTaskFromProject()",
       "file_type": "code",
       "source_file": "Backend/src/projects/projects.service.ts",
-      "source_location": "L133",
+      "source_location": "L142",
       "_origin": "ast",
       "id": "backend_src_projects_projects_service_projectsservice_removetaskfromproject",
       "community": 2,
@@ -8837,7 +8837,7 @@
       "label": ".moveTaskToProject()",
       "file_type": "code",
       "source_file": "Backend/src/projects/projects.service.ts",
-      "source_location": "L139",
+      "source_location": "L148",
       "_origin": "ast",
       "id": "backend_src_projects_projects_service_projectsservice_movetasktoproject",
       "community": 2,
@@ -8848,7 +8848,7 @@
       "label": ".recalculateProjectStats()",
       "file_type": "code",
       "source_file": "Backend/src/projects/projects.service.ts",
-      "source_location": "L148",
+      "source_location": "L157",
       "_origin": "ast",
       "id": "backend_src_projects_projects_service_projectsservice_recalculateprojectstats",
       "community": 2,
@@ -9027,8 +9027,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_src_projects_schemas_project_wave_schema",
-      "community": 75,
-      "community_name": "projects.module.ts",
+      "community": 80,
+      "community_name": "ProjectDocument",
       "norm_label": "project-wave.schema.ts"
     },
     {
@@ -9049,8 +9049,8 @@
       "source_location": "L7",
       "_origin": "ast",
       "id": "backend_src_projects_schemas_project_wave_schema_projectwave",
-      "community": 75,
-      "community_name": "projects.module.ts",
+      "community": 80,
+      "community_name": "ProjectDocument",
       "norm_label": "projectwave"
     },
     {
@@ -9060,8 +9060,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "backend_src_projects_schemas_project_wave_schema_ts_schema",
-      "community": 75,
-      "community_name": "projects.module.ts",
+      "community": 80,
+      "community_name": "ProjectDocument",
       "norm_label": "schema"
     },
     {
@@ -9071,8 +9071,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "backend_src_projects_schemas_project_wave_schema_ts_prop",
-      "community": 75,
-      "community_name": "projects.module.ts",
+      "community": 80,
+      "community_name": "ProjectDocument",
       "norm_label": "prop"
     },
     {
@@ -9082,8 +9082,8 @@
       "source_location": "L34",
       "_origin": "ast",
       "id": "backend_src_projects_schemas_project_wave_schema_projectwaveschema",
-      "community": 75,
-      "community_name": "projects.module.ts",
+      "community": 80,
+      "community_name": "ProjectDocument",
       "norm_label": "projectwaveschema"
     },
     {
@@ -9093,7 +9093,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_src_projects_schemas_project_schema",
-      "community": 75,
+      "community": 36,
       "community_name": "projects.module.ts",
       "norm_label": "project.schema.ts"
     },
@@ -9104,7 +9104,7 @@
       "source_location": "L3",
       "_origin": "ast",
       "id": "backend_src_projects_schemas_project_schema_smartobjective",
-      "community": 75,
+      "community": 36,
       "community_name": "projects.module.ts",
       "norm_label": "smartobjective"
     },
@@ -9115,7 +9115,7 @@
       "source_location": "L14",
       "_origin": "ast",
       "id": "backend_src_projects_schemas_project_schema_dashboardmetricpreferences",
-      "community": 75,
+      "community": 36,
       "community_name": "projects.module.ts",
       "norm_label": "dashboardmetricpreferences"
     },
@@ -9137,7 +9137,7 @@
       "source_location": "L49",
       "_origin": "ast",
       "id": "backend_src_projects_schemas_project_schema_projectschema",
-      "community": 75,
+      "community": 36,
       "community_name": "projects.module.ts",
       "norm_label": "projectschema"
     },
@@ -9149,7 +9149,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_schemas_risk_schema",
       "community": 36,
-      "community_name": "wave-and-risk.controller.ts",
+      "community_name": "projects.module.ts",
       "norm_label": "risk.schema.ts"
     },
     {
@@ -9160,7 +9160,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_schemas_risk_schema_riskdocument",
       "community": 36,
-      "community_name": "wave-and-risk.controller.ts",
+      "community_name": "projects.module.ts",
       "norm_label": "riskdocument"
     },
     {
@@ -9171,7 +9171,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_schemas_risk_schema_risk",
       "community": 36,
-      "community_name": "wave-and-risk.controller.ts",
+      "community_name": "projects.module.ts",
       "norm_label": "risk"
     },
     {
@@ -9182,7 +9182,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_schemas_risk_schema_ts_schema",
       "community": 36,
-      "community_name": "wave-and-risk.controller.ts",
+      "community_name": "projects.module.ts",
       "norm_label": "schema"
     },
     {
@@ -9193,7 +9193,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_schemas_risk_schema_ts_prop",
       "community": 36,
-      "community_name": "wave-and-risk.controller.ts",
+      "community_name": "projects.module.ts",
       "norm_label": "prop"
     },
     {
@@ -9203,7 +9203,7 @@
       "source_location": "L43",
       "_origin": "ast",
       "id": "backend_src_projects_schemas_risk_schema_riskschema",
-      "community": 75,
+      "community": 36,
       "community_name": "projects.module.ts",
       "norm_label": "riskschema"
     },
@@ -9214,7 +9214,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_src_projects_schemas_wbs_node_schema",
-      "community": 141,
+      "community": 62,
       "community_name": "wbs.dto.ts",
       "norm_label": "wbs-node.schema.ts"
     },
@@ -9225,7 +9225,7 @@
       "source_location": "L3",
       "_origin": "ast",
       "id": "backend_src_projects_schemas_wbs_node_schema_wbsnodedocument",
-      "community": 141,
+      "community": 62,
       "community_name": "wbs.dto.ts",
       "norm_label": "wbsnodedocument"
     },
@@ -9236,7 +9236,7 @@
       "source_location": "L16",
       "_origin": "ast",
       "id": "backend_src_projects_schemas_wbs_node_schema_wbsnodeschema",
-      "community": 75,
+      "community": 36,
       "community_name": "projects.module.ts",
       "norm_label": "wbsnodeschema"
     },
@@ -9247,8 +9247,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_src_projects_schemas_x_matrix_snapshot_schema",
-      "community": 75,
-      "community_name": "projects.module.ts",
+      "community": 95,
+      "community_name": "projects-x-matrix.service.ts",
       "norm_label": "x-matrix-snapshot.schema.ts"
     },
     {
@@ -9258,8 +9258,8 @@
       "source_location": "L4",
       "_origin": "ast",
       "id": "backend_src_projects_schemas_x_matrix_snapshot_schema_xmatrixsnapshotdocument",
-      "community": 75,
-      "community_name": "projects.module.ts",
+      "community": 95,
+      "community_name": "projects-x-matrix.service.ts",
       "norm_label": "xmatrixsnapshotdocument"
     },
     {
@@ -9269,8 +9269,8 @@
       "source_location": "L7",
       "_origin": "ast",
       "id": "backend_src_projects_schemas_x_matrix_snapshot_schema_xmatrixsnapshot",
-      "community": 75,
-      "community_name": "projects.module.ts",
+      "community": 95,
+      "community_name": "projects-x-matrix.service.ts",
       "norm_label": "xmatrixsnapshot"
     },
     {
@@ -9280,8 +9280,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "backend_src_projects_schemas_x_matrix_snapshot_schema_ts_schema",
-      "community": 75,
-      "community_name": "projects.module.ts",
+      "community": 95,
+      "community_name": "projects-x-matrix.service.ts",
       "norm_label": "schema"
     },
     {
@@ -9291,8 +9291,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "backend_src_projects_schemas_x_matrix_snapshot_schema_ts_prop",
-      "community": 75,
-      "community_name": "projects.module.ts",
+      "community": 95,
+      "community_name": "projects-x-matrix.service.ts",
       "norm_label": "prop"
     },
     {
@@ -9302,7 +9302,7 @@
       "source_location": "L15",
       "_origin": "ast",
       "id": "backend_src_projects_schemas_x_matrix_snapshot_schema_xmatrixsnapshotschema",
-      "community": 75,
+      "community": 36,
       "community_name": "projects.module.ts",
       "norm_label": "xmatrixsnapshotschema"
     },
@@ -9544,8 +9544,8 @@
       "source_location": "L15",
       "_origin": "ast",
       "id": "backend_src_projects_services_drafts_draft_plan_generation_service_draftplangenerationservice_constructor",
-      "community": 61,
-      "community_name": "theme-extraction.service.ts",
+      "community": 10,
+      "community_name": "metrics-calculator.util.ts",
       "norm_label": ".constructor()"
     },
     {
@@ -10799,7 +10799,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_services_execution_index",
       "community": 36,
-      "community_name": "wave-and-risk.controller.ts",
+      "community_name": "projects.module.ts",
       "norm_label": "execution/index.ts"
     },
     {
@@ -11052,7 +11052,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_services_execution_risk_service",
       "community": 36,
-      "community_name": "wave-and-risk.controller.ts",
+      "community_name": "projects.module.ts",
       "norm_label": "risk.service.ts"
     },
     {
@@ -11063,7 +11063,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_services_execution_risk_service_riskservice",
       "community": 36,
-      "community_name": "wave-and-risk.controller.ts",
+      "community_name": "projects.module.ts",
       "norm_label": "riskservice"
     },
     {
@@ -11074,7 +11074,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_services_execution_risk_service_ts_injectable",
       "community": 36,
-      "community_name": "wave-and-risk.controller.ts",
+      "community_name": "projects.module.ts",
       "norm_label": "injectable"
     },
     {
@@ -11085,7 +11085,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_services_execution_risk_service_ts_injectmodel",
       "community": 36,
-      "community_name": "wave-and-risk.controller.ts",
+      "community_name": "projects.module.ts",
       "norm_label": "injectmodel"
     },
     {
@@ -11096,7 +11096,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_services_execution_risk_service_riskservice_constructor",
       "community": 36,
-      "community_name": "wave-and-risk.controller.ts",
+      "community_name": "projects.module.ts",
       "norm_label": ".constructor()"
     },
     {
@@ -11107,7 +11107,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_services_execution_risk_service_riskservice_assessrisks",
       "community": 36,
-      "community_name": "wave-and-risk.controller.ts",
+      "community_name": "projects.module.ts",
       "norm_label": ".assessrisks()"
     },
     {
@@ -11118,7 +11118,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_services_execution_risk_service_riskservice_calculateseverity",
       "community": 36,
-      "community_name": "wave-and-risk.controller.ts",
+      "community_name": "projects.module.ts",
       "norm_label": ".calculateseverity()"
     },
     {
@@ -11129,7 +11129,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_services_execution_risk_service_riskservice_createrisk",
       "community": 36,
-      "community_name": "wave-and-risk.controller.ts",
+      "community_name": "projects.module.ts",
       "norm_label": ".createrisk()"
     },
     {
@@ -11140,7 +11140,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_services_execution_risk_service_riskservice_updaterisk",
       "community": 36,
-      "community_name": "wave-and-risk.controller.ts",
+      "community_name": "projects.module.ts",
       "norm_label": ".updaterisk()"
     },
     {
@@ -11162,7 +11162,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_services_execution_risk_service_riskservice_getrisksbyseverity",
       "community": 36,
-      "community_name": "wave-and-risk.controller.ts",
+      "community_name": "projects.module.ts",
       "norm_label": ".getrisksbyseverity()"
     },
     {
@@ -11173,7 +11173,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_services_execution_risk_service_riskservice_updatemitigationplan",
       "community": 36,
-      "community_name": "wave-and-risk.controller.ts",
+      "community_name": "projects.module.ts",
       "norm_label": ".updatemitigationplan()"
     },
     {
@@ -11184,7 +11184,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_services_execution_risk_service_riskservice_updateriskstatus",
       "community": 36,
-      "community_name": "wave-and-risk.controller.ts",
+      "community_name": "projects.module.ts",
       "norm_label": ".updateriskstatus()"
     },
     {
@@ -11195,7 +11195,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_services_execution_risk_service_riskservice_deleterisk",
       "community": 36,
-      "community_name": "wave-and-risk.controller.ts",
+      "community_name": "projects.module.ts",
       "norm_label": ".deleterisk()"
     },
     {
@@ -11228,7 +11228,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_services_strategy_index",
       "community": 36,
-      "community_name": "wave-and-risk.controller.ts",
+      "community_name": "projects.module.ts",
       "norm_label": "strategy/index.ts"
     },
     {
@@ -11579,8 +11579,8 @@
       "source_location": "L58",
       "_origin": "ast",
       "id": "backend_src_projects_services_strategy_rolling_wave_service_rollingwaveservice_addtasktowave",
-      "community": 75,
-      "community_name": "projects.module.ts",
+      "community": 80,
+      "community_name": "ProjectDocument",
       "norm_label": ".addtasktowave()"
     },
     {
@@ -11590,8 +11590,8 @@
       "source_location": "L68",
       "_origin": "ast",
       "id": "backend_src_projects_services_strategy_rolling_wave_service_rollingwaveservice_removetaskfromwave",
-      "community": 75,
-      "community_name": "projects.module.ts",
+      "community": 80,
+      "community_name": "ProjectDocument",
       "norm_label": ".removetaskfromwave()"
     },
     {
@@ -12229,7 +12229,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_services_visualization_index",
       "community": 95,
-      "community_name": "pert-diagram.service.ts",
+      "community_name": "projects-x-matrix.service.ts",
       "norm_label": "visualization/index.ts"
     },
     {
@@ -12240,7 +12240,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_services_visualization_pert_diagram_service",
       "community": 95,
-      "community_name": "pert-diagram.service.ts",
+      "community_name": "projects-x-matrix.service.ts",
       "norm_label": "pert-diagram.service.ts"
     },
     {
@@ -12251,7 +12251,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_services_visualization_pert_diagram_service_pertdiagramservice",
       "community": 95,
-      "community_name": "pert-diagram.service.ts",
+      "community_name": "projects-x-matrix.service.ts",
       "norm_label": "pertdiagramservice"
     },
     {
@@ -12262,7 +12262,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_services_visualization_pert_diagram_service_ts_injectable",
       "community": 95,
-      "community_name": "pert-diagram.service.ts",
+      "community_name": "projects-x-matrix.service.ts",
       "norm_label": "injectable"
     },
     {
@@ -12273,7 +12273,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_services_visualization_pert_diagram_service_ts_injectmodel",
       "community": 95,
-      "community_name": "pert-diagram.service.ts",
+      "community_name": "projects-x-matrix.service.ts",
       "norm_label": "injectmodel"
     },
     {
@@ -12284,7 +12284,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_services_visualization_pert_diagram_service_pertdiagramservice_constructor",
       "community": 95,
-      "community_name": "pert-diagram.service.ts",
+      "community_name": "projects-x-matrix.service.ts",
       "norm_label": ".constructor()"
     },
     {
@@ -12305,8 +12305,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_src_projects_services_visualization_projects_x_matrix_service",
-      "community": 75,
-      "community_name": "projects.module.ts",
+      "community": 95,
+      "community_name": "projects-x-matrix.service.ts",
       "norm_label": "projects-x-matrix.service.ts"
     },
     {
@@ -12317,7 +12317,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_services_visualization_projects_x_matrix_service_projectsxmatrixservice",
       "community": 95,
-      "community_name": "pert-diagram.service.ts",
+      "community_name": "projects-x-matrix.service.ts",
       "norm_label": "projectsxmatrixservice"
     },
     {
@@ -12328,7 +12328,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_services_visualization_projects_x_matrix_service_ts_injectable",
       "community": 95,
-      "community_name": "pert-diagram.service.ts",
+      "community_name": "projects-x-matrix.service.ts",
       "norm_label": "injectable"
     },
     {
@@ -12361,7 +12361,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_services_visualization_projects_x_matrix_service_projectsxmatrixservice_createxmatrix",
       "community": 95,
-      "community_name": "pert-diagram.service.ts",
+      "community_name": "projects-x-matrix.service.ts",
       "norm_label": ".createxmatrix()"
     },
     {
@@ -12372,7 +12372,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_services_visualization_projects_x_matrix_service_projectsxmatrixservice_validateandgetproject",
       "community": 95,
-      "community_name": "pert-diagram.service.ts",
+      "community_name": "projects-x-matrix.service.ts",
       "norm_label": ".validateandgetproject()"
     },
     {
@@ -12383,7 +12383,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_services_visualization_projects_x_matrix_service_projectsxmatrixservice_fetchtasksandwaves",
       "community": 95,
-      "community_name": "pert-diagram.service.ts",
+      "community_name": "projects-x-matrix.service.ts",
       "norm_label": ".fetchtasksandwaves()"
     },
     {
@@ -12394,7 +12394,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_services_visualization_projects_x_matrix_service_projectsxmatrixservice_getsavedxmatrix",
       "community": 95,
-      "community_name": "pert-diagram.service.ts",
+      "community_name": "projects-x-matrix.service.ts",
       "norm_label": ".getsavedxmatrix()"
     },
     {
@@ -13372,8 +13372,8 @@
       "source_location": "L13",
       "_origin": "ast",
       "id": "backend_src_projects_services_wbs_core_audit_service_auditservice",
-      "community": 10,
-      "community_name": "metrics-calculator.util.ts",
+      "community": 61,
+      "community_name": "AuditService",
       "norm_label": "auditservice"
     },
     {
@@ -13383,8 +13383,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "backend_src_projects_services_wbs_core_audit_service_ts_injectable",
-      "community": 10,
-      "community_name": "metrics-calculator.util.ts",
+      "community": 61,
+      "community_name": "AuditService",
       "norm_label": "injectable"
     },
     {
@@ -13394,8 +13394,8 @@
       "source_location": "L14",
       "_origin": "ast",
       "id": "backend_src_projects_services_wbs_core_audit_service_auditservice_constructor",
-      "community": 10,
-      "community_name": "metrics-calculator.util.ts",
+      "community": 61,
+      "community_name": "AuditService",
       "norm_label": ".constructor()"
     },
     {
@@ -13405,8 +13405,8 @@
       "source_location": "L16",
       "_origin": "ast",
       "id": "backend_src_projects_services_wbs_core_audit_service_auditservice_getmodeloverride",
-      "community": 10,
-      "community_name": "metrics-calculator.util.ts",
+      "community": 61,
+      "community_name": "AuditService",
       "norm_label": ".getmodeloverride()"
     },
     {
@@ -13416,8 +13416,8 @@
       "source_location": "L24",
       "_origin": "ast",
       "id": "backend_src_projects_services_wbs_core_audit_service_auditservice_safeenv",
-      "community": 10,
-      "community_name": "metrics-calculator.util.ts",
+      "community": 61,
+      "community_name": "AuditService",
       "norm_label": ".safeenv()"
     },
     {
@@ -13427,8 +13427,8 @@
       "source_location": "L29",
       "_origin": "ast",
       "id": "backend_src_projects_services_wbs_core_audit_service_auditservice_auditleafdiscrepancy",
-      "community": 10,
-      "community_name": "metrics-calculator.util.ts",
+      "community": 61,
+      "community_name": "AuditService",
       "norm_label": ".auditleafdiscrepancy()"
     },
     {
@@ -13438,8 +13438,8 @@
       "source_location": "L80",
       "_origin": "ast",
       "id": "backend_src_projects_services_wbs_core_audit_service_auditservice_computediscrepancymetrics",
-      "community": 10,
-      "community_name": "metrics-calculator.util.ts",
+      "community": 61,
+      "community_name": "AuditService",
       "norm_label": ".computediscrepancymetrics()"
     },
     {
@@ -13449,8 +13449,8 @@
       "source_location": "L93",
       "_origin": "ast",
       "id": "backend_src_projects_services_wbs_core_audit_service_auditservice_computeduplicatemetrics",
-      "community": 10,
-      "community_name": "metrics-calculator.util.ts",
+      "community": 61,
+      "community_name": "AuditService",
       "norm_label": ".computeduplicatemetrics()"
     },
     {
@@ -13460,8 +13460,8 @@
       "source_location": "L131",
       "_origin": "ast",
       "id": "backend_src_projects_services_wbs_core_audit_service_auditservice_normalizetaskkey",
-      "community": 10,
-      "community_name": "metrics-calculator.util.ts",
+      "community": 61,
+      "community_name": "AuditService",
       "norm_label": ".normalizetaskkey()"
     },
     {
@@ -13471,8 +13471,8 @@
       "source_location": "L145",
       "_origin": "ast",
       "id": "backend_src_projects_services_wbs_core_audit_service_auditservice_formattaskspreview",
-      "community": 10,
-      "community_name": "metrics-calculator.util.ts",
+      "community": 61,
+      "community_name": "AuditService",
       "norm_label": ".formattaskspreview()"
     },
     {
@@ -13482,8 +13482,8 @@
       "source_location": "L152",
       "_origin": "ast",
       "id": "backend_src_projects_services_wbs_core_audit_service_auditservice_formattaskline",
-      "community": 10,
-      "community_name": "metrics-calculator.util.ts",
+      "community": 61,
+      "community_name": "AuditService",
       "norm_label": ".formattaskline()"
     },
     {
@@ -13493,8 +13493,8 @@
       "source_location": "L173",
       "_origin": "ast",
       "id": "backend_src_projects_services_wbs_core_audit_service_auditservice_applyguardrails",
-      "community": 10,
-      "community_name": "metrics-calculator.util.ts",
+      "community": 61,
+      "community_name": "AuditService",
       "norm_label": ".applyguardrails()"
     },
     {
@@ -13669,7 +13669,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_src_projects_services_wbs_core_wbs_persistence_service",
-      "community": 141,
+      "community": 62,
       "community_name": "wbs.dto.ts",
       "norm_label": "wbs-persistence.service.ts"
     },
@@ -13681,7 +13681,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_services_wbs_core_wbs_persistence_service_wbspersistenceservice",
       "community": 141,
-      "community_name": "wbs.dto.ts",
+      "community_name": "CacheService",
       "norm_label": "wbspersistenceservice"
     },
     {
@@ -13692,7 +13692,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_services_wbs_core_wbs_persistence_service_ts_injectable",
       "community": 141,
-      "community_name": "wbs.dto.ts",
+      "community_name": "CacheService",
       "norm_label": "injectable"
     },
     {
@@ -13703,7 +13703,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_services_wbs_core_wbs_persistence_service_ts_injectmodel",
       "community": 141,
-      "community_name": "wbs.dto.ts",
+      "community_name": "CacheService",
       "norm_label": "injectmodel"
     },
     {
@@ -13714,7 +13714,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_services_wbs_core_wbs_persistence_service_wbspersistenceservice_constructor",
       "community": 141,
-      "community_name": "wbs.dto.ts",
+      "community_name": "CacheService",
       "norm_label": ".constructor()"
     },
     {
@@ -13725,7 +13725,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_services_wbs_core_wbs_persistence_service_wbspersistenceservice_save",
       "community": 141,
-      "community_name": "wbs.dto.ts",
+      "community_name": "CacheService",
       "norm_label": ".save()"
     },
     {
@@ -13747,7 +13747,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_services_wbs_core_wbs_persistence_service_wbspersistenceservice_calculatetotalhours",
       "community": 141,
-      "community_name": "wbs.dto.ts",
+      "community_name": "CacheService",
       "norm_label": ".calculatetotalhours()"
     },
     {
@@ -13758,7 +13758,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_services_wbs_core_wbs_persistence_service_wbspersistenceservice_recalculateestimatedhours",
       "community": 141,
-      "community_name": "wbs.dto.ts",
+      "community_name": "CacheService",
       "norm_label": ".recalculateestimatedhours()"
     },
     {
@@ -13944,7 +13944,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_src_projects_services_wbs_core_wbs_service",
-      "community": 141,
+      "community": 62,
       "community_name": "wbs.dto.ts",
       "norm_label": "wbs.service.ts"
     },
@@ -14088,7 +14088,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_services_wbs_shared_cache_service",
       "community": 141,
-      "community_name": "wbs.dto.ts",
+      "community_name": "CacheService",
       "norm_label": "cache.service.ts"
     },
     {
@@ -14099,7 +14099,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_services_wbs_shared_cache_service_cacheservice",
       "community": 141,
-      "community_name": "wbs.dto.ts",
+      "community_name": "CacheService",
       "norm_label": "cacheservice"
     },
     {
@@ -14110,7 +14110,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_services_wbs_shared_cache_service_ts_injectable",
       "community": 141,
-      "community_name": "wbs.dto.ts",
+      "community_name": "CacheService",
       "norm_label": "injectable"
     },
     {
@@ -14121,7 +14121,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_services_wbs_shared_cache_service_cacheservice_constructor",
       "community": 141,
-      "community_name": "wbs.dto.ts",
+      "community_name": "CacheService",
       "norm_label": ".constructor()"
     },
     {
@@ -14132,7 +14132,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_services_wbs_shared_cache_service_cacheservice_initializeredis",
       "community": 141,
-      "community_name": "wbs.dto.ts",
+      "community_name": "CacheService",
       "norm_label": ".initializeredis()"
     },
     {
@@ -14143,7 +14143,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_services_wbs_shared_cache_service_cacheservice_iscachedebugenabled",
       "community": 141,
-      "community_name": "wbs.dto.ts",
+      "community_name": "CacheService",
       "norm_label": ".iscachedebugenabled()"
     },
     {
@@ -14154,7 +14154,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_services_wbs_shared_cache_service_cacheservice_getbackendname",
       "community": 141,
-      "community_name": "wbs.dto.ts",
+      "community_name": "CacheService",
       "norm_label": ".getbackendname()"
     },
     {
@@ -14165,7 +14165,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_services_wbs_shared_cache_service_cacheservice_cachebackendname",
       "community": 141,
-      "community_name": "wbs.dto.ts",
+      "community_name": "CacheService",
       "norm_label": ".cachebackendname()"
     },
     {
@@ -14176,7 +14176,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_services_wbs_shared_cache_service_cacheservice_logcache",
       "community": 141,
-      "community_name": "wbs.dto.ts",
+      "community_name": "CacheService",
       "norm_label": ".logcache()"
     },
     {
@@ -14187,7 +14187,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_services_wbs_shared_cache_service_cacheservice_get",
       "community": 141,
-      "community_name": "wbs.dto.ts",
+      "community_name": "CacheService",
       "norm_label": ".get()"
     },
     {
@@ -14198,7 +14198,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_services_wbs_shared_cache_service_cacheservice_set",
       "community": 141,
-      "community_name": "wbs.dto.ts",
+      "community_name": "CacheService",
       "norm_label": ".set()"
     },
     {
@@ -14209,7 +14209,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_services_wbs_shared_cache_service_cacheservice_clearforproject",
       "community": 141,
-      "community_name": "wbs.dto.ts",
+      "community_name": "CacheService",
       "norm_label": ".clearforproject()"
     },
     {
@@ -14593,8 +14593,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_src_projects_services_wbs_shared_theme_extraction_service",
-      "community": 61,
-      "community_name": "theme-extraction.service.ts",
+      "community": 10,
+      "community_name": "metrics-calculator.util.ts",
       "norm_label": "theme-extraction.service.ts"
     },
     {
@@ -14604,8 +14604,8 @@
       "source_location": "L17",
       "_origin": "ast",
       "id": "backend_src_projects_services_wbs_shared_theme_extraction_service_themeextractionservice",
-      "community": 61,
-      "community_name": "theme-extraction.service.ts",
+      "community": 10,
+      "community_name": "metrics-calculator.util.ts",
       "norm_label": "themeextractionservice"
     },
     {
@@ -14615,8 +14615,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "backend_src_projects_services_wbs_shared_theme_extraction_service_ts_injectable",
-      "community": 61,
-      "community_name": "theme-extraction.service.ts",
+      "community": 10,
+      "community_name": "metrics-calculator.util.ts",
       "norm_label": "injectable"
     },
     {
@@ -14626,8 +14626,8 @@
       "source_location": "L18",
       "_origin": "ast",
       "id": "backend_src_projects_services_wbs_shared_theme_extraction_service_themeextractionservice_constructor",
-      "community": 61,
-      "community_name": "theme-extraction.service.ts",
+      "community": 10,
+      "community_name": "metrics-calculator.util.ts",
       "norm_label": ".constructor()"
     },
     {
@@ -14637,8 +14637,8 @@
       "source_location": "L24",
       "_origin": "ast",
       "id": "backend_src_projects_services_wbs_shared_theme_extraction_service_themeextractionservice_getthemesuggestions",
-      "community": 61,
-      "community_name": "theme-extraction.service.ts",
+      "community": 10,
+      "community_name": "metrics-calculator.util.ts",
       "norm_label": ".getthemesuggestions()"
     },
     {
@@ -14648,8 +14648,8 @@
       "source_location": "L162",
       "_origin": "ast",
       "id": "backend_src_projects_services_wbs_shared_theme_extraction_service_themeextractionservice_getthemesuggestionsforleaf",
-      "community": 61,
-      "community_name": "theme-extraction.service.ts",
+      "community": 10,
+      "community_name": "metrics-calculator.util.ts",
       "norm_label": ".getthemesuggestionsforleaf()"
     },
     {
@@ -14659,8 +14659,8 @@
       "source_location": "L224",
       "_origin": "ast",
       "id": "backend_src_projects_services_wbs_shared_theme_extraction_service_themeextractionservice_extractthemesegments",
-      "community": 61,
-      "community_name": "theme-extraction.service.ts",
+      "community": 10,
+      "community_name": "metrics-calculator.util.ts",
       "norm_label": ".extractthemesegments()"
     },
     {
@@ -14670,8 +14670,8 @@
       "source_location": "L245",
       "_origin": "ast",
       "id": "backend_src_projects_services_wbs_shared_theme_extraction_service_themeextractionservice_summarizethemefromsegment",
-      "community": 61,
-      "community_name": "theme-extraction.service.ts",
+      "community": 10,
+      "community_name": "metrics-calculator.util.ts",
       "norm_label": ".summarizethemefromsegment()"
     },
     {
@@ -14890,8 +14890,8 @@
       "source_location": "L207",
       "_origin": "ast",
       "id": "backend_src_projects_services_wbs_utils_metrics_calculator_util_cosinesimilarity",
-      "community": 61,
-      "community_name": "theme-extraction.service.ts",
+      "community": 10,
+      "community_name": "metrics-calculator.util.ts",
       "norm_label": "cosinesimilarity()"
     },
     {
@@ -14901,8 +14901,8 @@
       "source_location": "L222",
       "_origin": "ast",
       "id": "backend_src_projects_services_wbs_utils_metrics_calculator_util_normalizevector",
-      "community": 61,
-      "community_name": "theme-extraction.service.ts",
+      "community": 10,
+      "community_name": "metrics-calculator.util.ts",
       "norm_label": "normalizevector()"
     },
     {
@@ -14912,8 +14912,8 @@
       "source_location": "L229",
       "_origin": "ast",
       "id": "backend_src_projects_services_wbs_utils_metrics_calculator_util_kmeansclusters",
-      "community": 61,
-      "community_name": "theme-extraction.service.ts",
+      "community": 10,
+      "community_name": "metrics-calculator.util.ts",
       "norm_label": "kmeansclusters()"
     },
     {
@@ -24020,8 +24020,8 @@
       "source_location": "L230",
       "_origin": "ast",
       "id": "backend_src_tasks_services_traceability_rtm_crud_service_rtmcrudservice_unmaprequirementfromtask",
-      "community": 25,
-      "community_name": "RTMCrudService",
+      "community": 119,
+      "community_name": "Requirement",
       "norm_label": ".unmaprequirementfromtask()"
     },
     {
@@ -24031,8 +24031,8 @@
       "source_location": "L261",
       "_origin": "ast",
       "id": "backend_src_tasks_services_traceability_rtm_crud_service_rtmcrudservice_updaterequirementstatusifnolinkedactions",
-      "community": 25,
-      "community_name": "RTMCrudService",
+      "community": 119,
+      "community_name": "Requirement",
       "norm_label": "._updaterequirementstatusifnolinkedactions()"
     },
     {
@@ -24680,8 +24680,8 @@
       "source_location": "L51",
       "_origin": "ast",
       "id": "backend_src_tasks_services_traceability_rtm_service_rtmservice_unmaprequirementfromtask",
-      "community": 78,
-      "community_name": "RTMService",
+      "community": 119,
+      "community_name": "Requirement",
       "norm_label": ".unmaprequirementfromtask()"
     },
     {
@@ -27717,7 +27717,7 @@
       "_origin": "ast",
       "id": "backend_tests_unit_projects_controllers_projects_visualization_controller_spec",
       "community": 95,
-      "community_name": "pert-diagram.service.ts",
+      "community_name": "projects-x-matrix.service.ts",
       "norm_label": "projects-visualization.controller.spec.ts"
     },
     {
@@ -27728,7 +27728,7 @@
       "_origin": "ast",
       "id": "backend_tests_unit_projects_controllers_projects_wbs_controller_spec",
       "community": 62,
-      "community_name": "projects-wbs.controller.ts",
+      "community_name": "wbs.dto.ts",
       "norm_label": "projects-wbs.controller.spec.ts"
     },
     {
@@ -27739,7 +27739,7 @@
       "_origin": "ast",
       "id": "backend_tests_unit_projects_controllers_wave_and_risk_controller_spec",
       "community": 36,
-      "community_name": "wave-and-risk.controller.ts",
+      "community_name": "projects.module.ts",
       "norm_label": "wave-and-risk.controller.spec.ts"
     },
     {
@@ -27772,7 +27772,7 @@
       "_origin": "ast",
       "id": "backend_tests_unit_projects_execution_risk_service_spec",
       "community": 36,
-      "community_name": "wave-and-risk.controller.ts",
+      "community_name": "projects.module.ts",
       "norm_label": "projects/execution/risk.service.spec.ts"
     },
     {
@@ -27915,7 +27915,7 @@
       "_origin": "ast",
       "id": "backend_tests_unit_projects_services_execution_risk_service_spec",
       "community": 36,
-      "community_name": "wave-and-risk.controller.ts",
+      "community_name": "projects.module.ts",
       "norm_label": "services/execution/risk.service.spec.ts"
     },
     {
@@ -28014,7 +28014,7 @@
       "_origin": "ast",
       "id": "backend_tests_unit_projects_services_visualization_pert_diagram_service_spec",
       "community": 95,
-      "community_name": "pert-diagram.service.ts",
+      "community_name": "projects-x-matrix.service.ts",
       "norm_label": "services/visualization/pert-diagram.service.spec.ts"
     },
     {
@@ -28113,7 +28113,7 @@
       "_origin": "ast",
       "id": "backend_tests_unit_projects_services_wbs_shared_cache_service_spec",
       "community": 141,
-      "community_name": "wbs.dto.ts",
+      "community_name": "CacheService",
       "norm_label": "cache.service.spec.ts"
     },
     {
@@ -28134,8 +28134,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_tests_unit_projects_services_wbs_shared_theme_extraction_service_spec",
-      "community": 61,
-      "community_name": "theme-extraction.service.ts",
+      "community": 10,
+      "community_name": "metrics-calculator.util.ts",
       "norm_label": "theme-extraction.service.spec.ts"
     },
     {
@@ -28178,8 +28178,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_tests_unit_projects_services_wbs_utils_metrics_calculator_util_spec",
-      "community": 61,
-      "community_name": "theme-extraction.service.ts",
+      "community": 10,
+      "community_name": "metrics-calculator.util.ts",
       "norm_label": "metrics-calculator.util.spec.ts"
     },
     {
@@ -28212,7 +28212,7 @@
       "_origin": "ast",
       "id": "backend_tests_unit_projects_services_wbs_wbs_persistence_service_spec",
       "community": 141,
-      "community_name": "wbs.dto.ts",
+      "community_name": "CacheService",
       "norm_label": "wbs-persistence.service.spec.ts"
     },
     {
@@ -28266,8 +28266,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_tests_unit_projects_visualization_gantt_service_spec",
-      "community": 75,
-      "community_name": "projects.module.ts",
+      "community": 80,
+      "community_name": "ProjectDocument",
       "norm_label": "projects/visualization/gantt.service.spec.ts"
     },
     {
@@ -28278,7 +28278,7 @@
       "_origin": "ast",
       "id": "backend_tests_unit_projects_visualization_pert_diagram_service_spec",
       "community": 95,
-      "community_name": "pert-diagram.service.ts",
+      "community_name": "projects-x-matrix.service.ts",
       "norm_label": "projects/visualization/pert-diagram.service.spec.ts"
     },
     {
@@ -28288,8 +28288,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_tests_unit_projects_visualization_projects_x_matrix_service_spec",
-      "community": 75,
-      "community_name": "projects.module.ts",
+      "community": 95,
+      "community_name": "projects-x-matrix.service.ts",
       "norm_label": "projects-x-matrix.service.spec.ts"
     },
     {
@@ -46295,8 +46295,8 @@
       "source_location": "L17",
       "_origin": "ast",
       "id": "frontend_package_dependencies_axios",
-      "community": 175,
-      "community_name": "axios",
+      "community": 72,
+      "community_name": "dependencies",
       "norm_label": "axios"
     },
     {
@@ -46306,8 +46306,8 @@
       "source_location": "L17",
       "_origin": "ast",
       "id": "axios",
-      "community": 175,
-      "community_name": "axios",
+      "community": 72,
+      "community_name": "dependencies",
       "norm_label": "axios"
     },
     {
@@ -46339,8 +46339,8 @@
       "source_location": "L19",
       "_origin": "ast",
       "id": "frontend_package_dependencies_cytoscape_dagre",
-      "community": 72,
-      "community_name": "dependencies",
+      "community": 75,
+      "community_name": "cytoscape-dagre",
       "norm_label": "cytoscape-dagre"
     },
     {
@@ -46350,8 +46350,8 @@
       "source_location": "L19",
       "_origin": "ast",
       "id": "cytoscape_dagre",
-      "community": 72,
-      "community_name": "dependencies",
+      "community": 75,
+      "community_name": "cytoscape-dagre",
       "norm_label": "cytoscape-dagre"
     },
     {
@@ -82323,7 +82323,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "Backend/src/projects/projects.service.ts",
-      "source_location": "L127",
+      "source_location": "L134",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_src_projects_projects_service_projectsservice",
@@ -82433,7 +82433,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "Backend/src/projects/projects.service.ts",
-      "source_location": "L115",
+      "source_location": "L119",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_src_projects_projects_service_projectsservice",
@@ -82444,7 +82444,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "Backend/src/projects/projects.service.ts",
-      "source_location": "L139",
+      "source_location": "L148",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_src_projects_projects_service_projectsservice",
@@ -82455,7 +82455,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "Backend/src/projects/projects.service.ts",
-      "source_location": "L148",
+      "source_location": "L157",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_src_projects_projects_service_projectsservice",
@@ -82466,7 +82466,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "Backend/src/projects/projects.service.ts",
-      "source_location": "L83",
+      "source_location": "L86",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_src_projects_projects_service_projectsservice",
@@ -82477,7 +82477,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "Backend/src/projects/projects.service.ts",
-      "source_location": "L133",
+      "source_location": "L142",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_src_projects_projects_service_projectsservice",
@@ -82488,7 +82488,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "Backend/src/projects/projects.service.ts",
-      "source_location": "L91",
+      "source_location": "L94",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_src_projects_projects_service_projectsservice",
@@ -82823,7 +82823,7 @@
       "context": "generic_arg",
       "confidence": "EXTRACTED",
       "source_file": "Backend/src/projects/projects.service.ts",
-      "source_location": "L115",
+      "source_location": "L119",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_src_projects_projects_service_projectsservice_incrementhoursworked",
@@ -82835,7 +82835,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "Backend/src/projects/projects.service.ts",
-      "source_location": "L144",
+      "source_location": "L153",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_src_projects_projects_service_projectsservice_movetasktoproject",
@@ -82847,7 +82847,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "Backend/src/projects/projects.service.ts",
-      "source_location": "L141",
+      "source_location": "L150",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_src_projects_projects_service_projectsservice_movetasktoproject",
@@ -82859,7 +82859,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "Backend/src/projects/projects.service.ts",
-      "source_location": "L142",
+      "source_location": "L151",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_src_projects_projects_service_projectsservice_movetasktoproject",
@@ -82871,7 +82871,7 @@
       "context": "generic_arg",
       "confidence": "EXTRACTED",
       "source_file": "Backend/src/projects/projects.service.ts",
-      "source_location": "L148",
+      "source_location": "L157",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_src_projects_projects_service_projectsservice_recalculateprojectstats",
@@ -82884,7 +82884,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "Backend/src/projects/projects.service.ts",
-      "source_location": "L149",
+      "source_location": "L158",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_src_projects_projects_service_projectsservice_recalculateprojectstats",
@@ -175819,5 +175819,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "ef6c65b8c5d8e0d423ee5e1f6881258d5daa7036"
+  "built_at_commit": "e33e521b061b7065b52a7edb9455bf426896578d"
 }

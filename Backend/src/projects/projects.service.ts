@@ -77,10 +77,11 @@ export class ProjectsService {
     if (!id || id === 'null' || id === 'undefined' || !Types.ObjectId.isValid(id)) {
       throw new BadRequestException(`ID inválido: ${id}`);
     }
-    const updateData: Record<string, any> = { ...dto };
-    return await this.projectModel
-      .findByIdAndUpdate(new Types.ObjectId(id), { $set: updateData }, { new: true })
-      .exec();
+    const project = await this.projectModel.findById(new Types.ObjectId(id)).exec();
+    if (!project) return null;
+
+    Object.assign(project, dto);
+    return await project.save();
   }
 
   async remove(id: string): Promise<boolean> {
