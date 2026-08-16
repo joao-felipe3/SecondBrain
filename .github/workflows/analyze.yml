@@ -52,7 +52,7 @@ jobs:
           MONGODB_URI: mongodb://localhost:27017/second-brain-test
 
       - name: 📤 Upload coverage reports
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: coverage-reports
           path: |
@@ -259,7 +259,7 @@ jobs:
           ANALYZE: "true"
 
       - name: 📤 Upload Bundle Stats Artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: bundle-stats
           path: Frontend/stats.html
