@@ -17,6 +17,10 @@ jobs:
   coverage-analysis:
     name: 📊 Coverage Analysis
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+      issues: write
     defaults:
       run:
         working-directory: Backend

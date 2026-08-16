@@ -350,8 +350,8 @@
     "semantic_hash": ""
   },
   "Backend/src/projects/projects.service.ts": {
-    "mtime": 1785005462.6504943,
-    "ast_hash": "aca8668d5e1420abf31250a6cc78a955",
+    "mtime": 1786922166.1626449,
+    "ast_hash": "c6c557be917034f3cfb21bfcfa77fe5d",
     "semantic_hash": ""
   },
   "Backend/src/projects/schemas/drafts-validation.schema.ts": {
@@ -470,8 +470,8 @@
     "semantic_hash": ""
   },
   "Backend/src/projects/services/execution/project-stats.service.ts": {
-    "mtime": 1786329191.79074,
-    "ast_hash": "5defbf3726f1dc25b2026f85bdc4617f",
+    "mtime": 1786921090.652604,
+    "ast_hash": "ad50af7adfddf4559b20655af57f6ebb",
     "semantic_hash": ""
   },
   "Backend/src/projects/services/execution/risk.service.ts": {
@@ -2870,8 +2870,8 @@
     "semantic_hash": ""
   },
   ".github/workflows/analyze.yml": {
-    "mtime": 1785028624.693849,
-    "ast_hash": "f12dd511772dda65ab45e47153f56f82",
+    "mtime": 1786922068.2321284,
+    "ast_hash": "54c923b2f7f0666f9bae00431f0083f9",
     "semantic_hash": ""
   },
   ".github/workflows/build.yml": {

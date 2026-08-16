@@ -2705,8 +2705,8 @@
     "semantic_hash": ""
   },
   "Frontend/package.json": {
-    "mtime": 1785336726.0166578,
-    "ast_hash": "4d76ffe8f5f53e46566dd21c785dcf09",
+    "mtime": 1786916496.5241482,
+    "ast_hash": "21aeb758fff78ecfda2fafc946cd2721",
     "semantic_hash": ""
   },
   "Frontend/pages/Task/index.vue": {
@@ -2895,8 +2895,8 @@
     "semantic_hash": ""
   },
   ".github/workflows/test.yml": {
-    "mtime": 1784936494.9830503,
-    "ast_hash": "923c2d5b6726b49dd40f6497fabec3e7",
+    "mtime": 1786920050.8601892,
+    "ast_hash": "2f0c6cf3d6b76fcf2d2c566d75b53495",
     "semantic_hash": ""
   },
   ".github/workflows/wiki-index.yml": {
@@ -2905,8 +2905,8 @@
     "semantic_hash": ""
   },
   "Backend/README.md": {
-    "mtime": 1780519839.5624864,
-    "ast_hash": "c4432cbdfb7fedcd630b497fe2ea77e3",
+    "mtime": 1786916768.4430034,
+    "ast_hash": "3a5a2874db2c6163c5f89740c33aae18",
     "semantic_hash": ""
   },
   "Backend/llm-wiki/overview.md": {
@@ -3370,8 +3370,8 @@
     "semantic_hash": ""
   },
   "Project/FRONTEND_REFACTORING_PLAN.md": {
-    "mtime": 1786400231.9248178,
-    "ast_hash": "b202f7ffe31339616980e34d4441f77d",
+    "mtime": 1786914266.9157274,
+    "ast_hash": "808ddbcf8447c90fa41c48c7e2d33060",
     "semantic_hash": ""
   },
   "Project/adr/004-validation-strategy.md": {
