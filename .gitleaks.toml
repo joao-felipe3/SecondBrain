@@ -1,0 +1,10 @@
+title = "SecondBrain gitleaks configuration"
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Ignore legacy NestJS CircleCI badge token pattern from project template"
+paths = ['''Backend/README\.md''']
+regexes = ['''https://img\.shields\.io/circleci/build/github/nestjs/nest/master\?token=[A-Za-z0-9]+''']
+commits = ['''80aed532889e6a293f50ede648dd5d4ca5d09083''']
