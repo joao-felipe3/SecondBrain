@@ -33,7 +33,8 @@ export class ProjectStatsService {
       projectId === 'undefined' ||
       !Types.ObjectId.isValid(projectId)
     ) {
-      console.warn(`recalculateProjectStats: ID inválido ignorado: ${projectId}`);
+      const sanitizedProjectId = String(projectId).replace(/[\r\n]/g, '');
+      console.warn(`recalculateProjectStats: ID inválido ignorado: ${sanitizedProjectId}`);
       return null;
     }
 
