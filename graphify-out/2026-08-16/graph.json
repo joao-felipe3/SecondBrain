@@ -7344,8 +7344,8 @@
       "source_location": "L29",
       "_origin": "ast",
       "id": "backend_src_projects_interfaces_gantt_interface_buildtasknodesparams",
-      "community": 19,
-      "community_name": "cpm.interface.ts",
+      "community": 140,
+      "community_name": "cpm.service.ts",
       "norm_label": "buildtasknodesparams"
     },
     {
@@ -7388,8 +7388,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_src_projects_interfaces_pert_interface",
-      "community": 140,
-      "community_name": "cpm.service.ts",
+      "community": 168,
+      "community_name": "pert-helpers.util.ts",
       "norm_label": "pert.interface.ts"
     },
     {
@@ -7399,8 +7399,8 @@
       "source_location": "L6",
       "_origin": "ast",
       "id": "backend_src_projects_interfaces_pert_interface_buildperttasknodesparams",
-      "community": 140,
-      "community_name": "cpm.service.ts",
+      "community": 168,
+      "community_name": "pert-helpers.util.ts",
       "norm_label": "buildperttasknodesparams"
     },
     {
@@ -7410,8 +7410,8 @@
       "source_location": "L12",
       "_origin": "ast",
       "id": "backend_src_projects_interfaces_pert_interface_mappertnodesparams",
-      "community": 140,
-      "community_name": "cpm.service.ts",
+      "community": 168,
+      "community_name": "pert-helpers.util.ts",
       "norm_label": "mappertnodesparams"
     },
     {
@@ -7421,8 +7421,8 @@
       "source_location": "L18",
       "_origin": "ast",
       "id": "backend_src_projects_interfaces_pert_interface_mappertedgesparams",
-      "community": 140,
-      "community_name": "cpm.service.ts",
+      "community": 168,
+      "community_name": "pert-helpers.util.ts",
       "norm_label": "mappertedgesparams"
     },
     {
@@ -12294,8 +12294,8 @@
       "source_location": "L20",
       "_origin": "ast",
       "id": "backend_src_projects_services_visualization_pert_diagram_service_pertdiagramservice_getpertdiagramdata",
-      "community": 53,
-      "community_name": "CPMService",
+      "community": 69,
+      "community_name": "pert-diagram.dto.ts",
       "norm_label": ".getpertdiagramdata()"
     },
     {
@@ -12558,8 +12558,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_src_projects_services_visualization_utils_pert_helpers_util",
-      "community": 140,
-      "community_name": "cpm.service.ts",
+      "community": 168,
+      "community_name": "pert-helpers.util.ts",
       "norm_label": "pert-helpers.util.ts"
     },
     {
@@ -12569,8 +12569,8 @@
       "source_location": "L11",
       "_origin": "ast",
       "id": "backend_src_projects_services_visualization_utils_pert_helpers_util_round2",
-      "community": 140,
-      "community_name": "cpm.service.ts",
+      "community": 168,
+      "community_name": "pert-helpers.util.ts",
       "norm_label": "round2()"
     },
     {
@@ -12580,8 +12580,8 @@
       "source_location": "L15",
       "_origin": "ast",
       "id": "backend_src_projects_services_visualization_utils_pert_helpers_util_tominutes",
-      "community": 140,
-      "community_name": "cpm.service.ts",
+      "community": 168,
+      "community_name": "pert-helpers.util.ts",
       "norm_label": "tominutes()"
     },
     {
@@ -12591,8 +12591,8 @@
       "source_location": "L25",
       "_origin": "ast",
       "id": "backend_src_projects_services_visualization_utils_pert_helpers_util_buildtasknodes",
-      "community": 140,
-      "community_name": "cpm.service.ts",
+      "community": 168,
+      "community_name": "pert-helpers.util.ts",
       "norm_label": "buildtasknodes()"
     },
     {
@@ -12602,8 +12602,8 @@
       "source_location": "L59",
       "_origin": "ast",
       "id": "backend_src_projects_services_visualization_utils_pert_helpers_util_computetasklevels",
-      "community": 140,
-      "community_name": "cpm.service.ts",
+      "community": 168,
+      "community_name": "pert-helpers.util.ts",
       "norm_label": "computetasklevels()"
     },
     {
@@ -12613,8 +12613,8 @@
       "source_location": "L102",
       "_origin": "ast",
       "id": "backend_src_projects_services_visualization_utils_pert_helpers_util_mapnodes",
-      "community": 140,
-      "community_name": "cpm.service.ts",
+      "community": 168,
+      "community_name": "pert-helpers.util.ts",
       "norm_label": "mapnodes()"
     },
     {
@@ -12624,8 +12624,8 @@
       "source_location": "L136",
       "_origin": "ast",
       "id": "backend_src_projects_services_visualization_utils_pert_helpers_util_mapedges",
-      "community": 140,
-      "community_name": "cpm.service.ts",
+      "community": 168,
+      "community_name": "pert-helpers.util.ts",
       "norm_label": "mapedges()"
     },
     {
@@ -17058,7 +17058,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_dto_dependencies_cpm_diagnostics_dto",
       "community": 118,
-      "community_name": "cpm-diagnostics.dto.ts",
+      "community_name": "cpm.interface.ts",
       "norm_label": "cpm-diagnostics.dto.ts"
     },
     {
@@ -17069,7 +17069,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_dto_dependencies_cpm_diagnostics_dto_slackbucketsdto",
       "community": 118,
-      "community_name": "cpm-diagnostics.dto.ts",
+      "community_name": "cpm.interface.ts",
       "norm_label": "slackbucketsdto"
     },
     {
@@ -17080,7 +17080,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_dto_dependencies_cpm_diagnostics_dto_ts_apiproperty",
       "community": 118,
-      "community_name": "cpm-diagnostics.dto.ts",
+      "community_name": "cpm.interface.ts",
       "norm_label": "apiproperty"
     },
     {
@@ -17091,7 +17091,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_dto_dependencies_cpm_diagnostics_dto_topunlockerdto",
       "community": 118,
-      "community_name": "cpm-diagnostics.dto.ts",
+      "community_name": "cpm.interface.ts",
       "norm_label": "topunlockerdto"
     },
     {
@@ -17102,7 +17102,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_dto_dependencies_cpm_diagnostics_dto_topbottleneckdto",
       "community": 118,
-      "community_name": "cpm-diagnostics.dto.ts",
+      "community_name": "cpm.interface.ts",
       "norm_label": "topbottleneckdto"
     },
     {
@@ -17113,7 +17113,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_dto_dependencies_cpm_diagnostics_dto_missingdependencysampledto",
       "community": 118,
-      "community_name": "cpm-diagnostics.dto.ts",
+      "community_name": "cpm.interface.ts",
       "norm_label": "missingdependencysampledto"
     },
     {
@@ -17124,7 +17124,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_dto_dependencies_cpm_diagnostics_dto_cpmvalidationdto",
       "community": 118,
-      "community_name": "cpm-diagnostics.dto.ts",
+      "community_name": "cpm.interface.ts",
       "norm_label": "cpmvalidationdto"
     },
     {
@@ -17135,7 +17135,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_dto_dependencies_cpm_diagnostics_dto_cpmdiagnosticsdto",
       "community": 118,
-      "community_name": "cpm-diagnostics.dto.ts",
+      "community_name": "cpm.interface.ts",
       "norm_label": "cpmdiagnosticsdto"
     },
     {
@@ -17146,7 +17146,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_dto_dependencies_cpm_diagnostics_dto_cpmdiagnosticsdto_constructor",
       "community": 118,
-      "community_name": "cpm-diagnostics.dto.ts",
+      "community_name": "cpm.interface.ts",
       "norm_label": ".constructor()"
     },
     {
@@ -17541,8 +17541,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_src_tasks_dto_dependencies_create_dependency_dto",
-      "community": 168,
-      "community_name": "UpsertDependencyDto",
+      "community": 140,
+      "community_name": "cpm.service.ts",
       "norm_label": "create-dependency.dto.ts"
     },
     {
@@ -17552,8 +17552,8 @@
       "source_location": "L5",
       "_origin": "ast",
       "id": "backend_src_tasks_dto_dependencies_create_dependency_dto_createdependencydto",
-      "community": 168,
-      "community_name": "UpsertDependencyDto",
+      "community": 140,
+      "community_name": "cpm.service.ts",
       "norm_label": "createdependencydto"
     },
     {
@@ -17563,8 +17563,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "backend_src_tasks_dto_dependencies_create_dependency_dto_ts_apiproperty",
-      "community": 168,
-      "community_name": "UpsertDependencyDto",
+      "community": 140,
+      "community_name": "cpm.service.ts",
       "norm_label": "apiproperty"
     },
     {
@@ -17574,8 +17574,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "backend_src_tasks_dto_dependencies_create_dependency_dto_ts_isstring",
-      "community": 168,
-      "community_name": "UpsertDependencyDto",
+      "community": 140,
+      "community_name": "cpm.service.ts",
       "norm_label": "isstring"
     },
     {
@@ -17585,8 +17585,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "backend_src_tasks_dto_dependencies_create_dependency_dto_ts_isnotempty",
-      "community": 168,
-      "community_name": "UpsertDependencyDto",
+      "community": 140,
+      "community_name": "cpm.service.ts",
       "norm_label": "isnotempty"
     },
     {
@@ -17596,8 +17596,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "backend_src_tasks_dto_dependencies_create_dependency_dto_ts_isoptional",
-      "community": 168,
-      "community_name": "UpsertDependencyDto",
+      "community": 140,
+      "community_name": "cpm.service.ts",
       "norm_label": "isoptional"
     },
     {
@@ -17607,8 +17607,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "backend_src_tasks_dto_dependencies_create_dependency_dto_ts_isboolean",
-      "community": 168,
-      "community_name": "UpsertDependencyDto",
+      "community": 140,
+      "community_name": "cpm.service.ts",
       "norm_label": "isboolean"
     },
     {
@@ -17717,8 +17717,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_src_tasks_dto_dependencies_index",
-      "community": 168,
-      "community_name": "UpsertDependencyDto",
+      "community": 140,
+      "community_name": "cpm.service.ts",
       "norm_label": "dto/dependencies/index.ts"
     },
     {
@@ -17871,8 +17871,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_src_tasks_dto_dependencies_upsert_dependency_dto",
-      "community": 168,
-      "community_name": "UpsertDependencyDto",
+      "community": 140,
+      "community_name": "cpm.service.ts",
       "norm_label": "upsert-dependency.dto.ts"
     },
     {
@@ -17882,8 +17882,8 @@
       "source_location": "L5",
       "_origin": "ast",
       "id": "backend_src_tasks_dto_dependencies_upsert_dependency_dto_upsertdependencydto",
-      "community": 168,
-      "community_name": "UpsertDependencyDto",
+      "community": 140,
+      "community_name": "cpm.service.ts",
       "norm_label": "upsertdependencydto"
     },
     {
@@ -17893,8 +17893,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "backend_src_tasks_dto_dependencies_upsert_dependency_dto_ts_apiproperty",
-      "community": 168,
-      "community_name": "UpsertDependencyDto",
+      "community": 140,
+      "community_name": "cpm.service.ts",
       "norm_label": "apiproperty"
     },
     {
@@ -17904,8 +17904,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "backend_src_tasks_dto_dependencies_upsert_dependency_dto_ts_isstring",
-      "community": 168,
-      "community_name": "UpsertDependencyDto",
+      "community": 140,
+      "community_name": "cpm.service.ts",
       "norm_label": "isstring"
     },
     {
@@ -17915,8 +17915,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "backend_src_tasks_dto_dependencies_upsert_dependency_dto_ts_isnotempty",
-      "community": 168,
-      "community_name": "UpsertDependencyDto",
+      "community": 140,
+      "community_name": "cpm.service.ts",
       "norm_label": "isnotempty"
     },
     {
@@ -17926,8 +17926,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "backend_src_tasks_dto_dependencies_upsert_dependency_dto_ts_isoptional",
-      "community": 168,
-      "community_name": "UpsertDependencyDto",
+      "community": 140,
+      "community_name": "cpm.service.ts",
       "norm_label": "isoptional"
     },
     {
@@ -17937,8 +17937,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "backend_src_tasks_dto_dependencies_upsert_dependency_dto_ts_isboolean",
-      "community": 168,
-      "community_name": "UpsertDependencyDto",
+      "community": 140,
+      "community_name": "cpm.service.ts",
       "norm_label": "isboolean"
     },
     {
@@ -19301,7 +19301,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_src_tasks_interfaces_cpm_interface",
-      "community": 19,
+      "community": 118,
       "community_name": "cpm.interface.ts",
       "norm_label": "cpm.interface.ts"
     },
@@ -19323,8 +19323,8 @@
       "source_location": "L8",
       "_origin": "ast",
       "id": "backend_src_tasks_interfaces_cpm_interface_tasknode",
-      "community": 140,
-      "community_name": "cpm.service.ts",
+      "community": 168,
+      "community_name": "pert-helpers.util.ts",
       "norm_label": "tasknode"
     },
     {
@@ -19368,7 +19368,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_interfaces_cpm_interface_slackbuckets",
       "community": 118,
-      "community_name": "cpm-diagnostics.dto.ts",
+      "community_name": "cpm.interface.ts",
       "norm_label": "slackbuckets"
     },
     {
@@ -19379,7 +19379,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_interfaces_cpm_interface_topunlocker",
       "community": 118,
-      "community_name": "cpm-diagnostics.dto.ts",
+      "community_name": "cpm.interface.ts",
       "norm_label": "topunlocker"
     },
     {
@@ -19390,7 +19390,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_interfaces_cpm_interface_topbottleneck",
       "community": 118,
-      "community_name": "cpm-diagnostics.dto.ts",
+      "community_name": "cpm.interface.ts",
       "norm_label": "topbottleneck"
     },
     {
@@ -19401,7 +19401,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_interfaces_cpm_interface_missingdependencysample",
       "community": 118,
-      "community_name": "cpm-diagnostics.dto.ts",
+      "community_name": "cpm.interface.ts",
       "norm_label": "missingdependencysample"
     },
     {
@@ -19412,7 +19412,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_interfaces_cpm_interface_cpmvalidation",
       "community": 118,
-      "community_name": "cpm-diagnostics.dto.ts",
+      "community_name": "cpm.interface.ts",
       "norm_label": "cpmvalidation"
     },
     {
@@ -19423,7 +19423,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_interfaces_cpm_interface_cpmdiagnostics",
       "community": 118,
-      "community_name": "cpm-diagnostics.dto.ts",
+      "community_name": "cpm.interface.ts",
       "norm_label": "cpmdiagnostics"
     },
     {
@@ -19455,7 +19455,7 @@
       "source_location": "L125",
       "_origin": "ast",
       "id": "backend_src_tasks_interfaces_cpm_interface_validatedependenciesparams",
-      "community": 19,
+      "community": 118,
       "community_name": "cpm.interface.ts",
       "norm_label": "validatedependenciesparams"
     },
@@ -19466,7 +19466,7 @@
       "source_location": "L131",
       "_origin": "ast",
       "id": "backend_src_tasks_interfaces_cpm_interface_computegraphdegreesparams",
-      "community": 19,
+      "community": 118,
       "community_name": "cpm.interface.ts",
       "norm_label": "computegraphdegreesparams"
     },
@@ -19477,7 +19477,7 @@
       "source_location": "L137",
       "_origin": "ast",
       "id": "backend_src_tasks_interfaces_cpm_interface_findendnodeparams",
-      "community": 19,
+      "community": 118,
       "community_name": "cpm.interface.ts",
       "norm_label": "findendnodeparams"
     },
@@ -19488,7 +19488,7 @@
       "source_location": "L143",
       "_origin": "ast",
       "id": "backend_src_tasks_interfaces_cpm_interface_evaluatealignmentparams",
-      "community": 19,
+      "community": 118,
       "community_name": "cpm.interface.ts",
       "norm_label": "evaluatealignmentparams"
     },
@@ -19499,7 +19499,7 @@
       "source_location": "L150",
       "_origin": "ast",
       "id": "backend_src_tasks_interfaces_cpm_interface_findbestpredecessorparams",
-      "community": 19,
+      "community": 118,
       "community_name": "cpm.interface.ts",
       "norm_label": "findbestpredecessorparams"
     },
@@ -19510,7 +19510,7 @@
       "source_location": "L157",
       "_origin": "ast",
       "id": "backend_src_tasks_interfaces_cpm_interface_buildcriticalpathparams",
-      "community": 19,
+      "community": 118,
       "community_name": "cpm.interface.ts",
       "norm_label": "buildcriticalpathparams"
     },
@@ -19521,7 +19521,7 @@
       "source_location": "L163",
       "_origin": "ast",
       "id": "backend_src_tasks_interfaces_cpm_interface_generatealertsparams",
-      "community": 19,
+      "community": 118,
       "community_name": "cpm.interface.ts",
       "norm_label": "generatealertsparams"
     },
@@ -19532,7 +19532,7 @@
       "source_location": "L174",
       "_origin": "ast",
       "id": "backend_src_tasks_interfaces_cpm_interface_createcpmdiagnosticsparams",
-      "community": 19,
+      "community": 118,
       "community_name": "cpm.interface.ts",
       "norm_label": "createcpmdiagnosticsparams"
     },
@@ -19543,7 +19543,7 @@
       "source_location": "L189",
       "_origin": "ast",
       "id": "backend_src_tasks_interfaces_cpm_interface_cpmcontext",
-      "community": 19,
+      "community": 118,
       "community_name": "cpm.interface.ts",
       "norm_label": "cpmcontext"
     },
@@ -19555,7 +19555,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_interfaces_cpm_interface_cpmpasssummary",
       "community": 19,
-      "community_name": "cpm.interface.ts",
+      "community_name": "cpm-passes.utils.ts",
       "norm_label": "cpmpasssummary"
     },
     {
@@ -19565,7 +19565,7 @@
       "source_location": "L202",
       "_origin": "ast",
       "id": "backend_src_tasks_interfaces_cpm_interface_cpmpassresult",
-      "community": 19,
+      "community": 118,
       "community_name": "cpm.interface.ts",
       "norm_label": "cpmpassresult"
     },
@@ -19576,7 +19576,7 @@
       "source_location": "L209",
       "_origin": "ast",
       "id": "backend_src_tasks_interfaces_cpm_interface_cpmanalyticsresult",
-      "community": 19,
+      "community": 118,
       "community_name": "cpm.interface.ts",
       "norm_label": "cpmanalyticsresult"
     },
@@ -19587,7 +19587,7 @@
       "source_location": "L221",
       "_origin": "ast",
       "id": "backend_src_tasks_interfaces_cpm_interface_alertdiagnosticsinput",
-      "community": 19,
+      "community": 118,
       "community_name": "cpm.interface.ts",
       "norm_label": "alertdiagnosticsinput"
     },
@@ -19598,8 +19598,8 @@
       "source_location": "L228",
       "_origin": "ast",
       "id": "backend_src_tasks_interfaces_cpm_interface_forwardpassmaps",
-      "community": 19,
-      "community_name": "cpm.interface.ts",
+      "community": 140,
+      "community_name": "cpm.service.ts",
       "norm_label": "forwardpassmaps"
     },
     {
@@ -19610,7 +19610,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_interfaces_cpm_interface_backwardpassmaps",
       "community": 19,
-      "community_name": "cpm.interface.ts",
+      "community_name": "cpm-passes.utils.ts",
       "norm_label": "backwardpassmaps"
     },
     {
@@ -19621,7 +19621,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_interfaces_cpm_interface_buildforwardpassmapsparams",
       "community": 19,
-      "community_name": "cpm.interface.ts",
+      "community_name": "cpm-passes.utils.ts",
       "norm_label": "buildforwardpassmapsparams"
     },
     {
@@ -19631,8 +19631,8 @@
       "source_location": "L245",
       "_origin": "ast",
       "id": "backend_src_tasks_interfaces_cpm_interface_updateforwardsuccessorparams",
-      "community": 19,
-      "community_name": "cpm.interface.ts",
+      "community": 140,
+      "community_name": "cpm.service.ts",
       "norm_label": "updateforwardsuccessorparams"
     },
     {
@@ -19643,7 +19643,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_interfaces_cpm_interface_forwardpassparams",
       "community": 19,
-      "community_name": "cpm.interface.ts",
+      "community_name": "cpm-passes.utils.ts",
       "norm_label": "forwardpassparams"
     },
     {
@@ -19654,7 +19654,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_interfaces_cpm_interface_buildbackwardpassmapsparams",
       "community": 19,
-      "community_name": "cpm.interface.ts",
+      "community_name": "cpm-passes.utils.ts",
       "norm_label": "buildbackwardpassmapsparams"
     },
     {
@@ -19665,7 +19665,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_interfaces_cpm_interface_updatebackwardpredecessorparams",
       "community": 19,
-      "community_name": "cpm.interface.ts",
+      "community_name": "cpm-passes.utils.ts",
       "norm_label": "updatebackwardpredecessorparams"
     },
     {
@@ -19676,7 +19676,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_interfaces_cpm_interface_backwardpassparams",
       "community": 19,
-      "community_name": "cpm.interface.ts",
+      "community_name": "cpm-passes.utils.ts",
       "norm_label": "backwardpassparams"
     },
     {
@@ -19686,8 +19686,8 @@
       "source_location": "L282",
       "_origin": "ast",
       "id": "backend_src_tasks_interfaces_cpm_interface_processforwardpassqueueparams",
-      "community": 19,
-      "community_name": "cpm.interface.ts",
+      "community": 140,
+      "community_name": "cpm.service.ts",
       "norm_label": "processforwardpassqueueparams"
     },
     {
@@ -19698,7 +19698,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_interfaces_cpm_interface_processbackwardpassqueueparams",
       "community": 19,
-      "community_name": "cpm.interface.ts",
+      "community_name": "cpm-passes.utils.ts",
       "norm_label": "processbackwardpassqueueparams"
     },
     {
@@ -20489,8 +20489,8 @@
       "source_location": "L7",
       "_origin": "ast",
       "id": "backend_src_tasks_schemas_task_dependency_schema_dependencytype",
-      "community": 19,
-      "community_name": "cpm.interface.ts",
+      "community": 140,
+      "community_name": "cpm.service.ts",
       "norm_label": "dependencytype"
     },
     {
@@ -21314,8 +21314,8 @@
       "source_location": "L44",
       "_origin": "ast",
       "id": "backend_src_tasks_services_dependencies_cpm_service_cpmservice_adddependency",
-      "community": 140,
-      "community_name": "cpm.service.ts",
+      "community": 53,
+      "community_name": "CPMService",
       "norm_label": ".adddependency()"
     },
     {
@@ -22074,7 +22074,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_services_dependencies_utils_cpm_passes_utils",
       "community": 19,
-      "community_name": "cpm.interface.ts",
+      "community_name": "cpm-passes.utils.ts",
       "norm_label": "cpm-passes.utils.ts"
     },
     {
@@ -22085,7 +22085,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_services_dependencies_utils_cpm_passes_utils_logger",
       "community": 19,
-      "community_name": "cpm.interface.ts",
+      "community_name": "cpm-passes.utils.ts",
       "norm_label": "logger"
     },
     {
@@ -22096,7 +22096,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_services_dependencies_utils_cpm_passes_utils_normalizerelationship",
       "community": 19,
-      "community_name": "cpm.interface.ts",
+      "community_name": "cpm-passes.utils.ts",
       "norm_label": "normalizerelationship()"
     },
     {
@@ -22107,7 +22107,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_services_dependencies_utils_cpm_passes_utils_extractexplicitedges",
       "community": 19,
-      "community_name": "cpm.interface.ts",
+      "community_name": "cpm-passes.utils.ts",
       "norm_label": "extractexplicitedges()"
     },
     {
@@ -22118,7 +22118,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_services_dependencies_utils_cpm_passes_utils_extractfallbackedges",
       "community": 19,
-      "community_name": "cpm.interface.ts",
+      "community_name": "cpm-passes.utils.ts",
       "norm_label": "extractfallbackedges()"
     },
     {
@@ -22129,7 +22129,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_services_dependencies_utils_cpm_passes_utils_getdependencyedges",
       "community": 19,
-      "community_name": "cpm.interface.ts",
+      "community_name": "cpm-passes.utils.ts",
       "norm_label": "getdependencyedges()"
     },
     {
@@ -22140,7 +22140,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_services_dependencies_utils_cpm_passes_utils_buildedgemap",
       "community": 19,
-      "community_name": "cpm.interface.ts",
+      "community_name": "cpm-passes.utils.ts",
       "norm_label": "buildedgemap()"
     },
     {
@@ -22151,7 +22151,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_services_dependencies_utils_cpm_passes_utils_buildforwardpassmaps",
       "community": 19,
-      "community_name": "cpm.interface.ts",
+      "community_name": "cpm-passes.utils.ts",
       "norm_label": "buildforwardpassmaps()"
     },
     {
@@ -22162,7 +22162,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_services_dependencies_utils_cpm_passes_utils_updateforwardsuccessor",
       "community": 19,
-      "community_name": "cpm.interface.ts",
+      "community_name": "cpm-passes.utils.ts",
       "norm_label": "updateforwardsuccessor()"
     },
     {
@@ -22173,7 +22173,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_services_dependencies_utils_cpm_passes_utils_initializeforwardqueue",
       "community": 19,
-      "community_name": "cpm.interface.ts",
+      "community_name": "cpm-passes.utils.ts",
       "norm_label": "initializeforwardqueue()"
     },
     {
@@ -22184,7 +22184,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_services_dependencies_utils_cpm_passes_utils_processforwardpassqueue",
       "community": 19,
-      "community_name": "cpm.interface.ts",
+      "community_name": "cpm-passes.utils.ts",
       "norm_label": "processforwardpassqueue()"
     },
     {
@@ -22195,7 +22195,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_services_dependencies_utils_cpm_passes_utils_validateforwardcycle",
       "community": 19,
-      "community_name": "cpm.interface.ts",
+      "community_name": "cpm-passes.utils.ts",
       "norm_label": "validateforwardcycle()"
     },
     {
@@ -22206,7 +22206,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_services_dependencies_utils_cpm_passes_utils_forwardpass",
       "community": 19,
-      "community_name": "cpm.interface.ts",
+      "community_name": "cpm-passes.utils.ts",
       "norm_label": "forwardpass()"
     },
     {
@@ -22217,7 +22217,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_services_dependencies_utils_cpm_passes_utils_computecandidatebounds",
       "community": 19,
-      "community_name": "cpm.interface.ts",
+      "community_name": "cpm-passes.utils.ts",
       "norm_label": "computecandidatebounds()"
     },
     {
@@ -22228,7 +22228,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_services_dependencies_utils_cpm_passes_utils_buildbackwardpassmaps",
       "community": 19,
-      "community_name": "cpm.interface.ts",
+      "community_name": "cpm-passes.utils.ts",
       "norm_label": "buildbackwardpassmaps()"
     },
     {
@@ -22239,7 +22239,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_services_dependencies_utils_cpm_passes_utils_updatebackwardpredecessor",
       "community": 19,
-      "community_name": "cpm.interface.ts",
+      "community_name": "cpm-passes.utils.ts",
       "norm_label": "updatebackwardpredecessor()"
     },
     {
@@ -22250,7 +22250,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_services_dependencies_utils_cpm_passes_utils_initializebackwardqueue",
       "community": 19,
-      "community_name": "cpm.interface.ts",
+      "community_name": "cpm-passes.utils.ts",
       "norm_label": "initializebackwardqueue()"
     },
     {
@@ -22261,7 +22261,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_services_dependencies_utils_cpm_passes_utils_processbackwardpassqueue",
       "community": 19,
-      "community_name": "cpm.interface.ts",
+      "community_name": "cpm-passes.utils.ts",
       "norm_label": "processbackwardpassqueue()"
     },
     {
@@ -22272,7 +22272,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_services_dependencies_utils_cpm_passes_utils_validatebackwardcycle",
       "community": 19,
-      "community_name": "cpm.interface.ts",
+      "community_name": "cpm-passes.utils.ts",
       "norm_label": "validatebackwardcycle()"
     },
     {
@@ -22283,7 +22283,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_services_dependencies_utils_cpm_passes_utils_backwardpass",
       "community": 19,
-      "community_name": "cpm.interface.ts",
+      "community_name": "cpm-passes.utils.ts",
       "norm_label": "backwardpass()"
     },
     {
@@ -28035,8 +28035,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_tests_unit_projects_services_visualization_utils_pert_helpers_util_spec",
-      "community": 140,
-      "community_name": "cpm.service.ts",
+      "community": 168,
+      "community_name": "pert-helpers.util.ts",
       "norm_label": "pert-helpers.util.spec.ts"
     },
     {
@@ -28542,7 +28542,7 @@
       "_origin": "ast",
       "id": "backend_tests_unit_tasks_services_dependencies_utils_cpm_passes_utils_spec",
       "community": 19,
-      "community_name": "cpm.interface.ts",
+      "community_name": "cpm-passes.utils.ts",
       "norm_label": "cpm-passes.utils.spec.ts"
     },
     {
@@ -46339,8 +46339,8 @@
       "source_location": "L19",
       "_origin": "ast",
       "id": "frontend_package_dependencies_cytoscape_dagre",
-      "community": 72,
-      "community_name": "dependencies",
+      "community": 211,
+      "community_name": "cytoscape-dagre",
       "norm_label": "cytoscape-dagre"
     },
     {
@@ -46350,8 +46350,8 @@
       "source_location": "L19",
       "_origin": "ast",
       "id": "cytoscape_dagre",
-      "community": 72,
-      "community_name": "dependencies",
+      "community": 211,
+      "community_name": "cytoscape-dagre",
       "norm_label": "cytoscape-dagre"
     },
     {
@@ -46427,8 +46427,8 @@
       "source_location": "L23",
       "_origin": "ast",
       "id": "frontend_package_dependencies_formdata_polyfill",
-      "community": 192,
-      "community_name": "formdata-polyfill",
+      "community": 72,
+      "community_name": "dependencies",
       "norm_label": "formdata-polyfill"
     },
     {
@@ -46438,8 +46438,8 @@
       "source_location": "L23",
       "_origin": "ast",
       "id": "formdata_polyfill",
-      "community": 192,
-      "community_name": "formdata-polyfill",
+      "community": 72,
+      "community_name": "dependencies",
       "norm_label": "formdata-polyfill"
     },
     {
@@ -48800,7 +48800,7 @@
       "label": "Description",
       "file_type": "document",
       "source_file": "Backend/README.md",
-      "source_location": "L21",
+      "source_location": "L24",
       "_origin": "ast",
       "id": "backend_readme_description",
       "community": 200,
@@ -48811,7 +48811,7 @@
       "label": "Project setup",
       "file_type": "document",
       "source_file": "Backend/README.md",
-      "source_location": "L25",
+      "source_location": "L28",
       "_origin": "ast",
       "id": "backend_readme_project_setup",
       "community": 200,
@@ -48822,7 +48822,7 @@
       "label": "AI configuration (Gemini / Gemma)",
       "file_type": "document",
       "source_file": "Backend/README.md",
-      "source_location": "L27",
+      "source_location": "L30",
       "_origin": "ast",
       "id": "backend_readme_ai_configuration_gemini_gemma",
       "community": 200,
@@ -48833,7 +48833,7 @@
       "label": "Compile and run the project",
       "file_type": "document",
       "source_file": "Backend/README.md",
-      "source_location": "L42",
+      "source_location": "L45",
       "_origin": "ast",
       "id": "backend_readme_compile_and_run_the_project",
       "community": 200,
@@ -48844,7 +48844,7 @@
       "label": "Run tests",
       "file_type": "document",
       "source_file": "Backend/README.md",
-      "source_location": "L55",
+      "source_location": "L58",
       "_origin": "ast",
       "id": "backend_readme_run_tests",
       "community": 200,
@@ -48855,7 +48855,7 @@
       "label": "Deployment",
       "file_type": "document",
       "source_file": "Backend/README.md",
-      "source_location": "L70",
+      "source_location": "L73",
       "_origin": "ast",
       "id": "backend_readme_deployment",
       "community": 200,
@@ -48866,7 +48866,7 @@
       "label": "Resources",
       "file_type": "document",
       "source_file": "Backend/README.md",
-      "source_location": "L83",
+      "source_location": "L86",
       "_origin": "ast",
       "id": "backend_readme_resources",
       "community": 200,
@@ -48877,7 +48877,7 @@
       "label": "Support",
       "file_type": "document",
       "source_file": "Backend/README.md",
-      "source_location": "L96",
+      "source_location": "L99",
       "_origin": "ast",
       "id": "backend_readme_support",
       "community": 200,
@@ -48888,7 +48888,7 @@
       "label": "Stay in touch",
       "file_type": "document",
       "source_file": "Backend/README.md",
-      "source_location": "L100",
+      "source_location": "L103",
       "_origin": "ast",
       "id": "backend_readme_stay_in_touch",
       "community": 200,
@@ -48899,7 +48899,7 @@
       "label": "License",
       "file_type": "document",
       "source_file": "Backend/README.md",
-      "source_location": "L106",
+      "source_location": "L109",
       "_origin": "ast",
       "id": "backend_readme_license",
       "community": 200,
@@ -171102,7 +171102,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "Backend/README.md",
-      "source_location": "L27",
+      "source_location": "L30",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_readme",
@@ -171113,7 +171113,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "Backend/README.md",
-      "source_location": "L42",
+      "source_location": "L45",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_readme",
@@ -171124,7 +171124,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "Backend/README.md",
-      "source_location": "L70",
+      "source_location": "L73",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_readme",
@@ -171135,7 +171135,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "Backend/README.md",
-      "source_location": "L21",
+      "source_location": "L24",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_readme",
@@ -171146,7 +171146,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "Backend/README.md",
-      "source_location": "L106",
+      "source_location": "L109",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_readme",
@@ -171157,7 +171157,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "Backend/README.md",
-      "source_location": "L25",
+      "source_location": "L28",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_readme",
@@ -171168,7 +171168,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "Backend/README.md",
-      "source_location": "L83",
+      "source_location": "L86",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_readme",
@@ -171179,7 +171179,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "Backend/README.md",
-      "source_location": "L55",
+      "source_location": "L58",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_readme",
@@ -171190,7 +171190,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "Backend/README.md",
-      "source_location": "L100",
+      "source_location": "L103",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_readme",
@@ -171201,7 +171201,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "Backend/README.md",
-      "source_location": "L96",
+      "source_location": "L99",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_readme",
@@ -175819,5 +175819,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "ef6c65b8c5d8e0d423ee5e1f6881258d5daa7036"
+  "built_at_commit": "17f6e0380f5b07b4835f07cdf50a96a3b9dc11bd"
 }

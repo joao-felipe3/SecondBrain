@@ -22,7 +22,7 @@
     "echarts": "^6.0.0",
     "formdata-polyfill": "^4.0.10",
     "lucide-vue-next": "^0.510.0",
-    "nuxt": "^4.4.7",
+    "nuxt": "^4.5.1",
     "pinia": "^3.0.2",
     "sass": "^1.88.0",
     "sass-loader": "^13.3.3",

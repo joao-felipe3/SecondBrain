@@ -97,7 +97,7 @@
 ### 3.4. Micro-Interações & Sprites de NPCs (Easter Eggs & Props)
 
 - [x] **NPCs (Anão & Elfa):**
-  - [x] Posicionar sprite `.png` dos NPCs em `GuildNpcSpeechBubble.vue`.
+  - [ ] Posicionar sprite `.png` dos NPCs em `GuildNpcSpeechBubble.vue`.
   - [ ] Aplicar animação CSS de respiração idle (`@keyframes npcIdle`).
   - [x] Clique nos NPCs ativa balão de fala com frases dinâmicas de progresso do usuário.
   - [ ] Spritesheet animado do Anão Ferreiro batendo o martelo na bigorna em loop.
