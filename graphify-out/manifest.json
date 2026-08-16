@@ -2895,8 +2895,8 @@
     "semantic_hash": ""
   },
   ".github/workflows/test.yml": {
-    "mtime": 1784936494.9830503,
-    "ast_hash": "923c2d5b6726b49dd40f6497fabec3e7",
+    "mtime": 1786920050.8601892,
+    "ast_hash": "2f0c6cf3d6b76fcf2d2c566d75b53495",
     "semantic_hash": ""
   },
   ".github/workflows/wiki-index.yml": {
