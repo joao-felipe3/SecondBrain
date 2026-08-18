@@ -45,7 +45,7 @@ const pointer = {
   vx: 0,
   vy: 0,
   active: false,
-  radius: 140, // Raio de influência sutil do vento
+  radius: 112, // Raio intermediário suave
 };
 
 const GOLD_PALETTE = [
@@ -228,7 +228,7 @@ function render() {
     const p = particles[i];
     p.life++;
 
-    // 1. Interação de repulsão suave com o cursor / touch
+    // 1. Interação de repulsão orgânica e sutil com o cursor / touch
     let excitedGlow = 0;
     if (isPointerActive) {
       const dx = p.x - pointer.x;
@@ -238,28 +238,36 @@ function render() {
       if (distSq < pointerRadiusSq && distSq > 0.001) {
         const dist = Math.sqrt(distSq);
         const norm = 1 - dist / pointer.radius;
-        // Curva suave de repulsão (smoothstep)
-        const force = norm * norm * 3.2;
+        // Força sutil calibrada
+        const force = norm * norm * 0.9;
 
         const nx = dx / dist;
         const ny = dy / dist;
 
-        // Empurrão radial do vento
-        p.vx += nx * force * 0.65;
-        p.vy += ny * force * 0.65;
+        // Impulso radial equilibrado
+        p.vx += nx * force * 0.28;
+        p.vy += ny * force * 0.28;
 
-        // Vorticidade sutil provocada pela velocidade do cursor
-        p.vx += pointer.vx * norm * 0.22;
-        p.vy += pointer.vy * norm * 0.22;
+        // Vorticidade sutil com o rastro do cursor
+        p.vx += pointer.vx * norm * 0.05;
+        p.vy += pointer.vy * norm * 0.05;
 
-        // Excitação mágica de brilho ao toque/proximidade
-        excitedGlow = norm * 0.35;
+        // Excitação de brilho orgânica
+        excitedGlow = norm * 0.25;
       }
     }
 
-    // 2. Amortecimento suave de velocidade para retornar ao fluxo natural
-    p.vx += (p.baseVx - p.vx) * 0.045;
-    p.vy += (p.baseVy - p.vy) * 0.045;
+    // 2. Amortecimento suave de velocidade para retornar harmoniosamente ao fluxo natural
+    p.vx += (p.baseVx - p.vx) * 0.065;
+    p.vy += (p.baseVy - p.vy) * 0.065;
+
+    // Limite de velocidade para manter movimento calmo e sedoso
+    const maxSpeed = 1.8;
+    const speed = Math.hypot(p.vx, p.vy);
+    if (speed > maxSpeed) {
+      p.vx = (p.vx / speed) * maxSpeed;
+      p.vy = (p.vy / speed) * maxSpeed;
+    }
 
     // 3. Atualização de posição com convecção e oscilação orgânica
     p.x += p.vx + Math.sin(p.life * p.waveFreq + p.phase) * p.waveAmp;
