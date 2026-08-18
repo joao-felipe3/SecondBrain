@@ -56,7 +56,7 @@
 
 ---
 
-## 🏰 3. Tela: Saguão Central da Guilda (`/`) 🟡 EM PROGRESSO (14/21)
+## 🏰 3. Tela: Saguão Central da Guilda (`/`) 🟡 EM PROGRESSO (15/21)
 
 ### 3.1. Cenário Base & Camadas Estáticas
 
@@ -70,7 +70,7 @@
 - [x] **Lareira ao Fundo:** Animação de pulso do fogo + emissão de fagulhas em loop (`GuildParticlesCanvas.vue` + `@keyframes sparkRise`).
 - [x] **Banners nas Colunas:** Aplicar balanço suave de vento (`@keyframes bannerSway`) com `transform-origin: top center`.
 - [ ] **Velas & Candelabros Secundários:** Spritesheet de chama variante para velinhas das mesas/balcão.
-- [ ] **Partículas Interativas de Poeira Dourada:** Poeira/fagulhas reagindo com repulsão sutil ao movimento do cursor.
+- [x] **Partículas Interativas de Poeira Dourada:** Poeira/fagulhas reagindo com repulsão sutil ao movimento do cursor.
 
 ### 3.3. Portais & Interatividade de Navegação
 
