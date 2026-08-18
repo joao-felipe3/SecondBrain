@@ -1,16 +1,16 @@
 # Graph Report - SecondBrain  (2026-08-18)
 
 ## Corpus Check
-- 634 files · ~7,413,622 words
+- 634 files · ~7,413,656 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 4860 nodes · 10533 edges · 270 communities (231 shown, 39 thin omitted)
+- 4860 nodes · 10533 edges · 271 communities (232 shown, 39 thin omitted)
 - Extraction: 100% EXTRACTED · 0% INFERRED · 0% AMBIGUOUS · INFERRED: 35 edges (avg confidence: 0.6)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `472e19ef`
+- Built from commit: `d7d0de68`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -133,7 +133,7 @@
 - DatePickerField.vue
 - SuggestionsAiService
 - rolling-wave-helpers.util.spec.ts
-- cpm.interface.ts
+- cpm-diagnostics.dto.ts
 - RTMMappingService
 - task.ts
 - useConversionHelpers.ts
@@ -221,6 +221,7 @@
 - ts-node
 - ADR-002: Separação de Módulos por Domínio
 - ADR-009: Observabilidade de Banco de Dados e Logging de Queries Lentas (Mongoose Interceptor)
+- cpm.interface.ts
 - 📐 Especificação Arquitetural e Visão de Sistema — SecondBrain
 - @types/supertest
 - typescript
@@ -297,7 +298,7 @@
 ## Import Cycles
 - None detected.
 
-## Communities (270 total, 39 thin omitted)
+## Communities (271 total, 39 thin omitted)
 
 ### Community 0 - "draft-generation-helpers.util.ts"
 Cohesion: 0.19
@@ -333,7 +334,7 @@ Nodes (29): answerEdited, answers, budgetValidation, canProceed, conversationId,
 
 ### Community 8 - "PertDiagramVisualization.vue"
 Cohesion: 0.04
-Nodes (60): activeImpactNodeId, applyGraph(), applyImpactSimulationForNode(), applyImpactSummaryToGraph(), {
+Nodes (57): activeImpactNodeId, applyGraph(), applyImpactSimulationForNode(), applyImpactSummaryToGraph(), {
   applyLayoutPass,
 }, {
   applyRenderFailureState,
@@ -341,7 +342,7 @@ Nodes (60): activeImpactNodeId, applyGraph(), applyImpactSimulationForNode(), ap
   bindPertGraphEvents,
 }, {
   buildElements,
-} (+52 more)
+} (+49 more)
 
 ### Community 9 - "CreateTaskDto"
 Cohesion: 0.11
@@ -416,8 +417,8 @@ Cohesion: 0.05
 Nodes (38): adaptiveGroupMap, blockedIds, buildGroupMapByDepth(), criticalEdgesOnly, detailGraph, displayBlockedIds, displayEdges, displayFocusIds (+30 more)
 
 ### Community 27 - "pert/index.ts"
-Cohesion: 0.07
-Nodes (35): PertDiagramDataResponse, PertDiagramEdge, PertDiagramNode, PertDiagramStatistics, usePertDiagramData(), PertNodeInsights, PertTooltipState, usePertDiagramState() (+27 more)
+Cohesion: 0.06
+Nodes (38): PertDiagramDataResponse, PertDiagramEdge, PertDiagramNode, PertDiagramStatistics, usePertDiagramData(), PertNodeInsights, PertTooltipState, usePertDiagramState() (+30 more)
 
 ### Community 28 - "x-matrix-helpers.util.ts"
 Cohesion: 0.09
@@ -484,8 +485,8 @@ Cohesion: 0.10
 Nodes (18): AllocateTasksWithDeadlineOptions, BuildWavesOptions, DeterministicPartitionResult, DeterministicWaveResult, NormalizeTasksOptions, PartitionTasksDeterministicDto, TimelineMetrics, TimelineMetricsOptions (+10 more)
 
 ### Community 46 - "tasks.service.ts"
-Cohesion: 0.07
-Nodes (23): InjectModel, HabitsController, ApiOperation, ApiResponse, ApiTags, Controller, Get, Query (+15 more)
+Cohesion: 0.08
+Nodes (22): HabitsController, ApiOperation, ApiResponse, ApiTags, Controller, Get, Query, GetHabitsDashboardDto (+14 more)
 
 ### Community 47 - "PertEstimateDto"
 Cohesion: 0.16
@@ -513,7 +514,7 @@ Nodes (29): autoGenerateRequirements(), autoGenerating, autoMapping, autoMapRequ
 
 ### Community 53 - "CPMService"
 Cohesion: 0.09
-Nodes (21): CPMController, ApiBearerAuth, ApiOperation, ApiResponse, ApiTags, Body, Controller, Delete (+13 more)
+Nodes (22): InjectModel, CPMController, ApiBearerAuth, ApiOperation, ApiResponse, ApiTags, Body, Controller (+14 more)
 
 ### Community 54 - "recurring-calculation.utils.ts"
 Cohesion: 0.19
@@ -668,8 +669,8 @@ Cohesion: 0.11
 Nodes (14): CreateMicroTaskDto, ChecklistItemDto, RecurringExceptionDto, RecurringTaskOccurrenceDto, ApiProperty, ApiPropertyOptional, IsBoolean, IsDate (+6 more)
 
 ### Community 93 - "cpm-passes.utils.ts"
-Cohesion: 0.11
-Nodes (29): BackwardPassMaps, BackwardPassParams, BuildBackwardPassMapsParams, BuildForwardPassMapsParams, ForwardPassMaps, ForwardPassParams, ProcessBackwardPassQueueParams, ProcessForwardPassQueueParams (+21 more)
+Cohesion: 0.20
+Nodes (19): backwardPass(), buildBackwardPassMaps(), buildEdgeMap(), buildForwardPassMaps(), computeCandidateBounds(), extractExplicitEdges(), extractFallbackEdges(), forwardPass() (+11 more)
 
 ### Community 94 - "LeafTasksBufferService"
 Cohesion: 0.23
@@ -763,9 +764,9 @@ Nodes (4): NextStepsPromptParams, buildGeminiNextStepsPrompt(), SuggestionsAiSer
 Cohesion: 0.24
 Nodes (13): addDays(), buildTaskScheduleMetrics(), endOfDay(), estimateTaskHours(), startOfDay(), buildUpdateOperationForTask(), buildWaveSummary(), calculateEffectiveWaveDates() (+5 more)
 
-### Community 118 - "cpm.interface.ts"
-Cohesion: 0.11
-Nodes (26): CPMDiagnosticsDto, CPMValidationDto, MissingDependencySampleDto, SlackBucketsDto, TopBottleneckDto, TopUnlockerDto, ApiProperty, AlertDiagnosticsInput (+18 more)
+### Community 118 - "cpm-diagnostics.dto.ts"
+Cohesion: 0.22
+Nodes (13): CPMDiagnosticsDto, CPMValidationDto, MissingDependencySampleDto, SlackBucketsDto, TopBottleneckDto, TopUnlockerDto, ApiProperty, CPMDiagnostics (+5 more)
 
 ### Community 119 - "RTMMappingService"
 Cohesion: 0.28
@@ -1030,6 +1031,10 @@ Nodes (11): ADR-002: Separação de Módulos por Domínio, Alternativas consider
 ### Community 205 - "ADR-009: Observabilidade de Banco de Dados e Logging de Queries Lentas (Mongoose Interceptor)"
 Cohesion: 0.18
 Nodes (11): ADR-009: Observabilidade de Banco de Dados e Logging de Queries Lentas (Mongoose Interceptor), ADRs Relacionadas, Consequências, Contexto, Decisão, Detalhes de Aplicação no SecondBrain, Drivers (por que essa escolha atende aos requisitos), `MongooseLoggerInterceptor` (+3 more)
+
+### Community 206 - "cpm.interface.ts"
+Cohesion: 0.08
+Nodes (23): AlertDiagnosticsInput, BackwardPassMaps, BackwardPassParams, BuildBackwardPassMapsParams, BuildCriticalPathParams, BuildForwardPassMapsParams, ComputeGraphDegreesParams, CPMAnalyticsResult (+15 more)
 
 ### Community 207 - "📐 Especificação Arquitetural e Visão de Sistema — SecondBrain"
 Cohesion: 0.18

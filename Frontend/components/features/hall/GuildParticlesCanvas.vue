@@ -69,7 +69,11 @@ function createEmber(width: number, height: number): Particle {
   const baseY =
     height * 0.495 + (Math.random() * (height * 0.015) - height * 0.0075);
 
-  const theme = EMBER_PALETTE[Math.floor(Math.random() * EMBER_PALETTE.length)];
+  const themeIndex = Math.floor(Math.random() * EMBER_PALETTE.length);
+  const theme = EMBER_PALETTE[themeIndex] ?? {
+    main: "#ffaa00",
+    glow: "#ff5500",
+  };
   const maxLife = Math.random() * 110 + 60;
 
   return {
@@ -100,7 +104,11 @@ function createDust(
   height: number,
   spawnAnywhere = true,
 ): Particle {
-  const theme = GOLD_PALETTE[Math.floor(Math.random() * GOLD_PALETTE.length)];
+  const themeIndex = Math.floor(Math.random() * GOLD_PALETTE.length);
+  const theme = GOLD_PALETTE[themeIndex] ?? {
+    main: "#ffd700",
+    glow: "#ffb700",
+  };
   const size = Math.random() * 2.2 + 0.8;
   const isSpecial = Math.random() < 0.25 && size > 1.6;
 
@@ -226,6 +234,7 @@ function render() {
 
   for (let i = 0; i < particles.length; i++) {
     const p = particles[i];
+    if (!p) continue;
     p.life++;
 
     // 1. Interação de repulsão orgânica e sutil com o cursor / touch
@@ -353,8 +362,8 @@ function handlePointerLeave() {
 }
 
 function handleTouchMove(e: TouchEvent) {
-  if (e.touches.length > 0) {
-    const touch = e.touches[0];
+  const touch = e.touches[0];
+  if (touch) {
     updatePointerCoordinates(touch.clientX, touch.clientY);
   }
 }

@@ -5617,8 +5617,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "backend_src_projects_controllers_wave_and_risk_controller_ts_injectmodel",
-      "community": 46,
-      "community_name": "tasks.service.ts",
+      "community": 53,
+      "community_name": "CPMService",
       "norm_label": "injectmodel"
     },
     {
@@ -5694,8 +5694,8 @@
       "source_location": "L47",
       "_origin": "ast",
       "id": "backend_src_projects_controllers_wave_and_risk_controller_waveandriskcontroller_constructor",
-      "community": 46,
-      "community_name": "tasks.service.ts",
+      "community": 53,
+      "community_name": "CPMService",
       "norm_label": ".constructor()"
     },
     {
@@ -17058,7 +17058,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_dto_dependencies_cpm_diagnostics_dto",
       "community": 118,
-      "community_name": "cpm.interface.ts",
+      "community_name": "cpm-diagnostics.dto.ts",
       "norm_label": "cpm-diagnostics.dto.ts"
     },
     {
@@ -17069,7 +17069,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_dto_dependencies_cpm_diagnostics_dto_slackbucketsdto",
       "community": 118,
-      "community_name": "cpm.interface.ts",
+      "community_name": "cpm-diagnostics.dto.ts",
       "norm_label": "slackbucketsdto"
     },
     {
@@ -17080,7 +17080,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_dto_dependencies_cpm_diagnostics_dto_ts_apiproperty",
       "community": 118,
-      "community_name": "cpm.interface.ts",
+      "community_name": "cpm-diagnostics.dto.ts",
       "norm_label": "apiproperty"
     },
     {
@@ -17091,7 +17091,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_dto_dependencies_cpm_diagnostics_dto_topunlockerdto",
       "community": 118,
-      "community_name": "cpm.interface.ts",
+      "community_name": "cpm-diagnostics.dto.ts",
       "norm_label": "topunlockerdto"
     },
     {
@@ -17102,7 +17102,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_dto_dependencies_cpm_diagnostics_dto_topbottleneckdto",
       "community": 118,
-      "community_name": "cpm.interface.ts",
+      "community_name": "cpm-diagnostics.dto.ts",
       "norm_label": "topbottleneckdto"
     },
     {
@@ -17113,7 +17113,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_dto_dependencies_cpm_diagnostics_dto_missingdependencysampledto",
       "community": 118,
-      "community_name": "cpm.interface.ts",
+      "community_name": "cpm-diagnostics.dto.ts",
       "norm_label": "missingdependencysampledto"
     },
     {
@@ -17124,7 +17124,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_dto_dependencies_cpm_diagnostics_dto_cpmvalidationdto",
       "community": 118,
-      "community_name": "cpm.interface.ts",
+      "community_name": "cpm-diagnostics.dto.ts",
       "norm_label": "cpmvalidationdto"
     },
     {
@@ -17135,7 +17135,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_dto_dependencies_cpm_diagnostics_dto_cpmdiagnosticsdto",
       "community": 118,
-      "community_name": "cpm.interface.ts",
+      "community_name": "cpm-diagnostics.dto.ts",
       "norm_label": "cpmdiagnosticsdto"
     },
     {
@@ -17146,7 +17146,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_dto_dependencies_cpm_diagnostics_dto_cpmdiagnosticsdto_constructor",
       "community": 118,
-      "community_name": "cpm.interface.ts",
+      "community_name": "cpm-diagnostics.dto.ts",
       "norm_label": ".constructor()"
     },
     {
@@ -17718,7 +17718,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_dto_dependencies_index",
       "community": 118,
-      "community_name": "cpm.interface.ts",
+      "community_name": "cpm-diagnostics.dto.ts",
       "norm_label": "dto/dependencies/index.ts"
     },
     {
@@ -19301,7 +19301,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_src_tasks_interfaces_cpm_interface",
-      "community": 118,
+      "community": 206,
       "community_name": "cpm.interface.ts",
       "norm_label": "cpm.interface.ts"
     },
@@ -19368,7 +19368,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_interfaces_cpm_interface_slackbuckets",
       "community": 118,
-      "community_name": "cpm.interface.ts",
+      "community_name": "cpm-diagnostics.dto.ts",
       "norm_label": "slackbuckets"
     },
     {
@@ -19379,7 +19379,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_interfaces_cpm_interface_topunlocker",
       "community": 118,
-      "community_name": "cpm.interface.ts",
+      "community_name": "cpm-diagnostics.dto.ts",
       "norm_label": "topunlocker"
     },
     {
@@ -19390,7 +19390,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_interfaces_cpm_interface_topbottleneck",
       "community": 118,
-      "community_name": "cpm.interface.ts",
+      "community_name": "cpm-diagnostics.dto.ts",
       "norm_label": "topbottleneck"
     },
     {
@@ -19401,7 +19401,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_interfaces_cpm_interface_missingdependencysample",
       "community": 118,
-      "community_name": "cpm.interface.ts",
+      "community_name": "cpm-diagnostics.dto.ts",
       "norm_label": "missingdependencysample"
     },
     {
@@ -19412,7 +19412,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_interfaces_cpm_interface_cpmvalidation",
       "community": 118,
-      "community_name": "cpm.interface.ts",
+      "community_name": "cpm-diagnostics.dto.ts",
       "norm_label": "cpmvalidation"
     },
     {
@@ -19423,7 +19423,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_interfaces_cpm_interface_cpmdiagnostics",
       "community": 118,
-      "community_name": "cpm.interface.ts",
+      "community_name": "cpm-diagnostics.dto.ts",
       "norm_label": "cpmdiagnostics"
     },
     {
@@ -19455,7 +19455,7 @@
       "source_location": "L125",
       "_origin": "ast",
       "id": "backend_src_tasks_interfaces_cpm_interface_validatedependenciesparams",
-      "community": 118,
+      "community": 206,
       "community_name": "cpm.interface.ts",
       "norm_label": "validatedependenciesparams"
     },
@@ -19466,7 +19466,7 @@
       "source_location": "L131",
       "_origin": "ast",
       "id": "backend_src_tasks_interfaces_cpm_interface_computegraphdegreesparams",
-      "community": 118,
+      "community": 206,
       "community_name": "cpm.interface.ts",
       "norm_label": "computegraphdegreesparams"
     },
@@ -19477,7 +19477,7 @@
       "source_location": "L137",
       "_origin": "ast",
       "id": "backend_src_tasks_interfaces_cpm_interface_findendnodeparams",
-      "community": 118,
+      "community": 206,
       "community_name": "cpm.interface.ts",
       "norm_label": "findendnodeparams"
     },
@@ -19488,7 +19488,7 @@
       "source_location": "L143",
       "_origin": "ast",
       "id": "backend_src_tasks_interfaces_cpm_interface_evaluatealignmentparams",
-      "community": 118,
+      "community": 206,
       "community_name": "cpm.interface.ts",
       "norm_label": "evaluatealignmentparams"
     },
@@ -19499,7 +19499,7 @@
       "source_location": "L150",
       "_origin": "ast",
       "id": "backend_src_tasks_interfaces_cpm_interface_findbestpredecessorparams",
-      "community": 118,
+      "community": 206,
       "community_name": "cpm.interface.ts",
       "norm_label": "findbestpredecessorparams"
     },
@@ -19510,7 +19510,7 @@
       "source_location": "L157",
       "_origin": "ast",
       "id": "backend_src_tasks_interfaces_cpm_interface_buildcriticalpathparams",
-      "community": 118,
+      "community": 206,
       "community_name": "cpm.interface.ts",
       "norm_label": "buildcriticalpathparams"
     },
@@ -19521,7 +19521,7 @@
       "source_location": "L163",
       "_origin": "ast",
       "id": "backend_src_tasks_interfaces_cpm_interface_generatealertsparams",
-      "community": 118,
+      "community": 206,
       "community_name": "cpm.interface.ts",
       "norm_label": "generatealertsparams"
     },
@@ -19532,7 +19532,7 @@
       "source_location": "L174",
       "_origin": "ast",
       "id": "backend_src_tasks_interfaces_cpm_interface_createcpmdiagnosticsparams",
-      "community": 118,
+      "community": 206,
       "community_name": "cpm.interface.ts",
       "norm_label": "createcpmdiagnosticsparams"
     },
@@ -19543,7 +19543,7 @@
       "source_location": "L189",
       "_origin": "ast",
       "id": "backend_src_tasks_interfaces_cpm_interface_cpmcontext",
-      "community": 118,
+      "community": 206,
       "community_name": "cpm.interface.ts",
       "norm_label": "cpmcontext"
     },
@@ -19554,7 +19554,7 @@
       "source_location": "L197",
       "_origin": "ast",
       "id": "backend_src_tasks_interfaces_cpm_interface_cpmpasssummary",
-      "community": 118,
+      "community": 206,
       "community_name": "cpm.interface.ts",
       "norm_label": "cpmpasssummary"
     },
@@ -19565,7 +19565,7 @@
       "source_location": "L202",
       "_origin": "ast",
       "id": "backend_src_tasks_interfaces_cpm_interface_cpmpassresult",
-      "community": 118,
+      "community": 206,
       "community_name": "cpm.interface.ts",
       "norm_label": "cpmpassresult"
     },
@@ -19576,7 +19576,7 @@
       "source_location": "L209",
       "_origin": "ast",
       "id": "backend_src_tasks_interfaces_cpm_interface_cpmanalyticsresult",
-      "community": 118,
+      "community": 206,
       "community_name": "cpm.interface.ts",
       "norm_label": "cpmanalyticsresult"
     },
@@ -19587,7 +19587,7 @@
       "source_location": "L221",
       "_origin": "ast",
       "id": "backend_src_tasks_interfaces_cpm_interface_alertdiagnosticsinput",
-      "community": 118,
+      "community": 206,
       "community_name": "cpm.interface.ts",
       "norm_label": "alertdiagnosticsinput"
     },
@@ -19598,8 +19598,8 @@
       "source_location": "L228",
       "_origin": "ast",
       "id": "backend_src_tasks_interfaces_cpm_interface_forwardpassmaps",
-      "community": 93,
-      "community_name": "cpm-passes.utils.ts",
+      "community": 206,
+      "community_name": "cpm.interface.ts",
       "norm_label": "forwardpassmaps"
     },
     {
@@ -19609,8 +19609,8 @@
       "source_location": "L234",
       "_origin": "ast",
       "id": "backend_src_tasks_interfaces_cpm_interface_backwardpassmaps",
-      "community": 93,
-      "community_name": "cpm-passes.utils.ts",
+      "community": 206,
+      "community_name": "cpm.interface.ts",
       "norm_label": "backwardpassmaps"
     },
     {
@@ -19620,8 +19620,8 @@
       "source_location": "L239",
       "_origin": "ast",
       "id": "backend_src_tasks_interfaces_cpm_interface_buildforwardpassmapsparams",
-      "community": 93,
-      "community_name": "cpm-passes.utils.ts",
+      "community": 206,
+      "community_name": "cpm.interface.ts",
       "norm_label": "buildforwardpassmapsparams"
     },
     {
@@ -19631,8 +19631,8 @@
       "source_location": "L245",
       "_origin": "ast",
       "id": "backend_src_tasks_interfaces_cpm_interface_updateforwardsuccessorparams",
-      "community": 93,
-      "community_name": "cpm-passes.utils.ts",
+      "community": 206,
+      "community_name": "cpm.interface.ts",
       "norm_label": "updateforwardsuccessorparams"
     },
     {
@@ -19642,8 +19642,8 @@
       "source_location": "L254",
       "_origin": "ast",
       "id": "backend_src_tasks_interfaces_cpm_interface_forwardpassparams",
-      "community": 93,
-      "community_name": "cpm-passes.utils.ts",
+      "community": 206,
+      "community_name": "cpm.interface.ts",
       "norm_label": "forwardpassparams"
     },
     {
@@ -19653,8 +19653,8 @@
       "source_location": "L259",
       "_origin": "ast",
       "id": "backend_src_tasks_interfaces_cpm_interface_buildbackwardpassmapsparams",
-      "community": 93,
-      "community_name": "cpm-passes.utils.ts",
+      "community": 206,
+      "community_name": "cpm.interface.ts",
       "norm_label": "buildbackwardpassmapsparams"
     },
     {
@@ -19664,8 +19664,8 @@
       "source_location": "L266",
       "_origin": "ast",
       "id": "backend_src_tasks_interfaces_cpm_interface_updatebackwardpredecessorparams",
-      "community": 93,
-      "community_name": "cpm-passes.utils.ts",
+      "community": 206,
+      "community_name": "cpm.interface.ts",
       "norm_label": "updatebackwardpredecessorparams"
     },
     {
@@ -19675,8 +19675,8 @@
       "source_location": "L276",
       "_origin": "ast",
       "id": "backend_src_tasks_interfaces_cpm_interface_backwardpassparams",
-      "community": 93,
-      "community_name": "cpm-passes.utils.ts",
+      "community": 206,
+      "community_name": "cpm.interface.ts",
       "norm_label": "backwardpassparams"
     },
     {
@@ -19686,8 +19686,8 @@
       "source_location": "L282",
       "_origin": "ast",
       "id": "backend_src_tasks_interfaces_cpm_interface_processforwardpassqueueparams",
-      "community": 93,
-      "community_name": "cpm-passes.utils.ts",
+      "community": 206,
+      "community_name": "cpm.interface.ts",
       "norm_label": "processforwardpassqueueparams"
     },
     {
@@ -19697,8 +19697,8 @@
       "source_location": "L290",
       "_origin": "ast",
       "id": "backend_src_tasks_interfaces_cpm_interface_processbackwardpassqueueparams",
-      "community": 93,
-      "community_name": "cpm-passes.utils.ts",
+      "community": 206,
+      "community_name": "cpm.interface.ts",
       "norm_label": "processbackwardpassqueueparams"
     },
     {
@@ -29913,7 +29913,7 @@
       "label": "updatePointerCoordinates()",
       "file_type": "code",
       "source_file": "Frontend/components/features/hall/GuildParticlesCanvas.vue",
-      "source_location": "L324",
+      "source_location": "L332",
       "_origin": "ast",
       "id": "frontend_components_features_hall_guildparticlescanvas_updatepointercoordinates",
       "community": 150,
@@ -29924,7 +29924,7 @@
       "label": "handlePointerMove()",
       "file_type": "code",
       "source_file": "Frontend/components/features/hall/GuildParticlesCanvas.vue",
-      "source_location": "L339",
+      "source_location": "L347",
       "_origin": "ast",
       "id": "frontend_components_features_hall_guildparticlescanvas_handlepointermove",
       "community": 150,
@@ -29935,7 +29935,7 @@
       "label": "handlePointerLeave()",
       "file_type": "code",
       "source_file": "Frontend/components/features/hall/GuildParticlesCanvas.vue",
-      "source_location": "L343",
+      "source_location": "L351",
       "_origin": "ast",
       "id": "frontend_components_features_hall_guildparticlescanvas_handlepointerleave",
       "community": 150,
@@ -29946,7 +29946,7 @@
       "label": "handleTouchMove()",
       "file_type": "code",
       "source_file": "Frontend/components/features/hall/GuildParticlesCanvas.vue",
-      "source_location": "L347",
+      "source_location": "L355",
       "_origin": "ast",
       "id": "frontend_components_features_hall_guildparticlescanvas_handletouchmove",
       "community": 150,
@@ -29957,7 +29957,7 @@
       "label": "handleTouchEnd()",
       "file_type": "code",
       "source_file": "Frontend/components/features/hall/GuildParticlesCanvas.vue",
-      "source_location": "L354",
+      "source_location": "L362",
       "_origin": "ast",
       "id": "frontend_components_features_hall_guildparticlescanvas_handletouchend",
       "community": 150,
@@ -29968,7 +29968,7 @@
       "label": "handleResize()",
       "file_type": "code",
       "source_file": "Frontend/components/features/hall/GuildParticlesCanvas.vue",
-      "source_location": "L358",
+      "source_location": "L366",
       "_origin": "ast",
       "id": "frontend_components_features_hall_guildparticlescanvas_handleresize",
       "community": 150,
@@ -44568,8 +44568,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "frontend_composables_features_pert_usepertgrapheventbindings",
-      "community": 8,
-      "community_name": "PertDiagramVisualization.vue",
+      "community": 27,
+      "community_name": "pert/index.ts",
       "norm_label": "usepertgrapheventbindings.ts"
     },
     {
@@ -44579,8 +44579,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "frontend_composables_features_pert_usepertgrapheventbindings_bindpertgrapheventsparams",
-      "community": 8,
-      "community_name": "PertDiagramVisualization.vue",
+      "community": 27,
+      "community_name": "pert/index.ts",
       "norm_label": "bindpertgrapheventsparams"
     },
     {
@@ -44590,8 +44590,8 @@
       "source_location": "L24",
       "_origin": "ast",
       "id": "frontend_composables_features_pert_usepertgrapheventbindings_usepertgrapheventbindings",
-      "community": 8,
-      "community_name": "PertDiagramVisualization.vue",
+      "community": 27,
+      "community_name": "pert/index.ts",
       "norm_label": "usepertgrapheventbindings()"
     },
     {
@@ -44601,8 +44601,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "frontend_composables_features_pert_usepertgraphinitializer",
-      "community": 8,
-      "community_name": "PertDiagramVisualization.vue",
+      "community": 27,
+      "community_name": "pert/index.ts",
       "norm_label": "usepertgraphinitializer.ts"
     },
     {
@@ -44612,8 +44612,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "frontend_composables_features_pert_usepertgraphinitializer_initializepertgraphparams",
-      "community": 8,
-      "community_name": "PertDiagramVisualization.vue",
+      "community": 27,
+      "community_name": "pert/index.ts",
       "norm_label": "initializepertgraphparams"
     },
     {
@@ -44623,8 +44623,8 @@
       "source_location": "L24",
       "_origin": "ast",
       "id": "frontend_composables_features_pert_usepertgraphinitializer_initializepertgraphresult",
-      "community": 8,
-      "community_name": "PertDiagramVisualization.vue",
+      "community": 27,
+      "community_name": "pert/index.ts",
       "norm_label": "initializepertgraphresult"
     },
     {
@@ -44634,8 +44634,8 @@
       "source_location": "L31",
       "_origin": "ast",
       "id": "frontend_composables_features_pert_usepertgraphinitializer_usepertgraphinitializer",
-      "community": 8,
-      "community_name": "PertDiagramVisualization.vue",
+      "community": 27,
+      "community_name": "pert/index.ts",
       "norm_label": "usepertgraphinitializer()"
     },
     {
@@ -44711,8 +44711,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "frontend_composables_features_pert_usepertinteractionmanager",
-      "community": 27,
-      "community_name": "pert/index.ts",
+      "community": 8,
+      "community_name": "PertDiagramVisualization.vue",
       "norm_label": "usepertinteractionmanager.ts"
     },
     {
@@ -44722,8 +44722,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "frontend_composables_features_pert_usepertinteractionmanager_usepertinteractionmanager",
-      "community": 27,
-      "community_name": "pert/index.ts",
+      "community": 8,
+      "community_name": "PertDiagramVisualization.vue",
       "norm_label": "usepertinteractionmanager()"
     },
     {
@@ -44733,8 +44733,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "frontend_composables_features_pert_usepertintersectionmetrics",
-      "community": 27,
-      "community_name": "pert/index.ts",
+      "community": 8,
+      "community_name": "PertDiagramVisualization.vue",
       "norm_label": "usepertintersectionmetrics.ts"
     },
     {
@@ -44744,8 +44744,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "frontend_composables_features_pert_usepertintersectionmetrics_segment",
-      "community": 27,
-      "community_name": "pert/index.ts",
+      "community": 8,
+      "community_name": "PertDiagramVisualization.vue",
       "norm_label": "segment"
     },
     {
@@ -44755,8 +44755,8 @@
       "source_location": "L11",
       "_origin": "ast",
       "id": "frontend_composables_features_pert_usepertintersectionmetrics_usepertintersectionmetrics",
-      "community": 27,
-      "community_name": "pert/index.ts",
+      "community": 8,
+      "community_name": "PertDiagramVisualization.vue",
       "norm_label": "usepertintersectionmetrics()"
     },
     {
@@ -44997,8 +44997,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "frontend_composables_features_pert_usepertrenderfailurestate",
-      "community": 27,
-      "community_name": "pert/index.ts",
+      "community": 8,
+      "community_name": "PertDiagramVisualization.vue",
       "norm_label": "usepertrenderfailurestate.ts"
     },
     {
@@ -45008,8 +45008,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "frontend_composables_features_pert_usepertrenderfailurestate_pertresolvedlayoutmode",
-      "community": 27,
-      "community_name": "pert/index.ts",
+      "community": 8,
+      "community_name": "PertDiagramVisualization.vue",
       "norm_label": "pertresolvedlayoutmode"
     },
     {
@@ -45019,8 +45019,8 @@
       "source_location": "L3",
       "_origin": "ast",
       "id": "frontend_composables_features_pert_usepertrenderfailurestate_applyrenderfailurestateparams",
-      "community": 27,
-      "community_name": "pert/index.ts",
+      "community": 8,
+      "community_name": "PertDiagramVisualization.vue",
       "norm_label": "applyrenderfailurestateparams"
     },
     {
@@ -45030,8 +45030,8 @@
       "source_location": "L9",
       "_origin": "ast",
       "id": "frontend_composables_features_pert_usepertrenderfailurestate_usepertrenderfailurestate",
-      "community": 27,
-      "community_name": "pert/index.ts",
+      "community": 8,
+      "community_name": "PertDiagramVisualization.vue",
       "norm_label": "usepertrenderfailurestate()"
     },
     {
@@ -45041,8 +45041,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "frontend_composables_features_pert_usepertrenderfinalizer",
-      "community": 8,
-      "community_name": "PertDiagramVisualization.vue",
+      "community": 27,
+      "community_name": "pert/index.ts",
       "norm_label": "usepertrenderfinalizer.ts"
     },
     {
@@ -45052,8 +45052,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "frontend_composables_features_pert_usepertrenderfinalizer_pertresolvedlayoutmode",
-      "community": 8,
-      "community_name": "PertDiagramVisualization.vue",
+      "community": 27,
+      "community_name": "pert/index.ts",
       "norm_label": "pertresolvedlayoutmode"
     },
     {
@@ -45063,8 +45063,8 @@
       "source_location": "L3",
       "_origin": "ast",
       "id": "frontend_composables_features_pert_usepertrenderfinalizer_resolvelayoutstateresult",
-      "community": 8,
-      "community_name": "PertDiagramVisualization.vue",
+      "community": 27,
+      "community_name": "pert/index.ts",
       "norm_label": "resolvelayoutstateresult"
     },
     {
@@ -45074,8 +45074,8 @@
       "source_location": "L7",
       "_origin": "ast",
       "id": "frontend_composables_features_pert_usepertrenderfinalizer_applyfinalviewportparams",
-      "community": 8,
-      "community_name": "PertDiagramVisualization.vue",
+      "community": 27,
+      "community_name": "pert/index.ts",
       "norm_label": "applyfinalviewportparams"
     },
     {
@@ -45085,8 +45085,8 @@
       "source_location": "L20",
       "_origin": "ast",
       "id": "frontend_composables_features_pert_usepertrenderfinalizer_usepertrenderfinalizer",
-      "community": 8,
-      "community_name": "PertDiagramVisualization.vue",
+      "community": 27,
+      "community_name": "pert/index.ts",
       "norm_label": "usepertrenderfinalizer()"
     },
     {
@@ -144302,7 +144302,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "Frontend/components/features/hall/GuildParticlesCanvas.vue",
-      "source_location": "L343",
+      "source_location": "L351",
       "weight": 1.0,
       "_origin": "ast",
       "source": "frontend_components_features_hall_guildparticlescanvas",
@@ -144313,7 +144313,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "Frontend/components/features/hall/GuildParticlesCanvas.vue",
-      "source_location": "L339",
+      "source_location": "L347",
       "weight": 1.0,
       "_origin": "ast",
       "source": "frontend_components_features_hall_guildparticlescanvas",
@@ -144324,7 +144324,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "Frontend/components/features/hall/GuildParticlesCanvas.vue",
-      "source_location": "L358",
+      "source_location": "L366",
       "weight": 1.0,
       "_origin": "ast",
       "source": "frontend_components_features_hall_guildparticlescanvas",
@@ -144335,7 +144335,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "Frontend/components/features/hall/GuildParticlesCanvas.vue",
-      "source_location": "L354",
+      "source_location": "L362",
       "weight": 1.0,
       "_origin": "ast",
       "source": "frontend_components_features_hall_guildparticlescanvas",
@@ -144346,7 +144346,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "Frontend/components/features/hall/GuildParticlesCanvas.vue",
-      "source_location": "L347",
+      "source_location": "L355",
       "weight": 1.0,
       "_origin": "ast",
       "source": "frontend_components_features_hall_guildparticlescanvas",
@@ -144412,7 +144412,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "Frontend/components/features/hall/GuildParticlesCanvas.vue",
-      "source_location": "L324",
+      "source_location": "L332",
       "weight": 1.0,
       "_origin": "ast",
       "source": "frontend_components_features_hall_guildparticlescanvas",
@@ -144459,7 +144459,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "Frontend/components/features/hall/GuildParticlesCanvas.vue",
-      "source_location": "L314",
+      "source_location": "L322",
       "weight": 1.0,
       "_origin": "ast",
       "source": "frontend_components_features_hall_guildparticlescanvas_render",
@@ -144483,7 +144483,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "Frontend/components/features/hall/GuildParticlesCanvas.vue",
-      "source_location": "L315",
+      "source_location": "L323",
       "weight": 1.0,
       "_origin": "ast",
       "source": "frontend_components_features_hall_guildparticlescanvas_render",
@@ -144495,7 +144495,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "Frontend/components/features/hall/GuildParticlesCanvas.vue",
-      "source_location": "L370",
+      "source_location": "L378",
       "weight": 1.0,
       "_origin": "ast",
       "source": "frontend_components_features_hall_guildparticlescanvas_handleresize",
@@ -144519,7 +144519,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "Frontend/components/features/hall/GuildParticlesCanvas.vue",
-      "source_location": "L294",
+      "source_location": "L302",
       "weight": 1.0,
       "_origin": "ast",
       "source": "frontend_components_features_hall_guildparticlescanvas_render",
@@ -144531,7 +144531,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "Frontend/components/features/hall/GuildParticlesCanvas.vue",
-      "source_location": "L340",
+      "source_location": "L348",
       "weight": 1.0,
       "_origin": "ast",
       "source": "frontend_components_features_hall_guildparticlescanvas_handlepointermove",
@@ -144543,7 +144543,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "Frontend/components/features/hall/GuildParticlesCanvas.vue",
-      "source_location": "L350",
+      "source_location": "L358",
       "weight": 1.0,
       "_origin": "ast",
       "source": "frontend_components_features_hall_guildparticlescanvas_handletouchmove",
@@ -176087,5 +176087,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "472e19efb7aea7e2502cee7756df91f89957ca4a"
+  "built_at_commit": "d7d0de68ee2c8b80222a676402e858bca938787a"
 }
