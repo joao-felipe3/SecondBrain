@@ -25,12 +25,6 @@ describe('TasksService', () => {
       recalculateProjectStats: jest.fn().mockResolvedValue(undefined),
     };
 
-    mockGeminiService = {
-      suggestPertEstimates: jest
-        .fn()
-        .mockResolvedValue({ optimistic: 30, mostLikely: 60, pessimistic: 120 }),
-    };
-
     mockFeedbackService = {
       generateCompletionFeedback: jest.fn().mockResolvedValue('Feedback AI'),
       getCompletionFeedback: jest.fn().mockResolvedValue(null),
