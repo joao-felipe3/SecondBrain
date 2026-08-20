@@ -1,6 +1,6 @@
 import { ProjectDocument } from '../schemas/project.schema';
 import { ProjectWaveDocument } from '../schemas/project-wave.schema';
-import { TaskDocument } from '../../tasks/schemas/task.schema';
+import { TaskGanttContext } from '../../tasks/interfaces/task-contexts.interface';
 import { TaskDependency } from '../../tasks/entities/task-dependency.entity';
 import { TaskNode } from '../../tasks/interfaces/cpm.interface';
 import { DependencyType } from '../../tasks/schemas/task-dependency.schema';
@@ -20,27 +20,27 @@ export interface AdjustWindowBoundsParams {
 }
 
 export interface ResolveWindowParams {
-  task: TaskDocument;
+  task: TaskGanttContext;
   durationHours: number;
   wave: ProjectWaveDocument | null;
   project: ProjectDocument;
 }
 
 export interface BuildTaskNodesParams {
-  tasks: TaskDocument[];
+  tasks: TaskGanttContext[];
   dependencies: TaskDependency[];
   normalizeRelationship: (rel?: string) => DependencyType;
 }
 
 export interface MapSingleTaskItemParams {
-  task: TaskDocument;
+  task: TaskGanttContext;
   metric: TaskNode | undefined;
   wave: ProjectWaveDocument | null;
   project: ProjectDocument;
 }
 
 export interface MapTaskItemsParams {
-  tasks: TaskDocument[];
+  tasks: TaskGanttContext[];
   metricsById: Map<string, TaskNode>;
   waveByTaskId: Map<string, ProjectWaveDocument>;
   project: ProjectDocument;

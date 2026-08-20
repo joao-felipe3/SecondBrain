@@ -1,5 +1,5 @@
 import { ProjectDocument } from '../../../schemas/project.schema';
-import { TaskDocument } from '../../../../tasks/schemas/task.schema';
+import { TaskGanttContext } from '../../../../tasks/interfaces/task-contexts.interface';
 import { ProjectWaveDocument } from '../../../schemas/project-wave.schema';
 import { TaskDependency } from '../../../../tasks/entities/task-dependency.entity';
 import { TaskNode } from '../../../../tasks/interfaces/cpm.interface';
@@ -17,7 +17,7 @@ export function round2(value: number): number {
   return Number((Number.isFinite(value) ? value : 0).toFixed(2));
 }
 
-export function toMinutes(task: TaskDocument): number {
+export function toMinutes(task: TaskGanttContext): number {
   if (typeof task?.pertExpectedMinutes === 'number' && task.pertExpectedMinutes > 0) {
     return task.pertExpectedMinutes;
   }
@@ -130,7 +130,7 @@ export function resolveWindowByDeadline(params: ResolveWindowParams): GanttTimeW
 
 export function buildTaskNodes(params: BuildTaskNodesParams): TaskNode[] {
   const { tasks, dependencies, normalizeRelationship } = params;
-  const taskNodes: TaskNode[] = tasks.map((task: TaskDocument) => ({
+  const taskNodes: TaskNode[] = tasks.map((task: TaskGanttContext) => ({
     id: task?._id?.toString?.() || String(task?.id || ''),
     name: String(task?.name || 'Task'),
     duration: toMinutes(task),
@@ -200,7 +200,7 @@ export function mapSingleTaskItem(params: MapSingleTaskItemParams): GanttTaskIte
 export function mapTaskItems(params: MapTaskItemsParams): GanttTaskItem[] {
   const { tasks, metricsById, waveByTaskId, project } = params;
   return tasks
-    .map((task: TaskDocument) => {
+    .map((task: TaskGanttContext) => {
       const id = task?._id?.toString?.() || String(task?.id || '');
       const metric = metricsById.get(id);
       const wave = waveByTaskId.get(id) || null;

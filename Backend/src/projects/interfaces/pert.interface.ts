@@ -1,16 +1,16 @@
-import { TaskDocument } from '../../tasks/schemas/task.schema';
+import { TaskPertContext } from '../../tasks/interfaces/task-contexts.interface';
 import { TaskDependency } from '../../tasks/entities/task-dependency.entity';
 import { TaskNode } from '../../tasks/interfaces/cpm.interface';
 import { DependencyType } from '../../tasks/schemas/task-dependency.schema';
 
 export interface BuildPertTaskNodesParams {
-  tasks: TaskDocument[];
+  tasks: TaskPertContext[];
   dependencies: TaskDependency[];
   normalizeRelationship: (rel?: string) => DependencyType;
 }
 
 export interface MapPertNodesParams {
-  tasks: TaskDocument[];
+  tasks: TaskPertContext[];
   metricsById: Map<string, TaskNode>;
   taskLevels: Map<string, number>;
 }

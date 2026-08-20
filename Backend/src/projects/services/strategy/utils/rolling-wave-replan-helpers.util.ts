@@ -15,7 +15,7 @@ import {
   WaveReplanSummary,
   BuildWaveSummaryOptions,
 } from '../../../interfaces/rolling-wave.interface';
-import { TaskDocument } from '../../../../tasks/schemas/task.schema';
+import { TaskDomainEntity } from '../../../../tasks/interfaces/task-contexts.interface';
 import {
   startOfDay,
   endOfDay,
@@ -70,7 +70,7 @@ function calculateEffectiveWaveDates(options: CalculateEffectiveWaveDatesOptions
 
 function buildUpdateOperationForTask(
   options: BuildTaskUpdateOpOptions,
-): AnyBulkWriteOperation<TaskDocument> | null {
+): AnyBulkWriteOperation<TaskDomainEntity> | null {
   const { task, cumulativeHours, totalHours, availableDays, effectiveStart } = options;
   const dayOffset = Math.min(
     availableDays - 1,
@@ -110,7 +110,7 @@ function generateBulkOpsForPendingTasks(
     0,
   );
 
-  const bulkOps: AnyBulkWriteOperation<TaskDocument>[] = [];
+  const bulkOps: AnyBulkWriteOperation<TaskDomainEntity>[] = [];
   let cumulativeHours = 0;
   let waveUpdatedCount = 0;
 
@@ -223,7 +223,7 @@ export function calculateReplannedDeadlines(
   let cursor = startOfDay(now);
   let updatedCount = 0;
   let skippedConcludedCount = 0;
-  const bulkOps: AnyBulkWriteOperation<TaskDocument>[] = [];
+  const bulkOps: AnyBulkWriteOperation<TaskDomainEntity>[] = [];
   const summaries: ReplanTaskDeadlinesResult['summaries'] = [];
 
   for (let index = 0; index < waves.length; index++) {

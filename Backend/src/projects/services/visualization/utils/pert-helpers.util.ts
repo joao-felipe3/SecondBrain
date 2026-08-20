@@ -1,4 +1,4 @@
-import { TaskDocument } from '../../../../tasks/schemas/task.schema';
+import { TaskPertContext } from '../../../../tasks/interfaces/task-contexts.interface';
 import { TaskDependency } from '../../../../tasks/entities/task-dependency.entity';
 import { TaskNode } from '../../../../tasks/interfaces/cpm.interface';
 import { PertDiagramNode, PertDiagramEdge } from '../../../dto/pert-diagram.dto';
@@ -12,19 +12,19 @@ export function round2(value: number): number {
   return Number((Number.isFinite(value) ? value : 0).toFixed(2));
 }
 
-export function toMinutes(task: TaskDocument): number {
+export function toMinutes(task: TaskPertContext): number {
   if (typeof task?.pertExpectedMinutes === 'number' && task.pertExpectedMinutes > 0) {
     return task.pertExpectedMinutes;
   }
-  if (typeof task?.pomodorosPlanned === 'number' && task.pomodorosPlanned > 0) {
-    return task.pomodorosPlanned * 25;
+  if (typeof (task as any)?.pomodorosPlanned === 'number' && (task as any).pomodorosPlanned > 0) {
+    return (task as any).pomodorosPlanned * 25;
   }
   return 60;
 }
 
 export function buildTaskNodes(params: BuildPertTaskNodesParams): TaskNode[] {
   const { tasks, dependencies, normalizeRelationship } = params;
-  const taskNodes: TaskNode[] = tasks.map((task: TaskDocument) => ({
+  const taskNodes: TaskNode[] = tasks.map((task: TaskPertContext) => ({
     id: task?._id?.toString?.() || String(task?.id || ''),
     name: String(task?.name || 'Task'),
     duration: toMinutes(task),
@@ -57,7 +57,7 @@ export function buildTaskNodes(params: BuildPertTaskNodesParams): TaskNode[] {
 }
 
 export function computeTaskLevels(
-  tasks: TaskDocument[],
+  tasks: TaskPertContext[],
   dependencies: TaskDependency[],
 ): Map<string, number> {
   const predecessorMap = new Map<string, Set<string>>();
@@ -101,7 +101,7 @@ export function computeTaskLevels(
 
 export function mapNodes(params: MapPertNodesParams): PertDiagramNode[] {
   const { tasks, metricsById, taskLevels } = params;
-  return tasks.map((task: TaskDocument) => {
+  return tasks.map((task: TaskPertContext) => {
     const id = task?._id?.toString?.() || String(task?.id || '');
     const metric = metricsById.get(id);
     const durationHours = round2(toMinutes(task) / 60);

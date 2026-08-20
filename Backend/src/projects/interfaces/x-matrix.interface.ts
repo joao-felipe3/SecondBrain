@@ -1,10 +1,10 @@
-import { TaskDocument } from '../../tasks/schemas/task.schema';
+import { TaskXMatrixContext } from '../../tasks/interfaces/task-contexts.interface';
 import { ProjectWaveDocument } from '../schemas/project-wave.schema';
 import { ProjectDocument } from '../schemas/project.schema';
 import { XMatrixAxisItemDto, XMatrixCellDto, CreateXMatrixDto } from '../dto/x-matrix.dto';
 
 export interface BuildTacticalItemsOptions {
-  tasks: TaskDocument[];
+  tasks: TaskXMatrixContext[];
   waves: ProjectWaveDocument[];
   wbsLevels: Set<number>;
   maxTacticalItems: number;
@@ -58,7 +58,7 @@ export interface FilteredData {
 
 export interface GenerateXMatrixDataOptions {
   project: ProjectDocument;
-  tasks: TaskDocument[];
+  tasks: TaskXMatrixContext[];
   waves: ProjectWaveDocument[];
   dto: CreateXMatrixDto;
 }

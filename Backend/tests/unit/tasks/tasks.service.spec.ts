@@ -94,7 +94,7 @@ describe('TasksService', () => {
       createDeviationAlertForTask: jest.fn().mockResolvedValue({ alertCreated: false }),
     };
 
-    let mockPertAiService = {
+    const mockPertAiService = {
       suggestPertEstimates: jest
         .fn()
         .mockResolvedValue({ optimistic: 30, mostLikely: 60, pessimistic: 120 }),

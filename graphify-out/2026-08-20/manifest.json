@@ -20,8 +20,8 @@
     "semantic_hash": ""
   },
   "Backend/package.json": {
-    "mtime": 1787245070.4944115,
-    "ast_hash": "cd78ef8d8991e504be504521c621cf02",
+    "mtime": 1787248185.287391,
+    "ast_hash": "6a6a5487c18fa56c0d0d91e9e8cbce1d",
     "semantic_hash": ""
   },
   "Backend/scripts/export-graph-html.ts": {
@@ -300,8 +300,8 @@
     "semantic_hash": ""
   },
   "Backend/src/projects/interfaces/gantt.interface.ts": {
-    "mtime": 1784227225.130205,
-    "ast_hash": "69e7386d174e246407fc42b8eea74a62",
+    "mtime": 1787249337.981819,
+    "ast_hash": "a7ee9d86aad7654edd131cea2fd23474",
     "semantic_hash": ""
   },
   "Backend/src/projects/interfaces/index.ts": {
@@ -310,8 +310,8 @@
     "semantic_hash": ""
   },
   "Backend/src/projects/interfaces/pert.interface.ts": {
-    "mtime": 1784936056.313012,
-    "ast_hash": "8b48f93be0fa61f0b94a1f0666ba7d0e",
+    "mtime": 1787249359.563006,
+    "ast_hash": "27ab566e79eb597997251a53d426e679",
     "semantic_hash": ""
   },
   "Backend/src/projects/interfaces/risk.interface.ts": {
@@ -320,8 +320,8 @@
     "semantic_hash": ""
   },
   "Backend/src/projects/interfaces/rolling-wave.interface.ts": {
-    "mtime": 1784936056.313012,
-    "ast_hash": "20ae190541e67bcfc18b8d15d22689d2",
+    "mtime": 1787249576.543786,
+    "ast_hash": "df94d72a8baea4c6d8081e82f555d295",
     "semantic_hash": ""
   },
   "Backend/src/projects/interfaces/wbs-conversion.interface.ts": {
@@ -340,8 +340,8 @@
     "semantic_hash": ""
   },
   "Backend/src/projects/interfaces/x-matrix.interface.ts": {
-    "mtime": 1784428773.301969,
-    "ast_hash": "0466d648bf1f95ce4c5d1f5c3e3d8909",
+    "mtime": 1787249382.4754207,
+    "ast_hash": "75a2cb889f5b135c4a97917460bbd758",
     "semantic_hash": ""
   },
   "Backend/src/projects/projects.module.ts": {
@@ -515,8 +515,8 @@
     "semantic_hash": ""
   },
   "Backend/src/projects/services/strategy/utils/rolling-wave-replan-helpers.util.ts": {
-    "mtime": 1784516771.8863943,
-    "ast_hash": "ffe7368d5878fc61ed7d96b13f4a4c6f",
+    "mtime": 1787249936.7334845,
+    "ast_hash": "3504189c8da0fa85a58b3f4a014debf7",
     "semantic_hash": ""
   },
   "Backend/src/projects/services/visualization/gantt.service.ts": {
@@ -540,13 +540,13 @@
     "semantic_hash": ""
   },
   "Backend/src/projects/services/visualization/utils/gantt-helpers.util.ts": {
-    "mtime": 1784988360.699576,
-    "ast_hash": "076b308edbaad61abfd20a9fccb912d2",
+    "mtime": 1787249705.3254826,
+    "ast_hash": "28db833c9c8f3ceb37f66af3c70e1a69",
     "semantic_hash": ""
   },
   "Backend/src/projects/services/visualization/utils/pert-helpers.util.ts": {
-    "mtime": 1784988360.699576,
-    "ast_hash": "41eeb6d3c07de4e33b84bcc7e39a959b",
+    "mtime": 1787249727.870088,
+    "ast_hash": "7fecb4b6ac7f2d5a287504b7661de151",
     "semantic_hash": ""
   },
   "Backend/src/projects/services/visualization/utils/x-matrix-helpers.util.ts": {
@@ -555,8 +555,8 @@
     "semantic_hash": ""
   },
   "Backend/src/projects/services/visualization/utils/x-matrix-tactical-helpers.util.ts": {
-    "mtime": 1784517180.6218548,
-    "ast_hash": "816e0b2d0585179e70a116d01bf8d4b1",
+    "mtime": 1787249456.666441,
+    "ast_hash": "b1cefa2e0b67058f992620862cde0cb4",
     "semantic_hash": ""
   },
   "Backend/src/projects/services/visualization/utils/x-matrix-text-helpers.util.ts": {
@@ -730,8 +730,8 @@
     "semantic_hash": ""
   },
   "Backend/src/tasks/dto/analysis/metrics-calculation.dto.ts": {
-    "mtime": 1784346792.8352973,
-    "ast_hash": "20f7aef42612d9b66308b8fd4a5f27a5",
+    "mtime": 1787249478.201773,
+    "ast_hash": "d19acdc1cbc77eceb259ea9ea0f5586f",
     "semantic_hash": ""
   },
   "Backend/src/tasks/dto/analysis/pert-estimate.dto.ts": {
@@ -1015,8 +1015,8 @@
     "semantic_hash": ""
   },
   "Backend/src/tasks/schemas/task.schema.ts": {
-    "mtime": 1787245158.8910575,
-    "ast_hash": "95d96168259795a8538bb8c784f5ddfd",
+    "mtime": 1787248412.2751577,
+    "ast_hash": "d4cd62c8bbfb9276f3e539d8fab78b12",
     "semantic_hash": ""
   },
   "Backend/src/tasks/services/analysis/buffer.service.ts": {
@@ -1030,8 +1030,8 @@
     "semantic_hash": ""
   },
   "Backend/src/tasks/services/analysis/metrics.service.ts": {
-    "mtime": 1783876719.2964766,
-    "ast_hash": "e7b0fb345d2f6db9f0550ca71de5d479",
+    "mtime": 1787249502.3676875,
+    "ast_hash": "23666371ceb4b38e73f9e71081c3efb1",
     "semantic_hash": ""
   },
   "Backend/src/tasks/services/analysis/pert.service.ts": {
@@ -1680,8 +1680,8 @@
     "semantic_hash": ""
   },
   "Backend/tests/unit/tasks/helpers/tasks-service-test-providers.ts": {
-    "mtime": 1787246425.0466511,
-    "ast_hash": "1b7b59f2d14e9a54403dac9e1c2e180a",
+    "mtime": 1787248185.242332,
+    "ast_hash": "5734b2a8dfec1a6f2840a379931a1989",
     "semantic_hash": ""
   },
   "Backend/tests/unit/tasks/mappers/requirement.mapper.spec.ts": {
@@ -1855,8 +1855,8 @@
     "semantic_hash": ""
   },
   "Backend/tests/unit/tasks/tasks.service.spec.ts": {
-    "mtime": 1787246806.3600862,
-    "ast_hash": "85f408ae153415429565d8f0756e1405",
+    "mtime": 1787248412.2751577,
+    "ast_hash": "7a28ab6fec6bf55483020adee572b0a9",
     "semantic_hash": ""
   },
   "Backend/tsconfig.build.json": {
@@ -3140,8 +3140,8 @@
     "semantic_hash": ""
   },
   "Frontend/components/features/hall/GuildParticlesCanvas.vue": {
-    "mtime": 1787244134.137542,
-    "ast_hash": "05545f981eb0180ed02a4a24d5dca7ff",
+    "mtime": 1787248185.4208498,
+    "ast_hash": "7f412c1a0d975cb17149b970e3456cd0",
     "semantic_hash": ""
   },
   "Frontend/components/features/hall/GuildReceptionDesk.vue": {
@@ -3510,8 +3510,8 @@
     "semantic_hash": ""
   },
   "Backend/src/ai/ai-projects.module.ts": {
-    "mtime": 1787245803.4793882,
-    "ast_hash": "5fd668083e29de3ddb0d3303695112de",
+    "mtime": 1787248185.0628154,
+    "ast_hash": "1e485aec4b381ef57f7f45d77134f874",
     "semantic_hash": ""
   },
   "Backend/src/ai/ai-tasks.module.ts": {
@@ -3525,13 +3525,13 @@
     "semantic_hash": ""
   },
   "Backend/src/tasks/interfaces/task-contexts.interface.ts": {
-    "mtime": 1787246026.0712948,
-    "ast_hash": "b34a9cd693e02f9f4918922f8f06924b",
+    "mtime": 1787249856.6095703,
+    "ast_hash": "cc7600c407685ca88e9fb43b495e02a1",
     "semantic_hash": ""
   },
   "Backend/src/tasks/listeners/task-events.listener.ts": {
-    "mtime": 1787245683.3826835,
-    "ast_hash": "81fe7c62ab386eb09d06f4d167111e6a",
+    "mtime": 1787248185.475338,
+    "ast_hash": "1575b6e4b4b3991be1646b538e46f3a1",
     "semantic_hash": ""
   }
 }

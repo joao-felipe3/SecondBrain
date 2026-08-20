@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { CreateTaskDto } from '../../dto/task/create-task.dto';
-import { TaskDocument } from '../../schemas/task.schema';
+import { TaskDomainEntity } from '../../interfaces/task-contexts.interface';
 import { PertEstimateDto, CalculateProgressDto } from '../../dto';
 
 @Injectable()
@@ -9,7 +9,10 @@ export class TasksMetricsService {
   // 1. PERT Estimation Calculations & Application
   // ===========================================================================
 
-  applyPertEstimates(dto: Partial<CreateTaskDto>, fallbackTask?: TaskDocument | null): void {
+  applyPertEstimates(
+    dto: Partial<CreateTaskDto>,
+    fallbackTask?: Partial<TaskDomainEntity> | null,
+  ): void {
     if (!this.hasPertInput(dto) && this.resolveBaseMinutes(dto, fallbackTask) === undefined) {
       return;
     }
@@ -35,7 +38,7 @@ export class TasksMetricsService {
 
   private resolveBaseMinutes(
     dto: Partial<CreateTaskDto>,
-    fallbackTask?: TaskDocument | null,
+    fallbackTask?: Partial<TaskDomainEntity> | null,
   ): number | undefined {
     return (
       dto.pertMostLikelyMinutes ??
@@ -73,7 +76,7 @@ export class TasksMetricsService {
   // 2. RTM Risk Analysis
   // ===========================================================================
 
-  applyRtmRisk(dto: Partial<CreateTaskDto>, fallbackTask?: TaskDocument | null): void {
+  applyRtmRisk(dto: Partial<CreateTaskDto>, fallbackTask?: Partial<TaskDomainEntity> | null): void {
     if (this.hasTraceabilityLinks(dto, fallbackTask)) {
       dto.rtmRisk = false;
       dto.rtmRiskReason = undefined;
@@ -87,7 +90,7 @@ export class TasksMetricsService {
 
   private hasTraceabilityLinks(
     dto: Partial<CreateTaskDto>,
-    fallbackTask?: TaskDocument | null,
+    fallbackTask?: Partial<TaskDomainEntity> | null,
   ): boolean {
     const requirementIds = dto.requirementIds ?? fallbackTask?.requirementIds ?? [];
     const journeyItemIds = dto.journeyItemIds ?? fallbackTask?.journeyItemIds ?? [];
@@ -102,7 +105,7 @@ export class TasksMetricsService {
   // 3. EVM Metrics Calculations & Application
   // ===========================================================================
 
-  applyEvmMetrics(dto: Partial<CreateTaskDto>, fallbackTask?: TaskDocument | null): void {
+  applyEvmMetrics(dto: Partial<CreateTaskDto>, fallbackTask?: Partial<TaskDomainEntity> | null): void {
     const expectedMinutes = this.resolveExpectedMinutes(dto, fallbackTask);
     if (!expectedMinutes) return;
 
@@ -126,7 +129,7 @@ export class TasksMetricsService {
 
   private resolveExpectedMinutes(
     dto: Partial<CreateTaskDto>,
-    fallbackTask?: TaskDocument | null,
+    fallbackTask?: Partial<TaskDomainEntity> | null,
   ): number | undefined {
     return (
       dto.pertExpectedMinutes ??
@@ -148,7 +151,7 @@ export class TasksMetricsService {
 
   private calculateElapsedRatio(
     dto: Partial<CreateTaskDto>,
-    fallbackTask?: TaskDocument | null,
+    fallbackTask?: Partial<TaskDomainEntity> | null,
   ): number {
     const createdAt = fallbackTask?.createdAt ? new Date(fallbackTask.createdAt) : new Date();
     const deadline = dto.deadline

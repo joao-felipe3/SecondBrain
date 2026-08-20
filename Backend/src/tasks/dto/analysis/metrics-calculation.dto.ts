@@ -1,8 +1,12 @@
 import { CreateTaskDto } from '../task/create-task.dto';
-import { TaskDocument } from '../../schemas/task.schema';
+import {
+  TaskOperationalInfo,
+  TaskPertMetrics,
+  TaskGamification,
+} from '../../interfaces/task-contexts.interface';
 
 export class CalculateProgressDto {
   dto!: Partial<CreateTaskDto>;
-  fallbackTask!: TaskDocument | null | undefined;
+  fallbackTask!: Partial<TaskOperationalInfo & TaskPertMetrics & TaskGamification> | null | undefined;
   expectedMinutes!: number;
 }

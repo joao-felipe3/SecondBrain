@@ -79,3 +79,44 @@ export interface TaskRecurrence {
 export interface TaskChecklistContext {
   checklist?: Array<string | TaskChecklistItem>;
 }
+
+export type TaskDomainEntity = TaskOperationalInfo &
+  TaskPertMetrics &
+  TaskEvmMetrics &
+  TaskTraceability &
+  TaskGamification &
+  TaskRecurrence &
+  TaskChecklistContext & {
+    _id?: unknown;
+    id?: string;
+  };
+
+export type TaskGanttContext = Pick<
+  TaskOperationalInfo,
+  'name' | 'deadline' | 'createdAt' | 'status' | 'isConcluded' | 'priority'
+> &
+  TaskPertMetrics &
+  TaskTraceability &
+  Pick<TaskEvmMetrics, 'evmProgress'> &
+  Pick<TaskGamification, 'pomodorosPlanned' | 'pomodorosDid'> & {
+    _id?: unknown;
+    id?: string;
+  };
+
+export type TaskPertContext = Pick<
+  TaskOperationalInfo,
+  'name' | 'deadline' | 'createdAt' | 'isConcluded' | 'priority'
+> &
+  TaskPertMetrics &
+  TaskTraceability &
+  Pick<TaskEvmMetrics, 'evmProgress'> & {
+    _id?: unknown;
+    id?: string;
+  };
+
+export type TaskXMatrixContext = Pick<TaskOperationalInfo, 'name' | 'description' | 'isConcluded'> &
+  TaskTraceability &
+  Pick<TaskGamification, 'pomodorosPlanned' | 'pomodorosDid'> & {
+    _id?: unknown;
+    id?: string;
+  };

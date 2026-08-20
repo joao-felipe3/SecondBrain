@@ -1,4 +1,4 @@
-import { TaskDocument } from '../../../../tasks/schemas/task.schema';
+import { TaskXMatrixContext } from '../../../../tasks/interfaces/task-contexts.interface';
 import { ProjectWaveDocument } from '../../../schemas/project-wave.schema';
 import { XMatrixAxisItemDto } from '../../../dto/x-matrix.dto';
 import { BuildTacticalItemsOptions, TacticalAgg } from '../../../interfaces/x-matrix.interface';
@@ -38,7 +38,7 @@ function buildWaveByTaskIdMap(waves: ProjectWaveDocument[]): Map<string, number[
 }
 
 function groupTasksIntoTacticalAgg(
-  tasks: TaskDocument[],
+  tasks: TaskXMatrixContext[],
   waveByTaskId: Map<string, number[]>,
   wbsLevels: Set<number>,
 ): Map<string, TacticalAgg> {
