@@ -44,7 +44,7 @@ function groupTasksIntoTacticalAgg(
 ): Map<string, TacticalAgg> {
   const tacticalById = new Map<string, TacticalAgg>();
   for (const task of tasks) {
-    const taskId = String(task._id || '').trim();
+    const taskId = (task?._id?.toString?.() || String(task?.id || '')).trim();
     const pathLabel = inferInitiativeFromWbsPath(task.wbsPath, wbsLevels);
     const parentNodeId = String(task.parentWbsNodeId || '').trim();
     const fallbackLabel =

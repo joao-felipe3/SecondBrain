@@ -1008,8 +1008,8 @@
       "source_location": "L65",
       "_origin": "ast",
       "id": "backend_package_devdependencies_eslint_js",
-      "community": 149,
-      "community_name": "devDependencies",
+      "community": 239,
+      "community_name": "@eslint/js",
       "norm_label": "@eslint/js"
     },
     {
@@ -1019,8 +1019,8 @@
       "source_location": "L65",
       "_origin": "ast",
       "id": "eslint_js",
-      "community": 149,
-      "community_name": "devDependencies",
+      "community": 239,
+      "community_name": "@eslint/js",
       "norm_label": "@eslint/js"
     },
     {
@@ -1294,8 +1294,8 @@
       "source_location": "L78",
       "_origin": "ast",
       "id": "backend_package_devdependencies_eslint",
-      "community": 192,
-      "community_name": "eslint",
+      "community": 149,
+      "community_name": "devDependencies",
       "norm_label": "eslint"
     },
     {
@@ -1305,8 +1305,8 @@
       "source_location": "L78",
       "_origin": "ast",
       "id": "backend_package_json_eslint",
-      "community": 192,
-      "community_name": "eslint",
+      "community": 149,
+      "community_name": "devDependencies",
       "norm_label": "eslint"
     },
     {
@@ -2230,7 +2230,7 @@
       "_origin": "ast",
       "id": "backend_src_ai_ai_tasks_module",
       "community": 42,
-      "community_name": "GeminiExecutorService",
+      "community_name": "gemini.service.ts",
       "norm_label": "ai-tasks.module.ts"
     },
     {
@@ -2241,7 +2241,7 @@
       "_origin": "ast",
       "id": "backend_src_ai_ai_tasks_module_aitasksmodule",
       "community": 42,
-      "community_name": "GeminiExecutorService",
+      "community_name": "gemini.service.ts",
       "norm_label": "aitasksmodule"
     },
     {
@@ -2252,7 +2252,7 @@
       "_origin": "ast",
       "id": "backend_src_ai_ai_tasks_module_ts_module",
       "community": 42,
-      "community_name": "GeminiExecutorService",
+      "community_name": "gemini.service.ts",
       "norm_label": "module"
     },
     {
@@ -2263,7 +2263,7 @@
       "_origin": "ast",
       "id": "backend_src_ai_ai_module",
       "community": 42,
-      "community_name": "GeminiExecutorService",
+      "community_name": "gemini.service.ts",
       "norm_label": "ai.module.ts"
     },
     {
@@ -2559,8 +2559,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_src_ai_interfaces_gemini_prompts_interface",
-      "community": 117,
-      "community_name": "SuggestionsAiService",
+      "community": 42,
+      "community_name": "gemini.service.ts",
       "norm_label": "gemini-prompts.interface.ts"
     },
     {
@@ -2570,8 +2570,8 @@
       "source_location": "L4",
       "_origin": "ast",
       "id": "backend_src_ai_interfaces_gemini_prompts_interface_checklistpromptparams",
-      "community": 135,
-      "community_name": "ChecklistAiService",
+      "community": 42,
+      "community_name": "gemini.service.ts",
       "norm_label": "checklistpromptparams"
     },
     {
@@ -2581,8 +2581,8 @@
       "source_location": "L13",
       "_origin": "ast",
       "id": "backend_src_ai_interfaces_gemini_prompts_interface_checklistwithhistorypromptparams",
-      "community": 135,
-      "community_name": "ChecklistAiService",
+      "community": 42,
+      "community_name": "gemini.service.ts",
       "norm_label": "checklistwithhistorypromptparams"
     },
     {
@@ -2592,8 +2592,8 @@
       "source_location": "L20",
       "_origin": "ast",
       "id": "backend_src_ai_interfaces_gemini_prompts_interface_pertestimatepromptparams",
-      "community": 117,
-      "community_name": "SuggestionsAiService",
+      "community": 42,
+      "community_name": "gemini.service.ts",
       "norm_label": "pertestimatepromptparams"
     },
     {
@@ -2603,8 +2603,8 @@
       "source_location": "L29",
       "_origin": "ast",
       "id": "backend_src_ai_interfaces_gemini_prompts_interface_completionfeedbackpromptparams",
-      "community": 117,
-      "community_name": "SuggestionsAiService",
+      "community": 42,
+      "community_name": "gemini.service.ts",
       "norm_label": "completionfeedbackpromptparams"
     },
     {
@@ -2625,8 +2625,8 @@
       "source_location": "L45",
       "_origin": "ast",
       "id": "backend_src_ai_interfaces_gemini_prompts_interface_tasksuggestionspromptparams",
-      "community": 117,
-      "community_name": "SuggestionsAiService",
+      "community": 42,
+      "community_name": "gemini.service.ts",
       "norm_label": "tasksuggestionspromptparams"
     },
     {
@@ -2637,7 +2637,7 @@
       "_origin": "ast",
       "id": "backend_src_ai_interfaces_index",
       "community": 42,
-      "community_name": "GeminiExecutorService",
+      "community_name": "gemini.service.ts",
       "norm_label": "ai/interfaces/index.ts"
     },
     {
@@ -2647,8 +2647,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_src_ai_prompts_core_gemini_prompts",
-      "community": 117,
-      "community_name": "SuggestionsAiService",
+      "community": 42,
+      "community_name": "gemini.service.ts",
       "norm_label": "gemini.prompts.ts"
     },
     {
@@ -2658,8 +2658,8 @@
       "source_location": "L10",
       "_origin": "ast",
       "id": "backend_src_ai_prompts_core_gemini_prompts_buildchecklistgenerationprompt",
-      "community": 135,
-      "community_name": "ChecklistAiService",
+      "community": 42,
+      "community_name": "gemini.service.ts",
       "norm_label": "buildchecklistgenerationprompt()"
     },
     {
@@ -2669,8 +2669,8 @@
       "source_location": "L21",
       "_origin": "ast",
       "id": "backend_src_ai_prompts_core_gemini_prompts_buildchecklistwithhistoryprompt",
-      "community": 135,
-      "community_name": "ChecklistAiService",
+      "community": 42,
+      "community_name": "gemini.service.ts",
       "norm_label": "buildchecklistwithhistoryprompt()"
     },
     {
@@ -2680,8 +2680,8 @@
       "source_location": "L35",
       "_origin": "ast",
       "id": "backend_src_ai_prompts_core_gemini_prompts_buildpertestimateprompt",
-      "community": 117,
-      "community_name": "SuggestionsAiService",
+      "community": 42,
+      "community_name": "gemini.service.ts",
       "norm_label": "buildpertestimateprompt()"
     },
     {
@@ -2691,8 +2691,8 @@
       "source_location": "L56",
       "_origin": "ast",
       "id": "backend_src_ai_prompts_core_gemini_prompts_buildcompletionfeedbackprompt",
-      "community": 117,
-      "community_name": "SuggestionsAiService",
+      "community": 42,
+      "community_name": "gemini.service.ts",
       "norm_label": "buildcompletionfeedbackprompt()"
     },
     {
@@ -2713,8 +2713,8 @@
       "source_location": "L110",
       "_origin": "ast",
       "id": "backend_src_ai_prompts_core_gemini_prompts_buildtasksuggestionsprompt",
-      "community": 117,
-      "community_name": "SuggestionsAiService",
+      "community": 42,
+      "community_name": "gemini.service.ts",
       "norm_label": "buildtasksuggestionsprompt()"
     },
     {
@@ -2725,7 +2725,7 @@
       "_origin": "ast",
       "id": "backend_src_ai_prompts_index",
       "community": 42,
-      "community_name": "GeminiExecutorService",
+      "community_name": "gemini.service.ts",
       "norm_label": "prompts/index.ts"
     },
     {
@@ -2736,7 +2736,7 @@
       "_origin": "ast",
       "id": "backend_src_ai_prompts_projects_audit_prompts",
       "community": 42,
-      "community_name": "GeminiExecutorService",
+      "community_name": "gemini.service.ts",
       "norm_label": "audit.prompts.ts"
     },
     {
@@ -3132,7 +3132,7 @@
       "_origin": "ast",
       "id": "backend_src_ai_services_core_gemini_executor_service",
       "community": 42,
-      "community_name": "GeminiExecutorService",
+      "community_name": "gemini.service.ts",
       "norm_label": "gemini-executor.service.ts"
     },
     {
@@ -3142,7 +3142,7 @@
       "source_location": "L6",
       "_origin": "ast",
       "id": "backend_src_ai_services_core_gemini_executor_service_geminiexecutorservice",
-      "community": 42,
+      "community": 98,
       "community_name": "GeminiExecutorService",
       "norm_label": "geminiexecutorservice"
     },
@@ -3153,7 +3153,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "backend_src_ai_services_core_gemini_executor_service_ts_injectable",
-      "community": 42,
+      "community": 98,
       "community_name": "GeminiExecutorService",
       "norm_label": "injectable"
     },
@@ -3164,7 +3164,7 @@
       "source_location": "L20",
       "_origin": "ast",
       "id": "backend_src_ai_services_core_gemini_executor_service_geminiexecutorservice_constructor",
-      "community": 42,
+      "community": 98,
       "community_name": "GeminiExecutorService",
       "norm_label": ".constructor()"
     },
@@ -3175,8 +3175,8 @@
       "source_location": "L74",
       "_origin": "ast",
       "id": "backend_src_ai_services_core_gemini_executor_service_geminiexecutorservice_supportsjsonmode",
-      "community": 98,
-      "community_name": ".generateContent",
+      "community": 117,
+      "community_name": "SuggestionsAiService",
       "norm_label": ".supportsjsonmode()"
     },
     {
@@ -3197,7 +3197,7 @@
       "source_location": "L82",
       "_origin": "ast",
       "id": "backend_src_ai_services_core_gemini_executor_service_geminiexecutorservice_getstrongmodelname",
-      "community": 42,
+      "community": 98,
       "community_name": "GeminiExecutorService",
       "norm_label": ".getstrongmodelname()"
     },
@@ -3209,7 +3209,7 @@
       "_origin": "ast",
       "id": "backend_src_ai_services_core_gemini_executor_service_geminiexecutorservice_todaykey",
       "community": 98,
-      "community_name": ".generateContent",
+      "community_name": "GeminiExecutorService",
       "norm_label": ".todaykey()"
     },
     {
@@ -3220,7 +3220,7 @@
       "_origin": "ast",
       "id": "backend_src_ai_services_core_gemini_executor_service_geminiexecutorservice_resetstrongbudgetifneeded",
       "community": 98,
-      "community_name": ".generateContent",
+      "community_name": "GeminiExecutorService",
       "norm_label": ".resetstrongbudgetifneeded()"
     },
     {
@@ -3231,7 +3231,7 @@
       "_origin": "ast",
       "id": "backend_src_ai_services_core_gemini_executor_service_geminiexecutorservice_canusestrongmodel",
       "community": 98,
-      "community_name": ".generateContent",
+      "community_name": "GeminiExecutorService",
       "norm_label": ".canusestrongmodel()"
     },
     {
@@ -3242,7 +3242,7 @@
       "_origin": "ast",
       "id": "backend_src_ai_services_core_gemini_executor_service_geminiexecutorservice_pickmodel",
       "community": 98,
-      "community_name": ".generateContent",
+      "community_name": "GeminiExecutorService",
       "norm_label": ".pickmodel()"
     },
     {
@@ -3253,7 +3253,7 @@
       "_origin": "ast",
       "id": "backend_src_ai_services_core_gemini_executor_service_geminiexecutorservice_trackmodelusage",
       "community": 98,
-      "community_name": ".generateContent",
+      "community_name": "GeminiExecutorService",
       "norm_label": ".trackmodelusage()"
     },
     {
@@ -3264,7 +3264,7 @@
       "_origin": "ast",
       "id": "backend_src_ai_services_core_gemini_executor_service_geminiexecutorservice_supportsjsonmodeformodel",
       "community": 98,
-      "community_name": ".generateContent",
+      "community_name": "GeminiExecutorService",
       "norm_label": ".supportsjsonmodeformodel()"
     },
     {
@@ -3275,7 +3275,7 @@
       "_origin": "ast",
       "id": "backend_src_ai_services_core_gemini_executor_service_geminiexecutorservice_shouldusejsonmode",
       "community": 98,
-      "community_name": ".generateContent",
+      "community_name": "GeminiExecutorService",
       "norm_label": ".shouldusejsonmode()"
     },
     {
@@ -3285,7 +3285,7 @@
       "source_location": "L148",
       "_origin": "ast",
       "id": "backend_src_ai_services_core_gemini_executor_service_geminiexecutorservice_generateembedding",
-      "community": 42,
+      "community": 98,
       "community_name": "GeminiExecutorService",
       "norm_label": ".generateembedding()"
     },
@@ -3297,7 +3297,7 @@
       "_origin": "ast",
       "id": "backend_src_ai_services_core_gemini_executor_service_geminiexecutorservice_generatecontent",
       "community": 98,
-      "community_name": ".generateContent",
+      "community_name": "GeminiExecutorService",
       "norm_label": ".generatecontent()"
     },
     {
@@ -3308,7 +3308,7 @@
       "_origin": "ast",
       "id": "backend_src_ai_services_core_gemini_service",
       "community": 42,
-      "community_name": "GeminiExecutorService",
+      "community_name": "gemini.service.ts",
       "norm_label": "gemini.service.ts"
     },
     {
@@ -3340,8 +3340,8 @@
       "source_location": "L18",
       "_origin": "ast",
       "id": "backend_src_ai_services_core_gemini_service_geminiservice_constructor",
-      "community": 42,
-      "community_name": "GeminiExecutorService",
+      "community": 117,
+      "community_name": "SuggestionsAiService",
       "norm_label": ".constructor()"
     },
     {
@@ -3373,8 +3373,8 @@
       "source_location": "L34",
       "_origin": "ast",
       "id": "backend_src_ai_services_core_gemini_service_geminiservice_suggestpertestimates",
-      "community": 117,
-      "community_name": "SuggestionsAiService",
+      "community": 125,
+      "community_name": "PertAiService",
       "norm_label": ".suggestpertestimates()"
     },
     {
@@ -3384,8 +3384,8 @@
       "source_location": "L46",
       "_origin": "ast",
       "id": "backend_src_ai_services_core_gemini_service_geminiservice_generatetasksuggestions",
-      "community": 117,
-      "community_name": "SuggestionsAiService",
+      "community": 42,
+      "community_name": "gemini.service.ts",
       "norm_label": ".generatetasksuggestions()"
     },
     {
@@ -3395,8 +3395,8 @@
       "source_location": "L50",
       "_origin": "ast",
       "id": "backend_src_ai_services_core_gemini_service_geminiservice_generatecompletionfeedback",
-      "community": 117,
-      "community_name": "SuggestionsAiService",
+      "community": 42,
+      "community_name": "gemini.service.ts",
       "norm_label": ".generatecompletionfeedback()"
     },
     {
@@ -3451,7 +3451,7 @@
       "_origin": "ast",
       "id": "backend_src_ai_services_core_gemini_service_geminiservice_inferdependencies",
       "community": 98,
-      "community_name": ".generateContent",
+      "community_name": "GeminiExecutorService",
       "norm_label": ".inferdependencies()"
     },
     {
@@ -3461,7 +3461,7 @@
       "source_location": "L93",
       "_origin": "ast",
       "id": "backend_src_ai_services_core_gemini_service_geminiservice_generateembedding",
-      "community": 42,
+      "community": 98,
       "community_name": "GeminiExecutorService",
       "norm_label": ".generateembedding()"
     },
@@ -3483,8 +3483,8 @@
       "source_location": "L111",
       "_origin": "ast",
       "id": "backend_src_ai_services_core_gemini_service_geminiservice_supportsjsonmode",
-      "community": 98,
-      "community_name": ".generateContent",
+      "community": 117,
+      "community_name": "SuggestionsAiService",
       "norm_label": ".supportsjsonmode()"
     },
     {
@@ -3505,7 +3505,7 @@
       "source_location": "L119",
       "_origin": "ast",
       "id": "backend_src_ai_services_core_gemini_service_geminiservice_getstrongmodelname",
-      "community": 42,
+      "community": 98,
       "community_name": "GeminiExecutorService",
       "norm_label": ".getstrongmodelname()"
     },
@@ -3517,7 +3517,7 @@
       "_origin": "ast",
       "id": "backend_src_ai_services_projects_prompt_builder_service",
       "community": 42,
-      "community_name": "GeminiExecutorService",
+      "community_name": "gemini.service.ts",
       "norm_label": "prompt-builder.service.ts"
     },
     {
@@ -3725,7 +3725,7 @@
       "source_location": "L22",
       "_origin": "ast",
       "id": "backend_src_ai_services_projects_wbs_ai_service_wbsaiservice_constructor",
-      "community": 42,
+      "community": 98,
       "community_name": "GeminiExecutorService",
       "norm_label": ".constructor()"
     },
@@ -3769,8 +3769,8 @@
       "source_location": "L119",
       "_origin": "ast",
       "id": "backend_src_ai_services_projects_wbs_ai_service_wbsaiservice_fixmonotonybatch",
-      "community": 75,
-      "community_name": "wbs-ai.service.ts",
+      "community": 60,
+      "community_name": "metrics-calculator.util.ts",
       "norm_label": ".fixmonotonybatch()"
     },
     {
@@ -3792,7 +3792,7 @@
       "_origin": "ast",
       "id": "backend_src_ai_services_tasks_checklist_ai_service",
       "community": 42,
-      "community_name": "GeminiExecutorService",
+      "community_name": "gemini.service.ts",
       "norm_label": "checklist-ai.service.ts"
     },
     {
@@ -3935,7 +3935,7 @@
       "_origin": "ast",
       "id": "backend_src_ai_services_tasks_dependency_ai_service",
       "community": 42,
-      "community_name": "GeminiExecutorService",
+      "community_name": "gemini.service.ts",
       "norm_label": "dependency-ai.service.ts"
     },
     {
@@ -3946,7 +3946,7 @@
       "_origin": "ast",
       "id": "backend_src_ai_services_tasks_dependency_ai_service_dependencyaiservice",
       "community": 42,
-      "community_name": "GeminiExecutorService",
+      "community_name": "gemini.service.ts",
       "norm_label": "dependencyaiservice"
     },
     {
@@ -3957,7 +3957,7 @@
       "_origin": "ast",
       "id": "backend_src_ai_services_tasks_dependency_ai_service_ts_injectable",
       "community": 42,
-      "community_name": "GeminiExecutorService",
+      "community_name": "gemini.service.ts",
       "norm_label": "injectable"
     },
     {
@@ -3967,7 +3967,7 @@
       "source_location": "L8",
       "_origin": "ast",
       "id": "backend_src_ai_services_tasks_dependency_ai_service_dependencyaiservice_constructor",
-      "community": 42,
+      "community": 98,
       "community_name": "GeminiExecutorService",
       "norm_label": ".constructor()"
     },
@@ -3979,7 +3979,7 @@
       "_origin": "ast",
       "id": "backend_src_ai_services_tasks_dependency_ai_service_dependencyaiservice_inferdependencies",
       "community": 98,
-      "community_name": ".generateContent",
+      "community_name": "GeminiExecutorService",
       "norm_label": ".inferdependencies()"
     },
     {
@@ -4111,7 +4111,7 @@
       "_origin": "ast",
       "id": "backend_src_ai_services_tasks_pert_ai_service",
       "community": 42,
-      "community_name": "GeminiExecutorService",
+      "community_name": "gemini.service.ts",
       "norm_label": "pert-ai.service.ts"
     },
     {
@@ -4243,7 +4243,7 @@
       "_origin": "ast",
       "id": "backend_src_ai_services_tasks_suggestions_ai_service",
       "community": 42,
-      "community_name": "GeminiExecutorService",
+      "community_name": "gemini.service.ts",
       "norm_label": "suggestions-ai.service.ts"
     },
     {
@@ -4297,8 +4297,8 @@
       "source_location": "L23",
       "_origin": "ast",
       "id": "backend_src_ai_services_tasks_suggestions_ai_service_suggestionsaiservice_generatetasksuggestions",
-      "community": 117,
-      "community_name": "SuggestionsAiService",
+      "community": 42,
+      "community_name": "gemini.service.ts",
       "norm_label": ".generatetasksuggestions()"
     },
     {
@@ -4308,8 +4308,8 @@
       "source_location": "L35",
       "_origin": "ast",
       "id": "backend_src_ai_services_tasks_suggestions_ai_service_suggestionsaiservice_generatecompletionfeedback",
-      "community": 117,
-      "community_name": "SuggestionsAiService",
+      "community": 42,
+      "community_name": "gemini.service.ts",
       "norm_label": ".generatecompletionfeedback()"
     },
     {
@@ -5376,7 +5376,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_controllers_projects_wbs_controller",
       "community": 116,
-      "community_name": "projects-wbs.controller.ts",
+      "community_name": "wbs.dto.ts",
       "norm_label": "projects-wbs.controller.ts"
     },
     {
@@ -5485,8 +5485,8 @@
       "source_location": "L32",
       "_origin": "ast",
       "id": "backend_src_projects_controllers_projects_wbs_controller_projectswbscontroller_constructor",
-      "community": 75,
-      "community_name": "wbs-ai.service.ts",
+      "community": 145,
+      "community_name": "projects.module.ts",
       "norm_label": ".constructor()"
     },
     {
@@ -5716,8 +5716,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "backend_src_projects_controllers_wave_and_risk_controller_ts_injectmodel",
-      "community": 10,
-      "community_name": "tasks.service.ts",
+      "community": 140,
+      "community_name": "cpm.service.ts",
       "norm_label": "injectmodel"
     },
     {
@@ -5793,8 +5793,8 @@
       "source_location": "L47",
       "_origin": "ast",
       "id": "backend_src_projects_controllers_wave_and_risk_controller_waveandriskcontroller_constructor",
-      "community": 10,
-      "community_name": "tasks.service.ts",
+      "community": 140,
+      "community_name": "cpm.service.ts",
       "norm_label": ".constructor()"
     },
     {
@@ -6882,7 +6882,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_src_projects_dto_wbs_dto",
-      "community": 70,
+      "community": 116,
       "community_name": "wbs.dto.ts",
       "norm_label": "wbs.dto.ts"
     },
@@ -6905,7 +6905,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_dto_wbs_dto_ts_apipropertyoptional",
       "community": 116,
-      "community_name": "projects-wbs.controller.ts",
+      "community_name": "wbs.dto.ts",
       "norm_label": "apipropertyoptional"
     },
     {
@@ -6916,7 +6916,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_dto_wbs_dto_ts_isoptional",
       "community": 116,
-      "community_name": "projects-wbs.controller.ts",
+      "community_name": "wbs.dto.ts",
       "norm_label": "isoptional"
     },
     {
@@ -6927,7 +6927,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_dto_wbs_dto_ts_isstring",
       "community": 116,
-      "community_name": "projects-wbs.controller.ts",
+      "community_name": "wbs.dto.ts",
       "norm_label": "isstring"
     },
     {
@@ -6938,7 +6938,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_dto_wbs_dto_ts_apiproperty",
       "community": 116,
-      "community_name": "projects-wbs.controller.ts",
+      "community_name": "wbs.dto.ts",
       "norm_label": "apiproperty"
     },
     {
@@ -6949,7 +6949,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_dto_wbs_dto_ts_isnumber",
       "community": 116,
-      "community_name": "projects-wbs.controller.ts",
+      "community_name": "wbs.dto.ts",
       "norm_label": "isnumber"
     },
     {
@@ -6960,7 +6960,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_dto_wbs_dto_ts_isarray",
       "community": 116,
-      "community_name": "projects-wbs.controller.ts",
+      "community_name": "wbs.dto.ts",
       "norm_label": "isarray"
     },
     {
@@ -6971,7 +6971,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_dto_wbs_dto_ts_type",
       "community": 116,
-      "community_name": "projects-wbs.controller.ts",
+      "community_name": "wbs.dto.ts",
       "norm_label": "type"
     },
     {
@@ -6982,7 +6982,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_dto_wbs_dto_generatewbsdto",
       "community": 116,
-      "community_name": "projects-wbs.controller.ts",
+      "community_name": "wbs.dto.ts",
       "norm_label": "generatewbsdto"
     },
     {
@@ -6993,7 +6993,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_dto_wbs_dto_savewbsdto",
       "community": 116,
-      "community_name": "projects-wbs.controller.ts",
+      "community_name": "wbs.dto.ts",
       "norm_label": "savewbsdto"
     },
     {
@@ -7004,7 +7004,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_dto_wbs_dto_suggestdecompositiondto",
       "community": 116,
-      "community_name": "projects-wbs.controller.ts",
+      "community_name": "wbs.dto.ts",
       "norm_label": "suggestdecompositiondto"
     },
     {
@@ -7026,7 +7026,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_dto_wbs_dto_convertwbstotasksdto",
       "community": 116,
-      "community_name": "projects-wbs.controller.ts",
+      "community_name": "wbs.dto.ts",
       "norm_label": "convertwbstotasksdto"
     },
     {
@@ -7037,7 +7037,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_dto_wbs_dto_ts_isboolean",
       "community": 116,
-      "community_name": "projects-wbs.controller.ts",
+      "community_name": "wbs.dto.ts",
       "norm_label": "isboolean"
     },
     {
@@ -7048,7 +7048,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_dto_wbs_dto_getleafnodesdto",
       "community": 116,
-      "community_name": "projects-wbs.controller.ts",
+      "community_name": "wbs.dto.ts",
       "norm_label": "getleafnodesdto"
     },
     {
@@ -7059,7 +7059,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_dto_wbs_dto_generatetasksforleafdto",
       "community": 116,
-      "community_name": "projects-wbs.controller.ts",
+      "community_name": "wbs.dto.ts",
       "norm_label": "generatetasksforleafdto"
     },
     {
@@ -7070,7 +7070,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_dto_wbs_dto_auditleafdiscrepancydto",
       "community": 116,
-      "community_name": "projects-wbs.controller.ts",
+      "community_name": "wbs.dto.ts",
       "norm_label": "auditleafdiscrepancydto"
     },
     {
@@ -7081,7 +7081,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_dto_wbs_dto_resolvewbsbudgetdto",
       "community": 116,
-      "community_name": "projects-wbs.controller.ts",
+      "community_name": "wbs.dto.ts",
       "norm_label": "resolvewbsbudgetdto"
     },
     {
@@ -7092,7 +7092,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_dto_wbs_dto_ts_isin",
       "community": 116,
-      "community_name": "projects-wbs.controller.ts",
+      "community_name": "wbs.dto.ts",
       "norm_label": "isin"
     },
     {
@@ -8115,7 +8115,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_interfaces_wbs_conversion_interface_conversionoptions",
       "community": 70,
-      "community_name": "wbs.dto.ts",
+      "community_name": "wbs-conversion-orchestrator.service.ts",
       "norm_label": "conversionoptions"
     },
     {
@@ -8126,7 +8126,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_interfaces_wbs_conversion_interface_conversionresult",
       "community": 70,
-      "community_name": "wbs.dto.ts",
+      "community_name": "wbs-conversion-orchestrator.service.ts",
       "norm_label": "conversionresult"
     },
     {
@@ -8192,7 +8192,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_interfaces_wbs_conversion_interface_tasksservicesubset",
       "community": 70,
-      "community_name": "wbs.dto.ts",
+      "community_name": "wbs-conversion-orchestrator.service.ts",
       "norm_label": "tasksservicesubset"
     },
     {
@@ -8258,7 +8258,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_interfaces_wbs_conversion_interface_generatetasksforsingleleafparams",
       "community": 70,
-      "community_name": "wbs.dto.ts",
+      "community_name": "wbs-conversion-orchestrator.service.ts",
       "norm_label": "generatetasksforsingleleafparams"
     },
     {
@@ -8368,7 +8368,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_interfaces_wbs_conversion_interface_generatetasksforsingleleafresult",
       "community": 70,
-      "community_name": "wbs.dto.ts",
+      "community_name": "wbs-conversion-orchestrator.service.ts",
       "norm_label": "generatetasksforsingleleafresult"
     },
     {
@@ -13263,7 +13263,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_services_wbs_conversion_task_conversion_service_taskconversionservice_finalizeconversion",
       "community": 70,
-      "community_name": "wbs.dto.ts",
+      "community_name": "wbs-conversion-orchestrator.service.ts",
       "norm_label": ".finalizeconversion()"
     },
     {
@@ -13285,7 +13285,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_services_wbs_conversion_wbs_conversion_orchestrator_service",
       "community": 70,
-      "community_name": "wbs.dto.ts",
+      "community_name": "wbs-conversion-orchestrator.service.ts",
       "norm_label": "wbs-conversion-orchestrator.service.ts"
     },
     {
@@ -13296,7 +13296,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_services_wbs_conversion_wbs_conversion_orchestrator_service_wbsconversionorchestrationservice",
       "community": 70,
-      "community_name": "wbs.dto.ts",
+      "community_name": "wbs-conversion-orchestrator.service.ts",
       "norm_label": "wbsconversionorchestrationservice"
     },
     {
@@ -13307,7 +13307,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_services_wbs_conversion_wbs_conversion_orchestrator_service_ts_injectable",
       "community": 70,
-      "community_name": "wbs.dto.ts",
+      "community_name": "wbs-conversion-orchestrator.service.ts",
       "norm_label": "injectable"
     },
     {
@@ -13329,7 +13329,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_services_wbs_conversion_wbs_conversion_orchestrator_service_wbsconversionorchestrationservice_convertwbstotasks",
       "community": 70,
-      "community_name": "wbs.dto.ts",
+      "community_name": "wbs-conversion-orchestrator.service.ts",
       "norm_label": ".convertwbstotasks()"
     },
     {
@@ -13340,7 +13340,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_services_wbs_conversion_wbs_conversion_orchestrator_service_wbsconversionorchestrationservice_stage1draftgeneration",
       "community": 70,
-      "community_name": "wbs.dto.ts",
+      "community_name": "wbs-conversion-orchestrator.service.ts",
       "norm_label": ".stage1draftgeneration()"
     },
     {
@@ -13351,7 +13351,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_services_wbs_conversion_wbs_conversion_orchestrator_service_wbsconversionorchestrationservice_stage2draftprocessing",
       "community": 70,
-      "community_name": "wbs.dto.ts",
+      "community_name": "wbs-conversion-orchestrator.service.ts",
       "norm_label": ".stage2draftprocessing()"
     },
     {
@@ -13362,7 +13362,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_services_wbs_conversion_wbs_conversion_orchestrator_service_wbsconversionorchestrationservice_stage3taskconversion",
       "community": 70,
-      "community_name": "wbs.dto.ts",
+      "community_name": "wbs-conversion-orchestrator.service.ts",
       "norm_label": ".stage3taskconversion()"
     },
     {
@@ -13373,7 +13373,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_services_wbs_conversion_wbs_conversion_orchestrator_service_wbsconversionorchestrationservice_generatedrafts",
       "community": 70,
-      "community_name": "wbs.dto.ts",
+      "community_name": "wbs-conversion-orchestrator.service.ts",
       "norm_label": ".generatedrafts()"
     },
     {
@@ -13384,7 +13384,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_services_wbs_conversion_wbs_conversion_orchestrator_service_wbsconversionorchestrationservice_processdrafts",
       "community": 70,
-      "community_name": "wbs.dto.ts",
+      "community_name": "wbs-conversion-orchestrator.service.ts",
       "norm_label": ".processdrafts()"
     },
     {
@@ -13395,7 +13395,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_services_wbs_conversion_wbs_conversion_orchestrator_service_wbsconversionorchestrationservice_generatetasksforsingleleaf",
       "community": 70,
-      "community_name": "wbs.dto.ts",
+      "community_name": "wbs-conversion-orchestrator.service.ts",
       "norm_label": ".generatetasksforsingleleaf()"
     },
     {
@@ -13406,7 +13406,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_services_wbs_conversion_wbs_conversion_orchestrator_service_wbsconversionorchestrationservice_handlesingleleafconversionerror",
       "community": 70,
-      "community_name": "wbs.dto.ts",
+      "community_name": "wbs-conversion-orchestrator.service.ts",
       "norm_label": ".handlesingleleafconversionerror()"
     },
     {
@@ -13417,7 +13417,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_services_wbs_conversion_wbs_conversion_orchestrator_service_wbsconversionorchestrationservice_persistgeneratedtasks",
       "community": 70,
-      "community_name": "wbs.dto.ts",
+      "community_name": "wbs-conversion-orchestrator.service.ts",
       "norm_label": ".persistgeneratedtasks()"
     },
     {
@@ -13428,7 +13428,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_services_wbs_conversion_wbs_conversion_orchestrator_service_wbsconversionorchestrationservice_normalizeoptions",
       "community": 70,
-      "community_name": "wbs.dto.ts",
+      "community_name": "wbs-conversion-orchestrator.service.ts",
       "norm_label": ".normalizeoptions()"
     },
     {
@@ -13439,7 +13439,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_services_wbs_conversion_wbs_conversion_orchestrator_service_wbsconversionorchestrationservice_logifverbose",
       "community": 70,
-      "community_name": "wbs.dto.ts",
+      "community_name": "wbs-conversion-orchestrator.service.ts",
       "norm_label": ".logifverbose()"
     },
     {
@@ -13450,7 +13450,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_services_wbs_conversion_wbs_conversion_orchestrator_service_wbsconversionorchestrationservice_logerror",
       "community": 70,
-      "community_name": "wbs.dto.ts",
+      "community_name": "wbs-conversion-orchestrator.service.ts",
       "norm_label": ".logerror()"
     },
     {
@@ -13603,8 +13603,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_src_projects_services_wbs_core_monotony_service",
-      "community": 75,
-      "community_name": "wbs-ai.service.ts",
+      "community": 60,
+      "community_name": "metrics-calculator.util.ts",
       "norm_label": "monotony.service.ts"
     },
     {
@@ -13614,8 +13614,8 @@
       "source_location": "L8",
       "_origin": "ast",
       "id": "backend_src_projects_services_wbs_core_monotony_service_fixedmonotonyitem",
-      "community": 75,
-      "community_name": "wbs-ai.service.ts",
+      "community": 60,
+      "community_name": "metrics-calculator.util.ts",
       "norm_label": "fixedmonotonyitem"
     },
     {
@@ -13625,8 +13625,8 @@
       "source_location": "L23",
       "_origin": "ast",
       "id": "backend_src_projects_services_wbs_core_monotony_service_monotonyservice",
-      "community": 75,
-      "community_name": "wbs-ai.service.ts",
+      "community": 60,
+      "community_name": "metrics-calculator.util.ts",
       "norm_label": "monotonyservice"
     },
     {
@@ -13636,8 +13636,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "backend_src_projects_services_wbs_core_monotony_service_ts_injectable",
-      "community": 75,
-      "community_name": "wbs-ai.service.ts",
+      "community": 60,
+      "community_name": "metrics-calculator.util.ts",
       "norm_label": "injectable"
     },
     {
@@ -13647,8 +13647,8 @@
       "source_location": "L24",
       "_origin": "ast",
       "id": "backend_src_projects_services_wbs_core_monotony_service_monotonyservice_constructor",
-      "community": 75,
-      "community_name": "wbs-ai.service.ts",
+      "community": 60,
+      "community_name": "metrics-calculator.util.ts",
       "norm_label": ".constructor()"
     },
     {
@@ -13669,8 +13669,8 @@
       "source_location": "L71",
       "_origin": "ast",
       "id": "backend_src_projects_services_wbs_core_monotony_service_monotonyservice_sanitizetitle",
-      "community": 75,
-      "community_name": "wbs-ai.service.ts",
+      "community": 60,
+      "community_name": "metrics-calculator.util.ts",
       "norm_label": ".sanitizetitle()"
     },
     {
@@ -13680,8 +13680,8 @@
       "source_location": "L87",
       "_origin": "ast",
       "id": "backend_src_projects_services_wbs_core_monotony_service_monotonyservice_autofixmonotonyforleaf",
-      "community": 75,
-      "community_name": "wbs-ai.service.ts",
+      "community": 60,
+      "community_name": "metrics-calculator.util.ts",
       "norm_label": ".autofixmonotonyforleaf()"
     },
     {
@@ -13834,8 +13834,8 @@
       "source_location": "L70",
       "_origin": "ast",
       "id": "backend_src_projects_services_wbs_core_wbs_persistence_service_wbspersistenceservice_get",
-      "community": 75,
-      "community_name": "wbs-ai.service.ts",
+      "community": 145,
+      "community_name": "projects.module.ts",
       "norm_label": ".get()"
     },
     {
@@ -13867,8 +13867,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_src_projects_services_wbs_core_wbs_validation_service",
-      "community": 75,
-      "community_name": "wbs-ai.service.ts",
+      "community": 116,
+      "community_name": "wbs.dto.ts",
       "norm_label": "wbs-validation.service.ts"
     },
     {
@@ -13900,8 +13900,8 @@
       "source_location": "L9",
       "_origin": "ast",
       "id": "backend_src_projects_services_wbs_core_wbs_validation_service_wbsvalidationservice_constructor",
-      "community": 44,
-      "community_name": "WbsValidationService",
+      "community": 75,
+      "community_name": "wbs-ai.service.ts",
       "norm_label": ".constructor()"
     },
     {
@@ -14044,7 +14044,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_services_wbs_core_wbs_service",
       "community": 70,
-      "community_name": "wbs.dto.ts",
+      "community_name": "wbs-conversion-orchestrator.service.ts",
       "norm_label": "wbs.service.ts"
     },
     {
@@ -14054,8 +14054,8 @@
       "source_location": "L16",
       "_origin": "ast",
       "id": "backend_src_projects_services_wbs_core_wbs_service_wbsservice",
-      "community": 75,
-      "community_name": "wbs-ai.service.ts",
+      "community": 145,
+      "community_name": "projects.module.ts",
       "norm_label": "wbsservice"
     },
     {
@@ -14065,8 +14065,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "backend_src_projects_services_wbs_core_wbs_service_ts_injectable",
-      "community": 75,
-      "community_name": "wbs-ai.service.ts",
+      "community": 145,
+      "community_name": "projects.module.ts",
       "norm_label": "injectable"
     },
     {
@@ -14087,8 +14087,8 @@
       "source_location": "L24",
       "_origin": "ast",
       "id": "backend_src_projects_services_wbs_core_wbs_service_wbsservice_validatewbsnode",
-      "community": 75,
-      "community_name": "wbs-ai.service.ts",
+      "community": 145,
+      "community_name": "projects.module.ts",
       "norm_label": ".validatewbsnode()"
     },
     {
@@ -14098,8 +14098,8 @@
       "source_location": "L47",
       "_origin": "ast",
       "id": "backend_src_projects_services_wbs_core_wbs_service_wbsservice_validatewbs",
-      "community": 75,
-      "community_name": "wbs-ai.service.ts",
+      "community": 145,
+      "community_name": "projects.module.ts",
       "norm_label": ".validatewbs()"
     },
     {
@@ -14143,7 +14143,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_services_wbs_core_wbs_service_wbsservice_generatetasksforsingleleaf",
       "community": 70,
-      "community_name": "wbs.dto.ts",
+      "community_name": "wbs-conversion-orchestrator.service.ts",
       "norm_label": ".generatetasksforsingleleaf()"
     },
     {
@@ -14164,8 +14164,8 @@
       "source_location": "L103",
       "_origin": "ast",
       "id": "backend_src_projects_services_wbs_core_wbs_service_wbsservice_getwbs",
-      "community": 75,
-      "community_name": "wbs-ai.service.ts",
+      "community": 145,
+      "community_name": "projects.module.ts",
       "norm_label": ".getwbs()"
     },
     {
@@ -14638,7 +14638,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_services_wbs_shared_config_service_configservice_getnowiso",
       "community": 70,
-      "community_name": "wbs.dto.ts",
+      "community_name": "wbs-conversion-orchestrator.service.ts",
       "norm_label": ".getnowiso()"
     },
     {
@@ -14649,7 +14649,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_services_wbs_shared_config_service_configservice_logiftimingdebug",
       "community": 70,
-      "community_name": "wbs.dto.ts",
+      "community_name": "wbs-conversion-orchestrator.service.ts",
       "norm_label": ".logiftimingdebug()"
     },
     {
@@ -16892,8 +16892,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_src_tasks_dto_analysis_index",
-      "community": 47,
-      "community_name": "PertEstimateDto",
+      "community": 10,
+      "community_name": "tasks.service.ts",
       "norm_label": "dto/analysis/index.ts"
     },
     {
@@ -16911,7 +16911,7 @@
       "label": "CalculateProgressDto",
       "file_type": "code",
       "source_file": "Backend/src/tasks/dto/analysis/metrics-calculation.dto.ts",
-      "source_location": "L4",
+      "source_location": "L8",
       "_origin": "ast",
       "id": "backend_src_tasks_dto_analysis_metrics_calculation_dto_calculateprogressdto",
       "community": 41,
@@ -16991,8 +16991,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_src_tasks_dto_analysis_suggest_pert_dto",
-      "community": 47,
-      "community_name": "PertEstimateDto",
+      "community": 10,
+      "community_name": "tasks.service.ts",
       "norm_label": "suggest-pert.dto.ts"
     },
     {
@@ -17002,8 +17002,8 @@
       "source_location": "L3",
       "_origin": "ast",
       "id": "backend_src_tasks_dto_analysis_suggest_pert_dto_microtasktype",
-      "community": 47,
-      "community_name": "PertEstimateDto",
+      "community": 10,
+      "community_name": "tasks.service.ts",
       "norm_label": "microtasktype"
     },
     {
@@ -17013,8 +17013,8 @@
       "source_location": "L13",
       "_origin": "ast",
       "id": "backend_src_tasks_dto_analysis_suggest_pert_dto_suggestpertdto",
-      "community": 47,
-      "community_name": "PertEstimateDto",
+      "community": 10,
+      "community_name": "tasks.service.ts",
       "norm_label": "suggestpertdto"
     },
     {
@@ -17024,8 +17024,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "backend_src_tasks_dto_analysis_suggest_pert_dto_ts_isenum",
-      "community": 47,
-      "community_name": "PertEstimateDto",
+      "community": 10,
+      "community_name": "tasks.service.ts",
       "norm_label": "isenum"
     },
     {
@@ -17035,8 +17035,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "backend_src_tasks_dto_analysis_suggest_pert_dto_ts_isstring",
-      "community": 47,
-      "community_name": "PertEstimateDto",
+      "community": 10,
+      "community_name": "tasks.service.ts",
       "norm_label": "isstring"
     },
     {
@@ -17046,8 +17046,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "backend_src_tasks_dto_analysis_suggest_pert_dto_ts_isoptional",
-      "community": 47,
-      "community_name": "PertEstimateDto",
+      "community": 10,
+      "community_name": "tasks.service.ts",
       "norm_label": "isoptional"
     },
     {
@@ -17057,8 +17057,8 @@
       "source_location": "L29",
       "_origin": "ast",
       "id": "backend_src_tasks_dto_analysis_suggest_pert_dto_pertsuggestionresponsedto",
-      "community": 47,
-      "community_name": "PertEstimateDto",
+      "community": 10,
+      "community_name": "tasks.service.ts",
       "norm_label": "pertsuggestionresponsedto"
     },
     {
@@ -21058,7 +21058,7 @@
       "label": "TaskSchema",
       "file_type": "code",
       "source_file": "Backend/src/tasks/schemas/task.schema.ts",
-      "source_location": "L26",
+      "source_location": "L27",
       "_origin": "ast",
       "id": "backend_src_tasks_schemas_task_schema_taskschema",
       "community": 41,
@@ -21344,7 +21344,7 @@
       "label": ".hasPertInput()",
       "file_type": "code",
       "source_file": "Backend/src/tasks/services/analysis/metrics.service.ts",
-      "source_location": "L28",
+      "source_location": "L31",
       "_origin": "ast",
       "id": "backend_src_tasks_services_analysis_metrics_service_tasksmetricsservice_haspertinput",
       "community": 9,
@@ -21355,7 +21355,7 @@
       "label": ".resolveBaseMinutes()",
       "file_type": "code",
       "source_file": "Backend/src/tasks/services/analysis/metrics.service.ts",
-      "source_location": "L36",
+      "source_location": "L39",
       "_origin": "ast",
       "id": "backend_src_tasks_services_analysis_metrics_service_tasksmetricsservice_resolvebaseminutes",
       "community": 9,
@@ -21366,7 +21366,7 @@
       "label": ".calculatePertBounds()",
       "file_type": "code",
       "source_file": "Backend/src/tasks/services/analysis/metrics.service.ts",
-      "source_location": "L48",
+      "source_location": "L51",
       "_origin": "ast",
       "id": "backend_src_tasks_services_analysis_metrics_service_tasksmetricsservice_calculatepertbounds",
       "community": 9,
@@ -21377,7 +21377,7 @@
       "label": ".calculateExpectedAndVariance()",
       "file_type": "code",
       "source_file": "Backend/src/tasks/services/analysis/metrics.service.ts",
-      "source_location": "L62",
+      "source_location": "L65",
       "_origin": "ast",
       "id": "backend_src_tasks_services_analysis_metrics_service_tasksmetricsservice_calculateexpectedandvariance",
       "community": 9,
@@ -21388,7 +21388,7 @@
       "label": ".applyRtmRisk()",
       "file_type": "code",
       "source_file": "Backend/src/tasks/services/analysis/metrics.service.ts",
-      "source_location": "L76",
+      "source_location": "L79",
       "_origin": "ast",
       "id": "backend_src_tasks_services_analysis_metrics_service_tasksmetricsservice_applyrtmrisk",
       "community": 9,
@@ -21399,7 +21399,7 @@
       "label": ".hasTraceabilityLinks()",
       "file_type": "code",
       "source_file": "Backend/src/tasks/services/analysis/metrics.service.ts",
-      "source_location": "L88",
+      "source_location": "L91",
       "_origin": "ast",
       "id": "backend_src_tasks_services_analysis_metrics_service_tasksmetricsservice_hastraceabilitylinks",
       "community": 9,
@@ -21410,7 +21410,7 @@
       "label": ".applyEvmMetrics()",
       "file_type": "code",
       "source_file": "Backend/src/tasks/services/analysis/metrics.service.ts",
-      "source_location": "L105",
+      "source_location": "L108",
       "_origin": "ast",
       "id": "backend_src_tasks_services_analysis_metrics_service_tasksmetricsservice_applyevmmetrics",
       "community": 9,
@@ -21421,7 +21421,7 @@
       "label": ".resolveExpectedMinutes()",
       "file_type": "code",
       "source_file": "Backend/src/tasks/services/analysis/metrics.service.ts",
-      "source_location": "L127",
+      "source_location": "L130",
       "_origin": "ast",
       "id": "backend_src_tasks_services_analysis_metrics_service_tasksmetricsservice_resolveexpectedminutes",
       "community": 9,
@@ -21432,7 +21432,7 @@
       "label": ".calculateProgress()",
       "file_type": "code",
       "source_file": "Backend/src/tasks/services/analysis/metrics.service.ts",
-      "source_location": "L139",
+      "source_location": "L142",
       "_origin": "ast",
       "id": "backend_src_tasks_services_analysis_metrics_service_tasksmetricsservice_calculateprogress",
       "community": 9,
@@ -21443,7 +21443,7 @@
       "label": ".calculateElapsedRatio()",
       "file_type": "code",
       "source_file": "Backend/src/tasks/services/analysis/metrics.service.ts",
-      "source_location": "L149",
+      "source_location": "L152",
       "_origin": "ast",
       "id": "backend_src_tasks_services_analysis_metrics_service_tasksmetricsservice_calculateelapsedratio",
       "community": 9,
@@ -21454,7 +21454,7 @@
       "label": ".calculateDeadline()",
       "file_type": "code",
       "source_file": "Backend/src/tasks/services/analysis/metrics.service.ts",
-      "source_location": "L171",
+      "source_location": "L174",
       "_origin": "ast",
       "id": "backend_src_tasks_services_analysis_metrics_service_tasksmetricsservice_calculatedeadline",
       "community": 47,
@@ -23558,8 +23558,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "backend_src_tasks_services_intelligence_feedback_service_ts_injectmodel",
-      "community": 117,
-      "community_name": "SuggestionsAiService",
+      "community": 17,
+      "community_name": "feedback.service.ts",
       "norm_label": "injectmodel"
     },
     {
@@ -23569,8 +23569,8 @@
       "source_location": "L23",
       "_origin": "ast",
       "id": "backend_src_tasks_services_intelligence_feedback_service_feedbackservice_constructor",
-      "community": 117,
-      "community_name": "SuggestionsAiService",
+      "community": 17,
+      "community_name": "feedback.service.ts",
       "norm_label": ".constructor()"
     },
     {
@@ -24493,8 +24493,8 @@
       "source_location": "L261",
       "_origin": "ast",
       "id": "backend_src_tasks_services_traceability_rtm_crud_service_rtmcrudservice_updaterequirementstatusifnolinkedactions",
-      "community": 25,
-      "community_name": "Requirement",
+      "community": 6,
+      "community_name": "GeminiService",
       "norm_label": "._updaterequirementstatusifnolinkedactions()"
     },
     {
@@ -27925,7 +27925,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_tests_unit_ai_services_core_gemini_executor_service_spec",
-      "community": 42,
+      "community": 98,
       "community_name": "GeminiExecutorService",
       "norm_label": "gemini-executor.service.spec.ts"
     },
@@ -27937,7 +27937,7 @@
       "_origin": "ast",
       "id": "backend_tests_unit_ai_services_core_gemini_service_spec",
       "community": 42,
-      "community_name": "GeminiExecutorService",
+      "community_name": "gemini.service.ts",
       "norm_label": "gemini.service.spec.ts"
     },
     {
@@ -28069,7 +28069,7 @@
       "_origin": "ast",
       "id": "backend_tests_unit_ai_services_tasks_dependency_ai_service_spec",
       "community": 42,
-      "community_name": "GeminiExecutorService",
+      "community_name": "gemini.service.ts",
       "norm_label": "dependency-ai.service.spec.ts"
     },
     {
@@ -28190,7 +28190,7 @@
       "_origin": "ast",
       "id": "backend_tests_unit_projects_controllers_projects_wbs_controller_spec",
       "community": 116,
-      "community_name": "projects-wbs.controller.ts",
+      "community_name": "wbs.dto.ts",
       "norm_label": "projects-wbs.controller.spec.ts"
     },
     {
@@ -28508,8 +28508,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_tests_unit_projects_services_wbs_audit_service_spec",
-      "community": 75,
-      "community_name": "wbs-ai.service.ts",
+      "community": 61,
+      "community_name": "AuditService",
       "norm_label": "audit.service.spec.ts"
     },
     {
@@ -28531,7 +28531,7 @@
       "_origin": "ast",
       "id": "backend_tests_unit_projects_services_wbs_conversion_wbs_conversion_orchestrator_service_spec",
       "community": 70,
-      "community_name": "wbs.dto.ts",
+      "community_name": "wbs-conversion-orchestrator.service.ts",
       "norm_label": "wbs-conversion-orchestrator.service.spec.ts"
     },
     {
@@ -28563,8 +28563,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_tests_unit_projects_services_wbs_monotony_service_spec",
-      "community": 75,
-      "community_name": "wbs-ai.service.ts",
+      "community": 60,
+      "community_name": "metrics-calculator.util.ts",
       "norm_label": "monotony.service.spec.ts"
     },
     {
@@ -28684,8 +28684,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_tests_unit_projects_services_wbs_wbs_validation_service_spec",
-      "community": 75,
-      "community_name": "wbs-ai.service.ts",
+      "community": 116,
+      "community_name": "wbs.dto.ts",
       "norm_label": "wbs/wbs-validation.service.spec.ts"
     },
     {
@@ -45701,8 +45701,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "frontend_composables_features_pert_usepertrouteoptimization",
-      "community": 271,
-      "community_name": "pert/usePertRouteOptimization.ts",
+      "community": 123,
+      "community_name": "pert/usePertDiagramData.ts",
       "norm_label": "pert/usepertrouteoptimization.ts"
     },
     {
@@ -45712,8 +45712,8 @@
       "source_location": "L3",
       "_origin": "ast",
       "id": "frontend_composables_features_pert_usepertrouteoptimization_pertresolvedlayoutmode",
-      "community": 271,
-      "community_name": "pert/usePertRouteOptimization.ts",
+      "community": 123,
+      "community_name": "pert/usePertDiagramData.ts",
       "norm_label": "pertresolvedlayoutmode"
     },
     {
@@ -45723,8 +45723,8 @@
       "source_location": "L5",
       "_origin": "ast",
       "id": "frontend_composables_features_pert_usepertrouteoptimization_usepertrouteoptimizationparams",
-      "community": 271,
-      "community_name": "pert/usePertRouteOptimization.ts",
+      "community": 123,
+      "community_name": "pert/usePertDiagramData.ts",
       "norm_label": "usepertrouteoptimizationparams"
     },
     {
@@ -45734,8 +45734,8 @@
       "source_location": "L13",
       "_origin": "ast",
       "id": "frontend_composables_features_pert_usepertrouteoptimization_routeoptimizationsummary",
-      "community": 271,
-      "community_name": "pert/usePertRouteOptimization.ts",
+      "community": 123,
+      "community_name": "pert/usePertDiagramData.ts",
       "norm_label": "routeoptimizationsummary"
     },
     {
@@ -45745,8 +45745,8 @@
       "source_location": "L22",
       "_origin": "ast",
       "id": "frontend_composables_features_pert_usepertrouteoptimization_segment",
-      "community": 271,
-      "community_name": "pert/usePertRouteOptimization.ts",
+      "community": 123,
+      "community_name": "pert/usePertDiagramData.ts",
       "norm_label": "segment"
     },
     {
@@ -45756,8 +45756,8 @@
       "source_location": "L32",
       "_origin": "ast",
       "id": "frontend_composables_features_pert_usepertrouteoptimization_usepertrouteoptimization",
-      "community": 271,
-      "community_name": "pert/usePertRouteOptimization.ts",
+      "community": 123,
+      "community_name": "pert/usePertDiagramData.ts",
       "norm_label": "usepertrouteoptimization()"
     },
     {
@@ -45932,8 +45932,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "frontend_composables_features_usepertrouteoptimization",
-      "community": 271,
-      "community_name": "pert/usePertRouteOptimization.ts",
+      "community": 123,
+      "community_name": "pert/usePertDiagramData.ts",
       "norm_label": "features/usepertrouteoptimization.ts"
     },
     {
@@ -46955,8 +46955,8 @@
       "source_location": "L17",
       "_origin": "ast",
       "id": "frontend_package_dependencies_axios",
-      "community": 72,
-      "community_name": "dependencies",
+      "community": 192,
+      "community_name": "axios",
       "norm_label": "axios"
     },
     {
@@ -46966,8 +46966,8 @@
       "source_location": "L17",
       "_origin": "ast",
       "id": "axios",
-      "community": 72,
-      "community_name": "dependencies",
+      "community": 192,
+      "community_name": "axios",
       "norm_label": "axios"
     },
     {
@@ -47087,8 +47087,8 @@
       "source_location": "L23",
       "_origin": "ast",
       "id": "frontend_package_dependencies_formdata_polyfill",
-      "community": 240,
-      "community_name": "formdata-polyfill",
+      "community": 72,
+      "community_name": "dependencies",
       "norm_label": "formdata-polyfill"
     },
     {
@@ -47098,8 +47098,8 @@
       "source_location": "L23",
       "_origin": "ast",
       "id": "formdata_polyfill",
-      "community": 240,
-      "community_name": "formdata-polyfill",
+      "community": 72,
+      "community_name": "dependencies",
       "norm_label": "formdata-polyfill"
     },
     {
@@ -52367,8 +52367,8 @@
       "source_location": "L1079",
       "_origin": "ast",
       "id": "project_requisitos_fase_12_polimento_e_seguran\u00e7a",
-      "community": 239,
-      "community_name": "\ud83c\udff0 Fase 12 - Polimento e Seguran\u00e7a",
+      "community": 173,
+      "community_name": "\ud83d\udccb Acompanhamento de Requisitos - Second Brain",
       "norm_label": "\ud83c\udff0 fase 12 - polimento e seguranca"
     },
     {
@@ -52378,8 +52378,8 @@
       "source_location": "L1081",
       "_origin": "ast",
       "id": "project_requisitos_usabilidade",
-      "community": 239,
-      "community_name": "\ud83c\udff0 Fase 12 - Polimento e Seguran\u00e7a",
+      "community": 173,
+      "community_name": "\ud83d\udccb Acompanhamento de Requisitos - Second Brain",
       "norm_label": "usabilidade"
     },
     {
@@ -52389,8 +52389,8 @@
       "source_location": "L1090",
       "_origin": "ast",
       "id": "project_requisitos_qualidade_de_c\u00f3digo",
-      "community": 239,
-      "community_name": "\ud83c\udff0 Fase 12 - Polimento e Seguran\u00e7a",
+      "community": 173,
+      "community_name": "\ud83d\udccb Acompanhamento de Requisitos - Second Brain",
       "norm_label": "qualidade de codigo"
     },
     {
@@ -52400,8 +52400,8 @@
       "source_location": "L1096",
       "_origin": "ast",
       "id": "project_requisitos_seguran\u00e7a",
-      "community": 239,
-      "community_name": "\ud83c\udff0 Fase 12 - Polimento e Seguran\u00e7a",
+      "community": 173,
+      "community_name": "\ud83d\udccb Acompanhamento de Requisitos - Second Brain",
       "norm_label": "seguranca"
     },
     {
@@ -52411,8 +52411,8 @@
       "source_location": "L1104",
       "_origin": "ast",
       "id": "project_requisitos_novos_requisitos_propostos_transpar\u00eancia_e_privacidade_psicol\u00f3gica",
-      "community": 239,
-      "community_name": "\ud83c\udff0 Fase 12 - Polimento e Seguran\u00e7a",
+      "community": 173,
+      "community_name": "\ud83d\udccb Acompanhamento de Requisitos - Second Brain",
       "norm_label": "novos requisitos propostos (transparencia e privacidade psicologica)"
     },
     {
@@ -108350,7 +108350,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "Backend/src/tasks/dto/analysis/metrics-calculation.dto.ts",
-      "source_location": "L4",
+      "source_location": "L8",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_src_tasks_dto_analysis_metrics_calculation_dto",
@@ -108434,7 +108434,7 @@
       "context": "generic_arg",
       "confidence": "EXTRACTED",
       "source_file": "Backend/src/tasks/dto/analysis/metrics-calculation.dto.ts",
-      "source_location": "L5",
+      "source_location": "L9",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_src_tasks_dto_analysis_metrics_calculation_dto_calculateprogressdto",
@@ -108446,7 +108446,7 @@
       "context": "generic_arg",
       "confidence": "EXTRACTED",
       "source_file": "Backend/src/tasks/dto/analysis/metrics-calculation.dto.ts",
-      "source_location": "L6",
+      "source_location": "L10",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_src_tasks_dto_analysis_metrics_calculation_dto_calculateprogressdto",
@@ -108458,7 +108458,7 @@
       "context": "generic_arg",
       "confidence": "EXTRACTED",
       "source_file": "Backend/src/tasks/dto/analysis/metrics-calculation.dto.ts",
-      "source_location": "L6",
+      "source_location": "L10",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_src_tasks_dto_analysis_metrics_calculation_dto_calculateprogressdto",
@@ -108470,7 +108470,7 @@
       "context": "generic_arg",
       "confidence": "EXTRACTED",
       "source_file": "Backend/src/tasks/dto/analysis/metrics-calculation.dto.ts",
-      "source_location": "L6",
+      "source_location": "L10",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_src_tasks_dto_analysis_metrics_calculation_dto_calculateprogressdto",
@@ -108494,7 +108494,7 @@
       "context": "parameter_type",
       "confidence": "EXTRACTED",
       "source_file": "Backend/src/tasks/services/analysis/metrics.service.ts",
-      "source_location": "L139",
+      "source_location": "L142",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_src_tasks_services_analysis_metrics_service_tasksmetricsservice_calculateprogress",
@@ -108624,7 +108624,7 @@
       "context": "parameter_type",
       "confidence": "EXTRACTED",
       "source_file": "Backend/src/tasks/services/analysis/metrics.service.ts",
-      "source_location": "L62",
+      "source_location": "L65",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_src_tasks_services_analysis_metrics_service_tasksmetricsservice_calculateexpectedandvariance",
@@ -108636,7 +108636,7 @@
       "context": "return_type",
       "confidence": "EXTRACTED",
       "source_file": "Backend/src/tasks/services/analysis/metrics.service.ts",
-      "source_location": "L48",
+      "source_location": "L51",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_src_tasks_services_analysis_metrics_service_tasksmetricsservice_calculatepertbounds",
@@ -116719,7 +116719,7 @@
       "context": "generic_arg",
       "confidence": "EXTRACTED",
       "source_file": "Backend/src/tasks/services/analysis/metrics.service.ts",
-      "source_location": "L105",
+      "source_location": "L108",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_src_tasks_services_analysis_metrics_service_tasksmetricsservice_applyevmmetrics",
@@ -116743,7 +116743,7 @@
       "context": "generic_arg",
       "confidence": "EXTRACTED",
       "source_file": "Backend/src/tasks/services/analysis/metrics.service.ts",
-      "source_location": "L76",
+      "source_location": "L79",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_src_tasks_services_analysis_metrics_service_tasksmetricsservice_applyrtmrisk",
@@ -116755,7 +116755,7 @@
       "context": "generic_arg",
       "confidence": "EXTRACTED",
       "source_file": "Backend/src/tasks/services/analysis/metrics.service.ts",
-      "source_location": "L149",
+      "source_location": "L152",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_src_tasks_services_analysis_metrics_service_tasksmetricsservice_calculateelapsedratio",
@@ -116767,7 +116767,7 @@
       "context": "generic_arg",
       "confidence": "EXTRACTED",
       "source_file": "Backend/src/tasks/services/analysis/metrics.service.ts",
-      "source_location": "L48",
+      "source_location": "L51",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_src_tasks_services_analysis_metrics_service_tasksmetricsservice_calculatepertbounds",
@@ -116779,7 +116779,7 @@
       "context": "generic_arg",
       "confidence": "EXTRACTED",
       "source_file": "Backend/src/tasks/services/analysis/metrics.service.ts",
-      "source_location": "L28",
+      "source_location": "L31",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_src_tasks_services_analysis_metrics_service_tasksmetricsservice_haspertinput",
@@ -116791,7 +116791,7 @@
       "context": "generic_arg",
       "confidence": "EXTRACTED",
       "source_file": "Backend/src/tasks/services/analysis/metrics.service.ts",
-      "source_location": "L88",
+      "source_location": "L91",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_src_tasks_services_analysis_metrics_service_tasksmetricsservice_hastraceabilitylinks",
@@ -116803,7 +116803,7 @@
       "context": "generic_arg",
       "confidence": "EXTRACTED",
       "source_file": "Backend/src/tasks/services/analysis/metrics.service.ts",
-      "source_location": "L36",
+      "source_location": "L39",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_src_tasks_services_analysis_metrics_service_tasksmetricsservice_resolvebaseminutes",
@@ -116815,7 +116815,7 @@
       "context": "generic_arg",
       "confidence": "EXTRACTED",
       "source_file": "Backend/src/tasks/services/analysis/metrics.service.ts",
-      "source_location": "L127",
+      "source_location": "L130",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_src_tasks_services_analysis_metrics_service_tasksmetricsservice_resolveexpectedminutes",
@@ -122335,7 +122335,7 @@
       "context": "generic_arg",
       "confidence": "EXTRACTED",
       "source_file": "Backend/src/tasks/services/analysis/metrics.service.ts",
-      "source_location": "L105",
+      "source_location": "L108",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_src_tasks_services_analysis_metrics_service_tasksmetricsservice_applyevmmetrics",
@@ -122359,7 +122359,7 @@
       "context": "generic_arg",
       "confidence": "EXTRACTED",
       "source_file": "Backend/src/tasks/services/analysis/metrics.service.ts",
-      "source_location": "L76",
+      "source_location": "L79",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_src_tasks_services_analysis_metrics_service_tasksmetricsservice_applyrtmrisk",
@@ -122371,7 +122371,7 @@
       "context": "generic_arg",
       "confidence": "EXTRACTED",
       "source_file": "Backend/src/tasks/services/analysis/metrics.service.ts",
-      "source_location": "L149",
+      "source_location": "L152",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_src_tasks_services_analysis_metrics_service_tasksmetricsservice_calculateelapsedratio",
@@ -122383,7 +122383,7 @@
       "context": "generic_arg",
       "confidence": "EXTRACTED",
       "source_file": "Backend/src/tasks/services/analysis/metrics.service.ts",
-      "source_location": "L88",
+      "source_location": "L91",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_src_tasks_services_analysis_metrics_service_tasksmetricsservice_hastraceabilitylinks",
@@ -122395,7 +122395,7 @@
       "context": "generic_arg",
       "confidence": "EXTRACTED",
       "source_file": "Backend/src/tasks/services/analysis/metrics.service.ts",
-      "source_location": "L36",
+      "source_location": "L39",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_src_tasks_services_analysis_metrics_service_tasksmetricsservice_resolvebaseminutes",
@@ -122407,7 +122407,7 @@
       "context": "generic_arg",
       "confidence": "EXTRACTED",
       "source_file": "Backend/src/tasks/services/analysis/metrics.service.ts",
-      "source_location": "L127",
+      "source_location": "L130",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_src_tasks_services_analysis_metrics_service_tasksmetricsservice_resolveexpectedminutes",
@@ -125132,7 +125132,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "Backend/src/tasks/schemas/task.schema.ts",
-      "source_location": "L26",
+      "source_location": "L27",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_src_tasks_schemas_task_schema",
@@ -127345,7 +127345,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "Backend/src/tasks/services/analysis/metrics.service.ts",
-      "source_location": "L105",
+      "source_location": "L108",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_src_tasks_services_analysis_metrics_service_tasksmetricsservice",
@@ -127367,7 +127367,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "Backend/src/tasks/services/analysis/metrics.service.ts",
-      "source_location": "L76",
+      "source_location": "L79",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_src_tasks_services_analysis_metrics_service_tasksmetricsservice",
@@ -127378,7 +127378,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "Backend/src/tasks/services/analysis/metrics.service.ts",
-      "source_location": "L171",
+      "source_location": "L174",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_src_tasks_services_analysis_metrics_service_tasksmetricsservice",
@@ -127389,7 +127389,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "Backend/src/tasks/services/analysis/metrics.service.ts",
-      "source_location": "L149",
+      "source_location": "L152",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_src_tasks_services_analysis_metrics_service_tasksmetricsservice",
@@ -127400,7 +127400,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "Backend/src/tasks/services/analysis/metrics.service.ts",
-      "source_location": "L62",
+      "source_location": "L65",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_src_tasks_services_analysis_metrics_service_tasksmetricsservice",
@@ -127411,7 +127411,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "Backend/src/tasks/services/analysis/metrics.service.ts",
-      "source_location": "L48",
+      "source_location": "L51",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_src_tasks_services_analysis_metrics_service_tasksmetricsservice",
@@ -127422,7 +127422,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "Backend/src/tasks/services/analysis/metrics.service.ts",
-      "source_location": "L139",
+      "source_location": "L142",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_src_tasks_services_analysis_metrics_service_tasksmetricsservice",
@@ -127433,7 +127433,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "Backend/src/tasks/services/analysis/metrics.service.ts",
-      "source_location": "L28",
+      "source_location": "L31",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_src_tasks_services_analysis_metrics_service_tasksmetricsservice",
@@ -127444,7 +127444,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "Backend/src/tasks/services/analysis/metrics.service.ts",
-      "source_location": "L88",
+      "source_location": "L91",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_src_tasks_services_analysis_metrics_service_tasksmetricsservice",
@@ -127455,7 +127455,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "Backend/src/tasks/services/analysis/metrics.service.ts",
-      "source_location": "L36",
+      "source_location": "L39",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_src_tasks_services_analysis_metrics_service_tasksmetricsservice",
@@ -127466,7 +127466,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "Backend/src/tasks/services/analysis/metrics.service.ts",
-      "source_location": "L127",
+      "source_location": "L130",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_src_tasks_services_analysis_metrics_service_tasksmetricsservice",
@@ -127622,7 +127622,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "Backend/src/tasks/services/analysis/metrics.service.ts",
-      "source_location": "L19",
+      "source_location": "L22",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_src_tasks_services_analysis_metrics_service_tasksmetricsservice_applypertestimates",
@@ -127634,7 +127634,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "Backend/src/tasks/services/analysis/metrics.service.ts",
-      "source_location": "L18",
+      "source_location": "L21",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_src_tasks_services_analysis_metrics_service_tasksmetricsservice_applypertestimates",
@@ -127646,7 +127646,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "Backend/src/tasks/services/analysis/metrics.service.ts",
-      "source_location": "L13",
+      "source_location": "L16",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_src_tasks_services_analysis_metrics_service_tasksmetricsservice_applypertestimates",
@@ -127658,7 +127658,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "Backend/src/tasks/services/analysis/metrics.service.ts",
-      "source_location": "L13",
+      "source_location": "L16",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_src_tasks_services_analysis_metrics_service_tasksmetricsservice_applypertestimates",
@@ -127682,7 +127682,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "Backend/src/tasks/services/analysis/metrics.service.ts",
-      "source_location": "L77",
+      "source_location": "L80",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_src_tasks_services_analysis_metrics_service_tasksmetricsservice_applyrtmrisk",
@@ -127706,7 +127706,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "Backend/src/tasks/services/analysis/metrics.service.ts",
-      "source_location": "L114",
+      "source_location": "L117",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_src_tasks_services_analysis_metrics_service_tasksmetricsservice_applyevmmetrics",
@@ -127718,7 +127718,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "Backend/src/tasks/services/analysis/metrics.service.ts",
-      "source_location": "L109",
+      "source_location": "L112",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_src_tasks_services_analysis_metrics_service_tasksmetricsservice_applyevmmetrics",
@@ -127730,7 +127730,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "Backend/src/tasks/services/analysis/metrics.service.ts",
-      "source_location": "L106",
+      "source_location": "L109",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_src_tasks_services_analysis_metrics_service_tasksmetricsservice_applyevmmetrics",

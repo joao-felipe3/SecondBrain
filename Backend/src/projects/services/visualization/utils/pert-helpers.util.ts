@@ -16,8 +16,8 @@ export function toMinutes(task: TaskPertContext): number {
   if (typeof task?.pertExpectedMinutes === 'number' && task.pertExpectedMinutes > 0) {
     return task.pertExpectedMinutes;
   }
-  if (typeof (task as any)?.pomodorosPlanned === 'number' && (task as any).pomodorosPlanned > 0) {
-    return (task as any).pomodorosPlanned * 25;
+  if (typeof task?.pomodorosPlanned === 'number' && task.pomodorosPlanned > 0) {
+    return task.pomodorosPlanned * 25;
   }
   return 60;
 }

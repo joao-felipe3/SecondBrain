@@ -4,7 +4,6 @@ describe('TasksService', () => {
   let service: TasksService;
   let mockTaskRepo: any;
   let mockProjectStatsService: any;
-  let mockGeminiService: any;
   let mockFeedbackService: any;
   let mockPertService: any;
   let mockWriteService: any;

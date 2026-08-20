@@ -109,6 +109,7 @@ export type TaskPertContext = Pick<
 > &
   TaskPertMetrics &
   TaskTraceability &
+  Pick<TaskGamification, 'pomodorosPlanned'> &
   Pick<TaskEvmMetrics, 'evmProgress'> & {
     _id?: unknown;
     id?: string;
