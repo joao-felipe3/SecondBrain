@@ -1,16 +1,16 @@
 # Graph Report - SecondBrain  (2026-08-20)
 
 ## Corpus Check
-- 641 files · ~7,418,248 words
+- 641 files · ~7,418,244 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 4934 nodes · 10694 edges · 274 communities (237 shown, 37 thin omitted)
+- 4934 nodes · 10694 edges · 275 communities (240 shown, 35 thin omitted)
 - Extraction: 100% EXTRACTED · 0% INFERRED · 0% AMBIGUOUS · INFERRED: 35 edges (avg confidence: 0.6)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `fb5378e9`
+- Built from commit: `e69b6b3c`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -57,7 +57,7 @@
 - tasks/layout/Sidebar.vue
 - dependencies
 - TaskDocument
-- gemini.service.ts
+- GeminiExecutorService
 - rtm-ai.utils.ts
 - WbsValidationService
 - rolling-wave.interface.ts
@@ -85,7 +85,7 @@
 - scripts
 - planning.service.ts
 - pert-helpers.util.ts
-- wbs-conversion-orchestrator.service.ts
+- wbs.dto.ts
 - compilerOptions
 - dependencies
 - ProjectsService
@@ -113,7 +113,6 @@
 - pert-diagram.service.ts
 - ProjectPanel.vue
 - WBSTreeVisualization.vue
-- GeminiExecutorService
 - rolling-wave-replan-helpers.util.ts
 - useGuildAudio.ts
 - RiskRegister.vue
@@ -131,8 +130,8 @@
 - task-events.listener.ts
 - MicroTaskDetailSection.vue
 - DatePickerField.vue
-- wbs.dto.ts
-- SuggestionsAiService
+- projects-wbs.controller.ts
+- gemini.prompts.ts
 - TasksHabitsService
 - RTMMappingService
 - task.ts
@@ -207,7 +206,7 @@
 - pert-diagram.dto.ts
 - eslint-plugin-prettier
 - globals
-- axios
+- pert/usePertRouteOptimization.ts
 - Guia de Performance, Profiling e Diagnóstico
 - ADR-001: Backend com NestJS + Mongoose
 - ADR-003: Integração com Gemini API
@@ -239,6 +238,7 @@
 - cytoscape-popper.d.ts
 - pre-push
 - @eslint/js
+- eslint
 - ADR-008: Automações CI/CD e Guardrails de Qualidade (GitHub Actions, Husky & Dependency-Cruiser)
 - 🛡️ Fase 3.5 - Refatoração & Interface RPG Diegética (Frontend)
 - ⚡ Eficiência - Integração de LLM na Definição e Gestão de Projetos
@@ -268,7 +268,7 @@
 - Módulo: Análise Quantitativa e PERT/CPM
 - Módulo: Inteligência e Suporte com IA
 - Módulo: Monitoramento e Alertas Operacionais
-- jest
+- formdata-polyfill
 - rolling-wave-db-helpers.util.ts
 - usePertLayoutFallbacks.ts
 - clinic
@@ -301,7 +301,7 @@
 ## Import Cycles
 - None detected.
 
-## Communities (274 total, 37 thin omitted)
+## Communities (275 total, 35 thin omitted)
 
 ### Community 0 - "draft-generation-helpers.util.ts"
 Cohesion: 0.20
@@ -328,7 +328,7 @@ Cohesion: 0.10
 Nodes (33): buildInferInterLeafPrompt(), buildInferWithAiPrompt(), buildRetryPrompt(), InferenceLeafGatesDto, InferenceTaskDto, InferInterLeafWithAiDto, InferredDependencyDto, InferWithAiDto (+25 more)
 
 ### Community 6 - "GeminiService"
-Cohesion: 0.11
+Cohesion: 0.12
 Nodes (22): GeminiService, Injectable, RequirementMaps, RTMMatrixData, RTMRequirementData, RTMTaskData, RTMValidation, ValidationIssues (+14 more)
 
 ### Community 7 - "ProjectPlannerDialog.vue"
@@ -475,9 +475,9 @@ Nodes (45): dependencies, class-transformer, class-validator, @google/generative
 Cohesion: 0.12
 Nodes (15): CalculateProgressDto, InsertManyError, TaskChecklistContext, TaskChecklistItem, TaskEvmMetrics, TaskGamification, TaskOperationalInfo, TaskPertMetrics (+7 more)
 
-### Community 42 - "gemini.service.ts"
+### Community 42 - "GeminiExecutorService"
 Cohesion: 0.16
-Nodes (14): AiTasksModule, Module, ChecklistPromptParams, ChecklistWithHistoryPromptParams, CompletionFeedbackPromptParams, PertEstimatePromptParams, TaskSuggestionsPromptParams, buildChecklistGenerationPrompt() (+6 more)
+Nodes (8): AiTasksModule, Module, GeminiExecutorService, Injectable, DependencyAiService, Injectable, SuggestionsAiService, Injectable
 
 ### Community 43 - "rtm-ai.utils.ts"
 Cohesion: 0.12
@@ -548,11 +548,11 @@ Cohesion: 0.08
 Nodes (26): @commitlint/cli, @commitlint/config-conventional, husky, lint-staged, description, devDependencies, @commitlint/cli, @commitlint/config-conventional (+18 more)
 
 ### Community 60 - "metrics-calculator.util.ts"
-Cohesion: 0.06
-Nodes (29): buildMicroTasksGeneratorPrompt(), buildMicroTasksOutlineWithPlanPrompt(), buildFixMonotonyPrompt(), WBSLeafProjectContext, BatchMetricInputTask, BatchMetricsOptions, ChunkMinutesParams, PertCalculationResult (+21 more)
+Cohesion: 0.07
+Nodes (26): buildMicroTasksGeneratorPrompt(), buildMicroTasksOutlineWithPlanPrompt(), buildFixMonotonyPrompt(), WBSLeafProjectContext, BatchMetricInputTask, BatchMetricsOptions, ChunkMinutesParams, PertCalculationResult (+18 more)
 
 ### Community 61 - "AuditService"
-Cohesion: 0.23
+Cohesion: 0.24
 Nodes (6): ApplyGuardrailsParams, AuditLeafDiscrepancyInput, LeafAuditResult, BatchMetricsResult, AuditService, Injectable
 
 ### Community 62 - "GenerateChecklistWithHistoryDto"
@@ -587,8 +587,8 @@ Nodes (20): buildCatchballQuestionsPrompt(), buildSmartObjectivePrompt(), buildS
 Cohesion: 0.34
 Nodes (11): BuildPertTaskNodesParams, MapPertEdgesParams, MapPertNodesParams, buildTaskNodes(), computeTaskLevels(), mapEdges(), mapNodes(), round2() (+3 more)
 
-### Community 70 - "wbs-conversion-orchestrator.service.ts"
-Cohesion: 0.19
+### Community 70 - "wbs.dto.ts"
+Cohesion: 0.18
 Nodes (7): ConversionOptions, ConversionResult, GenerateTasksForSingleLeafParams, GenerateTasksForSingleLeafResult, TasksServiceSubset, Injectable, WbsConversionOrchestrationService
 
 ### Community 71 - "compilerOptions"
@@ -597,7 +597,7 @@ Nodes (24): compilerOptions, allowSyntheticDefaultImports, baseUrl, declaration,
 
 ### Community 72 - "dependencies"
 Cohesion: 0.08
-Nodes (25): cytoscape, cytoscape-popper, dagre, echarts, formdata-polyfill, dependencies, cytoscape, cytoscape-popper (+17 more)
+Nodes (25): axios, cytoscape, cytoscape-popper, dagre, echarts, dependencies, axios, cytoscape (+17 more)
 
 ### Community 73 - "ProjectsService"
 Cohesion: 0.11
@@ -608,8 +608,8 @@ Cohesion: 0.07
 Nodes (15): emit, useResponsive(), backgroundImageUrl, hoverTooltip, isLeftArchHovered, { isMobile, isPortrait }, { isMuted, toggleMute, playSFX, playDoorOpenSound }, isRightDoorHovered (+7 more)
 
 ### Community 75 - "wbs-ai.service.ts"
-Cohesion: 0.12
-Nodes (12): buildAuditPrompt(), buildWbsDecompositionPrompt(), buildWbsGenerationPrompt(), Injectable, WbsAiService, AuditLeafDiscrepancyAiInput, AuditLeafDiscrepancyAiResult, GenerateWbsInput (+4 more)
+Cohesion: 0.07
+Nodes (17): buildAuditPrompt(), buildWbsDecompositionPrompt(), buildWbsGenerationPrompt(), Injectable, WbsAiService, AuditLeafDiscrepancyAiInput, AuditLeafDiscrepancyAiResult, GenerateWbsInput (+9 more)
 
 ### Community 76 - "ZoomedContent.vue"
 Cohesion: 0.06
@@ -767,13 +767,13 @@ Nodes (13): ChecklistItem, completionColor, completionPercentage, emit, hasCheck
 Cohesion: 0.16
 Nodes (13): clearError(), computedLabel, emit, error, errorMessage, formatDate(), inputValue, localValue (+5 more)
 
-### Community 116 - "wbs.dto.ts"
-Cohesion: 0.26
+### Community 116 - "projects-wbs.controller.ts"
+Cohesion: 0.29
 Nodes (17): AuditLeafDiscrepancyDto, ConvertWBSToTasksDto, GenerateTasksForLeafDto, GenerateWBSDto, GetLeafNodesDto, ResolveWBSBudgetDto, SaveWBSDto, SuggestDecompositionDto (+9 more)
 
-### Community 117 - "SuggestionsAiService"
-Cohesion: 0.19
-Nodes (4): NextStepsPromptParams, buildGeminiNextStepsPrompt(), SuggestionsAiService, Injectable
+### Community 117 - "gemini.prompts.ts"
+Cohesion: 0.18
+Nodes (8): CompletionFeedbackPromptParams, NextStepsPromptParams, PertEstimatePromptParams, TaskSuggestionsPromptParams, buildCompletionFeedbackPrompt(), buildGeminiNextStepsPrompt(), buildPertEstimatePrompt(), buildTaskSuggestionsPrompt()
 
 ### Community 118 - "TasksHabitsService"
 Cohesion: 0.19
@@ -796,8 +796,8 @@ Cohesion: 0.10
 Nodes (20): Backend Endpoints (Sprint 6), CompletionFeedbackModal.vue, CSS Variables, DeviationWarningAlert.vue, Directory Structure, E2E Tests, Frontend Stores, Future Enhancements (Phase 3+) (+12 more)
 
 ### Community 123 - "pert/usePertDiagramData.ts"
-Cohesion: 0.13
-Nodes (18): PertDiagramDataResponse, PertDiagramEdge, PertDiagramNode, PertDiagramStatistics, usePertDiagramData(), PertNodeInsights, PertTooltipState, BuildPertElementsParams (+10 more)
+Cohesion: 0.19
+Nodes (13): PertDiagramDataResponse, PertDiagramEdge, PertDiagramNode, PertDiagramStatistics, usePertDiagramData(), PertNodeInsights, PertTooltipState, BuildPertElementsParams (+5 more)
 
 ### Community 124 - "DeviationWarningAlert.vue"
 Cohesion: 0.15
@@ -839,6 +839,10 @@ Nodes (10): dataDir, degreeMap, edges, graphPath, nodeIds, nodeMap, nodes, norma
 Cohesion: 0.24
 Nodes (11): generateSimpleEmbedding(), getFilesRecursively(), GraphEdge, GraphNode, IGNORED_PATHS, main(), OUTPUT_DIR, parseMdFile() (+3 more)
 
+### Community 135 - "ChecklistAiService"
+Cohesion: 0.20
+Nodes (6): ChecklistPromptParams, ChecklistWithHistoryPromptParams, buildChecklistGenerationPrompt(), buildChecklistWithHistoryPrompt(), ChecklistAiService, Injectable
+
 ### Community 136 - "MicroTaskDraft"
 Cohesion: 0.26
 Nodes (5): GenerateLeafDraftsWithPlanDto, MicroTaskDraft, WBSLeafWithPlanGenerationContext, DraftWithPlanGenerationService, Injectable
@@ -876,8 +880,8 @@ Cohesion: 0.33
 Nodes (9): applyAuditSuggestion(), applyResolution(), auditResult, buildAuditResolution(), emit, props, resolutionMode, resolutionProcessing (+1 more)
 
 ### Community 145 - "projects.module.ts"
-Cohesion: 0.09
-Nodes (12): projectMongooseFeature, WBSNodeDocument, WBSNodeSchema, DraftGenerationService, Injectable, Injectable, InjectModel, WbsPersistenceService (+4 more)
+Cohesion: 0.11
+Nodes (10): projectMongooseFeature, WBSNodeDocument, WBSNodeSchema, DraftGenerationService, Injectable, Injectable, InjectModel, WbsPersistenceService (+2 more)
 
 ### Community 146 - "Paper.vue"
 Cohesion: 0.16
@@ -893,7 +897,7 @@ Nodes (10): DeterministicProjectInput, ReplanTaskDeadlinesResult, ProjectWave, P
 
 ### Community 149 - "devDependencies"
 Cohesion: 0.06
-Nodes (35): autocannon, devDependencies, autocannon, dependency-cruiser, eslint, eslint-config-prettier, mongodb-memory-server, @nestjs/cli (+27 more)
+Nodes (35): autocannon, devDependencies, autocannon, dependency-cruiser, eslint-config-prettier, jest, mongodb-memory-server, @nestjs/cli (+27 more)
 
 ### Community 150 - "GuildParticlesCanvas.vue"
 Cohesion: 0.16
@@ -1018,6 +1022,10 @@ Nodes (14): 1. Diagrama PERT/CPM (Cytoscape + Dagre), 2. Cronograma de Gantt (EC
 ### Community 189 - "pert-diagram.dto.ts"
 Cohesion: 0.56
 Nodes (7): PackageCriticalityDto, PertDiagramDataResponse, PertDiagramEdge, PertDiagramNode, PertDiagramStatistics, ApiProperty, ApiPropertyOptional
+
+### Community 192 - "pert/usePertRouteOptimization.ts"
+Cohesion: 0.33
+Nodes (5): PertResolvedLayoutMode, RouteOptimizationSummary, Segment, usePertRouteOptimization(), UsePertRouteOptimizationParams
 
 ### Community 193 - "Guia de Performance, Profiling e Diagnóstico"
 Cohesion: 0.15
@@ -1198,7 +1206,7 @@ Nodes (6): PertLayoutMode, PertResolvedLayoutMode, RunInitialLayoutFallbackParam
 ## Knowledge Gaps
 - **1481 isolated node(s):** `$schema`, `collection`, `sourceRoot`, `deleteOutDir`, `name` (+1476 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **37 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **35 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
@@ -1207,7 +1215,7 @@ _Questions this graph is uniquely positioned to answer:_
   _High betweenness centrality (0.035) - this node is a cross-community bridge._
 - **Why does `useApi()` connect `useApi` to `tasks/layout/Sidebar.vue`, `RTMMatrix.vue`, `CriticalPathPage.vue`, `FeedbackTab.vue`, `ProjectBufferDashboard.vue`, `BookModal.vue`, `PertDiagramPage.vue`, `DeviationWarningAlert.vue`, `LineageTab.vue`?**
   _High betweenness centrality (0.016) - this node is a cross-community bridge._
-- **Why does `ConfigService` connect `ConfigService` to `GeminiExecutorService`, `wbs-conversion-orchestrator.service.ts`, `ChecklistAiService`, `projects.module.ts`, `PertAiService`, `ai-wiki.service.ts`?**
+- **Why does `ConfigService` connect `ConfigService` to `wbs.dto.ts`, `ChecklistAiService`, `GeminiExecutorService`, `projects.module.ts`, `PertAiService`, `ai-wiki.service.ts`?**
   _High betweenness centrality (0.015) - this node is a cross-community bridge._
 - **What connects `$schema`, `collection`, `sourceRoot` to the rest of the system?**
   _1481 weakly-connected nodes found - possible documentation gaps or missing edges._

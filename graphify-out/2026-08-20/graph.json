@@ -1294,8 +1294,8 @@
       "source_location": "L78",
       "_origin": "ast",
       "id": "backend_package_devdependencies_eslint",
-      "community": 149,
-      "community_name": "devDependencies",
+      "community": 240,
+      "community_name": "eslint",
       "norm_label": "eslint"
     },
     {
@@ -1305,8 +1305,8 @@
       "source_location": "L78",
       "_origin": "ast",
       "id": "backend_package_json_eslint",
-      "community": 149,
-      "community_name": "devDependencies",
+      "community": 240,
+      "community_name": "eslint",
       "norm_label": "eslint"
     },
     {
@@ -1382,8 +1382,8 @@
       "source_location": "L82",
       "_origin": "ast",
       "id": "backend_package_devdependencies_jest",
-      "community": 270,
-      "community_name": "jest",
+      "community": 149,
+      "community_name": "devDependencies",
       "norm_label": "jest"
     },
     {
@@ -1393,8 +1393,8 @@
       "source_location": "L82",
       "_origin": "ast",
       "id": "jest",
-      "community": 270,
-      "community_name": "jest",
+      "community": 149,
+      "community_name": "devDependencies",
       "norm_label": "jest"
     },
     {
@@ -2230,7 +2230,7 @@
       "_origin": "ast",
       "id": "backend_src_ai_ai_tasks_module",
       "community": 42,
-      "community_name": "gemini.service.ts",
+      "community_name": "GeminiExecutorService",
       "norm_label": "ai-tasks.module.ts"
     },
     {
@@ -2241,7 +2241,7 @@
       "_origin": "ast",
       "id": "backend_src_ai_ai_tasks_module_aitasksmodule",
       "community": 42,
-      "community_name": "gemini.service.ts",
+      "community_name": "GeminiExecutorService",
       "norm_label": "aitasksmodule"
     },
     {
@@ -2252,7 +2252,7 @@
       "_origin": "ast",
       "id": "backend_src_ai_ai_tasks_module_ts_module",
       "community": 42,
-      "community_name": "gemini.service.ts",
+      "community_name": "GeminiExecutorService",
       "norm_label": "module"
     },
     {
@@ -2263,7 +2263,7 @@
       "_origin": "ast",
       "id": "backend_src_ai_ai_module",
       "community": 42,
-      "community_name": "gemini.service.ts",
+      "community_name": "GeminiExecutorService",
       "norm_label": "ai.module.ts"
     },
     {
@@ -2559,8 +2559,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_src_ai_interfaces_gemini_prompts_interface",
-      "community": 42,
-      "community_name": "gemini.service.ts",
+      "community": 117,
+      "community_name": "gemini.prompts.ts",
       "norm_label": "gemini-prompts.interface.ts"
     },
     {
@@ -2570,8 +2570,8 @@
       "source_location": "L4",
       "_origin": "ast",
       "id": "backend_src_ai_interfaces_gemini_prompts_interface_checklistpromptparams",
-      "community": 42,
-      "community_name": "gemini.service.ts",
+      "community": 135,
+      "community_name": "ChecklistAiService",
       "norm_label": "checklistpromptparams"
     },
     {
@@ -2581,8 +2581,8 @@
       "source_location": "L13",
       "_origin": "ast",
       "id": "backend_src_ai_interfaces_gemini_prompts_interface_checklistwithhistorypromptparams",
-      "community": 42,
-      "community_name": "gemini.service.ts",
+      "community": 135,
+      "community_name": "ChecklistAiService",
       "norm_label": "checklistwithhistorypromptparams"
     },
     {
@@ -2592,8 +2592,8 @@
       "source_location": "L20",
       "_origin": "ast",
       "id": "backend_src_ai_interfaces_gemini_prompts_interface_pertestimatepromptparams",
-      "community": 42,
-      "community_name": "gemini.service.ts",
+      "community": 117,
+      "community_name": "gemini.prompts.ts",
       "norm_label": "pertestimatepromptparams"
     },
     {
@@ -2603,8 +2603,8 @@
       "source_location": "L29",
       "_origin": "ast",
       "id": "backend_src_ai_interfaces_gemini_prompts_interface_completionfeedbackpromptparams",
-      "community": 42,
-      "community_name": "gemini.service.ts",
+      "community": 117,
+      "community_name": "gemini.prompts.ts",
       "norm_label": "completionfeedbackpromptparams"
     },
     {
@@ -2615,7 +2615,7 @@
       "_origin": "ast",
       "id": "backend_src_ai_interfaces_gemini_prompts_interface_nextstepspromptparams",
       "community": 117,
-      "community_name": "SuggestionsAiService",
+      "community_name": "gemini.prompts.ts",
       "norm_label": "nextstepspromptparams"
     },
     {
@@ -2625,8 +2625,8 @@
       "source_location": "L45",
       "_origin": "ast",
       "id": "backend_src_ai_interfaces_gemini_prompts_interface_tasksuggestionspromptparams",
-      "community": 42,
-      "community_name": "gemini.service.ts",
+      "community": 117,
+      "community_name": "gemini.prompts.ts",
       "norm_label": "tasksuggestionspromptparams"
     },
     {
@@ -2637,7 +2637,7 @@
       "_origin": "ast",
       "id": "backend_src_ai_interfaces_index",
       "community": 42,
-      "community_name": "gemini.service.ts",
+      "community_name": "GeminiExecutorService",
       "norm_label": "ai/interfaces/index.ts"
     },
     {
@@ -2647,8 +2647,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_src_ai_prompts_core_gemini_prompts",
-      "community": 42,
-      "community_name": "gemini.service.ts",
+      "community": 117,
+      "community_name": "gemini.prompts.ts",
       "norm_label": "gemini.prompts.ts"
     },
     {
@@ -2658,8 +2658,8 @@
       "source_location": "L10",
       "_origin": "ast",
       "id": "backend_src_ai_prompts_core_gemini_prompts_buildchecklistgenerationprompt",
-      "community": 42,
-      "community_name": "gemini.service.ts",
+      "community": 135,
+      "community_name": "ChecklistAiService",
       "norm_label": "buildchecklistgenerationprompt()"
     },
     {
@@ -2669,8 +2669,8 @@
       "source_location": "L21",
       "_origin": "ast",
       "id": "backend_src_ai_prompts_core_gemini_prompts_buildchecklistwithhistoryprompt",
-      "community": 42,
-      "community_name": "gemini.service.ts",
+      "community": 135,
+      "community_name": "ChecklistAiService",
       "norm_label": "buildchecklistwithhistoryprompt()"
     },
     {
@@ -2680,8 +2680,8 @@
       "source_location": "L35",
       "_origin": "ast",
       "id": "backend_src_ai_prompts_core_gemini_prompts_buildpertestimateprompt",
-      "community": 42,
-      "community_name": "gemini.service.ts",
+      "community": 117,
+      "community_name": "gemini.prompts.ts",
       "norm_label": "buildpertestimateprompt()"
     },
     {
@@ -2691,8 +2691,8 @@
       "source_location": "L56",
       "_origin": "ast",
       "id": "backend_src_ai_prompts_core_gemini_prompts_buildcompletionfeedbackprompt",
-      "community": 42,
-      "community_name": "gemini.service.ts",
+      "community": 117,
+      "community_name": "gemini.prompts.ts",
       "norm_label": "buildcompletionfeedbackprompt()"
     },
     {
@@ -2703,7 +2703,7 @@
       "_origin": "ast",
       "id": "backend_src_ai_prompts_core_gemini_prompts_buildgemininextstepsprompt",
       "community": 117,
-      "community_name": "SuggestionsAiService",
+      "community_name": "gemini.prompts.ts",
       "norm_label": "buildgemininextstepsprompt()"
     },
     {
@@ -2713,8 +2713,8 @@
       "source_location": "L110",
       "_origin": "ast",
       "id": "backend_src_ai_prompts_core_gemini_prompts_buildtasksuggestionsprompt",
-      "community": 42,
-      "community_name": "gemini.service.ts",
+      "community": 117,
+      "community_name": "gemini.prompts.ts",
       "norm_label": "buildtasksuggestionsprompt()"
     },
     {
@@ -2725,7 +2725,7 @@
       "_origin": "ast",
       "id": "backend_src_ai_prompts_index",
       "community": 42,
-      "community_name": "gemini.service.ts",
+      "community_name": "GeminiExecutorService",
       "norm_label": "prompts/index.ts"
     },
     {
@@ -2736,7 +2736,7 @@
       "_origin": "ast",
       "id": "backend_src_ai_prompts_projects_audit_prompts",
       "community": 42,
-      "community_name": "gemini.service.ts",
+      "community_name": "GeminiExecutorService",
       "norm_label": "audit.prompts.ts"
     },
     {
@@ -3132,7 +3132,7 @@
       "_origin": "ast",
       "id": "backend_src_ai_services_core_gemini_executor_service",
       "community": 42,
-      "community_name": "gemini.service.ts",
+      "community_name": "GeminiExecutorService",
       "norm_label": "gemini-executor.service.ts"
     },
     {
@@ -3142,7 +3142,7 @@
       "source_location": "L6",
       "_origin": "ast",
       "id": "backend_src_ai_services_core_gemini_executor_service_geminiexecutorservice",
-      "community": 98,
+      "community": 42,
       "community_name": "GeminiExecutorService",
       "norm_label": "geminiexecutorservice"
     },
@@ -3153,7 +3153,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "backend_src_ai_services_core_gemini_executor_service_ts_injectable",
-      "community": 98,
+      "community": 42,
       "community_name": "GeminiExecutorService",
       "norm_label": "injectable"
     },
@@ -3164,7 +3164,7 @@
       "source_location": "L20",
       "_origin": "ast",
       "id": "backend_src_ai_services_core_gemini_executor_service_geminiexecutorservice_constructor",
-      "community": 98,
+      "community": 42,
       "community_name": "GeminiExecutorService",
       "norm_label": ".constructor()"
     },
@@ -3175,8 +3175,8 @@
       "source_location": "L74",
       "_origin": "ast",
       "id": "backend_src_ai_services_core_gemini_executor_service_geminiexecutorservice_supportsjsonmode",
-      "community": 117,
-      "community_name": "SuggestionsAiService",
+      "community": 98,
+      "community_name": ".generateContent",
       "norm_label": ".supportsjsonmode()"
     },
     {
@@ -3197,7 +3197,7 @@
       "source_location": "L82",
       "_origin": "ast",
       "id": "backend_src_ai_services_core_gemini_executor_service_geminiexecutorservice_getstrongmodelname",
-      "community": 98,
+      "community": 42,
       "community_name": "GeminiExecutorService",
       "norm_label": ".getstrongmodelname()"
     },
@@ -3209,7 +3209,7 @@
       "_origin": "ast",
       "id": "backend_src_ai_services_core_gemini_executor_service_geminiexecutorservice_todaykey",
       "community": 98,
-      "community_name": "GeminiExecutorService",
+      "community_name": ".generateContent",
       "norm_label": ".todaykey()"
     },
     {
@@ -3220,7 +3220,7 @@
       "_origin": "ast",
       "id": "backend_src_ai_services_core_gemini_executor_service_geminiexecutorservice_resetstrongbudgetifneeded",
       "community": 98,
-      "community_name": "GeminiExecutorService",
+      "community_name": ".generateContent",
       "norm_label": ".resetstrongbudgetifneeded()"
     },
     {
@@ -3231,7 +3231,7 @@
       "_origin": "ast",
       "id": "backend_src_ai_services_core_gemini_executor_service_geminiexecutorservice_canusestrongmodel",
       "community": 98,
-      "community_name": "GeminiExecutorService",
+      "community_name": ".generateContent",
       "norm_label": ".canusestrongmodel()"
     },
     {
@@ -3242,7 +3242,7 @@
       "_origin": "ast",
       "id": "backend_src_ai_services_core_gemini_executor_service_geminiexecutorservice_pickmodel",
       "community": 98,
-      "community_name": "GeminiExecutorService",
+      "community_name": ".generateContent",
       "norm_label": ".pickmodel()"
     },
     {
@@ -3253,7 +3253,7 @@
       "_origin": "ast",
       "id": "backend_src_ai_services_core_gemini_executor_service_geminiexecutorservice_trackmodelusage",
       "community": 98,
-      "community_name": "GeminiExecutorService",
+      "community_name": ".generateContent",
       "norm_label": ".trackmodelusage()"
     },
     {
@@ -3264,7 +3264,7 @@
       "_origin": "ast",
       "id": "backend_src_ai_services_core_gemini_executor_service_geminiexecutorservice_supportsjsonmodeformodel",
       "community": 98,
-      "community_name": "GeminiExecutorService",
+      "community_name": ".generateContent",
       "norm_label": ".supportsjsonmodeformodel()"
     },
     {
@@ -3275,7 +3275,7 @@
       "_origin": "ast",
       "id": "backend_src_ai_services_core_gemini_executor_service_geminiexecutorservice_shouldusejsonmode",
       "community": 98,
-      "community_name": "GeminiExecutorService",
+      "community_name": ".generateContent",
       "norm_label": ".shouldusejsonmode()"
     },
     {
@@ -3285,7 +3285,7 @@
       "source_location": "L148",
       "_origin": "ast",
       "id": "backend_src_ai_services_core_gemini_executor_service_geminiexecutorservice_generateembedding",
-      "community": 98,
+      "community": 42,
       "community_name": "GeminiExecutorService",
       "norm_label": ".generateembedding()"
     },
@@ -3297,7 +3297,7 @@
       "_origin": "ast",
       "id": "backend_src_ai_services_core_gemini_executor_service_geminiexecutorservice_generatecontent",
       "community": 98,
-      "community_name": "GeminiExecutorService",
+      "community_name": ".generateContent",
       "norm_label": ".generatecontent()"
     },
     {
@@ -3308,7 +3308,7 @@
       "_origin": "ast",
       "id": "backend_src_ai_services_core_gemini_service",
       "community": 42,
-      "community_name": "gemini.service.ts",
+      "community_name": "GeminiExecutorService",
       "norm_label": "gemini.service.ts"
     },
     {
@@ -3340,8 +3340,8 @@
       "source_location": "L18",
       "_origin": "ast",
       "id": "backend_src_ai_services_core_gemini_service_geminiservice_constructor",
-      "community": 117,
-      "community_name": "SuggestionsAiService",
+      "community": 42,
+      "community_name": "GeminiExecutorService",
       "norm_label": ".constructor()"
     },
     {
@@ -3373,8 +3373,8 @@
       "source_location": "L34",
       "_origin": "ast",
       "id": "backend_src_ai_services_core_gemini_service_geminiservice_suggestpertestimates",
-      "community": 125,
-      "community_name": "PertAiService",
+      "community": 117,
+      "community_name": "gemini.prompts.ts",
       "norm_label": ".suggestpertestimates()"
     },
     {
@@ -3384,8 +3384,8 @@
       "source_location": "L46",
       "_origin": "ast",
       "id": "backend_src_ai_services_core_gemini_service_geminiservice_generatetasksuggestions",
-      "community": 42,
-      "community_name": "gemini.service.ts",
+      "community": 117,
+      "community_name": "gemini.prompts.ts",
       "norm_label": ".generatetasksuggestions()"
     },
     {
@@ -3395,8 +3395,8 @@
       "source_location": "L50",
       "_origin": "ast",
       "id": "backend_src_ai_services_core_gemini_service_geminiservice_generatecompletionfeedback",
-      "community": 42,
-      "community_name": "gemini.service.ts",
+      "community": 117,
+      "community_name": "gemini.prompts.ts",
       "norm_label": ".generatecompletionfeedback()"
     },
     {
@@ -3406,8 +3406,8 @@
       "source_location": "L54",
       "_origin": "ast",
       "id": "backend_src_ai_services_core_gemini_service_geminiservice_generatecompletionfeedbackstructured",
-      "community": 117,
-      "community_name": "SuggestionsAiService",
+      "community": 98,
+      "community_name": ".generateContent",
       "norm_label": ".generatecompletionfeedbackstructured()"
     },
     {
@@ -3418,7 +3418,7 @@
       "_origin": "ast",
       "id": "backend_src_ai_services_core_gemini_service_geminiservice_generatenextsteps",
       "community": 117,
-      "community_name": "SuggestionsAiService",
+      "community_name": "gemini.prompts.ts",
       "norm_label": ".generatenextsteps()"
     },
     {
@@ -3451,7 +3451,7 @@
       "_origin": "ast",
       "id": "backend_src_ai_services_core_gemini_service_geminiservice_inferdependencies",
       "community": 98,
-      "community_name": "GeminiExecutorService",
+      "community_name": ".generateContent",
       "norm_label": ".inferdependencies()"
     },
     {
@@ -3461,7 +3461,7 @@
       "source_location": "L93",
       "_origin": "ast",
       "id": "backend_src_ai_services_core_gemini_service_geminiservice_generateembedding",
-      "community": 98,
+      "community": 42,
       "community_name": "GeminiExecutorService",
       "norm_label": ".generateembedding()"
     },
@@ -3483,8 +3483,8 @@
       "source_location": "L111",
       "_origin": "ast",
       "id": "backend_src_ai_services_core_gemini_service_geminiservice_supportsjsonmode",
-      "community": 117,
-      "community_name": "SuggestionsAiService",
+      "community": 98,
+      "community_name": ".generateContent",
       "norm_label": ".supportsjsonmode()"
     },
     {
@@ -3505,7 +3505,7 @@
       "source_location": "L119",
       "_origin": "ast",
       "id": "backend_src_ai_services_core_gemini_service_geminiservice_getstrongmodelname",
-      "community": 98,
+      "community": 42,
       "community_name": "GeminiExecutorService",
       "norm_label": ".getstrongmodelname()"
     },
@@ -3517,7 +3517,7 @@
       "_origin": "ast",
       "id": "backend_src_ai_services_projects_prompt_builder_service",
       "community": 42,
-      "community_name": "gemini.service.ts",
+      "community_name": "GeminiExecutorService",
       "norm_label": "prompt-builder.service.ts"
     },
     {
@@ -3725,7 +3725,7 @@
       "source_location": "L22",
       "_origin": "ast",
       "id": "backend_src_ai_services_projects_wbs_ai_service_wbsaiservice_constructor",
-      "community": 98,
+      "community": 42,
       "community_name": "GeminiExecutorService",
       "norm_label": ".constructor()"
     },
@@ -3769,8 +3769,8 @@
       "source_location": "L119",
       "_origin": "ast",
       "id": "backend_src_ai_services_projects_wbs_ai_service_wbsaiservice_fixmonotonybatch",
-      "community": 60,
-      "community_name": "metrics-calculator.util.ts",
+      "community": 75,
+      "community_name": "wbs-ai.service.ts",
       "norm_label": ".fixmonotonybatch()"
     },
     {
@@ -3792,7 +3792,7 @@
       "_origin": "ast",
       "id": "backend_src_ai_services_tasks_checklist_ai_service",
       "community": 42,
-      "community_name": "gemini.service.ts",
+      "community_name": "GeminiExecutorService",
       "norm_label": "checklist-ai.service.ts"
     },
     {
@@ -3935,7 +3935,7 @@
       "_origin": "ast",
       "id": "backend_src_ai_services_tasks_dependency_ai_service",
       "community": 42,
-      "community_name": "gemini.service.ts",
+      "community_name": "GeminiExecutorService",
       "norm_label": "dependency-ai.service.ts"
     },
     {
@@ -3946,7 +3946,7 @@
       "_origin": "ast",
       "id": "backend_src_ai_services_tasks_dependency_ai_service_dependencyaiservice",
       "community": 42,
-      "community_name": "gemini.service.ts",
+      "community_name": "GeminiExecutorService",
       "norm_label": "dependencyaiservice"
     },
     {
@@ -3957,7 +3957,7 @@
       "_origin": "ast",
       "id": "backend_src_ai_services_tasks_dependency_ai_service_ts_injectable",
       "community": 42,
-      "community_name": "gemini.service.ts",
+      "community_name": "GeminiExecutorService",
       "norm_label": "injectable"
     },
     {
@@ -3967,7 +3967,7 @@
       "source_location": "L8",
       "_origin": "ast",
       "id": "backend_src_ai_services_tasks_dependency_ai_service_dependencyaiservice_constructor",
-      "community": 98,
+      "community": 42,
       "community_name": "GeminiExecutorService",
       "norm_label": ".constructor()"
     },
@@ -3979,7 +3979,7 @@
       "_origin": "ast",
       "id": "backend_src_ai_services_tasks_dependency_ai_service_dependencyaiservice_inferdependencies",
       "community": 98,
-      "community_name": "GeminiExecutorService",
+      "community_name": ".generateContent",
       "norm_label": ".inferdependencies()"
     },
     {
@@ -4111,7 +4111,7 @@
       "_origin": "ast",
       "id": "backend_src_ai_services_tasks_pert_ai_service",
       "community": 42,
-      "community_name": "gemini.service.ts",
+      "community_name": "GeminiExecutorService",
       "norm_label": "pert-ai.service.ts"
     },
     {
@@ -4243,7 +4243,7 @@
       "_origin": "ast",
       "id": "backend_src_ai_services_tasks_suggestions_ai_service",
       "community": 42,
-      "community_name": "gemini.service.ts",
+      "community_name": "GeminiExecutorService",
       "norm_label": "suggestions-ai.service.ts"
     },
     {
@@ -4253,8 +4253,8 @@
       "source_location": "L16",
       "_origin": "ast",
       "id": "backend_src_ai_services_tasks_suggestions_ai_service_suggestionsaiservice",
-      "community": 117,
-      "community_name": "SuggestionsAiService",
+      "community": 42,
+      "community_name": "GeminiExecutorService",
       "norm_label": "suggestionsaiservice"
     },
     {
@@ -4264,8 +4264,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "backend_src_ai_services_tasks_suggestions_ai_service_ts_injectable",
-      "community": 117,
-      "community_name": "SuggestionsAiService",
+      "community": 42,
+      "community_name": "GeminiExecutorService",
       "norm_label": "injectable"
     },
     {
@@ -4275,8 +4275,8 @@
       "source_location": "L17",
       "_origin": "ast",
       "id": "backend_src_ai_services_tasks_suggestions_ai_service_suggestionsaiservice_constructor",
-      "community": 117,
-      "community_name": "SuggestionsAiService",
+      "community": 42,
+      "community_name": "GeminiExecutorService",
       "norm_label": ".constructor()"
     },
     {
@@ -4297,8 +4297,8 @@
       "source_location": "L23",
       "_origin": "ast",
       "id": "backend_src_ai_services_tasks_suggestions_ai_service_suggestionsaiservice_generatetasksuggestions",
-      "community": 42,
-      "community_name": "gemini.service.ts",
+      "community": 117,
+      "community_name": "gemini.prompts.ts",
       "norm_label": ".generatetasksuggestions()"
     },
     {
@@ -4308,8 +4308,8 @@
       "source_location": "L35",
       "_origin": "ast",
       "id": "backend_src_ai_services_tasks_suggestions_ai_service_suggestionsaiservice_generatecompletionfeedback",
-      "community": 42,
-      "community_name": "gemini.service.ts",
+      "community": 117,
+      "community_name": "gemini.prompts.ts",
       "norm_label": ".generatecompletionfeedback()"
     },
     {
@@ -4319,8 +4319,8 @@
       "source_location": "L68",
       "_origin": "ast",
       "id": "backend_src_ai_services_tasks_suggestions_ai_service_suggestionsaiservice_generatecompletionfeedbackstructured",
-      "community": 117,
-      "community_name": "SuggestionsAiService",
+      "community": 98,
+      "community_name": ".generateContent",
       "norm_label": ".generatecompletionfeedbackstructured()"
     },
     {
@@ -4331,7 +4331,7 @@
       "_origin": "ast",
       "id": "backend_src_ai_services_tasks_suggestions_ai_service_suggestionsaiservice_generatenextsteps",
       "community": 117,
-      "community_name": "SuggestionsAiService",
+      "community_name": "gemini.prompts.ts",
       "norm_label": ".generatenextsteps()"
     },
     {
@@ -4363,8 +4363,8 @@
       "source_location": "L215",
       "_origin": "ast",
       "id": "backend_src_ai_services_tasks_suggestions_ai_service_suggestionsaiservice_safeparsejson",
-      "community": 117,
-      "community_name": "SuggestionsAiService",
+      "community": 98,
+      "community_name": ".generateContent",
       "norm_label": ".safeparsejson()"
     },
     {
@@ -5376,7 +5376,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_controllers_projects_wbs_controller",
       "community": 116,
-      "community_name": "wbs.dto.ts",
+      "community_name": "projects-wbs.controller.ts",
       "norm_label": "projects-wbs.controller.ts"
     },
     {
@@ -5485,8 +5485,8 @@
       "source_location": "L32",
       "_origin": "ast",
       "id": "backend_src_projects_controllers_projects_wbs_controller_projectswbscontroller_constructor",
-      "community": 145,
-      "community_name": "projects.module.ts",
+      "community": 75,
+      "community_name": "wbs-ai.service.ts",
       "norm_label": ".constructor()"
     },
     {
@@ -6882,7 +6882,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_src_projects_dto_wbs_dto",
-      "community": 116,
+      "community": 70,
       "community_name": "wbs.dto.ts",
       "norm_label": "wbs.dto.ts"
     },
@@ -6905,7 +6905,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_dto_wbs_dto_ts_apipropertyoptional",
       "community": 116,
-      "community_name": "wbs.dto.ts",
+      "community_name": "projects-wbs.controller.ts",
       "norm_label": "apipropertyoptional"
     },
     {
@@ -6916,7 +6916,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_dto_wbs_dto_ts_isoptional",
       "community": 116,
-      "community_name": "wbs.dto.ts",
+      "community_name": "projects-wbs.controller.ts",
       "norm_label": "isoptional"
     },
     {
@@ -6927,7 +6927,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_dto_wbs_dto_ts_isstring",
       "community": 116,
-      "community_name": "wbs.dto.ts",
+      "community_name": "projects-wbs.controller.ts",
       "norm_label": "isstring"
     },
     {
@@ -6938,7 +6938,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_dto_wbs_dto_ts_apiproperty",
       "community": 116,
-      "community_name": "wbs.dto.ts",
+      "community_name": "projects-wbs.controller.ts",
       "norm_label": "apiproperty"
     },
     {
@@ -6949,7 +6949,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_dto_wbs_dto_ts_isnumber",
       "community": 116,
-      "community_name": "wbs.dto.ts",
+      "community_name": "projects-wbs.controller.ts",
       "norm_label": "isnumber"
     },
     {
@@ -6960,7 +6960,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_dto_wbs_dto_ts_isarray",
       "community": 116,
-      "community_name": "wbs.dto.ts",
+      "community_name": "projects-wbs.controller.ts",
       "norm_label": "isarray"
     },
     {
@@ -6971,7 +6971,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_dto_wbs_dto_ts_type",
       "community": 116,
-      "community_name": "wbs.dto.ts",
+      "community_name": "projects-wbs.controller.ts",
       "norm_label": "type"
     },
     {
@@ -6982,7 +6982,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_dto_wbs_dto_generatewbsdto",
       "community": 116,
-      "community_name": "wbs.dto.ts",
+      "community_name": "projects-wbs.controller.ts",
       "norm_label": "generatewbsdto"
     },
     {
@@ -6993,7 +6993,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_dto_wbs_dto_savewbsdto",
       "community": 116,
-      "community_name": "wbs.dto.ts",
+      "community_name": "projects-wbs.controller.ts",
       "norm_label": "savewbsdto"
     },
     {
@@ -7004,7 +7004,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_dto_wbs_dto_suggestdecompositiondto",
       "community": 116,
-      "community_name": "wbs.dto.ts",
+      "community_name": "projects-wbs.controller.ts",
       "norm_label": "suggestdecompositiondto"
     },
     {
@@ -7026,7 +7026,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_dto_wbs_dto_convertwbstotasksdto",
       "community": 116,
-      "community_name": "wbs.dto.ts",
+      "community_name": "projects-wbs.controller.ts",
       "norm_label": "convertwbstotasksdto"
     },
     {
@@ -7037,7 +7037,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_dto_wbs_dto_ts_isboolean",
       "community": 116,
-      "community_name": "wbs.dto.ts",
+      "community_name": "projects-wbs.controller.ts",
       "norm_label": "isboolean"
     },
     {
@@ -7048,7 +7048,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_dto_wbs_dto_getleafnodesdto",
       "community": 116,
-      "community_name": "wbs.dto.ts",
+      "community_name": "projects-wbs.controller.ts",
       "norm_label": "getleafnodesdto"
     },
     {
@@ -7059,7 +7059,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_dto_wbs_dto_generatetasksforleafdto",
       "community": 116,
-      "community_name": "wbs.dto.ts",
+      "community_name": "projects-wbs.controller.ts",
       "norm_label": "generatetasksforleafdto"
     },
     {
@@ -7070,7 +7070,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_dto_wbs_dto_auditleafdiscrepancydto",
       "community": 116,
-      "community_name": "wbs.dto.ts",
+      "community_name": "projects-wbs.controller.ts",
       "norm_label": "auditleafdiscrepancydto"
     },
     {
@@ -7081,7 +7081,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_dto_wbs_dto_resolvewbsbudgetdto",
       "community": 116,
-      "community_name": "wbs.dto.ts",
+      "community_name": "projects-wbs.controller.ts",
       "norm_label": "resolvewbsbudgetdto"
     },
     {
@@ -7092,7 +7092,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_dto_wbs_dto_ts_isin",
       "community": 116,
-      "community_name": "wbs.dto.ts",
+      "community_name": "projects-wbs.controller.ts",
       "norm_label": "isin"
     },
     {
@@ -8115,7 +8115,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_interfaces_wbs_conversion_interface_conversionoptions",
       "community": 70,
-      "community_name": "wbs-conversion-orchestrator.service.ts",
+      "community_name": "wbs.dto.ts",
       "norm_label": "conversionoptions"
     },
     {
@@ -8126,7 +8126,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_interfaces_wbs_conversion_interface_conversionresult",
       "community": 70,
-      "community_name": "wbs-conversion-orchestrator.service.ts",
+      "community_name": "wbs.dto.ts",
       "norm_label": "conversionresult"
     },
     {
@@ -8192,7 +8192,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_interfaces_wbs_conversion_interface_tasksservicesubset",
       "community": 70,
-      "community_name": "wbs-conversion-orchestrator.service.ts",
+      "community_name": "wbs.dto.ts",
       "norm_label": "tasksservicesubset"
     },
     {
@@ -8258,7 +8258,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_interfaces_wbs_conversion_interface_generatetasksforsingleleafparams",
       "community": 70,
-      "community_name": "wbs-conversion-orchestrator.service.ts",
+      "community_name": "wbs.dto.ts",
       "norm_label": "generatetasksforsingleleafparams"
     },
     {
@@ -8368,7 +8368,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_interfaces_wbs_conversion_interface_generatetasksforsingleleafresult",
       "community": 70,
-      "community_name": "wbs-conversion-orchestrator.service.ts",
+      "community_name": "wbs.dto.ts",
       "norm_label": "generatetasksforsingleleafresult"
     },
     {
@@ -13263,7 +13263,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_services_wbs_conversion_task_conversion_service_taskconversionservice_finalizeconversion",
       "community": 70,
-      "community_name": "wbs-conversion-orchestrator.service.ts",
+      "community_name": "wbs.dto.ts",
       "norm_label": ".finalizeconversion()"
     },
     {
@@ -13285,7 +13285,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_services_wbs_conversion_wbs_conversion_orchestrator_service",
       "community": 70,
-      "community_name": "wbs-conversion-orchestrator.service.ts",
+      "community_name": "wbs.dto.ts",
       "norm_label": "wbs-conversion-orchestrator.service.ts"
     },
     {
@@ -13296,7 +13296,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_services_wbs_conversion_wbs_conversion_orchestrator_service_wbsconversionorchestrationservice",
       "community": 70,
-      "community_name": "wbs-conversion-orchestrator.service.ts",
+      "community_name": "wbs.dto.ts",
       "norm_label": "wbsconversionorchestrationservice"
     },
     {
@@ -13307,7 +13307,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_services_wbs_conversion_wbs_conversion_orchestrator_service_ts_injectable",
       "community": 70,
-      "community_name": "wbs-conversion-orchestrator.service.ts",
+      "community_name": "wbs.dto.ts",
       "norm_label": "injectable"
     },
     {
@@ -13329,7 +13329,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_services_wbs_conversion_wbs_conversion_orchestrator_service_wbsconversionorchestrationservice_convertwbstotasks",
       "community": 70,
-      "community_name": "wbs-conversion-orchestrator.service.ts",
+      "community_name": "wbs.dto.ts",
       "norm_label": ".convertwbstotasks()"
     },
     {
@@ -13340,7 +13340,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_services_wbs_conversion_wbs_conversion_orchestrator_service_wbsconversionorchestrationservice_stage1draftgeneration",
       "community": 70,
-      "community_name": "wbs-conversion-orchestrator.service.ts",
+      "community_name": "wbs.dto.ts",
       "norm_label": ".stage1draftgeneration()"
     },
     {
@@ -13351,7 +13351,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_services_wbs_conversion_wbs_conversion_orchestrator_service_wbsconversionorchestrationservice_stage2draftprocessing",
       "community": 70,
-      "community_name": "wbs-conversion-orchestrator.service.ts",
+      "community_name": "wbs.dto.ts",
       "norm_label": ".stage2draftprocessing()"
     },
     {
@@ -13362,7 +13362,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_services_wbs_conversion_wbs_conversion_orchestrator_service_wbsconversionorchestrationservice_stage3taskconversion",
       "community": 70,
-      "community_name": "wbs-conversion-orchestrator.service.ts",
+      "community_name": "wbs.dto.ts",
       "norm_label": ".stage3taskconversion()"
     },
     {
@@ -13373,7 +13373,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_services_wbs_conversion_wbs_conversion_orchestrator_service_wbsconversionorchestrationservice_generatedrafts",
       "community": 70,
-      "community_name": "wbs-conversion-orchestrator.service.ts",
+      "community_name": "wbs.dto.ts",
       "norm_label": ".generatedrafts()"
     },
     {
@@ -13384,7 +13384,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_services_wbs_conversion_wbs_conversion_orchestrator_service_wbsconversionorchestrationservice_processdrafts",
       "community": 70,
-      "community_name": "wbs-conversion-orchestrator.service.ts",
+      "community_name": "wbs.dto.ts",
       "norm_label": ".processdrafts()"
     },
     {
@@ -13395,7 +13395,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_services_wbs_conversion_wbs_conversion_orchestrator_service_wbsconversionorchestrationservice_generatetasksforsingleleaf",
       "community": 70,
-      "community_name": "wbs-conversion-orchestrator.service.ts",
+      "community_name": "wbs.dto.ts",
       "norm_label": ".generatetasksforsingleleaf()"
     },
     {
@@ -13406,7 +13406,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_services_wbs_conversion_wbs_conversion_orchestrator_service_wbsconversionorchestrationservice_handlesingleleafconversionerror",
       "community": 70,
-      "community_name": "wbs-conversion-orchestrator.service.ts",
+      "community_name": "wbs.dto.ts",
       "norm_label": ".handlesingleleafconversionerror()"
     },
     {
@@ -13417,7 +13417,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_services_wbs_conversion_wbs_conversion_orchestrator_service_wbsconversionorchestrationservice_persistgeneratedtasks",
       "community": 70,
-      "community_name": "wbs-conversion-orchestrator.service.ts",
+      "community_name": "wbs.dto.ts",
       "norm_label": ".persistgeneratedtasks()"
     },
     {
@@ -13428,7 +13428,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_services_wbs_conversion_wbs_conversion_orchestrator_service_wbsconversionorchestrationservice_normalizeoptions",
       "community": 70,
-      "community_name": "wbs-conversion-orchestrator.service.ts",
+      "community_name": "wbs.dto.ts",
       "norm_label": ".normalizeoptions()"
     },
     {
@@ -13439,7 +13439,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_services_wbs_conversion_wbs_conversion_orchestrator_service_wbsconversionorchestrationservice_logifverbose",
       "community": 70,
-      "community_name": "wbs-conversion-orchestrator.service.ts",
+      "community_name": "wbs.dto.ts",
       "norm_label": ".logifverbose()"
     },
     {
@@ -13450,7 +13450,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_services_wbs_conversion_wbs_conversion_orchestrator_service_wbsconversionorchestrationservice_logerror",
       "community": 70,
-      "community_name": "wbs-conversion-orchestrator.service.ts",
+      "community_name": "wbs.dto.ts",
       "norm_label": ".logerror()"
     },
     {
@@ -13603,8 +13603,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_src_projects_services_wbs_core_monotony_service",
-      "community": 60,
-      "community_name": "metrics-calculator.util.ts",
+      "community": 75,
+      "community_name": "wbs-ai.service.ts",
       "norm_label": "monotony.service.ts"
     },
     {
@@ -13614,8 +13614,8 @@
       "source_location": "L8",
       "_origin": "ast",
       "id": "backend_src_projects_services_wbs_core_monotony_service_fixedmonotonyitem",
-      "community": 60,
-      "community_name": "metrics-calculator.util.ts",
+      "community": 75,
+      "community_name": "wbs-ai.service.ts",
       "norm_label": "fixedmonotonyitem"
     },
     {
@@ -13625,8 +13625,8 @@
       "source_location": "L23",
       "_origin": "ast",
       "id": "backend_src_projects_services_wbs_core_monotony_service_monotonyservice",
-      "community": 60,
-      "community_name": "metrics-calculator.util.ts",
+      "community": 75,
+      "community_name": "wbs-ai.service.ts",
       "norm_label": "monotonyservice"
     },
     {
@@ -13636,8 +13636,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "backend_src_projects_services_wbs_core_monotony_service_ts_injectable",
-      "community": 60,
-      "community_name": "metrics-calculator.util.ts",
+      "community": 75,
+      "community_name": "wbs-ai.service.ts",
       "norm_label": "injectable"
     },
     {
@@ -13647,8 +13647,8 @@
       "source_location": "L24",
       "_origin": "ast",
       "id": "backend_src_projects_services_wbs_core_monotony_service_monotonyservice_constructor",
-      "community": 60,
-      "community_name": "metrics-calculator.util.ts",
+      "community": 75,
+      "community_name": "wbs-ai.service.ts",
       "norm_label": ".constructor()"
     },
     {
@@ -13669,8 +13669,8 @@
       "source_location": "L71",
       "_origin": "ast",
       "id": "backend_src_projects_services_wbs_core_monotony_service_monotonyservice_sanitizetitle",
-      "community": 60,
-      "community_name": "metrics-calculator.util.ts",
+      "community": 75,
+      "community_name": "wbs-ai.service.ts",
       "norm_label": ".sanitizetitle()"
     },
     {
@@ -13680,8 +13680,8 @@
       "source_location": "L87",
       "_origin": "ast",
       "id": "backend_src_projects_services_wbs_core_monotony_service_monotonyservice_autofixmonotonyforleaf",
-      "community": 60,
-      "community_name": "metrics-calculator.util.ts",
+      "community": 75,
+      "community_name": "wbs-ai.service.ts",
       "norm_label": ".autofixmonotonyforleaf()"
     },
     {
@@ -13834,8 +13834,8 @@
       "source_location": "L70",
       "_origin": "ast",
       "id": "backend_src_projects_services_wbs_core_wbs_persistence_service_wbspersistenceservice_get",
-      "community": 145,
-      "community_name": "projects.module.ts",
+      "community": 75,
+      "community_name": "wbs-ai.service.ts",
       "norm_label": ".get()"
     },
     {
@@ -13867,8 +13867,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_src_projects_services_wbs_core_wbs_validation_service",
-      "community": 116,
-      "community_name": "wbs.dto.ts",
+      "community": 75,
+      "community_name": "wbs-ai.service.ts",
       "norm_label": "wbs-validation.service.ts"
     },
     {
@@ -13900,8 +13900,8 @@
       "source_location": "L9",
       "_origin": "ast",
       "id": "backend_src_projects_services_wbs_core_wbs_validation_service_wbsvalidationservice_constructor",
-      "community": 75,
-      "community_name": "wbs-ai.service.ts",
+      "community": 44,
+      "community_name": "WbsValidationService",
       "norm_label": ".constructor()"
     },
     {
@@ -14044,7 +14044,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_services_wbs_core_wbs_service",
       "community": 70,
-      "community_name": "wbs-conversion-orchestrator.service.ts",
+      "community_name": "wbs.dto.ts",
       "norm_label": "wbs.service.ts"
     },
     {
@@ -14054,8 +14054,8 @@
       "source_location": "L16",
       "_origin": "ast",
       "id": "backend_src_projects_services_wbs_core_wbs_service_wbsservice",
-      "community": 145,
-      "community_name": "projects.module.ts",
+      "community": 75,
+      "community_name": "wbs-ai.service.ts",
       "norm_label": "wbsservice"
     },
     {
@@ -14065,8 +14065,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "backend_src_projects_services_wbs_core_wbs_service_ts_injectable",
-      "community": 145,
-      "community_name": "projects.module.ts",
+      "community": 75,
+      "community_name": "wbs-ai.service.ts",
       "norm_label": "injectable"
     },
     {
@@ -14087,8 +14087,8 @@
       "source_location": "L24",
       "_origin": "ast",
       "id": "backend_src_projects_services_wbs_core_wbs_service_wbsservice_validatewbsnode",
-      "community": 145,
-      "community_name": "projects.module.ts",
+      "community": 75,
+      "community_name": "wbs-ai.service.ts",
       "norm_label": ".validatewbsnode()"
     },
     {
@@ -14098,8 +14098,8 @@
       "source_location": "L47",
       "_origin": "ast",
       "id": "backend_src_projects_services_wbs_core_wbs_service_wbsservice_validatewbs",
-      "community": 145,
-      "community_name": "projects.module.ts",
+      "community": 75,
+      "community_name": "wbs-ai.service.ts",
       "norm_label": ".validatewbs()"
     },
     {
@@ -14143,7 +14143,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_services_wbs_core_wbs_service_wbsservice_generatetasksforsingleleaf",
       "community": 70,
-      "community_name": "wbs-conversion-orchestrator.service.ts",
+      "community_name": "wbs.dto.ts",
       "norm_label": ".generatetasksforsingleleaf()"
     },
     {
@@ -14164,8 +14164,8 @@
       "source_location": "L103",
       "_origin": "ast",
       "id": "backend_src_projects_services_wbs_core_wbs_service_wbsservice_getwbs",
-      "community": 145,
-      "community_name": "projects.module.ts",
+      "community": 75,
+      "community_name": "wbs-ai.service.ts",
       "norm_label": ".getwbs()"
     },
     {
@@ -14638,7 +14638,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_services_wbs_shared_config_service_configservice_getnowiso",
       "community": 70,
-      "community_name": "wbs-conversion-orchestrator.service.ts",
+      "community_name": "wbs.dto.ts",
       "norm_label": ".getnowiso()"
     },
     {
@@ -14649,7 +14649,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_services_wbs_shared_config_service_configservice_logiftimingdebug",
       "community": 70,
-      "community_name": "wbs-conversion-orchestrator.service.ts",
+      "community_name": "wbs.dto.ts",
       "norm_label": ".logiftimingdebug()"
     },
     {
@@ -20288,7 +20288,7 @@
       "label": "TaskXMatrixContext",
       "file_type": "code",
       "source_file": "Backend/src/tasks/interfaces/task-contexts.interface.ts",
-      "source_location": "L117",
+      "source_location": "L118",
       "_origin": "ast",
       "id": "backend_src_tasks_interfaces_task_contexts_interface_taskxmatrixcontext",
       "community": 28,
@@ -24493,8 +24493,8 @@
       "source_location": "L261",
       "_origin": "ast",
       "id": "backend_src_tasks_services_traceability_rtm_crud_service_rtmcrudservice_updaterequirementstatusifnolinkedactions",
-      "community": 6,
-      "community_name": "GeminiService",
+      "community": 25,
+      "community_name": "Requirement",
       "norm_label": "._updaterequirementstatusifnolinkedactions()"
     },
     {
@@ -27925,7 +27925,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_tests_unit_ai_services_core_gemini_executor_service_spec",
-      "community": 98,
+      "community": 42,
       "community_name": "GeminiExecutorService",
       "norm_label": "gemini-executor.service.spec.ts"
     },
@@ -27937,7 +27937,7 @@
       "_origin": "ast",
       "id": "backend_tests_unit_ai_services_core_gemini_service_spec",
       "community": 42,
-      "community_name": "gemini.service.ts",
+      "community_name": "GeminiExecutorService",
       "norm_label": "gemini.service.spec.ts"
     },
     {
@@ -28069,7 +28069,7 @@
       "_origin": "ast",
       "id": "backend_tests_unit_ai_services_tasks_dependency_ai_service_spec",
       "community": 42,
-      "community_name": "gemini.service.ts",
+      "community_name": "GeminiExecutorService",
       "norm_label": "dependency-ai.service.spec.ts"
     },
     {
@@ -28101,8 +28101,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_tests_unit_ai_services_tasks_suggestions_ai_service_spec",
-      "community": 117,
-      "community_name": "SuggestionsAiService",
+      "community": 42,
+      "community_name": "GeminiExecutorService",
       "norm_label": "suggestions-ai.service.spec.ts"
     },
     {
@@ -28190,7 +28190,7 @@
       "_origin": "ast",
       "id": "backend_tests_unit_projects_controllers_projects_wbs_controller_spec",
       "community": 116,
-      "community_name": "wbs.dto.ts",
+      "community_name": "projects-wbs.controller.ts",
       "norm_label": "projects-wbs.controller.spec.ts"
     },
     {
@@ -28508,8 +28508,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_tests_unit_projects_services_wbs_audit_service_spec",
-      "community": 61,
-      "community_name": "AuditService",
+      "community": 75,
+      "community_name": "wbs-ai.service.ts",
       "norm_label": "audit.service.spec.ts"
     },
     {
@@ -28531,7 +28531,7 @@
       "_origin": "ast",
       "id": "backend_tests_unit_projects_services_wbs_conversion_wbs_conversion_orchestrator_service_spec",
       "community": 70,
-      "community_name": "wbs-conversion-orchestrator.service.ts",
+      "community_name": "wbs.dto.ts",
       "norm_label": "wbs-conversion-orchestrator.service.spec.ts"
     },
     {
@@ -28563,8 +28563,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_tests_unit_projects_services_wbs_monotony_service_spec",
-      "community": 60,
-      "community_name": "metrics-calculator.util.ts",
+      "community": 75,
+      "community_name": "wbs-ai.service.ts",
       "norm_label": "monotony.service.spec.ts"
     },
     {
@@ -28684,8 +28684,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_tests_unit_projects_services_wbs_wbs_validation_service_spec",
-      "community": 116,
-      "community_name": "wbs.dto.ts",
+      "community": 75,
+      "community_name": "wbs-ai.service.ts",
       "norm_label": "wbs/wbs-validation.service.spec.ts"
     },
     {
@@ -45701,8 +45701,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "frontend_composables_features_pert_usepertrouteoptimization",
-      "community": 123,
-      "community_name": "pert/usePertDiagramData.ts",
+      "community": 192,
+      "community_name": "pert/usePertRouteOptimization.ts",
       "norm_label": "pert/usepertrouteoptimization.ts"
     },
     {
@@ -45712,8 +45712,8 @@
       "source_location": "L3",
       "_origin": "ast",
       "id": "frontend_composables_features_pert_usepertrouteoptimization_pertresolvedlayoutmode",
-      "community": 123,
-      "community_name": "pert/usePertDiagramData.ts",
+      "community": 192,
+      "community_name": "pert/usePertRouteOptimization.ts",
       "norm_label": "pertresolvedlayoutmode"
     },
     {
@@ -45723,8 +45723,8 @@
       "source_location": "L5",
       "_origin": "ast",
       "id": "frontend_composables_features_pert_usepertrouteoptimization_usepertrouteoptimizationparams",
-      "community": 123,
-      "community_name": "pert/usePertDiagramData.ts",
+      "community": 192,
+      "community_name": "pert/usePertRouteOptimization.ts",
       "norm_label": "usepertrouteoptimizationparams"
     },
     {
@@ -45734,8 +45734,8 @@
       "source_location": "L13",
       "_origin": "ast",
       "id": "frontend_composables_features_pert_usepertrouteoptimization_routeoptimizationsummary",
-      "community": 123,
-      "community_name": "pert/usePertDiagramData.ts",
+      "community": 192,
+      "community_name": "pert/usePertRouteOptimization.ts",
       "norm_label": "routeoptimizationsummary"
     },
     {
@@ -45745,8 +45745,8 @@
       "source_location": "L22",
       "_origin": "ast",
       "id": "frontend_composables_features_pert_usepertrouteoptimization_segment",
-      "community": 123,
-      "community_name": "pert/usePertDiagramData.ts",
+      "community": 192,
+      "community_name": "pert/usePertRouteOptimization.ts",
       "norm_label": "segment"
     },
     {
@@ -45756,8 +45756,8 @@
       "source_location": "L32",
       "_origin": "ast",
       "id": "frontend_composables_features_pert_usepertrouteoptimization_usepertrouteoptimization",
-      "community": 123,
-      "community_name": "pert/usePertDiagramData.ts",
+      "community": 192,
+      "community_name": "pert/usePertRouteOptimization.ts",
       "norm_label": "usepertrouteoptimization()"
     },
     {
@@ -45932,8 +45932,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "frontend_composables_features_usepertrouteoptimization",
-      "community": 123,
-      "community_name": "pert/usePertDiagramData.ts",
+      "community": 192,
+      "community_name": "pert/usePertRouteOptimization.ts",
       "norm_label": "features/usepertrouteoptimization.ts"
     },
     {
@@ -46955,8 +46955,8 @@
       "source_location": "L17",
       "_origin": "ast",
       "id": "frontend_package_dependencies_axios",
-      "community": 192,
-      "community_name": "axios",
+      "community": 72,
+      "community_name": "dependencies",
       "norm_label": "axios"
     },
     {
@@ -46966,8 +46966,8 @@
       "source_location": "L17",
       "_origin": "ast",
       "id": "axios",
-      "community": 192,
-      "community_name": "axios",
+      "community": 72,
+      "community_name": "dependencies",
       "norm_label": "axios"
     },
     {
@@ -47087,8 +47087,8 @@
       "source_location": "L23",
       "_origin": "ast",
       "id": "frontend_package_dependencies_formdata_polyfill",
-      "community": 72,
-      "community_name": "dependencies",
+      "community": 270,
+      "community_name": "formdata-polyfill",
       "norm_label": "formdata-polyfill"
     },
     {
@@ -47098,8 +47098,8 @@
       "source_location": "L23",
       "_origin": "ast",
       "id": "formdata_polyfill",
-      "community": 72,
-      "community_name": "dependencies",
+      "community": 270,
+      "community_name": "formdata-polyfill",
       "norm_label": "formdata-polyfill"
     },
     {
@@ -122083,7 +122083,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "Backend/src/tasks/interfaces/task-contexts.interface.ts",
-      "source_location": "L117",
+      "source_location": "L118",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_src_tasks_interfaces_task_contexts_interface",
@@ -178771,5 +178771,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "fb5378e955cf37d6b2a4f5a33e8194fe346600ad"
+  "built_at_commit": "e69b6b3cd04ce398bcf076ac4a2dc96356f8267f"
 }

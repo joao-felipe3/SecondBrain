@@ -545,8 +545,8 @@
     "semantic_hash": ""
   },
   "Backend/src/projects/services/visualization/utils/pert-helpers.util.ts": {
-    "mtime": 1787249727.870088,
-    "ast_hash": "7fecb4b6ac7f2d5a287504b7661de151",
+    "mtime": 1787252476.1844108,
+    "ast_hash": "8c36ef4ef11a6bfeb2cc88b56a8a562a",
     "semantic_hash": ""
   },
   "Backend/src/projects/services/visualization/utils/x-matrix-helpers.util.ts": {
@@ -555,8 +555,8 @@
     "semantic_hash": ""
   },
   "Backend/src/projects/services/visualization/utils/x-matrix-tactical-helpers.util.ts": {
-    "mtime": 1787249456.666441,
-    "ast_hash": "b1cefa2e0b67058f992620862cde0cb4",
+    "mtime": 1787252505.4194667,
+    "ast_hash": "9f1182ac96497a14cddef9226cb09b1f",
     "semantic_hash": ""
   },
   "Backend/src/projects/services/visualization/utils/x-matrix-text-helpers.util.ts": {
@@ -1015,7 +1015,7 @@
     "semantic_hash": ""
   },
   "Backend/src/tasks/schemas/task.schema.ts": {
-    "mtime": 1787250235.1852734,
+    "mtime": 1787253668.5228372,
     "ast_hash": "738b338fa55fb22f4fbae7762379ae44",
     "semantic_hash": ""
   },
@@ -1855,8 +1855,8 @@
     "semantic_hash": ""
   },
   "Backend/tests/unit/tasks/tasks.service.spec.ts": {
-    "mtime": 1787248412.2751577,
-    "ast_hash": "7a28ab6fec6bf55483020adee572b0a9",
+    "mtime": 1787253615.2323794,
+    "ast_hash": "0b48269a182c0ce9c784f56d30ca5cff",
     "semantic_hash": ""
   },
   "Backend/tsconfig.build.json": {
@@ -3525,8 +3525,8 @@
     "semantic_hash": ""
   },
   "Backend/src/tasks/interfaces/task-contexts.interface.ts": {
-    "mtime": 1787249856.6095703,
-    "ast_hash": "cc7600c407685ca88e9fb43b495e02a1",
+    "mtime": 1787252460.498081,
+    "ast_hash": "9994bbc17902dc17e29175f20e247275",
     "semantic_hash": ""
   },
   "Backend/src/tasks/listeners/task-events.listener.ts": {
