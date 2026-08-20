@@ -101,12 +101,14 @@ const emit = defineEmits<{
   (e: "stairsClick"): void;
 }>();
 
-const { playCoinsSound, playDaggerSound } = useGuildAudio();
+const { playCoinsSound, playDaggerSound, playPennantFlutterSound } =
+  useGuildAudio();
 
 const isStairsHovered = ref(false);
 
 function onStairsHover() {
   isStairsHovered.value = true;
+  playPennantFlutterSound();
   emit("updateTooltip", "📜 Mezanino da Guilda: Calendário & Cartografia");
   emit("stairsHover");
 }
@@ -214,25 +216,25 @@ function triggerCoinsInteraction(event: MouseEvent) {
   transition: all 0.3s ease;
 }
 
-/* BRILHO AMBIENTE DIFUSO DO MEZANINO (SEM CORTES RETANGULARES) */
+/* BRILHO AMBIENTE DIFUSO DO MEZANINO (SUAVE E DIEGÉTICO) */
 .staircase-mezzanine-glow {
   position: absolute;
-  top: -30%;
-  left: -60%;
-  width: 220%;
-  height: 180%;
+  top: -35%;
+  left: -65%;
+  width: 230%;
+  height: 190%;
   border-radius: 50%;
   background: radial-gradient(
     ellipse 120% 100% at 50% 45%,
-    rgba(255, 215, 80, 0.32) 0%,
-    rgba(245, 158, 11, 0.18) 35%,
-    rgba(217, 119, 6, 0.07) 65%,
+    rgba(255, 215, 80, 0.16) 0%,
+    rgba(245, 158, 11, 0.08) 35%,
+    rgba(217, 119, 6, 0.02) 65%,
     transparent 100%
   );
   opacity: 0;
-  filter: blur(28px);
+  filter: blur(36px);
   mix-blend-mode: screen;
-  transition: opacity 0.4s ease;
+  transition: opacity 0.45s ease;
   pointer-events: none;
 }
 
@@ -246,15 +248,15 @@ function triggerCoinsInteraction(event: MouseEvent) {
   border-radius: 50%;
   background: radial-gradient(
     circle at 50% 30%,
-    rgba(254, 240, 138, 0.42) 0%,
-    rgba(250, 204, 21, 0.2) 30%,
-    rgba(234, 179, 8, 0.06) 60%,
+    rgba(254, 240, 138, 0.2) 0%,
+    rgba(250, 204, 21, 0.09) 30%,
+    rgba(234, 179, 8, 0.02) 60%,
     transparent 100%
   );
   opacity: 0;
-  filter: blur(18px);
+  filter: blur(22px);
   mix-blend-mode: screen;
-  transition: opacity 0.4s ease;
+  transition: opacity 0.45s ease;
   pointer-events: none;
 }
 
@@ -263,17 +265,17 @@ function triggerCoinsInteraction(event: MouseEvent) {
 .staircase-hotspot-zone:hover .staircase-arch-halo,
 .staircase-hotspot-zone.is-active .staircase-arch-halo {
   opacity: 1;
-  animation: mezzanineLightPulse 2.8s ease-in-out infinite alternate;
+  animation: mezzanineLightPulse 3s ease-in-out infinite alternate;
 }
 
 @keyframes mezzanineLightPulse {
   0% {
-    transform: scale(0.97);
-    opacity: 0.85;
+    transform: scale(0.98);
+    opacity: 0.65;
   }
   100% {
-    transform: scale(1.03);
-    opacity: 1;
+    transform: scale(1.02);
+    opacity: 0.9;
   }
 }
 

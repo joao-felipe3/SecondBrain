@@ -323,6 +323,74 @@ export function useGuildAudio() {
     noise.start(now);
   }
 
+  // 7. SOM DIEGÉTICO SUAVE DE FLUTUAÇÃO DE VELUDO / ESTANDARTE AO VENTO (Pennant Velvet Flutter SFX)
+  let lastPennantFlutterTime = 0;
+
+  function playPennantFlutterSound() {
+    if (isMuted.value) return;
+    const ctx = getAudioContext();
+    if (!ctx) return;
+
+    const now = ctx.currentTime;
+    // Debounce de 280ms para evitar disparos repetidos ao mover o cursor
+    if (now - lastPennantFlutterTime < 0.28) return;
+    lastPennantFlutterTime = now;
+
+    // A. Sopro de ar quente e veludo (Ruído filtrado suave)
+    const duration = 0.32;
+    const bufferSize = Math.floor(ctx.sampleRate * duration);
+    const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+    const data = buffer.getChannelData(0);
+
+    // Ruído marrom/rosa suavizado para textura de tecido
+    let lastOut = 0.0;
+    for (let i = 0; i < bufferSize; i++) {
+      const white = Math.random() * 2 - 1;
+      data[i] = (lastOut + 0.02 * white) / 1.02;
+      lastOut = data[i];
+      data[i] *= 3.5;
+    }
+
+    const noiseSource = ctx.createBufferSource();
+    noiseSource.buffer = buffer;
+
+    // Filtro de passagem de faixa com varredura suave simulando o ondular do tecido
+    const filter = ctx.createBiquadFilter();
+    filter.type = "bandpass";
+    filter.frequency.setValueAtTime(320, now);
+    filter.frequency.exponentialRampToValueAtTime(750, now + 0.12);
+    filter.frequency.exponentialRampToValueAtTime(420, now + duration);
+    filter.Q.setValueAtTime(1.8, now);
+
+    const gain = ctx.createGain();
+    gain.gain.setValueAtTime(0, now);
+    gain.gain.linearRampToValueAtTime(0.09, now + 0.06);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + duration);
+
+    noiseSource.connect(filter);
+    filter.connect(gain);
+    gain.connect(ctx.destination);
+
+    noiseSource.start(now);
+
+    // B. Sub-harmônico sutil de vento/brisa suave
+    const breezeOsc = ctx.createOscillator();
+    const breezeGain = ctx.createGain();
+    breezeOsc.type = "sine";
+    breezeOsc.frequency.setValueAtTime(95, now);
+    breezeOsc.frequency.exponentialRampToValueAtTime(65, now + duration);
+
+    breezeGain.gain.setValueAtTime(0, now);
+    breezeGain.gain.linearRampToValueAtTime(0.045, now + 0.05);
+    breezeGain.gain.exponentialRampToValueAtTime(0.001, now + duration);
+
+    breezeOsc.connect(breezeGain);
+    breezeGain.connect(ctx.destination);
+
+    breezeOsc.start(now);
+    breezeOsc.stop(now + duration);
+  }
+
   // DISPATCHER GERAL DE EFEITOS SONOROS (playSFX)
   function playSFX(sfxName: string) {
     switch (sfxName) {
@@ -343,6 +411,10 @@ export function useGuildAudio() {
         break;
       case "portal-hum":
         playPortalHumSound();
+        break;
+      case "pennant":
+      case "flutter":
+        playPennantFlutterSound();
         break;
       default:
         playFootstepsStoneSound();
@@ -389,6 +461,7 @@ export function useGuildAudio() {
     playDoorOpenSound,
     playDoorCloseSound,
     playPortalHumSound,
+    playPennantFlutterSound,
     playFootstepsStoneSound,
     toggleAmbientSound,
     startAmbientSound,
