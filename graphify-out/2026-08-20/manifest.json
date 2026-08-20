@@ -20,8 +20,8 @@
     "semantic_hash": ""
   },
   "Backend/package.json": {
-    "mtime": 1787248185.287391,
-    "ast_hash": "6a6a5487c18fa56c0d0d91e9e8cbce1d",
+    "mtime": 1787255806.30486,
+    "ast_hash": "fd459e25bca0114c7e7be03ba380f2be",
     "semantic_hash": ""
   },
   "Backend/scripts/export-graph-html.ts": {
@@ -1015,8 +1015,8 @@
     "semantic_hash": ""
   },
   "Backend/src/tasks/schemas/task.schema.ts": {
-    "mtime": 1787253668.5228372,
-    "ast_hash": "738b338fa55fb22f4fbae7762379ae44",
+    "mtime": 1787254078.8681445,
+    "ast_hash": "5878a5effdee5ffac20276a142b617ec",
     "semantic_hash": ""
   },
   "Backend/src/tasks/services/analysis/buffer.service.ts": {
@@ -2705,8 +2705,8 @@
     "semantic_hash": ""
   },
   "Frontend/package.json": {
-    "mtime": 1786924574.5514734,
-    "ast_hash": "9e4bbbf583a1e418b703bfb3c329b474",
+    "mtime": 1787255967.4476607,
+    "ast_hash": "2789c224acd60620c8781aad84160e6f",
     "semantic_hash": ""
   },
   "Frontend/pages/Task/index.vue": {

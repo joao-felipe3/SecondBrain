@@ -27,14 +27,13 @@
     "wiki:index": "ts-node -r tsconfig-paths/register scripts/index-wiki.ts",
     "wiki:visualize": "ts-node -r tsconfig-paths/register scripts/export-graph-html.ts",
     "agent:refactor": "ts-node -r tsconfig-paths/register scripts/refactor-agent.ts",
-    "profile:doctor": "clinic doctor --on-port \"autocannon -c 10 -d 10 http://localhost:3000/api\" -- node dist/main",
-    "profile:flame": "clinic flame --on-port \"autocannon -c 10 -d 10 http://localhost:3000/api\" -- node dist/main",
-    "profile:bubbleprof": "clinic bubbleprof --on-port \"autocannon -c 10 -d 10 http://localhost:3000/api\" -- node dist/main"
+    "profile:autocannon": "autocannon -c 10 -d 10 http://localhost:3000/api"
   },
   "overrides": {
     "ip-address": "^10.3.1",
     "fast-uri": "^3.1.5",
     "js-yaml": "^5.2.2",
+    "got": "^11.8.6",
     "body-parser": "^2.2.3",
     "file-type": "^21.3.1",
     "form-data": "^2.5.6",
@@ -74,7 +73,6 @@
     "@types/node": "^22.10.7",
     "@types/supertest": "^6.0.2",
     "autocannon": "^8.0.0",
-    "clinic": "^13.0.0",
     "dependency-cruiser": "^16.9.0",
     "eslint": "^10.8.0",
     "eslint-config-prettier": "^10.0.1",
