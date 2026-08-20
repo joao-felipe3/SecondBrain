@@ -92,7 +92,7 @@
   - [x] Mapear hitbox no topo do mezanino (`GuildDiegeticHotspots.vue`).
   - [x] Efeito de iluminação no hover e tooltip flutuante (`📜 Calendário & Eventos`).
   - [x] Camera Zoom centralizado e navegação.
-  - [ ] Animação de flâmula pendurada balançando ao focar a escadaria.
+  - [x] Animação de flâmula pendurada balançando ao focar a escadaria.
 
 ### 3.4. Micro-Interações & Sprites de NPCs (Easter Eggs & Props)
 

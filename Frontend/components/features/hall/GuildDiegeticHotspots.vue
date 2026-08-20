@@ -1,5 +1,27 @@
 <template>
   <div v-if="!isMobile" class="diegetic-hotspots-layer">
+    <!-- HOTSPOT CENTRAL: ESCADARIA & MEZANINO (CARTOGRAFIA / CALENDÁRIO -> /calendar) -->
+    <div
+      class="staircase-hotspot-zone"
+      :class="{ 'is-active': isStairsHovered }"
+      @click="onStairsClick"
+      @mouseenter="onStairsHover"
+      @mouseleave="onStairsLeave"
+    >
+      <!-- ILUMINAÇÃO DIEGÉTICA NO ARCO DO MEZANINO AO FOCAR A ESCADARIA -->
+      <div class="staircase-mezzanine-glow"></div>
+      <div class="staircase-arch-halo"></div>
+    </div>
+
+    <!-- FLÂMULA PENDURADA NO MEZANINO BALANÇANDO AO FOCAR A ESCADARIA -->
+    <GuildStaircasePennant
+      :is-hovered="isStairsHovered"
+      :is-zooming="isTransitioning"
+      @hover="onStairsHover"
+      @leave="onStairsLeave"
+      @click="onStairsClick"
+    />
+
     <!-- HOTSPOT DIREITO: PORTAL ANIMADO DA BIBLIOTECA DA GUILDA (/projects) -->
     <GuildLibraryPortal
       :is-transitioning="isTransitioning"
@@ -60,6 +82,7 @@ import { ref } from "vue";
 import UiWaxSeal from "~/components/ui/diegetic/UiWaxSeal.vue";
 import GuildDeskBookWidget from "~/components/features/hall/GuildDeskBookWidget.vue";
 import GuildLibraryPortal from "~/components/features/hall/GuildLibraryPortal.vue";
+import GuildStaircasePennant from "~/components/features/hall/GuildStaircasePennant.vue";
 import { useGuildAudio } from "~/composables/ui/useGuildAudio";
 
 defineProps<{
@@ -73,9 +96,30 @@ const emit = defineEmits<{
   (e: "rightDoorHover"): void;
   (e: "rightDoorLeave"): void;
   (e: "rightDoorClick"): void;
+  (e: "stairsHover"): void;
+  (e: "stairsLeave"): void;
+  (e: "stairsClick"): void;
 }>();
 
 const { playCoinsSound, playDaggerSound } = useGuildAudio();
+
+const isStairsHovered = ref(false);
+
+function onStairsHover() {
+  isStairsHovered.value = true;
+  emit("updateTooltip", "📜 Mezanino da Guilda: Calendário & Cartografia");
+  emit("stairsHover");
+}
+
+function onStairsLeave() {
+  isStairsHovered.value = false;
+  emit("updateTooltip", null);
+  emit("stairsLeave");
+}
+
+function onStairsClick() {
+  emit("stairsClick");
+}
 
 function onLibraryHover() {
   emit("updateTooltip", "📜 Acessar Biblioteca de Arquivos e Projetos");
@@ -155,6 +199,82 @@ function triggerCoinsInteraction(event: MouseEvent) {
   align-items: center;
   justify-content: center;
   transition: all 0.3s ease;
+}
+
+/* HOTSPOT CENTRAL: ESCADARIA & MEZANINO (/calendar) */
+.staircase-hotspot-zone {
+  position: absolute;
+  top: 13%;
+  left: 41.5%;
+  width: 12.6%;
+  height: 25%;
+  cursor: pointer;
+  z-index: 5;
+  overflow: visible;
+  transition: all 0.3s ease;
+}
+
+/* BRILHO AMBIENTE DIFUSO DO MEZANINO (SEM CORTES RETANGULARES) */
+.staircase-mezzanine-glow {
+  position: absolute;
+  top: -30%;
+  left: -60%;
+  width: 220%;
+  height: 180%;
+  border-radius: 50%;
+  background: radial-gradient(
+    ellipse 120% 100% at 50% 45%,
+    rgba(255, 215, 80, 0.32) 0%,
+    rgba(245, 158, 11, 0.18) 35%,
+    rgba(217, 119, 6, 0.07) 65%,
+    transparent 100%
+  );
+  opacity: 0;
+  filter: blur(28px);
+  mix-blend-mode: screen;
+  transition: opacity 0.4s ease;
+  pointer-events: none;
+}
+
+/* FOCO / NÚCLEO RADIAL SUAVE NO ARCO SUPERIOR */
+.staircase-arch-halo {
+  position: absolute;
+  top: -10%;
+  left: -20%;
+  width: 140%;
+  height: 110%;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle at 50% 30%,
+    rgba(254, 240, 138, 0.42) 0%,
+    rgba(250, 204, 21, 0.2) 30%,
+    rgba(234, 179, 8, 0.06) 60%,
+    transparent 100%
+  );
+  opacity: 0;
+  filter: blur(18px);
+  mix-blend-mode: screen;
+  transition: opacity 0.4s ease;
+  pointer-events: none;
+}
+
+.staircase-hotspot-zone:hover .staircase-mezzanine-glow,
+.staircase-hotspot-zone.is-active .staircase-mezzanine-glow,
+.staircase-hotspot-zone:hover .staircase-arch-halo,
+.staircase-hotspot-zone.is-active .staircase-arch-halo {
+  opacity: 1;
+  animation: mezzanineLightPulse 2.8s ease-in-out infinite alternate;
+}
+
+@keyframes mezzanineLightPulse {
+  0% {
+    transform: scale(0.97);
+    opacity: 0.85;
+  }
+  100% {
+    transform: scale(1.03);
+    opacity: 1;
+  }
 }
 
 /* BIBLIOTECA DE ARQUIVOS (PORTA DIREITA DA ARTE) */

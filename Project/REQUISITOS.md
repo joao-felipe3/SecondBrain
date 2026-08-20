@@ -409,7 +409,7 @@
 | 37  | Camera Zoom (`scale(2.8)`, `88% 50%`) + transição de rota ao clicar na Porta da Direita                               | Frontend |    ✅     |    ✅    |   ✅    | ✅  |
 | 38  | Efeito de vazamento de luz dourada entre as frestas da porta da biblioteca ao entreabrir                              | Frontend |    ⬜     |    ⬜    |   ⬜    | ⬜  |
 | 39  | Mapear hitbox da Escadaria Central no topo do mezanino com zoom e navegação (`GuildDiegeticHotspots.vue`)             | Frontend |    ✅     |    ✅    |   ✅    | ✅  |
-| 40  | Animação de flâmula pendurada balançando ao focar a escadaria                                                         | Frontend |    ⬜     |    ⬜    |   ⬜    | ⬜  |
+| 40  | Animação de flâmula pendurada balançando ao focar a escadaria                                                         | Frontend |    ✅     |    ✅    |   ✅    | ✅  |
 | 41  | NPCs estáticos em `GuildNpcSpeechBubble.vue` com balão de fala e frases dinâmicas                                     | Frontend |    ✅     |    ✅    |   ✅    | ✅  |
 
 ### ⚔️ 4. Mural de Contratos / Kanban (`/tasks`)

@@ -11,7 +11,8 @@
       class="safe-zone"
       :class="{
         'is-camera-hovering':
-          (isLeftArchHovered || isRightDoorHovered) && !isTransitioning,
+          (isLeftArchHovered || isRightDoorHovered || isStairsHovered) &&
+          !isTransitioning,
         'is-camera-zooming': isTransitioning,
       }"
       :style="{
@@ -43,7 +44,7 @@
         @leave="onLeftArchLeave"
       />
 
-      <!-- HOTSPOTS DIEGÉTICOS (BIBLIOTECA, WIDGET DO LIVRO, EASTER EGGS) -->
+      <!-- HOTSPOTS DIEGÉTICOS (BIBLIOTECA, ESCADARIA/FLÂMULA, WIDGET DO LIVRO, EASTER EGGS) -->
       <GuildDiegeticHotspots
         :is-mobile="isMobile"
         :is-transitioning="isTransitioning"
@@ -51,6 +52,9 @@
         @right-door-hover="onRightDoorHover"
         @right-door-leave="onRightDoorLeave"
         @right-door-click="handleRightDoorClick"
+        @stairs-hover="onStairsHover"
+        @stairs-leave="onStairsLeave"
+        @stairs-click="handleStairsClick"
         @update-tooltip="(msg) => (hoverTooltip = msg)"
       />
 
@@ -121,6 +125,8 @@ const zoomTransformOrigin = ref("16% 45%");
 
 // Estado de Hover do Arco da Esquerda (SVG Path)
 const isLeftArchHovered = ref(false);
+// Estado de Hover da Escadaria Central / Mezanino (Flâmula & Calendário)
+const isStairsHovered = ref(false);
 // Estado de Hover do Portal da Direita (Biblioteca)
 const isRightDoorHovered = ref(false);
 const hoverTooltip = ref<string | null>(null);
@@ -157,6 +163,33 @@ function handleLeftArchClick() {
   // Timeline de 500ms antes da transição de rota
   setTimeout(() => {
     router.push("/tasks");
+  }, 500);
+}
+
+// Eventos da Escadaria Central / Mezanino (Cartografia & Calendário)
+function onStairsHover() {
+  isStairsHovered.value = true;
+  if (!isTransitioning.value) {
+    zoomTransformOrigin.value = "48% 25%";
+  }
+}
+
+function onStairsLeave() {
+  isStairsHovered.value = false;
+}
+
+function handleStairsClick() {
+  if (isTransitioning.value) return;
+
+  isTransitioning.value = true;
+  zoomTransformOrigin.value = "48% 25%";
+
+  // SFX diegético de passos na pedra da escadaria
+  playSFX("footsteps-stone");
+
+  // Timeline de 500ms para a animação do camera zoom antes de redirecionar para /calendar
+  setTimeout(() => {
+    router.push("/calendar");
   }, 500);
 }
 

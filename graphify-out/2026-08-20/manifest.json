@@ -2715,8 +2715,8 @@
     "semantic_hash": ""
   },
   "Frontend/pages/index.vue": {
-    "mtime": 1787194750.5150552,
-    "ast_hash": "53a62123f6e207dff67029806d227271",
+    "mtime": 1786924574.5534751,
+    "ast_hash": "07649daca3cf93a7250fe1b6e266857a",
     "semantic_hash": ""
   },
   "Frontend/pages/projects/index.vue": {
@@ -2985,8 +2985,8 @@
     "semantic_hash": ""
   },
   "Project/REQUISITOS.md": {
-    "mtime": 1787194750.3436399,
-    "ast_hash": "d493796befe7b993eb405281e28de7e2",
+    "mtime": 1786924576.3831284,
+    "ast_hash": "c3266ebfbab25b48a85b1e72f28bb13f",
     "semantic_hash": ""
   },
   "Project/adr/001-why-nestjs-mongoose.md": {
@@ -3315,8 +3315,8 @@
     "semantic_hash": ""
   },
   "Frontend/components/features/hall/GuildDiegeticHotspots.vue": {
-    "mtime": 1787194749.5939193,
-    "ast_hash": "10b92d335a03d0b4150b8efc9d6816d2",
+    "mtime": 1786924574.517496,
+    "ast_hash": "544039d1f397d9faf1962ab428c35270",
     "semantic_hash": ""
   },
   "Frontend/components/features/hall/GuildMobileJournal.vue": {
@@ -3370,8 +3370,8 @@
     "semantic_hash": ""
   },
   "Project/FRONTEND_REFACTORING_PLAN.md": {
-    "mtime": 1787193696.2336333,
-    "ast_hash": "ab31ea04fa59ec9829ece38e73caa4f9",
+    "mtime": 1787021974.2119458,
+    "ast_hash": "76634631f29ba176c25892449bf1327d",
     "semantic_hash": ""
   },
   "Project/adr/004-validation-strategy.md": {
@@ -3497,16 +3497,6 @@
   "Frontend/composables/api/useWbsApi.ts": {
     "mtime": 1786924574.538471,
     "ast_hash": "07a6c086dc102a843f4d6e471a729cd6",
-    "semantic_hash": ""
-  },
-  "Frontend/components/features/hall/GuildStaircasePennant.vue": {
-    "mtime": 1787194749.7818148,
-    "ast_hash": "81aad5b830467f3672b11032c536d5eb",
-    "semantic_hash": ""
-  },
-  "Frontend/pages/calendar/index.vue": {
-    "mtime": 1787194750.2499218,
-    "ast_hash": "15d645410140a2f97f49ff3a3f775325",
     "semantic_hash": ""
   }
 }
