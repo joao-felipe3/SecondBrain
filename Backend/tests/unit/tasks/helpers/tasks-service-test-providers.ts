@@ -94,14 +94,14 @@ export function createTasksServiceTestProviders(deps: TasksServiceTestDeps) {
     },
     {
       provide: TasksAiSuggestionsLoopRunner,
-      useValue: new TasksAiSuggestionsLoopRunner(taskModel, geminiService),
+      useValue: new TasksAiSuggestionsLoopRunner(taskModel, geminiService as any),
     },
     {
       provide: TasksAiSuggestionsService,
       useValue: new TasksAiSuggestionsService(
         taskModel,
-        geminiService,
-        new TasksAiSuggestionsLoopRunner(taskModel, geminiService),
+        geminiService as any,
+        new TasksAiSuggestionsLoopRunner(taskModel, geminiService as any),
       ),
     },
     {
@@ -114,7 +114,12 @@ export function createTasksServiceTestProviders(deps: TasksServiceTestDeps) {
     },
     {
       provide: ChecklistOperationsService,
-      useValue: new ChecklistOperationsService(taskModel, checklistService, inputService, geminiService),
+      useValue: new ChecklistOperationsService(
+        taskModel,
+        checklistService,
+        inputService,
+        geminiService as any,
+      ),
     },
     {
       provide: TasksCompletionService,
@@ -146,7 +151,12 @@ export function createTasksServiceTestProviders(deps: TasksServiceTestDeps) {
           projectStatsService,
           metricsService,
           inputService,
-          new ChecklistOperationsService(taskModel, checklistService, inputService, geminiService),
+          new ChecklistOperationsService(
+            taskModel,
+            checklistService,
+            inputService,
+            geminiService as any,
+          ),
         );
 
         (recurringService as unknown as { tasksWriteService: TasksWriteService }).tasksWriteService =

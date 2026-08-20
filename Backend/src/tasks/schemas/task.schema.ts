@@ -1,68 +1,28 @@
 import { Schema, Document } from 'mongoose';
+import {
+  TaskChecklistItem,
+  TaskRecurringRule,
+  TaskOperationalInfo,
+  TaskPertMetrics,
+  TaskEvmMetrics,
+  TaskTraceability,
+  TaskGamification,
+  TaskRecurrence,
+  TaskChecklistContext,
+} from '../interfaces/task-contexts.interface';
 
-export interface TaskChecklistItem {
-  item: string;
-  completed: boolean;
-  order: number;
-}
+export { TaskChecklistItem, TaskRecurringRule };
 
-export interface TaskRecurringRule {
-  frequency: string;
-  interval: number;
-  daysOfWeek?: number[];
-  endDate?: Date;
-  exceptions?: Array<Date | { date: Date; reason?: string }>;
-}
-
-export interface TaskDocument extends Document {
-  name: string;
-  description?: string;
-  definitionOfDone?: string;
-  checklist?: Array<string | TaskChecklistItem>;
-  deadline: Date;
-  pomodorosPlanned: number;
-  pomodorosDid?: number;
-  pertOptimisticMinutes?: number;
-  pertMostLikelyMinutes?: number;
-  pertPessimisticMinutes?: number;
-  pertExpectedMinutes?: number;
-  pertVariance?: number;
-  priority?: number;
-  difficult?: number;
-  project?: string;
-  parentTaskId?: string;
-  parentWbsNodeId?: string;
-  wbsPath?: string;
-  generationBatchId?: string;
-  milestoneId?: string;
-  experience: number;
-  isConcluded: boolean;
-  late: boolean;
-  prize: number;
-  recurrency: string;
-  notification: Date;
-  microTaskType?: string;
-  parentRecurringId?: string;
-  isRecurringInstance?: boolean;
-  recurringState?: 'pending' | 'completed' | 'skipped';
-  recurringRule?: TaskRecurringRule;
-  cognitiveMode?: string;
-  contextTag?: string;
-  themeTag?: string[];
-  requirementIds?: string[];
-  journeyItemIds?: string[];
-  rtmRisk?: boolean;
-  rtmRiskReason?: string;
-  evmProgress?: number;
-  evmPlannedValueMinutes?: number;
-  evmEarnedValueMinutes?: number;
-  evmSchedulePerformanceIndex?: number;
-  evmAlert?: string;
-  status?: 'todo' | 'doing' | 'review' | 'done';
-  statusUpdatedAt?: Date;
-  kanbanOrder?: number;
-  createdAt?: Date;
-}
+export interface TaskDocument
+  extends
+    Document,
+    TaskOperationalInfo,
+    TaskPertMetrics,
+    TaskEvmMetrics,
+    TaskTraceability,
+    TaskGamification,
+    TaskRecurrence,
+    TaskChecklistContext {}
 
 export const TaskSchema = new Schema<TaskDocument>({
   name: { type: String, required: true },

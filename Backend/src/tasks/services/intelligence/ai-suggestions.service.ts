@@ -7,7 +7,6 @@ import {
   AiSuggestionsProgressDto,
 } from '../../dto/intelligence/generate-ai-suggestions.dto';
 import { TaskDocument } from '../../schemas/task.schema';
-import { GeminiService } from '../../../ai/services/core/gemini.service';
 import { SuggestionState } from '../../interfaces';
 import {
   calculateSuggestionsHours,
@@ -17,6 +16,7 @@ import {
   calculateExistingTasksHoursAndNames,
 } from './utils/ai-suggestions.utils';
 import { TasksAiSuggestionsLoopRunner } from './ai-suggestions-runner.service';
+import { SuggestionsAiService } from '../../../ai/services/tasks/suggestions-ai.service';
 
 @Injectable()
 export class TasksAiSuggestionsService {
@@ -24,7 +24,7 @@ export class TasksAiSuggestionsService {
 
   constructor(
     @InjectModel('Task') private readonly taskModel: Model<TaskDocument>,
-    private readonly geminiService: GeminiService,
+    private readonly suggestionsAiService: SuggestionsAiService,
     private readonly loopRunner: TasksAiSuggestionsLoopRunner,
   ) {}
 
@@ -113,11 +113,11 @@ export class TasksAiSuggestionsService {
   }): Promise<AiSuggestionsResponseDto> {
     const { dto, state, onProgress } = params;
     this.emitProgress({ state, status: 'loading', message: 'Gerando sugestoes...', onProgress });
-    const { suggestions, isFallback } = await this.geminiService.getTaskSuggestions({
+    const { suggestions, isFallback } = await this.suggestionsAiService.getTaskSuggestions({
       ...dto,
       existingTaskNames: state.existingTaskNames,
     });
-    const typedSuggestions = (suggestions || []) as SuggestionState['allSuggestions'];
+    const typedSuggestions = (suggestions || []) as unknown as SuggestionState['allSuggestions'];
     state.allSuggestions.push(...typedSuggestions);
     state.currentHours = calculateSuggestionsHours(state.allSuggestions);
 

@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getModelToken } from '@nestjs/mongoose';
 import { TasksAiSuggestionsService } from '../../../../../src/tasks/services/intelligence/ai-suggestions.service';
-import { GeminiService } from '../../../../../src/ai/services/core/gemini.service';
+import { SuggestionsAiService } from '../../../../../src/ai/services/tasks/suggestions-ai.service';
 import { TasksAiSuggestionsLoopRunner } from '../../../../../src/tasks/services/intelligence/ai-suggestions-runner.service';
 
 describe('TasksAiSuggestionsService', () => {
@@ -9,8 +9,8 @@ describe('TasksAiSuggestionsService', () => {
   let mockTaskModel: {
     find: jest.Mock;
   };
-  let mockGeminiService: {
-    generateContent: jest.Mock;
+  let mockSuggestionsAiService: {
+    generateContent?: jest.Mock;
     getTaskSuggestions?: jest.Mock;
   };
   let mockLoopRunner: {
@@ -29,8 +29,7 @@ describe('TasksAiSuggestionsService', () => {
       }),
     };
 
-    mockGeminiService = {
-      generateContent: jest.fn(),
+    mockSuggestionsAiService = {
       getTaskSuggestions: jest.fn().mockResolvedValue({
         suggestions: [{ name: 'Zero Hours Task', pomodoros: 2 }],
         isFallback: false,
@@ -50,7 +49,7 @@ describe('TasksAiSuggestionsService', () => {
       providers: [
         TasksAiSuggestionsService,
         { provide: getModelToken('Task'), useValue: mockTaskModel },
-        { provide: GeminiService, useValue: mockGeminiService },
+        { provide: SuggestionsAiService, useValue: mockSuggestionsAiService },
         { provide: TasksAiSuggestionsLoopRunner, useValue: mockLoopRunner },
       ],
     }).compile();

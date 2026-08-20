@@ -31,7 +31,6 @@ import { TaskRepository } from './interfaces/task-repository.interface';
 import { Task } from './entities/task.entity';
 
 // Services
-import { GeminiService } from '../ai/services/core/gemini.service';
 import {
   CompletionFeedbackPayload,
   CompletionFeedbackResponse,
@@ -41,6 +40,7 @@ import { TasksRecurringService, TasksCompletionService, TasksWriteService } from
 import { TasksAiSuggestionsService, ChecklistOperationsService } from './services/intelligence';
 import { TasksHabitsService } from './services/monitoring';
 import { TasksPertService } from './services/analysis';
+import { PertAiService } from '../ai/services/tasks/pert-ai.service';
 import { ProjectStatsService } from '../projects/services/execution/project-stats.service';
 import { TasksHierarchyService, TaskDescendantNode, TaskLineageResult } from './services/dependencies';
 
@@ -49,9 +49,9 @@ export class TasksService {
   constructor(
     @Inject('TaskRepository') private readonly taskRepository: TaskRepository,
     private readonly projectStatsService: ProjectStatsService,
-    private readonly geminiService: GeminiService,
     private readonly feedbackService: FeedbackService,
     private readonly tasksPertService: TasksPertService,
+    private readonly pertAiService: PertAiService,
     private readonly tasksWriteService: TasksWriteService,
     private readonly tasksRecurringService: TasksRecurringService,
     private readonly tasksAiSuggestionsService: TasksAiSuggestionsService,
@@ -246,8 +246,8 @@ export class TasksService {
     taskType: string,
     description: string,
     projectContext?: string,
-  ): Promise<Awaited<ReturnType<GeminiService['suggestPertEstimates']>>> {
-    const estimates = await this.geminiService.suggestPertEstimates({
+  ): Promise<Awaited<ReturnType<PertAiService['suggestPertEstimates']>>> {
+    const estimates = await this.pertAiService.suggestPertEstimates({
       taskType,
       description,
       projectContext,

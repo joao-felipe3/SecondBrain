@@ -2,7 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { TaskDocument } from '../../schemas/task.schema';
-import { GeminiService } from '../../../ai/services/core/gemini.service';
+import { SuggestionsAiService } from '../../../ai/services/tasks/suggestions-ai.service';
 import {
   GenerateAiSuggestionsDto,
   AiTaskSuggestionDto,
@@ -23,7 +23,7 @@ export class TasksAiSuggestionsLoopRunner {
 
   constructor(
     @InjectModel('Task') private readonly taskModel: Model<TaskDocument>,
-    private readonly geminiService: GeminiService,
+    private readonly suggestionsAiService: SuggestionsAiService,
   ) {}
 
   async runMultiBatchGenerationLoop(params: {
@@ -137,9 +137,9 @@ export class TasksAiSuggestionsLoopRunner {
     }
 
     this.logger.warn('Usando fallback de mock por ausencia de sugestoes acumuladas.');
-    const mockSuggestions = this.geminiService.generateMockSuggestions(
+    const mockSuggestions = this.suggestionsAiService.generateMockSuggestions(
       dto.projectName,
-    ) as AiTaskSuggestionDto[];
+    ) as unknown as AiTaskSuggestionDto[];
     addSuggestionsToState(state, mockSuggestions);
     return buildSuggestionsResponse({
       state,
@@ -153,10 +153,14 @@ export class TasksAiSuggestionsLoopRunner {
     existingTaskNames,
     chunkHours,
   }: FetchSuggestionsParams): Promise<{ suggestions: AiTaskSuggestionDto[]; isFallback: boolean }> {
-    return this.geminiService.getTaskSuggestions({
+    const res = await this.suggestionsAiService.getTaskSuggestions({
       ...dto,
       existingTaskNames,
       chunkHours,
     });
+    return {
+      suggestions: res.suggestions as unknown as AiTaskSuggestionDto[],
+      isFallback: res.isFallback,
+    };
   }
 }

@@ -20,8 +20,8 @@
     "semantic_hash": ""
   },
   "Backend/package.json": {
-    "mtime": 1786924574.4334905,
-    "ast_hash": "35fe9e849d9b3069719444595acf59ad",
+    "mtime": 1787248185.287391,
+    "ast_hash": "6a6a5487c18fa56c0d0d91e9e8cbce1d",
     "semantic_hash": ""
   },
   "Backend/scripts/export-graph-html.ts": {
@@ -40,8 +40,8 @@
     "semantic_hash": ""
   },
   "Backend/src/ai/ai.module.ts": {
-    "mtime": 1785009295.8975518,
-    "ast_hash": "0e0fa3ce8bd9385ad13e7953255b15c4",
+    "mtime": 1787245869.3903985,
+    "ast_hash": "07b49822fe56dcc7990f0c3d7558c892",
     "semantic_hash": ""
   },
   "Backend/src/ai/controllers/wiki/ai-wiki.controller.ts": {
@@ -185,8 +185,8 @@
     "semantic_hash": ""
   },
   "Backend/src/ai/services/tasks/suggestions-ai.service.ts": {
-    "mtime": 1787022803.5193741,
-    "ast_hash": "def7c0795662d92fa9b44bf463df1092",
+    "mtime": 1787246089.8666267,
+    "ast_hash": "8c5084004391a9bd1f2a9928d25b268e",
     "semantic_hash": ""
   },
   "Backend/src/ai/services/wiki/ai-wiki.service.spec.ts": {
@@ -215,8 +215,8 @@
     "semantic_hash": ""
   },
   "Backend/src/app.module.ts": {
-    "mtime": 1784936056.313012,
-    "ast_hash": "e23618ddd4b6705d91af3b1439483bbc",
+    "mtime": 1787245170.4492984,
+    "ast_hash": "b9dee88063bb8894e5c2a6c0e32879e8",
     "semantic_hash": ""
   },
   "Backend/src/app.service.ts": {
@@ -1015,8 +1015,8 @@
     "semantic_hash": ""
   },
   "Backend/src/tasks/schemas/task.schema.ts": {
-    "mtime": 1783876719.2964766,
-    "ast_hash": "24baac9010ffd02811b4c2e641b53ad9",
+    "mtime": 1787248185.5443425,
+    "ast_hash": "738b338fa55fb22f4fbae7762379ae44",
     "semantic_hash": ""
   },
   "Backend/src/tasks/services/analysis/buffer.service.ts": {
@@ -1050,8 +1050,8 @@
     "semantic_hash": ""
   },
   "Backend/src/tasks/services/dependencies/dependency-inference.service.ts": {
-    "mtime": 1784388605.6006799,
-    "ast_hash": "ec46d8e1214544db5a887c41b56a424b",
+    "mtime": 1787245526.529542,
+    "ast_hash": "90d512e8f8d7f411fee577fea20885cb",
     "semantic_hash": ""
   },
   "Backend/src/tasks/services/dependencies/hierarchy.service.ts": {
@@ -1100,18 +1100,18 @@
     "semantic_hash": ""
   },
   "Backend/src/tasks/services/intelligence/ai-suggestions-runner.service.ts": {
-    "mtime": 1784330459.861475,
-    "ast_hash": "44e95467893ed0efad42dc7a7605c2cf",
+    "mtime": 1787246109.8503594,
+    "ast_hash": "e2c0c02eb1658ff909b4509418fa2c6f",
     "semantic_hash": ""
   },
   "Backend/src/tasks/services/intelligence/ai-suggestions.service.ts": {
-    "mtime": 1785000902.0234742,
-    "ast_hash": "b2e973995375fe1108f51b587f8cb239",
+    "mtime": 1787246494.657765,
+    "ast_hash": "71c26535cbce137aadf8dc1f202a48df",
     "semantic_hash": ""
   },
   "Backend/src/tasks/services/intelligence/checklist-operations.service.ts": {
-    "mtime": 1784336431.6791706,
-    "ast_hash": "efc7ae458bececec7a62d445080cd919",
+    "mtime": 1787245476.4402716,
+    "ast_hash": "21ba61578c088ec18ef0cb33f2247068",
     "semantic_hash": ""
   },
   "Backend/src/tasks/services/intelligence/checklist.service.ts": {
@@ -1120,8 +1120,8 @@
     "semantic_hash": ""
   },
   "Backend/src/tasks/services/intelligence/feedback.service.ts": {
-    "mtime": 1784336424.617473,
-    "ast_hash": "5261bfcdffe4d582d0232be4c89e64e4",
+    "mtime": 1787246188.8738954,
+    "ast_hash": "b03634680bad2f3b27ff343769a95e79",
     "semantic_hash": ""
   },
   "Backend/src/tasks/services/intelligence/index.ts": {
@@ -1270,13 +1270,13 @@
     "semantic_hash": ""
   },
   "Backend/src/tasks/tasks.module.ts": {
-    "mtime": 1787022803.5205667,
-    "ast_hash": "64eebb93f497db4b0e8d0662a2cdd2c7",
+    "mtime": 1787245729.6958885,
+    "ast_hash": "fd0dc292cf1ec479eee0e37494ffdc9c",
     "semantic_hash": ""
   },
   "Backend/src/tasks/tasks.service.ts": {
-    "mtime": 1787022803.5205667,
-    "ast_hash": "b69f767e412de98b82e66c3588ce0c47",
+    "mtime": 1787246350.452915,
+    "ast_hash": "0607858f7e14f7a8bab7cf8230059d3f",
     "semantic_hash": ""
   },
   "Backend/tests/e2e/app.e2e-spec.ts": {
@@ -1680,8 +1680,8 @@
     "semantic_hash": ""
   },
   "Backend/tests/unit/tasks/helpers/tasks-service-test-providers.ts": {
-    "mtime": 1787022803.5213757,
-    "ast_hash": "e8b44b083d60415581cbe4fa60aad20c",
+    "mtime": 1787248185.242332,
+    "ast_hash": "5734b2a8dfec1a6f2840a379931a1989",
     "semantic_hash": ""
   },
   "Backend/tests/unit/tasks/mappers/requirement.mapper.spec.ts": {
@@ -1755,8 +1755,8 @@
     "semantic_hash": ""
   },
   "Backend/tests/unit/tasks/services/intelligence/ai-suggestions.service.spec.ts": {
-    "mtime": 1784936056.3150122,
-    "ast_hash": "f89da4cfe09fe10b5ce4802dcce1ba48",
+    "mtime": 1787246733.1154897,
+    "ast_hash": "baeb9f80449a911fbad48e7ede9378f7",
     "semantic_hash": ""
   },
   "Backend/tests/unit/tasks/services/intelligence/checklist-operations.service.spec.ts": {
@@ -1855,8 +1855,8 @@
     "semantic_hash": ""
   },
   "Backend/tests/unit/tasks/tasks.service.spec.ts": {
-    "mtime": 1787022803.5213757,
-    "ast_hash": "cf3a23f8a9de0f6bd4e33718982c0f9a",
+    "mtime": 1787246806.3600862,
+    "ast_hash": "85f408ae153415429565d8f0756e1405",
     "semantic_hash": ""
   },
   "Backend/tsconfig.build.json": {
@@ -3140,8 +3140,8 @@
     "semantic_hash": ""
   },
   "Frontend/components/features/hall/GuildParticlesCanvas.vue": {
-    "mtime": 1787023949.2937841,
-    "ast_hash": "93a7b7dd204978df7d17e6a73989fb3d",
+    "mtime": 1787248185.4208498,
+    "ast_hash": "7f412c1a0d975cb17149b970e3456cd0",
     "semantic_hash": ""
   },
   "Frontend/components/features/hall/GuildReceptionDesk.vue": {
@@ -3507,6 +3507,31 @@
   "Frontend/pages/calendar/index.vue": {
     "mtime": 1787194750.2499218,
     "ast_hash": "15d645410140a2f97f49ff3a3f775325",
+    "semantic_hash": ""
+  },
+  "Backend/src/ai/ai-projects.module.ts": {
+    "mtime": 1787248185.0628154,
+    "ast_hash": "1e485aec4b381ef57f7f45d77134f874",
+    "semantic_hash": ""
+  },
+  "Backend/src/ai/ai-tasks.module.ts": {
+    "mtime": 1787245773.0368402,
+    "ast_hash": "dc247c9a09276bdf1d0e82a1effcf97a",
+    "semantic_hash": ""
+  },
+  "Backend/src/tasks/events/task.events.ts": {
+    "mtime": 1787245127.312801,
+    "ast_hash": "04cbdf12acd086a718d294a91ecf5dbf",
+    "semantic_hash": ""
+  },
+  "Backend/src/tasks/interfaces/task-contexts.interface.ts": {
+    "mtime": 1787246026.0712948,
+    "ast_hash": "b34a9cd693e02f9f4918922f8f06924b",
+    "semantic_hash": ""
+  },
+  "Backend/src/tasks/listeners/task-events.listener.ts": {
+    "mtime": 1787248185.475338,
+    "ast_hash": "1575b6e4b4b3991be1646b538e46f3a1",
     "semantic_hash": ""
   }
 }

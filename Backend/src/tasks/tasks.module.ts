@@ -44,6 +44,7 @@ import { ProjectsModule } from '../projects/projects.module';
 import { TaskAlertSchema } from './schemas/task-alert.schema';
 import { AlertsService, DeviationDetectionService } from './services/monitoring';
 import { AlertsController } from './controllers/alerts.controller';
+import { TaskEventsListener } from './listeners/task-events.listener';
 
 const mongooseFeature = MongooseModule.forFeature([
   { name: Task.name, schema: TaskSchema },
@@ -93,6 +94,7 @@ const mongooseFeature = MongooseModule.forFeature([
     AlertsService,
     DeviationDetectionService,
     TasksRecurringService,
+    TaskEventsListener,
     {
       provide: 'TaskRepository',
       useClass: MongooseTaskRepository,

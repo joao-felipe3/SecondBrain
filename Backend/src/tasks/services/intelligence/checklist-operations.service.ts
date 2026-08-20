@@ -4,7 +4,7 @@ import { Model, Types } from 'mongoose';
 import { TaskDocument, TaskChecklistItem } from '../../schemas/task.schema';
 import { ChecklistItemDto } from '../../dto/task/create-task.dto';
 import { TasksInputService } from '../workflow/input.service';
-import { GeminiService } from '../../../ai/services/core/gemini.service';
+import { ChecklistAiService } from '../../../ai/services/tasks/checklist-ai.service';
 import { ChecklistService } from './checklist.service';
 import { ChecklistValidationResult, ChecklistHistoryProjectRef } from '../../interfaces';
 import {
@@ -19,7 +19,7 @@ export class ChecklistOperationsService {
     @InjectModel('Task') private readonly taskModel: Model<TaskDocument>,
     private readonly checklistService: ChecklistService,
     private readonly inputService: TasksInputService,
-    private readonly geminiService: GeminiService,
+    private readonly checklistAiService: ChecklistAiService,
   ) {}
 
   public validateChecklistStructure(
@@ -191,7 +191,7 @@ export class ChecklistOperationsService {
 
   async generateChecklistForTask(dto: GenerateChecklistDto): Promise<string[]> {
     const { taskName, description, microTaskType } = dto;
-    return this.geminiService.generateChecklistForTask({ taskName, description, microTaskType });
+    return this.checklistAiService.generateChecklistForTask({ taskName, description, microTaskType });
   }
 
   async generateChecklistWithHistory(dto: GenerateChecklistWithHistoryDto): Promise<string[]> {
@@ -199,7 +199,7 @@ export class ChecklistOperationsService {
     const historicalContext = await this.buildHistoricalContext({ projectId, microTaskType });
 
     if (historicalContext) {
-      return this.geminiService.generateChecklistWithHistory({
+      return this.checklistAiService.generateChecklistWithHistory({
         taskName,
         description,
         microTaskType,
@@ -207,7 +207,7 @@ export class ChecklistOperationsService {
       });
     }
 
-    return this.geminiService.generateChecklistForTask({ taskName, description, microTaskType });
+    return this.checklistAiService.generateChecklistForTask({ taskName, description, microTaskType });
   }
 
   private async buildHistoricalContext(params: {

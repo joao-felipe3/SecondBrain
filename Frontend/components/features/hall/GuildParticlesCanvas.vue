@@ -102,7 +102,7 @@ function createEmber(width: number, height: number): Particle {
 function createDust(
   width: number,
   height: number,
-  spawnAnywhere = true,
+  isInitial = false,
 ): Particle {
   const themeIndex = Math.floor(Math.random() * GOLD_PALETTE.length);
   const theme = GOLD_PALETTE[themeIndex] ?? {
@@ -113,18 +113,18 @@ function createDust(
   const isSpecial = Math.random() < 0.25 && size > 1.6;
 
   return {
-    x: spawnAnywhere ? Math.random() * width : Math.random() < 0.5 ? 0 : width,
-    y: spawnAnywhere ? Math.random() * height : Math.random() * height,
+    x: Math.random() * width,
+    y: Math.random() * height,
     vx: (Math.random() - 0.5) * 0.25,
     vy: (Math.random() - 0.5) * 0.2 - 0.06,
     baseVx: (Math.random() - 0.5) * 0.18,
     baseVy: (Math.random() - 0.5) * 0.15 - 0.05,
     size,
     alpha: 0.05,
-    maxAlpha: Math.random() * 0.65 + 0.25,
+    maxAlpha: Math.random() * 0.6 + 0.35,
     color: theme.main,
     glowColor: theme.glow,
-    life: spawnAnywhere ? Math.random() * 180 : 0,
+    life: isInitial ? Math.random() * 180 : 0,
     maxLife: Math.random() * 320 + 180,
     waveFreq: Math.random() * 0.03 + 0.015,
     waveAmp: Math.random() * 0.4 + 0.15,
@@ -148,17 +148,24 @@ function initParticles(width: number, height: number) {
 // Atualização de física do ponteiro (interpolação suave)
 function updatePointerPhysics() {
   if (pointer.active) {
-    // Interpolação elástica para suavizar o movimento do mouse
-    pointer.x += (pointer.targetX - pointer.x) * 0.35;
-    pointer.y += (pointer.targetY - pointer.y) * 0.35;
+    if (pointer.x < -1000) {
+      pointer.x = pointer.targetX;
+      pointer.y = pointer.targetY;
+      pointer.lastX = pointer.targetX;
+      pointer.lastY = pointer.targetY;
+    } else {
+      // Interpolação elástica para suavizar o movimento do mouse
+      pointer.x += (pointer.targetX - pointer.x) * 0.35;
+      pointer.y += (pointer.targetY - pointer.y) * 0.35;
 
-    // Cálculo de velocidade do cursor
-    if (pointer.lastX > -1000) {
-      pointer.vx = (pointer.x - pointer.lastX) * 0.4;
-      pointer.vy = (pointer.y - pointer.lastY) * 0.4;
+      // Cálculo de velocidade do cursor
+      if (pointer.lastX > -1000) {
+        pointer.vx = (pointer.x - pointer.lastX) * 0.4;
+        pointer.vy = (pointer.y - pointer.lastY) * 0.4;
+      }
+      pointer.lastX = pointer.x;
+      pointer.lastY = pointer.y;
     }
-    pointer.lastX = pointer.x;
-    pointer.lastY = pointer.y;
   } else {
     pointer.x = -9999;
     pointer.y = -9999;
@@ -285,8 +292,8 @@ function render() {
       Math.cos(p.life * (p.waveFreq * 0.8) + p.phase) * (p.waveAmp * 0.6);
 
     // 4. Cálculo de transparência e cintilação (shimmer)
-    const shimmer = Math.sin(p.life * p.shimmerSpeed + p.phase) * 0.28;
-    let baseAlpha = p.maxAlpha + shimmer;
+    const shimmer = Math.sin(p.life * p.shimmerSpeed + p.phase) * 0.22;
+    let baseAlpha = p.maxAlpha * (0.85 + shimmer);
 
     // Fade in / Fade out nas bordas da vida útil
     if (p.life < p.maxLife * 0.18) {
@@ -307,7 +314,7 @@ function render() {
       ctx.shadowColor = p.glowColor;
 
       // Desenho de ponto ou glint especial
-      if (p.hasGlint && p.type === "dust" && shimmer > 0.12) {
+      if (p.hasGlint && p.type === "dust" && shimmer > 0.08) {
         drawGlintStar(ctx, p.x, p.y, p.size * 0.9, p.color, currentAlpha);
       } else {
         ctx.beginPath();
@@ -372,6 +379,8 @@ function handleTouchEnd() {
   pointer.active = false;
 }
 
+let resizeObserver: ResizeObserver | null = null;
+
 function handleResize() {
   const canvas = canvasRef.value;
   if (!canvas) return;
@@ -381,15 +390,27 @@ function handleResize() {
   const height = parent.clientHeight || window.innerHeight || 1080;
 
   // Manter resolução proporcional e nítida
-  canvas.width = width;
-  canvas.height = height;
-
-  initParticles(canvas.width, canvas.height);
+  if (canvas.width !== width || canvas.height !== height) {
+    canvas.width = width;
+    canvas.height = height;
+    initParticles(canvas.width, canvas.height);
+  }
 }
 
 onMounted(() => {
   handleResize();
+  initParticles(
+    canvasRef.value?.width || 1920,
+    canvasRef.value?.height || 1080,
+  );
   render();
+
+  if (typeof ResizeObserver !== "undefined" && canvasRef.value?.parentElement) {
+    resizeObserver = new ResizeObserver(() => {
+      handleResize();
+    });
+    resizeObserver.observe(canvasRef.value.parentElement);
+  }
 
   window.addEventListener("resize", handleResize, { passive: true });
   window.addEventListener("pointermove", handlePointerMove, { passive: true });
@@ -405,6 +426,10 @@ onMounted(() => {
 onBeforeUnmount(() => {
   if (animId !== null) {
     cancelAnimationFrame(animId);
+  }
+  if (resizeObserver) {
+    resizeObserver.disconnect();
+    resizeObserver = null;
   }
   if (typeof window !== "undefined") {
     window.removeEventListener("resize", handleResize);

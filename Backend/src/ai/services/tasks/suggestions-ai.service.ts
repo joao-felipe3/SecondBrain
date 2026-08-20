@@ -16,6 +16,10 @@ import {
 export class SuggestionsAiService {
   constructor(private readonly geminiExecutor: GeminiExecutorService) {}
 
+  getModelName(): string {
+    return this.geminiExecutor.getModelName();
+  }
+
   async generateTaskSuggestions(params: TaskSuggestionsPromptParams): Promise<string> {
     const prompt = buildTaskSuggestionsPrompt(params);
 

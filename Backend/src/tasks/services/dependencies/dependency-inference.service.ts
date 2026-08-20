@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { GeminiService } from '../../../ai/services/core/gemini.service';
+import { DependencyAiService } from '../../../ai/services/tasks/dependency-ai.service';
 import {
   inferHeuristicPhases as runHeuristics,
   filterInvalidAndSelfEdges,
@@ -30,7 +30,7 @@ export {
 export class DependencyInferenceService {
   private readonly logger = new Logger(DependencyInferenceService.name);
 
-  constructor(private readonly geminiService: GeminiService) {}
+  constructor(private readonly dependencyAiService: DependencyAiService) {}
 
   // ===========================================================================
   // 1. Public AI & Heuristic Methods
@@ -185,7 +185,7 @@ export class DependencyInferenceService {
     maxOutputTokens: number;
     model?: string;
   }): Promise<InferredDependencyDto[]> {
-    const raw = await this.geminiService.inferDependencies(params);
+    const raw = await this.dependencyAiService.inferDependencies(params);
     return normalizeDependencies(raw);
   }
 

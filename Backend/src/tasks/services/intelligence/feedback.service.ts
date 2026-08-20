@@ -1,7 +1,7 @@
 import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
-import { GeminiService } from '../../../ai/services/core/gemini.service';
+import { SuggestionsAiService } from '../../../ai/services/tasks/suggestions-ai.service';
 import { TaskDocument } from '../../schemas/task.schema';
 import { TaskCompletionFeedbackDocument } from '../../schemas/task-completion-feedback.schema';
 import {
@@ -21,7 +21,7 @@ export { CompletionFeedbackPayloadDto as CompletionFeedbackPayload, CompletionFe
 @Injectable()
 export class FeedbackService {
   constructor(
-    private readonly geminiService: GeminiService,
+    private readonly suggestionsAiService: SuggestionsAiService,
     @InjectModel('Task') private readonly taskModel: Model<TaskDocument>,
     @InjectModel('TaskCompletionFeedback')
     private readonly feedbackModel: Model<TaskCompletionFeedbackDocument>,
@@ -91,7 +91,7 @@ export class FeedbackService {
     });
 
     try {
-      const feedbackObj = await this.geminiService.generateCompletionFeedbackStructured(prompt);
+      const feedbackObj = await this.suggestionsAiService.generateCompletionFeedbackStructured(prompt);
 
       if (!feedbackObj.celebration)
         feedbackObj.celebration = `Parabéns por concluir "${String(task.name || '')}".`;
@@ -124,7 +124,7 @@ export class FeedbackService {
       throw new BadRequestException('Task inválida');
     }
 
-    return this.geminiService.generateNextSteps({ taskName: task.name, feedback });
+    return this.suggestionsAiService.generateNextSteps({ taskName: task.name, feedback });
   }
 
   // ===========================================================================
@@ -205,7 +205,7 @@ export class FeedbackService {
     await this.feedbackModel.create({
       task: task._id,
       project: task.project ? new Types.ObjectId(task.project.toString()) : undefined,
-      modelName: this.geminiService.getModelName(),
+      modelName: this.suggestionsAiService.getModelName(),
       promptVersion: 'catchball-v1',
       inputSnapshot,
       error: String(error?.message ?? error),
@@ -217,7 +217,7 @@ export class FeedbackService {
     await this.feedbackModel.create({
       task: task._id,
       project: task.project ? new Types.ObjectId(task.project.toString()) : undefined,
-      modelName: this.geminiService.getModelName(),
+      modelName: this.suggestionsAiService.getModelName(),
       promptVersion: 'catchball-v1',
       inputSnapshot: {
         name: task.name,
@@ -234,7 +234,7 @@ export class FeedbackService {
       await this.feedbackModel.create({
         task: task._id,
         project: task.project ? new Types.ObjectId(task.project.toString()) : undefined,
-        modelName: this.geminiService.getModelName(),
+        modelName: this.suggestionsAiService.getModelName(),
         promptVersion: 'catchball-v1',
         inputSnapshot: {
           name: task.name,

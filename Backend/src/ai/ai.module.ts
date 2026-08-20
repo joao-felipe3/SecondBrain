@@ -11,9 +11,12 @@ import { RollingWaveAIService } from './services/projects/rolling-wave-ai.servic
 import { WbsAiService } from './services/projects/wbs-ai.service';
 import { AiWikiService } from './services/wiki/ai-wiki.service';
 import { AiWikiController } from './controllers/wiki/ai-wiki.controller';
+import { AiTasksModule } from './ai-tasks.module';
+import { AiProjectsModule } from './ai-projects.module';
 
 @Global()
 @Module({
+  imports: [AiTasksModule, AiProjectsModule],
   controllers: [AiWikiController],
   providers: [
     GeminiService,
@@ -29,6 +32,8 @@ import { AiWikiController } from './controllers/wiki/ai-wiki.controller';
     AiWikiService,
   ],
   exports: [
+    AiTasksModule,
+    AiProjectsModule,
     GeminiService,
     GeminiExecutorService,
     ChecklistAiService,
