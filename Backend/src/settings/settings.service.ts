@@ -23,9 +23,23 @@ export class SettingsService {
   }
 
   async updateSettings(userId: string, updateDto: UpdateSettingsDto): Promise<Settings> {
+    const sanitizedUpdate: Partial<UpdateSettingsDto> = {};
+    if (typeof updateDto?.silenceNotifications === 'boolean') {
+      sanitizedUpdate.silenceNotifications = updateDto.silenceNotifications;
+    }
+    if (typeof updateDto?.darkMode === 'boolean') {
+      sanitizedUpdate.darkMode = updateDto.darkMode;
+    }
+    if (typeof updateDto?.soundEnabled === 'boolean') {
+      sanitizedUpdate.soundEnabled = updateDto.soundEnabled;
+    }
+    if (typeof updateDto?.notificationTimeBeforeDueMinutes === 'number') {
+      sanitizedUpdate.notificationTimeBeforeDueMinutes = updateDto.notificationTimeBeforeDueMinutes;
+    }
+
     const settings = await this.settingsModel.findOneAndUpdate(
       { userId: String(userId) },
-      { $set: updateDto },
+      { $set: sanitizedUpdate },
       {
         new: true,
         upsert: true,

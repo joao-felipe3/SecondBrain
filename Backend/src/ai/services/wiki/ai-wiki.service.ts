@@ -100,12 +100,17 @@ export class AiWikiService implements OnModuleInit {
 
   private generateQueryEmbedding(query: string, dim = 64): number[] {
     const embedding: number[] = new Array<number>(dim).fill(0);
-    const clean = query.toLowerCase().replace(/[^a-z0-9]/g, ' ');
+    const clean = String(query || '')
+      .slice(0, 1000)
+      .toLowerCase()
+      .replace(/[^a-z0-9]/g, ' ');
     const words = clean.split(/\s+/).filter(Boolean);
+    const maxWords = Math.min(words.length, 100);
 
-    for (let i = 0; i < words.length; i++) {
+    for (let i = 0; i < maxWords; i++) {
       const word = words[i];
-      for (let j = 0; j < word.length; j++) {
+      const maxChars = Math.min(word.length, 50);
+      for (let j = 0; j < maxChars; j++) {
         const charCode = word.charCodeAt(j);
         const idx = (charCode * (j + 1) + i) % dim;
         embedding[idx] += 1;

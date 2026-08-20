@@ -98,16 +98,22 @@ export class RiskService {
   }
 
   async updateRisk(riskId: string, updateRiskDto: UpdateRiskDto): Promise<Risk | null> {
-    const existing = await this.riskModel.findById(riskId).exec();
+    const existing = await this.riskModel.findById(String(riskId)).exec();
     if (!existing) {
       return null;
     }
 
-    const { targetResolutionDate, ...rest } = updateRiskDto;
-    const updates: Partial<Risk> = { ...rest };
+    const updates: Partial<Risk> = {};
+    if (updateRiskDto.description !== undefined) updates.description = String(updateRiskDto.description);
+    if (updateRiskDto.status !== undefined) updates.status = updateRiskDto.status;
+    if (updateRiskDto.mitigationPlan !== undefined)
+      updates.mitigationPlan = String(updateRiskDto.mitigationPlan);
+    if (updateRiskDto.owner !== undefined) updates.owner = String(updateRiskDto.owner);
 
-    if (targetResolutionDate !== undefined) {
-      updates.targetResolutionDate = targetResolutionDate ? new Date(targetResolutionDate) : undefined;
+    if (updateRiskDto.targetResolutionDate !== undefined) {
+      updates.targetResolutionDate = updateRiskDto.targetResolutionDate
+        ? new Date(updateRiskDto.targetResolutionDate)
+        : undefined;
     }
 
     // Se probabilidade ou impacto mudarem e a severidade não for fornecida explicitamente, recalculamos
@@ -122,6 +128,8 @@ export class RiskService {
       if (!updateRiskDto.severity) {
         updates.severity = this.calculateSeverity(updates.probability, updates.impact);
       }
+    } else if (updateRiskDto.severity) {
+      updates.severity = updateRiskDto.severity;
     }
 
     return this.riskModel.findByIdAndUpdate(String(riskId), { $set: updates }, { new: true }).exec();
@@ -137,22 +145,28 @@ export class RiskService {
   async getRisksBySeverity(projectId: string, severity: RiskSeverity): Promise<RiskDocument[]> {
     return this.riskModel
       .find({
-        projectId: new Types.ObjectId(projectId),
+        projectId: new Types.ObjectId(String(projectId)),
         severity,
       })
       .exec();
   }
 
   async updateMitigationPlan(riskId: string, mitigationPlan: string): Promise<Risk | null> {
-    return this.riskModel.findByIdAndUpdate(riskId, { mitigationPlan }, { new: true }).exec();
+    return this.riskModel
+      .findByIdAndUpdate(
+        String(riskId),
+        { $set: { mitigationPlan: String(mitigationPlan) } },
+        { new: true },
+      )
+      .exec();
   }
 
   async updateRiskStatus(riskId: string, status: RiskStatus): Promise<Risk | null> {
-    return this.riskModel.findByIdAndUpdate(riskId, { status }, { new: true }).exec();
+    return this.riskModel.findByIdAndUpdate(String(riskId), { $set: { status } }, { new: true }).exec();
   }
 
   async deleteRisk(riskId: string): Promise<Risk | null> {
-    return this.riskModel.findByIdAndDelete(riskId).exec();
+    return this.riskModel.findByIdAndDelete(String(riskId)).exec();
   }
 
   async getRiskStatistics(projectId: string): Promise<RiskStatistics> {

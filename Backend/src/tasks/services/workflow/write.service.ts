@@ -88,8 +88,9 @@ export class TasksWriteService {
 
     this.applyDerivedFields(updateTaskDto);
 
+    const sanitizedPayload = this.sanitizeUpdatePayload(updateTaskDto);
     const updatedTask = await this.taskModel
-      .findByIdAndUpdate(String(id), { $set: updateTaskDto }, { new: true })
+      .findByIdAndUpdate(String(id), { $set: sanitizedPayload }, { new: true })
       .exec();
 
     if (updatedTask) {
@@ -188,6 +189,24 @@ export class TasksWriteService {
     if (!id || id === 'null' || id === 'undefined' || !/^[a-f\d]{24}$/i.test(id)) {
       throw new BadRequestException(`ID inválido: ${id}`);
     }
+  }
+
+  private sanitizeUpdatePayload<T extends Record<string, unknown>>(payload: T): Partial<T> {
+    if (!payload || typeof payload !== 'object') return {};
+    const sanitized: Record<string, unknown> = {};
+    for (const [key, value] of Object.entries(payload)) {
+      if (
+        typeof key === 'string' &&
+        !key.startsWith('$') &&
+        !key.includes('.') &&
+        key !== '__proto__' &&
+        key !== 'constructor' &&
+        key !== 'prototype'
+      ) {
+        sanitized[key] = value;
+      }
+    }
+    return sanitized as Partial<T>;
   }
 
   private async getTaskOrThrow(id: string): Promise<TaskDocument> {
