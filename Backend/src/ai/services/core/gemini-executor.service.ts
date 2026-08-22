@@ -136,7 +136,24 @@ export class GeminiExecutorService {
   private sanitizeForLog(val: string | number | boolean | null | undefined, maxLen = 60): string {
     if (val === null || val === undefined) return '';
     const str = typeof val === 'string' ? val : String(val);
-    return str.replace(/[\r\n\t]/g, ' ').slice(0, maxLen);
+    return str
+      .replace(/[\r\n\t]/g, ' ')
+      .split('')
+      .filter((char) => {
+        const code = char.charCodeAt(0);
+        return (code >= 32 && code !== 127) || code > 159;
+      })
+      .join('')
+      .trim()
+      .slice(0, maxLen);
+  }
+
+  private sanitizeModelNameForLog(modelName: string): string {
+    if (!modelName) return '';
+    return String(modelName)
+      .replace(/[\r\n]/g, '')
+      .replace(/[^a-zA-Z0-9_.:/-]/g, '')
+      .slice(0, 60);
   }
 
   private shouldUseJsonMode(requested: string | undefined, modelName: string): string | undefined {
@@ -144,7 +161,7 @@ export class GeminiExecutorService {
     if (this.supportsJsonModeForModel(modelName)) return requested;
     if (!this.warnedJsonMode) {
       this.warnedJsonMode = true;
-      const safeModel = this.sanitizeForLog(modelName);
+      const safeModel = this.sanitizeModelNameForLog(modelName);
       console.warn(
         `[GeminiService] JSON mode desabilitado para model="${safeModel}". A resposta será texto e o sistema fará parse/reparo de JSON quando necessário.`,
       );
@@ -170,7 +187,7 @@ export class GeminiExecutorService {
         this.embeddingDisabled = true;
         if (!this.warnedEmbedding) {
           this.warnedEmbedding = true;
-          const safeEmbeddingModel = this.sanitizeForLog(this.embeddingModel);
+          const safeEmbeddingModel = this.sanitizeModelNameForLog(this.embeddingModel || '');
           console.warn(
             `[GeminiService] Embeddings desabilitados: model="${safeEmbeddingModel}" não suportado/indisponível. Continuando sem embeddings.`,
           );

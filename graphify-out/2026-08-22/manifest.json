@@ -140,8 +140,8 @@
     "semantic_hash": ""
   },
   "Backend/src/ai/services/core/gemini-executor.service.ts": {
-    "mtime": 1787436656.242105,
-    "ast_hash": "5845f9fe3453323ec193d7aac342da91",
+    "mtime": 1787411972.7044046,
+    "ast_hash": "17dcce3b3b425e1ec634c21961562936",
     "semantic_hash": ""
   },
   "Backend/src/ai/services/core/gemini.service.ts": {
@@ -1015,7 +1015,7 @@
     "semantic_hash": ""
   },
   "Backend/src/tasks/schemas/task.schema.ts": {
-    "mtime": 1787436725.0003283,
+    "mtime": 1787433569.9205182,
     "ast_hash": "738b338fa55fb22f4fbae7762379ae44",
     "semantic_hash": ""
   },

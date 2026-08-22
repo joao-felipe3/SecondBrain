@@ -1,6 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import { execSync } from 'child_process';
+import { execFileSync } from 'child_process';
 import { GoogleGenerativeAI, SchemaType } from '@google/generative-ai';
 
 // ===========================================================================
@@ -57,7 +57,10 @@ function runTests(): boolean {
     const isWin = process.platform === 'win32';
     const npmCmd = isWin ? 'npm.cmd' : 'npm';
     // Run tests with --runInBand to prevent Jest worker memory limit issues on Windows
-    execSync(`${npmCmd} run test -- tests/unit/tasks --runInBand`, { stdio: 'inherit' });
+    execFileSync(npmCmd, ['run', 'test', '--', 'tests/unit/tasks', '--runInBand'], {
+      stdio: 'inherit',
+      shell: isWin,
+    });
     return true;
   } catch (err) {
     console.error('❌ Os testes unitários ou a compilação falharam.');
@@ -68,7 +71,7 @@ function runTests(): boolean {
 function rollbackFile(filePath: string) {
   console.log(`⏪ Revertendo alterações para o arquivo: ${filePath}`);
   try {
-    execSync(`git checkout -- "${filePath}"`, { stdio: 'inherit' });
+    execFileSync('git', ['checkout', '--', filePath], { stdio: 'inherit' });
     console.log('✅ Arquivo restaurado com sucesso.');
   } catch (err) {
     console.error('❌ Falha ao reverter arquivo usando git.', err);
@@ -222,6 +225,11 @@ async function main() {
 
   if (targetFile) {
     const fullPath = path.resolve(process.cwd(), targetFile);
+    const relativeToRoot = path.relative(process.cwd(), fullPath);
+    if (relativeToRoot.startsWith('..') || path.isAbsolute(relativeToRoot) || !fullPath.endsWith('.ts')) {
+      console.error(`❌ Erro: Caminho inválido ou não suportado: ${targetFile}`);
+      process.exit(1);
+    }
     if (!fs.existsSync(fullPath)) {
       console.error(`❌ Erro: Arquivo especificado não encontrado: ${fullPath}`);
       process.exit(1);
