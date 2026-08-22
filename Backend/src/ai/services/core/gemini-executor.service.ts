@@ -133,13 +133,20 @@ export class GeminiExecutorService {
       .startsWith('gemini-');
   }
 
+  private sanitizeForLog(val: string | number | boolean | null | undefined, maxLen = 60): string {
+    if (val === null || val === undefined) return '';
+    const str = typeof val === 'string' ? val : String(val);
+    return str.replace(/[\r\n\t]/g, ' ').slice(0, maxLen);
+  }
+
   private shouldUseJsonMode(requested: string | undefined, modelName: string): string | undefined {
     if (!requested) return undefined;
     if (this.supportsJsonModeForModel(modelName)) return requested;
     if (!this.warnedJsonMode) {
       this.warnedJsonMode = true;
+      const safeModel = this.sanitizeForLog(modelName);
       console.warn(
-        `[GeminiService] JSON mode desabilitado para model="${modelName}". A resposta será texto e o sistema fará parse/reparo de JSON quando necessário.`,
+        `[GeminiService] JSON mode desabilitado para model="${safeModel}". A resposta será texto e o sistema fará parse/reparo de JSON quando necessário.`,
       );
     }
     return undefined;
@@ -163,14 +170,16 @@ export class GeminiExecutorService {
         this.embeddingDisabled = true;
         if (!this.warnedEmbedding) {
           this.warnedEmbedding = true;
+          const safeEmbeddingModel = this.sanitizeForLog(this.embeddingModel);
           console.warn(
-            `[GeminiService] Embeddings desabilitados: model="${this.embeddingModel}" não suportado/indisponível. Continuando sem embeddings.`,
+            `[GeminiService] Embeddings desabilitados: model="${safeEmbeddingModel}" não suportado/indisponível. Continuando sem embeddings.`,
           );
         }
         return [];
       }
 
-      console.warn('Erro ao gerar embedding com Gemini:', errObj.message || message);
+      const safeMsg = this.sanitizeForLog(errObj.message || message, 120);
+      console.warn('Erro ao gerar embedding com Gemini:', safeMsg);
       return [];
     }
   }

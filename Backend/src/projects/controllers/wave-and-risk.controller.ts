@@ -153,17 +153,11 @@ export class WaveAndRiskController {
     @Body() body: { totalDurationDays?: number; waveLengthDays?: number } = {},
   ): Promise<ProjectWave[]> {
     try {
-      console.log('[WaveAndRiskController.generateWaves] projectId:', String(projectId), 'body:', body);
-
       // Buscar projeto para obter deadline e smartObjective
       const project = await this.projectModel.findById(String(projectId)).populate('tasks');
       if (!project) {
-        throw new HttpException('Projeto nÃ£o encontrado', HttpStatus.NOT_FOUND);
+        throw new HttpException('Projeto não encontrado', HttpStatus.NOT_FOUND);
       }
-
-      console.log(
-        `[WaveAndRiskController.generateWaves] Found project: ${project.name}, tasks: ${project.tasks?.length || 0}`,
-      );
 
       const result = await this.waveService.createInitialWaves(
         projectId,
@@ -171,10 +165,8 @@ export class WaveAndRiskController {
         body?.waveLengthDays || 28,
       );
 
-      console.log(`[WaveAndRiskController.generateWaves] Waves created successfully`);
       return result;
     } catch (error) {
-      console.error('[WaveAndRiskController.generateWaves] Exception:', error);
       const errorMessage = error instanceof Error ? error.message : String(error);
       throw new HttpException(`Erro ao gerar ondas: ${errorMessage}`, HttpStatus.INTERNAL_SERVER_ERROR);
     }
@@ -258,13 +250,10 @@ export class WaveAndRiskController {
     @Body() body: { projectDescription?: string },
   ): Promise<Risk[]> {
     try {
-      console.log('[WaveAndRiskController.assessRisks] projectId:', String(projectId), 'body:', body);
-      const projectDescription = body.projectDescription || 'Projeto sem descriÃ§Ã£o';
+      const projectDescription = body.projectDescription || 'Projeto sem descrição';
       const result = await this.riskService.assessRisks(String(projectId), projectDescription);
-      console.log(`[WaveAndRiskController.assessRisks] Success, returned ${result.length} risks`);
       return result;
     } catch (error) {
-      console.error('[WaveAndRiskController.assessRisks] Exception:', error);
       const errorMessage = error instanceof Error ? error.message : String(error);
       throw new HttpException(
         `Erro ao avaliar riscos: ${errorMessage}`,

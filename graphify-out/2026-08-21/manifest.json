@@ -140,8 +140,8 @@
     "semantic_hash": ""
   },
   "Backend/src/ai/services/core/gemini-executor.service.ts": {
-    "mtime": 1787364049.051262,
-    "ast_hash": "fc743b8bc1480dc62da278feb8a0d029",
+    "mtime": 1784605465.9640422,
+    "ast_hash": "62d2817fbdb04d668c820d6486d597ab",
     "semantic_hash": ""
   },
   "Backend/src/ai/services/core/gemini.service.ts": {
@@ -235,8 +235,8 @@
     "semantic_hash": ""
   },
   "Backend/src/projects/controllers/wave-and-risk.controller.ts": {
-    "mtime": 1787363930.9804509,
-    "ast_hash": "92efd69277cf5ced8d2b1fef01bda255",
+    "mtime": 1785005509.0918217,
+    "ast_hash": "ec6e06ac067d75346852bd2d1e7c4602",
     "semantic_hash": ""
   },
   "Backend/src/projects/dto/create-project.dto.ts": {
@@ -1015,8 +1015,8 @@
     "semantic_hash": ""
   },
   "Backend/src/tasks/schemas/task.schema.ts": {
-    "mtime": 1787364887.8626106,
-    "ast_hash": "738b338fa55fb22f4fbae7762379ae44",
+    "mtime": 1787259543.6576557,
+    "ast_hash": "5878a5effdee5ffac20276a142b617ec",
     "semantic_hash": ""
   },
   "Backend/src/tasks/services/analysis/buffer.service.ts": {
@@ -1260,8 +1260,8 @@
     "semantic_hash": ""
   },
   "Backend/src/tasks/services/workflow/write.service.ts": {
-    "mtime": 1787364218.0537553,
-    "ast_hash": "710616868f9dbe514ba7543470f96c02",
+    "mtime": 1787259489.6160104,
+    "ast_hash": "527cad383ed2d86b3984889dc9d118ab",
     "semantic_hash": ""
   },
   "Backend/src/tasks/tasks.controller.ts": {

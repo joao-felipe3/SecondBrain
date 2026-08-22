@@ -191,22 +191,61 @@ export class TasksWriteService {
     }
   }
 
-  private sanitizeUpdatePayload<T extends Record<string, unknown>>(payload: T): Partial<T> {
+  private static readonly ALLOWED_UPDATE_FIELDS: readonly (keyof CreateTaskDto)[] = [
+    'name',
+    'description',
+    'definitionOfDone',
+    'checklist',
+    'pomodorosPlanned',
+    'pomodorosDid',
+    'pertOptimisticMinutes',
+    'pertMostLikelyMinutes',
+    'pertPessimisticMinutes',
+    'pertExpectedMinutes',
+    'pertVariance',
+    'requirementIds',
+    'journeyItemIds',
+    'rtmRisk',
+    'rtmRiskReason',
+    'evmProgress',
+    'evmPlannedValueMinutes',
+    'evmEarnedValueMinutes',
+    'evmSchedulePerformanceIndex',
+    'evmAlert',
+    'deadline',
+    'priority',
+    'difficult',
+    'project',
+    'parentTaskId',
+    'parentWbsNodeId',
+    'wbsPath',
+    'generationBatchId',
+    'milestoneId',
+    'experience',
+    'isConcluded',
+    'late',
+    'prize',
+    'recurrency',
+    'notification',
+    'microTaskType',
+    'parentRecurringId',
+    'isRecurringInstance',
+    'recurringState',
+    'recurringRule',
+  ];
+
+  private sanitizeUpdatePayload(payload: Partial<CreateTaskDto>): Partial<CreateTaskDto> {
     if (!payload || typeof payload !== 'object') return {};
-    const sanitized: Record<string, unknown> = {};
-    for (const [key, value] of Object.entries(payload)) {
-      if (
-        typeof key === 'string' &&
-        !key.startsWith('$') &&
-        !key.includes('.') &&
-        key !== '__proto__' &&
-        key !== 'constructor' &&
-        key !== 'prototype'
-      ) {
-        sanitized[key] = value;
+    const sanitized: Partial<CreateTaskDto> = {};
+    for (const field of TasksWriteService.ALLOWED_UPDATE_FIELDS) {
+      if (Object.prototype.hasOwnProperty.call(payload, field)) {
+        const val = payload[field];
+        if (val !== undefined) {
+          sanitized[field] = val as never;
+        }
       }
     }
-    return sanitized as Partial<T>;
+    return sanitized;
   }
 
   private async getTaskOrThrow(id: string): Promise<TaskDocument> {
