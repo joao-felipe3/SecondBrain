@@ -100,9 +100,9 @@ export function buildCriticalPathSequence({
 
   const path: string[] = [];
   const visited = new Set<string>();
-  let cur: TaskNodeResponseDto | undefined = end;
+  let cur: TaskNodeResponseDto = end;
 
-  while (cur && !visited.has(cur.id)) {
+  while (!visited.has(cur.id)) {
     visited.add(cur.id);
     path.push(cur.id);
 

@@ -3022,7 +3022,7 @@
       "_origin": "ast",
       "id": "backend_src_ai_prompts_tasks_feedback_prompts",
       "community": 17,
-      "community_name": "feedback.service.ts",
+      "community_name": "ChecklistItemDto",
       "norm_label": "feedback.prompts.ts"
     },
     {
@@ -3033,7 +3033,7 @@
       "_origin": "ast",
       "id": "backend_src_ai_prompts_tasks_feedback_prompts_buildfeedbackprompt",
       "community": 17,
-      "community_name": "feedback.service.ts",
+      "community_name": "ChecklistItemDto",
       "norm_label": "buildfeedbackprompt()"
     },
     {
@@ -3044,7 +3044,7 @@
       "_origin": "ast",
       "id": "backend_src_ai_prompts_tasks_feedback_prompts_buildnextstepsprompt",
       "community": 17,
-      "community_name": "feedback.service.ts",
+      "community_name": "ChecklistItemDto",
       "norm_label": "buildnextstepsprompt()"
     },
     {
@@ -3076,8 +3076,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_src_ai_prompts_tasks_rtm_prompts",
-      "community": 6,
-      "community_name": "dto/index.ts",
+      "community": 165,
+      "community_name": "rtm-ai.utils.ts",
       "norm_label": "rtm.prompts.ts"
     },
     {
@@ -3087,8 +3087,8 @@
       "source_location": "L7",
       "_origin": "ast",
       "id": "backend_src_ai_prompts_tasks_rtm_prompts_buildgeneraterequirementsprompt",
-      "community": 6,
-      "community_name": "dto/index.ts",
+      "community": 165,
+      "community_name": "rtm-ai.utils.ts",
       "norm_label": "buildgeneraterequirementsprompt()"
     },
     {
@@ -3098,8 +3098,8 @@
       "source_location": "L44",
       "_origin": "ast",
       "id": "backend_src_ai_prompts_tasks_rtm_prompts_buildautomapbatchprompt",
-      "community": 6,
-      "community_name": "dto/index.ts",
+      "community": 165,
+      "community_name": "rtm-ai.utils.ts",
       "norm_label": "buildautomapbatchprompt()"
     },
     {
@@ -3109,8 +3109,8 @@
       "source_location": "L65",
       "_origin": "ast",
       "id": "backend_src_ai_prompts_tasks_rtm_prompts_buildgeneratetasksprompt",
-      "community": 6,
-      "community_name": "dto/index.ts",
+      "community": 165,
+      "community_name": "rtm-ai.utils.ts",
       "norm_label": "buildgeneratetasksprompt()"
     },
     {
@@ -3483,8 +3483,8 @@
       "source_location": "L97",
       "_origin": "ast",
       "id": "backend_src_ai_services_core_gemini_service_geminiservice_generatecontent",
-      "community": 6,
-      "community_name": "dto/index.ts",
+      "community": 165,
+      "community_name": "rtm-ai.utils.ts",
       "norm_label": ".generatecontent()"
     },
     {
@@ -3539,7 +3539,7 @@
       "_origin": "ast",
       "id": "backend_src_ai_services_projects_prompt_builder_service_promptbuilderservice",
       "community": 84,
-      "community_name": "PromptBuilderService",
+      "community_name": "DraftsAiService",
       "norm_label": "promptbuilderservice"
     },
     {
@@ -3550,7 +3550,7 @@
       "_origin": "ast",
       "id": "backend_src_ai_services_projects_prompt_builder_service_ts_injectable",
       "community": 84,
-      "community_name": "PromptBuilderService",
+      "community_name": "DraftsAiService",
       "norm_label": "injectable"
     },
     {
@@ -3561,7 +3561,7 @@
       "_origin": "ast",
       "id": "backend_src_ai_services_projects_prompt_builder_service_promptbuilderservice_buildmicrotasksoutlineprompt",
       "community": 84,
-      "community_name": "PromptBuilderService",
+      "community_name": "DraftsAiService",
       "norm_label": ".buildmicrotasksoutlineprompt()"
     },
     {
@@ -3572,7 +3572,7 @@
       "_origin": "ast",
       "id": "backend_src_ai_services_projects_prompt_builder_service_promptbuilderservice_buildmicrotasksoutlinewithplanprompt",
       "community": 84,
-      "community_name": "PromptBuilderService",
+      "community_name": "DraftsAiService",
       "norm_label": ".buildmicrotasksoutlinewithplanprompt()"
     },
     {
@@ -3583,7 +3583,7 @@
       "_origin": "ast",
       "id": "backend_src_ai_services_projects_prompt_builder_service_promptbuilderservice_buildmicrotaskdetailsprompt",
       "community": 84,
-      "community_name": "PromptBuilderService",
+      "community_name": "DraftsAiService",
       "norm_label": ".buildmicrotaskdetailsprompt()"
     },
     {
@@ -3594,7 +3594,7 @@
       "_origin": "ast",
       "id": "backend_src_ai_services_projects_prompt_builder_service_promptbuilderservice_buildmicrotaskdetailsbatchprompt",
       "community": 84,
-      "community_name": "PromptBuilderService",
+      "community_name": "DraftsAiService",
       "norm_label": ".buildmicrotaskdetailsbatchprompt()"
     },
     {
@@ -3605,7 +3605,7 @@
       "_origin": "ast",
       "id": "backend_src_ai_services_projects_prompt_builder_service_promptbuilderservice_buildmicrotasksprompt",
       "community": 84,
-      "community_name": "PromptBuilderService",
+      "community_name": "DraftsAiService",
       "norm_label": ".buildmicrotasksprompt()"
     },
     {
@@ -3616,7 +3616,7 @@
       "_origin": "ast",
       "id": "backend_src_ai_services_projects_prompt_builder_service_promptbuilderservice_buildmicrotasksplannerprompt",
       "community": 84,
-      "community_name": "PromptBuilderService",
+      "community_name": "DraftsAiService",
       "norm_label": ".buildmicrotasksplannerprompt()"
     },
     {
@@ -3627,7 +3627,7 @@
       "_origin": "ast",
       "id": "backend_src_ai_services_projects_prompt_builder_service_promptbuilderservice_buildmicrotasksgeneratorprompt",
       "community": 84,
-      "community_name": "PromptBuilderService",
+      "community_name": "DraftsAiService",
       "norm_label": ".buildmicrotasksgeneratorprompt()"
     },
     {
@@ -4001,7 +4001,7 @@
       "_origin": "ast",
       "id": "backend_src_ai_services_tasks_drafts_ai_service",
       "community": 43,
-      "community_name": "drafts-ai.service.ts",
+      "community_name": "drafts.interface.ts",
       "norm_label": "drafts-ai.service.ts"
     },
     {
@@ -4011,8 +4011,8 @@
       "source_location": "L31",
       "_origin": "ast",
       "id": "backend_src_ai_services_tasks_drafts_ai_service_draftsaiservice",
-      "community": 43,
-      "community_name": "drafts-ai.service.ts",
+      "community": 84,
+      "community_name": "DraftsAiService",
       "norm_label": "draftsaiservice"
     },
     {
@@ -4022,8 +4022,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "backend_src_ai_services_tasks_drafts_ai_service_ts_injectable",
-      "community": 43,
-      "community_name": "drafts-ai.service.ts",
+      "community": 84,
+      "community_name": "DraftsAiService",
       "norm_label": "injectable"
     },
     {
@@ -4034,7 +4034,7 @@
       "_origin": "ast",
       "id": "backend_src_ai_services_tasks_drafts_ai_service_draftsaiservice_constructor",
       "community": 84,
-      "community_name": "PromptBuilderService",
+      "community_name": "DraftsAiService",
       "norm_label": ".constructor()"
     },
     {
@@ -4045,7 +4045,7 @@
       "_origin": "ast",
       "id": "backend_src_ai_services_tasks_drafts_ai_service_draftsaiservice_generateplan",
       "community": 43,
-      "community_name": "drafts-ai.service.ts",
+      "community_name": "drafts.interface.ts",
       "norm_label": ".generateplan()"
     },
     {
@@ -4056,7 +4056,7 @@
       "_origin": "ast",
       "id": "backend_src_ai_services_tasks_drafts_ai_service_draftsaiservice_generatesinglepasswithoutplan",
       "community": 84,
-      "community_name": "PromptBuilderService",
+      "community_name": "DraftsAiService",
       "norm_label": ".generatesinglepasswithoutplan()"
     },
     {
@@ -4078,7 +4078,7 @@
       "_origin": "ast",
       "id": "backend_src_ai_services_tasks_drafts_ai_service_draftsaiservice_generateoutlinewithoutplan",
       "community": 84,
-      "community_name": "PromptBuilderService",
+      "community_name": "DraftsAiService",
       "norm_label": ".generateoutlinewithoutplan()"
     },
     {
@@ -4089,7 +4089,7 @@
       "_origin": "ast",
       "id": "backend_src_ai_services_tasks_drafts_ai_service_draftsaiservice_generateoutlinewithplan",
       "community": 84,
-      "community_name": "PromptBuilderService",
+      "community_name": "DraftsAiService",
       "norm_label": ".generateoutlinewithplan()"
     },
     {
@@ -4298,7 +4298,7 @@
       "_origin": "ast",
       "id": "backend_src_ai_services_tasks_suggestions_ai_service_suggestionsaiservice_getmodelname",
       "community": 17,
-      "community_name": "feedback.service.ts",
+      "community_name": "ChecklistItemDto",
       "norm_label": ".getmodelname()"
     },
     {
@@ -5210,8 +5210,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_src_projects_controllers_projects_visualization_controller",
-      "community": 202,
-      "community_name": "projects-x-matrix.service.ts",
+      "community": 156,
+      "community_name": "ProjectsXMatrixService",
       "norm_label": "projects-visualization.controller.ts"
     },
     {
@@ -5222,7 +5222,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_controllers_projects_visualization_controller_projectsvisualizationcontroller",
       "community": 156,
-      "community_name": "ProjectsVisualizationController",
+      "community_name": "ProjectsXMatrixService",
       "norm_label": "projectsvisualizationcontroller"
     },
     {
@@ -5233,7 +5233,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_controllers_projects_visualization_controller_ts_apitags",
       "community": 156,
-      "community_name": "ProjectsVisualizationController",
+      "community_name": "ProjectsXMatrixService",
       "norm_label": "apitags"
     },
     {
@@ -5244,7 +5244,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_controllers_projects_visualization_controller_ts_controller",
       "community": 156,
-      "community_name": "ProjectsVisualizationController",
+      "community_name": "ProjectsXMatrixService",
       "norm_label": "controller"
     },
     {
@@ -5255,7 +5255,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_controllers_projects_visualization_controller_ts_get",
       "community": 156,
-      "community_name": "ProjectsVisualizationController",
+      "community_name": "ProjectsXMatrixService",
       "norm_label": "get"
     },
     {
@@ -5266,7 +5266,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_controllers_projects_visualization_controller_ts_apioperation",
       "community": 156,
-      "community_name": "ProjectsVisualizationController",
+      "community_name": "ProjectsXMatrixService",
       "norm_label": "apioperation"
     },
     {
@@ -5277,7 +5277,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_controllers_projects_visualization_controller_ts_apiresponse",
       "community": 156,
-      "community_name": "ProjectsVisualizationController",
+      "community_name": "ProjectsXMatrixService",
       "norm_label": "apiresponse"
     },
     {
@@ -5288,7 +5288,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_controllers_projects_visualization_controller_ts_param",
       "community": 156,
-      "community_name": "ProjectsVisualizationController",
+      "community_name": "ProjectsXMatrixService",
       "norm_label": "param"
     },
     {
@@ -5299,7 +5299,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_controllers_projects_visualization_controller_ts_query",
       "community": 156,
-      "community_name": "ProjectsVisualizationController",
+      "community_name": "ProjectsXMatrixService",
       "norm_label": "query"
     },
     {
@@ -5310,7 +5310,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_controllers_projects_visualization_controller_ts_post",
       "community": 156,
-      "community_name": "ProjectsVisualizationController",
+      "community_name": "ProjectsXMatrixService",
       "norm_label": "post"
     },
     {
@@ -5321,7 +5321,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_controllers_projects_visualization_controller_ts_body",
       "community": 156,
-      "community_name": "ProjectsVisualizationController",
+      "community_name": "ProjectsXMatrixService",
       "norm_label": "body"
     },
     {
@@ -5343,7 +5343,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_controllers_projects_visualization_controller_projectsvisualizationcontroller_getganttdata",
       "community": 156,
-      "community_name": "ProjectsVisualizationController",
+      "community_name": "ProjectsXMatrixService",
       "norm_label": ".getganttdata()"
     },
     {
@@ -5354,7 +5354,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_controllers_projects_visualization_controller_projectsvisualizationcontroller_getpertdiagramdata",
       "community": 156,
-      "community_name": "ProjectsVisualizationController",
+      "community_name": "ProjectsXMatrixService",
       "norm_label": ".getpertdiagramdata()"
     },
     {
@@ -5365,7 +5365,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_controllers_projects_visualization_controller_projectsvisualizationcontroller_createxmatrix",
       "community": 156,
-      "community_name": "ProjectsVisualizationController",
+      "community_name": "ProjectsXMatrixService",
       "norm_label": ".createxmatrix()"
     },
     {
@@ -5376,7 +5376,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_controllers_projects_visualization_controller_projectsvisualizationcontroller_getsavedxmatrix",
       "community": 156,
-      "community_name": "ProjectsVisualizationController",
+      "community_name": "ProjectsXMatrixService",
       "norm_label": ".getsavedxmatrix()"
     },
     {
@@ -6794,8 +6794,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_src_projects_dto_wave_dto",
-      "community": 95,
-      "community_name": "projects.module.ts",
+      "community": 137,
+      "community_name": "CreateWaveDto",
       "norm_label": "wave.dto.ts"
     },
     {
@@ -6805,8 +6805,8 @@
       "source_location": "L3",
       "_origin": "ast",
       "id": "backend_src_projects_dto_wave_dto_createwavedto",
-      "community": 95,
-      "community_name": "projects.module.ts",
+      "community": 137,
+      "community_name": "CreateWaveDto",
       "norm_label": "createwavedto"
     },
     {
@@ -6816,8 +6816,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "backend_src_projects_dto_wave_dto_ts_isnumber",
-      "community": 95,
-      "community_name": "projects.module.ts",
+      "community": 137,
+      "community_name": "CreateWaveDto",
       "norm_label": "isnumber"
     },
     {
@@ -6827,8 +6827,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "backend_src_projects_dto_wave_dto_ts_isdatestring",
-      "community": 95,
-      "community_name": "projects.module.ts",
+      "community": 137,
+      "community_name": "CreateWaveDto",
       "norm_label": "isdatestring"
     },
     {
@@ -6838,8 +6838,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "backend_src_projects_dto_wave_dto_ts_isenum",
-      "community": 95,
-      "community_name": "projects.module.ts",
+      "community": 137,
+      "community_name": "CreateWaveDto",
       "norm_label": "isenum"
     },
     {
@@ -6849,8 +6849,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "backend_src_projects_dto_wave_dto_ts_isoptional",
-      "community": 95,
-      "community_name": "projects.module.ts",
+      "community": 137,
+      "community_name": "CreateWaveDto",
       "norm_label": "isoptional"
     },
     {
@@ -6860,8 +6860,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "backend_src_projects_dto_wave_dto_ts_isarray",
-      "community": 95,
-      "community_name": "projects.module.ts",
+      "community": 137,
+      "community_name": "CreateWaveDto",
       "norm_label": "isarray"
     },
     {
@@ -6871,8 +6871,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "backend_src_projects_dto_wave_dto_ts_isstring",
-      "community": 95,
-      "community_name": "projects.module.ts",
+      "community": 137,
+      "community_name": "CreateWaveDto",
       "norm_label": "isstring"
     },
     {
@@ -6882,8 +6882,8 @@
       "source_location": "L26",
       "_origin": "ast",
       "id": "backend_src_projects_dto_wave_dto_updatewavedto",
-      "community": 95,
-      "community_name": "projects.module.ts",
+      "community": 137,
+      "community_name": "CreateWaveDto",
       "norm_label": "updatewavedto"
     },
     {
@@ -7135,8 +7135,8 @@
       "source_location": "L3",
       "_origin": "ast",
       "id": "backend_src_projects_dto_x_matrix_dto_createxmatrixdto",
-      "community": 202,
-      "community_name": "projects-x-matrix.service.ts",
+      "community": 156,
+      "community_name": "ProjectsXMatrixService",
       "norm_label": "createxmatrixdto"
     },
     {
@@ -7179,8 +7179,8 @@
       "source_location": "L35",
       "_origin": "ast",
       "id": "backend_src_projects_dto_x_matrix_dto_xmatrixresponsedto",
-      "community": 202,
-      "community_name": "projects-x-matrix.service.ts",
+      "community": 156,
+      "community_name": "ProjectsXMatrixService",
       "norm_label": "xmatrixresponsedto"
     },
     {
@@ -7212,8 +7212,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_src_projects_interfaces_drafts_interface",
-      "community": 77,
-      "community_name": "MicroTaskDraft",
+      "community": 43,
+      "community_name": "drafts.interface.ts",
       "norm_label": "drafts.interface.ts"
     },
     {
@@ -7268,7 +7268,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_interfaces_drafts_interface_wbsleafgenerationcontext",
       "community": 84,
-      "community_name": "PromptBuilderService",
+      "community_name": "DraftsAiService",
       "norm_label": "wbsleafgenerationcontext"
     },
     {
@@ -7300,8 +7300,8 @@
       "source_location": "L59",
       "_origin": "ast",
       "id": "backend_src_projects_interfaces_drafts_interface_draftbatchitem",
-      "community": 77,
-      "community_name": "MicroTaskDraft",
+      "community": 43,
+      "community_name": "drafts.interface.ts",
       "norm_label": "draftbatchitem"
     },
     {
@@ -7311,8 +7311,8 @@
       "source_location": "L65",
       "_origin": "ast",
       "id": "backend_src_projects_interfaces_drafts_interface_draftbatchresult",
-      "community": 77,
-      "community_name": "MicroTaskDraft",
+      "community": 43,
+      "community_name": "drafts.interface.ts",
       "norm_label": "draftbatchresult"
     },
     {
@@ -7322,8 +7322,8 @@
       "source_location": "L70",
       "_origin": "ast",
       "id": "backend_src_projects_interfaces_drafts_interface_concurrencyparams",
-      "community": 77,
-      "community_name": "MicroTaskDraft",
+      "community": 43,
+      "community_name": "drafts.interface.ts",
       "norm_label": "concurrencyparams"
     },
     {
@@ -7356,7 +7356,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_interfaces_drafts_interface_wbsleafplanparamsdto",
       "community": 43,
-      "community_name": "drafts-ai.service.ts",
+      "community_name": "drafts.interface.ts",
       "norm_label": "wbsleafplanparamsdto"
     },
     {
@@ -7367,7 +7367,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_interfaces_drafts_interface_wbsleafplanresultdto",
       "community": 43,
-      "community_name": "drafts-ai.service.ts",
+      "community_name": "drafts.interface.ts",
       "norm_label": "wbsleafplanresultdto"
     },
     {
@@ -8796,8 +8796,8 @@
       "source_location": "L26",
       "_origin": "ast",
       "id": "backend_src_projects_projects_service_projectsservice_createxmatrix",
-      "community": 202,
-      "community_name": "projects-x-matrix.service.ts",
+      "community": 156,
+      "community_name": "ProjectsXMatrixService",
       "norm_label": ".createxmatrix()"
     },
     {
@@ -8807,8 +8807,8 @@
       "source_location": "L30",
       "_origin": "ast",
       "id": "backend_src_projects_projects_service_projectsservice_getsavedxmatrix",
-      "community": 202,
-      "community_name": "projects-x-matrix.service.ts",
+      "community": 156,
+      "community_name": "ProjectsXMatrixService",
       "norm_label": ".getsavedxmatrix()"
     },
     {
@@ -8973,7 +8973,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_schemas_drafts_validation_schema",
       "community": 43,
-      "community_name": "drafts-ai.service.ts",
+      "community_name": "drafts.interface.ts",
       "norm_label": "drafts-validation.schema.ts"
     },
     {
@@ -8984,7 +8984,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_schemas_drafts_validation_schema_safestring",
       "community": 43,
-      "community_name": "drafts-ai.service.ts",
+      "community_name": "drafts.interface.ts",
       "norm_label": "safestring()"
     },
     {
@@ -8995,7 +8995,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_schemas_drafts_validation_schema_safestringorundefined",
       "community": 43,
-      "community_name": "drafts-ai.service.ts",
+      "community_name": "drafts.interface.ts",
       "norm_label": "safestringorundefined()"
     },
     {
@@ -9006,7 +9006,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_schemas_drafts_validation_schema_plannerschema",
       "community": 43,
-      "community_name": "drafts-ai.service.ts",
+      "community_name": "drafts.interface.ts",
       "norm_label": "plannerschema"
     },
     {
@@ -9017,7 +9017,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_schemas_drafts_validation_schema_draftschema",
       "community": 43,
-      "community_name": "drafts-ai.service.ts",
+      "community_name": "drafts.interface.ts",
       "norm_label": "draftschema"
     },
     {
@@ -9028,7 +9028,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_schemas_drafts_validation_schema_draftsschema",
       "community": 43,
-      "community_name": "drafts-ai.service.ts",
+      "community_name": "drafts.interface.ts",
       "norm_label": "draftsschema"
     },
     {
@@ -9039,7 +9039,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_schemas_drafts_validation_schema_draftoutlineschema",
       "community": 43,
-      "community_name": "drafts-ai.service.ts",
+      "community_name": "drafts.interface.ts",
       "norm_label": "draftoutlineschema"
     },
     {
@@ -9050,7 +9050,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_schemas_drafts_validation_schema_draftoutlinesschema",
       "community": 43,
-      "community_name": "drafts-ai.service.ts",
+      "community_name": "drafts.interface.ts",
       "norm_label": "draftoutlinesschema"
     },
     {
@@ -9061,7 +9061,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_schemas_drafts_validation_schema_draftdetailsschema",
       "community": 43,
-      "community_name": "drafts-ai.service.ts",
+      "community_name": "drafts.interface.ts",
       "norm_label": "draftdetailsschema"
     },
     {
@@ -9357,8 +9357,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_src_projects_schemas_x_matrix_snapshot_schema",
-      "community": 202,
-      "community_name": "projects-x-matrix.service.ts",
+      "community": 95,
+      "community_name": "projects.module.ts",
       "norm_label": "x-matrix-snapshot.schema.ts"
     },
     {
@@ -9368,8 +9368,8 @@
       "source_location": "L4",
       "_origin": "ast",
       "id": "backend_src_projects_schemas_x_matrix_snapshot_schema_xmatrixsnapshotdocument",
-      "community": 202,
-      "community_name": "projects-x-matrix.service.ts",
+      "community": 95,
+      "community_name": "projects.module.ts",
       "norm_label": "xmatrixsnapshotdocument"
     },
     {
@@ -9379,8 +9379,8 @@
       "source_location": "L7",
       "_origin": "ast",
       "id": "backend_src_projects_schemas_x_matrix_snapshot_schema_xmatrixsnapshot",
-      "community": 202,
-      "community_name": "projects-x-matrix.service.ts",
+      "community": 95,
+      "community_name": "projects.module.ts",
       "norm_label": "xmatrixsnapshot"
     },
     {
@@ -9390,8 +9390,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "backend_src_projects_schemas_x_matrix_snapshot_schema_ts_schema",
-      "community": 202,
-      "community_name": "projects-x-matrix.service.ts",
+      "community": 95,
+      "community_name": "projects.module.ts",
       "norm_label": "schema"
     },
     {
@@ -9401,8 +9401,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "backend_src_projects_schemas_x_matrix_snapshot_schema_ts_prop",
-      "community": 202,
-      "community_name": "projects-x-matrix.service.ts",
+      "community": 95,
+      "community_name": "projects.module.ts",
       "norm_label": "prop"
     },
     {
@@ -9412,8 +9412,8 @@
       "source_location": "L15",
       "_origin": "ast",
       "id": "backend_src_projects_schemas_x_matrix_snapshot_schema_xmatrixsnapshotschema",
-      "community": 202,
-      "community_name": "projects-x-matrix.service.ts",
+      "community": 95,
+      "community_name": "projects.module.ts",
       "norm_label": "xmatrixsnapshotschema"
     },
     {
@@ -9456,8 +9456,8 @@
       "source_location": "L22",
       "_origin": "ast",
       "id": "backend_src_projects_services_drafts_draft_details_enrichment_service_draftdetailsenrichmentservice_constructor",
-      "community": 43,
-      "community_name": "drafts-ai.service.ts",
+      "community": 84,
+      "community_name": "DraftsAiService",
       "norm_label": ".constructor()"
     },
     {
@@ -9589,7 +9589,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_services_drafts_draft_generation_service_draftgenerationservice_generatemicrotasksplanforleaf",
       "community": 43,
-      "community_name": "drafts-ai.service.ts",
+      "community_name": "drafts.interface.ts",
       "norm_label": ".generatemicrotasksplanforleaf()"
     },
     {
@@ -9622,7 +9622,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_services_drafts_draft_plan_generation_service",
       "community": 43,
-      "community_name": "drafts-ai.service.ts",
+      "community_name": "drafts.interface.ts",
       "norm_label": "draft-plan-generation.service.ts"
     },
     {
@@ -9633,7 +9633,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_services_drafts_draft_plan_generation_service_draftplangenerationservice",
       "community": 43,
-      "community_name": "drafts-ai.service.ts",
+      "community_name": "drafts.interface.ts",
       "norm_label": "draftplangenerationservice"
     },
     {
@@ -9644,7 +9644,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_services_drafts_draft_plan_generation_service_ts_injectable",
       "community": 43,
-      "community_name": "drafts-ai.service.ts",
+      "community_name": "drafts.interface.ts",
       "norm_label": "injectable"
     },
     {
@@ -9666,7 +9666,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_services_drafts_draft_plan_generation_service_draftplangenerationservice_hashkey",
       "community": 43,
-      "community_name": "drafts-ai.service.ts",
+      "community_name": "drafts.interface.ts",
       "norm_label": ".hashkey()"
     },
     {
@@ -9677,7 +9677,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_services_drafts_draft_plan_generation_service_draftplangenerationservice_generatemicrotasksplanforleaf",
       "community": 43,
-      "community_name": "drafts-ai.service.ts",
+      "community_name": "drafts.interface.ts",
       "norm_label": ".generatemicrotasksplanforleaf()"
     },
     {
@@ -9688,7 +9688,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_services_drafts_draft_plan_generation_service_draftplangenerationservice_getcachekey",
       "community": 43,
-      "community_name": "drafts-ai.service.ts",
+      "community_name": "drafts.interface.ts",
       "norm_label": ".getcachekey()"
     },
     {
@@ -9699,7 +9699,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_services_drafts_draft_plan_generation_service_draftplangenerationservice_getcachedplan",
       "community": 43,
-      "community_name": "drafts-ai.service.ts",
+      "community_name": "drafts.interface.ts",
       "norm_label": ".getcachedplan()"
     },
     {
@@ -10006,8 +10006,8 @@
       "source_location": "L26",
       "_origin": "ast",
       "id": "backend_src_projects_services_drafts_draft_with_plan_generation_service_draftwithplangenerationservice_constructor",
-      "community": 43,
-      "community_name": "drafts-ai.service.ts",
+      "community": 84,
+      "community_name": "DraftsAiService",
       "norm_label": ".constructor()"
     },
     {
@@ -11085,7 +11085,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_services_execution_project_stats_service",
       "community": 22,
-      "community_name": "tasks-service-test-providers.ts",
+      "community_name": "tasks.service.ts",
       "norm_label": "project-stats.service.ts"
     },
     {
@@ -11096,7 +11096,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_services_execution_project_stats_service_projectstatsservice",
       "community": 22,
-      "community_name": "tasks-service-test-providers.ts",
+      "community_name": "tasks.service.ts",
       "norm_label": "projectstatsservice"
     },
     {
@@ -11107,7 +11107,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_services_execution_project_stats_service_ts_injectable",
       "community": 22,
-      "community_name": "tasks-service-test-providers.ts",
+      "community_name": "tasks.service.ts",
       "norm_label": "injectable"
     },
     {
@@ -11117,8 +11117,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "backend_src_projects_services_execution_project_stats_service_ts_injectmodel",
-      "community": 22,
-      "community_name": "tasks-service-test-providers.ts",
+      "community": 41,
+      "community_name": "TaskDocument",
       "norm_label": "injectmodel"
     },
     {
@@ -11128,8 +11128,8 @@
       "source_location": "L9",
       "_origin": "ast",
       "id": "backend_src_projects_services_execution_project_stats_service_projectstatsservice_constructor",
-      "community": 22,
-      "community_name": "tasks-service-test-providers.ts",
+      "community": 41,
+      "community_name": "TaskDocument",
       "norm_label": ".constructor()"
     },
     {
@@ -11150,8 +11150,8 @@
       "source_location": "L29",
       "_origin": "ast",
       "id": "backend_src_projects_services_execution_project_stats_service_projectstatsservice_recalculateprojectstats",
-      "community": 113,
-      "community_name": ".recalculateProjectStats",
+      "community": 9,
+      "community_name": "CreateTaskDto",
       "norm_label": ".recalculateprojectstats()"
     },
     {
@@ -12283,8 +12283,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "backend_src_projects_services_visualization_gantt_service_ts_injectmodel",
-      "community": 148,
-      "community_name": "ProjectWaveDocument",
+      "community": 118,
+      "community_name": "gantt.service.ts",
       "norm_label": "injectmodel"
     },
     {
@@ -12294,8 +12294,8 @@
       "source_location": "L14",
       "_origin": "ast",
       "id": "backend_src_projects_services_visualization_gantt_service_ganttservice_constructor",
-      "community": 148,
-      "community_name": "ProjectWaveDocument",
+      "community": 118,
+      "community_name": "gantt.service.ts",
       "norm_label": ".constructor()"
     },
     {
@@ -12338,8 +12338,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_src_projects_services_visualization_index",
-      "community": 202,
-      "community_name": "projects-x-matrix.service.ts",
+      "community": 156,
+      "community_name": "ProjectsXMatrixService",
       "norm_label": "visualization/index.ts"
     },
     {
@@ -12415,8 +12415,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_src_projects_services_visualization_projects_x_matrix_service",
-      "community": 202,
-      "community_name": "projects-x-matrix.service.ts",
+      "community": 95,
+      "community_name": "projects.module.ts",
       "norm_label": "projects-x-matrix.service.ts"
     },
     {
@@ -12426,8 +12426,8 @@
       "source_location": "L12",
       "_origin": "ast",
       "id": "backend_src_projects_services_visualization_projects_x_matrix_service_projectsxmatrixservice",
-      "community": 202,
-      "community_name": "projects-x-matrix.service.ts",
+      "community": 156,
+      "community_name": "ProjectsXMatrixService",
       "norm_label": "projectsxmatrixservice"
     },
     {
@@ -12437,8 +12437,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "backend_src_projects_services_visualization_projects_x_matrix_service_ts_injectable",
-      "community": 202,
-      "community_name": "projects-x-matrix.service.ts",
+      "community": 156,
+      "community_name": "ProjectsXMatrixService",
       "norm_label": "injectable"
     },
     {
@@ -12448,8 +12448,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "backend_src_projects_services_visualization_projects_x_matrix_service_ts_injectmodel",
-      "community": 202,
-      "community_name": "projects-x-matrix.service.ts",
+      "community": 148,
+      "community_name": "ProjectWaveDocument",
       "norm_label": "injectmodel"
     },
     {
@@ -12459,8 +12459,8 @@
       "source_location": "L13",
       "_origin": "ast",
       "id": "backend_src_projects_services_visualization_projects_x_matrix_service_projectsxmatrixservice_constructor",
-      "community": 202,
-      "community_name": "projects-x-matrix.service.ts",
+      "community": 148,
+      "community_name": "ProjectWaveDocument",
       "norm_label": ".constructor()"
     },
     {
@@ -12470,8 +12470,8 @@
       "source_location": "L23",
       "_origin": "ast",
       "id": "backend_src_projects_services_visualization_projects_x_matrix_service_projectsxmatrixservice_createxmatrix",
-      "community": 202,
-      "community_name": "projects-x-matrix.service.ts",
+      "community": 156,
+      "community_name": "ProjectsXMatrixService",
       "norm_label": ".createxmatrix()"
     },
     {
@@ -12481,8 +12481,8 @@
       "source_location": "L46",
       "_origin": "ast",
       "id": "backend_src_projects_services_visualization_projects_x_matrix_service_projectsxmatrixservice_validateandgetproject",
-      "community": 202,
-      "community_name": "projects-x-matrix.service.ts",
+      "community": 156,
+      "community_name": "ProjectsXMatrixService",
       "norm_label": ".validateandgetproject()"
     },
     {
@@ -12492,8 +12492,8 @@
       "source_location": "L62",
       "_origin": "ast",
       "id": "backend_src_projects_services_visualization_projects_x_matrix_service_projectsxmatrixservice_fetchtasksandwaves",
-      "community": 202,
-      "community_name": "projects-x-matrix.service.ts",
+      "community": 156,
+      "community_name": "ProjectsXMatrixService",
       "norm_label": ".fetchtasksandwaves()"
     },
     {
@@ -12503,8 +12503,8 @@
       "source_location": "L89",
       "_origin": "ast",
       "id": "backend_src_projects_services_visualization_projects_x_matrix_service_projectsxmatrixservice_getsavedxmatrix",
-      "community": 202,
-      "community_name": "projects-x-matrix.service.ts",
+      "community": 156,
+      "community_name": "ProjectsXMatrixService",
       "norm_label": ".getsavedxmatrix()"
     },
     {
@@ -14802,8 +14802,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_src_projects_services_wbs_utils_json_parser_util",
-      "community": 84,
-      "community_name": "PromptBuilderService",
+      "community": 202,
+      "community_name": "extractJsonObject",
       "norm_label": "json-parser.util.ts"
     },
     {
@@ -14813,8 +14813,8 @@
       "source_location": "L6",
       "_origin": "ast",
       "id": "backend_src_projects_services_wbs_utils_json_parser_util_cleanmarkdown",
-      "community": 84,
-      "community_name": "PromptBuilderService",
+      "community": 202,
+      "community_name": "extractJsonObject",
       "norm_label": "cleanmarkdown()"
     },
     {
@@ -14824,8 +14824,8 @@
       "source_location": "L18",
       "_origin": "ast",
       "id": "backend_src_projects_services_wbs_utils_json_parser_util_repairjsonstring",
-      "community": 84,
-      "community_name": "PromptBuilderService",
+      "community": 202,
+      "community_name": "extractJsonObject",
       "norm_label": "repairjsonstring()"
     },
     {
@@ -14835,8 +14835,8 @@
       "source_location": "L58",
       "_origin": "ast",
       "id": "backend_src_projects_services_wbs_utils_json_parser_util_extractpartialarray",
-      "community": 84,
-      "community_name": "PromptBuilderService",
+      "community": 202,
+      "community_name": "extractJsonObject",
       "norm_label": "extractpartialarray()"
     },
     {
@@ -14846,8 +14846,8 @@
       "source_location": "L98",
       "_origin": "ast",
       "id": "backend_src_projects_services_wbs_utils_json_parser_util_extractjsonarray",
-      "community": 84,
-      "community_name": "PromptBuilderService",
+      "community": 202,
+      "community_name": "extractJsonObject",
       "norm_label": "extractjsonarray()"
     },
     {
@@ -14857,8 +14857,8 @@
       "source_location": "L148",
       "_origin": "ast",
       "id": "backend_src_projects_services_wbs_utils_json_parser_util_salvageincompleteobject",
-      "community": 84,
-      "community_name": "PromptBuilderService",
+      "community": 202,
+      "community_name": "extractJsonObject",
       "norm_label": "salvageincompleteobject()"
     },
     {
@@ -14868,8 +14868,8 @@
       "source_location": "L208",
       "_origin": "ast",
       "id": "backend_src_projects_services_wbs_utils_json_parser_util_extractjsonobject",
-      "community": 84,
-      "community_name": "PromptBuilderService",
+      "community": 202,
+      "community_name": "extractJsonObject",
       "norm_label": "extractjsonobject()"
     },
     {
@@ -15869,8 +15869,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_src_tasks_controllers_alerts_controller",
-      "community": 137,
-      "community_name": "tasks.module.ts",
+      "community": 22,
+      "community_name": "tasks.service.ts",
       "norm_label": "alerts.controller.ts"
     },
     {
@@ -15880,8 +15880,8 @@
       "source_location": "L7",
       "_origin": "ast",
       "id": "backend_src_tasks_controllers_alerts_controller_alertscontroller",
-      "community": 137,
-      "community_name": "tasks.module.ts",
+      "community": 22,
+      "community_name": "tasks.service.ts",
       "norm_label": "alertscontroller"
     },
     {
@@ -15891,8 +15891,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "backend_src_tasks_controllers_alerts_controller_ts_apitags",
-      "community": 137,
-      "community_name": "tasks.module.ts",
+      "community": 22,
+      "community_name": "tasks.service.ts",
       "norm_label": "apitags"
     },
     {
@@ -15902,8 +15902,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "backend_src_tasks_controllers_alerts_controller_ts_controller",
-      "community": 137,
-      "community_name": "tasks.module.ts",
+      "community": 22,
+      "community_name": "tasks.service.ts",
       "norm_label": "controller"
     },
     {
@@ -15913,8 +15913,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "backend_src_tasks_controllers_alerts_controller_ts_get",
-      "community": 137,
-      "community_name": "tasks.module.ts",
+      "community": 22,
+      "community_name": "tasks.service.ts",
       "norm_label": "get"
     },
     {
@@ -15924,8 +15924,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "backend_src_tasks_controllers_alerts_controller_ts_apioperation",
-      "community": 137,
-      "community_name": "tasks.module.ts",
+      "community": 22,
+      "community_name": "tasks.service.ts",
       "norm_label": "apioperation"
     },
     {
@@ -15935,8 +15935,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "backend_src_tasks_controllers_alerts_controller_ts_apiresponse",
-      "community": 137,
-      "community_name": "tasks.module.ts",
+      "community": 22,
+      "community_name": "tasks.service.ts",
       "norm_label": "apiresponse"
     },
     {
@@ -15946,8 +15946,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "backend_src_tasks_controllers_alerts_controller_ts_query",
-      "community": 137,
-      "community_name": "tasks.module.ts",
+      "community": 22,
+      "community_name": "tasks.service.ts",
       "norm_label": "query"
     },
     {
@@ -15957,8 +15957,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "backend_src_tasks_controllers_alerts_controller_ts_patch",
-      "community": 137,
-      "community_name": "tasks.module.ts",
+      "community": 22,
+      "community_name": "tasks.service.ts",
       "norm_label": "patch"
     },
     {
@@ -15968,8 +15968,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "backend_src_tasks_controllers_alerts_controller_ts_param",
-      "community": 137,
-      "community_name": "tasks.module.ts",
+      "community": 22,
+      "community_name": "tasks.service.ts",
       "norm_label": "param"
     },
     {
@@ -15979,8 +15979,8 @@
       "source_location": "L8",
       "_origin": "ast",
       "id": "backend_src_tasks_controllers_alerts_controller_alertscontroller_constructor",
-      "community": 137,
-      "community_name": "tasks.module.ts",
+      "community": 22,
+      "community_name": "tasks.service.ts",
       "norm_label": ".constructor()"
     },
     {
@@ -15990,8 +15990,8 @@
       "source_location": "L13",
       "_origin": "ast",
       "id": "backend_src_tasks_controllers_alerts_controller_alertscontroller_listalerts",
-      "community": 137,
-      "community_name": "tasks.module.ts",
+      "community": 22,
+      "community_name": "tasks.service.ts",
       "norm_label": ".listalerts()"
     },
     {
@@ -16001,8 +16001,8 @@
       "source_location": "L30",
       "_origin": "ast",
       "id": "backend_src_tasks_controllers_alerts_controller_alertscontroller_markread",
-      "community": 137,
-      "community_name": "tasks.module.ts",
+      "community": 22,
+      "community_name": "tasks.service.ts",
       "norm_label": ".markread()"
     },
     {
@@ -16464,7 +16464,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_controllers_habits_controller",
       "community": 46,
-      "community_name": "tasks.service.ts",
+      "community_name": "TasksHabitsService",
       "norm_label": "habits.controller.ts"
     },
     {
@@ -16475,7 +16475,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_controllers_habits_controller_habitscontroller",
       "community": 46,
-      "community_name": "tasks.service.ts",
+      "community_name": "TasksHabitsService",
       "norm_label": "habitscontroller"
     },
     {
@@ -16486,7 +16486,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_controllers_habits_controller_ts_apitags",
       "community": 46,
-      "community_name": "tasks.service.ts",
+      "community_name": "TasksHabitsService",
       "norm_label": "apitags"
     },
     {
@@ -16497,7 +16497,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_controllers_habits_controller_ts_controller",
       "community": 46,
-      "community_name": "tasks.service.ts",
+      "community_name": "TasksHabitsService",
       "norm_label": "controller"
     },
     {
@@ -16508,7 +16508,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_controllers_habits_controller_ts_get",
       "community": 46,
-      "community_name": "tasks.service.ts",
+      "community_name": "TasksHabitsService",
       "norm_label": "get"
     },
     {
@@ -16519,7 +16519,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_controllers_habits_controller_ts_apioperation",
       "community": 46,
-      "community_name": "tasks.service.ts",
+      "community_name": "TasksHabitsService",
       "norm_label": "apioperation"
     },
     {
@@ -16530,7 +16530,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_controllers_habits_controller_ts_apiresponse",
       "community": 46,
-      "community_name": "tasks.service.ts",
+      "community_name": "TasksHabitsService",
       "norm_label": "apiresponse"
     },
     {
@@ -16541,7 +16541,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_controllers_habits_controller_ts_query",
       "community": 46,
-      "community_name": "tasks.service.ts",
+      "community_name": "TasksHabitsService",
       "norm_label": "query"
     },
     {
@@ -16551,8 +16551,8 @@
       "source_location": "L10",
       "_origin": "ast",
       "id": "backend_src_tasks_controllers_habits_controller_habitscontroller_constructor",
-      "community": 41,
-      "community_name": "TaskDocument",
+      "community": 46,
+      "community_name": "TasksHabitsService",
       "norm_label": ".constructor()"
     },
     {
@@ -16563,7 +16563,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_controllers_habits_controller_habitscontroller_gethabitsdashboard",
       "community": 46,
-      "community_name": "tasks.service.ts",
+      "community_name": "TasksHabitsService",
       "norm_label": ".gethabitsdashboard()"
     },
     {
@@ -16573,8 +16573,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_src_tasks_controllers_rtm_controller",
-      "community": 78,
-      "community_name": "RTMService",
+      "community": 6,
+      "community_name": "dto/index.ts",
       "norm_label": "rtm.controller.ts"
     },
     {
@@ -16585,7 +16585,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_controllers_rtm_controller_rtmcontroller",
       "community": 78,
-      "community_name": "RTMService",
+      "community_name": "RTMController",
       "norm_label": "rtmcontroller"
     },
     {
@@ -16596,7 +16596,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_controllers_rtm_controller_ts_apitags",
       "community": 78,
-      "community_name": "RTMService",
+      "community_name": "RTMController",
       "norm_label": "apitags"
     },
     {
@@ -16607,7 +16607,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_controllers_rtm_controller_ts_apibearerauth",
       "community": 78,
-      "community_name": "RTMService",
+      "community_name": "RTMController",
       "norm_label": "apibearerauth"
     },
     {
@@ -16618,7 +16618,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_controllers_rtm_controller_ts_controller",
       "community": 78,
-      "community_name": "RTMService",
+      "community_name": "RTMController",
       "norm_label": "controller"
     },
     {
@@ -16629,7 +16629,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_controllers_rtm_controller_ts_post",
       "community": 78,
-      "community_name": "RTMService",
+      "community_name": "RTMController",
       "norm_label": "post"
     },
     {
@@ -16640,7 +16640,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_controllers_rtm_controller_ts_apioperation",
       "community": 78,
-      "community_name": "RTMService",
+      "community_name": "RTMController",
       "norm_label": "apioperation"
     },
     {
@@ -16651,7 +16651,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_controllers_rtm_controller_ts_apiresponse",
       "community": 78,
-      "community_name": "RTMService",
+      "community_name": "RTMController",
       "norm_label": "apiresponse"
     },
     {
@@ -16662,7 +16662,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_controllers_rtm_controller_ts_param",
       "community": 78,
-      "community_name": "RTMService",
+      "community_name": "RTMController",
       "norm_label": "param"
     },
     {
@@ -16673,7 +16673,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_controllers_rtm_controller_ts_body",
       "community": 78,
-      "community_name": "RTMService",
+      "community_name": "RTMController",
       "norm_label": "body"
     },
     {
@@ -16684,7 +16684,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_controllers_rtm_controller_ts_get",
       "community": 78,
-      "community_name": "RTMService",
+      "community_name": "RTMController",
       "norm_label": "get"
     },
     {
@@ -16695,7 +16695,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_controllers_rtm_controller_ts_delete",
       "community": 78,
-      "community_name": "RTMService",
+      "community_name": "RTMController",
       "norm_label": "delete"
     },
     {
@@ -16705,8 +16705,8 @@
       "source_location": "L13",
       "_origin": "ast",
       "id": "backend_src_tasks_controllers_rtm_controller_rtmcontroller_constructor",
-      "community": 78,
-      "community_name": "RTMService",
+      "community": 25,
+      "community_name": "Requirement",
       "norm_label": ".constructor()"
     },
     {
@@ -16717,7 +16717,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_controllers_rtm_controller_rtmcontroller_autogeneraterequirements",
       "community": 78,
-      "community_name": "RTMService",
+      "community_name": "RTMController",
       "norm_label": ".autogeneraterequirements()"
     },
     {
@@ -16728,7 +16728,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_controllers_rtm_controller_rtmcontroller_getrtmmatrix",
       "community": 78,
-      "community_name": "RTMService",
+      "community_name": "RTMController",
       "norm_label": ".getrtmmatrix()"
     },
     {
@@ -16739,7 +16739,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_controllers_rtm_controller_rtmcontroller_maprequirementtotask",
       "community": 78,
-      "community_name": "RTMService",
+      "community_name": "RTMController",
       "norm_label": ".maprequirementtotask()"
     },
     {
@@ -16750,7 +16750,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_controllers_rtm_controller_rtmcontroller_unmaprequirementfromtask",
       "community": 78,
-      "community_name": "RTMService",
+      "community_name": "RTMController",
       "norm_label": ".unmaprequirementfromtask()"
     },
     {
@@ -16761,7 +16761,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_controllers_rtm_controller_rtmcontroller_deleterequirement",
       "community": 78,
-      "community_name": "RTMService",
+      "community_name": "RTMController",
       "norm_label": ".deleterequirement()"
     },
     {
@@ -16772,7 +16772,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_controllers_rtm_controller_rtmcontroller_deleteallrequirements",
       "community": 78,
-      "community_name": "RTMService",
+      "community_name": "RTMController",
       "norm_label": ".deleteallrequirements()"
     },
     {
@@ -16783,7 +16783,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_controllers_rtm_controller_rtmcontroller_getrequirements",
       "community": 78,
-      "community_name": "RTMService",
+      "community_name": "RTMController",
       "norm_label": ".getrequirements()"
     },
     {
@@ -16794,7 +16794,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_controllers_rtm_controller_rtmcontroller_automaprequirementstotasks",
       "community": 78,
-      "community_name": "RTMService",
+      "community_name": "RTMController",
       "norm_label": ".automaprequirementstotasks()"
     },
     {
@@ -16805,7 +16805,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_controllers_rtm_controller_rtmcontroller_generatetasksforunmappedrequirements",
       "community": 78,
-      "community_name": "RTMService",
+      "community_name": "RTMController",
       "norm_label": ".generatetasksforunmappedrequirements()"
     },
     {
@@ -17145,7 +17145,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_src_tasks_dto_checklist_update_checklist_dto",
-      "community": 29,
+      "community": 17,
       "community_name": "ChecklistItemDto",
       "norm_label": "update-checklist.dto.ts"
     },
@@ -17156,7 +17156,7 @@
       "source_location": "L3",
       "_origin": "ast",
       "id": "backend_src_tasks_dto_checklist_update_checklist_dto_updatechecklistdto",
-      "community": 29,
+      "community": 17,
       "community_name": "ChecklistItemDto",
       "norm_label": "updatechecklistdto"
     },
@@ -18070,7 +18070,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_dto_intelligence_checklist_dto",
       "community": 29,
-      "community_name": "ChecklistItemDto",
+      "community_name": "ChecklistOperationsService",
       "norm_label": "checklist.dto.ts"
     },
     {
@@ -18081,7 +18081,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_dto_intelligence_checklist_dto_findsimilartasksdto",
       "community": 29,
-      "community_name": "ChecklistItemDto",
+      "community_name": "ChecklistOperationsService",
       "norm_label": "findsimilartasksdto"
     },
     {
@@ -18092,7 +18092,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_dto_intelligence_checklist_dto_ts_apiproperty",
       "community": 29,
-      "community_name": "ChecklistItemDto",
+      "community_name": "ChecklistOperationsService",
       "norm_label": "apiproperty"
     },
     {
@@ -18103,7 +18103,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_dto_intelligence_checklist_dto_ts_isstring",
       "community": 29,
-      "community_name": "ChecklistItemDto",
+      "community_name": "ChecklistOperationsService",
       "norm_label": "isstring"
     },
     {
@@ -18114,7 +18114,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_dto_intelligence_checklist_dto_ts_isnotempty",
       "community": 29,
-      "community_name": "ChecklistItemDto",
+      "community_name": "ChecklistOperationsService",
       "norm_label": "isnotempty"
     },
     {
@@ -18125,7 +18125,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_dto_intelligence_checklist_dto_ts_isoptional",
       "community": 29,
-      "community_name": "ChecklistItemDto",
+      "community_name": "ChecklistOperationsService",
       "norm_label": "isoptional"
     },
     {
@@ -18136,7 +18136,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_dto_intelligence_checklist_dto_ts_isnumber",
       "community": 29,
-      "community_name": "ChecklistItemDto",
+      "community_name": "ChecklistOperationsService",
       "norm_label": "isnumber"
     },
     {
@@ -18147,7 +18147,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_dto_intelligence_checklist_dto_updatechecklisttaskitemdto",
       "community": 29,
-      "community_name": "ChecklistItemDto",
+      "community_name": "ChecklistOperationsService",
       "norm_label": "updatechecklisttaskitemdto"
     },
     {
@@ -18158,7 +18158,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_dto_intelligence_checklist_dto_ts_isboolean",
       "community": 29,
-      "community_name": "ChecklistItemDto",
+      "community_name": "ChecklistOperationsService",
       "norm_label": "isboolean"
     },
     {
@@ -18169,7 +18169,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_dto_intelligence_checklist_dto_generatechecklistdto",
       "community": 29,
-      "community_name": "ChecklistItemDto",
+      "community_name": "ChecklistOperationsService",
       "norm_label": "generatechecklistdto"
     },
     {
@@ -18180,7 +18180,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_dto_intelligence_checklist_dto_generatechecklistwithhistorydto",
       "community": 29,
-      "community_name": "ChecklistItemDto",
+      "community_name": "ChecklistOperationsService",
       "norm_label": "generatechecklistwithhistorydto"
     },
     {
@@ -18191,7 +18191,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_dto_intelligence_feedback_dto",
       "community": 17,
-      "community_name": "feedback.service.ts",
+      "community_name": "ChecklistItemDto",
       "norm_label": "feedback.dto.ts"
     },
     {
@@ -18202,7 +18202,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_dto_intelligence_feedback_dto_completionfeedbackpayloaddto",
       "community": 17,
-      "community_name": "feedback.service.ts",
+      "community_name": "ChecklistItemDto",
       "norm_label": "completionfeedbackpayloaddto"
     },
     {
@@ -18213,7 +18213,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_dto_intelligence_feedback_dto_ts_apipropertyoptional",
       "community": 17,
-      "community_name": "feedback.service.ts",
+      "community_name": "ChecklistItemDto",
       "norm_label": "apipropertyoptional"
     },
     {
@@ -18224,7 +18224,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_dto_intelligence_feedback_dto_ts_isstring",
       "community": 17,
-      "community_name": "feedback.service.ts",
+      "community_name": "ChecklistItemDto",
       "norm_label": "isstring"
     },
     {
@@ -18235,7 +18235,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_dto_intelligence_feedback_dto_ts_isoptional",
       "community": 17,
-      "community_name": "feedback.service.ts",
+      "community_name": "ChecklistItemDto",
       "norm_label": "isoptional"
     },
     {
@@ -18246,7 +18246,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_dto_intelligence_feedback_dto_ts_isarray",
       "community": 17,
-      "community_name": "feedback.service.ts",
+      "community_name": "ChecklistItemDto",
       "norm_label": "isarray"
     },
     {
@@ -18257,7 +18257,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_dto_intelligence_feedback_dto_generatefeedbackoncompletiondto",
       "community": 17,
-      "community_name": "feedback.service.ts",
+      "community_name": "ChecklistItemDto",
       "norm_label": "generatefeedbackoncompletiondto"
     },
     {
@@ -18268,7 +18268,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_dto_intelligence_feedback_dto_ts_apiproperty",
       "community": 17,
-      "community_name": "feedback.service.ts",
+      "community_name": "ChecklistItemDto",
       "norm_label": "apiproperty"
     },
     {
@@ -18279,7 +18279,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_dto_intelligence_feedback_dto_ts_isnotempty",
       "community": 17,
-      "community_name": "feedback.service.ts",
+      "community_name": "ChecklistItemDto",
       "norm_label": "isnotempty"
     },
     {
@@ -18290,7 +18290,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_dto_intelligence_feedback_dto_completionfeedbackresult",
       "community": 17,
-      "community_name": "feedback.service.ts",
+      "community_name": "ChecklistItemDto",
       "norm_label": "completionfeedbackresult"
     },
     {
@@ -18301,7 +18301,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_dto_intelligence_feedback_dto_completionfeedbackresponse",
       "community": 17,
-      "community_name": "feedback.service.ts",
+      "community_name": "ChecklistItemDto",
       "norm_label": "completionfeedbackresponse"
     },
     {
@@ -18312,7 +18312,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_dto_intelligence_feedback_dto_nextstepsuggestion",
       "community": 17,
-      "community_name": "feedback.service.ts",
+      "community_name": "ChecklistItemDto",
       "norm_label": "nextstepsuggestion"
     },
     {
@@ -18323,7 +18323,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_dto_intelligence_feedback_dto_savesuccessfeedbackdto",
       "community": 17,
-      "community_name": "feedback.service.ts",
+      "community_name": "ChecklistItemDto",
       "norm_label": "savesuccessfeedbackdto"
     },
     {
@@ -18334,7 +18334,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_dto_intelligence_feedback_dto_saveerrorfeedbackoncompletiondto",
       "community": 17,
-      "community_name": "feedback.service.ts",
+      "community_name": "ChecklistItemDto",
       "norm_label": "saveerrorfeedbackoncompletiondto"
     },
     {
@@ -18400,7 +18400,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_dto_intelligence_index",
       "community": 29,
-      "community_name": "ChecklistItemDto",
+      "community_name": "ChecklistOperationsService",
       "norm_label": "dto/intelligence/index.ts"
     },
     {
@@ -18411,7 +18411,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_dto_monitoring_get_habits_dashboard_dto",
       "community": 46,
-      "community_name": "tasks.service.ts",
+      "community_name": "TasksHabitsService",
       "norm_label": "get-habits-dashboard.dto.ts"
     },
     {
@@ -18422,7 +18422,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_dto_monitoring_get_habits_dashboard_dto_gethabitsdashboarddto",
       "community": 46,
-      "community_name": "tasks.service.ts",
+      "community_name": "TasksHabitsService",
       "norm_label": "gethabitsdashboarddto"
     },
     {
@@ -18433,7 +18433,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_dto_monitoring_get_habits_dashboard_dto_ts_isoptional",
       "community": 46,
-      "community_name": "tasks.service.ts",
+      "community_name": "TasksHabitsService",
       "norm_label": "isoptional"
     },
     {
@@ -18444,7 +18444,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_dto_monitoring_get_habits_dashboard_dto_ts_isstring",
       "community": 46,
-      "community_name": "tasks.service.ts",
+      "community_name": "TasksHabitsService",
       "norm_label": "isstring"
     },
     {
@@ -18455,7 +18455,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_dto_monitoring_habits_dashboard_dto",
       "community": 46,
-      "community_name": "tasks.service.ts",
+      "community_name": "TasksHabitsService",
       "norm_label": "habits-dashboard.dto.ts"
     },
     {
@@ -18466,7 +18466,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_dto_monitoring_habits_dashboard_dto_duetodayhabitdto",
       "community": 46,
-      "community_name": "tasks.service.ts",
+      "community_name": "TasksHabitsService",
       "norm_label": "duetodayhabitdto"
     },
     {
@@ -18477,7 +18477,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_dto_monitoring_habits_dashboard_dto_ts_apiproperty",
       "community": 46,
-      "community_name": "tasks.service.ts",
+      "community_name": "TasksHabitsService",
       "norm_label": "apiproperty"
     },
     {
@@ -18488,7 +18488,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_dto_monitoring_habits_dashboard_dto_ts_apipropertyoptional",
       "community": 46,
-      "community_name": "tasks.service.ts",
+      "community_name": "TasksHabitsService",
       "norm_label": "apipropertyoptional"
     },
     {
@@ -18499,7 +18499,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_dto_monitoring_habits_dashboard_dto_habitsummarydto",
       "community": 46,
-      "community_name": "tasks.service.ts",
+      "community_name": "TasksHabitsService",
       "norm_label": "habitsummarydto"
     },
     {
@@ -18510,7 +18510,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_dto_monitoring_habits_dashboard_dto_gethabitsdashboardresponsedto",
       "community": 46,
-      "community_name": "tasks.service.ts",
+      "community_name": "TasksHabitsService",
       "norm_label": "gethabitsdashboardresponsedto"
     },
     {
@@ -18521,7 +18521,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_dto_monitoring_index",
       "community": 46,
-      "community_name": "tasks.service.ts",
+      "community_name": "TasksHabitsService",
       "norm_label": "dto/monitoring/index.ts"
     },
     {
@@ -18631,7 +18631,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_dto_task_create_bulk_tasks_dto",
       "community": 22,
-      "community_name": "tasks-service-test-providers.ts",
+      "community_name": "tasks.service.ts",
       "norm_label": "create-bulk-tasks.dto.ts"
     },
     {
@@ -18730,7 +18730,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_dto_task_create_many_tasks_options_dto",
       "community": 22,
-      "community_name": "tasks-service-test-providers.ts",
+      "community_name": "tasks.service.ts",
       "norm_label": "create-many-tasks-options.dto.ts"
     },
     {
@@ -18774,7 +18774,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_dto_task_create_micro_task_dto",
       "community": 22,
-      "community_name": "tasks-service-test-providers.ts",
+      "community_name": "tasks.service.ts",
       "norm_label": "create-micro-task.dto.ts"
     },
     {
@@ -18796,7 +18796,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_dto_task_create_task_dto",
       "community": 22,
-      "community_name": "tasks-service-test-providers.ts",
+      "community_name": "tasks.service.ts",
       "norm_label": "create-task.dto.ts"
     },
     {
@@ -18806,7 +18806,7 @@
       "source_location": "L15",
       "_origin": "ast",
       "id": "backend_src_tasks_dto_task_create_task_dto_checklistitemdto",
-      "community": 29,
+      "community": 17,
       "community_name": "ChecklistItemDto",
       "norm_label": "checklistitemdto"
     },
@@ -18839,7 +18839,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "backend_src_tasks_dto_task_create_task_dto_ts_apipropertyoptional",
-      "community": 29,
+      "community": 17,
       "community_name": "ChecklistItemDto",
       "norm_label": "apipropertyoptional"
     },
@@ -18861,7 +18861,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "backend_src_tasks_dto_task_create_task_dto_ts_isboolean",
-      "community": 29,
+      "community": 17,
       "community_name": "ChecklistItemDto",
       "norm_label": "isboolean"
     },
@@ -18983,7 +18983,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_dto_task_index",
       "community": 22,
-      "community_name": "tasks-service-test-providers.ts",
+      "community_name": "tasks.service.ts",
       "norm_label": "task/index.ts"
     },
     {
@@ -18994,7 +18994,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_dto_task_move_task_status_dto",
       "community": 22,
-      "community_name": "tasks-service-test-providers.ts",
+      "community_name": "tasks.service.ts",
       "norm_label": "move-task-status.dto.ts"
     },
     {
@@ -19005,7 +19005,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_dto_task_move_task_status_dto_movetaskstatusdto",
       "community": 22,
-      "community_name": "tasks-service-test-providers.ts",
+      "community_name": "tasks.service.ts",
       "norm_label": "movetaskstatusdto"
     },
     {
@@ -19280,7 +19280,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_events_task_events",
       "community": 113,
-      "community_name": ".recalculateProjectStats",
+      "community_name": "task-events.listener.ts",
       "norm_label": "task.events.ts"
     },
     {
@@ -19291,7 +19291,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_events_task_events_taskcreatedevent",
       "community": 113,
-      "community_name": ".recalculateProjectStats",
+      "community_name": "task-events.listener.ts",
       "norm_label": "taskcreatedevent"
     },
     {
@@ -19302,7 +19302,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_events_task_events_taskcreatedevent_constructor",
       "community": 113,
-      "community_name": ".recalculateProjectStats",
+      "community_name": "task-events.listener.ts",
       "norm_label": ".constructor()"
     },
     {
@@ -19313,7 +19313,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_events_task_events_taskcompletedevent",
       "community": 113,
-      "community_name": ".recalculateProjectStats",
+      "community_name": "task-events.listener.ts",
       "norm_label": "taskcompletedevent"
     },
     {
@@ -19324,7 +19324,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_events_task_events_taskcompletedevent_constructor",
       "community": 113,
-      "community_name": ".recalculateProjectStats",
+      "community_name": "task-events.listener.ts",
       "norm_label": ".constructor()"
     },
     {
@@ -19335,7 +19335,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_events_task_events_taskdeletedevent",
       "community": 113,
-      "community_name": ".recalculateProjectStats",
+      "community_name": "task-events.listener.ts",
       "norm_label": "taskdeletedevent"
     },
     {
@@ -19346,7 +19346,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_events_task_events_taskdeletedevent_constructor",
       "community": 113,
-      "community_name": ".recalculateProjectStats",
+      "community_name": "task-events.listener.ts",
       "norm_label": ".constructor()"
     },
     {
@@ -19357,7 +19357,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_events_task_events_taskstatusmovedevent",
       "community": 113,
-      "community_name": ".recalculateProjectStats",
+      "community_name": "task-events.listener.ts",
       "norm_label": "taskstatusmovedevent"
     },
     {
@@ -19368,7 +19368,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_events_task_events_taskstatusmovedevent_constructor",
       "community": 113,
-      "community_name": ".recalculateProjectStats",
+      "community_name": "task-events.listener.ts",
       "norm_label": ".constructor()"
     },
     {
@@ -19379,7 +19379,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_events_task_events_taskprogressupdatedevent",
       "community": 113,
-      "community_name": ".recalculateProjectStats",
+      "community_name": "task-events.listener.ts",
       "norm_label": "taskprogressupdatedevent"
     },
     {
@@ -19390,7 +19390,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_events_task_events_taskprogressupdatedevent_constructor",
       "community": 113,
-      "community_name": ".recalculateProjectStats",
+      "community_name": "task-events.listener.ts",
       "norm_label": ".constructor()"
     },
     {
@@ -19489,7 +19489,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_interfaces_checklist_interface",
       "community": 29,
-      "community_name": "ChecklistItemDto",
+      "community_name": "ChecklistOperationsService",
       "norm_label": "checklist.interface.ts"
     },
     {
@@ -19500,7 +19500,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_interfaces_checklist_interface_checklistvalidationresult",
       "community": 29,
-      "community_name": "ChecklistItemDto",
+      "community_name": "ChecklistOperationsService",
       "norm_label": "checklistvalidationresult"
     },
     {
@@ -19511,7 +19511,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_interfaces_checklist_interface_taskhistorysummary",
       "community": 29,
-      "community_name": "ChecklistItemDto",
+      "community_name": "ChecklistOperationsService",
       "norm_label": "taskhistorysummary"
     },
     {
@@ -19522,7 +19522,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_interfaces_checklist_interface_checklisthistoryprojectref",
       "community": 29,
-      "community_name": "ChecklistItemDto",
+      "community_name": "ChecklistOperationsService",
       "norm_label": "checklisthistoryprojectref"
     },
     {
@@ -20006,7 +20006,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_interfaces_feedback_interface",
       "community": 17,
-      "community_name": "feedback.service.ts",
+      "community_name": "ChecklistItemDto",
       "norm_label": "feedback.interface.ts"
     },
     {
@@ -20017,7 +20017,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_interfaces_feedback_interface_completionfeedbackpayload",
       "community": 17,
-      "community_name": "feedback.service.ts",
+      "community_name": "ChecklistItemDto",
       "norm_label": "completionfeedbackpayload"
     },
     {
@@ -20115,8 +20115,8 @@
       "source_location": "L21",
       "_origin": "ast",
       "id": "backend_src_tasks_interfaces_rtm_interface_requirementmaps",
-      "community": 25,
-      "community_name": "Requirement",
+      "community": 209,
+      "community_name": ".validateRTM",
       "norm_label": "requirementmaps"
     },
     {
@@ -20126,8 +20126,8 @@
       "source_location": "L26",
       "_origin": "ast",
       "id": "backend_src_tasks_interfaces_rtm_interface_validationissues",
-      "community": 16,
-      "community_name": "rtm-mapping.service.ts",
+      "community": 209,
+      "community_name": ".validateRTM",
       "norm_label": "validationissues"
     },
     {
@@ -20137,8 +20137,8 @@
       "source_location": "L31",
       "_origin": "ast",
       "id": "backend_src_tasks_interfaces_rtm_interface_rtmvalidation",
-      "community": 44,
-      "community_name": "RTMMappingService",
+      "community": 209,
+      "community_name": ".validateRTM",
       "norm_label": "rtmvalidation"
     },
     {
@@ -20391,7 +20391,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_listeners_task_events_listener",
       "community": 113,
-      "community_name": ".recalculateProjectStats",
+      "community_name": "task-events.listener.ts",
       "norm_label": "task-events.listener.ts"
     },
     {
@@ -20402,7 +20402,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_listeners_task_events_listener_taskeventslistener",
       "community": 113,
-      "community_name": ".recalculateProjectStats",
+      "community_name": "task-events.listener.ts",
       "norm_label": "taskeventslistener"
     },
     {
@@ -20413,7 +20413,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_listeners_task_events_listener_ts_injectable",
       "community": 113,
-      "community_name": ".recalculateProjectStats",
+      "community_name": "task-events.listener.ts",
       "norm_label": "injectable"
     },
     {
@@ -20424,7 +20424,7 @@
       "_origin": "ast",
       "id": "onevent",
       "community": 113,
-      "community_name": ".recalculateProjectStats",
+      "community_name": "task-events.listener.ts",
       "norm_label": "onevent"
     },
     {
@@ -20435,7 +20435,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_listeners_task_events_listener_taskeventslistener_constructor",
       "community": 113,
-      "community_name": ".recalculateProjectStats",
+      "community_name": "task-events.listener.ts",
       "norm_label": ".constructor()"
     },
     {
@@ -20446,7 +20446,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_listeners_task_events_listener_taskeventslistener_handletaskcreated",
       "community": 113,
-      "community_name": ".recalculateProjectStats",
+      "community_name": "task-events.listener.ts",
       "norm_label": ".handletaskcreated()"
     },
     {
@@ -20457,7 +20457,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_listeners_task_events_listener_taskeventslistener_handletaskcompleted",
       "community": 113,
-      "community_name": ".recalculateProjectStats",
+      "community_name": "task-events.listener.ts",
       "norm_label": ".handletaskcompleted()"
     },
     {
@@ -20468,7 +20468,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_listeners_task_events_listener_taskeventslistener_handletaskdeleted",
       "community": 113,
-      "community_name": ".recalculateProjectStats",
+      "community_name": "task-events.listener.ts",
       "norm_label": ".handletaskdeleted()"
     },
     {
@@ -20479,7 +20479,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_listeners_task_events_listener_taskeventslistener_handletaskstatusmoved",
       "community": 113,
-      "community_name": ".recalculateProjectStats",
+      "community_name": "task-events.listener.ts",
       "norm_label": ".handletaskstatusmoved()"
     },
     {
@@ -20490,7 +20490,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_listeners_task_events_listener_taskeventslistener_handletaskprogressupdated",
       "community": 113,
-      "community_name": ".recalculateProjectStats",
+      "community_name": "task-events.listener.ts",
       "norm_label": ".handletaskprogressupdated()"
     },
     {
@@ -20885,8 +20885,8 @@
       "source_location": "L70",
       "_origin": "ast",
       "id": "backend_src_tasks_schemas_requirement_schema_requirementschema",
-      "community": 137,
-      "community_name": "tasks.module.ts",
+      "community": 22,
+      "community_name": "tasks.service.ts",
       "norm_label": "requirementschema"
     },
     {
@@ -20896,8 +20896,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_src_tasks_schemas_task_alert_schema",
-      "community": 137,
-      "community_name": "tasks.module.ts",
+      "community": 22,
+      "community_name": "tasks.service.ts",
       "norm_label": "task-alert.schema.ts"
     },
     {
@@ -20907,8 +20907,8 @@
       "source_location": "L3",
       "_origin": "ast",
       "id": "backend_src_tasks_schemas_task_alert_schema_taskalertdocument",
-      "community": 137,
-      "community_name": "tasks.module.ts",
+      "community": 22,
+      "community_name": "tasks.service.ts",
       "norm_label": "taskalertdocument"
     },
     {
@@ -20918,8 +20918,8 @@
       "source_location": "L14",
       "_origin": "ast",
       "id": "backend_src_tasks_schemas_task_alert_schema_taskalertschema",
-      "community": 137,
-      "community_name": "tasks.module.ts",
+      "community": 22,
+      "community_name": "tasks.service.ts",
       "norm_label": "taskalertschema"
     },
     {
@@ -20930,7 +20930,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_schemas_task_completion_feedback_schema",
       "community": 17,
-      "community_name": "feedback.service.ts",
+      "community_name": "ChecklistItemDto",
       "norm_label": "task-completion-feedback.schema.ts"
     },
     {
@@ -20941,7 +20941,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_schemas_task_completion_feedback_schema_taskcompletionfeedbackdocument",
       "community": 17,
-      "community_name": "feedback.service.ts",
+      "community_name": "ChecklistItemDto",
       "norm_label": "taskcompletionfeedbackdocument"
     },
     {
@@ -20952,7 +20952,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_schemas_task_completion_feedback_schema_taskcompletionfeedbackschema",
       "community": 17,
-      "community_name": "feedback.service.ts",
+      "community_name": "ChecklistItemDto",
       "norm_label": "taskcompletionfeedbackschema"
     },
     {
@@ -21072,8 +21072,8 @@
       "source_location": "L27",
       "_origin": "ast",
       "id": "backend_src_tasks_schemas_task_schema_taskschema",
-      "community": 137,
-      "community_name": "tasks.module.ts",
+      "community": 22,
+      "community_name": "tasks.service.ts",
       "norm_label": "taskschema"
     },
     {
@@ -21315,7 +21315,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_services_analysis_metrics_service",
       "community": 22,
-      "community_name": "tasks-service-test-providers.ts",
+      "community_name": "tasks.service.ts",
       "norm_label": "metrics.service.ts"
     },
     {
@@ -21600,8 +21600,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "backend_src_tasks_services_analysis_pert_service_ts_injectmodel",
-      "community": 9,
-      "community_name": "CreateTaskDto",
+      "community": 47,
+      "community_name": "tasks.controller.ts",
       "norm_label": "injectmodel"
     },
     {
@@ -21611,8 +21611,8 @@
       "source_location": "L86",
       "_origin": "ast",
       "id": "backend_src_tasks_services_analysis_pert_service_taskspertservice_constructor",
-      "community": 9,
-      "community_name": "CreateTaskDto",
+      "community": 47,
+      "community_name": "tasks.controller.ts",
       "norm_label": ".constructor()"
     },
     {
@@ -23240,7 +23240,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_services_intelligence_checklist_operations_service",
       "community": 22,
-      "community_name": "tasks-service-test-providers.ts",
+      "community_name": "tasks.service.ts",
       "norm_label": "checklist-operations.service.ts"
     },
     {
@@ -23251,7 +23251,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_services_intelligence_checklist_operations_service_checklistoperationsservice",
       "community": 29,
-      "community_name": "ChecklistItemDto",
+      "community_name": "ChecklistOperationsService",
       "norm_label": "checklistoperationsservice"
     },
     {
@@ -23262,7 +23262,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_services_intelligence_checklist_operations_service_ts_injectable",
       "community": 29,
-      "community_name": "ChecklistItemDto",
+      "community_name": "ChecklistOperationsService",
       "norm_label": "injectable"
     },
     {
@@ -23273,7 +23273,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_services_intelligence_checklist_operations_service_ts_injectmodel",
       "community": 29,
-      "community_name": "ChecklistItemDto",
+      "community_name": "ChecklistOperationsService",
       "norm_label": "injectmodel"
     },
     {
@@ -23284,7 +23284,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_services_intelligence_checklist_operations_service_checklistoperationsservice_constructor",
       "community": 29,
-      "community_name": "ChecklistItemDto",
+      "community_name": "ChecklistOperationsService",
       "norm_label": ".constructor()"
     },
     {
@@ -23295,7 +23295,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_services_intelligence_checklist_operations_service_checklistoperationsservice_validatecheckliststructure",
       "community": 29,
-      "community_name": "ChecklistItemDto",
+      "community_name": "ChecklistOperationsService",
       "norm_label": ".validatecheckliststructure()"
     },
     {
@@ -23305,7 +23305,7 @@
       "source_location": "L35",
       "_origin": "ast",
       "id": "backend_src_tasks_services_intelligence_checklist_operations_service_checklistoperationsservice_updatemicrotaskchecklist",
-      "community": 29,
+      "community": 17,
       "community_name": "ChecklistItemDto",
       "norm_label": ".updatemicrotaskchecklist()"
     },
@@ -23317,7 +23317,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_services_intelligence_checklist_operations_service_checklistoperationsservice_updatechecklistitem",
       "community": 29,
-      "community_name": "ChecklistItemDto",
+      "community_name": "ChecklistOperationsService",
       "norm_label": ".updatechecklistitem()"
     },
     {
@@ -23328,7 +23328,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_services_intelligence_checklist_operations_service_checklistoperationsservice_parseandvalidateitemindex",
       "community": 29,
-      "community_name": "ChecklistItemDto",
+      "community_name": "ChecklistOperationsService",
       "norm_label": ".parseandvalidateitemindex()"
     },
     {
@@ -23339,7 +23339,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_services_intelligence_checklist_operations_service_checklistoperationsservice_gettaskbyidorthrow",
       "community": 29,
-      "community_name": "ChecklistItemDto",
+      "community_name": "ChecklistOperationsService",
       "norm_label": ".gettaskbyidorthrow()"
     },
     {
@@ -23350,7 +23350,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_services_intelligence_checklist_operations_service_checklistoperationsservice_validatecompletionrequirements",
       "community": 29,
-      "community_name": "ChecklistItemDto",
+      "community_name": "ChecklistOperationsService",
       "norm_label": ".validatecompletionrequirements()"
     },
     {
@@ -23361,7 +23361,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_services_intelligence_checklist_operations_service_checklistoperationsservice_getvalidationerrors",
       "community": 29,
-      "community_name": "ChecklistItemDto",
+      "community_name": "ChecklistOperationsService",
       "norm_label": ".getvalidationerrors()"
     },
     {
@@ -23372,7 +23372,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_services_intelligence_checklist_operations_service_checklistoperationsservice_checkchecklisterrors",
       "community": 29,
-      "community_name": "ChecklistItemDto",
+      "community_name": "ChecklistOperationsService",
       "norm_label": ".checkchecklisterrors()"
     },
     {
@@ -23383,7 +23383,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_services_intelligence_checklist_operations_service_checklistoperationsservice_checkperterrors",
       "community": 29,
-      "community_name": "ChecklistItemDto",
+      "community_name": "ChecklistOperationsService",
       "norm_label": ".checkperterrors()"
     },
     {
@@ -23394,7 +23394,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_services_intelligence_checklist_operations_service_checklistoperationsservice_generatechecklistfortask",
       "community": 29,
-      "community_name": "ChecklistItemDto",
+      "community_name": "ChecklistOperationsService",
       "norm_label": ".generatechecklistfortask()"
     },
     {
@@ -23405,7 +23405,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_services_intelligence_checklist_operations_service_checklistoperationsservice_generatechecklistwithhistory",
       "community": 29,
-      "community_name": "ChecklistItemDto",
+      "community_name": "ChecklistOperationsService",
       "norm_label": ".generatechecklistwithhistory()"
     },
     {
@@ -23416,7 +23416,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_services_intelligence_checklist_operations_service_checklistoperationsservice_buildhistoricalcontext",
       "community": 29,
-      "community_name": "ChecklistItemDto",
+      "community_name": "ChecklistOperationsService",
       "norm_label": ".buildhistoricalcontext()"
     },
     {
@@ -23427,7 +23427,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_services_intelligence_checklist_service",
       "community": 29,
-      "community_name": "ChecklistItemDto",
+      "community_name": "ChecklistOperationsService",
       "norm_label": "checklist.service.ts"
     },
     {
@@ -23438,7 +23438,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_services_intelligence_checklist_service_checklistservice",
       "community": 29,
-      "community_name": "ChecklistItemDto",
+      "community_name": "ChecklistOperationsService",
       "norm_label": "checklistservice"
     },
     {
@@ -23449,7 +23449,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_services_intelligence_checklist_service_ts_injectable",
       "community": 29,
-      "community_name": "ChecklistItemDto",
+      "community_name": "ChecklistOperationsService",
       "norm_label": "injectable"
     },
     {
@@ -23460,7 +23460,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_services_intelligence_checklist_service_ts_injectmodel",
       "community": 29,
-      "community_name": "ChecklistItemDto",
+      "community_name": "ChecklistOperationsService",
       "norm_label": "injectmodel"
     },
     {
@@ -23471,7 +23471,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_services_intelligence_checklist_service_checklistservice_constructor",
       "community": 29,
-      "community_name": "ChecklistItemDto",
+      "community_name": "ChecklistOperationsService",
       "norm_label": ".constructor()"
     },
     {
@@ -23482,7 +23482,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_services_intelligence_checklist_service_checklistservice_findsimilartasksinproject",
       "community": 29,
-      "community_name": "ChecklistItemDto",
+      "community_name": "ChecklistOperationsService",
       "norm_label": ".findsimilartasksinproject()"
     },
     {
@@ -23493,7 +23493,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_services_intelligence_checklist_service_checklistservice_enrichhistorycontext",
       "community": 29,
-      "community_name": "ChecklistItemDto",
+      "community_name": "ChecklistOperationsService",
       "norm_label": ".enrichhistorycontext()"
     },
     {
@@ -23504,7 +23504,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_services_intelligence_checklist_service_checklistservice_validatecheckliststructure",
       "community": 29,
-      "community_name": "ChecklistItemDto",
+      "community_name": "ChecklistOperationsService",
       "norm_label": ".validatecheckliststructure()"
     },
     {
@@ -23515,7 +23515,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_services_intelligence_checklist_service_checklistservice_validatechecklistcompletion",
       "community": 29,
-      "community_name": "ChecklistItemDto",
+      "community_name": "ChecklistOperationsService",
       "norm_label": ".validatechecklistcompletion()"
     },
     {
@@ -23526,7 +23526,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_services_intelligence_checklist_service_checklistservice_calculatecompletionpercentage",
       "community": 29,
-      "community_name": "ChecklistItemDto",
+      "community_name": "ChecklistOperationsService",
       "norm_label": ".calculatecompletionpercentage()"
     },
     {
@@ -23537,7 +23537,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_services_intelligence_feedback_service",
       "community": 17,
-      "community_name": "feedback.service.ts",
+      "community_name": "ChecklistItemDto",
       "norm_label": "feedback.service.ts"
     },
     {
@@ -23548,7 +23548,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_services_intelligence_feedback_service_feedbackservice",
       "community": 17,
-      "community_name": "feedback.service.ts",
+      "community_name": "ChecklistItemDto",
       "norm_label": "feedbackservice"
     },
     {
@@ -23559,7 +23559,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_services_intelligence_feedback_service_ts_injectable",
       "community": 17,
-      "community_name": "feedback.service.ts",
+      "community_name": "ChecklistItemDto",
       "norm_label": "injectable"
     },
     {
@@ -23570,7 +23570,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_services_intelligence_feedback_service_ts_injectmodel",
       "community": 17,
-      "community_name": "feedback.service.ts",
+      "community_name": "ChecklistItemDto",
       "norm_label": "injectmodel"
     },
     {
@@ -23581,7 +23581,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_services_intelligence_feedback_service_feedbackservice_constructor",
       "community": 17,
-      "community_name": "feedback.service.ts",
+      "community_name": "ChecklistItemDto",
       "norm_label": ".constructor()"
     },
     {
@@ -23592,7 +23592,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_services_intelligence_feedback_service_feedbackservice_generatecompletionfeedback",
       "community": 17,
-      "community_name": "feedback.service.ts",
+      "community_name": "ChecklistItemDto",
       "norm_label": ".generatecompletionfeedback()"
     },
     {
@@ -23603,7 +23603,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_services_intelligence_feedback_service_feedbackservice_getcompletionfeedback",
       "community": 17,
-      "community_name": "feedback.service.ts",
+      "community_name": "ChecklistItemDto",
       "norm_label": ".getcompletionfeedback()"
     },
     {
@@ -23614,7 +23614,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_services_intelligence_feedback_service_feedbackservice_generatefeedbackoncompletion",
       "community": 17,
-      "community_name": "feedback.service.ts",
+      "community_name": "ChecklistItemDto",
       "norm_label": ".generatefeedbackoncompletion()"
     },
     {
@@ -23625,7 +23625,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_services_intelligence_feedback_service_feedbackservice_suggestnextsteps",
       "community": 17,
-      "community_name": "feedback.service.ts",
+      "community_name": "ChecklistItemDto",
       "norm_label": ".suggestnextsteps()"
     },
     {
@@ -23636,7 +23636,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_services_intelligence_feedback_service_feedbackservice_validateandgettask",
       "community": 17,
-      "community_name": "feedback.service.ts",
+      "community_name": "ChecklistItemDto",
       "norm_label": ".validateandgettask()"
     },
     {
@@ -23647,7 +23647,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_services_intelligence_feedback_service_feedbackservice_createinputsnapshot",
       "community": 17,
-      "community_name": "feedback.service.ts",
+      "community_name": "ChecklistItemDto",
       "norm_label": ".createinputsnapshot()"
     },
     {
@@ -23658,7 +23658,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_services_intelligence_feedback_service_feedbackservice_isuserfeedbackpayload",
       "community": 17,
-      "community_name": "feedback.service.ts",
+      "community_name": "ChecklistItemDto",
       "norm_label": ".isuserfeedbackpayload()"
     },
     {
@@ -23669,7 +23669,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_services_intelligence_feedback_service_feedbackservice_saveuserfeedback",
       "community": 17,
-      "community_name": "feedback.service.ts",
+      "community_name": "ChecklistItemDto",
       "norm_label": ".saveuserfeedback()"
     },
     {
@@ -23680,7 +23680,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_services_intelligence_feedback_service_feedbackservice_saveerrorfeedback",
       "community": 17,
-      "community_name": "feedback.service.ts",
+      "community_name": "ChecklistItemDto",
       "norm_label": ".saveerrorfeedback()"
     },
     {
@@ -23691,7 +23691,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_services_intelligence_feedback_service_feedbackservice_savesuccessfeedback",
       "community": 17,
-      "community_name": "feedback.service.ts",
+      "community_name": "ChecklistItemDto",
       "norm_label": ".savesuccessfeedback()"
     },
     {
@@ -23702,7 +23702,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_services_intelligence_feedback_service_feedbackservice_saveerrorfeedbackoncompletion",
       "community": 17,
-      "community_name": "feedback.service.ts",
+      "community_name": "ChecklistItemDto",
       "norm_label": ".saveerrorfeedbackoncompletion()"
     },
     {
@@ -23713,7 +23713,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_services_intelligence_feedback_service_feedbackservice_buildchecklistsummary",
       "community": 17,
-      "community_name": "feedback.service.ts",
+      "community_name": "ChecklistItemDto",
       "norm_label": ".buildchecklistsummary()"
     },
     {
@@ -23724,7 +23724,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_services_intelligence_feedback_service_feedbackservice_calculatechecklistcompletionpercent",
       "community": 17,
-      "community_name": "feedback.service.ts",
+      "community_name": "ChecklistItemDto",
       "norm_label": ".calculatechecklistcompletionpercent()"
     },
     {
@@ -23734,8 +23734,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_src_tasks_services_intelligence_index",
-      "community": 17,
-      "community_name": "feedback.service.ts",
+      "community": 22,
+      "community_name": "tasks.service.ts",
       "norm_label": "services/intelligence/index.ts"
     },
     {
@@ -23833,8 +23833,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_src_tasks_services_monitoring_alerts_service",
-      "community": 137,
-      "community_name": "tasks.module.ts",
+      "community": 22,
+      "community_name": "tasks.service.ts",
       "norm_label": "alerts.service.ts"
     },
     {
@@ -23844,8 +23844,8 @@
       "source_location": "L6",
       "_origin": "ast",
       "id": "backend_src_tasks_services_monitoring_alerts_service_createalertinput",
-      "community": 137,
-      "community_name": "tasks.module.ts",
+      "community": 22,
+      "community_name": "tasks.service.ts",
       "norm_label": "createalertinput"
     },
     {
@@ -23855,8 +23855,8 @@
       "source_location": "L16",
       "_origin": "ast",
       "id": "backend_src_tasks_services_monitoring_alerts_service_alertsservice",
-      "community": 137,
-      "community_name": "tasks.module.ts",
+      "community": 22,
+      "community_name": "tasks.service.ts",
       "norm_label": "alertsservice"
     },
     {
@@ -23866,8 +23866,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "backend_src_tasks_services_monitoring_alerts_service_ts_injectable",
-      "community": 137,
-      "community_name": "tasks.module.ts",
+      "community": 22,
+      "community_name": "tasks.service.ts",
       "norm_label": "injectable"
     },
     {
@@ -23877,8 +23877,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "backend_src_tasks_services_monitoring_alerts_service_ts_injectmodel",
-      "community": 137,
-      "community_name": "tasks.module.ts",
+      "community": 22,
+      "community_name": "tasks.service.ts",
       "norm_label": "injectmodel"
     },
     {
@@ -23888,8 +23888,8 @@
       "source_location": "L17",
       "_origin": "ast",
       "id": "backend_src_tasks_services_monitoring_alerts_service_alertsservice_constructor",
-      "community": 137,
-      "community_name": "tasks.module.ts",
+      "community": 22,
+      "community_name": "tasks.service.ts",
       "norm_label": ".constructor()"
     },
     {
@@ -23899,8 +23899,8 @@
       "source_location": "L26",
       "_origin": "ast",
       "id": "backend_src_tasks_services_monitoring_alerts_service_alertsservice_createalert",
-      "community": 137,
-      "community_name": "tasks.module.ts",
+      "community": 22,
+      "community_name": "tasks.service.ts",
       "norm_label": ".createalert()"
     },
     {
@@ -23910,8 +23910,8 @@
       "source_location": "L41",
       "_origin": "ast",
       "id": "backend_src_tasks_services_monitoring_alerts_service_alertsservice_listalerts",
-      "community": 137,
-      "community_name": "tasks.module.ts",
+      "community": 22,
+      "community_name": "tasks.service.ts",
       "norm_label": ".listalerts()"
     },
     {
@@ -23921,8 +23921,8 @@
       "source_location": "L67",
       "_origin": "ast",
       "id": "backend_src_tasks_services_monitoring_alerts_service_alertsservice_markread",
-      "community": 137,
-      "community_name": "tasks.module.ts",
+      "community": 22,
+      "community_name": "tasks.service.ts",
       "norm_label": ".markread()"
     },
     {
@@ -23932,8 +23932,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_src_tasks_services_monitoring_deviation_detection_service",
-      "community": 137,
-      "community_name": "tasks.module.ts",
+      "community": 41,
+      "community_name": "TaskDocument",
       "norm_label": "deviation-detection.service.ts"
     },
     {
@@ -23943,8 +23943,8 @@
       "source_location": "L6",
       "_origin": "ast",
       "id": "backend_src_tasks_services_monitoring_deviation_detection_service_deviationresult",
-      "community": 137,
-      "community_name": "tasks.module.ts",
+      "community": 41,
+      "community_name": "TaskDocument",
       "norm_label": "deviationresult"
     },
     {
@@ -23954,8 +23954,8 @@
       "source_location": "L16",
       "_origin": "ast",
       "id": "backend_src_tasks_services_monitoring_deviation_detection_service_deviationdetectionservice",
-      "community": 137,
-      "community_name": "tasks.module.ts",
+      "community": 41,
+      "community_name": "TaskDocument",
       "norm_label": "deviationdetectionservice"
     },
     {
@@ -23965,8 +23965,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "backend_src_tasks_services_monitoring_deviation_detection_service_ts_injectable",
-      "community": 137,
-      "community_name": "tasks.module.ts",
+      "community": 41,
+      "community_name": "TaskDocument",
       "norm_label": "injectable"
     },
     {
@@ -23976,8 +23976,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "backend_src_tasks_services_monitoring_deviation_detection_service_ts_injectmodel",
-      "community": 137,
-      "community_name": "tasks.module.ts",
+      "community": 41,
+      "community_name": "TaskDocument",
       "norm_label": "injectmodel"
     },
     {
@@ -23987,8 +23987,8 @@
       "source_location": "L17",
       "_origin": "ast",
       "id": "backend_src_tasks_services_monitoring_deviation_detection_service_deviationdetectionservice_constructor",
-      "community": 137,
-      "community_name": "tasks.module.ts",
+      "community": 41,
+      "community_name": "TaskDocument",
       "norm_label": ".constructor()"
     },
     {
@@ -23998,8 +23998,8 @@
       "source_location": "L23",
       "_origin": "ast",
       "id": "backend_src_tasks_services_monitoring_deviation_detection_service_deviationdetectionservice_checktimedeviation",
-      "community": 137,
-      "community_name": "tasks.module.ts",
+      "community": 41,
+      "community_name": "TaskDocument",
       "norm_label": ".checktimedeviation()"
     },
     {
@@ -24009,8 +24009,8 @@
       "source_location": "L64",
       "_origin": "ast",
       "id": "backend_src_tasks_services_monitoring_deviation_detection_service_deviationdetectionservice_generatedeviationalert",
-      "community": 137,
-      "community_name": "tasks.module.ts",
+      "community": 41,
+      "community_name": "TaskDocument",
       "norm_label": ".generatedeviationalert()"
     },
     {
@@ -24020,8 +24020,8 @@
       "source_location": "L76",
       "_origin": "ast",
       "id": "backend_src_tasks_services_monitoring_deviation_detection_service_deviationdetectionservice_getactualminutes",
-      "community": 137,
-      "community_name": "tasks.module.ts",
+      "community": 41,
+      "community_name": "TaskDocument",
       "norm_label": ".getactualminutes()"
     },
     {
@@ -24032,7 +24032,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_services_monitoring_habits_service",
       "community": 46,
-      "community_name": "tasks.service.ts",
+      "community_name": "TasksHabitsService",
       "norm_label": "habits.service.ts"
     },
     {
@@ -24043,7 +24043,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_services_monitoring_habits_service_streakdata",
       "community": 46,
-      "community_name": "tasks.service.ts",
+      "community_name": "TasksHabitsService",
       "norm_label": "streakdata"
     },
     {
@@ -24054,7 +24054,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_services_monitoring_habits_service_habitsummary",
       "community": 46,
-      "community_name": "tasks.service.ts",
+      "community_name": "TasksHabitsService",
       "norm_label": "habitsummary"
     },
     {
@@ -24065,7 +24065,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_services_monitoring_habits_service_taskshabitsservice",
       "community": 46,
-      "community_name": "tasks.service.ts",
+      "community_name": "TasksHabitsService",
       "norm_label": "taskshabitsservice"
     },
     {
@@ -24076,7 +24076,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_services_monitoring_habits_service_ts_injectable",
       "community": 46,
-      "community_name": "tasks.service.ts",
+      "community_name": "TasksHabitsService",
       "norm_label": "injectable"
     },
     {
@@ -24087,7 +24087,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_services_monitoring_habits_service_ts_injectmodel",
       "community": 46,
-      "community_name": "tasks.service.ts",
+      "community_name": "TasksHabitsService",
       "norm_label": "injectmodel"
     },
     {
@@ -24098,7 +24098,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_services_monitoring_habits_service_taskshabitsservice_constructor",
       "community": 46,
-      "community_name": "tasks.service.ts",
+      "community_name": "TasksHabitsService",
       "norm_label": ".constructor()"
     },
     {
@@ -24109,7 +24109,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_services_monitoring_habits_service_taskshabitsservice_getstreakdata",
       "community": 46,
-      "community_name": "tasks.service.ts",
+      "community_name": "TasksHabitsService",
       "norm_label": ".getstreakdata()"
     },
     {
@@ -24120,7 +24120,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_services_monitoring_habits_service_taskshabitsservice_gethabitsdashboard",
       "community": 46,
-      "community_name": "tasks.service.ts",
+      "community_name": "TasksHabitsService",
       "norm_label": ".gethabitsdashboard()"
     },
     {
@@ -24131,7 +24131,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_services_monitoring_habits_service_taskshabitsservice_fetchtaskseries",
       "community": 46,
-      "community_name": "tasks.service.ts",
+      "community_name": "TasksHabitsService",
       "norm_label": "._fetchtaskseries()"
     },
     {
@@ -24142,7 +24142,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_services_monitoring_habits_service_taskshabitsservice_calculatestreakmetrics",
       "community": 46,
-      "community_name": "tasks.service.ts",
+      "community_name": "TasksHabitsService",
       "norm_label": "._calculatestreakmetrics()"
     },
     {
@@ -24153,7 +24153,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_services_monitoring_habits_service_taskshabitsservice_calculateadherence",
       "community": 46,
-      "community_name": "tasks.service.ts",
+      "community_name": "TasksHabitsService",
       "norm_label": "._calculateadherence()"
     },
     {
@@ -24164,7 +24164,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_services_monitoring_habits_service_taskshabitsservice_calculatecurrentstreak",
       "community": 46,
-      "community_name": "tasks.service.ts",
+      "community_name": "TasksHabitsService",
       "norm_label": "._calculatecurrentstreak()"
     },
     {
@@ -24175,7 +24175,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_services_monitoring_habits_service_taskshabitsservice_calculatelongeststreakandlastcompleteddate",
       "community": 46,
-      "community_name": "tasks.service.ts",
+      "community_name": "TasksHabitsService",
       "norm_label": "._calculatelongeststreakandlastcompleteddate()"
     },
     {
@@ -24186,7 +24186,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_services_monitoring_habits_service_taskshabitsservice_buildhabitsquery",
       "community": 46,
-      "community_name": "tasks.service.ts",
+      "community_name": "TasksHabitsService",
       "norm_label": "._buildhabitsquery()"
     },
     {
@@ -24197,7 +24197,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_services_monitoring_habits_service_taskshabitsservice_fetchhabits",
       "community": 46,
-      "community_name": "tasks.service.ts",
+      "community_name": "TasksHabitsService",
       "norm_label": "._fetchhabits()"
     },
     {
@@ -24208,7 +24208,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_services_monitoring_habits_service_taskshabitsservice_createhabitsummaries",
       "community": 46,
-      "community_name": "tasks.service.ts",
+      "community_name": "TasksHabitsService",
       "norm_label": "._createhabitsummaries()"
     },
     {
@@ -24219,7 +24219,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_services_monitoring_habits_service_taskshabitsservice_calculatedashboardmetrics",
       "community": 46,
-      "community_name": "tasks.service.ts",
+      "community_name": "TasksHabitsService",
       "norm_label": "._calculatedashboardmetrics()"
     },
     {
@@ -24230,7 +24230,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_services_monitoring_habits_service_taskshabitsservice_getduetodayhabits",
       "community": 46,
-      "community_name": "tasks.service.ts",
+      "community_name": "TasksHabitsService",
       "norm_label": "._getduetodayhabits()"
     },
     {
@@ -24241,7 +24241,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_services_monitoring_index",
       "community": 22,
-      "community_name": "tasks-service-test-providers.ts",
+      "community_name": "tasks.service.ts",
       "norm_label": "services/monitoring/index.ts"
     },
     {
@@ -24460,8 +24460,8 @@
       "source_location": "L162",
       "_origin": "ast",
       "id": "backend_src_tasks_services_traceability_rtm_crud_service_rtmcrudservice_deleterequirement",
-      "community": 78,
-      "community_name": "RTMService",
+      "community": 25,
+      "community_name": "Requirement",
       "norm_label": ".deleterequirement()"
     },
     {
@@ -24471,8 +24471,8 @@
       "source_location": "L177",
       "_origin": "ast",
       "id": "backend_src_tasks_services_traceability_rtm_crud_service_rtmcrudservice_deleteallrequirements",
-      "community": 78,
-      "community_name": "RTMService",
+      "community": 25,
+      "community_name": "Requirement",
       "norm_label": ".deleteallrequirements()"
     },
     {
@@ -24834,8 +24834,8 @@
       "source_location": "L109",
       "_origin": "ast",
       "id": "backend_src_tasks_services_traceability_rtm_task_generator_service_rtmtaskgeneratorservice_generateandlinktasks",
-      "community": 6,
-      "community_name": "dto/index.ts",
+      "community": 165,
+      "community_name": "rtm-ai.utils.ts",
       "norm_label": ".generateandlinktasks()"
     },
     {
@@ -24845,8 +24845,8 @@
       "source_location": "L148",
       "_origin": "ast",
       "id": "backend_src_tasks_services_traceability_rtm_task_generator_service_rtmtaskgeneratorservice_persistgeneratedtasks",
-      "community": 6,
-      "community_name": "dto/index.ts",
+      "community": 165,
+      "community_name": "rtm-ai.utils.ts",
       "norm_label": ".persistgeneratedtasks()"
     },
     {
@@ -24856,8 +24856,8 @@
       "source_location": "L187",
       "_origin": "ast",
       "id": "backend_src_tasks_services_traceability_rtm_task_generator_service_safestringify",
-      "community": 6,
-      "community_name": "dto/index.ts",
+      "community": 165,
+      "community_name": "rtm-ai.utils.ts",
       "norm_label": "safestringify()"
     },
     {
@@ -24922,8 +24922,8 @@
       "source_location": "L38",
       "_origin": "ast",
       "id": "backend_src_tasks_services_traceability_rtm_validation_service_rtmvalidationservice_validatertm",
-      "community": 44,
-      "community_name": "RTMMappingService",
+      "community": 209,
+      "community_name": ".validateRTM",
       "norm_label": ".validatertm()"
     },
     {
@@ -24966,8 +24966,8 @@
       "source_location": "L121",
       "_origin": "ast",
       "id": "backend_src_tasks_services_traceability_rtm_validation_service_rtmvalidationservice_buildrequirementmaps",
-      "community": 25,
-      "community_name": "Requirement",
+      "community": 209,
+      "community_name": ".validateRTM",
       "norm_label": ".buildrequirementmaps()"
     },
     {
@@ -24977,8 +24977,8 @@
       "source_location": "L142",
       "_origin": "ast",
       "id": "backend_src_tasks_services_traceability_rtm_validation_service_rtmvalidationservice_findvalidationissues",
-      "community": 16,
-      "community_name": "rtm-mapping.service.ts",
+      "community": 209,
+      "community_name": ".validateRTM",
       "norm_label": ".findvalidationissues()"
     },
     {
@@ -24999,8 +24999,8 @@
       "source_location": "L207",
       "_origin": "ast",
       "id": "backend_src_tasks_services_traceability_rtm_validation_service_rtmvalidationservice_calculatevalidationresult",
-      "community": 44,
-      "community_name": "RTMMappingService",
+      "community": 209,
+      "community_name": ".validateRTM",
       "norm_label": ".calculatevalidationresult()"
     },
     {
@@ -25065,8 +25065,8 @@
       "source_location": "L20",
       "_origin": "ast",
       "id": "backend_src_tasks_services_traceability_rtm_service_rtmservice",
-      "community": 78,
-      "community_name": "RTMService",
+      "community": 25,
+      "community_name": "Requirement",
       "norm_label": "rtmservice"
     },
     {
@@ -25076,8 +25076,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "backend_src_tasks_services_traceability_rtm_service_ts_injectable",
-      "community": 78,
-      "community_name": "RTMService",
+      "community": 25,
+      "community_name": "Requirement",
       "norm_label": "injectable"
     },
     {
@@ -25087,8 +25087,8 @@
       "source_location": "L21",
       "_origin": "ast",
       "id": "backend_src_tasks_services_traceability_rtm_service_rtmservice_constructor",
-      "community": 78,
-      "community_name": "RTMService",
+      "community": 25,
+      "community_name": "Requirement",
       "norm_label": ".constructor()"
     },
     {
@@ -25120,8 +25120,8 @@
       "source_location": "L39",
       "_origin": "ast",
       "id": "backend_src_tasks_services_traceability_rtm_service_rtmservice_deleterequirement",
-      "community": 78,
-      "community_name": "RTMService",
+      "community": 25,
+      "community_name": "Requirement",
       "norm_label": ".deleterequirement()"
     },
     {
@@ -25131,8 +25131,8 @@
       "source_location": "L43",
       "_origin": "ast",
       "id": "backend_src_tasks_services_traceability_rtm_service_rtmservice_deleteallrequirements",
-      "community": 78,
-      "community_name": "RTMService",
+      "community": 25,
+      "community_name": "Requirement",
       "norm_label": ".deleteallrequirements()"
     },
     {
@@ -25198,7 +25198,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_services_traceability_rtm_service_rtmservice_validatertm",
       "community": 78,
-      "community_name": "RTMService",
+      "community_name": "RTMController",
       "norm_label": ".validatertm()"
     },
     {
@@ -25396,7 +25396,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_services_workflow_completion_service",
       "community": 22,
-      "community_name": "tasks-service-test-providers.ts",
+      "community_name": "tasks.service.ts",
       "norm_label": "completion.service.ts"
     },
     {
@@ -25428,8 +25428,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "backend_src_tasks_services_workflow_completion_service_ts_injectmodel",
-      "community": 137,
-      "community_name": "tasks.module.ts",
+      "community": 41,
+      "community_name": "TaskDocument",
       "norm_label": "injectmodel"
     },
     {
@@ -25439,8 +25439,8 @@
       "source_location": "L17",
       "_origin": "ast",
       "id": "backend_src_tasks_services_workflow_completion_service_taskscompletionservice_constructor",
-      "community": 137,
-      "community_name": "tasks.module.ts",
+      "community": 41,
+      "community_name": "TaskDocument",
       "norm_label": ".constructor()"
     },
     {
@@ -25505,8 +25505,8 @@
       "source_location": "L162",
       "_origin": "ast",
       "id": "backend_src_tasks_services_workflow_completion_service_taskscompletionservice_createdeviationalertfortask",
-      "community": 137,
-      "community_name": "tasks.module.ts",
+      "community": 22,
+      "community_name": "tasks.service.ts",
       "norm_label": ".createdeviationalertfortask()"
     },
     {
@@ -25627,7 +25627,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_services_workflow_index",
       "community": 22,
-      "community_name": "tasks-service-test-providers.ts",
+      "community_name": "tasks.service.ts",
       "norm_label": "workflow/index.ts"
     },
     {
@@ -25638,7 +25638,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_services_workflow_input_service",
       "community": 22,
-      "community_name": "tasks-service-test-providers.ts",
+      "community_name": "tasks.service.ts",
       "norm_label": "input.service.ts"
     },
     {
@@ -25649,7 +25649,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_services_workflow_input_service_tasksinputservice",
       "community": 22,
-      "community_name": "tasks-service-test-providers.ts",
+      "community_name": "tasks.service.ts",
       "norm_label": "tasksinputservice"
     },
     {
@@ -25660,7 +25660,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_services_workflow_input_service_ts_injectable",
       "community": 22,
-      "community_name": "tasks-service-test-providers.ts",
+      "community_name": "tasks.service.ts",
       "norm_label": "injectable"
     },
     {
@@ -25671,7 +25671,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_services_workflow_input_service_tasksinputservice_validatepertinput",
       "community": 22,
-      "community_name": "tasks-service-test-providers.ts",
+      "community_name": "tasks.service.ts",
       "norm_label": ".validatepertinput()"
     },
     {
@@ -25681,7 +25681,7 @@
       "source_location": "L30",
       "_origin": "ast",
       "id": "backend_src_tasks_services_workflow_input_service_tasksinputservice_normalizechecklist",
-      "community": 29,
+      "community": 17,
       "community_name": "ChecklistItemDto",
       "norm_label": ".normalizechecklist()"
     },
@@ -25693,7 +25693,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_services_workflow_input_service_tasksinputservice_validatepertvaluesarepositive",
       "community": 22,
-      "community_name": "tasks-service-test-providers.ts",
+      "community_name": "tasks.service.ts",
       "norm_label": ".validatepertvaluesarepositive()"
     },
     {
@@ -25704,7 +25704,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_services_workflow_input_service_tasksinputservice_validatepertorder",
       "community": 22,
-      "community_name": "tasks-service-test-providers.ts",
+      "community_name": "tasks.service.ts",
       "norm_label": ".validatepertorder()"
     },
     {
@@ -25714,7 +25714,7 @@
       "source_location": "L60",
       "_origin": "ast",
       "id": "backend_src_tasks_services_workflow_input_service_tasksinputservice_normalizechecklistitem",
-      "community": 29,
+      "community": 17,
       "community_name": "ChecklistItemDto",
       "norm_label": ".normalizechecklistitem()"
     },
@@ -25726,7 +25726,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_services_workflow_recurring_service",
       "community": 22,
-      "community_name": "tasks-service-test-providers.ts",
+      "community_name": "tasks.service.ts",
       "norm_label": "recurring.service.ts"
     },
     {
@@ -25968,7 +25968,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_services_workflow_utils_kanban_utils",
       "community": 22,
-      "community_name": "tasks-service-test-providers.ts",
+      "community_name": "tasks.service.ts",
       "norm_label": "kanban.utils.ts"
     },
     {
@@ -25979,7 +25979,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_services_workflow_utils_kanban_utils_interpolateorderatindex",
       "community": 22,
-      "community_name": "tasks-service-test-providers.ts",
+      "community_name": "tasks.service.ts",
       "norm_label": "interpolateorderatindex()"
     },
     {
@@ -25990,7 +25990,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_services_workflow_utils_kanban_utils_calculatenextmaxorder",
       "community": 22,
-      "community_name": "tasks-service-test-providers.ts",
+      "community_name": "tasks.service.ts",
       "norm_label": "calculatenextmaxorder()"
     },
     {
@@ -26001,7 +26001,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_services_workflow_utils_kanban_utils_resolvetargetorder",
       "community": 22,
-      "community_name": "tasks-service-test-providers.ts",
+      "community_name": "tasks.service.ts",
       "norm_label": "resolvetargetorder()"
     },
     {
@@ -26353,7 +26353,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_services_workflow_write_service",
       "community": 22,
-      "community_name": "tasks-service-test-providers.ts",
+      "community_name": "tasks.service.ts",
       "norm_label": "write.service.ts"
     },
     {
@@ -26386,7 +26386,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_services_workflow_write_service_ts_injectmodel",
       "community": 22,
-      "community_name": "tasks-service-test-providers.ts",
+      "community_name": "tasks.service.ts",
       "norm_label": "injectmodel"
     },
     {
@@ -26397,7 +26397,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_services_workflow_write_service_taskswriteservice_constructor",
       "community": 22,
-      "community_name": "tasks-service-test-providers.ts",
+      "community_name": "tasks.service.ts",
       "norm_label": ".constructor()"
     },
     {
@@ -27144,8 +27144,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_src_tasks_tasks_module",
-      "community": 137,
-      "community_name": "tasks.module.ts",
+      "community": 22,
+      "community_name": "tasks.service.ts",
       "norm_label": "tasks.module.ts"
     },
     {
@@ -27155,8 +27155,8 @@
       "source_location": "L49",
       "_origin": "ast",
       "id": "backend_src_tasks_tasks_module_mongoosefeature",
-      "community": 137,
-      "community_name": "tasks.module.ts",
+      "community": 22,
+      "community_name": "tasks.service.ts",
       "norm_label": "mongoosefeature"
     },
     {
@@ -27188,7 +27188,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_src_tasks_tasks_service",
-      "community": 46,
+      "community": 22,
       "community_name": "tasks.service.ts",
       "norm_label": "tasks.service.ts"
     },
@@ -27221,8 +27221,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "inject",
-      "community": 41,
-      "community_name": "TaskDocument",
+      "community": 29,
+      "community_name": "ChecklistOperationsService",
       "norm_label": "inject"
     },
     {
@@ -27232,8 +27232,8 @@
       "source_location": "L49",
       "_origin": "ast",
       "id": "backend_src_tasks_tasks_service_tasksservice_constructor",
-      "community": 41,
-      "community_name": "TaskDocument",
+      "community": 29,
+      "community_name": "ChecklistOperationsService",
       "norm_label": ".constructor()"
     },
     {
@@ -27243,8 +27243,8 @@
       "source_location": "L64",
       "_origin": "ast",
       "id": "backend_src_tasks_tasks_service_tasksservice_recalculateprojectstats",
-      "community": 113,
-      "community_name": ".recalculateProjectStats",
+      "community": 41,
+      "community_name": "TaskDocument",
       "norm_label": ".recalculateprojectstats()"
     },
     {
@@ -27331,8 +27331,8 @@
       "source_location": "L108",
       "_origin": "ast",
       "id": "backend_src_tasks_tasks_service_tasksservice_remove",
-      "community": 9,
-      "community_name": "CreateTaskDto",
+      "community": 41,
+      "community_name": "TaskDocument",
       "norm_label": ".remove()"
     },
     {
@@ -27354,7 +27354,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_tasks_service_tasksservice_generatechecklistviacopilot",
       "community": 29,
-      "community_name": "ChecklistItemDto",
+      "community_name": "ChecklistOperationsService",
       "norm_label": ".generatechecklistviacopilot()"
     },
     {
@@ -27365,7 +27365,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_tasks_service_tasksservice_generatechecklistviacopilotwithhistory",
       "community": 29,
-      "community_name": "ChecklistItemDto",
+      "community_name": "ChecklistOperationsService",
       "norm_label": ".generatechecklistviacopilotwithhistory()"
     },
     {
@@ -27376,7 +27376,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_tasks_service_tasksservice_updatechecklistitem",
       "community": 29,
-      "community_name": "ChecklistItemDto",
+      "community_name": "ChecklistOperationsService",
       "norm_label": ".updatechecklistitem()"
     },
     {
@@ -27386,7 +27386,7 @@
       "source_location": "L131",
       "_origin": "ast",
       "id": "backend_src_tasks_tasks_service_tasksservice_updatemicrotaskchecklist",
-      "community": 29,
+      "community": 17,
       "community_name": "ChecklistItemDto",
       "norm_label": ".updatemicrotaskchecklist()"
     },
@@ -27398,7 +27398,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_tasks_service_tasksservice_validatecompletionrequirements",
       "community": 29,
-      "community_name": "ChecklistItemDto",
+      "community_name": "ChecklistOperationsService",
       "norm_label": ".validatecompletionrequirements()"
     },
     {
@@ -27409,7 +27409,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_tasks_service_tasksservice_getvalidationerrors",
       "community": 29,
-      "community_name": "ChecklistItemDto",
+      "community_name": "ChecklistOperationsService",
       "norm_label": ".getvalidationerrors()"
     },
     {
@@ -27474,8 +27474,8 @@
       "source_location": "L179",
       "_origin": "ast",
       "id": "backend_src_tasks_tasks_service_tasksservice_checkdeviationandcreatealert",
-      "community": 137,
-      "community_name": "tasks.module.ts",
+      "community": 22,
+      "community_name": "tasks.service.ts",
       "norm_label": ".checkdeviationandcreatealert()"
     },
     {
@@ -27486,7 +27486,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_tasks_service_tasksservice_generatecompletionfeedback",
       "community": 17,
-      "community_name": "feedback.service.ts",
+      "community_name": "ChecklistItemDto",
       "norm_label": ".generatecompletionfeedback()"
     },
     {
@@ -27497,7 +27497,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_tasks_service_tasksservice_getcompletionfeedback",
       "community": 17,
-      "community_name": "feedback.service.ts",
+      "community_name": "ChecklistItemDto",
       "norm_label": ".getcompletionfeedback()"
     },
     {
@@ -27552,7 +27552,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_tasks_service_tasksservice_getstreakdata",
       "community": 46,
-      "community_name": "tasks.service.ts",
+      "community_name": "TasksHabitsService",
       "norm_label": ".getstreakdata()"
     },
     {
@@ -27563,7 +27563,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_tasks_service_tasksservice_gethabitsdashboard",
       "community": 46,
-      "community_name": "tasks.service.ts",
+      "community_name": "TasksHabitsService",
       "norm_label": ".gethabitsdashboard()"
     },
     {
@@ -28047,7 +28047,7 @@
       "_origin": "ast",
       "id": "backend_tests_unit_ai_services_projects_prompt_builder_service_spec",
       "community": 84,
-      "community_name": "PromptBuilderService",
+      "community_name": "DraftsAiService",
       "norm_label": "prompt-builder.service.spec.ts"
     },
     {
@@ -28101,8 +28101,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_tests_unit_ai_services_tasks_drafts_ai_service_spec",
-      "community": 43,
-      "community_name": "drafts-ai.service.ts",
+      "community": 84,
+      "community_name": "DraftsAiService",
       "norm_label": "drafts-ai.service.spec.ts"
     },
     {
@@ -28200,8 +28200,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_tests_unit_projects_controllers_projects_visualization_controller_spec",
-      "community": 202,
-      "community_name": "projects-x-matrix.service.ts",
+      "community": 156,
+      "community_name": "ProjectsXMatrixService",
       "norm_label": "projects-visualization.controller.spec.ts"
     },
     {
@@ -28245,7 +28245,7 @@
       "_origin": "ast",
       "id": "backend_tests_unit_projects_execution_project_stats_service_spec",
       "community": 22,
-      "community_name": "tasks-service-test-providers.ts",
+      "community_name": "tasks.service.ts",
       "norm_label": "project-stats.service.spec.ts"
     },
     {
@@ -28289,7 +28289,7 @@
       "_origin": "ast",
       "id": "backend_tests_unit_projects_services_drafts_draft_plan_generation_service_spec",
       "community": 43,
-      "community_name": "drafts-ai.service.ts",
+      "community_name": "drafts.interface.ts",
       "norm_label": "draft-plan-generation.service.spec.ts"
     },
     {
@@ -28651,8 +28651,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_tests_unit_projects_services_wbs_utils_json_parser_util_spec",
-      "community": 84,
-      "community_name": "PromptBuilderService",
+      "community": 202,
+      "community_name": "extractJsonObject",
       "norm_label": "json-parser.util.spec.ts"
     },
     {
@@ -28772,8 +28772,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_tests_unit_projects_visualization_projects_x_matrix_service_spec",
-      "community": 202,
-      "community_name": "projects-x-matrix.service.ts",
+      "community": 95,
+      "community_name": "projects.module.ts",
       "norm_label": "projects-x-matrix.service.spec.ts"
     },
     {
@@ -28805,8 +28805,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_tests_unit_tasks_controllers_alerts_controller_spec",
-      "community": 137,
-      "community_name": "tasks.module.ts",
+      "community": 22,
+      "community_name": "tasks.service.ts",
       "norm_label": "alerts.controller.spec.ts"
     },
     {
@@ -28839,7 +28839,7 @@
       "_origin": "ast",
       "id": "backend_tests_unit_tasks_controllers_habits_controller_spec",
       "community": 46,
-      "community_name": "tasks.service.ts",
+      "community_name": "TasksHabitsService",
       "norm_label": "habits.controller.spec.ts"
     },
     {
@@ -28849,8 +28849,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_tests_unit_tasks_controllers_rtm_controller_spec",
-      "community": 78,
-      "community_name": "RTMService",
+      "community": 6,
+      "community_name": "dto/index.ts",
       "norm_label": "rtm.controller.spec.ts"
     },
     {
@@ -28872,7 +28872,7 @@
       "_origin": "ast",
       "id": "backend_tests_unit_tasks_helpers_tasks_service_test_providers",
       "community": 22,
-      "community_name": "tasks-service-test-providers.ts",
+      "community_name": "tasks.service.ts",
       "norm_label": "tasks-service-test-providers.ts"
     },
     {
@@ -28883,7 +28883,7 @@
       "_origin": "ast",
       "id": "backend_tests_unit_tasks_helpers_tasks_service_test_providers_tasksservicetestdeps",
       "community": 22,
-      "community_name": "tasks-service-test-providers.ts",
+      "community_name": "tasks.service.ts",
       "norm_label": "tasksservicetestdeps"
     },
     {
@@ -28894,7 +28894,7 @@
       "_origin": "ast",
       "id": "backend_tests_unit_tasks_helpers_tasks_service_test_providers_createtasksservicetestproviders",
       "community": 22,
-      "community_name": "tasks-service-test-providers.ts",
+      "community_name": "tasks.service.ts",
       "norm_label": "createtasksservicetestproviders()"
     },
     {
@@ -29070,7 +29070,7 @@
       "_origin": "ast",
       "id": "backend_tests_unit_tasks_services_intelligence_checklist_operations_service_spec",
       "community": 29,
-      "community_name": "ChecklistItemDto",
+      "community_name": "ChecklistOperationsService",
       "norm_label": "checklist-operations.service.spec.ts"
     },
     {
@@ -29081,7 +29081,7 @@
       "_origin": "ast",
       "id": "backend_tests_unit_tasks_services_intelligence_checklist_service_spec",
       "community": 29,
-      "community_name": "ChecklistItemDto",
+      "community_name": "ChecklistOperationsService",
       "norm_label": "checklist.service.spec.ts"
     },
     {
@@ -29092,7 +29092,7 @@
       "_origin": "ast",
       "id": "backend_tests_unit_tasks_services_intelligence_feedback_service_spec",
       "community": 17,
-      "community_name": "feedback.service.ts",
+      "community_name": "ChecklistItemDto",
       "norm_label": "feedback.service.spec.ts"
     },
     {
@@ -29102,8 +29102,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_tests_unit_tasks_services_monitoring_alerts_service_spec",
-      "community": 137,
-      "community_name": "tasks.module.ts",
+      "community": 22,
+      "community_name": "tasks.service.ts",
       "norm_label": "alerts.service.spec.ts"
     },
     {
@@ -29113,8 +29113,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_tests_unit_tasks_services_monitoring_deviation_detection_service_spec",
-      "community": 137,
-      "community_name": "tasks.module.ts",
+      "community": 41,
+      "community_name": "TaskDocument",
       "norm_label": "deviation-detection.service.spec.ts"
     },
     {
@@ -29125,7 +29125,7 @@
       "_origin": "ast",
       "id": "backend_tests_unit_tasks_services_monitoring_habits_service_spec",
       "community": 46,
-      "community_name": "tasks.service.ts",
+      "community_name": "TasksHabitsService",
       "norm_label": "habits.service.spec.ts"
     },
     {
@@ -29191,7 +29191,7 @@
       "_origin": "ast",
       "id": "backend_tests_unit_tasks_services_workflow_completion_service_spec",
       "community": 22,
-      "community_name": "tasks-service-test-providers.ts",
+      "community_name": "tasks.service.ts",
       "norm_label": "completion.service.spec.ts"
     },
     {
@@ -29202,7 +29202,7 @@
       "_origin": "ast",
       "id": "backend_tests_unit_tasks_services_workflow_input_service_spec",
       "community": 22,
-      "community_name": "tasks-service-test-providers.ts",
+      "community_name": "tasks.service.ts",
       "norm_label": "input.service.spec.ts"
     },
     {
@@ -29213,7 +29213,7 @@
       "_origin": "ast",
       "id": "backend_tests_unit_tasks_services_workflow_recurring_service_spec",
       "community": 22,
-      "community_name": "tasks-service-test-providers.ts",
+      "community_name": "tasks.service.ts",
       "norm_label": "recurring.service.spec.ts"
     },
     {
@@ -29224,7 +29224,7 @@
       "_origin": "ast",
       "id": "backend_tests_unit_tasks_services_workflow_utils_kanban_utils_spec",
       "community": 22,
-      "community_name": "tasks-service-test-providers.ts",
+      "community_name": "tasks.service.ts",
       "norm_label": "kanban.utils.spec.ts"
     },
     {
@@ -29246,7 +29246,7 @@
       "_origin": "ast",
       "id": "backend_tests_unit_tasks_services_workflow_write_service_spec",
       "community": 22,
-      "community_name": "tasks-service-test-providers.ts",
+      "community_name": "tasks.service.ts",
       "norm_label": "write.service.spec.ts"
     },
     {
@@ -30727,7 +30727,7 @@
       "label": "props",
       "file_type": "code",
       "source_file": "Frontend/components/features/projects/BookModal.vue",
-      "source_location": "L243",
+      "source_location": "L88",
       "_origin": "ast",
       "id": "frontend_components_features_projects_bookmodal_props",
       "community": 56,
@@ -30738,7 +30738,7 @@
       "label": "emit",
       "file_type": "code",
       "source_file": "Frontend/components/features/projects/BookModal.vue",
-      "source_location": "L249",
+      "source_location": "L94",
       "_origin": "ast",
       "id": "frontend_components_features_projects_bookmodal_emit",
       "community": 56,
@@ -30749,7 +30749,7 @@
       "label": "isClosing",
       "file_type": "code",
       "source_file": "Frontend/components/features/projects/BookModal.vue",
-      "source_location": "L252",
+      "source_location": "L97",
       "_origin": "ast",
       "id": "frontend_components_features_projects_bookmodal_isclosing",
       "community": 56,
@@ -30760,7 +30760,7 @@
       "label": "api",
       "file_type": "code",
       "source_file": "Frontend/components/features/projects/BookModal.vue",
-      "source_location": "L255",
+      "source_location": "L100",
       "_origin": "ast",
       "id": "frontend_components_features_projects_bookmodal_api",
       "community": 56,
@@ -30768,21 +30768,21 @@
       "norm_label": "api"
     },
     {
-      "label": "{\n  carouselEl,\n  currentIndex,\n  atStart,\n  atEnd,\n  go,\n  updateIndex,\n  attach,\n  detach,\n  reset,\n}",
+      "label": "{ carouselEl, currentIndex, atStart, atEnd, go, updateIndex, attach, detach, reset }",
       "file_type": "code",
       "source_file": "Frontend/components/features/projects/BookModal.vue",
-      "source_location": "L257",
+      "source_location": "L102",
       "_origin": "ast",
       "id": "frontend_components_features_projects_bookmodal_carouselel_currentindex_atstart_atend_go_updateindex_attach_detach_reset",
       "community": 56,
       "community_name": "BookModal.vue",
-      "norm_label": "{\n  carouselel,\n  currentindex,\n  atstart,\n  atend,\n  go,\n  updateindex,\n  attach,\n  detach,\n  reset,\n}"
+      "norm_label": "{ carouselel, currentindex, atstart, atend, go, updateindex, attach, detach, reset }"
     },
     {
       "label": "{ sparkles, createSparkles, clearSparkles }",
       "file_type": "code",
       "source_file": "Frontend/components/features/projects/BookModal.vue",
-      "source_location": "L268",
+      "source_location": "L103",
       "_origin": "ast",
       "id": "frontend_components_features_projects_bookmodal_sparkles_createsparkles_clearsparkles",
       "community": 56,
@@ -30793,7 +30793,7 @@
       "label": "projectRef",
       "file_type": "code",
       "source_file": "Frontend/components/features/projects/BookModal.vue",
-      "source_location": "L269",
+      "source_location": "L104",
       "_origin": "ast",
       "id": "frontend_components_features_projects_bookmodal_projectref",
       "community": 56,
@@ -30801,21 +30801,21 @@
       "norm_label": "projectref"
     },
     {
-      "label": "{\n  editing,\n  saving,\n  draft,\n  displayProject,\n  isValid,\n  startEdit: startEditInner,\n  cancelEdit: cancelEditInner,\n  updateField,\n  reset: resetEditing,\n}",
+      "label": "{ editing, saving, draft, displayProject, isValid, startEdit: startEditInner, cancelEdit: cancelEditInner, updateField, reset: resetEditing }",
       "file_type": "code",
       "source_file": "Frontend/components/features/projects/BookModal.vue",
-      "source_location": "L270",
+      "source_location": "L105",
       "_origin": "ast",
       "id": "frontend_components_features_projects_bookmodal_editing_saving_draft_displayproject_isvalid_startedit_starteditinner_canceledit_canceleditinner_updatefield_reset_resetediting",
       "community": 56,
       "community_name": "BookModal.vue",
-      "norm_label": "{\n  editing,\n  saving,\n  draft,\n  displayproject,\n  isvalid,\n  startedit: starteditinner,\n  canceledit: canceleditinner,\n  updatefield,\n  reset: resetediting,\n}"
+      "norm_label": "{ editing, saving, draft, displayproject, isvalid, startedit: starteditinner, canceledit: canceleditinner, updatefield, reset: resetediting }"
     },
     {
       "label": "renderProject",
       "file_type": "code",
       "source_file": "Frontend/components/features/projects/BookModal.vue",
-      "source_location": "L282",
+      "source_location": "L107",
       "_origin": "ast",
       "id": "frontend_components_features_projects_bookmodal_renderproject",
       "community": 56,
@@ -30826,7 +30826,7 @@
       "label": "startEdit()",
       "file_type": "code",
       "source_file": "Frontend/components/features/projects/BookModal.vue",
-      "source_location": "L307",
+      "source_location": "L132",
       "_origin": "ast",
       "id": "frontend_components_features_projects_bookmodal_startedit",
       "community": 56,
@@ -30837,7 +30837,7 @@
       "label": "cancelEdit()",
       "file_type": "code",
       "source_file": "Frontend/components/features/projects/BookModal.vue",
-      "source_location": "L308",
+      "source_location": "L133",
       "_origin": "ast",
       "id": "frontend_components_features_projects_bookmodal_canceledit",
       "community": 56,
@@ -30848,7 +30848,7 @@
       "label": "saveEdit()",
       "file_type": "code",
       "source_file": "Frontend/components/features/projects/BookModal.vue",
-      "source_location": "L311",
+      "source_location": "L136",
       "_origin": "ast",
       "id": "frontend_components_features_projects_bookmodal_saveedit",
       "community": 56,
@@ -30859,7 +30859,7 @@
       "label": "showDeleteDialog",
       "file_type": "code",
       "source_file": "Frontend/components/features/projects/BookModal.vue",
-      "source_location": "L329",
+      "source_location": "L154",
       "_origin": "ast",
       "id": "frontend_components_features_projects_bookmodal_showdeletedialog",
       "community": 56,
@@ -30870,7 +30870,7 @@
       "label": "taskCount",
       "file_type": "code",
       "source_file": "Frontend/components/features/projects/BookModal.vue",
-      "source_location": "L330",
+      "source_location": "L155",
       "_origin": "ast",
       "id": "frontend_components_features_projects_bookmodal_taskcount",
       "community": 56,
@@ -30881,7 +30881,7 @@
       "label": "reloadProject()",
       "file_type": "code",
       "source_file": "Frontend/components/features/projects/BookModal.vue",
-      "source_location": "L333",
+      "source_location": "L158",
       "_origin": "ast",
       "id": "frontend_components_features_projects_bookmodal_reloadproject",
       "community": 56,
@@ -30892,7 +30892,7 @@
       "label": "confirmDelete()",
       "file_type": "code",
       "source_file": "Frontend/components/features/projects/BookModal.vue",
-      "source_location": "L371",
+      "source_location": "L190",
       "_origin": "ast",
       "id": "frontend_components_features_projects_bookmodal_confirmdelete",
       "community": 56,
@@ -30903,7 +30903,7 @@
       "label": "onBackdrop()",
       "file_type": "code",
       "source_file": "Frontend/components/features/projects/BookModal.vue",
-      "source_location": "L398",
+      "source_location": "L217",
       "_origin": "ast",
       "id": "frontend_components_features_projects_bookmodal_onbackdrop",
       "community": 56,
@@ -30914,7 +30914,7 @@
       "label": "closeModal()",
       "file_type": "code",
       "source_file": "Frontend/components/features/projects/BookModal.vue",
-      "source_location": "L402",
+      "source_location": "L221",
       "_origin": "ast",
       "id": "frontend_components_features_projects_bookmodal_closemodal",
       "community": 56,
@@ -30925,7 +30925,7 @@
       "label": "finishClose()",
       "file_type": "code",
       "source_file": "Frontend/components/features/projects/BookModal.vue",
-      "source_location": "L408",
+      "source_location": "L227",
       "_origin": "ast",
       "id": "frontend_components_features_projects_bookmodal_finishclose",
       "community": 56,
@@ -45140,8 +45140,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "frontend_composables_features_pert_usepertgrapheventbindings",
-      "community": 27,
-      "community_name": "pert/index.ts",
+      "community": 8,
+      "community_name": "PertDiagramVisualization.vue",
       "norm_label": "usepertgrapheventbindings.ts"
     },
     {
@@ -45151,8 +45151,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "frontend_composables_features_pert_usepertgrapheventbindings_bindpertgrapheventsparams",
-      "community": 27,
-      "community_name": "pert/index.ts",
+      "community": 8,
+      "community_name": "PertDiagramVisualization.vue",
       "norm_label": "bindpertgrapheventsparams"
     },
     {
@@ -45162,8 +45162,8 @@
       "source_location": "L24",
       "_origin": "ast",
       "id": "frontend_composables_features_pert_usepertgrapheventbindings_usepertgrapheventbindings",
-      "community": 27,
-      "community_name": "pert/index.ts",
+      "community": 8,
+      "community_name": "PertDiagramVisualization.vue",
       "norm_label": "usepertgrapheventbindings()"
     },
     {
@@ -45569,8 +45569,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "frontend_composables_features_pert_usepertrenderfailurestate",
-      "community": 8,
-      "community_name": "PertDiagramVisualization.vue",
+      "community": 27,
+      "community_name": "pert/index.ts",
       "norm_label": "usepertrenderfailurestate.ts"
     },
     {
@@ -45580,8 +45580,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "frontend_composables_features_pert_usepertrenderfailurestate_pertresolvedlayoutmode",
-      "community": 8,
-      "community_name": "PertDiagramVisualization.vue",
+      "community": 27,
+      "community_name": "pert/index.ts",
       "norm_label": "pertresolvedlayoutmode"
     },
     {
@@ -45591,8 +45591,8 @@
       "source_location": "L3",
       "_origin": "ast",
       "id": "frontend_composables_features_pert_usepertrenderfailurestate_applyrenderfailurestateparams",
-      "community": 8,
-      "community_name": "PertDiagramVisualization.vue",
+      "community": 27,
+      "community_name": "pert/index.ts",
       "norm_label": "applyrenderfailurestateparams"
     },
     {
@@ -45602,8 +45602,8 @@
       "source_location": "L9",
       "_origin": "ast",
       "id": "frontend_composables_features_pert_usepertrenderfailurestate_usepertrenderfailurestate",
-      "community": 8,
-      "community_name": "PertDiagramVisualization.vue",
+      "community": 27,
+      "community_name": "pert/index.ts",
       "norm_label": "usepertrenderfailurestate()"
     },
     {
@@ -52433,8 +52433,8 @@
       "source_location": "L1079",
       "_origin": "ast",
       "id": "project_requisitos_fase_12_polimento_e_seguran\u00e7a",
-      "community": 209,
-      "community_name": "\ud83c\udff0 Fase 12 - Polimento e Seguran\u00e7a",
+      "community": 173,
+      "community_name": "\ud83d\udccb Acompanhamento de Requisitos - Second Brain",
       "norm_label": "\ud83c\udff0 fase 12 - polimento e seguranca"
     },
     {
@@ -52444,8 +52444,8 @@
       "source_location": "L1081",
       "_origin": "ast",
       "id": "project_requisitos_usabilidade",
-      "community": 209,
-      "community_name": "\ud83c\udff0 Fase 12 - Polimento e Seguran\u00e7a",
+      "community": 173,
+      "community_name": "\ud83d\udccb Acompanhamento de Requisitos - Second Brain",
       "norm_label": "usabilidade"
     },
     {
@@ -52455,8 +52455,8 @@
       "source_location": "L1090",
       "_origin": "ast",
       "id": "project_requisitos_qualidade_de_c\u00f3digo",
-      "community": 209,
-      "community_name": "\ud83c\udff0 Fase 12 - Polimento e Seguran\u00e7a",
+      "community": 173,
+      "community_name": "\ud83d\udccb Acompanhamento de Requisitos - Second Brain",
       "norm_label": "qualidade de codigo"
     },
     {
@@ -52466,8 +52466,8 @@
       "source_location": "L1096",
       "_origin": "ast",
       "id": "project_requisitos_seguran\u00e7a",
-      "community": 209,
-      "community_name": "\ud83c\udff0 Fase 12 - Polimento e Seguran\u00e7a",
+      "community": 173,
+      "community_name": "\ud83d\udccb Acompanhamento de Requisitos - Second Brain",
       "norm_label": "seguranca"
     },
     {
@@ -52477,8 +52477,8 @@
       "source_location": "L1104",
       "_origin": "ast",
       "id": "project_requisitos_novos_requisitos_propostos_transpar\u00eancia_e_privacidade_psicol\u00f3gica",
-      "community": 209,
-      "community_name": "\ud83c\udff0 Fase 12 - Polimento e Seguran\u00e7a",
+      "community": 173,
+      "community_name": "\ud83d\udccb Acompanhamento de Requisitos - Second Brain",
       "norm_label": "novos requisitos propostos (transparencia e privacidade psicologica)"
     },
     {
@@ -147336,7 +147336,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "Frontend/components/features/projects/BookModal.vue",
-      "source_location": "L255",
+      "source_location": "L100",
       "weight": 1.0,
       "_origin": "ast",
       "source": "frontend_components_features_projects_bookmodal",
@@ -147347,7 +147347,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "Frontend/components/features/projects/BookModal.vue",
-      "source_location": "L308",
+      "source_location": "L133",
       "weight": 1.0,
       "_origin": "ast",
       "source": "frontend_components_features_projects_bookmodal",
@@ -147358,7 +147358,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "Frontend/components/features/projects/BookModal.vue",
-      "source_location": "L257",
+      "source_location": "L102",
       "weight": 1.0,
       "_origin": "ast",
       "source": "frontend_components_features_projects_bookmodal",
@@ -147369,7 +147369,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "Frontend/components/features/projects/BookModal.vue",
-      "source_location": "L402",
+      "source_location": "L221",
       "weight": 1.0,
       "_origin": "ast",
       "source": "frontend_components_features_projects_bookmodal",
@@ -147380,7 +147380,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "Frontend/components/features/projects/BookModal.vue",
-      "source_location": "L371",
+      "source_location": "L190",
       "weight": 1.0,
       "_origin": "ast",
       "source": "frontend_components_features_projects_bookmodal",
@@ -147391,7 +147391,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "Frontend/components/features/projects/BookModal.vue",
-      "source_location": "L270",
+      "source_location": "L105",
       "weight": 1.0,
       "_origin": "ast",
       "source": "frontend_components_features_projects_bookmodal",
@@ -147402,7 +147402,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "Frontend/components/features/projects/BookModal.vue",
-      "source_location": "L249",
+      "source_location": "L94",
       "weight": 1.0,
       "_origin": "ast",
       "source": "frontend_components_features_projects_bookmodal",
@@ -147413,7 +147413,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "Frontend/components/features/projects/BookModal.vue",
-      "source_location": "L408",
+      "source_location": "L227",
       "weight": 1.0,
       "_origin": "ast",
       "source": "frontend_components_features_projects_bookmodal",
@@ -147424,7 +147424,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "Frontend/components/features/projects/BookModal.vue",
-      "source_location": "L252",
+      "source_location": "L97",
       "weight": 1.0,
       "_origin": "ast",
       "source": "frontend_components_features_projects_bookmodal",
@@ -147435,7 +147435,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "Frontend/components/features/projects/BookModal.vue",
-      "source_location": "L398",
+      "source_location": "L217",
       "weight": 1.0,
       "_origin": "ast",
       "source": "frontend_components_features_projects_bookmodal",
@@ -147446,7 +147446,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "Frontend/components/features/projects/BookModal.vue",
-      "source_location": "L269",
+      "source_location": "L104",
       "weight": 1.0,
       "_origin": "ast",
       "source": "frontend_components_features_projects_bookmodal",
@@ -147457,7 +147457,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "Frontend/components/features/projects/BookModal.vue",
-      "source_location": "L243",
+      "source_location": "L88",
       "weight": 1.0,
       "_origin": "ast",
       "source": "frontend_components_features_projects_bookmodal",
@@ -147468,7 +147468,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "Frontend/components/features/projects/BookModal.vue",
-      "source_location": "L333",
+      "source_location": "L158",
       "weight": 1.0,
       "_origin": "ast",
       "source": "frontend_components_features_projects_bookmodal",
@@ -147479,7 +147479,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "Frontend/components/features/projects/BookModal.vue",
-      "source_location": "L282",
+      "source_location": "L107",
       "weight": 1.0,
       "_origin": "ast",
       "source": "frontend_components_features_projects_bookmodal",
@@ -147490,7 +147490,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "Frontend/components/features/projects/BookModal.vue",
-      "source_location": "L311",
+      "source_location": "L136",
       "weight": 1.0,
       "_origin": "ast",
       "source": "frontend_components_features_projects_bookmodal",
@@ -147501,7 +147501,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "Frontend/components/features/projects/BookModal.vue",
-      "source_location": "L329",
+      "source_location": "L154",
       "weight": 1.0,
       "_origin": "ast",
       "source": "frontend_components_features_projects_bookmodal",
@@ -147512,7 +147512,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "Frontend/components/features/projects/BookModal.vue",
-      "source_location": "L268",
+      "source_location": "L103",
       "weight": 1.0,
       "_origin": "ast",
       "source": "frontend_components_features_projects_bookmodal",
@@ -147523,7 +147523,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "Frontend/components/features/projects/BookModal.vue",
-      "source_location": "L307",
+      "source_location": "L132",
       "weight": 1.0,
       "_origin": "ast",
       "source": "frontend_components_features_projects_bookmodal",
@@ -147534,7 +147534,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "Frontend/components/features/projects/BookModal.vue",
-      "source_location": "L330",
+      "source_location": "L155",
       "weight": 1.0,
       "_origin": "ast",
       "source": "frontend_components_features_projects_bookmodal",
@@ -147546,7 +147546,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "Frontend/components/features/projects/BookModal.vue",
-      "source_location": "L222",
+      "source_location": "L69",
       "weight": 1.0,
       "_origin": "ast",
       "source": "frontend_components_features_projects_bookmodal",
@@ -147558,7 +147558,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "Frontend/components/features/projects/BookModal.vue",
-      "source_location": "L223",
+      "source_location": "L70",
       "weight": 1.0,
       "_origin": "ast",
       "source": "frontend_components_features_projects_bookmodal",
@@ -147570,7 +147570,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "Frontend/components/features/projects/BookModal.vue",
-      "source_location": "L226",
+      "source_location": "L73",
       "weight": 1.0,
       "_origin": "ast",
       "source": "frontend_components_features_projects_bookmodal",
@@ -147582,7 +147582,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "Frontend/components/features/projects/BookModal.vue",
-      "source_location": "L219",
+      "source_location": "L66",
       "weight": 1.0,
       "_origin": "ast",
       "source": "frontend_components_features_projects_bookmodal",
@@ -147594,7 +147594,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "Frontend/components/features/projects/BookModal.vue",
-      "source_location": "L227",
+      "source_location": "L74",
       "weight": 1.0,
       "_origin": "ast",
       "source": "frontend_components_features_projects_bookmodal",
@@ -147606,7 +147606,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "Frontend/components/features/projects/BookModal.vue",
-      "source_location": "L225",
+      "source_location": "L72",
       "weight": 1.0,
       "_origin": "ast",
       "source": "frontend_components_features_projects_bookmodal",
@@ -147618,7 +147618,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "Frontend/components/features/projects/BookModal.vue",
-      "source_location": "L224",
+      "source_location": "L71",
       "weight": 1.0,
       "_origin": "ast",
       "source": "frontend_components_features_projects_bookmodal",
@@ -147630,7 +147630,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "Frontend/components/features/projects/BookModal.vue",
-      "source_location": "L220",
+      "source_location": "L67",
       "weight": 1.0,
       "_origin": "ast",
       "source": "frontend_components_features_projects_bookmodal",
@@ -147642,7 +147642,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "Frontend/components/features/projects/BookModal.vue",
-      "source_location": "L221",
+      "source_location": "L68",
       "weight": 1.0,
       "_origin": "ast",
       "source": "frontend_components_features_projects_bookmodal",
@@ -147654,7 +147654,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "Frontend/components/features/projects/BookModal.vue",
-      "source_location": "L228",
+      "source_location": "L75",
       "weight": 1.0,
       "_origin": "ast",
       "source": "frontend_components_features_projects_bookmodal",
@@ -147666,7 +147666,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "Frontend/components/features/projects/BookModal.vue",
-      "source_location": "L229",
+      "source_location": "L76",
       "weight": 1.0,
       "_origin": "ast",
       "source": "frontend_components_features_projects_bookmodal",
@@ -147678,7 +147678,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "Frontend/components/features/projects/BookModal.vue",
-      "source_location": "L230",
+      "source_location": "L77",
       "weight": 1.0,
       "_origin": "ast",
       "source": "frontend_components_features_projects_bookmodal",
@@ -147690,7 +147690,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "Frontend/components/features/projects/BookModal.vue",
-      "source_location": "L230",
+      "source_location": "L77",
       "weight": 1.0,
       "_origin": "ast",
       "source": "frontend_components_features_projects_bookmodal",
@@ -147702,7 +147702,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "Frontend/components/features/projects/BookModal.vue",
-      "source_location": "L230",
+      "source_location": "L77",
       "weight": 1.0,
       "_origin": "ast",
       "source": "frontend_components_features_projects_bookmodal",
@@ -147714,7 +147714,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "Frontend/components/features/projects/BookModal.vue",
-      "source_location": "L234",
+      "source_location": "L81",
       "weight": 1.0,
       "_origin": "ast",
       "source": "frontend_components_features_projects_bookmodal",
@@ -147726,7 +147726,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "Frontend/components/features/projects/BookModal.vue",
-      "source_location": "L234",
+      "source_location": "L81",
       "weight": 1.0,
       "_origin": "ast",
       "source": "frontend_components_features_projects_bookmodal",
@@ -147738,7 +147738,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "Frontend/components/features/projects/BookModal.vue",
-      "source_location": "L234",
+      "source_location": "L81",
       "weight": 1.0,
       "_origin": "ast",
       "source": "frontend_components_features_projects_bookmodal",
@@ -147750,7 +147750,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "Frontend/components/features/projects/BookModal.vue",
-      "source_location": "L232",
+      "source_location": "L79",
       "weight": 1.0,
       "_origin": "ast",
       "source": "frontend_components_features_projects_bookmodal",
@@ -147762,7 +147762,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "Frontend/components/features/projects/BookModal.vue",
-      "source_location": "L232",
+      "source_location": "L79",
       "weight": 1.0,
       "_origin": "ast",
       "source": "frontend_components_features_projects_bookmodal",
@@ -147774,7 +147774,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "Frontend/components/features/projects/BookModal.vue",
-      "source_location": "L233",
+      "source_location": "L80",
       "weight": 1.0,
       "_origin": "ast",
       "source": "frontend_components_features_projects_bookmodal",
@@ -147786,7 +147786,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "Frontend/components/features/projects/BookModal.vue",
-      "source_location": "L233",
+      "source_location": "L80",
       "weight": 1.0,
       "_origin": "ast",
       "source": "frontend_components_features_projects_bookmodal",
@@ -147798,7 +147798,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "Frontend/components/features/projects/BookModal.vue",
-      "source_location": "L238",
+      "source_location": "L82",
       "weight": 1.0,
       "_origin": "ast",
       "source": "frontend_components_features_projects_bookmodal",
@@ -147810,7 +147810,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "Frontend/components/features/projects/BookModal.vue",
-      "source_location": "L238",
+      "source_location": "L82",
       "weight": 1.0,
       "_origin": "ast",
       "source": "frontend_components_features_projects_bookmodal",
@@ -147846,7 +147846,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "Frontend/components/features/projects/BookModal.vue",
-      "source_location": "L388",
+      "source_location": "L207",
       "weight": 1.0,
       "_origin": "ast",
       "source": "frontend_components_features_projects_bookmodal_confirmdelete",
@@ -147858,7 +147858,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "Frontend/components/features/projects/BookModal.vue",
-      "source_location": "L415",
+      "source_location": "L231",
       "weight": 1.0,
       "_origin": "ast",
       "source": "frontend_components_features_projects_bookmodal_finishclose",
@@ -147870,7 +147870,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "Frontend/components/features/projects/BookModal.vue",
-      "source_location": "L343",
+      "source_location": "L168",
       "weight": 1.0,
       "_origin": "ast",
       "source": "frontend_components_features_projects_bookmodal_reloadproject",
@@ -147882,7 +147882,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "Frontend/components/features/projects/BookModal.vue",
-      "source_location": "L318",
+      "source_location": "L143",
       "weight": 1.0,
       "_origin": "ast",
       "source": "frontend_components_features_projects_bookmodal_saveedit",
@@ -147894,7 +147894,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "Frontend/components/features/projects/BookModal.vue",
-      "source_location": "L323",
+      "source_location": "L148",
       "weight": 1.0,
       "_origin": "ast",
       "source": "frontend_components_features_projects_bookmodal_saveedit",
@@ -147906,7 +147906,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "Frontend/components/features/projects/BookModal.vue",
-      "source_location": "L315",
+      "source_location": "L140",
       "weight": 1.0,
       "_origin": "ast",
       "source": "frontend_components_features_projects_bookmodal_saveedit",
@@ -147918,7 +147918,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "Frontend/components/features/projects/BookModal.vue",
-      "source_location": "L338",
+      "source_location": "L163",
       "weight": 1.0,
       "_origin": "ast",
       "source": "frontend_components_features_projects_bookmodal_reloadproject",
@@ -147930,7 +147930,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "Frontend/components/features/projects/BookModal.vue",
-      "source_location": "L389",
+      "source_location": "L208",
       "weight": 1.0,
       "_origin": "ast",
       "source": "frontend_components_features_projects_bookmodal_confirmdelete",
@@ -147942,7 +147942,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "Frontend/components/features/projects/BookModal.vue",
-      "source_location": "L373",
+      "source_location": "L192",
       "weight": 1.0,
       "_origin": "ast",
       "source": "frontend_components_features_projects_bookmodal_confirmdelete",
@@ -147978,7 +147978,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "Frontend/components/features/projects/BookModal.vue",
-      "source_location": "L400",
+      "source_location": "L219",
       "weight": 1.0,
       "_origin": "ast",
       "source": "frontend_components_features_projects_bookmodal_onbackdrop",
@@ -147990,7 +147990,7 @@
       "context": "argument",
       "confidence": "INFERRED",
       "source_file": "Frontend/components/features/projects/BookModal.vue",
-      "source_location": "L406",
+      "source_location": "L225",
       "weight": 1.0,
       "_origin": "ast",
       "source": "frontend_components_features_projects_bookmodal_closemodal",
@@ -178974,5 +178974,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "60f747df5f8cecb370ada361f0fda209782deca8"
+  "built_at_commit": "c49248ce1583bb2dbbde438166a3f5a5c92c7846"
 }
