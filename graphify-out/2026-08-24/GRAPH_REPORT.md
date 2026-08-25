@@ -1,16 +1,16 @@
-# Graph Report - SecondBrain  (2026-08-24)
+# Graph Report - SecondBrain  (2026-08-23)
 
 ## Corpus Check
-- 641 files · ~7,400,766 words
+- 641 files · ~7,400,747 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 4940 nodes · 10706 edges · 270 communities (235 shown, 35 thin omitted)
+- 4940 nodes · 10706 edges · 273 communities (237 shown, 36 thin omitted)
 - Extraction: 100% EXTRACTED · 0% INFERRED · 0% AMBIGUOUS · INFERRED: 35 edges (avg confidence: 0.6)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `356673ee`
+- Built from commit: `60f747df`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -32,19 +32,19 @@
 - InteractiveConversionDialog.vue
 - evm.service.ts
 - rtm-mapping.service.ts
-- ChecklistItemDto
+- feedback.service.ts
 - GuildNpcSpeechBubble.vue
 - WaveAndRiskController
 - ValueTab.vue
 - cpm.interface.ts
-- tasks.service.ts
+- tasks-service-test-providers.ts
 - KanbanBoard.vue
 - Task
 - Requirement
 - PertDiagramPage.vue
 - pert/index.ts
 - x-matrix-helpers.util.ts
-- ChecklistOperationsService
+- ChecklistItemDto
 - GanttPage.vue
 - ai-wiki.service.ts
 - checklist.e2e-spec.ts
@@ -61,7 +61,7 @@
 - drafts-ai.service.ts
 - RTMMappingService
 - rolling-wave-deterministic-helpers.util.ts
-- TasksHabitsService
+- tasks.service.ts
 - tasks.controller.ts
 - BookShelf.vue
 - draft-processing.service.ts
@@ -152,7 +152,7 @@
 - index-wiki.ts
 - ChecklistAiService
 - rolling-wave-helpers.util.spec.ts
-- CreateWaveDto
+- tasks.module.ts
 - EditarTab.vue
 - SettingsDialog.vue
 - cpm-diagnostics.dto.ts
@@ -171,7 +171,7 @@
 - overrides
 - evm-relevance.util.ts
 - exclude
-- ProjectsXMatrixService
+- ProjectsVisualizationController
 - LineageTab.vue
 - scripts
 - RiskRegisterList.vue
@@ -203,10 +203,10 @@
 - 001-why-nestjs-mongoose.md
 - ADR-004: Estratégia de Validação em 3 Camadas
 - ADR-005: Motores de Visualização Gráfica e Diagramas de Rede (ECharts, Cytoscape & Dagre)
-- usePertRetryCoordinator.ts
+- usePertCytoscapeBootstrap
 - @eslint/eslintrc
 - eslint-plugin-prettier
-- mongodb-memory-server
+- globals
 - CreateRiskDto
 - Guia de Performance, Profiling e Diagnóstico
 - ADR-001: Backend com NestJS + Mongoose
@@ -217,13 +217,16 @@
 - ADR-010: Camada de Consulta Semântica e Graph RAG (LLM Wiki & Knowledge Base)
 - Backend/README.md
 - pert-helpers.util.ts
+- projects-x-matrix.service.ts
 - RecordProjectProgressDto
 - ADR-002: Separação de Módulos por Domínio
 - ADR-009: Observabilidade de Banco de Dados e Logging de Queries Lentas (Mongoose Interceptor)
 - @nestjs/schematics
 - 📐 Especificação Arquitetural e Visão de Sistema — SecondBrain
 - @types/supertest
+- 🏰 Fase 12 - Polimento e Segurança
 - typescript-eslint
+- WaveAssignerInterface
 - ZoomedContent.spec.ts
 - nuxt.config.ts
 - @types/node
@@ -297,7 +300,7 @@
 ## Import Cycles
 - None detected.
 
-## Communities (270 total, 35 thin omitted)
+## Communities (273 total, 36 thin omitted)
 
 ### Community 0 - "microtask-outline.prompts.ts"
 Cohesion: 0.24
@@ -353,7 +356,7 @@ Nodes (22): GroupedPackageTasks, RawPackageMetrics, generateAlerts(), calculateC
 
 ### Community 11 - "WbsValidationService"
 Cohesion: 0.13
-Nodes (13): ProjectsWbsController, ApiOperation, ApiResponse, ApiTags, Body, Controller, Get, Param (+5 more)
+Nodes (11): ProjectsWbsController, ApiOperation, ApiResponse, ApiTags, Body, Controller, Get, Param (+3 more)
 
 ### Community 12 - "TasksRecurringService"
 Cohesion: 0.11
@@ -375,9 +378,9 @@ Nodes (28): BuildEVMCurvePointsParamsDto, BuildPersonalMetricsParamsDto, Estimat
 Cohesion: 0.16
 Nodes (16): ValidationIssues, RequirementMapper, Requirement, RequirementDocument, Prop, Schema, InjectModel, InjectModel (+8 more)
 
-### Community 17 - "ChecklistItemDto"
-Cohesion: 0.07
-Nodes (24): buildFeedbackPrompt(), UpdateChecklistDto, CompletionFeedbackPayloadDto, CompletionFeedbackResponse, CompletionFeedbackResult, GenerateFeedbackOnCompletionDto, NextStepSuggestion, SaveErrorFeedbackOnCompletionDto (+16 more)
+### Community 17 - "feedback.service.ts"
+Cohesion: 0.08
+Nodes (20): buildFeedbackPrompt(), CompletionFeedbackPayloadDto, CompletionFeedbackResponse, CompletionFeedbackResult, GenerateFeedbackOnCompletionDto, NextStepSuggestion, SaveErrorFeedbackOnCompletionDto, SaveSuccessFeedbackDto (+12 more)
 
 ### Community 18 - "GuildNpcSpeechBubble.vue"
 Cohesion: 0.13
@@ -395,9 +398,9 @@ Nodes (36): adherenceRate, currentPeriodOffset, currentStreak, getDayStatus(), g
 Cohesion: 0.08
 Nodes (42): AlertDiagnosticsInput, BackwardPassMaps, BackwardPassParams, BuildBackwardPassMapsParams, BuildCriticalPathParams, BuildForwardPassMapsParams, ComputeGraphDegreesParams, CPMAnalyticsResult (+34 more)
 
-### Community 22 - "tasks.service.ts"
-Cohesion: 0.07
-Nodes (28): ProjectStatsService, Injectable, AlertsController, ApiOperation, ApiResponse, ApiTags, Controller, Get (+20 more)
+### Community 22 - "tasks-service-test-providers.ts"
+Cohesion: 0.13
+Nodes (11): ProjectStatsService, Injectable, InjectModel, MoveTaskStatusDto, TasksInputService, Injectable, calculateNextMaxOrder(), interpolateOrderAtIndex() (+3 more)
 
 ### Community 23 - "KanbanBoard.vue"
 Cohesion: 0.06
@@ -423,9 +426,9 @@ Nodes (37): PertDiagramDataResponse, PertDiagramEdge, PertDiagramNode, PertDiagr
 Cohesion: 0.11
 Nodes (37): XMatrixAxisItemDto, XMatrixCellDto, XMatrixDiagnosticsDto, XMatrixStrength, ActiveIds, ApplyFractalFilterOptions, BuildTacticalItemsOptions, CalculateCorrelationsOptions (+29 more)
 
-### Community 29 - "ChecklistOperationsService"
-Cohesion: 0.08
-Nodes (19): FindSimilarTasksDto, GenerateChecklistDto, GenerateChecklistWithHistoryDto, ApiProperty, IsBoolean, IsNotEmpty, IsNumber, IsOptional (+11 more)
+### Community 29 - "ChecklistItemDto"
+Cohesion: 0.06
+Nodes (23): UpdateChecklistDto, FindSimilarTasksDto, GenerateChecklistDto, GenerateChecklistWithHistoryDto, ApiProperty, IsBoolean, IsNotEmpty, IsNumber (+15 more)
 
 ### Community 30 - "GanttPage.vue"
 Cohesion: 0.06
@@ -468,12 +471,12 @@ Cohesion: 0.05
 Nodes (45): dependencies, class-transformer, class-validator, @google/generative-ai, ioredis, joi, mongoose, @nestjs/common (+37 more)
 
 ### Community 41 - "TaskDocument"
-Cohesion: 0.07
-Nodes (22): InjectModel, CalculateProgressDto, InsertManyError, TaskChecklistContext, TaskChecklistItem, TaskEvmMetrics, TaskGamification, TaskOperationalInfo (+14 more)
+Cohesion: 0.09
+Nodes (17): CalculateProgressDto, InsertManyError, TaskChecklistContext, TaskChecklistItem, TaskEvmMetrics, TaskGamification, TaskOperationalInfo, TaskPertMetrics (+9 more)
 
 ### Community 42 - "gemini.service.ts"
-Cohesion: 0.19
-Nodes (12): AiTasksModule, Module, ChecklistPromptParams, ChecklistWithHistoryPromptParams, CompletionFeedbackPromptParams, PertEstimatePromptParams, buildChecklistGenerationPrompt(), buildChecklistWithHistoryPrompt() (+4 more)
+Cohesion: 0.16
+Nodes (14): AiTasksModule, Module, ChecklistPromptParams, ChecklistWithHistoryPromptParams, CompletionFeedbackPromptParams, PertEstimatePromptParams, TaskSuggestionsPromptParams, buildChecklistGenerationPrompt() (+6 more)
 
 ### Community 43 - "drafts-ai.service.ts"
 Cohesion: 0.14
@@ -484,12 +487,12 @@ Cohesion: 0.22
 Nodes (4): AutoMapRequirementsResponseDto, RTMValidation, RTMMappingService, Injectable
 
 ### Community 45 - "rolling-wave-deterministic-helpers.util.ts"
-Cohesion: 0.09
-Nodes (20): AllocateTasksWithDeadlineOptions, BuildWavesOptions, DeterministicPartitionResult, DeterministicWaveResult, NormalizeTasksOptions, PartitionTasksDeterministicDto, TimelineMetrics, TimelineMetricsOptions (+12 more)
+Cohesion: 0.13
+Nodes (17): AllocateTasksWithDeadlineOptions, BuildWavesOptions, DeterministicPartitionResult, DeterministicWaveResult, NormalizeTasksOptions, PartitionTasksDeterministicDto, TimelineMetrics, TimelineMetricsOptions (+9 more)
 
-### Community 46 - "TasksHabitsService"
-Cohesion: 0.08
-Nodes (21): HabitsController, ApiOperation, ApiResponse, ApiTags, Controller, Get, Query, GetHabitsDashboardDto (+13 more)
+### Community 46 - "tasks.service.ts"
+Cohesion: 0.09
+Nodes (20): HabitsController, ApiOperation, ApiResponse, ApiTags, Controller, Get, Query, GetHabitsDashboardDto (+12 more)
 
 ### Community 47 - "tasks.controller.ts"
 Cohesion: 0.09
@@ -564,8 +567,8 @@ Cohesion: 0.07
 Nodes (29): @commitlint/cli, @commitlint/config-conventional, husky, lint-staged, description, devDependencies, @commitlint/cli, @commitlint/config-conventional (+21 more)
 
 ### Community 60 - "metrics-calculator.util.ts"
-Cohesion: 0.09
-Nodes (26): buildFixMonotonyPrompt(), ApplyGuardrailsParams, BatchMetricInputTask, BatchMetricsOptions, BatchMetricsResult, ChunkMinutesParams, PertCalculationResult, RefineChunksParams (+18 more)
+Cohesion: 0.08
+Nodes (29): buildFixMonotonyPrompt(), ApplyGuardrailsParams, BatchMetricInputTask, BatchMetricsOptions, BatchMetricsResult, ChunkMinutesParams, PertCalculationResult, RefineChunksParams (+21 more)
 
 ### Community 62 - "TasksHierarchyService"
 Cohesion: 0.14
@@ -620,8 +623,8 @@ Cohesion: 0.07
 Nodes (15): emit, useResponsive(), backgroundImageUrl, hoverTooltip, isLeftArchHovered, { isMobile, isPortrait }, { isMuted, toggleMute, playSFX, playDoorOpenSound }, isRightDoorHovered (+7 more)
 
 ### Community 75 - "wbs/index.ts"
-Cohesion: 0.10
-Nodes (9): WBSNodeDocument, Injectable, InjectModel, WbsPersistenceService, Injectable, WBSService, CacheService, Injectable (+1 more)
+Cohesion: 0.11
+Nodes (8): WBSNodeDocument, Injectable, InjectModel, WbsPersistenceService, Injectable, WBSService, CacheService, Injectable
 
 ### Community 76 - "ZoomedContent.vue"
 Cohesion: 0.06
@@ -688,8 +691,8 @@ Cohesion: 0.11
 Nodes (17): coefficientOfVariation, emit, expectedTimeHours, expectedTimeMinutes, hasEstimates, isValid, mostLikelyHours, optimisticHours (+9 more)
 
 ### Community 92 - "usePertLayoutFallbacks.ts"
-Cohesion: 0.20
-Nodes (9): buildPertGraphStyles(), CytoscapeFactory, usePertCytoscapeBootstrap(), PertLayoutMode, PertResolvedLayoutMode, RunInitialLayoutFallbackParams, RunLayoutFn, RunRecoveryParams (+1 more)
+Cohesion: 0.29
+Nodes (6): PertLayoutMode, PertResolvedLayoutMode, RunInitialLayoutFallbackParams, RunLayoutFn, RunRecoveryParams, usePertLayoutFallbacks()
 
 ### Community 93 - "EVMService"
 Cohesion: 0.34
@@ -700,8 +703,8 @@ Cohesion: 0.23
 Nodes (3): BufferEntry, LeafTasksBufferService, Injectable
 
 ### Community 95 - "projects.module.ts"
-Cohesion: 0.12
-Nodes (15): IDepRecord, ITaskRecord, Project, projectMongooseFeature, DashboardMetricPreferences, ProjectSchema, SmartObjective, ProjectWaveSchema (+7 more)
+Cohesion: 0.11
+Nodes (18): IDepRecord, ITaskRecord, CreateWaveDto, IsArray, IsDateString, IsEnum, IsNumber, IsOptional (+10 more)
 
 ### Community 96 - "ProjectPanel.vue"
 Cohesion: 0.10
@@ -788,16 +791,16 @@ Cohesion: 0.32
 Nodes (18): AuditLeafDiscrepancyDto, ConvertWBSToTasksDto, GenerateTasksForLeafDto, GenerateWBSDto, GetLeafNodesDto, ResolveWBSBudgetDto, SaveWBSDto, SuggestDecompositionDto (+10 more)
 
 ### Community 117 - "GeminiService"
-Cohesion: 0.08
-Nodes (8): NextStepsPromptParams, TaskSuggestionsPromptParams, buildGeminiNextStepsPrompt(), buildTaskSuggestionsPrompt(), GeminiService, Injectable, SuggestionsAiService, Injectable
+Cohesion: 0.12
+Nodes (6): NextStepsPromptParams, buildGeminiNextStepsPrompt(), GeminiService, Injectable, SuggestionsAiService, Injectable
 
 ### Community 118 - "gantt.service.ts"
-Cohesion: 0.16
-Nodes (9): GanttDataResponse, GanttDependencyItem, GanttQueryOptions, GanttTaskItem, GanttTimeWindow, InjectModel, GanttService, Injectable (+1 more)
+Cohesion: 0.18
+Nodes (8): GanttDataResponse, GanttDependencyItem, GanttQueryOptions, GanttTaskItem, GanttTimeWindow, InjectModel, GanttService, Injectable
 
 ### Community 119 - "rolling-wave-helpers.util.ts"
-Cohesion: 0.23
-Nodes (13): AIPlanWave, DeterministicTaskInput, DeterministicWbsNodeInput, WbsNodeFlat, balanceWaveTasksOverflow(), balanceWaveTasksUnderflow(), distributeMissingTasks(), findBestDonorIndex() (+5 more)
+Cohesion: 0.20
+Nodes (15): AIPlanWave, DeterministicTaskInput, DeterministicWbsNodeInput, WbsNodeFlat, balanceWaveTasksOverflow(), balanceWaveTasksUnderflow(), distributeMissingTasks(), findBestDonorIndex() (+7 more)
 
 ### Community 120 - "task.ts"
 Cohesion: 0.12
@@ -859,9 +862,9 @@ Nodes (11): generateSimpleEmbedding(), getFilesRecursively(), GraphEdge, GraphNo
 Cohesion: 0.24
 Nodes (13): addDays(), buildTaskScheduleMetrics(), endOfDay(), estimateTaskHours(), startOfDay(), buildUpdateOperationForTask(), buildWaveSummary(), calculateEffectiveWaveDates() (+5 more)
 
-### Community 137 - "CreateWaveDto"
-Cohesion: 0.33
-Nodes (8): CreateWaveDto, IsArray, IsDateString, IsEnum, IsNumber, IsOptional, IsString, UpdateWaveDto
+### Community 137 - "tasks.module.ts"
+Cohesion: 0.07
+Nodes (23): AlertsController, ApiOperation, ApiResponse, ApiTags, Controller, Get, Param, Patch (+15 more)
 
 ### Community 138 - "EditarTab.vue"
 Cohesion: 0.50
@@ -909,7 +912,7 @@ Nodes (13): DeterministicProjectInput, ProjectWave, ProjectWaveDocument, Prop, S
 
 ### Community 149 - "devDependencies"
 Cohesion: 0.06
-Nodes (35): autocannon, devDependencies, autocannon, dependency-cruiser, eslint, eslint-config-prettier, globals, @nestjs/cli (+27 more)
+Nodes (35): autocannon, devDependencies, autocannon, dependency-cruiser, eslint, eslint-config-prettier, mongodb-memory-server, @nestjs/cli (+27 more)
 
 ### Community 150 - "GuildParticlesCanvas.vue"
 Cohesion: 0.16
@@ -935,9 +938,9 @@ Nodes (10): EVMForecast, getAutoCompletedHoursVisibility(), getAutoConsistencyVi
 Cohesion: 0.25
 Nodes (7): exclude, extends, dist, node_modules, **/*spec.ts, test, ./tsconfig.json
 
-### Community 156 - "ProjectsXMatrixService"
-Cohesion: 0.14
-Nodes (14): ProjectsVisualizationController, ApiOperation, ApiResponse, ApiTags, Body, Controller, Get, Param (+6 more)
+### Community 156 - "ProjectsVisualizationController"
+Cohesion: 0.27
+Nodes (10): ProjectsVisualizationController, ApiOperation, ApiResponse, ApiTags, Body, Controller, Get, Param (+2 more)
 
 ### Community 157 - "LineageTab.vue"
 Cohesion: 0.25
@@ -1000,8 +1003,8 @@ Cohesion: 0.22
 Nodes (8): CreateLayoutRunnerParams, GraphLevels, PertLayoutPreset, PertResolvedLayoutMode, usePertLayoutEngine(), CreatePostProcessParams, PertResolvedLayoutMode, usePertPostProcessor()
 
 ### Community 173 - "📋 Acompanhamento de Requisitos - Second Brain"
-Cohesion: 0.13
-Nodes (15): 📋 Acompanhamento de Requisitos - Second Brain, Agentes de Tutoria e Aprendizado, Curadoria de Rotas Pessoais (Deep Research Pro), 🏰 Fase 12 - Polimento e Segurança, 📚 Fase 13 - Agentes Tutores e Aprendizado Acelerado (Estudos Sem Fricção), 🤖 Fase 5 - Criação Estratégica de Projetos com Agente de IA, 📅 Histórico de Atualizações, 🔗 Links Úteis (+7 more)
+Cohesion: 0.20
+Nodes (10): 📋 Acompanhamento de Requisitos - Second Brain, Agentes de Tutoria e Aprendizado, Curadoria de Rotas Pessoais (Deep Research Pro), 📚 Fase 13 - Agentes Tutores e Aprendizado Acelerado (Estudos Sem Fricção), 🤖 Fase 5 - Criação Estratégica de Projetos com Agente de IA, 📅 Histórico de Atualizações, 🔗 Links Úteis, Micro-RAG Exclusivo do Projeto e Starter Pack (+2 more)
 
 ### Community 175 - "EVMProgressService"
 Cohesion: 0.22
@@ -1031,9 +1034,9 @@ Nodes (14): 1. Joi para Env Vars (`app.module.ts`), 2. DTOs com `class-validator
 Cohesion: 0.14
 Nodes (14): 1. Diagrama PERT/CPM (Cytoscape + Dagre), 2. Cronograma de Gantt (ECharts Custom Series), 3. Matriz X-Matrix (ECharts / Heatmap & Matrix Grid), ADR-005: Motores de Visualização Gráfica e Diagramas de Rede (ECharts, Cytoscape & Dagre), ADRs Relacionadas, Consequências, Contexto, Decisão (+6 more)
 
-### Community 188 - "usePertRetryCoordinator.ts"
-Cohesion: 0.40
-Nodes (4): HandleHiddenContainerRetryParams, HandleInvalidGeometryRetryParams, ScheduleTokenRetryParams, usePertRetryCoordinator()
+### Community 188 - "usePertCytoscapeBootstrap"
+Cohesion: 0.25
+Nodes (7): buildPertGraphStyles(), CytoscapeFactory, usePertCytoscapeBootstrap(), ApplyFinalViewportParams, PertResolvedLayoutMode, ResolveLayoutStateResult, usePertRenderFinalizer()
 
 ### Community 192 - "CreateRiskDto"
 Cohesion: 0.43
@@ -1075,6 +1078,10 @@ Nodes (10): AI configuration (Gemini / Gemma), Compile and run the project, Depl
 Cohesion: 0.57
 Nodes (6): buildTaskNodes(), computeTaskLevels(), mapEdges(), mapNodes(), round2(), toMinutes()
 
+### Community 202 - "projects-x-matrix.service.ts"
+Cohesion: 0.15
+Nodes (10): CreateXMatrixDto, XMatrixResponseDto, Prop, Schema, XMatrixSnapshot, XMatrixSnapshotDocument, XMatrixSnapshotSchema, ProjectsXMatrixService (+2 more)
+
 ### Community 203 - "RecordProjectProgressDto"
 Cohesion: 0.50
 Nodes (4): RecordProjectProgressDto, IsDateString, IsNumber, IsOptional
@@ -1090,6 +1097,10 @@ Nodes (11): ADR-009: Observabilidade de Banco de Dados e Logging de Queries Lent
 ### Community 207 - "📐 Especificação Arquitetural e Visão de Sistema — SecondBrain"
 Cohesion: 0.18
 Nodes (10): 1. Engine de Planejamento e Decomposição WBS (`ProjectsModule`), 2. Arquitetura Diegética de UI em 3 Camadas (`Frontend`), 3. Engine de Consulta Semântica e Graph RAG (`AiWikiModule`), 🛠️ Como Visualizar e Editar os Diagramas PlantUML, 📐 Especificação Arquitetural e Visão de Sistema — SecondBrain, Nível 1: C4 System Context, Nível 2: C4 Container Architecture, 🧩 Principais Sub-Sistemas e Decisões de Design (+2 more)
+
+### Community 209 - "🏰 Fase 12 - Polimento e Segurança"
+Cohesion: 0.40
+Nodes (5): 🏰 Fase 12 - Polimento e Segurança, Novos requisitos propostos (transparência e privacidade psicológica), Qualidade de Código, Segurança, Usabilidade
 
 ### Community 241 - "ADR-008: Automações CI/CD e Guardrails de Qualidade (GitHub Actions, Husky & Dependency-Cruiser)"
 Cohesion: 0.20
@@ -1180,7 +1191,7 @@ Cohesion: 0.40
 Nodes (4): Descrição, Endpoints REST, Módulo: Workflow de Tarefas, Principais Serviços
 
 ### Community 264 - "wbs-ai.service.ts"
-Cohesion: 0.09
+Cohesion: 0.11
 Nodes (14): buildAuditPrompt(), buildWbsDecompositionPrompt(), buildWbsGenerationPrompt(), Injectable, WbsAiService, AuditLeafDiscrepancyAiInput, AuditLeafDiscrepancyAiResult, GenerateWbsInput (+6 more)
 
 ### Community 265 - "Nuxt Minimal Starter"
@@ -1206,12 +1217,12 @@ Nodes (3): Descrição, Módulo: Monitoramento e Alertas Operacionais, Principai
 ## Knowledge Gaps
 - **1484 isolated node(s):** `$schema`, `collection`, `sourceRoot`, `deleteOutDir`, `name` (+1479 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **35 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **36 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `TaskDocument` connect `TaskDocument` to `CreateTaskDto`, `TasksRecurringService`, `TasksController`, `ChecklistItemDto`, `projects.service.ts`, `ProjectWaveDocument`, `tasks.service.ts`, `Task`, `ProjectsXMatrixService`, `ChecklistOperationsService`, `ai-suggestions-runner.service.ts`, `TasksHabitsService`, `tasks.controller.ts`, `TasksHierarchyService`, `pert-diagram.service.ts`, `ProjectsService`, `projects.module.ts`, `.recalculateProjectStats`, `gantt.service.ts`?**
+- **Why does `TaskDocument` connect `TaskDocument` to `CreateTaskDto`, `tasks.module.ts`, `TasksRecurringService`, `TasksController`, `feedback.service.ts`, `projects.service.ts`, `ProjectWaveDocument`, `tasks-service-test-providers.ts`, `Task`, `ChecklistItemDto`, `ai-suggestions-runner.service.ts`, `tasks.service.ts`, `tasks.controller.ts`, `TasksHierarchyService`, `pert-diagram.service.ts`, `ProjectsService`, `projects-x-matrix.service.ts`, `.recalculateProjectStats`, `gantt.service.ts`?**
   _High betweenness centrality (0.027) - this node is a cross-community bridge._
 - **Why does `ConfigService` connect `ConfigService` to `wbs-conversion-orchestrator.service.ts`, `ChecklistAiService`, `wbs/index.ts`, `MicroTaskDraft`, `PertAiService`, `projects.module.ts`, `ai-wiki.service.ts`?**
   _High betweenness centrality (0.014) - this node is a cross-community bridge._

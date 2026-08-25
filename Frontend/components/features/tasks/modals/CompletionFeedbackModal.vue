@@ -238,7 +238,6 @@ function toFeedbackResponse(payload: unknown): Feedback | null {
   let rawAny: unknown = payload;
   if (
     typeof payload === "object" &&
-    payload !== null &&
     "feedback" in (payload as Record<string, unknown>)
   ) {
     // @ts-ignore

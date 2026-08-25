@@ -2,38 +2,67 @@
   <div class="task-form" v-bind="$attrs">
     <h1 class="text-center py-2">{{ createOrEdit }} Task</h1>
 
-    <CommonTextField v-model="task.name" label="Quest Title" :required="true"/>
-    <CommonDescriptionField v-model="task.description"/>
+    <CommonTextField v-model="task.name" label="Quest Title" :required="true" />
+    <CommonDescriptionField v-model="task.description" />
 
     <v-row>
-      <v-col cols="6"><CommonSlider v-model="task.difficult" label="Difficulty" /></v-col>
-      <v-col cols="6"><CommonSlider v-model="task.priority" label="Priority" /></v-col>
+      <v-col cols="6"
+        ><CommonSlider v-model="task.difficult" label="Difficulty"
+      /></v-col>
+      <v-col cols="6"
+        ><CommonSlider v-model="task.priority" label="Priority"
+      /></v-col>
     </v-row>
 
     <v-row dense>
-      <v-col cols="6"><CommonDatePickerField label="Deadline" v-model="localDeadline" :formatted="formattedDeadline" :minDate="getYesterday()" :required="true" /></v-col>
-      <v-col cols="6"><CommonDatePickerField label="Notification" v-model="localNotification" :formatted="formattedNotification" placeholder="Selecione a data" :minDate="getYesterday()"/></v-col>
+      <v-col cols="6"
+        ><CommonDatePickerField
+          label="Deadline"
+          v-model="localDeadline"
+          :formatted="formattedDeadline"
+          :minDate="getYesterday()"
+          :required="true"
+      /></v-col>
+      <v-col cols="6"
+        ><CommonDatePickerField
+          label="Notification"
+          v-model="localNotification"
+          :formatted="formattedNotification"
+          placeholder="Selecione a data"
+          :minDate="getYesterday()"
+      /></v-col>
     </v-row>
 
     <v-row dense class="mt-n3 mb-n4">
-      <v-col cols="6"><CommonSelect v-model="task.project" label="Project" :items="projectNames" :required="true" /></v-col>
-      <v-col cols="6"><CommonSelect v-model="microTaskTypeUi" label="Task Type" :items="microTaskTypeOptions"/></v-col>
+      <v-col cols="6"
+        ><CommonSelect
+          v-model="task.project"
+          label="Project"
+          :items="projectNames"
+          :required="true"
+      /></v-col>
+      <v-col cols="6"
+        ><CommonSelect
+          v-model="microTaskTypeUi"
+          label="Task Type"
+          :items="microTaskTypeOptions"
+      /></v-col>
     </v-row>
 
     <!-- Campos específicos para hábitos - aparece dinamicamente -->
     <div v-if="isHabitLocal" class="habit-section">
-      <v-row dense >
+      <v-row dense>
         <v-col cols="6">
-          <CommonSelect 
-            v-model="task.recurringRule.frequency" 
-            label="Frequency" 
-            :items="['daily','weekdays','weekly','biweekly','monthly']" 
+          <CommonSelect
+            v-model="task.recurringRule.frequency"
+            label="Frequency"
+            :items="['daily', 'weekdays', 'weekly', 'biweekly', 'monthly']"
           />
         </v-col>
         <v-col cols="6">
-          <CommonTextField 
-            v-model.number="task.recurringRule.interval" 
-            label="Interval" 
+          <CommonTextField
+            v-model.number="task.recurringRule.interval"
+            label="Interval"
             type="number"
             min="1"
           />
@@ -41,19 +70,26 @@
       </v-row>
       <v-row dense class="mt-n3">
         <v-col cols="6">
-          <CommonTextField 
-            v-model.number="task.target" 
-            label="Weekly Target (days)" 
+          <CommonTextField
+            v-model.number="task.target"
+            label="Weekly Target (days)"
             type="number"
             min="1"
             max="7"
           />
         </v-col>
         <v-col cols="6">
-          <CommonSelect 
-            v-model="task.category" 
-            label="Category" 
-            :items="['health', 'productivity', 'learning', 'fitness', 'mindfulness', 'other']"
+          <CommonSelect
+            v-model="task.category"
+            label="Category"
+            :items="[
+              'health',
+              'productivity',
+              'learning',
+              'fitness',
+              'mindfulness',
+              'other',
+            ]"
           />
         </v-col>
       </v-row>
@@ -64,186 +100,210 @@
 </template>
 
 <script setup>
-import { computed, ref, watch } from 'vue'
-import CommonTextField from '../../../shared/fields/TextField.vue'
-import CommonDescriptionField from '../../../shared/fields/DescriptionField.vue'
-import CommonSlider from '../../../shared/fields/Slider.vue'
-import CommonDatePickerField from '../../../shared/fields/DatePickerField.vue'
-import CommonSelect from '../../../shared/fields/Select.vue'
-import CommonEffortSelect from '../../../shared/fields/EffortSelect.vue'
+import { computed, ref, watch } from "vue";
+import CommonTextField from "../../../shared/fields/TextField.vue";
+import CommonDescriptionField from "../../../shared/fields/DescriptionField.vue";
+import CommonSlider from "../../../shared/fields/Slider.vue";
+import CommonDatePickerField from "../../../shared/fields/DatePickerField.vue";
+import CommonSelect from "../../../shared/fields/Select.vue";
+import CommonEffortSelect from "../../../shared/fields/EffortSelect.vue";
 
 const props = defineProps({
   task: {
     type: Object,
-    required: true
+    required: true,
   },
   projects: {
     type: Array,
-    default: () => []
+    default: () => [],
   },
   deadline: [String, Date],
   notification: [String, Date],
   createOrEdit: {
     type: String,
-    default: 'Create'
+    default: "Create",
   },
   isValid: Boolean,
   isHabit: {
     type: Boolean,
     default: false,
   },
-})
+});
 
-const emit = defineEmits(['update:is-valid'])
+const emit = defineEmits(["update:is-valid"]);
 
 // Derived list of project names for the select
-const projectNames = computed(() => (props.projects || []).map(p => p.name).filter(Boolean))
+const projectNames = computed(() =>
+  (props.projects || []).map((p) => p.name).filter(Boolean),
+);
 
-const localDeadline = ref(props.task.deadline)
-const localNotification = ref(props.task.notification)
+const localDeadline = ref(props.task.deadline);
+const localNotification = ref(props.task.notification);
 
 // Sincronização de entrada (props → local)
-watch(() => props.deadline, (val) => { localDeadline.value = val })
-watch(() => props.notification, (val) => { localNotification.value = val })
+watch(
+  () => props.deadline,
+  (val) => {
+    localDeadline.value = val;
+  },
+);
+watch(
+  () => props.notification,
+  (val) => {
+    localNotification.value = val;
+  },
+);
 
 // Formatadores
 const formattedDeadline = computed(() => {
-  return localDeadline.value ? formatDateToDDMMYYYY(localDeadline.value) : ''
-})
+  return localDeadline.value ? formatDateToDDMMYYYY(localDeadline.value) : "";
+});
 const formattedNotification = computed(() => {
-  return localNotification.value ? formatDateToDDMMYYYY(localNotification.value) : ''
-})
+  return localNotification.value
+    ? formatDateToDDMMYYYY(localNotification.value)
+    : "";
+});
 
 function getYesterday() {
-  const date = new Date()
-  date.setDate(date.getDate() - 1) // Subtrai um dia
-  return date
+  const date = new Date();
+  date.setDate(date.getDate() - 1); // Subtrai um dia
+  return date;
 }
 
 function formatDateToDDMMYYYY(date) {
-  if (!date) return ''
-  const d = new Date(date)
-  const day = String(d.getDate()).padStart(2, '0')
-  const month = String(d.getMonth() + 1).padStart(2, '0')
-  const year = d.getFullYear()
-  return `${day}/${month}/${year}`
+  if (!date) return "";
+  const d = new Date(date);
+  const day = String(d.getDate()).padStart(2, "0");
+  const month = String(d.getMonth() + 1).padStart(2, "0");
+  const year = d.getFullYear();
+  return `${day}/${month}/${year}`;
 }
 
-const microTaskTypeOptions = ['None', 'subtask', 'habit', 'quick', 'complex']
-const microTaskTypeUi = ref(props.task.microTaskType || 'None')
+const microTaskTypeOptions = ["None", "subtask", "habit", "quick", "complex"];
+const microTaskTypeUi = ref(props.task.microTaskType || "None");
 
 // Backend requires `pomodorosPlanned` (Number). If the user hasn't selected effort yet,
 // default to 1 to prevent POST /tasks 400.
-if (props.task && (props.task.pomodorosPlanned === null || props.task.pomodorosPlanned === undefined)) {
-  props.task.pomodorosPlanned = 1
+if (
+  props.task &&
+  (props.task.pomodorosPlanned === null ||
+    props.task.pomodorosPlanned === undefined)
+) {
+  props.task.pomodorosPlanned = 1;
 }
 
 // Computed property para detectar se é hábito baseado no microTaskType OU no prop
 const isHabitLocal = computed(() => {
-  return microTaskTypeUi.value === 'habit' || props.isHabit
-})
+  return microTaskTypeUi.value === "habit" || props.isHabit;
+});
 
 watch(microTaskTypeUi, (value) => {
-  props.task.microTaskType = value === 'None' ? undefined : value
-  
+  props.task.microTaskType = value === "None" ? undefined : value;
+
   // Inicializar campos de hábito quando selecionado
-  if (value === 'habit') {
+  if (value === "habit") {
     if (!props.task.recurringRule) {
-      props.task.recurringRule = { frequency: 'daily', interval: 1 }
+      props.task.recurringRule = { frequency: "daily", interval: 1 };
     }
-    if (!props.task.target) props.task.target = 5
-    if (!props.task.category) props.task.category = 'health'
+    if (!props.task.target) props.task.target = 5;
+    if (!props.task.category) props.task.category = "health";
   } else {
     // Limpar campos de hábito quando não é mais hábito
     if (props.task.checklist === undefined) {
-      props.task.autoGenerateChecklist = true
+      props.task.autoGenerateChecklist = true;
     }
   }
-})
+});
 
 watch(localDeadline, (val) => {
   if (val && val instanceof Date && !isNaN(val)) {
     props.task.deadline = val.toISOString();
   } else {
-    props.task.deadline = null
+    props.task.deadline = null;
   }
-})
+});
 
 watch(localNotification, (val) => {
   if (val && val instanceof Date && !isNaN(val)) {
     props.task.notification = val.toISOString();
   } else {
-    props.task.notification = null
+    props.task.notification = null;
   }
-})
+});
 
 // Inicializa campos específicos de hábito se já é hábito (editando existente)
 if (props.isHabit) {
   if (!props.task.recurringRule) {
-    props.task.recurringRule = { frequency: 'daily', interval: 1 }
+    props.task.recurringRule = { frequency: "daily", interval: 1 };
   }
-  if (!props.task.target) props.task.target = 5
-  if (!props.task.category) props.task.category = 'health'
+  if (!props.task.target) props.task.target = 5;
+  if (!props.task.category) props.task.category = "health";
   // force microTaskType to habit when isHabit
-  microTaskTypeUi.value = 'habit'
-  props.task.microTaskType = 'habit'
+  microTaskTypeUi.value = "habit";
+  props.task.microTaskType = "habit";
 }
 
-watch(() => props.isHabit, (v) => {
-  if (v) {
-    microTaskTypeUi.value = 'habit'
-    props.task.microTaskType = 'habit'
-  }
-})
+watch(
+  () => props.isHabit,
+  (v) => {
+    if (v) {
+      microTaskTypeUi.value = "habit";
+      props.task.microTaskType = "habit";
+    }
+  },
+);
 
 function normalizeTaskProject() {
-  const names = projectNames.value || []
-  if (!props.task) return
-  const p = props.task.project
+  const names = projectNames.value || [];
+  if (!props.task) return;
+  const p = props.task.project;
   if (!p) {
-    props.task.project = null
-    return
+    props.task.project = null;
+    return;
   }
 
-  if (typeof p === 'object' && p !== null) {
+  if (typeof p === "object") {
     if (p.name) {
-      props.task.project = p.name
-      return
+      props.task.project = p.name;
+      return;
     }
-    const foundById = (props.projects || []).find(pr => pr._id === p._id)
-    props.task.project = foundById ? foundById.name || null : null
-    return
+    const foundById = (props.projects || []).find((pr) => pr._id === p._id);
+    props.task.project = foundById ? foundById.name || null : null;
+    return;
   }
 
-  if (typeof p === 'string') {
-    if (names.includes(p)) return
+  if (typeof p === "string") {
+    if (names.includes(p)) return;
     // or it may be an id that we can map to a name
-    const found = (props.projects || []).find(pr => pr._id === p)
+    const found = (props.projects || []).find((pr) => pr._id === p);
     if (found) {
-      props.task.project = found.name || null
-      return
+      props.task.project = found.name || null;
+      return;
     }
     // otherwise clear invalid value
-    props.task.project = null
+    props.task.project = null;
   }
 }
 
-normalizeTaskProject()
-watch(projectNames, () => normalizeTaskProject(), { immediate: true })
-watch(() => props.task.project, () => normalizeTaskProject())
+normalizeTaskProject();
+watch(projectNames, () => normalizeTaskProject(), { immediate: true });
+watch(
+  () => props.task.project,
+  () => normalizeTaskProject(),
+);
 
 const isValidDate = (dateStr) => {
-  const date = new Date(dateStr)
-  return !isNaN(date.getTime())
-}
+  const date = new Date(dateStr);
+  return !isNaN(date.getTime());
+};
 
 const isFormValid = computed(() => {
   return (
-    props.task.name?.trim() !== '' &&
+    props.task.name?.trim() !== "" &&
     isValidDate(localDeadline.value) &&
     props.task.pomodorosPlanned > 0
-  )
-})
+  );
+});
 
 watch(
   () => [
@@ -253,11 +313,11 @@ watch(
     props.task.microTaskType,
   ],
   () => {
-    const valid = isFormValid.value
-    emit('update:is-valid', valid)
+    const valid = isFormValid.value;
+    emit("update:is-valid", valid);
   },
-  { immediate: true }
-)
+  { immediate: true },
+);
 </script>
 
 <style scoped>
@@ -266,7 +326,11 @@ watch(
 }
 
 .habit-section {
-  background: linear-gradient(135deg, rgba(255, 241, 118, 0.1) 0%, rgba(255, 193, 7, 0.08) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(255, 241, 118, 0.1) 0%,
+    rgba(255, 193, 7, 0.08) 100%
+  );
   animation: slideIn 0.3s ease-out;
   margin-top: 1rem;
 }
@@ -282,9 +346,7 @@ watch(
   }
 }
 
-
 .habit-label {
-  font-family: 'Irish Grover', cursive;
+  font-family: "Irish Grover", cursive;
 }
 </style>
-

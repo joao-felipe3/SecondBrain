@@ -38,7 +38,7 @@ function evaluateDependencyAlignment({ pred, cur, dep, eps }: EvaluateDependency
   const predEF = typeof pred.earlyFinish === 'number' ? pred.earlyFinish : predES + (pred.duration || 0);
 
   let aligns = false;
-  let timelineRef = predEF;
+  let timelineRef: number;
 
   if (dep.relationship === DependencyType.START_TO_START) {
     aligns = Math.abs(predES - es) <= eps;
