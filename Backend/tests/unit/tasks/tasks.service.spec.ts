@@ -3,7 +3,6 @@ import { TasksService } from '@src/tasks/tasks.service';
 describe('TasksService', () => {
   let service: TasksService;
   let mockTaskRepo: any;
-  let mockProjectStatsService: any;
   let mockFeedbackService: any;
   let mockPertService: any;
   let mockWriteService: any;
@@ -20,10 +19,6 @@ describe('TasksService', () => {
       findAll: jest.fn().mockResolvedValue([{ id: 't1' }]),
       findByProjectId: jest.fn().mockResolvedValue([{ id: 't1' }]),
       findById: jest.fn().mockResolvedValue({ id: 't1' }),
-    };
-
-    mockProjectStatsService = {
-      recalculateProjectStats: jest.fn().mockResolvedValue(undefined),
     };
 
     mockFeedbackService = {
@@ -100,7 +95,7 @@ describe('TasksService', () => {
 
     service = new TasksService(
       mockTaskRepo,
-      mockEventEmitter as any,
+      mockEventEmitter,
       mockFeedbackService,
       mockPertService,
       mockPertAiService as any,

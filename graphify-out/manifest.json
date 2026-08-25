@@ -345,8 +345,8 @@
     "semantic_hash": ""
   },
   "Backend/src/projects/projects.module.ts": {
-    "mtime": 1787627799.237763,
-    "ast_hash": "0fbe1e1a40fef0b9d780412a659390b9",
+    "mtime": 1787629141.4953742,
+    "ast_hash": "ddbb6b5b273aefb28adb0a5251186b1e",
     "semantic_hash": ""
   },
   "Backend/src/projects/projects.service.ts": {
@@ -1015,7 +1015,7 @@
     "semantic_hash": ""
   },
   "Backend/src/tasks/schemas/task.schema.ts": {
-    "mtime": 1787628619.5295064,
+    "mtime": 1787629326.7095132,
     "ast_hash": "738b338fa55fb22f4fbae7762379ae44",
     "semantic_hash": ""
   },
@@ -1260,8 +1260,8 @@
     "semantic_hash": ""
   },
   "Backend/src/tasks/services/workflow/write.service.ts": {
-    "mtime": 1787628619.7405992,
-    "ast_hash": "43f23468215aa201c01e621c3de06cf4",
+    "mtime": 1787629224.7773657,
+    "ast_hash": "74e156c75ca3d05fad3c2d3ec2e9df9b",
     "semantic_hash": ""
   },
   "Backend/src/tasks/tasks.controller.ts": {
@@ -1275,8 +1275,8 @@
     "semantic_hash": ""
   },
   "Backend/src/tasks/tasks.service.ts": {
-    "mtime": 1787627761.2376187,
-    "ast_hash": "243181a533a5b82c1e4869434e8a6f2b",
+    "mtime": 1787629160.3349583,
+    "ast_hash": "f488cc70ef6fe63451a6cc2caf85045c",
     "semantic_hash": ""
   },
   "Backend/tests/e2e/app.e2e-spec.ts": {
@@ -1855,8 +1855,8 @@
     "semantic_hash": ""
   },
   "Backend/tests/unit/tasks/tasks.service.spec.ts": {
-    "mtime": 1787628309.8583472,
-    "ast_hash": "a61c9acc7320021607e1ec9beff8c615",
+    "mtime": 1787629172.74447,
+    "ast_hash": "0d64fe56e78c5bec621e84f6aa436512",
     "semantic_hash": ""
   },
   "Backend/tsconfig.build.json": {

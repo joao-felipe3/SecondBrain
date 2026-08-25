@@ -63,7 +63,9 @@ export class TasksService {
   ) {}
 
   public async recalculateProjectStats(projectId: string): Promise<void> {
-    this.eventEmitter.emit('task.progress_updated', new TaskProgressUpdatedEvent('', projectId));
+    await Promise.resolve(
+      this.eventEmitter.emit('task.progress_updated', new TaskProgressUpdatedEvent('', projectId)),
+    );
   }
 
   // ---------------------------------------- Creation / Write operations ----------------------------------------

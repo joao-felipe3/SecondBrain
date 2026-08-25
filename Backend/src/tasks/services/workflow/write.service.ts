@@ -48,7 +48,7 @@ export class TasksWriteService {
 
     const inserted = await this.performInsertMany(tasks, ordered);
 
-    await this.postInsertProcessing(inserted, shouldRecalculateStats);
+    this.postInsertProcessing(inserted, shouldRecalculateStats);
 
     return inserted;
   }
@@ -350,11 +350,8 @@ export class TasksWriteService {
     return inserted;
   }
 
-  private async postInsertProcessing(
-    inserted: TaskDocument[],
-    shouldRecalculateStats: boolean,
-  ): Promise<void> {
+  private postInsertProcessing(inserted: TaskDocument[], shouldRecalculateStats: boolean): void {
     if (!shouldRecalculateStats) return;
-    await this.recalculateProjectsStats(inserted);
+    this.recalculateProjectsStats(inserted);
   }
 }
