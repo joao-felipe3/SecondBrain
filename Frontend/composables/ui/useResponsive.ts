@@ -1,5 +1,4 @@
 import { ref, onMounted, onBeforeUnmount, computed } from "vue";
-import { breakpointsTailwind, useBreakpoints } from "@vueuse/core";
 
 export function useResponsive() {
   const isMobile = ref(false);
@@ -8,9 +7,6 @@ export function useResponsive() {
   const isPortrait = ref(false);
   const windowWidth = ref(1200);
   const windowHeight = ref(800);
-
-  // Use VueUse breakpoints if available
-  const breakpoints = useBreakpoints(breakpointsTailwind);
 
   const MOBILE_BREAKPOINT = 960;
 

@@ -254,10 +254,8 @@ describe("Sprint 5: Paper.vue - Type Detection & Preview Rendering", () => {
       const task = { _id: "task-1", name: "Task", status: "todo" };
       const habit = { _id: "habit-1", name: "Habit", microTaskType: "habit" };
 
-      const taskZoomed = "ZoomedContent";
-      const habitZoomed = "ZoomedContent";
-
-      expect(taskZoomed).toBe(habitZoomed);
+      const getZoomedContent = (_item: unknown) => "ZoomedContent";
+      expect(getZoomedContent(task)).toBe(getZoomedContent(habit));
     });
 
     it("should transition between preview and zoomed smoothly", () => {
@@ -274,9 +272,8 @@ describe("Sprint 5: Paper.vue - Type Detection & Preview Rendering", () => {
       const task = { _id: "task-1" };
       const habit = { _id: "habit-1", microTaskType: "habit" };
 
-      const background = "/svg/old-paper-4.svg";
-
-      expect(background).toBe("/svg/old-paper-4.svg");
+      const getBackground = (_item: unknown) => "/svg/old-paper-4.svg";
+      expect(getBackground(task)).toBe(getBackground(habit));
     });
 
     it("should pass position style to Paper", () => {
