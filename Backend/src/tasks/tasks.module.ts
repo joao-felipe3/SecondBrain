@@ -1,4 +1,4 @@
-import { Module, forwardRef } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { TasksService } from './tasks.service';
 import { ChecklistService } from './services/intelligence';
 import { PertService, BufferService } from './services/analysis';
@@ -40,15 +40,15 @@ import {
 } from './services/intelligence';
 import { TasksHabitsService } from './services/monitoring';
 import { TasksMetricsService, TasksPertService } from './services/analysis';
-import { ProjectsModule } from '../projects/projects.module';
+import { ProjectSchema } from '../projects/schemas/project.schema';
 import { TaskAlertSchema } from './schemas/task-alert.schema';
 import { AlertsService, DeviationDetectionService } from './services/monitoring';
 import { AlertsController } from './controllers/alerts.controller';
-import { TaskEventsListener } from './listeners/task-events.listener';
 
 const mongooseFeature = MongooseModule.forFeature([
   { name: Task.name, schema: TaskSchema },
   { name: 'Task', schema: TaskSchema },
+  { name: 'Project', schema: ProjectSchema },
   { name: TaskDependency.name, schema: TaskDependencySchema },
   { name: ProjectBuffer.name, schema: ProjectBufferSchema },
   { name: Requirement.name, schema: RequirementSchema },
@@ -57,7 +57,7 @@ const mongooseFeature = MongooseModule.forFeature([
 ]);
 
 @Module({
-  imports: [forwardRef(() => ProjectsModule), mongooseFeature],
+  imports: [mongooseFeature],
   controllers: [
     TasksController,
     CPMController,
@@ -94,7 +94,6 @@ const mongooseFeature = MongooseModule.forFeature([
     AlertsService,
     DeviationDetectionService,
     TasksRecurringService,
-    TaskEventsListener,
     {
       provide: 'TaskRepository',
       useClass: MongooseTaskRepository,

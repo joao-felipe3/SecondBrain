@@ -2,8 +2,8 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { getModelToken } from '@nestjs/mongoose';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { Types } from 'mongoose';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { TasksRecurringService } from '../../../../../src/tasks/services/workflow/recurring.service';
-import { ProjectStatsService } from '../../../../../src/projects/services/execution/project-stats.service';
 import { TasksWriteService } from '../../../../../src/tasks/services/workflow/write.service';
 import { CreateMicroTaskDto } from '../../../../../src/tasks/dto/task/create-micro-task.dto';
 
@@ -15,8 +15,8 @@ describe('TasksRecurringService', () => {
     findByIdAndDelete: jest.Mock;
     findByIdAndUpdate: jest.Mock;
   };
-  let mockProjectStatsService: {
-    recalculateProjectStats: jest.Mock;
+  let mockEventEmitter: {
+    emit: jest.Mock;
   };
   let mockTasksWriteService: {
     createMicroTask: jest.Mock;
@@ -34,8 +34,8 @@ describe('TasksRecurringService', () => {
       findByIdAndUpdate: jest.fn(),
     };
 
-    mockProjectStatsService = {
-      recalculateProjectStats: jest.fn().mockResolvedValue(undefined),
+    mockEventEmitter = {
+      emit: jest.fn(),
     };
 
     mockTasksWriteService = {
@@ -47,7 +47,7 @@ describe('TasksRecurringService', () => {
       providers: [
         TasksRecurringService,
         { provide: getModelToken('Task'), useValue: mockTaskModel },
-        { provide: ProjectStatsService, useValue: mockProjectStatsService },
+        { provide: EventEmitter2, useValue: mockEventEmitter },
         { provide: TasksWriteService, useValue: mockTasksWriteService },
       ],
     }).compile();
@@ -118,7 +118,10 @@ describe('TasksRecurringService', () => {
 
       const result = await service.deleteRecurringSeries(validParentId);
       expect(result.deletedCount).toBe(2);
-      expect(mockProjectStatsService.recalculateProjectStats).toHaveBeenCalledWith(validProjectId);
+      expect(mockEventEmitter.emit).toHaveBeenCalledWith(
+        'task.deleted',
+        expect.objectContaining({ projectId: validProjectId }),
+      );
     });
   });
 

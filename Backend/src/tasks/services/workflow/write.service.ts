@@ -1,11 +1,17 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { CreateTaskDto } from '../../dto/task/create-task.dto';
 import { CreateMicroTaskDto } from '../../dto/task/create-micro-task.dto';
 import { TaskDocument } from '../../schemas/task.schema';
 import { ProjectDocument } from '../../../projects/schemas/project.schema';
-import { ProjectStatsService } from '../../../projects/services/execution/project-stats.service';
+import {
+  TaskCreatedEvent,
+  TaskDeletedEvent,
+  TaskUpdatedEvent,
+  BulkTasksCreatedEvent,
+} from '../../events/task.events';
 import { TasksMetricsService } from '../analysis/metrics.service';
 import { CreateManyTasksOptionsDto } from '../../dto/task/create-many-tasks-options.dto';
 import { TasksInputService } from './input.service';
@@ -18,7 +24,7 @@ export class TasksWriteService {
     @InjectModel('Task') private readonly taskModel: Model<TaskDocument>,
     @InjectModel('Project')
     private readonly projectModel: Model<ProjectDocument>,
-    private readonly projectStatsService: ProjectStatsService,
+    private readonly eventEmitter: EventEmitter2,
     private readonly metricsService: TasksMetricsService,
     private readonly tasksInputService: TasksInputService,
     private readonly checklistOperationsService: ChecklistOperationsService,
@@ -67,9 +73,8 @@ export class TasksWriteService {
     const createdTask = new this.taskModel(createTaskDto);
     const savedTask = await createdTask.save();
 
-    if (savedTask.project) {
-      await this.projectStatsService.recalculateProjectStats(savedTask.project.toString());
-    }
+    const projectId = savedTask.project ? savedTask.project.toString() : undefined;
+    this.eventEmitter.emit('task.created', new TaskCreatedEvent(savedTask, projectId));
 
     return savedTask;
   }
@@ -95,13 +100,10 @@ export class TasksWriteService {
 
     if (updatedTask) {
       const newProjectId = updatedTask.project?.toString();
-
-      if (oldProjectId && oldProjectId !== newProjectId) {
-        await this.projectStatsService.recalculateProjectStats(oldProjectId);
-      }
-      if (newProjectId) {
-        await this.projectStatsService.recalculateProjectStats(newProjectId);
-      }
+      this.eventEmitter.emit(
+        'task.updated',
+        new TaskUpdatedEvent(updatedTask, newProjectId, oldProjectId),
+      );
     }
 
     return updatedTask;
@@ -120,7 +122,7 @@ export class TasksWriteService {
     const result = await this.taskModel.findByIdAndDelete(id).exec();
 
     if (result && projectId) {
-      await this.projectStatsService.recalculateProjectStats(projectId);
+      this.eventEmitter.emit('task.deleted', new TaskDeletedEvent(id, projectId));
     }
 
     return result !== null;
@@ -175,13 +177,13 @@ export class TasksWriteService {
     }
   }
 
-  private async recalculateProjectsStats(tasks: TaskDocument[]): Promise<void> {
-    const uniqueProjectIds = new Set(
-      tasks.map((task) => task.project?.toString?.() ?? task.project).filter(Boolean),
-    );
+  private recalculateProjectsStats(tasks: TaskDocument[]): void {
+    const uniqueProjectIds = Array.from(
+      new Set(tasks.map((task) => task.project?.toString?.() ?? task.project).filter(Boolean)),
+    ) as string[];
 
-    for (const pid of uniqueProjectIds) {
-      await this.projectStatsService.recalculateProjectStats(String(pid));
+    if (uniqueProjectIds.length > 0) {
+      this.eventEmitter.emit('task.bulk_created', new BulkTasksCreatedEvent(tasks, uniqueProjectIds));
     }
   }
 

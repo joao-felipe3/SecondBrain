@@ -41,14 +41,15 @@ import { TasksAiSuggestionsService, ChecklistOperationsService } from './service
 import { TasksHabitsService } from './services/monitoring';
 import { TasksPertService } from './services/analysis';
 import { PertAiService } from '../ai/services/tasks/pert-ai.service';
-import { ProjectStatsService } from '../projects/services/execution/project-stats.service';
+import { EventEmitter2 } from '@nestjs/event-emitter';
+import { TaskProgressUpdatedEvent } from './events/task.events';
 import { TasksHierarchyService, TaskDescendantNode, TaskLineageResult } from './services/dependencies';
 
 @Injectable()
 export class TasksService {
   constructor(
     @Inject('TaskRepository') private readonly taskRepository: TaskRepository,
-    private readonly projectStatsService: ProjectStatsService,
+    private readonly eventEmitter: EventEmitter2,
     private readonly feedbackService: FeedbackService,
     private readonly tasksPertService: TasksPertService,
     private readonly pertAiService: PertAiService,
@@ -62,7 +63,7 @@ export class TasksService {
   ) {}
 
   public async recalculateProjectStats(projectId: string): Promise<void> {
-    await this.projectStatsService.recalculateProjectStats(projectId);
+    this.eventEmitter.emit('task.progress_updated', new TaskProgressUpdatedEvent('', projectId));
   }
 
   // ---------------------------------------- Creation / Write operations ----------------------------------------

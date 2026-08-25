@@ -345,8 +345,8 @@
     "semantic_hash": ""
   },
   "Backend/src/projects/projects.module.ts": {
-    "mtime": 1787627799.237763,
-    "ast_hash": "0fbe1e1a40fef0b9d780412a659390b9",
+    "mtime": 1787022803.5193741,
+    "ast_hash": "bf4b10a5d13ef38e211cad42aa23c136",
     "semantic_hash": ""
   },
   "Backend/src/projects/projects.service.ts": {
@@ -1015,7 +1015,7 @@
     "semantic_hash": ""
   },
   "Backend/src/tasks/schemas/task.schema.ts": {
-    "mtime": 1787628619.5295064,
+    "mtime": 1787624573.8201523,
     "ast_hash": "738b338fa55fb22f4fbae7762379ae44",
     "semantic_hash": ""
   },
@@ -1210,8 +1210,8 @@
     "semantic_hash": ""
   },
   "Backend/src/tasks/services/workflow/completion.service.ts": {
-    "mtime": 1787627736.292212,
-    "ast_hash": "a236c3d4ee74749f32eca92b254feb9c",
+    "mtime": 1787022803.5205667,
+    "ast_hash": "df375839538ab87327455cf1421f4b2c",
     "semantic_hash": ""
   },
   "Backend/src/tasks/services/workflow/index.ts": {
@@ -1225,8 +1225,8 @@
     "semantic_hash": ""
   },
   "Backend/src/tasks/services/workflow/recurring.service.ts": {
-    "mtime": 1787627751.1197846,
-    "ast_hash": "f8a04445e991a4e286543c2c7f9d7f0f",
+    "mtime": 1787022803.5205667,
+    "ast_hash": "feb70be03a3d6b6e032cfdef3178422a",
     "semantic_hash": ""
   },
   "Backend/src/tasks/services/workflow/utils/index.ts": {
@@ -1260,8 +1260,8 @@
     "semantic_hash": ""
   },
   "Backend/src/tasks/services/workflow/write.service.ts": {
-    "mtime": 1787628619.7405992,
-    "ast_hash": "43f23468215aa201c01e621c3de06cf4",
+    "mtime": 1787364218.0537553,
+    "ast_hash": "710616868f9dbe514ba7543470f96c02",
     "semantic_hash": ""
   },
   "Backend/src/tasks/tasks.controller.ts": {
@@ -1270,13 +1270,13 @@
     "semantic_hash": ""
   },
   "Backend/src/tasks/tasks.module.ts": {
-    "mtime": 1787627821.28993,
-    "ast_hash": "c8fcd13d9b574a46fc31a8310fca8888",
+    "mtime": 1787245729.6958885,
+    "ast_hash": "fd0dc292cf1ec479eee0e37494ffdc9c",
     "semantic_hash": ""
   },
   "Backend/src/tasks/tasks.service.ts": {
-    "mtime": 1787627761.2376187,
-    "ast_hash": "243181a533a5b82c1e4869434e8a6f2b",
+    "mtime": 1787246350.452915,
+    "ast_hash": "0607858f7e14f7a8bab7cf8230059d3f",
     "semantic_hash": ""
   },
   "Backend/tests/e2e/app.e2e-spec.ts": {
@@ -1680,8 +1680,8 @@
     "semantic_hash": ""
   },
   "Backend/tests/unit/tasks/helpers/tasks-service-test-providers.ts": {
-    "mtime": 1787627936.3526716,
-    "ast_hash": "0e5588d79b8c3c508acf2953931c1be4",
+    "mtime": 1787248185.242332,
+    "ast_hash": "5734b2a8dfec1a6f2840a379931a1989",
     "semantic_hash": ""
   },
   "Backend/tests/unit/tasks/mappers/requirement.mapper.spec.ts": {
@@ -1815,8 +1815,8 @@
     "semantic_hash": ""
   },
   "Backend/tests/unit/tasks/services/workflow/completion.service.spec.ts": {
-    "mtime": 1787627891.4180875,
-    "ast_hash": "301f4de70a1f42176a8bfbf47e5787fa",
+    "mtime": 1787022803.5213757,
+    "ast_hash": "51b5dd2a982896eb40707d4669c06a6f",
     "semantic_hash": ""
   },
   "Backend/tests/unit/tasks/services/workflow/input.service.spec.ts": {
@@ -1825,8 +1825,8 @@
     "semantic_hash": ""
   },
   "Backend/tests/unit/tasks/services/workflow/recurring.service.spec.ts": {
-    "mtime": 1787628008.993133,
-    "ast_hash": "604ef41e7db49a95d4319e2cc81ba3ad",
+    "mtime": 1787022803.5213757,
+    "ast_hash": "31984b6b2f98d05bb86e5434f8f5cd47",
     "semantic_hash": ""
   },
   "Backend/tests/unit/tasks/services/workflow/utils/kanban.utils.spec.ts": {
@@ -1840,8 +1840,8 @@
     "semantic_hash": ""
   },
   "Backend/tests/unit/tasks/services/workflow/write.service.spec.ts": {
-    "mtime": 1787627922.0676053,
-    "ast_hash": "9c0c3ce6193580cf94723385d1b6590f",
+    "mtime": 1787022803.5213757,
+    "ast_hash": "e4a1512373e407508ff5caf77bf09348",
     "semantic_hash": ""
   },
   "Backend/tests/unit/tasks/tasks.controller.spec.ts": {
@@ -1855,8 +1855,8 @@
     "semantic_hash": ""
   },
   "Backend/tests/unit/tasks/tasks.service.spec.ts": {
-    "mtime": 1787628309.8583472,
-    "ast_hash": "a61c9acc7320021607e1ec9beff8c615",
+    "mtime": 1787253615.2323794,
+    "ast_hash": "0b48269a182c0ce9c784f56d30ca5cff",
     "semantic_hash": ""
   },
   "Backend/tsconfig.build.json": {
@@ -3515,8 +3515,8 @@
     "semantic_hash": ""
   },
   "Backend/src/tasks/events/task.events.ts": {
-    "mtime": 1787628619.3881178,
-    "ast_hash": "9a55cd99a02c7583d59a8b3f4bf19fa9",
+    "mtime": 1787245127.312801,
+    "ast_hash": "04cbdf12acd086a718d294a91ecf5dbf",
     "semantic_hash": ""
   },
   "Backend/src/tasks/interfaces/task-contexts.interface.ts": {
@@ -3525,13 +3525,8 @@
     "semantic_hash": ""
   },
   "Backend/src/tasks/listeners/task-events.listener.ts": {
-    "mtime": 1787627831.557035,
-    "ast_hash": "ac37cda8cb41673880e649bd843f4339",
-    "semantic_hash": ""
-  },
-  "Backend/src/projects/listeners/task-events.listener.ts": {
-    "mtime": 1787627779.183319,
-    "ast_hash": "13cdbc464c314991dfea785b154b833b",
+    "mtime": 1787248185.475338,
+    "ast_hash": "1575b6e4b4b3991be1646b538e46f3a1",
     "semantic_hash": ""
   }
 }

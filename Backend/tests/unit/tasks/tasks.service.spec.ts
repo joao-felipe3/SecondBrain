@@ -13,6 +13,7 @@ describe('TasksService', () => {
   let mockHierarchyService: any;
   let mockChecklistOpsService: any;
   let mockCompletionService: any;
+  let mockEventEmitter: any;
 
   beforeEach(() => {
     mockTaskRepo = {
@@ -93,9 +94,13 @@ describe('TasksService', () => {
         .mockResolvedValue({ optimistic: 30, mostLikely: 60, pessimistic: 120 }),
     };
 
+    mockEventEmitter = {
+      emit: jest.fn(),
+    };
+
     service = new TasksService(
       mockTaskRepo,
-      mockProjectStatsService,
+      mockEventEmitter as any,
       mockFeedbackService,
       mockPertService,
       mockPertAiService as any,
@@ -129,7 +134,10 @@ describe('TasksService', () => {
 
     it('should delegate read & project stats calls', async () => {
       await service.recalculateProjectStats('p1');
-      expect(mockProjectStatsService.recalculateProjectStats).toHaveBeenCalledWith('p1');
+      expect(mockEventEmitter.emit).toHaveBeenCalledWith(
+        'task.progress_updated',
+        expect.objectContaining({ projectId: 'p1' }),
+      );
 
       const all = await service.findAll();
       expect(all.length).toBe(1);

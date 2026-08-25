@@ -55,8 +55,10 @@ const projectMongooseFeature = MongooseModule.forFeature([
   { name: 'WBSNode', schema: WBSNodeSchema },
 ]);
 
+import { TaskEventsListener } from './listeners/task-events.listener';
+
 @Module({
-  imports: [projectMongooseFeature, forwardRef(() => TasksModule)],
+  imports: [TasksModule, projectMongooseFeature],
   controllers: [
     ProjectsCoreController,
     ProjectsPlanningController,
@@ -95,6 +97,7 @@ const projectMongooseFeature = MongooseModule.forFeature([
     WbsConversionOrchestrationService,
     GanttService,
     PertDiagramService,
+    TaskEventsListener,
   ],
   exports: [
     projectMongooseFeature,

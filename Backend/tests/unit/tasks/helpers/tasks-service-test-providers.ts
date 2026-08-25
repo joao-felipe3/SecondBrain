@@ -1,3 +1,4 @@
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Model } from 'mongoose';
 import { TasksInputService } from '../../../../src/tasks/services/workflow/input.service';
 import { TasksMetricsService } from '../../../../src/tasks/services/analysis/metrics.service';
@@ -12,11 +13,9 @@ import { TasksPertService } from '../../../../src/tasks/services/analysis/pert.s
 import { TasksWriteService } from '../../../../src/tasks/services/workflow/write.service';
 import { TaskDocument } from '../../../../src/tasks/schemas/task.schema';
 import { ProjectDocument } from '../../../../src/projects/schemas/project.schema';
-import { ProjectStatsService } from '../../../../src/projects/services/execution/project-stats.service';
 import { GeminiService } from '../../../../src/ai/services/core/gemini.service';
 import { ChecklistService } from '../../../../src/tasks/services/intelligence/checklist.service';
 import { PertService } from '../../../../src/tasks/services/analysis/pert.service';
-import { EVMProgressService } from '../../../../src/projects/services/evm/evm-progress.service';
 import { AlertsService } from '../../../../src/tasks/services/monitoring/alerts.service';
 import { DeviationDetectionService } from '../../../../src/tasks/services/monitoring/deviation-detection.service';
 
@@ -27,7 +26,7 @@ type TasksServiceTestDeps = {
   geminiService: unknown;
   checklistService: unknown;
   pertService: unknown;
-  evmProgressService: unknown;
+  evmProgressService?: unknown;
   alertsService: unknown;
   deviationDetectionService: unknown;
 };
@@ -35,20 +34,19 @@ type TasksServiceTestDeps = {
 export function createTasksServiceTestProviders(deps: TasksServiceTestDeps) {
   const taskModel = deps.taskModel as Model<TaskDocument>;
   const projectModel = deps.projectModel as Model<ProjectDocument>;
-  const projectStatsService = (deps.projectStatsService || {
-    recalculateProjectStats: jest.fn(),
-    incrementHoursWorked: jest.fn(),
-  }) as ProjectStatsService;
   const geminiService = deps.geminiService as GeminiService;
   const checklistService = deps.checklistService as ChecklistService;
   const pertService = deps.pertService as PertService;
-  const evmProgressService = deps.evmProgressService as EVMProgressService;
   const alertsService = deps.alertsService as AlertsService;
   const deviationDetectionService = deps.deviationDetectionService as DeviationDetectionService;
 
+  const mockEventEmitter = {
+    emit: jest.fn(),
+  } as unknown as EventEmitter2;
+
   const inputService = new TasksInputService();
   const metricsService = new TasksMetricsService();
-  const recurringService = new TasksRecurringService(taskModel, projectStatsService);
+  const recurringService = new TasksRecurringService(taskModel, mockEventEmitter);
   let completionService!: TasksCompletionService;
   let writeService!: TasksWriteService;
 
@@ -86,6 +84,7 @@ export function createTasksServiceTestProviders(deps: TasksServiceTestDeps) {
 
   return [
     { provide: 'TaskRepository', useValue: taskRepositoryMock },
+    { provide: EventEmitter2, useValue: mockEventEmitter },
     { provide: TasksInputService, useValue: inputService },
     { provide: TasksMetricsService, useValue: metricsService },
     {
@@ -126,8 +125,7 @@ export function createTasksServiceTestProviders(deps: TasksServiceTestDeps) {
       useFactory: () => {
         completionService = new TasksCompletionService(
           taskModel,
-          projectStatsService,
-          evmProgressService,
+          mockEventEmitter,
           metricsService,
           deviationDetectionService,
           alertsService,
@@ -148,7 +146,7 @@ export function createTasksServiceTestProviders(deps: TasksServiceTestDeps) {
         writeService = new TasksWriteService(
           taskModel,
           projectModel,
-          projectStatsService,
+          mockEventEmitter,
           metricsService,
           inputService,
           new ChecklistOperationsService(

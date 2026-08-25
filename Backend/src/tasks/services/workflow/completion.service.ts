@@ -2,10 +2,10 @@ import { Injectable, BadRequestException, NotFoundException } from '@nestjs/comm
 import { MoveTaskStatusDto } from '../../dto/task/move-task-status.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { TaskDocument } from '../../schemas/task.schema';
 import { TaskAlertDocument } from '../../schemas/task-alert.schema';
-import { EVMProgressService } from '../../../projects/services/evm';
-import { ProjectStatsService } from '../../../projects/services/execution/project-stats.service';
+import { TaskCompletedEvent, TaskProgressUpdatedEvent } from '../../events/task.events';
 import { TasksMetricsService } from '../analysis/metrics.service';
 import { DeviationDetectionService, AlertsService } from '../monitoring';
 import { TasksRecurringService } from './recurring.service';
@@ -16,8 +16,7 @@ import { resolveTargetOrder } from './utils/kanban.utils';
 export class TasksCompletionService {
   constructor(
     @InjectModel('Task') private readonly taskModel: Model<TaskDocument>,
-    private readonly projectStatsService: ProjectStatsService,
-    private readonly evmProgressService: EVMProgressService,
+    private readonly eventEmitter: EventEmitter2,
     private readonly metricsService: TasksMetricsService,
     private readonly deviationDetectionService: DeviationDetectionService,
     private readonly alertsService: AlertsService,
@@ -43,13 +42,11 @@ export class TasksCompletionService {
     this.metricsService.applyEvmMetrics(task, task);
     const updatedTask = await task.save();
 
-    if (updatedTask.project && remainingHours > 0) {
-      await this.updateProjectMetricsAfterCompletion({
-        projectId: String(updatedTask.project),
-        taskId: id,
-        remainingHours,
-      });
-    }
+    const projectId = updatedTask.project ? String(updatedTask.project) : undefined;
+    this.eventEmitter.emit(
+      'task.completed',
+      new TaskCompletedEvent(updatedTask, projectId, remainingHours),
+    );
 
     await this.checkDeviationAndCreateAlert(id);
 
@@ -73,9 +70,11 @@ export class TasksCompletionService {
     this.metricsService.applyEvmMetrics(task, task);
     const updatedTask = await task.save();
 
-    if (task.project) {
-      await this.updateProjectMetricsAfterPomodoro(String(task.project), id);
-    }
+    const projectId = updatedTask.project ? String(updatedTask.project) : undefined;
+    this.eventEmitter.emit(
+      'task.progress_updated',
+      new TaskProgressUpdatedEvent(id, projectId, updatedTask.pomodorosDid, 0.5, 'pomodoro'),
+    );
 
     return updatedTask;
   }
@@ -280,64 +279,7 @@ export class TasksCompletionService {
   }
 
   // ===========================================================================
-  // 7. Private Helpers: Metrics Integration
-  // ===========================================================================
-
-  private async updateProjectMetricsAfterCompletion(params: {
-    projectId: string;
-    taskId: string;
-    remainingHours: number;
-  }): Promise<void> {
-    const { projectId, taskId, remainingHours } = params;
-    await this.projectStatsService.incrementHoursWorked(projectId, remainingHours);
-    await this.registerAutoEvmProgress({
-      projectId,
-      taskId,
-      hoursDelta: remainingHours,
-      source: 'completion',
-    });
-  }
-
-  private async updateProjectMetricsAfterPomodoro(projectId: string, taskId: string): Promise<void> {
-    await this.projectStatsService.incrementHoursWorked(projectId, 0.5);
-    await this.registerAutoEvmProgress({
-      projectId,
-      taskId,
-      hoursDelta: 0.5,
-      source: 'pomodoro',
-    });
-  }
-
-  private async registerAutoEvmProgress(params: {
-    projectId: string;
-    taskId: string;
-    hoursDelta: number;
-    source: 'pomodoro' | 'completion';
-  }): Promise<void> {
-    const { projectId, taskId, hoursDelta, source } = params;
-    if (!projectId || !taskId || hoursDelta <= 0) {
-      return;
-    }
-
-    try {
-      await this.evmProgressService.recordProgress({
-        projectId,
-        completedHours: hoursDelta,
-        plannedValue: hoursDelta,
-        source,
-        taskId,
-      });
-    } catch (error) {
-      const message = error instanceof Error ? error.message : String(error);
-      console.warn('[TasksCompletionService] Falha ao registrar progresso EVM automatico', {
-        projectId,
-        taskId,
-        source,
-        message,
-      });
-    }
-  }
-
+  // 7. Private Helpers: Monitoring & Scheduling
   // ===========================================================================
   // 8. Private Helpers: Monitoring & Scheduling
   // ===========================================================================

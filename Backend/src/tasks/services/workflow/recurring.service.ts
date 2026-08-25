@@ -1,9 +1,10 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { RecurringRuleDto, RecurringTaskOccurrenceDto } from '../../dto/task/create-task.dto';
 import { CreateMicroTaskDto } from '../../dto/task/create-micro-task.dto';
-import { ProjectStatsService } from '../../../projects/services/execution/project-stats.service';
+import { TaskDeletedEvent } from '../../events/task.events';
 import { TaskDocument } from '../../schemas/task.schema';
 import {
   normalizeChecklistFromTask,
@@ -19,7 +20,7 @@ import { TasksWriteService } from './write.service';
 export class TasksRecurringService {
   constructor(
     @InjectModel('Task') private readonly taskModel?: Model<TaskDocument>,
-    private readonly projectStatsService?: ProjectStatsService,
+    private readonly eventEmitter?: EventEmitter2,
     private readonly tasksWriteService?: TasksWriteService,
   ) {}
 
@@ -79,9 +80,9 @@ export class TasksRecurringService {
       if (removed) deletedCount += 1;
     }
 
-    if (this.projectStatsService) {
+    if (this.eventEmitter) {
       for (const projectId of affectedProjects) {
-        await this.projectStatsService.recalculateProjectStats(projectId);
+        this.eventEmitter.emit('task.deleted', new TaskDeletedEvent(parentRecurringId, projectId));
       }
     }
 

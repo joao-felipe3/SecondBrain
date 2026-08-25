@@ -2,8 +2,8 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { getModelToken } from '@nestjs/mongoose';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { Types } from 'mongoose';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { TasksWriteService } from '../../../../../src/tasks/services/workflow/write.service';
-import { ProjectStatsService } from '../../../../../src/projects/services/execution/project-stats.service';
 import { TasksMetricsService } from '../../../../../src/tasks/services/analysis/metrics.service';
 import { TasksInputService } from '../../../../../src/tasks/services/workflow/input.service';
 import { ChecklistOperationsService } from '../../../../../src/tasks/services/intelligence/checklist-operations.service';
@@ -15,8 +15,8 @@ describe('TasksWriteService', () => {
     findById: jest.Mock;
     findOne: jest.Mock;
   };
-  let mockProjectStatsService: {
-    recalculateProjectStats: jest.Mock;
+  let mockEventEmitter: {
+    emit: jest.Mock;
   };
   let mockMetricsService: {
     deriveMetrics: jest.Mock;
@@ -61,8 +61,8 @@ describe('TasksWriteService', () => {
       }),
     };
 
-    mockProjectStatsService = {
-      recalculateProjectStats: jest.fn().mockResolvedValue(undefined),
+    mockEventEmitter = {
+      emit: jest.fn(),
     };
 
     mockMetricsService = {
@@ -87,7 +87,7 @@ describe('TasksWriteService', () => {
         TasksWriteService,
         { provide: getModelToken('Task'), useValue: mockTaskModel },
         { provide: getModelToken('Project'), useValue: mockProjectModel },
-        { provide: ProjectStatsService, useValue: mockProjectStatsService },
+        { provide: EventEmitter2, useValue: mockEventEmitter },
         { provide: TasksMetricsService, useValue: mockMetricsService },
         { provide: TasksInputService, useValue: mockTasksInputService },
         { provide: ChecklistOperationsService, useValue: mockChecklistOperationsService },
@@ -102,12 +102,15 @@ describe('TasksWriteService', () => {
   });
 
   describe('createTaskCore', () => {
-    it('deve criar uma tarefa e recalcular estatísticas do projeto', async () => {
+    it('deve criar uma tarefa e emitir evento task.created', async () => {
       const dto: any = { name: 'Minha Tarefa', project: validProjectId };
       const result = await service.createTaskCore(dto);
 
       expect(result).toBeDefined();
-      expect(mockProjectStatsService.recalculateProjectStats).toHaveBeenCalledWith(validProjectId);
+      expect(mockEventEmitter.emit).toHaveBeenCalledWith(
+        'task.created',
+        expect.objectContaining({ projectId: validProjectId }),
+      );
     });
   });
 
@@ -117,7 +120,7 @@ describe('TasksWriteService', () => {
       expect(result).toEqual([]);
     });
 
-    it('deve inserir tarefas em lote e recalcular estatisticas do projeto', async () => {
+    it('deve inserir tarefas em lote e emitir evento task.bulk_created', async () => {
       const dtos = [
         { name: 'Task 1', project: validProjectId },
         { name: 'Task 2', project: validProjectId },
@@ -129,7 +132,10 @@ describe('TasksWriteService', () => {
       const result = await service.createMany(dtos, { recalculateProjectStats: true });
 
       expect(result).toEqual(insertedDocs);
-      expect(mockProjectStatsService.recalculateProjectStats).toHaveBeenCalledWith(validProjectId);
+      expect(mockEventEmitter.emit).toHaveBeenCalledWith(
+        'task.bulk_created',
+        expect.objectContaining({ projectIds: [validProjectId] }),
+      );
     });
   });
 
@@ -163,7 +169,7 @@ describe('TasksWriteService', () => {
       await expect(service.update('invalid-id', {})).rejects.toThrow(BadRequestException);
     });
 
-    it('deve atualizar tarefa e recalcular estatisticas do projeto se o projeto for alterado', async () => {
+    it('deve atualizar tarefa e emitir evento task.updated', async () => {
       const oldProjectId = new Types.ObjectId().toString();
       const newProjectId = new Types.ObjectId().toString();
 
@@ -183,8 +189,13 @@ describe('TasksWriteService', () => {
       const result = await service.update(validTaskId, { project: newProjectId });
 
       expect(result).toEqual(updatedTask);
-      expect(mockProjectStatsService.recalculateProjectStats).toHaveBeenCalledWith(oldProjectId);
-      expect(mockProjectStatsService.recalculateProjectStats).toHaveBeenCalledWith(newProjectId);
+      expect(mockEventEmitter.emit).toHaveBeenCalledWith(
+        'task.updated',
+        expect.objectContaining({
+          projectId: newProjectId,
+          oldProjectId,
+        }),
+      );
     });
   });
 
@@ -201,7 +212,7 @@ describe('TasksWriteService', () => {
       await expect(service.remove(validTaskId)).rejects.toThrow(NotFoundException);
     });
 
-    it('deve remover tarefa e recalcular estatisticas do projeto', async () => {
+    it('deve remover tarefa e emitir evento task.deleted', async () => {
       mockTaskModel.findById.mockReturnValue({
         exec: jest.fn().mockResolvedValue({ _id: validTaskId, project: validProjectId }),
       });
@@ -212,7 +223,10 @@ describe('TasksWriteService', () => {
 
       const success = await service.remove(validTaskId);
       expect(success).toBe(true);
-      expect(mockProjectStatsService.recalculateProjectStats).toHaveBeenCalledWith(validProjectId);
+      expect(mockEventEmitter.emit).toHaveBeenCalledWith(
+        'task.deleted',
+        expect.objectContaining({ taskId: validTaskId, projectId: validProjectId }),
+      );
     });
   });
 });

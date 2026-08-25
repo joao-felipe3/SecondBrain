@@ -2,9 +2,8 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { getModelToken } from '@nestjs/mongoose';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { Types } from 'mongoose';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { TasksCompletionService } from '../../../../../src/tasks/services/workflow/completion.service';
-import { ProjectStatsService } from '../../../../../src/projects/services/execution/project-stats.service';
-import { EVMProgressService } from '../../../../../src/projects/services/evm';
 import { TasksMetricsService } from '../../../../../src/tasks/services/analysis/metrics.service';
 import { DeviationDetectionService, AlertsService } from '../../../../../src/tasks/services/monitoring';
 import { TasksRecurringService } from '../../../../../src/tasks/services/workflow/recurring.service';
@@ -18,11 +17,8 @@ describe('TasksCompletionService', () => {
     findOne: jest.Mock;
     find?: jest.Mock;
   };
-  let mockProjectStatsService: {
-    incrementHoursWorked: jest.Mock;
-  };
-  let mockEvmProgressService: {
-    recordProgress: jest.Mock;
+  let mockEventEmitter: {
+    emit: jest.Mock;
   };
   let mockMetricsService: {
     applyEvmMetrics: jest.Mock;
@@ -59,12 +55,8 @@ describe('TasksCompletionService', () => {
       })),
     };
 
-    mockProjectStatsService = {
-      incrementHoursWorked: jest.fn().mockResolvedValue(undefined),
-    };
-
-    mockEvmProgressService = {
-      recordProgress: jest.fn().mockResolvedValue(undefined),
+    mockEventEmitter = {
+      emit: jest.fn(),
     };
 
     mockMetricsService = {
@@ -93,8 +85,7 @@ describe('TasksCompletionService', () => {
       providers: [
         TasksCompletionService,
         { provide: getModelToken('Task'), useValue: mockTaskModel },
-        { provide: ProjectStatsService, useValue: mockProjectStatsService },
-        { provide: EVMProgressService, useValue: mockEvmProgressService },
+        { provide: EventEmitter2, useValue: mockEventEmitter },
         { provide: TasksMetricsService, useValue: mockMetricsService },
         { provide: DeviationDetectionService, useValue: mockDeviationDetectionService },
         { provide: AlertsService, useValue: mockAlertsService },
@@ -159,12 +150,11 @@ describe('TasksCompletionService', () => {
 
       expect(result.isConcluded).toBe(true);
       expect(result.pomodorosDid).toBe(4);
-      expect(mockProjectStatsService.incrementHoursWorked).toHaveBeenCalledWith(validProjectId, 1.5);
-      expect(mockEvmProgressService.recordProgress).toHaveBeenCalledWith(
+      expect(mockEventEmitter.emit).toHaveBeenCalledWith(
+        'task.completed',
         expect.objectContaining({
           projectId: validProjectId,
-          completedHours: 1.5,
-          source: 'completion',
+          remainingHours: 1.5,
         }),
       );
     });
@@ -191,7 +181,13 @@ describe('TasksCompletionService', () => {
 
       expect(result.pomodorosDid).toBe(3);
       expect(mockMetricsService.applyEvmMetrics).toHaveBeenCalled();
-      expect(mockProjectStatsService.incrementHoursWorked).toHaveBeenCalledWith(validProjectId, 0.5);
+      expect(mockEventEmitter.emit).toHaveBeenCalledWith(
+        'task.progress_updated',
+        expect.objectContaining({
+          projectId: validProjectId,
+          hoursDelta: 0.5,
+        }),
+      );
     });
   });
 
