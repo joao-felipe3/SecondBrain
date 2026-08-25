@@ -1,6 +1,6 @@
 // composables/api/useApi.ts
-import { useNuxtApp } from '#app';
-import type { AxiosInstance } from 'axios';
+import { useNuxtApp } from "#app";
+import type { AxiosInstance } from "axios";
 /**
  * Composable para requisições HTTP usando o plugin $api (Axios).
  * @param endpoint Endpoint da API (ex: '/tasks')
@@ -69,8 +69,6 @@ export const useApi = (endpoint: string) => {
 
 // Factory para endpoints com ID dinâmico (e.g., useApiResource('/projects'))
 export const useApiResource = (baseEndpoint: string) => {
-  const api = useNuxtApp().$api as AxiosInstance;
-
   const one = (id: string | number) => useApi(`${baseEndpoint}/${id}`);
 
   const list = async () => {

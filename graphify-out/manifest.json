@@ -1015,7 +1015,7 @@
     "semantic_hash": ""
   },
   "Backend/src/tasks/schemas/task.schema.ts": {
-    "mtime": 1787623913.7371218,
+    "mtime": 1787624573.8201523,
     "ast_hash": "738b338fa55fb22f4fbae7762379ae44",
     "semantic_hash": ""
   },
@@ -2135,8 +2135,8 @@
     "semantic_hash": ""
   },
   "Frontend/components/features/tasks/board/HabitPreview.spec.ts": {
-    "mtime": 1780519839.7905583,
-    "ast_hash": "0b7ae43e7b34c08f3fd50e1ee620ada1",
+    "mtime": 1787624573.9557025,
+    "ast_hash": "0bb32d3bc5ff22740089a7a08fa2c8ed",
     "semantic_hash": ""
   },
   "Frontend/components/features/tasks/board/HabitPreview.vue": {
@@ -2165,8 +2165,8 @@
     "semantic_hash": ""
   },
   "Frontend/components/features/tasks/board/ZoomedContent.spec.ts": {
-    "mtime": 1780519839.7965586,
-    "ast_hash": "70ca24209e029af10b03bb6e6ae672b6",
+    "mtime": 1787624574.0443158,
+    "ast_hash": "3ed70208546d94dedc54f73d563b1dcd",
     "semantic_hash": ""
   },
   "Frontend/components/features/tasks/board/ZoomedContent.vue": {
@@ -2190,8 +2190,8 @@
     "semantic_hash": ""
   },
   "Frontend/components/features/tasks/kanban/KanbanBoard.spec.ts": {
-    "mtime": 1780519839.8045588,
-    "ast_hash": "11295b93a6dec8ac276c2a22eb5b0db2",
+    "mtime": 1787624574.2055733,
+    "ast_hash": "288d29943c319fb830f1a9085f7eecb4",
     "semantic_hash": ""
   },
   "Frontend/components/features/tasks/kanban/KanbanBoard.vue": {
@@ -2425,8 +2425,8 @@
     "semantic_hash": ""
   },
   "Frontend/composables/api/useApi.ts": {
-    "mtime": 1774578713.5089414,
-    "ast_hash": "1fc9bda6a32beef45c6941345c6c207b",
+    "mtime": 1787624574.2327852,
+    "ast_hash": "00acd7c9a36e20fd3a514942d904ebf6",
     "semantic_hash": ""
   },
   "Frontend/composables/features/index.ts": {
@@ -2790,8 +2790,8 @@
     "semantic_hash": ""
   },
   "Frontend/tests/sprint6-qa.spec.ts": {
-    "mtime": 1780519839.8602283,
-    "ast_hash": "c12e59eceb373360cf72ccb8b6f90001",
+    "mtime": 1787624574.2645128,
+    "ast_hash": "7c5422c1ffb5a35959f5bcca1feb8ac7",
     "semantic_hash": ""
   },
   "Frontend/tests/unit/components.snapshot.spec.ts": {

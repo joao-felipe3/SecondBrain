@@ -7894,8 +7894,8 @@
       "source_location": "L172",
       "_origin": "ast",
       "id": "backend_src_projects_interfaces_rolling_wave_interface_waveassignerinterface",
-      "community": 191,
-      "community_name": "WaveAssignerInterface",
+      "community": 45,
+      "community_name": "rolling-wave-deterministic-helpers.util.ts",
       "norm_label": "waveassignerinterface"
     },
     {
@@ -7905,8 +7905,8 @@
       "source_location": "L173",
       "_origin": "ast",
       "id": "backend_src_projects_interfaces_rolling_wave_interface_waveassignerinterface_gettaskidsforwave",
-      "community": 191,
-      "community_name": "WaveAssignerInterface",
+      "community": 45,
+      "community_name": "rolling-wave-deterministic-helpers.util.ts",
       "norm_label": ".gettaskidsforwave()"
     },
     {
@@ -7916,8 +7916,8 @@
       "source_location": "L174",
       "_origin": "ast",
       "id": "backend_src_projects_interfaces_rolling_wave_interface_waveassignerinterface_getusedhours",
-      "community": 191,
-      "community_name": "WaveAssignerInterface",
+      "community": 45,
+      "community_name": "rolling-wave-deterministic-helpers.util.ts",
       "norm_label": ".getusedhours()"
     },
     {
@@ -7927,8 +7927,8 @@
       "source_location": "L175",
       "_origin": "ast",
       "id": "backend_src_projects_interfaces_rolling_wave_interface_waveassignerinterface_pushtowave",
-      "community": 191,
-      "community_name": "WaveAssignerInterface",
+      "community": 45,
+      "community_name": "rolling-wave-deterministic-helpers.util.ts",
       "norm_label": ".pushtowave()"
     },
     {
@@ -7938,8 +7938,8 @@
       "source_location": "L176",
       "_origin": "ast",
       "id": "backend_src_projects_interfaces_rolling_wave_interface_waveassignerinterface_findwaveindexwithcapacity",
-      "community": 191,
-      "community_name": "WaveAssignerInterface",
+      "community": 45,
+      "community_name": "rolling-wave-deterministic-helpers.util.ts",
       "norm_label": ".findwaveindexwithcapacity()"
     },
     {
@@ -7949,8 +7949,8 @@
       "source_location": "L177",
       "_origin": "ast",
       "id": "backend_src_projects_interfaces_rolling_wave_interface_waveassignerinterface_findleastloadedwave",
-      "community": 191,
-      "community_name": "WaveAssignerInterface",
+      "community": 45,
+      "community_name": "rolling-wave-deterministic-helpers.util.ts",
       "norm_label": ".findleastloadedwave()"
     },
     {
@@ -11150,8 +11150,8 @@
       "source_location": "L29",
       "_origin": "ast",
       "id": "backend_src_projects_services_execution_project_stats_service_projectstatsservice_recalculateprojectstats",
-      "community": 9,
-      "community_name": "CreateTaskDto",
+      "community": 113,
+      "community_name": ".recalculateProjectStats",
       "norm_label": ".recalculateprojectstats()"
     },
     {
@@ -11953,8 +11953,8 @@
       "source_location": "L17",
       "_origin": "ast",
       "id": "backend_src_projects_services_strategy_utils_rolling_wave_helpers_util_todateornull",
-      "community": 119,
-      "community_name": "rolling-wave-helpers.util.ts",
+      "community": 45,
+      "community_name": "rolling-wave-deterministic-helpers.util.ts",
       "norm_label": "todateornull()"
     },
     {
@@ -12030,8 +12030,8 @@
       "source_location": "L118",
       "_origin": "ast",
       "id": "backend_src_projects_services_strategy_utils_rolling_wave_helpers_util_resolvegroupkey",
-      "community": 119,
-      "community_name": "rolling-wave-helpers.util.ts",
+      "community": 45,
+      "community_name": "rolling-wave-deterministic-helpers.util.ts",
       "norm_label": "resolvegroupkey()"
     },
     {
@@ -15572,8 +15572,8 @@
       "source_location": "L13",
       "_origin": "ast",
       "id": "backend_src_settings_settings_module_settingsmodule",
-      "community": 273,
-      "community_name": "SettingsModule",
+      "community": 3,
+      "community_name": "app.module.ts",
       "norm_label": "settingsmodule"
     },
     {
@@ -15583,8 +15583,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "backend_src_settings_settings_module_ts_module",
-      "community": 273,
-      "community_name": "SettingsModule",
+      "community": 3,
+      "community_name": "app.module.ts",
       "norm_label": "module"
     },
     {
@@ -18806,8 +18806,8 @@
       "source_location": "L15",
       "_origin": "ast",
       "id": "backend_src_tasks_dto_task_create_task_dto_checklistitemdto",
-      "community": 12,
-      "community_name": "TasksRecurringService",
+      "community": 9,
+      "community_name": "CreateTaskDto",
       "norm_label": "checklistitemdto"
     },
     {
@@ -18817,8 +18817,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "backend_src_tasks_dto_task_create_task_dto_ts_apiproperty",
-      "community": 12,
-      "community_name": "TasksRecurringService",
+      "community": 9,
+      "community_name": "CreateTaskDto",
       "norm_label": "apiproperty"
     },
     {
@@ -18828,8 +18828,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "backend_src_tasks_dto_task_create_task_dto_ts_isstring",
-      "community": 12,
-      "community_name": "TasksRecurringService",
+      "community": 9,
+      "community_name": "CreateTaskDto",
       "norm_label": "isstring"
     },
     {
@@ -18839,8 +18839,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "backend_src_tasks_dto_task_create_task_dto_ts_apipropertyoptional",
-      "community": 12,
-      "community_name": "TasksRecurringService",
+      "community": 9,
+      "community_name": "CreateTaskDto",
       "norm_label": "apipropertyoptional"
     },
     {
@@ -18850,8 +18850,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "backend_src_tasks_dto_task_create_task_dto_ts_isoptional",
-      "community": 12,
-      "community_name": "TasksRecurringService",
+      "community": 9,
+      "community_name": "CreateTaskDto",
       "norm_label": "isoptional"
     },
     {
@@ -18861,8 +18861,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "backend_src_tasks_dto_task_create_task_dto_ts_isboolean",
-      "community": 12,
-      "community_name": "TasksRecurringService",
+      "community": 9,
+      "community_name": "CreateTaskDto",
       "norm_label": "isboolean"
     },
     {
@@ -18872,8 +18872,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "backend_src_tasks_dto_task_create_task_dto_ts_isnumber",
-      "community": 12,
-      "community_name": "TasksRecurringService",
+      "community": 9,
+      "community_name": "CreateTaskDto",
       "norm_label": "isnumber"
     },
     {
@@ -18883,8 +18883,8 @@
       "source_location": "L31",
       "_origin": "ast",
       "id": "backend_src_tasks_dto_task_create_task_dto_recurringexceptiondto",
-      "community": 12,
-      "community_name": "TasksRecurringService",
+      "community": 9,
+      "community_name": "CreateTaskDto",
       "norm_label": "recurringexceptiondto"
     },
     {
@@ -18894,8 +18894,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "backend_src_tasks_dto_task_create_task_dto_ts_type",
-      "community": 12,
-      "community_name": "TasksRecurringService",
+      "community": 9,
+      "community_name": "CreateTaskDto",
       "norm_label": "type"
     },
     {
@@ -18905,8 +18905,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "backend_src_tasks_dto_task_create_task_dto_ts_isdate",
-      "community": 12,
-      "community_name": "TasksRecurringService",
+      "community": 9,
+      "community_name": "CreateTaskDto",
       "norm_label": "isdate"
     },
     {
@@ -18927,8 +18927,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "backend_src_tasks_dto_task_create_task_dto_ts_isarray",
-      "community": 12,
-      "community_name": "TasksRecurringService",
+      "community": 9,
+      "community_name": "CreateTaskDto",
       "norm_label": "isarray"
     },
     {
@@ -18971,8 +18971,8 @@
       "source_location": "L280",
       "_origin": "ast",
       "id": "backend_src_tasks_dto_task_create_task_dto_recurringtaskoccurrencedto",
-      "community": 12,
-      "community_name": "TasksRecurringService",
+      "community": 9,
+      "community_name": "CreateTaskDto",
       "norm_label": "recurringtaskoccurrencedto"
     },
     {
@@ -19048,8 +19048,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_src_tasks_dto_traceability_rtm_dto",
-      "community": 25,
-      "community_name": "Requirement",
+      "community": 191,
+      "community_name": "SaveRequirementDto",
       "norm_label": "rtm.dto.ts"
     },
     {
@@ -19059,8 +19059,8 @@
       "source_location": "L5",
       "_origin": "ast",
       "id": "backend_src_tasks_dto_traceability_rtm_dto_maprequirementtotaskdto",
-      "community": 25,
-      "community_name": "Requirement",
+      "community": 191,
+      "community_name": "SaveRequirementDto",
       "norm_label": "maprequirementtotaskdto"
     },
     {
@@ -19070,8 +19070,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "backend_src_tasks_dto_traceability_rtm_dto_ts_apiproperty",
-      "community": 25,
-      "community_name": "Requirement",
+      "community": 191,
+      "community_name": "SaveRequirementDto",
       "norm_label": "apiproperty"
     },
     {
@@ -19081,8 +19081,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "backend_src_tasks_dto_traceability_rtm_dto_ts_isstring",
-      "community": 25,
-      "community_name": "Requirement",
+      "community": 191,
+      "community_name": "SaveRequirementDto",
       "norm_label": "isstring"
     },
     {
@@ -19092,8 +19092,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "backend_src_tasks_dto_traceability_rtm_dto_ts_isnotempty",
-      "community": 25,
-      "community_name": "Requirement",
+      "community": 191,
+      "community_name": "SaveRequirementDto",
       "norm_label": "isnotempty"
     },
     {
@@ -19103,8 +19103,8 @@
       "source_location": "L31",
       "_origin": "ast",
       "id": "backend_src_tasks_dto_traceability_rtm_dto_saverequirementdto",
-      "community": 25,
-      "community_name": "Requirement",
+      "community": 191,
+      "community_name": "SaveRequirementDto",
       "norm_label": "saverequirementdto"
     },
     {
@@ -19114,8 +19114,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "backend_src_tasks_dto_traceability_rtm_dto_ts_apipropertyoptional",
-      "community": 25,
-      "community_name": "Requirement",
+      "community": 191,
+      "community_name": "SaveRequirementDto",
       "norm_label": "apipropertyoptional"
     },
     {
@@ -19125,8 +19125,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "backend_src_tasks_dto_traceability_rtm_dto_ts_isoptional",
-      "community": 25,
-      "community_name": "Requirement",
+      "community": 191,
+      "community_name": "SaveRequirementDto",
       "norm_label": "isoptional"
     },
     {
@@ -19147,8 +19147,8 @@
       "source_location": "L91",
       "_origin": "ast",
       "id": "backend_src_tasks_dto_traceability_rtm_dto_processsinglerequirementdto",
-      "community": 25,
-      "community_name": "Requirement",
+      "community": 191,
+      "community_name": "SaveRequirementDto",
       "norm_label": "processsinglerequirementdto"
     },
     {
@@ -19158,8 +19158,8 @@
       "source_location": "L98",
       "_origin": "ast",
       "id": "backend_src_tasks_dto_traceability_rtm_dto_rtmvalidationdto",
-      "community": 25,
-      "community_name": "Requirement",
+      "community": 191,
+      "community_name": "SaveRequirementDto",
       "norm_label": "rtmvalidationdto"
     },
     {
@@ -19180,8 +19180,8 @@
       "source_location": "L168",
       "_origin": "ast",
       "id": "backend_src_tasks_dto_traceability_rtm_dto_generatetasksresponsedto",
-      "community": 78,
-      "community_name": "RTMService",
+      "community": 191,
+      "community_name": "SaveRequirementDto",
       "norm_label": "generatetasksresponsedto"
     },
     {
@@ -19280,7 +19280,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_events_task_events",
       "community": 113,
-      "community_name": "task-events.listener.ts",
+      "community_name": ".recalculateProjectStats",
       "norm_label": "task.events.ts"
     },
     {
@@ -19291,7 +19291,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_events_task_events_taskcreatedevent",
       "community": 113,
-      "community_name": "task-events.listener.ts",
+      "community_name": ".recalculateProjectStats",
       "norm_label": "taskcreatedevent"
     },
     {
@@ -19302,7 +19302,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_events_task_events_taskcreatedevent_constructor",
       "community": 113,
-      "community_name": "task-events.listener.ts",
+      "community_name": ".recalculateProjectStats",
       "norm_label": ".constructor()"
     },
     {
@@ -19313,7 +19313,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_events_task_events_taskcompletedevent",
       "community": 113,
-      "community_name": "task-events.listener.ts",
+      "community_name": ".recalculateProjectStats",
       "norm_label": "taskcompletedevent"
     },
     {
@@ -19324,7 +19324,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_events_task_events_taskcompletedevent_constructor",
       "community": 113,
-      "community_name": "task-events.listener.ts",
+      "community_name": ".recalculateProjectStats",
       "norm_label": ".constructor()"
     },
     {
@@ -19335,7 +19335,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_events_task_events_taskdeletedevent",
       "community": 113,
-      "community_name": "task-events.listener.ts",
+      "community_name": ".recalculateProjectStats",
       "norm_label": "taskdeletedevent"
     },
     {
@@ -19346,7 +19346,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_events_task_events_taskdeletedevent_constructor",
       "community": 113,
-      "community_name": "task-events.listener.ts",
+      "community_name": ".recalculateProjectStats",
       "norm_label": ".constructor()"
     },
     {
@@ -19357,7 +19357,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_events_task_events_taskstatusmovedevent",
       "community": 113,
-      "community_name": "task-events.listener.ts",
+      "community_name": ".recalculateProjectStats",
       "norm_label": "taskstatusmovedevent"
     },
     {
@@ -19368,7 +19368,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_events_task_events_taskstatusmovedevent_constructor",
       "community": 113,
-      "community_name": "task-events.listener.ts",
+      "community_name": ".recalculateProjectStats",
       "norm_label": ".constructor()"
     },
     {
@@ -19379,7 +19379,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_events_task_events_taskprogressupdatedevent",
       "community": 113,
-      "community_name": "task-events.listener.ts",
+      "community_name": ".recalculateProjectStats",
       "norm_label": "taskprogressupdatedevent"
     },
     {
@@ -19390,7 +19390,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_events_task_events_taskprogressupdatedevent_constructor",
       "community": 113,
-      "community_name": "task-events.listener.ts",
+      "community_name": ".recalculateProjectStats",
       "norm_label": ".constructor()"
     },
     {
@@ -19499,8 +19499,8 @@
       "source_location": "L3",
       "_origin": "ast",
       "id": "backend_src_tasks_interfaces_checklist_interface_checklistvalidationresult",
-      "community": 29,
-      "community_name": "tasks.service.ts",
+      "community": 9,
+      "community_name": "CreateTaskDto",
       "norm_label": "checklistvalidationresult"
     },
     {
@@ -20391,7 +20391,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_listeners_task_events_listener",
       "community": 113,
-      "community_name": "task-events.listener.ts",
+      "community_name": ".recalculateProjectStats",
       "norm_label": "task-events.listener.ts"
     },
     {
@@ -20402,7 +20402,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_listeners_task_events_listener_taskeventslistener",
       "community": 113,
-      "community_name": "task-events.listener.ts",
+      "community_name": ".recalculateProjectStats",
       "norm_label": "taskeventslistener"
     },
     {
@@ -20413,7 +20413,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_listeners_task_events_listener_ts_injectable",
       "community": 113,
-      "community_name": "task-events.listener.ts",
+      "community_name": ".recalculateProjectStats",
       "norm_label": "injectable"
     },
     {
@@ -20424,7 +20424,7 @@
       "_origin": "ast",
       "id": "onevent",
       "community": 113,
-      "community_name": "task-events.listener.ts",
+      "community_name": ".recalculateProjectStats",
       "norm_label": "onevent"
     },
     {
@@ -20435,7 +20435,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_listeners_task_events_listener_taskeventslistener_constructor",
       "community": 113,
-      "community_name": "task-events.listener.ts",
+      "community_name": ".recalculateProjectStats",
       "norm_label": ".constructor()"
     },
     {
@@ -20446,7 +20446,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_listeners_task_events_listener_taskeventslistener_handletaskcreated",
       "community": 113,
-      "community_name": "task-events.listener.ts",
+      "community_name": ".recalculateProjectStats",
       "norm_label": ".handletaskcreated()"
     },
     {
@@ -20457,7 +20457,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_listeners_task_events_listener_taskeventslistener_handletaskcompleted",
       "community": 113,
-      "community_name": "task-events.listener.ts",
+      "community_name": ".recalculateProjectStats",
       "norm_label": ".handletaskcompleted()"
     },
     {
@@ -20468,7 +20468,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_listeners_task_events_listener_taskeventslistener_handletaskdeleted",
       "community": 113,
-      "community_name": "task-events.listener.ts",
+      "community_name": ".recalculateProjectStats",
       "norm_label": ".handletaskdeleted()"
     },
     {
@@ -20479,7 +20479,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_listeners_task_events_listener_taskeventslistener_handletaskstatusmoved",
       "community": 113,
-      "community_name": "task-events.listener.ts",
+      "community_name": ".recalculateProjectStats",
       "norm_label": ".handletaskstatusmoved()"
     },
     {
@@ -20490,7 +20490,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_listeners_task_events_listener_taskeventslistener_handletaskprogressupdated",
       "community": 113,
-      "community_name": "task-events.listener.ts",
+      "community_name": ".recalculateProjectStats",
       "norm_label": ".handletaskprogressupdated()"
     },
     {
@@ -21391,8 +21391,8 @@
       "source_location": "L65",
       "_origin": "ast",
       "id": "backend_src_tasks_services_analysis_metrics_service_tasksmetricsservice_calculateexpectedandvariance",
-      "community": 9,
-      "community_name": "CreateTaskDto",
+      "community": 47,
+      "community_name": "tasks.controller.ts",
       "norm_label": ".calculateexpectedandvariance()"
     },
     {
@@ -23294,8 +23294,8 @@
       "source_location": "L25",
       "_origin": "ast",
       "id": "backend_src_tasks_services_intelligence_checklist_operations_service_checklistoperationsservice_validatecheckliststructure",
-      "community": 29,
-      "community_name": "tasks.service.ts",
+      "community": 9,
+      "community_name": "CreateTaskDto",
       "norm_label": ".validatecheckliststructure()"
     },
     {
@@ -23305,8 +23305,8 @@
       "source_location": "L35",
       "_origin": "ast",
       "id": "backend_src_tasks_services_intelligence_checklist_operations_service_checklistoperationsservice_updatemicrotaskchecklist",
-      "community": 12,
-      "community_name": "TasksRecurringService",
+      "community": 9,
+      "community_name": "CreateTaskDto",
       "norm_label": ".updatemicrotaskchecklist()"
     },
     {
@@ -23503,8 +23503,8 @@
       "source_location": "L86",
       "_origin": "ast",
       "id": "backend_src_tasks_services_intelligence_checklist_service_checklistservice_validatecheckliststructure",
-      "community": 29,
-      "community_name": "tasks.service.ts",
+      "community": 9,
+      "community_name": "CreateTaskDto",
       "norm_label": ".validatecheckliststructure()"
     },
     {
@@ -24328,8 +24328,8 @@
       "source_location": "L33",
       "_origin": "ast",
       "id": "backend_src_tasks_services_traceability_rtm_ai_service_rtmaiservice_generatetasksforunmappedrequirements",
-      "community": 78,
-      "community_name": "RTMService",
+      "community": 191,
+      "community_name": "SaveRequirementDto",
       "norm_label": ".generatetasksforunmappedrequirements()"
     },
     {
@@ -24823,8 +24823,8 @@
       "source_location": "L31",
       "_origin": "ast",
       "id": "backend_src_tasks_services_traceability_rtm_task_generator_service_rtmtaskgeneratorservice_generatetasksforunmappedrequirements",
-      "community": 78,
-      "community_name": "RTMService",
+      "community": 191,
+      "community_name": "SaveRequirementDto",
       "norm_label": ".generatetasksforunmappedrequirements()"
     },
     {
@@ -24845,8 +24845,8 @@
       "source_location": "L148",
       "_origin": "ast",
       "id": "backend_src_tasks_services_traceability_rtm_task_generator_service_rtmtaskgeneratorservice_persistgeneratedtasks",
-      "community": 6,
-      "community_name": "rtm-ai.utils.ts",
+      "community": 16,
+      "community_name": "rtm-mapping.service.ts",
       "norm_label": ".persistgeneratedtasks()"
     },
     {
@@ -24856,8 +24856,8 @@
       "source_location": "L187",
       "_origin": "ast",
       "id": "backend_src_tasks_services_traceability_rtm_task_generator_service_safestringify",
-      "community": 6,
-      "community_name": "rtm-ai.utils.ts",
+      "community": 16,
+      "community_name": "rtm-mapping.service.ts",
       "norm_label": "safestringify()"
     },
     {
@@ -25109,8 +25109,8 @@
       "source_location": "L35",
       "_origin": "ast",
       "id": "backend_src_tasks_services_traceability_rtm_service_rtmservice_saverequirements",
-      "community": 25,
-      "community_name": "Requirement",
+      "community": 78,
+      "community_name": "RTMService",
       "norm_label": ".saverequirements()"
     },
     {
@@ -25186,8 +25186,8 @@
       "source_location": "L75",
       "_origin": "ast",
       "id": "backend_src_tasks_services_traceability_rtm_service_rtmservice_generatetasksforunmappedrequirements",
-      "community": 78,
-      "community_name": "RTMService",
+      "community": 191,
+      "community_name": "SaveRequirementDto",
       "norm_label": ".generatetasksforunmappedrequirements()"
     },
     {
@@ -25681,8 +25681,8 @@
       "source_location": "L30",
       "_origin": "ast",
       "id": "backend_src_tasks_services_workflow_input_service_tasksinputservice_normalizechecklist",
-      "community": 12,
-      "community_name": "TasksRecurringService",
+      "community": 9,
+      "community_name": "CreateTaskDto",
       "norm_label": ".normalizechecklist()"
     },
     {
@@ -25714,8 +25714,8 @@
       "source_location": "L60",
       "_origin": "ast",
       "id": "backend_src_tasks_services_workflow_input_service_tasksinputservice_normalizechecklistitem",
-      "community": 12,
-      "community_name": "TasksRecurringService",
+      "community": 9,
+      "community_name": "CreateTaskDto",
       "norm_label": ".normalizechecklistitem()"
     },
     {
@@ -25813,8 +25813,8 @@
       "source_location": "L48",
       "_origin": "ast",
       "id": "backend_src_tasks_services_workflow_recurring_service_tasksrecurringservice_findrecurringseries",
-      "community": 12,
-      "community_name": "TasksRecurringService",
+      "community": 41,
+      "community_name": "TasksService",
       "norm_label": ".findrecurringseries()"
     },
     {
@@ -25824,8 +25824,8 @@
       "source_location": "L65",
       "_origin": "ast",
       "id": "backend_src_tasks_services_workflow_recurring_service_tasksrecurringservice_deleterecurringseries",
-      "community": 12,
-      "community_name": "TasksRecurringService",
+      "community": 41,
+      "community_name": "TasksService",
       "norm_label": ".deleterecurringseries()"
     },
     {
@@ -25967,8 +25967,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_src_tasks_services_workflow_utils_kanban_utils",
-      "community": 202,
-      "community_name": "kanban.utils.ts",
+      "community": 29,
+      "community_name": "tasks.service.ts",
       "norm_label": "kanban.utils.ts"
     },
     {
@@ -25978,8 +25978,8 @@
       "source_location": "L9",
       "_origin": "ast",
       "id": "backend_src_tasks_services_workflow_utils_kanban_utils_interpolateorderatindex",
-      "community": 202,
-      "community_name": "kanban.utils.ts",
+      "community": 29,
+      "community_name": "tasks.service.ts",
       "norm_label": "interpolateorderatindex()"
     },
     {
@@ -25989,8 +25989,8 @@
       "source_location": "L22",
       "_origin": "ast",
       "id": "backend_src_tasks_services_workflow_utils_kanban_utils_calculatenextmaxorder",
-      "community": 202,
-      "community_name": "kanban.utils.ts",
+      "community": 29,
+      "community_name": "tasks.service.ts",
       "norm_label": "calculatenextmaxorder()"
     },
     {
@@ -26000,8 +26000,8 @@
       "source_location": "L30",
       "_origin": "ast",
       "id": "backend_src_tasks_services_workflow_utils_kanban_utils_resolvetargetorder",
-      "community": 202,
-      "community_name": "kanban.utils.ts",
+      "community": 29,
+      "community_name": "tasks.service.ts",
       "norm_label": "resolvetargetorder()"
     },
     {
@@ -27243,8 +27243,8 @@
       "source_location": "L64",
       "_origin": "ast",
       "id": "backend_src_tasks_tasks_service_tasksservice_recalculateprojectstats",
-      "community": 41,
-      "community_name": "TasksService",
+      "community": 113,
+      "community_name": ".recalculateProjectStats",
       "norm_label": ".recalculateprojectstats()"
     },
     {
@@ -27320,8 +27320,8 @@
       "source_location": "L104",
       "_origin": "ast",
       "id": "backend_src_tasks_tasks_service_tasksservice_update",
-      "community": 9,
-      "community_name": "CreateTaskDto",
+      "community": 41,
+      "community_name": "TasksService",
       "norm_label": ".update()"
     },
     {
@@ -27386,8 +27386,8 @@
       "source_location": "L131",
       "_origin": "ast",
       "id": "backend_src_tasks_tasks_service_tasksservice_updatemicrotaskchecklist",
-      "community": 12,
-      "community_name": "TasksRecurringService",
+      "community": 9,
+      "community_name": "CreateTaskDto",
       "norm_label": ".updatemicrotaskchecklist()"
     },
     {
@@ -27529,8 +27529,8 @@
       "source_location": "L206",
       "_origin": "ast",
       "id": "backend_src_tasks_tasks_service_tasksservice_findrecurringseries",
-      "community": 12,
-      "community_name": "TasksRecurringService",
+      "community": 41,
+      "community_name": "TasksService",
       "norm_label": ".findrecurringseries()"
     },
     {
@@ -27540,8 +27540,8 @@
       "source_location": "L210",
       "_origin": "ast",
       "id": "backend_src_tasks_tasks_service_tasksservice_deleterecurringseries",
-      "community": 12,
-      "community_name": "TasksRecurringService",
+      "community": 41,
+      "community_name": "TasksService",
       "norm_label": ".deleterecurringseries()"
     },
     {
@@ -29223,8 +29223,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_tests_unit_tasks_services_workflow_utils_kanban_utils_spec",
-      "community": 202,
-      "community_name": "kanban.utils.ts",
+      "community": 29,
+      "community_name": "tasks.service.ts",
       "norm_label": "kanban.utils.spec.ts"
     },
     {
@@ -38559,7 +38559,7 @@
       "label": "mockHabit",
       "file_type": "code",
       "source_file": "Frontend/components/features/tasks/board/HabitPreview.spec.ts",
-      "source_location": "L10",
+      "source_location": "L9",
       "_origin": "ast",
       "id": "frontend_components_features_tasks_board_habitpreview_spec_mockhabit",
       "community": 180,
@@ -38570,7 +38570,7 @@
       "label": "mockWeeklyHabit",
       "file_type": "code",
       "source_file": "Frontend/components/features/tasks/board/HabitPreview.spec.ts",
-      "source_location": "L32",
+      "source_location": "L31",
       "_origin": "ast",
       "id": "frontend_components_features_tasks_board_habitpreview_spec_mockweeklyhabit",
       "community": 180,
@@ -46977,8 +46977,8 @@
       "source_location": "L17",
       "_origin": "ast",
       "id": "frontend_package_dependencies_axios",
-      "community": 72,
-      "community_name": "dependencies",
+      "community": 202,
+      "community_name": "axios",
       "norm_label": "axios"
     },
     {
@@ -46988,8 +46988,8 @@
       "source_location": "L17",
       "_origin": "ast",
       "id": "axios",
-      "community": 72,
-      "community_name": "dependencies",
+      "community": 202,
+      "community_name": "axios",
       "norm_label": "axios"
     },
     {
@@ -47175,8 +47175,8 @@
       "source_location": "L26",
       "_origin": "ast",
       "id": "frontend_package_dependencies_pinia",
-      "community": 274,
-      "community_name": "pinia",
+      "community": 72,
+      "community_name": "dependencies",
       "norm_label": "pinia"
     },
     {
@@ -47186,8 +47186,8 @@
       "source_location": "L26",
       "_origin": "ast",
       "id": "pinia",
-      "community": 274,
-      "community_name": "pinia",
+      "community": 72,
+      "community_name": "dependencies",
       "norm_label": "pinia"
     },
     {
@@ -159193,7 +159193,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "Frontend/components/features/tasks/board/HabitPreview.spec.ts",
-      "source_location": "L10",
+      "source_location": "L9",
       "weight": 1.0,
       "_origin": "ast",
       "source": "frontend_components_features_tasks_board_habitpreview_spec",
@@ -159204,7 +159204,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "Frontend/components/features/tasks/board/HabitPreview.spec.ts",
-      "source_location": "L32",
+      "source_location": "L31",
       "weight": 1.0,
       "_origin": "ast",
       "source": "frontend_components_features_tasks_board_habitpreview_spec",
@@ -167234,7 +167234,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "Frontend/composables/api/useApi.ts",
-      "source_location": "L74",
+      "source_location": "L72",
       "weight": 1.0,
       "_origin": "ast",
       "source": "frontend_composables_api_useapi_useapiresource",
@@ -178950,5 +178950,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "f84fe6aecc0bb17db6c46e480b67315c1ed56edb"
+  "built_at_commit": "5fce4d2757865b1e85330d0957d0ef3b585a4235"
 }
