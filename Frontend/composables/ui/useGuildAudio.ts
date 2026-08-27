@@ -1,4 +1,4 @@
-import { ref } from "vue";
+import { ref } from 'vue';
 
 const isMuted = ref(false);
 const isAmbientPlaying = ref(false);
@@ -6,15 +6,14 @@ const isAmbientPlaying = ref(false);
 let audioCtx: AudioContext | null = null;
 
 function getAudioContext(): AudioContext | null {
-  if (typeof window === "undefined") return null;
+  if (typeof window === 'undefined') return null;
   if (!audioCtx) {
-    const AudioContextClass =
-      window.AudioContext || (window as any).webkitAudioContext;
+    const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
     if (AudioContextClass) {
       audioCtx = new AudioContextClass();
     }
   }
-  if (audioCtx && audioCtx.state === "suspended") {
+  if (audioCtx && audioCtx.state === 'suspended') {
     audioCtx.resume();
   }
   return audioCtx;
@@ -28,32 +27,34 @@ export function useGuildAudio() {
     }
   }
 
-  // 1. SOM DE MOEDAS METÁLICAS (Clink)
+  // 1. SOM DE MOEDAS METÁLICAS (Clink / Chime)
   function playCoinsSound() {
     if (isMuted.value) return;
     const ctx = getAudioContext();
     if (!ctx) return;
 
     const now = ctx.currentTime;
+    // Pequena variação aleatória de pitch para cada clique soar natural e orgânico
+    const pitchShift = (Math.random() - 0.5) * 120;
 
-    // 2 tons em rápida sequência simulando moedas colidindo
-    const freqs = [1800, 2400, 3200];
+    // Frequências ricas e agudas simulando o tilintar de ouro no balcão
+    const freqs = [1900 + pitchShift, 2550 + pitchShift, 3400 + pitchShift];
     freqs.forEach((freq, index) => {
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
 
-      osc.type = "sine";
-      osc.frequency.setValueAtTime(freq, now + index * 0.04);
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(freq, now + index * 0.035);
 
-      gain.gain.setValueAtTime(0, now + index * 0.04);
-      gain.gain.linearRampToValueAtTime(0.18, now + index * 0.04 + 0.005);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + index * 0.04 + 0.25);
+      gain.gain.setValueAtTime(0, now + index * 0.035);
+      gain.gain.linearRampToValueAtTime(0.22, now + index * 0.035 + 0.006);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + index * 0.035 + 0.28);
 
       osc.connect(gain);
       gain.connect(ctx.destination);
 
-      osc.start(now + index * 0.04);
-      osc.stop(now + index * 0.04 + 0.25);
+      osc.start(now + index * 0.035);
+      osc.stop(now + index * 0.035 + 0.28);
     });
   }
 
@@ -69,7 +70,7 @@ export function useGuildAudio() {
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
 
-    osc.type = "triangle";
+    osc.type = 'triangle';
     osc.frequency.setValueAtTime(440, now);
     osc.frequency.exponentialRampToValueAtTime(120, now + 0.3);
 
@@ -85,7 +86,7 @@ export function useGuildAudio() {
     // Harmônico metálico agudo
     const metalOsc = ctx.createOscillator();
     const metalGain = ctx.createGain();
-    metalOsc.type = "sine";
+    metalOsc.type = 'sine';
     metalOsc.frequency.setValueAtTime(880, now);
     metalOsc.frequency.linearRampToValueAtTime(860, now + 0.4);
 
@@ -118,7 +119,7 @@ export function useGuildAudio() {
     whiteNoise.buffer = buffer;
 
     const filter = ctx.createBiquadFilter();
-    filter.type = "bandpass";
+    filter.type = 'bandpass';
     filter.frequency.setValueAtTime(1200, now);
     filter.Q.setValueAtTime(2.5, now);
 
@@ -151,12 +152,8 @@ export function useGuildAudio() {
     }
   }
 
-  function playDoorSound(
-    baseName: string,
-    targetDurationMs: number = 600,
-    volume: number = 0.6,
-  ) {
-    if (isMuted.value || typeof window === "undefined") return;
+  function playDoorSound(baseName: string, targetDurationMs: number = 600, volume: number = 0.6) {
+    if (isMuted.value || typeof window === 'undefined') return;
 
     stopDoorSound();
 
@@ -179,19 +176,14 @@ export function useGuildAudio() {
     audio.volume = volume;
 
     const applyPlaybackRate = () => {
-      if (
-        audio &&
-        audio.duration &&
-        isFinite(audio.duration) &&
-        audio.duration > 0
-      ) {
+      if (audio && audio.duration && isFinite(audio.duration) && audio.duration > 0) {
         // Adapta a velocidade para coincidir exatamente com a duração da animação (0.5x a 3.0x)
         const rate = audio.duration / targetSec;
         audio.playbackRate = Math.max(0.4, Math.min(3.5, rate));
       }
     };
 
-    audio.addEventListener("loadedmetadata", applyPlaybackRate);
+    audio.addEventListener('loadedmetadata', applyPlaybackRate);
     if (audio.readyState >= 1) {
       applyPlaybackRate();
     }
@@ -207,11 +199,11 @@ export function useGuildAudio() {
   }
 
   function playDoorOpenSound(targetDurationMs: number = 600) {
-    playDoorSound("door-open", targetDurationMs, 0.6);
+    playDoorSound('door-open', targetDurationMs, 0.6);
   }
 
   function playDoorCloseSound(targetDurationMs: number = 400) {
-    playDoorSound("door-close", targetDurationMs, 0.5);
+    playDoorSound('door-close', targetDurationMs, 0.5);
   }
 
   // 5. SOM DE PASSOS NA PEDRA (Footsteps on Stone)
@@ -229,7 +221,7 @@ export function useGuildAudio() {
       // Thud grave de impacto na pedra
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
-      osc.type = "triangle";
+      osc.type = 'triangle';
       osc.frequency.setValueAtTime(110 - idx * 10, stepNow);
       osc.frequency.exponentialRampToValueAtTime(35, stepNow + 0.1);
 
@@ -252,7 +244,7 @@ export function useGuildAudio() {
       noise.buffer = buffer;
 
       const noiseFilter = ctx.createBiquadFilter();
-      noiseFilter.type = "lowpass";
+      noiseFilter.type = 'lowpass';
       noiseFilter.frequency.setValueAtTime(600, stepNow);
 
       const noiseGain = ctx.createGain();
@@ -279,7 +271,7 @@ export function useGuildAudio() {
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
 
-    osc.type = "sine";
+    osc.type = 'sine';
     osc.frequency.setValueAtTime(140, now);
     osc.frequency.exponentialRampToValueAtTime(220, now + 0.25);
     osc.frequency.exponentialRampToValueAtTime(160, now + 0.5);
@@ -306,7 +298,7 @@ export function useGuildAudio() {
     noise.buffer = buffer;
 
     const filter = ctx.createBiquadFilter();
-    filter.type = "bandpass";
+    filter.type = 'bandpass';
     filter.frequency.setValueAtTime(800, now);
     filter.frequency.exponentialRampToValueAtTime(1600, now + 0.2);
     filter.Q.setValueAtTime(3, now);
@@ -356,7 +348,7 @@ export function useGuildAudio() {
 
     // Filtro de passagem de faixa com varredura suave simulando o ondular do tecido
     const filter = ctx.createBiquadFilter();
-    filter.type = "bandpass";
+    filter.type = 'bandpass';
     filter.frequency.setValueAtTime(320, now);
     filter.frequency.exponentialRampToValueAtTime(750, now + 0.12);
     filter.frequency.exponentialRampToValueAtTime(420, now + duration);
@@ -376,7 +368,7 @@ export function useGuildAudio() {
     // B. Sub-harmônico sutil de vento/brisa suave
     const breezeOsc = ctx.createOscillator();
     const breezeGain = ctx.createGain();
-    breezeOsc.type = "sine";
+    breezeOsc.type = 'sine';
     breezeOsc.frequency.setValueAtTime(95, now);
     breezeOsc.frequency.exponentialRampToValueAtTime(65, now + duration);
 
@@ -394,26 +386,26 @@ export function useGuildAudio() {
   // DISPATCHER GERAL DE EFEITOS SONOROS (playSFX)
   function playSFX(sfxName: string) {
     switch (sfxName) {
-      case "footsteps-stone":
+      case 'footsteps-stone':
         playFootstepsStoneSound();
         break;
-      case "coins":
+      case 'coins':
         playCoinsSound();
         break;
-      case "dagger":
+      case 'dagger':
         playDaggerSound();
         break;
-      case "paper":
+      case 'paper':
         playPaperFlipSound();
         break;
-      case "door":
+      case 'door':
         playDoorOpenSound();
         break;
-      case "portal-hum":
+      case 'portal-hum':
         playPortalHumSound();
         break;
-      case "pennant":
-      case "flutter":
+      case 'pennant':
+      case 'flutter':
         playPennantFlutterSound();
         break;
       default:
@@ -445,7 +437,7 @@ export function useGuildAudio() {
     source.loop = true;
 
     const filter = ctx.createBiquadFilter();
-    filter.type = "lowpass";
+    filter.type = 'lowpass';
     filter.frequency.setValueAtTime(400, ctx.currentTime);
 
     const gain = ctx.createGain();

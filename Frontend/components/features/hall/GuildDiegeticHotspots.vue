@@ -34,12 +34,7 @@
     <div
       class="desk-book-widget-container"
       @click="emit('openReception')"
-      @mouseenter="
-        emit(
-          'updateTooltip',
-          '📖 Clique para abrir Grimório Completo da Guilda',
-        )
-      "
+      @mouseenter="emit('updateTooltip', '📖 Clique para abrir Grimório Completo da Guilda')"
       @mouseleave="emit('updateTooltip', null)"
     >
       <GuildDeskBookWidget />
@@ -60,30 +55,33 @@
     <!-- EASTER EGG: PILHA DE MOEDAS DE OURO -->
     <div
       class="hotspot-area coins-easter-egg-area"
+      :class="{ 'is-popping': isCoinsPopping }"
       @click="triggerCoinsInteraction"
-      @mouseenter="emit('updateTooltip', '🪙 Tocar moedas de ouro da guilda')"
+      @mouseenter="emit('updateTooltip', '🪙 Pilha de Moedas no Balcão (+1 Gold)')"
       @mouseleave="emit('updateTooltip', null)"
     >
       <div class="coins-highlight-aura"></div>
+
+      <!-- ANIMAÇÃO FLUTUANTE DE +1 GOLD -->
       <div
         v-for="pop in goldPopups"
         :key="pop.id"
         class="floating-gold-popup"
         :style="{ left: `${pop.x}px`, top: `${pop.y}px` }"
       >
-        <span>+100 XP 🪙</span>
+        <span class="gold-text">+1 Gold 🪙</span>
       </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from "vue";
-import UiWaxSeal from "~/components/ui/diegetic/UiWaxSeal.vue";
-import GuildDeskBookWidget from "~/components/features/hall/GuildDeskBookWidget.vue";
-import GuildLibraryPortal from "~/components/features/hall/GuildLibraryPortal.vue";
-import GuildStaircasePennant from "~/components/features/hall/GuildStaircasePennant.vue";
-import { useGuildAudio } from "~/composables/ui/useGuildAudio";
+import { ref } from 'vue';
+import UiWaxSeal from '~/components/ui/diegetic/UiWaxSeal.vue';
+import GuildDeskBookWidget from '~/components/features/hall/GuildDeskBookWidget.vue';
+import GuildLibraryPortal from '~/components/features/hall/GuildLibraryPortal.vue';
+import GuildStaircasePennant from '~/components/features/hall/GuildStaircasePennant.vue';
+import { useGuildAudio } from '~/composables/ui/useGuildAudio';
 
 defineProps<{
   isMobile: boolean;
@@ -91,53 +89,53 @@ defineProps<{
 }>();
 
 const emit = defineEmits<{
-  (e: "openReception"): void;
-  (e: "updateTooltip", tooltip: string | null): void;
-  (e: "rightDoorHover"): void;
-  (e: "rightDoorLeave"): void;
-  (e: "rightDoorClick"): void;
-  (e: "stairsHover"): void;
-  (e: "stairsLeave"): void;
-  (e: "stairsClick"): void;
+  (e: 'openReception'): void;
+  (e: 'updateTooltip', tooltip: string | null): void;
+  (e: 'rightDoorHover'): void;
+  (e: 'rightDoorLeave'): void;
+  (e: 'rightDoorClick'): void;
+  (e: 'stairsHover'): void;
+  (e: 'stairsLeave'): void;
+  (e: 'stairsClick'): void;
 }>();
 
-const { playCoinsSound, playDaggerSound, playPennantFlutterSound } =
-  useGuildAudio();
+const { playCoinsSound, playDaggerSound, playPennantFlutterSound } = useGuildAudio();
 
 const isStairsHovered = ref(false);
 
 function onStairsHover() {
   isStairsHovered.value = true;
   playPennantFlutterSound();
-  emit("updateTooltip", "📜 Mezanino da Guilda: Calendário & Cartografia");
-  emit("stairsHover");
+  emit('updateTooltip', '📜 Mezanino da Guilda: Calendário & Cartografia');
+  emit('stairsHover');
 }
 
 function onStairsLeave() {
   isStairsHovered.value = false;
-  emit("updateTooltip", null);
-  emit("stairsLeave");
+  emit('updateTooltip', null);
+  emit('stairsLeave');
 }
 
 function onStairsClick() {
-  emit("stairsClick");
+  emit('stairsClick');
 }
 
 function onLibraryHover() {
-  emit("updateTooltip", "📜 Acessar Biblioteca de Arquivos e Projetos");
-  emit("rightDoorHover");
+  emit('updateTooltip', '📜 Acessar Biblioteca de Arquivos e Projetos');
+  emit('rightDoorHover');
 }
 
 function onLibraryLeave() {
-  emit("updateTooltip", null);
-  emit("rightDoorLeave");
+  emit('updateTooltip', null);
+  emit('rightDoorLeave');
 }
 
 function onLibraryClick() {
-  emit("rightDoorClick");
+  emit('rightDoorClick');
 }
 
 const isDaggerShaking = ref(false);
+const isCoinsPopping = ref(false);
 
 interface GoldPopup {
   id: number;
@@ -156,13 +154,18 @@ function triggerDaggerInteraction() {
   }, 400);
 }
 
-// Easter Egg: Pilha de Moedas
+// Easter Egg: Pilha de Moedas no Balcão
 function triggerCoinsInteraction(event: MouseEvent) {
   playCoinsSound();
 
+  isCoinsPopping.value = true;
+  setTimeout(() => {
+    isCoinsPopping.value = false;
+  }, 250);
+
   const id = ++goldIdCounter;
   const rect = (event.currentTarget as HTMLElement).getBoundingClientRect();
-  const x = event.clientX - rect.left - 20;
+  const x = event.clientX - rect.left - 16;
   const y = event.clientY - rect.top - 20;
 
   goldPopups.value.push({ id, x, y });
@@ -314,11 +317,7 @@ function triggerCoinsInteraction(event: MouseEvent) {
   position: absolute;
   inset: -8px;
   border-radius: 50%;
-  background: radial-gradient(
-    circle,
-    rgba(255, 215, 0, 0.05) 0%,
-    transparent 75%
-  );
+  background: radial-gradient(circle, rgba(255, 215, 0, 0.05) 0%, transparent 75%);
   opacity: 0;
   transition: opacity 0.2s ease;
   pointer-events: none;
@@ -363,11 +362,7 @@ function triggerCoinsInteraction(event: MouseEvent) {
   position: absolute;
   inset: -8px;
   border-radius: 50%;
-  background: radial-gradient(
-    circle,
-    rgba(255, 215, 0, 0.05) 0%,
-    transparent 75%
-  );
+  background: radial-gradient(circle, rgba(255, 215, 0, 0.05) 0%, transparent 75%);
   opacity: 0;
   transition: opacity 0.2s ease;
   pointer-events: none;
@@ -447,15 +442,43 @@ function triggerCoinsInteraction(event: MouseEvent) {
   animation: dagger-shake 0.35s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
 }
 
+/* ANIMAÇÃO BOUNCE/POP DA PILHA DE MOEDAS */
+@keyframes coins-pop {
+  0% {
+    transform: scale(1);
+  }
+  40% {
+    transform: scale(0.92) translateY(2px);
+  }
+  75% {
+    transform: scale(1.08) translateY(-3px);
+  }
+  100% {
+    transform: scale(1) translateY(0);
+  }
+}
+
+.coins-easter-egg-area.is-popping {
+  animation: coins-pop 0.25s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
 /* ANIMATED FLOATING GOLD POPUP */
 @keyframes float-up-gold {
   0% {
+    opacity: 0;
+    transform: translateY(6px) scale(0.85);
+  }
+  20% {
     opacity: 1;
-    transform: translateY(0) scale(0.9);
+    transform: translateY(-8px) scale(1.1);
+  }
+  80% {
+    opacity: 1;
+    transform: translateY(-38px) scale(1.02);
   }
   100% {
     opacity: 0;
-    transform: translateY(-40px) scale(1.15);
+    transform: translateY(-56px) scale(0.95);
   }
 }
 
@@ -463,12 +486,21 @@ function triggerCoinsInteraction(event: MouseEvent) {
   position: absolute;
   pointer-events: none;
   font-family: var(--font-guild-title, serif);
-  font-weight: bold;
-  font-size: 0.95rem;
-  color: #fbbf24;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.9);
-  animation: float-up-gold 1.2s ease-out forwards;
+  font-weight: 800;
+  font-size: 1.05rem;
+  color: #fef08a;
+  text-shadow:
+    0 0 10px rgba(245, 158, 11, 0.9),
+    0 2px 4px rgba(0, 0, 0, 0.95);
+  animation: float-up-gold 1.2s cubic-bezier(0.22, 1, 0.36, 1) forwards;
   z-index: 50;
   white-space: nowrap;
+  user-select: none;
+}
+
+.gold-text {
+  display: inline-block;
+  letter-spacing: 0.04em;
+  filter: drop-shadow(0 2px 6px rgba(251, 191, 36, 0.7));
 }
 </style>

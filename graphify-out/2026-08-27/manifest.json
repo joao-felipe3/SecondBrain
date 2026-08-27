@@ -1015,7 +1015,7 @@
     "semantic_hash": ""
   },
   "Backend/src/tasks/schemas/task.schema.ts": {
-    "mtime": 1787795476.0121481,
+    "mtime": 1787793168.2252667,
     "ast_hash": "738b338fa55fb22f4fbae7762379ae44",
     "semantic_hash": ""
   },
@@ -3160,8 +3160,8 @@
     "semantic_hash": ""
   },
   "Frontend/composables/ui/useGuildAudio.ts": {
-    "mtime": 1787801048.2228289,
-    "ast_hash": "8e1e30d100fbde04cd54b58cd74751a9",
+    "mtime": 1787538849.2405586,
+    "ast_hash": "81989089cd3c5cbe67a51c8399ead2dc",
     "semantic_hash": ""
   },
   "Frontend/composables/ui/useResponsive.ts": {
@@ -3310,8 +3310,8 @@
     "semantic_hash": ""
   },
   "Frontend/components/features/hall/GuildDiegeticHotspots.vue": {
-    "mtime": 1787801048.098822,
-    "ast_hash": "86b1a87b7db8f1316b0328935422b3b6",
+    "mtime": 1787197945.7947772,
+    "ast_hash": "dd8a4835ae118602d5963076129d04a0",
     "semantic_hash": ""
   },
   "Frontend/components/features/hall/GuildMobileJournal.vue": {
@@ -3365,8 +3365,8 @@
     "semantic_hash": ""
   },
   "Project/FRONTEND_REFACTORING_PLAN.md": {
-    "mtime": 1787800853.5445433,
-    "ast_hash": "57bb8e16c47f78b9316e3a9d9df15b99",
+    "mtime": 1787193696.2336333,
+    "ast_hash": "ab31ea04fa59ec9829ece38e73caa4f9",
     "semantic_hash": ""
   },
   "Project/adr/004-validation-strategy.md": {

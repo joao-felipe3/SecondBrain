@@ -102,7 +102,7 @@
   - [x] Clique nos NPCs ativa balão de fala com frases dinâmicas de progresso do usuário.
   - [ ] Spritesheet animado do Anão Ferreiro batendo o martelo na bigorna em loop.
   - [ ] Spritesheet animado da Elfa Arcanista folheando pergaminhos em loop.
-- [ ] **Pilha de Moedas no Balcão:** Clique toca SFX de ouro (`playCoinsSound`) + animação floating `+1 Gold`.
+- [x] **Pilha de Moedas no Balcão:** Clique toca SFX de ouro (`playCoinsSound`) + animação floating `+1 Gold`.
 - [ ] **Adaga Fincada no Balcão:** Clique ativa tremedeira metálica (`playDaggerSound` + `@keyframes daggerVibrate`).
 - [ ] **Caneca de Hidromel:** Clique ativa animação de espuma subindo + SFX de brinde/gole.
 
