@@ -1,911 +1,945 @@
-@startuml Classes
+@startuml SecondBrain_ClassDiagram
+!theme plain
 skinparam style strictuml
-left to right direction
+skinparam handwritten false
+skinparam monochrome false
+skinparam shadowing false
+skinparam linetype ortho
+skinparam packageStyle rectangle
+skinparam classAttributeIconSize 0
+skinparam defaultFontName "Segoe UI", "Helvetica", "Arial", sans-serif
+skinparam defaultFontSize 12
 
-' This diagram reflects the current Backend DTOs + persistence schemas (NestJS/Mongoose).
-' It replaces early-phase placeholder classes (Workout/Product/etc) with real domain models.
+skinparam package {
+    BackgroundColor #F8FAFC
+    BorderColor #94A3B8
+    BorderThickness 1.5
+    FontColor #1E293B
+    FontStyle bold
+}
 
+skinparam class {
+    BackgroundColor #FFFFFF
+    BorderColor #64748B
+    BorderThickness 1.2
+    HeaderBackgroundColor #F1F5F9
+    FontColor #0F172A
+    FontSize 12
+    AttributeFontColor #334155
+    AttributeFontSize 11
+}
+
+skinparam class<<entity>> {
+    HeaderBackgroundColor #EEF2FF
+    BorderColor #6366F1
+}
+
+skinparam class<<valueobject>> {
+    HeaderBackgroundColor #ECFDF5
+    BorderColor #10B981
+}
+
+skinparam class<<dto>> {
+    HeaderBackgroundColor #FFFBEB
+    BorderColor #F59E0B
+}
+
+skinparam class<<response>> {
+    HeaderBackgroundColor #FAF5FF
+    BorderColor #8B5CF6
+}
+
+skinparam enum {
+    HeaderBackgroundColor #F3F4F6
+    BorderColor #6B7280
+}
+
+skinparam note {
+    BackgroundColor #FEF3C7
+    BorderColor #D97706
+    FontColor #78350F
+    FontSize 11
+}
+
+skinparam arrow {
+    Color #475569
+    Thickness 1.2
+    FontColor #334155
+    FontSize 10
+}
+
+' ==========================================
+' Core Data Types & Enums
+' ==========================================
 class ObjectId <<datatype>>
 
 enum TaskStatus {
-    todo
-    doing
-    review
-    done
+    + todo
+    + doing
+    + review
+    + done
 }
 
 enum RecurringState {
-    pending
-    completed
-    skipped
+    + pending
+    + completed
+    + skipped
 }
 
 enum MicroTaskType {
-    subtask
-    quick
-    complex
-    habit
+    + subtask
+    + quick
+    + complex
+    + habit
 }
 
 enum DependencyType {
-    finish-to-start
-    start-to-start
-    finish-to-finish
+    + finish-to-start
+    + start-to-start
+    + finish-to-finish
 }
 
 enum WBSStatus {
-    planned
-    in-progress
-    completed
-    on-hold
+    + planned
+    + in-progress
+    + completed
+    + on-hold
 }
 
-package "Tasks (Persistence)" {
-    class TaskChecklistItem {
-        item: string
-        completed: boolean
-        order: number
+' ==========================================
+' Tasks Aggregate (Persistence)
+' ==========================================
+package "Tasks Domain (Persistence)" {
+    class TaskChecklistItem <<valueobject>> {
+        + item: string
+        + completed: boolean
+        + order: number
     }
 
-    class RecurringException {
-        date: Date
-        reason: string
+    class RecurringException <<valueobject>> {
+        + date: Date
+        + reason: string
     }
 
-    class TaskRecurringRule {
-        frequency: string
-        interval: number
-        daysOfWeek: number[]
-        endDate: Date
-        exceptions: RecurringException[]
+    class TaskRecurringRule <<valueobject>> {
+        + frequency: string
+        + interval: number
+        + daysOfWeek: number[]
+        + endDate: Date
+        + exceptions: RecurringException[]
     }
 
-    class Task {
-        id: ObjectId
-        name: string
-        description: string
-        definitionOfDone: string
-        checklist: (string|TaskChecklistItem)[]
-
-        deadline: Date
-        notification: Date
-
-        pomodorosPlanned: number
-        pomodorosDid: number
-
-        pertOptimisticMinutes: number
-        pertMostLikelyMinutes: number
-        pertPessimisticMinutes: number
-        pertExpectedMinutes: number
-        pertVariance: number
-
-        priority: number
-        difficult: number
-        experience: number
-        prize: number
-
-        status: TaskStatus
-        statusUpdatedAt: Date
-        kanbanOrder: number
-
-        isConcluded: boolean
-        late: boolean
-
-        projectId: ObjectId
-        parentTaskId: ObjectId
-
-        parentWbsNodeId: string
-        wbsPath: string
-        generationBatchId: string
-        milestoneId: string
-
-        microTaskType: MicroTaskType
-        recurrency: string
-        parentRecurringId: ObjectId
-        isRecurringInstance: boolean
-        recurringState: RecurringState
-        recurringRule: TaskRecurringRule
-
-        requirementIds: string[]
-        journeyItemIds: string[]
-        createdAt: Date
+    class Task <<entity>> {
+        + id: ObjectId
+        + name: string
+        + description: string
+        + definitionOfDone: string
+        + checklist: (string | TaskChecklistItem)[]
+        + deadline: Date
+        + notification: Date
+        + pomodorosPlanned: number
+        + pomodorosDid: number
+        + pertOptimisticMinutes: number
+        + pertMostLikelyMinutes: number
+        + pertPessimisticMinutes: number
+        + pertExpectedMinutes: number
+        + pertVariance: number
+        + priority: number
+        + difficult: number
+        + experience: number
+        + prize: number
+        + status: TaskStatus
+        + statusUpdatedAt: Date
+        + kanbanOrder: number
+        + isConcluded: boolean
+        + late: boolean
+        + projectId: ObjectId
+        + parentTaskId: ObjectId
+        + parentWbsNodeId: string
+        + wbsPath: string
+        + generationBatchId: string
+        + milestoneId: string
+        + microTaskType: MicroTaskType
+        + recurrency: string
+        + parentRecurringId: ObjectId
+        + isRecurringInstance: boolean
+        + recurringState: RecurringState
+        + recurringRule: TaskRecurringRule
+        + requirementIds: string[]
+        + journeyItemIds: string[]
+        + createdAt: Date
+        + updatedAt: Date
     }
 
-    class TaskDependency {
-        id: ObjectId
-        projectId: ObjectId
-        taskId: ObjectId
-        dependsOnTaskId: ObjectId
-        relationship: DependencyType
-        reason: string
-        isAutoIdentified: boolean
-        createdAt: Date
-        updatedAt: Date
+    class TaskDependency <<entity>> {
+        + id: ObjectId
+        + projectId: ObjectId
+        + taskId: ObjectId
+        + dependsOnTaskId: ObjectId
+        + relationship: DependencyType
+        + reason: string
+        + isAutoIdentified: boolean
+        + createdAt: Date
+        + updatedAt: Date
     }
 
-    class Requirement {
-        id: ObjectId
-        projectId: ObjectId
-        description: string
-        type: string
-        kind: string
-        parentItemId: ObjectId
-        hierarchyLevel: number
-        title: string
-        traceableItems: ObjectId[]
-        traceableActionItems: ObjectId[]
-        source: string
-        status: string
-        createdAt: Date
-        updatedAt: Date
+    class Requirement <<entity>> {
+        + id: ObjectId
+        + projectId: ObjectId
+        + description: string
+        + type: string
+        + kind: string
+        + parentItemId: ObjectId
+        + hierarchyLevel: number
+        + title: string
+        + traceableItems: ObjectId[]
+        + traceableActionItems: ObjectId[]
+        + source: string
+        + status: string
+        + createdAt: Date
+        + updatedAt: Date
     }
 
-    class ProjectBuffer {
-        id: ObjectId
-        projectId: ObjectId
-        projectBuffer: number
-        consumed: number
-        threshold: number
-        criticalPathDuration: number
-        totalVariance: number
-        standardDeviation: number
-    }
-}
-
-package "Projects (Persistence)" {
-    class BacklogIdea {
-        text: string
-        createdAt: Date
+    class ProjectBuffer <<entity>> {
+        + id: ObjectId
+        + projectId: ObjectId
+        + projectBuffer: number
+        + consumed: number
+        + threshold: number
+        + criticalPathDuration: number
+        + totalVariance: number
+        + standardDeviation: number
     }
 
-    class SmartObjective {
-        specific: string
-        measurable: string
-        achievable: string
-        relevant: string
-        temporal: string
-        weeklyHours: number
-        summary: string
-        risks: string[]
+    class TaskAlert <<entity>> {
+        + id: ObjectId
+        + taskId: ObjectId
+        + projectId: ObjectId
+        + alertType: string
+        + message: string
+        + acknowledged: boolean
+        + createdAt: Date
     }
 
-    class DashboardManualVisibility {
-        spi: boolean
-        plannedVsEarned: boolean
-        completedHours: boolean
-        consistency: boolean
-        planAdherence: boolean
-        trend: boolean
-        perceivedProgress: boolean
-        remainingHours: boolean
-    }
-
-    class DashboardMetricPreferences {
-        mode: string
-        manualVisibility: DashboardManualVisibility
-    }
-
-    class Project {
-        id: ObjectId
-        name: string
-        description: string
-        color: string
-        startDate: Date
-        deadline: Date
-        totalHoursWorked: number
-        plannedHours: number
-        shortTermGoal: string
-        midTermGoal: string
-        longTermGoal: string
-        smartObjective: SmartObjective
-        status: string
-        progressPercentage: number
-        experience: number
-        reward: number
-        backlogIdeas: BacklogIdea[]
-        dashboardMetricPreferences: DashboardMetricPreferences
-    }
-
-    class WBSNode {
-        id: string
-        projectId: string
-        name: string
-        description: string
-        level: number
-        parentId: string
-        estimatedHours: number
-        status: WBSStatus
-        order: number
-        createdAt: Date
-    }
-
-    class ProjectWave {
-        id: ObjectId
-        projectId: ObjectId
-        waveNumber: number
-        startDate: Date
-        endDate: Date
-        status: string
-        taskIds: ObjectId[]
-        description: string
-    }
-
-    class Risk {
-        id: ObjectId
-        projectId: ObjectId
-        description: string
-        probability: number
-        impact: number
-        severity: string
-        mitigationPlan: string
-        status: string
-        owner: string
-        targetResolutionDate: Date
-    }
-
-    class XMatrixSnapshot {
-        projectId: ObjectId
-        data: object
+    class TaskCompletionFeedback <<entity>> {
+        + id: ObjectId
+        + taskId: ObjectId
+        + projectId: ObjectId
+        + rating: number
+        + difficultyPerceived: number
+        + feedbackNotes: string
+        + recordedAt: Date
     }
 }
 
-package "Settings (Persistence)" {
-    class Settings {
-        id: ObjectId
-        userId: string
-        silenceNotifications: boolean
-        darkMode: boolean
-        soundEnabled: boolean
-        notificationTimeBeforeDueMinutes: number
-        createdAt: Date
-        updatedAt: Date
+' ==========================================
+' Projects Aggregate (Persistence)
+' ==========================================
+package "Projects Domain (Persistence)" {
+    class BacklogIdea <<valueobject>> {
+        + text: string
+        + createdAt: Date
+    }
+
+    class SmartObjective <<valueobject>> {
+        + specific: string
+        + measurable: string
+        + achievable: string
+        + relevant: string
+        + temporal: string
+        + weeklyHours: number
+        + summary: string
+        + risks: string[]
+    }
+
+    class DashboardManualVisibility <<valueobject>> {
+        + spi: boolean
+        + plannedVsEarned: boolean
+        + completedHours: boolean
+        + consistency: boolean
+        + planAdherence: boolean
+        + trend: boolean
+        + perceivedProgress: boolean
+        + remainingHours: boolean
+    }
+
+    class DashboardMetricPreferences <<valueobject>> {
+        + mode: string
+        + manualVisibility: DashboardManualVisibility
+    }
+
+    class Project <<entity>> {
+        + id: ObjectId
+        + name: string
+        + description: string
+        + color: string
+        + startDate: Date
+        + deadline: Date
+        + totalHoursWorked: number
+        + plannedHours: number
+        + shortTermGoal: string
+        + midTermGoal: string
+        + longTermGoal: string
+        + smartObjective: SmartObjective
+        + status: string
+        + progressPercentage: number
+        + experience: number
+        + reward: number
+        + backlogIdeas: BacklogIdea[]
+        + dashboardMetricPreferences: DashboardMetricPreferences
+        + createdAt: Date
+        + updatedAt: Date
+    }
+
+    class WBSNode <<entity>> {
+        + id: string
+        + projectId: string
+        + name: string
+        + description: string
+        + level: number
+        + parentId: string
+        + estimatedHours: number
+        + status: WBSStatus
+        + order: number
+        + createdAt: Date
+    }
+
+    class ProjectWave <<entity>> {
+        + id: ObjectId
+        + projectId: ObjectId
+        + waveNumber: number
+        + startDate: Date
+        + endDate: Date
+        + status: string
+        + taskIds: ObjectId[]
+        + description: string
+    }
+
+    class Risk <<entity>> {
+        + id: ObjectId
+        + projectId: ObjectId
+        + description: string
+        + probability: number
+        + impact: number
+        + severity: string
+        + mitigationPlan: string
+        + status: string
+        + owner: string
+        + targetResolutionDate: Date
+    }
+
+    class ProjectProgressRecord <<entity>> {
+        + id: ObjectId
+        + projectId: ObjectId
+        + date: Date
+        + completedHours: number
+        + plannedValue: number
+    }
+
+    class XMatrixSnapshot <<entity>> {
+        + id: ObjectId
+        + projectId: ObjectId
+        + data: object
+        + createdAt: Date
     }
 }
 
-package "DTOs (API Contracts)" {
+' ==========================================
+' Settings (Persistence)
+' ==========================================
+package "Settings Domain (Persistence)" {
+    class Settings <<entity>> {
+        + id: ObjectId
+        + userId: string
+        + silenceNotifications: boolean
+        + darkMode: boolean
+        + soundEnabled: boolean
+        + notificationTimeBeforeDueMinutes: number
+        + createdAt: Date
+        + updatedAt: Date
+    }
+}
+
+' ==========================================
+' Data Transfer Objects (DTOs)
+' ==========================================
+package "Contracts & DTOs (API Requests)" {
     class ChecklistItemDto <<dto>> {
-        item: string
-        completed?: boolean
-        order?: number
+        + item: string
+        + completed: boolean
+        + order: number
     }
 
     class RecurringExceptionDto <<dto>> {
-        date: Date
-        reason?: string
+        + date: Date
+        + reason: string
     }
 
     class RecurringRuleDto <<dto>> {
-        frequency: string
-        interval: number
-        daysOfWeek?: number[]
-        endDate?: Date
-        exceptions?: (Date|RecurringExceptionDto)[]
+        + frequency: string
+        + interval: number
+        + daysOfWeek: number[]
+        + endDate: Date
+        + exceptions: (Date | RecurringExceptionDto)[]
     }
 
     class CreateTaskDto <<dto>> {
-        name: string
-        description?: string
-        definitionOfDone?: string
-        checklist?: (string|ChecklistItemDto)[]
-
-        pomodorosPlanned: number
-        pomodorosDid?: number
-
-        pertOptimisticMinutes?: number
-        pertMostLikelyMinutes?: number
-        pertPessimisticMinutes?: number
-        pertExpectedMinutes?: number
-        pertVariance?: number
-
-        requirementIds?: string[]
-        journeyItemIds?: string[]
-
-        rtmRisk?: boolean
-        rtmRiskReason?: string
-
-        evmProgress?: number
-        evmPlannedValueMinutes?: number
-        evmEarnedValueMinutes?: number
-        evmSchedulePerformanceIndex?: number
-        evmAlert?: string
-
-        deadline: Date
-        priority?: number
-        difficult?: number
-
-        project: (string|ObjectId)
-        parentTaskId?: (string|ObjectId)
-
-        parentWbsNodeId?: string
-        wbsPath?: string
-        generationBatchId?: string
-        milestoneId?: string
-
-        experience?: number
-        isConcluded: boolean
-        late: boolean
-        prize?: number
-        recurrency: string
-        notification: Date
-        microTaskType?: string
-
-        parentRecurringId?: (string|ObjectId)
-        isRecurringInstance?: boolean
-        recurringState?: RecurringState
-        recurringRule?: RecurringRuleDto
-
-        cognitiveMode?: string
-        contextTag?: string
-        themeTag?: string[]
-        status?: TaskStatus
+        + name: string
+        + description: string
+        + definitionOfDone: string
+        + checklist: (string | ChecklistItemDto)[]
+        + pomodorosPlanned: number
+        + pomodorosDid: number
+        + pertOptimisticMinutes: number
+        + pertMostLikelyMinutes: number
+        + pertPessimisticMinutes: number
+        + pertExpectedMinutes: number
+        + pertVariance: number
+        + requirementIds: string[]
+        + journeyItemIds: string[]
+        + rtmRisk: boolean
+        + rtmRiskReason: string
+        + evmProgress: number
+        + evmPlannedValueMinutes: number
+        + evmEarnedValueMinutes: number
+        + evmSchedulePerformanceIndex: number
+        + evmAlert: string
+        + deadline: Date
+        + priority: number
+        + difficult: number
+        + project: (string | ObjectId)
+        + parentTaskId: (string | ObjectId)
+        + parentWbsNodeId: string
+        + wbsPath: string
+        + generationBatchId: string
+        + milestoneId: string
+        + experience: number
+        + isConcluded: boolean
+        + late: boolean
+        + prize: number
+        + recurrency: string
+        + notification: Date
+        + microTaskType: string
+        + parentRecurringId: (string | ObjectId)
+        + isRecurringInstance: boolean
+        + recurringState: RecurringState
+        + recurringRule: RecurringRuleDto
+        + cognitiveMode: string
+        + contextTag: string
+        + themeTag: string[]
+        + status: TaskStatus
     }
 
-    class UpdateTaskDto <<dto>> {
-    }
-
+    class UpdateTaskDto <<dto>>
     class CreateMicroTaskDto <<dto>> {
-        autoGenerateChecklist?: boolean
+        + autoGenerateChecklist: boolean
     }
-
     class MoveTaskStatusDto <<dto>> {
-        status: TaskStatus
-        toOrder?: number
-        toIndex?: number
-        fromStatus?: TaskStatus
-        fromOrder?: number
+        + status: TaskStatus
+        + toOrder: number
+        + toIndex: number
+        + fromStatus: TaskStatus
+        + fromOrder: number
     }
-
     class UpdateChecklistDto <<dto>> {
-        checklist: (string|ChecklistItemDto)[]
+        + checklist: (string | ChecklistItemDto)[]
     }
-
     class UpdateRecurringRuleDto <<dto>> {
-        recurringRule: RecurringRuleDto
+        + recurringRule: RecurringRuleDto
     }
-
     class PertEstimateDto <<dto>> {
-        optimistic: number
-        mostLikely: number
-        pessimistic: number
+        + optimistic: number
+        + mostLikely: number
+        + pessimistic: number
     }
-
-    class PertEstimateResponseDto <<response>> {
-        expectedTime: number
-        variance: number
-        standardDeviation: number
-        formula: string
-        estimate: PertEstimateDto
-    }
-
     class SuggestPertDto <<dto>> {
-        taskType: MicroTaskType
-        description: string
-        projectContext?: string
+        + taskType: MicroTaskType
+        + description: string
+        + projectContext: string
     }
-
-    class PertSuggestionResponseDto <<response>> {
-        optimistic: number
-        likely: number
-        pessimistic: number
-        expectedTime: number
-        standardDeviation: number
-        recommendation: string
-        fromLLM: boolean
-    }
-
     class UpdatePertDto <<dto>> {
-        pertOptimisticMinutes: number
-        pertMostLikelyMinutes: number
-        pertPessimisticMinutes: number
+        + pertOptimisticMinutes: number
+        + pertMostLikelyMinutes: number
+        + pertPessimisticMinutes: number
     }
 
     class GenerateAiSuggestionsDto <<dto>> {
-        projectName: string
-        projectId?: string
-        shortTermGoal?: string
-        midTermGoal?: string
-        longTermGoal?: string
-        userPrompt?: string
-        targetHours?: number
-    }
-
-    class AiTaskSuggestionDto <<dto>> {
-        name: string
-        deadline: string
-        pomodoros: number
-        priority: number
-        difficulty: number
-        selected: boolean
-    }
-
-    class AiSuggestionsProgressDto <<dto>> {
-        currentIteration: number
-        maxIterations: number
-        currentHours: number
-        targetHours: number
-        tasksGenerated: number
-        status: string
-        message: string
-    }
-
-    class AiSuggestionsResponseDto <<response>> {
-        suggestions: AiTaskSuggestionDto[]
-        progress: AiSuggestionsProgressDto
+        + projectName: string
+        + projectId: string
+        + shortTermGoal: string
+        + midTermGoal: string
+        + longTermGoal: string
+        + userPrompt: string
+        + targetHours: number
     }
 
     class CreateProjectDto <<dto>> {
-        name: string
-        description: string
-        color: string
-        tasks?: Task[]
-        startDate: Date
-        deadline: Date
-        totalHoursWorked: number
-        plannedHours: number
-        shortTermGoal: string
-        midTermGoal: string
-        longTermGoal: string
-        status: string
-        progressPercentage: number
-        experience: number
-        reward: number
+        + name: string
+        + description: string
+        + color: string
+        + startDate: Date
+        + deadline: Date
+        + totalHoursWorked: number
+        + plannedHours: number
+        + shortTermGoal: string
+        + midTermGoal: string
+        + longTermGoal: string
+        + status: string
+        + progressPercentage: number
+        + experience: number
+        + reward: number
     }
 
     class SmartObjectiveDto <<dto>> {
-        specific: string
-        measurable: string
-        achievable: string
-        relevant: string
-        temporal: string
-        weeklyHours?: number
-        summary: string
-        risks: string[]
+        + specific: string
+        + measurable: string
+        + achievable: string
+        + relevant: string
+        + temporal: string
+        + weeklyHours: number
+        + summary: string
+        + risks: string[]
     }
 
     class UpdateProjectDto <<dto>> {
-        smartObjective?: SmartObjectiveDto
+        + smartObjective: SmartObjectiveDto
     }
 
     class CatchballRequestDto <<dto>> {
-        projectName: string
-        projectDescription: string
-        shortTermGoal?: string
-        midTermGoal?: string
-        longTermGoal?: string
-    }
-
-    class CatchballResponseDto <<response>> {
-        questions: string[]
-        conversationId: string
+        + projectName: string
+        + projectDescription: string
+        + shortTermGoal: string
+        + midTermGoal: string
+        + longTermGoal: string
     }
 
     class RefineObjectiveDto <<dto>> {
-        conversationId: string
-        answers: string[]
+        + conversationId: string
+        + answers: string[]
     }
 
     class SuggestAnswerDto <<dto>> {
-        conversationId: string
-        questionIndex: number
-        question: string
-        previousAnswers: string[]
-    }
-
-    class PlanWithAIResponseDto <<response>> {
-        smart: SmartObjectiveDto
-        nextPhase: string
+        + conversationId: string
+        + questionIndex: number
+        + question: string
+        + previousAnswers: string[]
     }
 
     class WBSNodeDto <<dto>> {
-        _id?: string
-        name: string
-        description?: string
-        level: number
-        parentId?: string
-        estimatedHours: number
-        order?: number
-        children?: WBSNodeDto[]
+        + _id: string
+        + name: string
+        + description: string
+        + level: number
+        + parentId: string
+        + estimatedHours: number
+        + order: number
+        + children: WBSNodeDto[]
     }
 
     class GenerateWBSDto <<dto>> {
-        specific: string
-        measurable: string
-        achievable: string
-        relevant: string
-        temporal: string
-        summary?: string
-        weeklyHours?: number
-        budgetHours?: number
+        + specific: string
+        + measurable: string
+        + achievable: string
+        + relevant: string
+        + temporal: string
+        + summary: string
+        + weeklyHours: number
+        + budgetHours: number
     }
 
     class SaveWBSDto <<dto>> {
-        nodes: WBSNodeDto[]
-    }
-
-    class SuggestDecompositionDto <<dto>> {
-        name: string
-        description?: string
-        estimatedHours: number
-    }
-
-    class ValidateWBSResponseDto <<response>> {
-        valid: boolean
-        reason?: string
-        suggestion?: string
+        + nodes: WBSNodeDto[]
     }
 
     class ConvertWBSToTasksDto <<dto>> {
-        nodes: WBSNodeDto[]
-        autoResolveDiscrepancies?: boolean
-        autoAuditThresholdPct?: number
-        preferences?: object
-    }
-
-    class GetLeafNodesDto <<dto>> {
-        nodes: WBSNodeDto[]
-    }
-
-    class GenerateTasksForLeafDto <<dto>> {
-        leafNode: WBSNodeDto
-        nodePath: string
-        preferences?: object
-        prefetchLeafs?: object[]
-        saveTasks?: boolean
-    }
-
-    class AuditLeafDiscrepancyDto <<dto>> {
-        leafNode: WBSNodeDto
-        nodePath: string
-        generatedHours: number
-        tasks: object[]
-    }
-
-    class ResolveWBSBudgetDto <<dto>> {
-        nodes: WBSNodeDto[]
-        budgetHours: number
-        strategy: string
+        + nodes: WBSNodeDto[]
+        + autoResolveDiscrepancies: boolean
+        + autoAuditThresholdPct: number
+        + preferences: object
     }
 
     class CreateRiskDto <<dto>> {
-        description: string
-        probability: number
-        impact: number
-        severity?: string
-        mitigationPlan?: string
-        status?: string
-        owner?: string
-        targetResolutionDate?: string
-    }
-
-    class UpdateRiskDto <<dto>> {
-        description?: string
-        probability?: number
-        impact?: number
-        severity?: string
-        mitigationPlan?: string
-        status?: string
-        owner?: string
-        targetResolutionDate?: string
-    }
-
-    class AssessRisksDto <<dto>> {
-        projectDescription: string
+        + description: string
+        + probability: number
+        + impact: number
+        + severity: string
+        + mitigationPlan: string
+        + status: string
+        + owner: string
+        + targetResolutionDate: string
     }
 
     class CreateWaveDto <<dto>> {
-        waveNumber: number
-        startDate: string
-        endDate: string
-        status?: string
-        taskIds?: string[]
-        description?: string
-    }
-
-    class UpdateWaveDto <<dto>> {
-        status?: string
-        taskIds?: string[]
-        description?: string
-    }
-
-    class RecordProjectProgressDto <<dto>> {
-        date?: string
-        completedHours: number
-        plannedValue: number
-    }
-
-    class UpdateSettingsDto <<dto>> {
-        silenceNotifications?: boolean
-        darkMode?: boolean
-        soundEnabled?: boolean
-        notificationTimeBeforeDueMinutes?: number
+        + waveNumber: number
+        + startDate: string
+        + endDate: string
+        + status: string
+        + taskIds: string[]
+        + description: string
     }
 
     class CreateXMatrixDto <<dto>> {
-        strategy3to5Years?: string[]
-        annualGoals?: string[]
-        taskIds?: string[]
-        wbsLevels?: number[]
-        maxTacticalItems?: number
-        includeCompleted?: boolean
+        + strategy3to5Years: string[]
+        + annualGoals: string[]
+        + taskIds: string[]
+        + wbsLevels: number[]
+        + maxTacticalItems: number
+        + includeCompleted: boolean
     }
 }
 
-package "Analytics (API Responses)" {
+' ==========================================
+' Analytics & Views (API Responses)
+' ==========================================
+package "Analytics & Projections (API Responses)" {
     class GanttTaskItem <<response>> {
-        id: string
-        name: string
-        startDate: string
-        endDate: string
-        durationHours: number
-        earlyStart: number
-        earlyFinish: number
-        lateStart: number
-        lateFinish: number
-        slack: number
-        isCritical: boolean
-        progress: number
-        isConcluded: boolean
-        priority: number
-        parentWbsNodeId?: string
-        wbsPath?: string
+        + id: string
+        + name: string
+        + startDate: string
+        + endDate: string
+        + durationHours: number
+        + earlyStart: number
+        + earlyFinish: number
+        + lateStart: number
+        + lateFinish: number
+        + slack: number
+        + isCritical: boolean
+        + progress: number
+        + isConcluded: boolean
+        + priority: number
+        + parentWbsNodeId: string
+        + wbsPath: string
     }
 
     class GanttDependencyItem <<response>> {
-        id: string
-        fromTaskId: string
-        toTaskId: string
-        relationship: DependencyType
-        reason?: string
-        isAutoIdentified: boolean
+        + id: string
+        + fromTaskId: string
+        + toTaskId: string
+        + relationship: DependencyType
+        + reason: string
+        + isAutoIdentified: boolean
     }
 
     class PackageCriticalityItem <<response>> {
-        packageId: string
-        packagePath?: string
-        taskCount: number
-        criticalTaskCount: number
-        criticalRatio: number
-        minSlack: number
-        criticalDuration: number
-        criticalPathTaskCount: number
-        score: number
+        + packageId: string
+        + packagePath: string
+        + taskCount: number
+        + criticalTaskCount: number
+        + criticalRatio: number
+        + minSlack: number
+        + criticalDuration: number
+        + criticalPathTaskCount: number
+        + score: number
     }
 
     class GanttDataResponse <<response>> {
-        projectId: string
-        projectName: string
-        projectStartDate: string
-        projectDeadline: (string|null)
-        projectDurationHours: number
-        tasks: GanttTaskItem[]
-        dependencies: GanttDependencyItem[]
-        criticalPath: string[]
-        alerts: string[]
-        diagnostics?: object
-        packageCriticality?: PackageCriticalityItem[]
+        + projectId: string
+        + projectName: string
+        + projectStartDate: string
+        + projectDeadline: string
+        + projectDurationHours: number
+        + tasks: GanttTaskItem[]
+        + dependencies: GanttDependencyItem[]
+        + criticalPath: string[]
+        + alerts: string[]
+        + diagnostics: object
+        + packageCriticality: PackageCriticalityItem[]
     }
 
     class PertDiagramNode <<response>> {
-        id: string
-        name: string
-        durationHours: number
-        earlyStart: number
-        earlyFinish: number
-        lateStart: number
-        lateFinish: number
-        slack: number
-        isCritical: boolean
-        progress: number
-        isConcluded: boolean
-        priority: number
-        parentWbsNodeId?: string
-        wbsPath?: string
-        x: number
-        y: number
+        + id: string
+        + name: string
+        + durationHours: number
+        + earlyStart: number
+        + earlyFinish: number
+        + lateStart: number
+        + lateFinish: number
+        + slack: number
+        + isCritical: boolean
+        + progress: number
+        + isConcluded: boolean
+        + priority: number
+        + parentWbsNodeId: string
+        + wbsPath: string
+        + x: number
+        + y: number
     }
 
     class PertDiagramEdge <<response>> {
-        id: string
-        source: string
-        target: string
-        relationship: DependencyType
-        reason?: string
-        isAutoIdentified: boolean
-        isCriticalEdge: boolean
+        + id: string
+        + source: string
+        + target: string
+        + relationship: DependencyType
+        + reason: string
+        + isAutoIdentified: boolean
+        + isCriticalEdge: boolean
     }
 
     class PertDiagramStatistics <<response>> {
-        totalTasks: number
-        criticalTasks: number
-        criticalPercent: number
-        totalEdges: number
-        maxParallelism: number
+        + totalTasks: number
+        + criticalTasks: number
+        + criticalPercent: number
+        + totalEdges: number
+        + maxParallelism: number
     }
 
     class PertDiagramDataResponse <<response>> {
-        projectId: string
-        projectName: string
-        projectDurationHours: number
-        nodes: PertDiagramNode[]
-        edges: PertDiagramEdge[]
-        criticalPath: string[]
-        alerts: string[]
-        statistics: PertDiagramStatistics
-        diagnostics?: object
-        packageCriticality?: PackageCriticalityItem[]
+        + projectId: string
+        + projectName: string
+        + projectDurationHours: number
+        + nodes: PertDiagramNode[]
+        + edges: PertDiagramEdge[]
+        + criticalPath: string[]
+        + alerts: string[]
+        + statistics: PertDiagramStatistics
+        + diagnostics: object
+        + packageCriticality: PackageCriticalityItem[]
     }
 
     class EVMForecast <<response>> {
-        estimatedDate: (string|null)
-        variance: number
-        remainingHours: number
-        completionRate: number
-        bac: number
-        ev: number
-        pv: number
+        + estimatedDate: string
+        + variance: number
+        + remainingHours: number
+        + completionRate: number
+        + bac: number
+        + ev: number
+        + pv: number
     }
 
     class EVMCurve <<response>> {
-        plannedValue: number[]
-        actualValue: number[]
-        dates: string[]
-    }
-
-    class EVMDashboardManualVisibility <<response>> {
-        spi: boolean
-        plannedVsEarned: boolean
-        completedHours: boolean
-        consistency: boolean
-        planAdherence: boolean
-        trend: boolean
-        perceivedProgress: boolean
-        remainingHours: boolean
+        + plannedValue: number[]
+        + actualValue: number[]
+        + dates: string[]
     }
 
     class EVMDashboardPreferences <<response>> {
-        mode: string
-        manualVisibility: EVMDashboardManualVisibility
+        + mode: string
+        + manualVisibility: DashboardManualVisibility
     }
 
     class EVMMetricVisibility <<response>> {
-        visible: boolean
-        reason: string
+        + visible: boolean
+        + reason: string
     }
 
     class EVMMetricRelevance <<response>> {
-        spi: EVMMetricVisibility
-        plannedVsEarned: EVMMetricVisibility
-        completedHours: EVMMetricVisibility
-        consistency: EVMMetricVisibility
-        planAdherence: EVMMetricVisibility
-        trend: EVMMetricVisibility
-        perceivedProgress: EVMMetricVisibility
-        remainingHours: EVMMetricVisibility
+        + spi: EVMMetricVisibility
+        + plannedVsEarned: EVMMetricVisibility
+        + completedHours: EVMMetricVisibility
+        + consistency: EVMMetricVisibility
+        + planAdherence: EVMMetricVisibility
+        + trend: EVMMetricVisibility
+        + perceivedProgress: EVMMetricVisibility
+        + remainingHours: EVMMetricVisibility
     }
 
     class EVMMilestoneProgress <<response>> {
-        totalMilestones: number
-        completedMilestones: number
-        completionRate: number
-        activeMilestoneLabel: (string|null)
+        + totalMilestones: number
+        + completedMilestones: number
+        + completionRate: number
+        + activeMilestoneLabel: string
     }
 
     class EVMPersonalMetrics <<response>> {
-        consistencyScore: number
-        effortBalanceScore: number
-        planAdherence: number
-        completionTrend: string
-        perceivedValueScore: number
-        actionHint: string
+        + consistencyScore: number
+        + effortBalanceScore: number
+        + planAdherence: number
+        + completionTrend: string
+        + perceivedValueScore: number
+        + actionHint: string
     }
 
     class EVMTotals <<response>> {
-        completedHours: number
-        entriesCount: number
+        + completedHours: number
+        + entriesCount: number
     }
 
     class EVMSummary <<response>> {
-        spi: number
-        forecast: EVMForecast
-        curve: EVMCurve
-        totals: EVMTotals
-        personalMetrics: EVMPersonalMetrics
-        milestoneProgress: EVMMilestoneProgress
-        dashboardPreferences: EVMDashboardPreferences
-        metricRelevance: EVMMetricRelevance
+        + spi: number
+        + forecast: EVMForecast
+        + curve: EVMCurve
+        + totals: EVMTotals
+        + personalMetrics: EVMPersonalMetrics
+        + milestoneProgress: EVMMilestoneProgress
+        + dashboardPreferences: EVMDashboardPreferences
+        + metricRelevance: EVMMetricRelevance
     }
 
     class XMatrixAxisItemDto <<response>> {
-        id: string
-        label: string
-        source?: string
+        + id: string
+        + label: string
+        + source: string
     }
 
     class XMatrixCellDto <<response>> {
-        fromId: string
-        toId: string
-        strength: string
-        score: number
-        rationale: string
+        + fromId: string
+        + toId: string
+        + strength: string
+        + score: number
+        + rationale: string
     }
 
     class XMatrixDiagnosticsDto <<response>> {
-        generatedAt: string
-        strategyCount: number
-        annualCount: number
-        tacticalCount: number
-        taskCount: number
-        warnings: string[]
+        + generatedAt: string
+        + strategyCount: number
+        + annualCount: number
+        + tacticalCount: number
+        + taskCount: number
+        + warnings: string[]
     }
 
     class XMatrixResponseDto <<response>> {
-        projectId: string
-        projectName: string
-        strategyGoals: XMatrixAxisItemDto[]
-        annualGoals: XMatrixAxisItemDto[]
-        tacticalItems: XMatrixAxisItemDto[]
-        tasks: XMatrixAxisItemDto[]
-        strategyToAnnual: XMatrixCellDto[]
-        annualToTactical: XMatrixCellDto[]
-        annualToTasks: XMatrixCellDto[]
-        diagnostics: XMatrixDiagnosticsDto
+        + projectId: string
+        + projectName: string
+        + strategyGoals: XMatrixAxisItemDto[]
+        + annualGoals: XMatrixAxisItemDto[]
+        + tacticalItems: XMatrixAxisItemDto[]
+        + tasks: XMatrixAxisItemDto[]
+        + strategyToAnnual: XMatrixCellDto[]
+        + annualToTactical: XMatrixCellDto[]
+        + annualToTasks: XMatrixCellDto[]
+        + diagnostics: XMatrixDiagnosticsDto
+    }
+
+    class CatchballResponseDto <<response>> {
+        + questions: string[]
+        + conversationId: string
+    }
+
+    class PlanWithAIResponseDto <<response>> {
+        + smart: SmartObjectiveDto
+        + nextPhase: string
+    }
+
+    class ValidateWBSResponseDto <<response>> {
+        + valid: boolean
+        + reason: string
+        + suggestion: string
+    }
+
+    class PertEstimateResponseDto <<response>> {
+        + expectedTime: number
+        + variance: number
+        + standardDeviation: number
+        + formula: string
+        + estimate: PertEstimateDto
+    }
+
+    class PertSuggestionResponseDto <<response>> {
+        + optimistic: number
+        + likely: number
+        + pessimistic: number
+        + expectedTime: number
+        + standardDeviation: number
+        + recommendation: string
+        + fromLLM: boolean
+    }
+
+    class AiTaskSuggestionDto <<response>> {
+        + name: string
+        + deadline: string
+        + pomodoros: number
+        + priority: number
+        + difficulty: number
+        + selected: boolean
+    }
+
+    class AiSuggestionsProgressDto <<response>> {
+        + currentIteration: number
+        + maxIterations: number
+        + currentHours: number
+        + targetHours: number
+        + tasksGenerated: number
+        + status: string
+        + message: string
+    }
+
+    class AiSuggestionsResponseDto <<response>> {
+        + suggestions: AiTaskSuggestionDto[]
+        + progress: AiSuggestionsProgressDto
     }
 }
 
-' -------------------
-' Relationships
-' -------------------
+' ==========================================
+' Domain Relationships & Composition
+' ==========================================
 
-Project "1" <-- "0..*" Task : projectId
+' Tasks Internal Composition & Associations
+Task *-- "0..*" TaskChecklistItem : checklist
+Task *-- "0..1" TaskRecurringRule : recurringRule
+TaskRecurringRule *-- "0..*" RecurringException : exceptions
 Task "0..1" --> "0..1" Task : parentTaskId
 Task "0..*" --> "0..*" Requirement : requirementIds
+Task "0..1" <-- "0..*" TaskAlert : taskId
+Task "0..1" <-- "0..*" TaskCompletionFeedback : taskId
 
-Project "1" --> "0..*" WBSNode : projectId
+' Projects Internal Composition & Associations
+Project *-- "0..1" SmartObjective : smartObjective
+Project *-- "0..*" BacklogIdea : backlogIdeas
+Project *-- "0..1" DashboardMetricPreferences : preferences
+DashboardMetricPreferences *-- "1" DashboardManualVisibility : manualVisibility
+
+Project "1" *-- "0..*" WBSNode : wbsNodes
+Project "1" *-- "0..*" Risk : risks
+Project "1" *-- "0..*" ProjectWave : waves
+Project "1" *-- "0..*" ProjectProgressRecord : progressHistory
+Project "1" --> "0..1" ProjectBuffer : buffer
+Project "1" --> "0..1" XMatrixSnapshot : snapshot
+
+' Cross-Domain Entity Linkage
+Project "1" <-- "0..*" Task : projectId
 WBSNode "0..1" <-- "0..*" Task : parentWbsNodeId
-
-Project "1" --> "0..*" TaskDependency : projectId
+Project "1" --> "0..*" TaskDependency : dependencies
 TaskDependency "*" --> "1" Task : taskId
 TaskDependency "*" --> "1" Task : dependsOnTaskId
 
-Project "1" --> "0..1" ProjectBuffer : buffer
-Project "1" --> "0..*" Risk
-Project "1" --> "0..*" ProjectWave
-Project "1" --> "0..1" XMatrixSnapshot
-
+' DTO Specializations & Inheritance
 UpdateTaskDto --|> CreateTaskDto
 CreateMicroTaskDto --|> CreateTaskDto
 UpdateProjectDto --|> CreateProjectDto
+WBSNodeDto *-- "0..*" WBSNodeDto : children
 
-GanttDataResponse o-- GanttTaskItem
-GanttDataResponse o-- GanttDependencyItem
-GanttDataResponse o-- PackageCriticalityItem
+' View & Analytics Aggregations
+GanttDataResponse o-- "0..*" GanttTaskItem : tasks
+GanttDataResponse o-- "0..*" GanttDependencyItem : dependencies
+GanttDataResponse o-- "0..*" PackageCriticalityItem : packageCriticality
 
-PertDiagramDataResponse o-- PertDiagramNode
-PertDiagramDataResponse o-- PertDiagramEdge
-PertDiagramDataResponse o-- PertDiagramStatistics
-PertDiagramDataResponse o-- PackageCriticalityItem
+PertDiagramDataResponse o-- "0..*" PertDiagramNode : nodes
+PertDiagramDataResponse o-- "0..*" PertDiagramEdge : edges
+PertDiagramDataResponse o-- "1" PertDiagramStatistics : statistics
+PertDiagramDataResponse o-- "0..*" PackageCriticalityItem : packageCriticality
 
-EVMSummary o-- EVMForecast
-EVMSummary o-- EVMCurve
-EVMSummary o-- EVMTotals
-EVMSummary o-- EVMPersonalMetrics
-EVMSummary o-- EVMMilestoneProgress
-EVMSummary o-- EVMDashboardPreferences
-EVMSummary o-- EVMMetricRelevance
-EVMMetricRelevance o-- EVMMetricVisibility
+EVMSummary o-- "1" EVMForecast : forecast
+EVMSummary o-- "1" EVMCurve : curve
+EVMSummary o-- "1" EVMTotals : totals
+EVMSummary o-- "1" EVMPersonalMetrics : personalMetrics
+EVMSummary o-- "1" EVMMilestoneProgress : milestoneProgress
+EVMSummary o-- "1" EVMDashboardPreferences : dashboardPreferences
+EVMSummary o-- "1" EVMMetricRelevance : metricRelevance
+EVMMetricRelevance o-- "8" EVMMetricVisibility : metricVisibility
 
-XMatrixResponseDto o-- XMatrixAxisItemDto
-XMatrixResponseDto o-- XMatrixCellDto
-XMatrixResponseDto o-- XMatrixDiagnosticsDto
+XMatrixResponseDto o-- "0..*" XMatrixAxisItemDto : axisItems
+XMatrixResponseDto o-- "0..*" XMatrixCellDto : cells
+XMatrixResponseDto o-- "1" XMatrixDiagnosticsDto : diagnostics
 
-AiSuggestionsResponseDto o-- AiTaskSuggestionDto
-AiSuggestionsResponseDto o-- AiSuggestionsProgressDto
+AiSuggestionsResponseDto o-- "0..*" AiTaskSuggestionDto : suggestions
+AiSuggestionsResponseDto o-- "1" AiSuggestionsProgressDto : progress
+PertEstimateResponseDto o-- "1" PertEstimateDto : estimate
 
-PertEstimateResponseDto o-- PertEstimateDto
+' ==========================================
+' Architectural Notes
+' ==========================================
+note top of Task
+    <b>Core Task Entity</b>
+    - Represents actionable work, micro-tasks, and habits (microTaskType = 'habit').
+    - RTM traceability: links to WBS (parentWbsNodeId, wbsPath) and Requirements.
+    - Integrated with PERT (3-point estimates) & EVM tracking.
+end note
 
-note right of Task
-    Habits are represented as Tasks
-    where microTaskType = 'habit'.
+note top of Project
+    <b>Project Root Entity</b>
+    - Encapsulates Catchball/SMART goals, WBS hierarchy, waves, and risk registers.
+    - Drives CPM/PERT critical path analysis and X-Matrix strategic alignment.
 end note
 
 @enduml

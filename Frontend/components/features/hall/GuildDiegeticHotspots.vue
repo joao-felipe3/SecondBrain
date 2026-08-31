@@ -61,6 +61,13 @@
       @mouseleave="emit('updateTooltip', null)"
     >
       <div class="coins-highlight-aura"></div>
+      <img
+        src="/vfx/coins-stack.png"
+        alt="Pilha de Moedas de Ouro"
+        class="coins-sprite-img"
+        draggable="false"
+      />
+      <span v-if="isCoinsPopping" class="coins-click-sparks">✨</span>
 
       <!-- ANIMAÇÃO FLUTUANTE DE +1 GOLD -->
       <div
@@ -347,29 +354,63 @@ function triggerCoinsInteraction(event: MouseEvent) {
 
 /* EASTER EGG: PILHA DE MOEDAS DE OURO */
 .coins-easter-egg-area {
-  bottom: 1%;
-  left: 79.5%;
-  width: 9%;
-  height: 10%;
+  bottom: 0.5%;
+  left: 79%;
+  width: 9.5%;
+  height: 11%;
   z-index: 9;
   position: absolute;
   display: flex;
   align-items: center;
   justify-content: center;
+  cursor: pointer;
+  user-select: none;
+}
+
+.coins-sprite-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.75)) drop-shadow(0 0 6px rgba(245, 158, 11, 0.25));
+  transition:
+    transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1),
+    filter 0.2s ease;
+  pointer-events: none;
+}
+
+.coins-easter-egg-area:hover .coins-sprite-img {
+  transform: scale(1.08) translateY(-2px);
+  filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.85)) drop-shadow(0 0 12px rgba(251, 191, 36, 0.7))
+    brightness(1.1);
 }
 
 .coins-highlight-aura {
   position: absolute;
-  inset: -8px;
+  inset: -12px;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(255, 215, 0, 0.05) 0%, transparent 75%);
+  background: radial-gradient(
+    circle,
+    rgba(255, 215, 0, 0.2) 0%,
+    rgba(245, 158, 11, 0.08) 45%,
+    transparent 75%
+  );
   opacity: 0;
-  transition: opacity 0.2s ease;
+  transition: opacity 0.25s ease;
   pointer-events: none;
+  mix-blend-mode: screen;
 }
 
 .coins-easter-egg-area:hover .coins-highlight-aura {
   opacity: 1;
+}
+
+.coins-click-sparks {
+  position: absolute;
+  top: -10px;
+  font-size: 1.4rem;
+  pointer-events: none;
+  animation: spark-fade 0.4s ease-out;
+  z-index: 10;
 }
 
 /* EFEITOS E ANIMAÇÕES DOS OUTROS HOTSPOTS */

@@ -3310,8 +3310,8 @@
     "semantic_hash": ""
   },
   "Frontend/components/features/hall/GuildDiegeticHotspots.vue": {
-    "mtime": 1788144705.49398,
-    "ast_hash": "0d4440263bfc9c92a7e8f96d1e4bab12",
+    "mtime": 1787801048.098822,
+    "ast_hash": "86b1a87b7db8f1316b0328935422b3b6",
     "semantic_hash": ""
   },
   "Frontend/components/features/hall/GuildMobileJournal.vue": {
@@ -3532,16 +3532,6 @@
   "Backend/src/projects/listeners/task-events.listener.ts": {
     "mtime": 1787627779.183319,
     "ast_hash": "13cdbc464c314991dfea785b154b833b",
-    "semantic_hash": ""
-  },
-  "Frontend/public/images/guild/gold-coins-sprite-clean.png": {
-    "mtime": 1787973842.4368122,
-    "ast_hash": "e8c7f53b8d1a8039ac64d792a85a82e6",
-    "semantic_hash": ""
-  },
-  "Frontend/public/vfx/coins-stack.png": {
-    "mtime": 1787973842.331113,
-    "ast_hash": "e8c7f53b8d1a8039ac64d792a85a82e6",
     "semantic_hash": ""
   }
 }
