@@ -146,6 +146,7 @@ skills-lock.json
 # Graphify internal cache and temporary files
 graphify-out/.graphify_*
 graphify-out/*.py
+!graphify-out/improve_graph_views.py
 graphify-out/cache
 
 Frontend/imagens-geradas
