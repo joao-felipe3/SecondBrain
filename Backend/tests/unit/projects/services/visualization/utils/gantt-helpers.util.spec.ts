@@ -9,7 +9,6 @@ import {
   adjustWindowToBounds,
   resolveWindowByDeadline,
   buildTaskNodes,
-  mapSingleTaskItem,
   mapTaskItems,
   mapDependencyItems,
 } from '@src/projects/services/visualization/utils/gantt-helpers.util';

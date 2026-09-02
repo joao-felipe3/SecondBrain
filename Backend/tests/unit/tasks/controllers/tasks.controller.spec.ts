@@ -164,6 +164,7 @@ describe('TasksController', () => {
         autoDependencies: { mode: 'heuristic-phases' },
       });
 
+      expect(res).toBeDefined();
       expect(dependencyInference.inferHeuristicPhases).toHaveBeenCalled();
       expect(cpmService.upsertDependencies).toHaveBeenCalled();
     });
@@ -179,6 +180,7 @@ describe('TasksController', () => {
         autoDependencies: { mode: 'ai-per-leaf' },
       });
 
+      expect(res).toBeDefined();
       expect(dependencyInference.inferWithAi).toHaveBeenCalled();
       expect(cpmService.upsertDependencies).toHaveBeenCalled();
     });
