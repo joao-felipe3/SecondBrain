@@ -44,7 +44,7 @@ describe('PERT Helpers Util', () => {
     it('should map tasks and link valid dependencies', () => {
       const tasks: TaskPertContext[] = [
         {
-          _id: 'task-1' as any,
+          _id: 'task-1',
           name: 'Task 1',
           pertExpectedMinutes: 60,
           parentWbsNodeId: 'wbs-1',
@@ -135,7 +135,7 @@ describe('PERT Helpers Util', () => {
     it('should map task metrics, levels and progress', () => {
       const tasks: TaskPertContext[] = [
         {
-          _id: 't1' as any,
+          _id: 't1',
           name: 'Task One',
           pertExpectedMinutes: 120,
           evmProgress: 0.5,

@@ -74,11 +74,9 @@ describe('TasksController', () => {
     }).compile();
 
     controller = module.get<TasksController>(TasksController);
-    tasksService = module.get(TasksService) as jest.Mocked<TasksService>;
-    cpmService = module.get(CPMService) as jest.Mocked<CPMService>;
-    dependencyInference = module.get(
-      DependencyInferenceService,
-    ) as jest.Mocked<DependencyInferenceService>;
+    tasksService = module.get(TasksService);
+    cpmService = module.get(CPMService);
+    dependencyInference = module.get(DependencyInferenceService);
   });
 
   describe('createBulk', () => {
@@ -94,7 +92,7 @@ describe('TasksController', () => {
       ]);
 
       const res = await controller.createBulk({
-        tasks: [{ name: 'Task 1' }, { name: 'Task 2' }] as any,
+        tasks: [{ name: 'Task 1' }, { name: 'Task 2' }],
         autoDependencies: { mode: 'none' },
       });
 
@@ -111,7 +109,7 @@ describe('TasksController', () => {
       ]);
 
       const res = await controller.createBulk({
-        tasks: [{ name: 'Task 1' }, { name: 'Task 2' }, { name: 'Task 3' }] as any,
+        tasks: [{ name: 'Task 1' }, { name: 'Task 2' }, { name: 'Task 3' }],
         autoDependencies: { mode: 'within-leaf', relationship: 'FS', reason: 'Leaf dep' },
       });
 
@@ -130,7 +128,7 @@ describe('TasksController', () => {
       ]);
 
       const res = await controller.createBulk({
-        tasks: [{ name: 'Task 1' }, { name: 'Task 2' }] as any,
+        tasks: [{ name: 'Task 1' }, { name: 'Task 2' }],
         autoDependencies: { mode: 'within-and-between-leafs' },
       });
 
@@ -162,7 +160,7 @@ describe('TasksController', () => {
       ]);
 
       const res = await controller.createBulk({
-        tasks: [{ name: 'Task 1' }, { name: 'Task 2' }] as any,
+        tasks: [{ name: 'Task 1' }, { name: 'Task 2' }],
         autoDependencies: { mode: 'heuristic-phases' },
       });
 
@@ -177,7 +175,7 @@ describe('TasksController', () => {
       ]);
 
       const res = await controller.createBulk({
-        tasks: [{ name: 'Task 1' }, { name: 'Task 2' }] as any,
+        tasks: [{ name: 'Task 1' }, { name: 'Task 2' }],
         autoDependencies: { mode: 'ai-per-leaf' },
       });
 
@@ -231,7 +229,7 @@ describe('TasksController', () => {
     });
 
     it('should update micro task checklist and checklist item', async () => {
-      await controller.updateMicroTaskChecklist('micro-1', { checklist: [] } as any);
+      await controller.updateMicroTaskChecklist('micro-1', { checklist: [] });
       expect(tasksService.updateMicroTaskChecklist).toHaveBeenCalledWith('micro-1', []);
 
       await controller.updateChecklistItem('task-1', '0', { completed: true });
@@ -291,7 +289,7 @@ describe('TasksController', () => {
     });
 
     it('should handle completion feedback', async () => {
-      const res = await controller.generateCompletionFeedback('t1', {} as any);
+      const res = await controller.generateCompletionFeedback('t1', {});
       expect(res.feedback).toBe('Great job!');
 
       tasksService.findOne.mockResolvedValueOnce(null);

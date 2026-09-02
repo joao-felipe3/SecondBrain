@@ -128,7 +128,7 @@ describe('GeminiExecutorService', () => {
     };
 
     // Override setTimeout in test to avoid waiting
-    jest.spyOn(global, 'setTimeout').mockImplementation((cb: any) => cb() as any);
+    jest.spyOn(global, 'setTimeout').mockImplementation((cb: any) => cb());
 
     await expect(service.generateContent('prompt')).rejects.toThrow('Gemini rate limit after retries');
 

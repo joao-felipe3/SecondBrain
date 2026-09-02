@@ -1015,7 +1015,7 @@
     "semantic_hash": ""
   },
   "Backend/src/tasks/schemas/task.schema.ts": {
-    "mtime": 1788319542.1087985,
+    "mtime": 1788319768.2765868,
     "ast_hash": "738b338fa55fb22f4fbae7762379ae44",
     "semantic_hash": ""
   },
@@ -1325,8 +1325,8 @@
     "semantic_hash": ""
   },
   "Backend/tests/unit/ai/services/core/gemini-executor.service.spec.ts": {
-    "mtime": 1788318669.7061272,
-    "ast_hash": "0297319672049eb03ab87dcd1d7491f2",
+    "mtime": 1788319682.4549406,
+    "ast_hash": "16ec4d9f0b31fdd41939f3ea43aa1450",
     "semantic_hash": ""
   },
   "Backend/tests/unit/ai/services/core/gemini.service.spec.ts": {
@@ -1530,8 +1530,8 @@
     "semantic_hash": ""
   },
   "Backend/tests/unit/projects/services/visualization/utils/pert-helpers.util.spec.ts": {
-    "mtime": 1788317718.693354,
-    "ast_hash": "e8043bef3e08d33d83dce5c8958d8260",
+    "mtime": 1788319682.4549406,
+    "ast_hash": "11bbaaac6eb30408ac39c10ca6f57d15",
     "semantic_hash": ""
   },
   "Backend/tests/unit/projects/services/wbs/audit.service.spec.ts": {
@@ -1675,8 +1675,8 @@
     "semantic_hash": ""
   },
   "Backend/tests/unit/tasks/controllers/tasks.controller.spec.ts": {
-    "mtime": 1788319543.4968743,
-    "ast_hash": "938f2f16eb383fce6e9394e1be20e811",
+    "mtime": 1788319682.4549406,
+    "ast_hash": "54f78654a7eee7c97d6fda68081e5978",
     "semantic_hash": ""
   },
   "Backend/tests/unit/tasks/helpers/tasks-service-test-providers.ts": {
@@ -2890,8 +2890,8 @@
     "semantic_hash": ""
   },
   ".github/workflows/security.yml": {
-    "mtime": 1786924574.4254892,
-    "ast_hash": "3157a09586b98721c9a88b6d6396e994",
+    "mtime": 1788319622.251302,
+    "ast_hash": "4a3280f61c9d89829af711258309b116",
     "semantic_hash": ""
   },
   ".github/workflows/test.yml": {
@@ -3545,8 +3545,8 @@
     "semantic_hash": ""
   },
   "Backend/tests/projects/listeners/task-events.listener.spec.ts": {
-    "mtime": 1788317640.934597,
-    "ast_hash": "ee32015443954abeef2ab3d20911e2d4",
+    "mtime": 1788319682.4549406,
+    "ast_hash": "5b60141576cf2b9eb84fc33c74d5bfba",
     "semantic_hash": ""
   },
   "Backend/tests/unit/projects/services/visualization/utils/x-matrix-helpers.util.spec.ts": {

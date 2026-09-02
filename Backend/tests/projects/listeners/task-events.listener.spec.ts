@@ -43,7 +43,7 @@ describe('TaskEventsListener', () => {
     it('should recalculate stats using task.project if event.projectId is missing', async () => {
       await listener.handleTaskCreated({
         task: { project: 'proj-2' } as any,
-      } as TaskCreatedEvent);
+      });
       expect(projectStatsService.recalculateProjectStats).toHaveBeenCalledWith('proj-2');
     });
 
@@ -214,7 +214,7 @@ describe('TaskEventsListener', () => {
         hoursDelta: 1.5,
         source: 'manual',
         taskId: 'task-1',
-      } as TaskProgressUpdatedEvent);
+      });
 
       expect(projectStatsService.recalculateProjectStats).toHaveBeenCalledWith('proj-1');
       expect(projectStatsService.incrementHoursWorked).toHaveBeenCalledWith('proj-1', 1.5);
@@ -267,7 +267,7 @@ describe('TaskEventsListener', () => {
       await listener.handleBulkTasksCreated({
         projectIds: [],
         tasks: [],
-      } as unknown as BulkTasksCreatedEvent);
+      });
       expect(projectStatsService.recalculateProjectStats).not.toHaveBeenCalled();
     });
 
@@ -275,7 +275,7 @@ describe('TaskEventsListener', () => {
       await listener.handleBulkTasksCreated({
         projectIds: ['p1', 'p2', 'p3'],
         tasks: [],
-      } as unknown as BulkTasksCreatedEvent);
+      });
 
       expect(projectStatsService.recalculateProjectStats).toHaveBeenCalledTimes(3);
       expect(projectStatsService.recalculateProjectStats).toHaveBeenCalledWith('p1');
@@ -291,7 +291,7 @@ describe('TaskEventsListener', () => {
       await listener.handleBulkTasksCreated({
         projectIds: ['p1', 'p2'],
         tasks: [],
-      } as unknown as BulkTasksCreatedEvent);
+      });
 
       expect(projectStatsService.recalculateProjectStats).toHaveBeenCalledWith('p1');
       expect(projectStatsService.recalculateProjectStats).toHaveBeenCalledWith('p2');
