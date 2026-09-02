@@ -9,6 +9,7 @@ describe('FeedbackService', () => {
   let mockFeedbackModel: any;
 
   const validTaskId = new Types.ObjectId().toHexString();
+  const validProjectId = new Types.ObjectId();
 
   beforeEach(() => {
     mockGeminiService = {
@@ -27,9 +28,10 @@ describe('FeedbackService', () => {
         exec: jest.fn().mockResolvedValue({
           _id: validTaskId,
           name: 'Task Concluída',
+          project: validProjectId,
           isConcluded: true,
           pomodorosDid: 2,
-          checklist: [{ item: 'Step 1', completed: true }],
+          checklist: [{ item: 'Step 1', completed: true }, 'Step 2'],
         }),
       }),
     };
@@ -76,19 +78,55 @@ describe('FeedbackService', () => {
       expect(mockFeedbackModel.create).toHaveBeenCalled();
     });
 
+    it('should fill default fallbacks when AI response misses fields', async () => {
+      mockGeminiService.generateCompletionFeedbackStructured.mockResolvedValueOnce({});
+      const feedbackStr = await service.generateCompletionFeedback(validTaskId);
+      const parsed = JSON.parse(feedbackStr);
+      expect(parsed.celebration).toContain('Parabéns por concluir');
+      expect(parsed.validation).toContain('Checklist:');
+      expect(parsed.question).toContain('impedimento');
+      expect(parsed.suggestion).toContain('Sugestão:');
+    });
+
     it('should save user-provided payload directly', async () => {
       const payload: any = { celebration: 'User Feedback' };
       const res = await service.generateCompletionFeedback(validTaskId, payload);
       expect(res).toContain('User Feedback');
       expect(mockFeedbackModel.create).toHaveBeenCalled();
     });
+
+    it('should track error when AI generation fails during completion feedback', async () => {
+      mockGeminiService.generateCompletionFeedbackStructured.mockRejectedValueOnce(new Error('AI fail'));
+      await expect(service.generateCompletionFeedback(validTaskId)).rejects.toThrow('AI fail');
+      expect(mockFeedbackModel.create).toHaveBeenCalled();
+    });
   });
 
   describe('getCompletionFeedback & suggestNextSteps', () => {
+    it('should throw BadRequestException on invalid ID in getCompletionFeedback', async () => {
+      await expect(service.getCompletionFeedback('invalid-id')).rejects.toThrow(BadRequestException);
+    });
+
+    it('should return null if no feedback found', async () => {
+      mockFeedbackModel.findOne.mockReturnValueOnce({
+        sort: jest.fn().mockReturnValue({
+          select: jest.fn().mockReturnValue({
+            exec: jest.fn().mockResolvedValue(null),
+          }),
+        }),
+      });
+      const res = await service.getCompletionFeedback(validTaskId);
+      expect(res).toBeNull();
+    });
+
     it('should fetch completion feedback for valid task', async () => {
       const res = await service.getCompletionFeedback(validTaskId);
       expect(res).not.toBeNull();
       expect(res?.feedback).toContain('Parabéns!');
+    });
+
+    it('should throw BadRequestException on invalid task for suggestNextSteps', async () => {
+      await expect(service.suggestNextSteps(null as any, 'fb')).rejects.toThrow(BadRequestException);
     });
 
     it('should suggest next steps using Gemini Service', async () => {

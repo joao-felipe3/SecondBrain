@@ -35,7 +35,15 @@ describe('AuditService', () => {
         nodePath: '1.1',
         generatedHours: 40,
         tasks: [
-          { name: 'Criar endpoint A', pomodorosPlanned: 2, priority: 2 },
+          {
+            name: 'Criar endpoint A (1/2)',
+            pomodorosPlanned: 2,
+            priority: 2,
+            microTaskType: 'EXECUTION',
+            themeTag: 'backend',
+            contextTag: 'api',
+            cognitiveMode: 'deep_work',
+          },
           { name: 'Criar endpoint B', pomodorosPlanned: 2, priority: 2 },
         ],
       };
@@ -48,7 +56,7 @@ describe('AuditService', () => {
       expect(mockWbsAiService.auditLeafDiscrepancy).toHaveBeenCalled();
     });
 
-    it('deve aplicar guardrails e alterar recomendação em caso de gold_plating com alta redundância', async () => {
+    it('deve aplicar guardrails e alterar recomendação em caso de gold_plating com forte redundância e diffPct >= 90', async () => {
       mockWbsAiService.auditLeafDiscrepancy.mockResolvedValueOnce({
         diagnosis: 'underestimated',
         rationale: 'Parece subestimado',
@@ -73,6 +81,86 @@ describe('AuditService', () => {
 
       expect(result.diagnosis).toBe('gold_plating');
       expect(result.suggestedAction).toBe('simplify');
+      expect(result.rationale).toContain('[Guardrails]');
+    });
+
+    it('deve lidar com budgetHours zero e lista de tarefas vazia sem quebrar', async () => {
+      const project = {};
+      const dto: any = {
+        leafNode: { name: '', estimatedHours: 0 },
+        nodePath: '',
+        generatedHours: 10,
+        tasks: null,
+      };
+
+      const result = await service.auditLeafDiscrepancy(project, dto);
+      expect(result).toBeDefined();
+    });
+
+    it('deve respeitar WBS_GEMINI_MODEL override do environment', async () => {
+      process.env.WBS_GEMINI_MODEL = 'gemini-2.0-flash';
+      const project = { name: 'Projeto' };
+      const dto: any = {
+        leafNode: { name: 'Leaf 1', estimatedHours: 10 },
+        tasks: [],
+      };
+
+      await service.auditLeafDiscrepancy(project, dto);
+      expect(mockWbsAiService.auditLeafDiscrepancy).toHaveBeenCalledWith(
+        expect.objectContaining({ modelOverride: 'gemini-2.0-flash' }),
+      );
+      delete process.env.WBS_GEMINI_MODEL;
+    });
+
+    it('deve aplicar guardrail quando diagnosis inicial é gold_plating mas a redundância é baixa e diffPct <= 90', async () => {
+      mockWbsAiService.auditLeafDiscrepancy.mockResolvedValueOnce({
+        diagnosis: 'gold_plating',
+        rationale: 'Excesso de itens',
+        suggestedAction: 'simplify',
+        suggestedEstimatedHours: 15,
+      });
+
+      const project = { name: 'Projeto' };
+      const dto: any = {
+        leafNode: { name: 'Node 1', estimatedHours: 10 },
+        generatedHours: 15, // 50% diff
+        tasks: [
+          { name: 'Tarefa A única', themeTag: 't1', microTaskType: 'code' },
+          { name: 'Tarefa B distinta', themeTag: 't2', microTaskType: 'test' },
+          { name: 'Tarefa C variada', themeTag: 't3', microTaskType: 'doc' },
+          { name: 'Tarefa D diferente', themeTag: 't4', microTaskType: 'review' },
+          { name: 'Tarefa E inovadora', themeTag: 't5', microTaskType: 'deploy' },
+          { name: 'Tarefa F criativa', themeTag: 't6', microTaskType: 'monitor' },
+        ],
+      };
+
+      const result = await service.auditLeafDiscrepancy(project, dto);
+      expect(result.diagnosis).toBe('underestimated');
+      expect(result.suggestedAction).toBe('rebaseline');
+    });
+
+    it('deve aplicar guardrail para lowRedundancy com diffPct >= 120 convertendo para underestimated/rebaseline', async () => {
+      mockWbsAiService.auditLeafDiscrepancy.mockResolvedValueOnce({
+        diagnosis: 'mixed',
+        rationale: 'Misto',
+        suggestedAction: 'simplify',
+        suggestedEstimatedHours: 30,
+      });
+
+      const project = { name: 'Projeto' };
+      const dto: any = {
+        leafNode: { name: 'Node 1', estimatedHours: 10 },
+        generatedHours: 30, // 200% diff
+        tasks: [
+          { name: 'Tarefa A', themeTag: 't1' },
+          { name: 'Tarefa B', themeTag: 't2' },
+          { name: 'Tarefa C', themeTag: 't3' },
+        ],
+      };
+
+      const result = await service.auditLeafDiscrepancy(project, dto);
+      expect(result.diagnosis).toBe('underestimated');
+      expect(result.suggestedAction).toBe('rebaseline');
     });
   });
 });

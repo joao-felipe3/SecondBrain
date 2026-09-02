@@ -75,6 +75,55 @@ describe('DraftsAiService', () => {
       expect(drafts[0].name).toBe('Task No Plan 1');
     });
 
+    it('should split chunk on JSON error in generateSinglePassWithoutPlan', async () => {
+      mockGeminiExecutor.generateContent
+        .mockResolvedValueOnce('invalid json {')
+        .mockResolvedValueOnce(
+          JSON.stringify([
+            {
+              name: 'Left Task',
+              description: 'd',
+              pomodorosPlanned: 2,
+              priority: 2,
+              difficult: 2,
+              microTaskType: 'code',
+              themeTag: 't',
+              contextTag: 'c',
+              cognitiveMode: 'm',
+              checklist: ['s1', 's2'],
+              definitionOfDone: 'dod',
+            },
+          ]),
+        )
+        .mockResolvedValueOnce(
+          JSON.stringify([
+            {
+              name: 'Right Task',
+              description: 'd',
+              pomodorosPlanned: 2,
+              priority: 2,
+              difficult: 2,
+              microTaskType: 'code',
+              themeTag: 't',
+              contextTag: 'c',
+              cognitiveMode: 'm',
+              checklist: ['s3', 's4'],
+              definitionOfDone: 'dod',
+            },
+          ]),
+        );
+
+      const drafts = await service.generateSinglePassWithoutPlan(
+        { node: { name: 'Node' } } as any,
+        [60, 60],
+        [],
+      );
+
+      expect(drafts.length).toBe(2);
+      expect(drafts[0].name).toBe('Left Task');
+      expect(drafts[1].name).toBe('Right Task');
+    });
+
     it('should generate microtask drafts with plan context', async () => {
       mockGeminiExecutor.generateContent.mockResolvedValue(
         JSON.stringify([
@@ -130,6 +179,48 @@ describe('DraftsAiService', () => {
 
       expect(outlines.length).toBe(1);
       expect(outlines[0].name).toBe('Outline 1');
+    });
+
+    it('should split chunk on JSON error in generateOutlineWithoutPlan', async () => {
+      mockGeminiExecutor.generateContent
+        .mockResolvedValueOnce('broken json')
+        .mockResolvedValueOnce(
+          JSON.stringify([
+            {
+              name: 'Outline Left',
+              pomodorosPlanned: 2,
+              priority: 2,
+              difficult: 2,
+              microTaskType: 'code',
+              themeTag: 't',
+              contextTag: 'c',
+              cognitiveMode: 'm',
+            },
+          ]),
+        )
+        .mockResolvedValueOnce(
+          JSON.stringify([
+            {
+              name: 'Outline Right',
+              pomodorosPlanned: 2,
+              priority: 2,
+              difficult: 2,
+              microTaskType: 'code',
+              themeTag: 't',
+              contextTag: 'c',
+              cognitiveMode: 'm',
+            },
+          ]),
+        );
+
+      const outlines = await service.generateOutlineWithoutPlan(
+        { node: { name: 'Node' } } as any,
+        [60, 60],
+        [],
+      );
+
+      expect(outlines.length).toBe(2);
+      expect(outlines[0].name).toBe('Outline Left');
     });
 
     it('should generate outlines with plan', async () => {

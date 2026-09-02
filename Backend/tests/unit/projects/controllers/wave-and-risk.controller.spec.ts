@@ -1,4 +1,5 @@
 import { Types } from 'mongoose';
+import { HttpException } from '@nestjs/common';
 import { WaveAndRiskController } from '@src/projects/controllers/wave-and-risk.controller';
 
 describe('WaveAndRiskController', () => {
@@ -62,7 +63,9 @@ describe('WaveAndRiskController', () => {
     };
 
     mockCpmService = {
-      getDependencies: jest.fn().mockResolvedValue([]),
+      getDependencies: jest
+        .fn()
+        .mockResolvedValue([{ taskId: 't2', dependsOnTaskId: 't1', relationship: 'FS' }]),
       calculateCriticalPath: jest.fn().mockReturnValue({ criticalPath: ['t1'], projectDuration: 100 }),
       normalizeRelationship: jest.fn().mockReturnValue('FINISH_TO_START'),
     };
@@ -96,6 +99,14 @@ describe('WaveAndRiskController', () => {
       expect(replanned.updatedCount).toBe(5);
     });
 
+    it('should throw HttpException when project not found in generateWaves', async () => {
+      mockProjectModel.findById.mockReturnValueOnce({
+        populate: jest.fn().mockResolvedValue(null),
+      });
+
+      await expect(controller.generateWaves(validProjId, {})).rejects.toThrow(HttpException);
+    });
+
     it('should update wave and advance wave', async () => {
       const updated = await controller.updateWave(validProjId, 'w1', { status: 'planned' } as any);
       expect(updated).toBeDefined();
@@ -110,6 +121,9 @@ describe('WaveAndRiskController', () => {
 
       const assessed = await controller.assessRisks(validProjId, { projectDescription: 'Desc' });
       expect(assessed.length).toBe(1);
+
+      const assessedFallback = await controller.assessRisks(validProjId, {});
+      expect(assessedFallback.length).toBe(1);
 
       const bySev = await controller.getRisksBySeverity(validProjId, 'HIGH' as any);
       expect(bySev.length).toBe(1);
@@ -168,10 +182,129 @@ describe('WaveAndRiskController', () => {
       expect(personal).toBeDefined();
     });
 
-    it('should calculate next best action', async () => {
+    it('should calculate next best action for high-confidence risk', async () => {
       const nextAction = await controller.getNextBestAction(validProjId);
       expect(nextAction.action).toBeDefined();
       expect(nextAction.action.type).toBe('risco');
+    });
+
+    it('should calculate next best action for critical task on critical path', async () => {
+      mockRiskService.getRiskInterventions.mockResolvedValueOnce({
+        summary: 'ok',
+        interventions: [{ recommendedAction: 'monitorar', confidence: 0.5, description: '' }],
+      });
+
+      const nextAction = await controller.getNextBestAction(validProjId);
+      expect(nextAction.action.type).toBe('caminho-critico');
+      expect(nextAction.action.taskId).toBe('t1');
+    });
+
+    it('should calculate next best action for critical pace when no critical tasks', async () => {
+      mockRiskService.getRiskInterventions.mockResolvedValueOnce({
+        summary: 'ok',
+        interventions: [],
+      });
+      mockCpmService.calculateCriticalPath.mockReturnValueOnce({
+        criticalPath: [],
+        projectDuration: 50,
+      });
+      mockEvmService.getPersonalSummary.mockResolvedValueOnce({
+        paceStatus: 'critico',
+        actionHint: 'Reduza escopo',
+      });
+
+      const nextAction = await controller.getNextBestAction(validProjId);
+      expect(nextAction.action.type).toBe('ritmo');
+      expect(nextAction.action.title).toBe('Replanejar semana');
+    });
+
+    it('should calculate next best action for standard pace', async () => {
+      mockRiskService.getRiskInterventions.mockResolvedValueOnce({
+        summary: 'ok',
+        interventions: [],
+      });
+      mockCpmService.calculateCriticalPath.mockReturnValueOnce({
+        criticalPath: [],
+        projectDuration: 50,
+      });
+      mockEvmService.getPersonalSummary.mockResolvedValueOnce({
+        paceStatus: 'saudavel',
+        actionHint: 'Manter cadencia',
+      });
+
+      const nextAction = await controller.getNextBestAction(validProjId);
+      expect(nextAction.action.type).toBe('ritmo');
+      expect(nextAction.action.title).toBe('Manter cadencia semanal');
+    });
+
+    it('should handle error catch blocks with HttpException in controller methods', async () => {
+      mockWaveService.getWavesByProject.mockRejectedValueOnce(new Error('err'));
+      await expect(controller.getWaves(validProjId)).rejects.toThrow(HttpException);
+
+      mockWaveService.updateWaveStatus.mockRejectedValueOnce(new Error('err'));
+      await expect(controller.updateWave(validProjId, 'w1', {} as any)).rejects.toThrow(HttpException);
+
+      mockWaveService.advanceToNextWave.mockRejectedValueOnce(new Error('err'));
+      await expect(controller.advanceWave(validProjId)).rejects.toThrow(HttpException);
+
+      mockWaveService.replanTaskDeadlines.mockRejectedValueOnce(new Error('err'));
+      await expect(controller.replanTaskDeadlines(validProjId)).rejects.toThrow(HttpException);
+
+      mockRiskService.getRisksByProject.mockRejectedValueOnce(new Error('err'));
+      await expect(controller.getRisks(validProjId)).rejects.toThrow(HttpException);
+
+      mockRiskService.assessRisks.mockRejectedValueOnce(new Error('err'));
+      await expect(controller.assessRisks(validProjId, {})).rejects.toThrow(HttpException);
+
+      mockRiskService.getRisksBySeverity.mockRejectedValueOnce(new Error('err'));
+      await expect(controller.getRisksBySeverity(validProjId, 'LOW' as any)).rejects.toThrow(
+        HttpException,
+      );
+
+      mockRiskService.createRisk.mockRejectedValueOnce(new Error('err'));
+      await expect(controller.createRisk(validProjId, {} as any)).rejects.toThrow(HttpException);
+
+      mockRiskService.updateRisk.mockRejectedValueOnce(new Error('err'));
+      await expect(controller.updateRisk(validProjId, 'r1', {} as any)).rejects.toThrow(HttpException);
+
+      mockRiskService.deleteRisk.mockRejectedValueOnce(new Error('err'));
+      await expect(controller.deleteRisk(validProjId, 'r1')).rejects.toThrow(HttpException);
+
+      mockRiskService.getRiskStatistics.mockRejectedValueOnce(new Error('err'));
+      await expect(controller.getRiskStatistics(validProjId)).rejects.toThrow(HttpException);
+
+      mockRiskService.getRiskInterventions.mockRejectedValueOnce(new Error('err'));
+      await expect(controller.getRiskInterventions(validProjId)).rejects.toThrow(HttpException);
+
+      mockEvmProgressService.recordProgress.mockRejectedValueOnce(new Error('err'));
+      await expect(controller.recordProgress(validProjId, {} as any)).rejects.toThrow(HttpException);
+
+      mockEvmProgressService.getProgressEntries.mockRejectedValueOnce(new Error('err'));
+      await expect(controller.getProgressEntries(validProjId)).rejects.toThrow(HttpException);
+
+      mockEvmProgressService.deleteProgressEntry.mockRejectedValueOnce(new Error('err'));
+      await expect(controller.deleteProgressEntry(validProjId, 'p1')).rejects.toThrow(HttpException);
+
+      mockEvmService.calculateSPI.mockRejectedValueOnce(new Error('err'));
+      await expect(controller.getSPI(validProjId)).rejects.toThrow(HttpException);
+
+      mockEvmService.forecastCompletion.mockRejectedValueOnce(new Error('err'));
+      await expect(controller.getForecast(validProjId)).rejects.toThrow(HttpException);
+
+      mockEvmService.getEVMCurve.mockRejectedValueOnce(new Error('err'));
+      await expect(controller.getCurve(validProjId)).rejects.toThrow(HttpException);
+
+      mockEvmService.getEVMSummary.mockRejectedValueOnce(new Error('err'));
+      await expect(controller.getEVMSummary(validProjId)).rejects.toThrow(HttpException);
+
+      mockEvmService.getPersonalSummary.mockRejectedValueOnce(new Error('err'));
+      await expect(controller.getPersonalEVMSummary(validProjId)).rejects.toThrow(HttpException);
+
+      mockEvmProgressService.getDashboardPreferences.mockRejectedValueOnce(new Error('err'));
+      await expect(controller.getMetricPreferences(validProjId)).rejects.toThrow(HttpException);
+
+      mockEvmProgressService.saveDashboardPreferences.mockRejectedValueOnce(new Error('err'));
+      await expect(controller.updateMetricPreferences(validProjId, {})).rejects.toThrow(HttpException);
     });
   });
 });

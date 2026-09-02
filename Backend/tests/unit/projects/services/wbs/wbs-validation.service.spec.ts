@@ -107,19 +107,61 @@ describe('WbsValidationService', () => {
       expect(result.deltaHours).toBe(10);
       expect(result.utilizationPct).toBe(125);
     });
+
+    it('deve lidar com budgetHours zero ou inválido', () => {
+      const nodes: WBSNodeDto[] = [{ name: 'Task 1', estimatedHours: 20, children: [] }] as any;
+      const result = service.validateBudget(nodes, 0);
+      expect(result.budgetHours).toBe(0);
+      expect(result.overBudget).toBe(false);
+      expect(result.utilizationPct).toBe(0);
+    });
   });
 
   describe('normalizeTreeToBudget', () => {
     it('deve ajustar horas das folhas para se adequar ao orçamento', () => {
       const nodes: WBSNodeDto[] = [
-        { name: 'Task 1', estimatedHours: 40, children: [] },
-        { name: 'Task 2', estimatedHours: 60, children: [] },
+        {
+          name: 'Fase 1',
+          estimatedHours: 100,
+          children: [
+            { name: 'Task 1', estimatedHours: 40, children: [] },
+            { name: 'Task 2', estimatedHours: 60, children: [] },
+          ],
+        },
       ] as any;
 
       const normalized = service.normalizeTreeToBudget(nodes, 50);
 
-      const total = normalized.reduce((sum, n) => sum + n.estimatedHours, 0);
+      const total = normalized[0].children!.reduce((sum, n) => sum + n.estimatedHours, 0);
       expect(total).toBeCloseTo(50, 0);
+      expect(normalized[0].estimatedHours).toBeCloseTo(50, 0);
+    });
+
+    it('deve retornar árvore inalterada se budgetHours for inválido ou leaves vazias', () => {
+      const nodes: WBSNodeDto[] = [{ name: 'Fase 1', estimatedHours: 0, children: [] }] as any;
+      const resInv = service.normalizeTreeToBudget(nodes, -10);
+      expect(resInv).toEqual(nodes);
+
+      const resEmpty: WBSNodeDto[] = [];
+      expect(service.normalizeTreeToBudget(resEmpty, 50)).toEqual([]);
+
+      const resZeroHours = service.normalizeTreeToBudget(
+        [{ name: 'Task', estimatedHours: 0, children: [] }] as any,
+        50,
+      );
+      expect(resZeroHours[0].estimatedHours).toBe(0);
+    });
+
+    it('deve respeitar limites 8/80 na normalização', () => {
+      const nodes: WBSNodeDto[] = [
+        { name: 'Task 1', estimatedHours: 10, children: [] },
+        { name: 'Task 2', estimatedHours: 10, children: [] },
+      ] as any;
+
+      // Se tentar normalizar para 5h, o mínimo por folha é 8h -> total vira 16h
+      const normalized = service.normalizeTreeToBudget(nodes, 5);
+      expect(normalized[0].estimatedHours).toBe(8);
+      expect(normalized[1].estimatedHours).toBe(8);
     });
   });
 

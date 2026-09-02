@@ -29,7 +29,7 @@ describe('RTMController', () => {
         .mockResolvedValue({ isValid: true, coverage: 100, unmappedRequirements: [], risks: [] }),
       getRTMMatrix: jest.fn().mockResolvedValue({
         requirements: [{ id: validReqId }],
-        tasks: [{ id: validTaskId }],
+        tasks: [{ id: validTaskId, wbsNodeName: 'Leaf 1' }],
         matrix: new Map([[validReqId, new Set([validTaskId])]]),
         validation: { isValid: true, coverage: 100 },
       }),
@@ -139,6 +139,13 @@ describe('RTMController', () => {
         taskId: validTaskId,
       });
       expect(mapped.success).toBe(false);
+
+      mockRtmService.unmapRequirementFromTask.mockRejectedValueOnce(new Error('Unmap err'));
+      const unmapped = await controller.unmapRequirementFromTask(validProjId, {
+        requirementId: validReqId,
+        taskId: validTaskId,
+      });
+      expect(unmapped.success).toBe(false);
     });
 
     it('should list and delete requirements', async () => {
@@ -156,6 +163,18 @@ describe('RTMController', () => {
       mockRtmService.deleteRequirement.mockResolvedValueOnce(false);
       const del = await controller.deleteRequirement('invalid-id');
       expect(del.success).toBe(false);
+
+      mockRtmService.deleteRequirement.mockRejectedValueOnce(new Error('Delete err'));
+      const delErr = await controller.deleteRequirement('err-id');
+      expect(delErr.success).toBe(false);
+
+      mockRtmService.deleteAllRequirements.mockRejectedValueOnce(new Error('Delete all err'));
+      const delAllErr = await controller.deleteAllRequirements(validProjId);
+      expect(delAllErr.success).toBe(false);
+
+      mockRtmService.getRequirements.mockRejectedValueOnce(new Error('Get req err'));
+      const getErr = await controller.getRequirements(validProjId);
+      expect(getErr.success).toBe(false);
     });
 
     it('should auto-map requirements and generate tasks for unmapped', async () => {
@@ -170,6 +189,16 @@ describe('RTMController', () => {
       mockTasksService.findByProjectId.mockResolvedValueOnce([]);
       const autoMap = await controller.autoMapRequirementsToTasks(validProjId);
       expect(autoMap.success).toBe(false);
+    });
+
+    it('should handle errors in auto-map and generateTasksForUnmappedRequirements', async () => {
+      mockTasksService.findByProjectId.mockRejectedValueOnce(new Error('DB err'));
+      const autoMap = await controller.autoMapRequirementsToTasks(validProjId);
+      expect(autoMap.success).toBe(false);
+
+      mockRtmService.generateTasksForUnmappedRequirements.mockRejectedValueOnce(new Error('Gen err'));
+      const gen = await controller.generateTasksForUnmappedRequirements(validProjId);
+      expect(gen.success).toBe(false);
     });
   });
 });

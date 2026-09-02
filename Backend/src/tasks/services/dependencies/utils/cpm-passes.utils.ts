@@ -242,7 +242,9 @@ export function buildBackwardPassMaps(params: BuildBackwardPassMapsParams): Back
       maxLateFinish: projectDuration,
       maxLateStart: projectDuration - t.duration,
     });
+  }
 
+  for (const t of tasks) {
     for (const dep of edgeMap.get(t.id) ?? []) {
       if (!taskMap.has(dep.predecessorId)) continue;
       outdegree.set(dep.predecessorId, (outdegree.get(dep.predecessorId) ?? 0) + 1);

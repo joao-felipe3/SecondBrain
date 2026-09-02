@@ -1015,7 +1015,7 @@
     "semantic_hash": ""
   },
   "Backend/src/tasks/schemas/task.schema.ts": {
-    "mtime": 1788319542.1087985,
+    "mtime": 1788230517.9070556,
     "ast_hash": "738b338fa55fb22f4fbae7762379ae44",
     "semantic_hash": ""
   },
@@ -1080,8 +1080,8 @@
     "semantic_hash": ""
   },
   "Backend/src/tasks/services/dependencies/utils/cpm-passes.utils.ts": {
-    "mtime": 1788318619.058014,
-    "ast_hash": "6032167154687e0485959a703e7f81a3",
+    "mtime": 1784387073.2814496,
+    "ast_hash": "b16425f908aad2aa09ea857721e2c9a7",
     "semantic_hash": ""
   },
   "Backend/src/tasks/services/dependencies/utils/cpm-sequence.utils.ts": {
@@ -1325,8 +1325,8 @@
     "semantic_hash": ""
   },
   "Backend/tests/unit/ai/services/core/gemini-executor.service.spec.ts": {
-    "mtime": 1788318669.7061272,
-    "ast_hash": "0297319672049eb03ab87dcd1d7491f2",
+    "mtime": 1784919978.077613,
+    "ast_hash": "904353762a4e78e7de8155d4abb983b7",
     "semantic_hash": ""
   },
   "Backend/tests/unit/ai/services/core/gemini.service.spec.ts": {
@@ -1345,8 +1345,8 @@
     "semantic_hash": ""
   },
   "Backend/tests/unit/ai/services/projects/wbs-ai.service.spec.ts": {
-    "mtime": 1788319026.7643113,
-    "ast_hash": "7d2289121beb1cc1e855d3640a6421c9",
+    "mtime": 1787022803.5205667,
+    "ast_hash": "ebdf48b922e4fe4992bff770e3325732",
     "semantic_hash": ""
   },
   "Backend/tests/unit/ai/services/tasks/checklist-ai.service.spec.ts": {
@@ -1360,8 +1360,8 @@
     "semantic_hash": ""
   },
   "Backend/tests/unit/ai/services/tasks/drafts-ai.service.spec.ts": {
-    "mtime": 1788319017.3096473,
-    "ast_hash": "cd79982950e050481af20f3bdef1f38c",
+    "mtime": 1787022803.5213757,
+    "ast_hash": "2e338dbb80d0f0234bd585ffe6999dfd",
     "semantic_hash": ""
   },
   "Backend/tests/unit/ai/services/tasks/pert-ai.service.spec.ts": {
@@ -1395,8 +1395,8 @@
     "semantic_hash": ""
   },
   "Backend/tests/unit/projects/controllers/wave-and-risk.controller.spec.ts": {
-    "mtime": 1788319542.5996292,
-    "ast_hash": "0edc2da1b3a9cfd3ebbadb89c9a0719e",
+    "mtime": 1784988360.699576,
+    "ast_hash": "a437594a06b601ee3123479212bdb159",
     "semantic_hash": ""
   },
   "Backend/tests/unit/projects/dto/pert-diagram.dto.spec.ts": {
@@ -1455,13 +1455,13 @@
     "semantic_hash": ""
   },
   "Backend/tests/unit/projects/services/evm/evm.service.spec.ts": {
-    "mtime": 1788317693.2603123,
-    "ast_hash": "addbe86de5d19d80a0385525409b2d4f",
+    "mtime": 1784936495.683039,
+    "ast_hash": "e0b47d57ba53a55a813418d6db008431",
     "semantic_hash": ""
   },
   "Backend/tests/unit/projects/services/evm/utils/evm-calculations.util.spec.ts": {
-    "mtime": 1788317846.9176052,
-    "ast_hash": "407d97a37edcd1462206567471078467",
+    "mtime": 1784936968.0979557,
+    "ast_hash": "c14f455b015f08fc0699a62b76d19625",
     "semantic_hash": ""
   },
   "Backend/tests/unit/projects/services/evm/utils/evm-curve.util.spec.ts": {
@@ -1525,18 +1525,18 @@
     "semantic_hash": ""
   },
   "Backend/tests/unit/projects/services/visualization/utils/gantt-helpers.util.spec.ts": {
-    "mtime": 1788319542.903925,
-    "ast_hash": "8992da544d5967b298bea9fa825d7459",
+    "mtime": 1784936978.877175,
+    "ast_hash": "c7c715a2fed8c781dad668842ef6486a",
     "semantic_hash": ""
   },
   "Backend/tests/unit/projects/services/visualization/utils/pert-helpers.util.spec.ts": {
-    "mtime": 1788317718.693354,
-    "ast_hash": "e8043bef3e08d33d83dce5c8958d8260",
+    "mtime": 1784921499.7503219,
+    "ast_hash": "5ca8f221a06c91629c85533b363253a0",
     "semantic_hash": ""
   },
   "Backend/tests/unit/projects/services/wbs/audit.service.spec.ts": {
-    "mtime": 1788318477.5057611,
-    "ast_hash": "da2881fec6ff04040bbbda5cc52a09f9",
+    "mtime": 1784936495.902662,
+    "ast_hash": "e3d185eddd293edbe743db1f514a5980",
     "semantic_hash": ""
   },
   "Backend/tests/unit/projects/services/wbs/conversion/task-conversion-helper.service.spec.ts": {
@@ -1615,8 +1615,8 @@
     "semantic_hash": ""
   },
   "Backend/tests/unit/projects/services/wbs/wbs-validation.service.spec.ts": {
-    "mtime": 1788318493.1893046,
-    "ast_hash": "6b0090e20f4a45b412718095cadcb0b1",
+    "mtime": 1784936496.3309138,
+    "ast_hash": "cbfdba42fdc090e81077809185ccc62d",
     "semantic_hash": ""
   },
   "Backend/tests/unit/projects/services/wbs/wbs.service.spec.ts": {
@@ -1660,8 +1660,8 @@
     "semantic_hash": ""
   },
   "Backend/tests/unit/tasks/controllers/cpm.controller.spec.ts": {
-    "mtime": 1788318054.6945152,
-    "ast_hash": "795cb0fc344d3ef979a564448bd1c16e",
+    "mtime": 1784936495.5434723,
+    "ast_hash": "09ad706996772873414c454098386baa",
     "semantic_hash": ""
   },
   "Backend/tests/unit/tasks/controllers/habits.controller.spec.ts": {
@@ -1670,13 +1670,13 @@
     "semantic_hash": ""
   },
   "Backend/tests/unit/tasks/controllers/rtm.controller.spec.ts": {
-    "mtime": 1788318074.482618,
-    "ast_hash": "610c1da58cc46bfe56d695baa5a28665",
+    "mtime": 1784936495.601472,
+    "ast_hash": "34a866fd77b97506a5c9b08eb63114a3",
     "semantic_hash": ""
   },
   "Backend/tests/unit/tasks/controllers/tasks.controller.spec.ts": {
-    "mtime": 1788319543.4968743,
-    "ast_hash": "938f2f16eb383fce6e9394e1be20e811",
+    "mtime": 1784936056.3150122,
+    "ast_hash": "47488631660b0c073cd60d4d794d3f9f",
     "semantic_hash": ""
   },
   "Backend/tests/unit/tasks/helpers/tasks-service-test-providers.ts": {
@@ -1740,8 +1740,8 @@
     "semantic_hash": ""
   },
   "Backend/tests/unit/tasks/services/dependencies/utils/cpm-passes.utils.spec.ts": {
-    "mtime": 1788318518.5068524,
-    "ast_hash": "276609e57e29911dbff13e2ea593b201",
+    "mtime": 1784849104.8189967,
+    "ast_hash": "61d550411f7bbd508c050b55749695a5",
     "semantic_hash": ""
   },
   "Backend/tests/unit/tasks/services/dependencies/utils/dependency-inference.utils.spec.ts": {
@@ -1770,8 +1770,8 @@
     "semantic_hash": ""
   },
   "Backend/tests/unit/tasks/services/intelligence/feedback.service.spec.ts": {
-    "mtime": 1788318625.4245262,
-    "ast_hash": "2c05391d8e1cbd4b7bbfdae9fe129a08",
+    "mtime": 1784936496.035849,
+    "ast_hash": "901bfc002c56e5672f6783ddf51ef42c",
     "semantic_hash": ""
   },
   "Backend/tests/unit/tasks/services/monitoring/alerts.service.spec.ts": {
@@ -3470,8 +3470,8 @@
     "semantic_hash": ""
   },
   "Backend/tests/unit/projects/controllers/projects-wbs.controller.spec.ts": {
-    "mtime": 1788319542.5114195,
-    "ast_hash": "bf407536d9a3fa974d2d4bea48d1a532",
+    "mtime": 1787022803.5213757,
+    "ast_hash": "c0cfa4c8dd252ab8a4119d1ee074315a",
     "semantic_hash": ""
   },
   "Frontend/composables/api/useProjectsApi.ts": {
@@ -3542,21 +3542,6 @@
   "Frontend/public/vfx/coins-stack.png": {
     "mtime": 1787973842.331113,
     "ast_hash": "e8c7f53b8d1a8039ac64d792a85a82e6",
-    "semantic_hash": ""
-  },
-  "Backend/tests/projects/listeners/task-events.listener.spec.ts": {
-    "mtime": 1788317640.934597,
-    "ast_hash": "ee32015443954abeef2ab3d20911e2d4",
-    "semantic_hash": ""
-  },
-  "Backend/tests/unit/projects/services/visualization/utils/x-matrix-helpers.util.spec.ts": {
-    "mtime": 1788319543.076641,
-    "ast_hash": "347d85dceb7a3e8deb9d579ca6279fba",
-    "semantic_hash": ""
-  },
-  "Backend/tests/unit/tasks/services/dependencies/utils/cpm-sequence.utils.spec.ts": {
-    "mtime": 1788318529.0918627,
-    "ast_hash": "efaa094422b89c2f0634d253903aa83a",
     "semantic_hash": ""
   }
 }

@@ -12,6 +12,9 @@ describe('CPMController', () => {
   const validTaskId1 = new Types.ObjectId().toHexString();
   const validTaskId2 = new Types.ObjectId().toHexString();
   const validTaskId3 = new Types.ObjectId().toHexString();
+  const validTaskId4 = new Types.ObjectId().toHexString();
+  const validTaskId5 = new Types.ObjectId().toHexString();
+  const validTaskId6 = new Types.ObjectId().toHexString();
 
   beforeEach(() => {
     mockCpmService = {
@@ -49,6 +52,16 @@ describe('CPMController', () => {
             slack: 0,
             isCritical: true,
           },
+          {
+            id: validTaskId2,
+            name: 'Task 2',
+            earlyStart: 60,
+            earlyFinish: 120,
+            lateStart: 60,
+            lateFinish: 120,
+            slack: 0,
+            isCritical: true,
+          },
         ],
       }),
       normalizeRelationship: jest.fn().mockReturnValue('FINISH_TO_START'),
@@ -62,6 +75,7 @@ describe('CPMController', () => {
           pertExpectedMinutes: 60,
           parentWbsNodeId: 'wbs1',
           wbsPath: '1.1',
+          microTaskType: 'prepare',
         },
         {
           _id: validTaskId2,
@@ -69,6 +83,7 @@ describe('CPMController', () => {
           pertExpectedMinutes: 60,
           parentWbsNodeId: 'wbs1',
           wbsPath: '1.1',
+          microTaskType: 'test',
         },
         {
           _id: validTaskId3,
@@ -76,6 +91,7 @@ describe('CPMController', () => {
           pertExpectedMinutes: 60,
           parentWbsNodeId: 'wbs2',
           wbsPath: '1.2',
+          microTaskType: 'produce',
         },
       ]),
       findOne: jest
@@ -149,6 +165,28 @@ describe('CPMController', () => {
       expect(res.interLeafMode).toBe('heuristic');
     });
 
+    it('should supplement sparse multi-leaf interleaf graph when >= 6 leaves exist', async () => {
+      mockTasksService.findByProjectId.mockResolvedValueOnce([
+        { _id: validTaskId1, parentWbsNodeId: 'leaf1', wbsPath: '1.1', microTaskType: 'prepare' },
+        { _id: validTaskId2, parentWbsNodeId: 'leaf2', wbsPath: '1.2', microTaskType: 'produce' },
+        { _id: validTaskId3, parentWbsNodeId: 'leaf3', wbsPath: '1.3', microTaskType: 'test' },
+        { _id: validTaskId4, parentWbsNodeId: 'leaf4', wbsPath: '1.4', microTaskType: 'consolidate' },
+        { _id: validTaskId5, parentWbsNodeId: 'leaf5', wbsPath: '1.5', microTaskType: 'practice' },
+        { _id: validTaskId6, parentWbsNodeId: 'leaf6', wbsPath: '1.6', microTaskType: 'produce' },
+      ]);
+
+      mockDependencyInference.inferInterLeafWithAi.mockResolvedValueOnce([]); // sparse AI output
+
+      const res = await controller.autoInferDependencies(validProjId, {
+        strategy: 'ai-per-leaf',
+        apply: true,
+        includeInterLeafGates: true,
+        interLeafStrategy: 'ai',
+      } as any);
+
+      expect(res.dependenciesSuggested).toBeGreaterThan(0);
+    });
+
     it('should handle interLeafWithAi errors gracefully and fallback to heuristic', async () => {
       mockDependencyInference.inferInterLeafWithAi.mockRejectedValueOnce(
         new Error('AI interleaf error'),
@@ -175,7 +213,16 @@ describe('CPMController', () => {
       expect(res).toBeDefined();
     });
 
-    it('should calculate critical path and project buffer', async () => {
+    it('should calculate critical path and project buffer with title and estimatedMinutes', async () => {
+      mockTasksService.findByProjectId.mockResolvedValueOnce([
+        {
+          id: validTaskId1,
+          title: 'Task Title',
+          estimatedMinutes: 45,
+          variance: 10,
+        },
+      ]);
+
       const res = await controller.calculateCriticalPath(validProjId);
       expect(res.analysis.criticalPath.length).toBe(2);
       expect(mockBufferService.calculateProjectBuffer).toHaveBeenCalled();
@@ -193,16 +240,29 @@ describe('CPMController', () => {
       expect(metrics.isCritical).toBe(true);
     });
 
-    it('should throw error when getTaskMetrics cannot find task', async () => {
+    it('should throw error when getTaskMetrics cannot find task in database', async () => {
       mockTasksService.findOne.mockResolvedValueOnce(null);
       await expect(controller.getTaskMetrics('invalid-id', validProjId)).rejects.toThrow(
         'Tarefa não encontrada',
       );
     });
 
-    it('should list dependencies', async () => {
+    it('should throw error when getTaskMetrics cannot find task in CPM analysis', async () => {
+      mockCpmService.calculateCriticalPath.mockReturnValueOnce({
+        criticalPath: [],
+        projectDuration: 0,
+        tasksByImpact: [],
+      });
+
+      await expect(controller.getTaskMetrics(validTaskId1, validProjId)).rejects.toThrow(
+        'Não foi possível calcular métricas para a tarefa',
+      );
+    });
+
+    it('should list dependencies with mapped fields', async () => {
       const deps = await controller.getDependencies(validProjId);
       expect(deps.count).toBe(1);
+      expect(deps.dependencies[0].id).toBe('dep1');
     });
 
     it('should add and remove dependency between tasks', async () => {
@@ -243,6 +303,16 @@ describe('CPMController', () => {
 
       const clear = await controller.clearDependencyCycle(validProjId, { mode: 'auto-only' } as any);
       expect(clear.cleared).toBe(true);
+    });
+
+    it('should handle cycle clear when edge id is missing (fallback remove by key)', async () => {
+      mockCpmService.getDependencies.mockResolvedValueOnce([
+        { taskId: validTaskId1, dependsOnTaskId: validTaskId2, isAutoIdentified: true },
+        { taskId: validTaskId2, dependsOnTaskId: validTaskId1, isAutoIdentified: true },
+      ]);
+
+      const clear = await controller.clearDependencyCycle(validProjId, { mode: 'auto-only' } as any);
+      expect(clear).toBeDefined();
     });
 
     it('should handle cycle clear when mode is auto-only but edges are not auto-identified', async () => {
