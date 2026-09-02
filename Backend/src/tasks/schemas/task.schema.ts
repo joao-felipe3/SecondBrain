@@ -13,16 +13,15 @@ import {
 
 export { TaskChecklistItem, TaskRecurringRule };
 
-export interface TaskDocument
-  extends
-    Document,
-    TaskOperationalInfo,
-    TaskPertMetrics,
-    TaskEvmMetrics,
-    TaskTraceability,
-    TaskGamification,
-    TaskRecurrence,
-    TaskChecklistContext {}
+export type TaskContexts = TaskOperationalInfo &
+  TaskPertMetrics &
+  TaskEvmMetrics &
+  TaskTraceability &
+  TaskGamification &
+  TaskRecurrence &
+  TaskChecklistContext;
+
+export interface TaskDocument extends Document, TaskContexts {}
 
 export const TaskSchema = new Schema<TaskDocument>({
   name: { type: String, required: true },
