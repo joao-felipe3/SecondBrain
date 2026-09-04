@@ -222,5 +222,55 @@ describe('TasksRecurringService', () => {
 
       await expect(service.generateNextOccurrence(validParentId)).rejects.toThrow(NotFoundException);
     });
+
+    it('deve retornar null se tarefa nao possuir recurringRule', async () => {
+      const taskWithoutRule = { _id: validParentId, name: 'Task' } as any;
+      const result = await service.generateNextOccurrence(taskWithoutRule);
+      expect(result).toBeNull();
+    });
+
+    it('deve retornar null se calculateNextRecurringDate retornar null', async () => {
+      const futureEndDate = new Date(Date.now() + 86400000);
+      const taskWithExpiredRule = {
+        _id: validParentId,
+        deadline: futureEndDate,
+        recurringRule: { frequency: 'daily', interval: 1, endDate: futureEndDate },
+      } as any;
+
+      const result = await service.generateNextOccurrence(taskWithExpiredRule);
+      expect(result).toBeNull();
+    });
+
+    it('deve aceitar TaskDocument diretamente em vez de ID string', async () => {
+      const taskDoc = {
+        _id: validParentId,
+        deadline: new Date('2026-05-01'),
+        recurringRule: { frequency: 'daily', interval: 1 },
+      } as any;
+
+      mockTasksWriteService.createTaskCore.mockResolvedValueOnce({ _id: 'next-occ' });
+      const result = await service.generateNextOccurrence(taskDoc);
+      expect(result).toEqual({ _id: 'next-occ' });
+    });
+
+    it('deve lancar BadRequestException quando taskModel ou tasksWriteService forem ausentes', async () => {
+      const uninitializedService = new TasksRecurringService(null as any, null as any, null as any);
+
+      await expect(uninitializedService.findRecurringSeries(validParentId)).rejects.toThrow(
+        'TasksRecurringService não está inicializado com taskModel',
+      );
+      await expect(uninitializedService.deleteRecurringSeries(validParentId)).rejects.toThrow(
+        'TasksRecurringService não está inicializado com taskModel',
+      );
+      await expect(
+        uninitializedService.updateRecurringRule(validParentId, { frequency: 'daily', interval: 1 }),
+      ).rejects.toThrow('TasksRecurringService não está inicializado com taskModel');
+      await expect(
+        uninitializedService.createRecurringTemplate({
+          name: 'T',
+          recurringRule: { frequency: 'daily', interval: 1 },
+        } as any),
+      ).rejects.toThrow('TasksRecurringService não está inicializado com tasksWriteService');
+    });
   });
 });

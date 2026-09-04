@@ -325,5 +325,122 @@ describe('CPMController', () => {
       expect(clear.cleared).toBe(false);
       expect(clear.hasCycleAfter).toBe(true);
     });
+
+    it('should return immediately when project has zero tasks in autoInferDependencies', async () => {
+      mockTasksService.findByProjectId.mockResolvedValueOnce([]);
+      const res = await controller.autoInferDependencies(validProjId, { strategy: 'none' } as any);
+      expect(res.strategy).toBe('none');
+      expect(res.dependenciesSuggested).toBe(0);
+      expect(res.leafGroups).toBe(0);
+    });
+
+    it('should handle autoInferDependencies with within-leaf and interLeafStrategy none', async () => {
+      const res = await controller.autoInferDependencies(validProjId, {
+        strategy: 'within-leaf',
+        includeInterLeafGates: false,
+        interLeafStrategy: 'none',
+        apply: false,
+      } as any);
+
+      expect(res.interLeafMode).toBe('none');
+      expect(res.dependenciesSuggested).toBeGreaterThanOrEqual(0);
+    });
+
+    it('should handle autoInferDependencies with within-and-between-leafs', async () => {
+      const res = await controller.autoInferDependencies(validProjId, {
+        strategy: 'within-and-between-leafs',
+        includeInterLeafGates: true,
+        interLeafStrategy: 'heuristic',
+        apply: true,
+      } as any);
+
+      expect(res.apply).toBe(true);
+      expect(res.strategy).toBe('within-and-between-leafs');
+    });
+
+    it('should handle tasks with non-standard fields and no leaf group', async () => {
+      mockTasksService.findByProjectId.mockResolvedValueOnce([
+        {
+          id: validTaskId1,
+          title: 'Custom Title',
+          estimatedMinutes: 30,
+          checklist: ['step 1'],
+          definitionOfDone: 'done',
+        },
+        {
+          id: validTaskId2,
+          name: '',
+          pertExpectedMinutes: 45,
+        },
+      ]);
+
+      mockDependencyInference.inferWithAi.mockResolvedValueOnce([
+        { taskId: validTaskId1, dependsOnTaskId: validTaskId2 },
+      ]);
+
+      const res = await controller.autoInferDependencies(validProjId, {
+        strategy: 'ai-per-leaf',
+        apply: false,
+      } as any);
+
+      expect(res.leafGroups).toBe(1);
+    });
+
+    it('should handle non-Error rejection in leaf inference gracefully', async () => {
+      mockDependencyInference.inferWithAi.mockRejectedValueOnce('String leaf failure');
+
+      const res = await controller.autoInferDependencies(validProjId, {
+        strategy: 'ai-per-leaf',
+        apply: false,
+      } as any);
+
+      expect(res).toBeDefined();
+    });
+
+    it('should detect cycles in getDependencyCycle when cycles exist', async () => {
+      mockCpmService.getDependencies.mockResolvedValueOnce([
+        { taskId: validTaskId1, dependsOnTaskId: validTaskId2 },
+        { taskId: validTaskId2, dependsOnTaskId: validTaskId1 },
+      ]);
+
+      const cycle = await controller.getDependencyCycle(validProjId);
+      expect(cycle.hasCycle).toBe(true);
+      expect(cycle.cycleTaskIds.length).toBeGreaterThan(0);
+    });
+
+    it('should add dependency with explicit relationship and reason', async () => {
+      const added = await controller.addDependency(validProjId, {
+        taskId: validTaskId2,
+        dependsOnTaskId: validTaskId1,
+        relationship: 'FINISH_TO_FINISH' as any,
+        reason: 'Sync finishes',
+      });
+
+      expect(added.id).toBe('dep1');
+      expect(mockCpmService.addDependency).toHaveBeenCalledWith(
+        expect.objectContaining({
+          relationship: 'FINISH_TO_FINISH',
+          reason: 'Sync finishes',
+        }),
+      );
+    });
+
+    it('should handle critical path calculation with dependencies having unknown taskId or string error in buffer', async () => {
+      mockCpmService.getDependencies.mockResolvedValueOnce([
+        { taskId: 'unknown-task-id', dependsOnTaskId: validTaskId1 },
+        { taskId: '', dependsOnTaskId: validTaskId2 },
+      ]);
+      mockBufferService.calculateProjectBuffer.mockRejectedValueOnce('Non-error string rejection');
+
+      const res = await controller.calculateCriticalPath(validProjId);
+      expect(res.analysis).toBeDefined();
+    });
+
+    it('should return empty dependency list when getDependencies has no rows', async () => {
+      mockCpmService.getDependencies.mockResolvedValueOnce([]);
+      const deps = await controller.getDependencies(validProjId);
+      expect(deps.count).toBe(0);
+      expect(deps.dependencies).toEqual([]);
+    });
   });
 });

@@ -141,15 +141,39 @@ describe('RiskService', () => {
       expect(stats.byStatus.identificado).toBe(1);
     });
 
-    it('deve gerar recomendacoes de intervencoes de risco', async () => {
+    it('deve gerar recomendacoes de intervencoes de risco para diferentes cenarios', async () => {
       const mockRisks = [
         {
           _id: 'r1',
-          description: 'Risco Critico',
+          description: 'Risco Critico em Aberto',
           status: 'identificado',
           severity: 'alta',
           probability: 90,
           impact: 5,
+        },
+        {
+          _id: 'r2',
+          description: 'Risco Critico Mitigando',
+          status: 'mitigando',
+          severity: 'alta',
+          probability: 80,
+          impact: 4,
+        },
+        {
+          _id: 'r3',
+          description: 'Risco Score Alto',
+          status: 'identificado',
+          severity: 'média',
+          probability: 70,
+          impact: 4, // score = 0.7 * 4 = 2.8 >= 2
+        },
+        {
+          _id: 'r4',
+          description: 'Risco Baixo',
+          status: 'resolvido',
+          severity: 'baixa',
+          probability: 10,
+          impact: 1, // score = 0.1
         },
       ];
 
@@ -160,8 +184,79 @@ describe('RiskService', () => {
       });
 
       const result = await service.getRiskInterventions(validProjectId);
-      expect(result.summary.total).toBe(1);
-      expect(result.interventions[0].recommendedAction).toBe('reduzir-escopo');
+      expect(result.summary.total).toBe(4);
+      expect(result.summary.criticos).toBe(2);
+      expect(result.interventions.find((i) => i.riskId === 'r1')?.recommendedAction).toBe(
+        'reduzir-escopo',
+      );
+      expect(result.interventions.find((i) => i.riskId === 'r2')?.recommendedAction).toBe(
+        'trocar-estrategia',
+      );
+      expect(result.interventions.find((i) => i.riskId === 'r3')?.recommendedAction).toBe(
+        'pausa-planejada',
+      );
+      expect(result.interventions.find((i) => i.riskId === 'r4')?.recommendedAction).toBe('monitorar');
+    });
+
+    it('deve chamar getRisksBySeverity, updateMitigationPlan, updateRiskStatus e deleteRisk', async () => {
+      mockRiskModel.find.mockReturnValue({
+        exec: jest.fn().mockResolvedValue([]),
+      });
+      mockRiskModel.findByIdAndUpdate.mockReturnValue({
+        exec: jest.fn().mockResolvedValue({ _id: validRiskId }),
+      });
+      mockRiskModel.findByIdAndDelete.mockReturnValue({
+        exec: jest.fn().mockResolvedValue({ _id: validRiskId }),
+      });
+
+      const bySeverity = await service.getRisksBySeverity(validProjectId, 'alta');
+      expect(bySeverity).toEqual([]);
+
+      const updatedPlan = await service.updateMitigationPlan(validRiskId, 'Novo Plano');
+      expect(updatedPlan).toBeDefined();
+
+      const updatedStatus = await service.updateRiskStatus(validRiskId, 'resolvido');
+      expect(updatedStatus).toBeDefined();
+
+      const deleted = await service.deleteRisk(validRiskId);
+      expect(deleted).toBeDefined();
+    });
+
+    it('deve cobrir updateRisk com campos parciais, severidade explicita e targetResolutionDate', async () => {
+      const existing = { _id: validRiskId, probability: 30, impact: 2, severity: 'baixa' };
+      mockRiskModel.findById.mockReturnValue({
+        exec: jest.fn().mockResolvedValue(existing),
+      });
+      mockRiskModel.findByIdAndUpdate.mockReturnValue({
+        exec: jest.fn().mockResolvedValue({ ...existing, severity: 'média' }),
+      });
+
+      const result = await service.updateRisk(validRiskId, {
+        description: 'Nova descricao',
+        status: 'mitigando',
+        mitigationPlan: 'Plano',
+        owner: 'Dev',
+        targetResolutionDate: '2026-12-01',
+        severity: 'média',
+      });
+      expect(result).toBeDefined();
+      expect(mockRiskModel.findByIdAndUpdate).toHaveBeenCalledWith(
+        String(validRiskId),
+        expect.objectContaining({
+          $set: expect.objectContaining({
+            description: 'Nova descricao',
+            status: 'mitigando',
+            severity: 'média',
+          }),
+        }),
+        { new: true },
+      );
+    });
+
+    it('deve lidar com erro de excecao em assessRisks retornando array vazio', async () => {
+      mockGeminiService.generateContent.mockRejectedValue(new Error('LLM connection error'));
+      const risks = await service.assessRisks(validProjectId, 'Projeto Falha');
+      expect(risks).toEqual([]);
     });
   });
 });

@@ -1475,8 +1475,8 @@
     "semantic_hash": ""
   },
   "Backend/tests/unit/projects/services/execution/risk.service.spec.ts": {
-    "mtime": 1788490640.7023394,
-    "ast_hash": "ccc509904b6bc2901951772d2e8ef1cf",
+    "mtime": 1784988360.699576,
+    "ast_hash": "4e1962ece1843ed46ea8dfc149f44e24",
     "semantic_hash": ""
   },
   "Backend/tests/unit/projects/services/strategy/planning.service.spec.ts": {
@@ -1505,8 +1505,8 @@
     "semantic_hash": ""
   },
   "Backend/tests/unit/projects/services/strategy/utils/rolling-wave-helpers.util.spec.ts": {
-    "mtime": 1788490640.7862792,
-    "ast_hash": "ef6f30ac22723ce384bf7b2c0993b607",
+    "mtime": 1784988360.7025788,
+    "ast_hash": "828903a865a7d7d4606c2ef951bf99f2",
     "semantic_hash": ""
   },
   "Backend/tests/unit/projects/services/strategy/utils/rolling-wave-replan-helpers.util.spec.ts": {
@@ -1660,8 +1660,8 @@
     "semantic_hash": ""
   },
   "Backend/tests/unit/tasks/controllers/cpm.controller.spec.ts": {
-    "mtime": 1788489699.806495,
-    "ast_hash": "a3a900bf7e053c2cbac475e0bd1ed4db",
+    "mtime": 1788318054.6945152,
+    "ast_hash": "795cb0fc344d3ef979a564448bd1c16e",
     "semantic_hash": ""
   },
   "Backend/tests/unit/tasks/controllers/habits.controller.spec.ts": {
@@ -1710,8 +1710,8 @@
     "semantic_hash": ""
   },
   "Backend/tests/unit/tasks/services/analysis/metrics.service.spec.ts": {
-    "mtime": 1788489584.9564857,
-    "ast_hash": "4bdb5e5c51d591162dae5b2ff0305d85",
+    "mtime": 1784917548.51152,
+    "ast_hash": "b6cdc594143fb9655933f91654c9f1c5",
     "semantic_hash": ""
   },
   "Backend/tests/unit/tasks/services/analysis/pert.service.spec.ts": {
@@ -1825,8 +1825,8 @@
     "semantic_hash": ""
   },
   "Backend/tests/unit/tasks/services/workflow/recurring.service.spec.ts": {
-    "mtime": 1788490641.101172,
-    "ast_hash": "af88155a57e4cd5997a93c4c0c7d5d12",
+    "mtime": 1787628008.993133,
+    "ast_hash": "604ef41e7db49a95d4319e2cc81ba3ad",
     "semantic_hash": ""
   },
   "Backend/tests/unit/tasks/services/workflow/utils/kanban.utils.spec.ts": {
@@ -3557,36 +3557,6 @@
   "Backend/tests/unit/tasks/services/dependencies/utils/cpm-sequence.utils.spec.ts": {
     "mtime": 1788318529.0918627,
     "ast_hash": "efaa094422b89c2f0634d253903aa83a",
-    "semantic_hash": ""
-  },
-  "Backend/tests/unit/tasks/dto/cpm-diagnostics.dto.spec.ts": {
-    "mtime": 1788489435.0385864,
-    "ast_hash": "d003d5c656c390d7e8ac589dc610a62c",
-    "semantic_hash": ""
-  },
-  "Backend/tests/unit/tasks/services/traceability/utils/rtm-ai.utils.spec.ts": {
-    "mtime": 1788490641.0198622,
-    "ast_hash": "0f8e875807058305695cd74fea551448",
-    "semantic_hash": ""
-  },
-  "Backend/tests/unit/tasks/services/traceability/utils/rtm.utils.spec.ts": {
-    "mtime": 1788489546.790469,
-    "ast_hash": "2b163b68df869994575c6bd0ccb17821",
-    "semantic_hash": ""
-  },
-  "Backend/tests/unit/tasks/services/workflow/utils/recurring-calculation.utils.spec.ts": {
-    "mtime": 1788489515.3679075,
-    "ast_hash": "4c54e2f4bc771576e19c6798758368b2",
-    "semantic_hash": ""
-  },
-  "Backend/tests/unit/tasks/services/workflow/utils/recurring-validation.utils.spec.ts": {
-    "mtime": 1788489505.3381724,
-    "ast_hash": "d86411ae174b2fc51b6053849fdcf8f5",
-    "semantic_hash": ""
-  },
-  "Backend/tests/unit/tasks/services/workflow/utils/recurring.utils.spec.ts": {
-    "mtime": 1788489497.1290405,
-    "ast_hash": "1d3fc9c1f7e28a20b00765dfd6b799ba",
     "semantic_hash": ""
   }
 }
