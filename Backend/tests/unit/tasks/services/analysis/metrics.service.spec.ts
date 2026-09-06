@@ -82,19 +82,19 @@ describe('TasksMetricsService', () => {
 
     it('should set rtmRisk to false if requirement or WBS links exist in fallbackTask', () => {
       const dto: any = {};
-      service.applyRtmRisk(dto, { requirementIds: ['req-2'] } as any);
+      service.applyRtmRisk(dto, { requirementIds: ['req-2'] });
       expect(dto.rtmRisk).toBe(false);
 
       const dto2: any = {};
-      service.applyRtmRisk(dto2, { journeyItemIds: ['ji-2'] } as any);
+      service.applyRtmRisk(dto2, { journeyItemIds: ['ji-2'] });
       expect(dto2.rtmRisk).toBe(false);
 
       const dto3: any = {};
-      service.applyRtmRisk(dto3, { parentWbsNodeId: 'node-x' } as any);
+      service.applyRtmRisk(dto3, { parentWbsNodeId: 'node-x' });
       expect(dto3.rtmRisk).toBe(false);
 
       const dto4: any = {};
-      service.applyRtmRisk(dto4, { wbsPath: '2.1' } as any);
+      service.applyRtmRisk(dto4, { wbsPath: '2.1' });
       expect(dto4.rtmRisk).toBe(false);
     });
 
