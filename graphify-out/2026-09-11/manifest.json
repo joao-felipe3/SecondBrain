@@ -20,8 +20,8 @@
     "semantic_hash": ""
   },
   "Backend/package.json": {
-    "mtime": 1789097839.7024727,
-    "ast_hash": "76e7fc8ac8564056ddc8c82d82653cdb",
+    "mtime": 1789091602.4347782,
+    "ast_hash": "e3bb47ec6f620caf0371824f9c97b914",
     "semantic_hash": ""
   },
   "Backend/scripts/export-graph-html.ts": {
@@ -2705,8 +2705,8 @@
     "semantic_hash": ""
   },
   "Frontend/package.json": {
-    "mtime": 1789097828.847049,
-    "ast_hash": "4eaacdf7cfa08499657f4cde3c4d016a",
+    "mtime": 1789092172.0096636,
+    "ast_hash": "c8ee0c982dce8808a95393b9468074fd",
     "semantic_hash": ""
   },
   "Frontend/pages/Task/index.vue": {
