@@ -20,8 +20,8 @@
     "semantic_hash": ""
   },
   "Backend/package.json": {
-    "mtime": 1789091602.4347782,
-    "ast_hash": "e3bb47ec6f620caf0371824f9c97b914",
+    "mtime": 1787257206.3577564,
+    "ast_hash": "ed3b47a423ecd2afa6a9c87efe65a98e",
     "semantic_hash": ""
   },
   "Backend/scripts/export-graph-html.ts": {
@@ -2705,8 +2705,8 @@
     "semantic_hash": ""
   },
   "Frontend/package.json": {
-    "mtime": 1789092172.0096636,
-    "ast_hash": "c8ee0c982dce8808a95393b9468074fd",
+    "mtime": 1787255967.4476607,
+    "ast_hash": "2789c224acd60620c8781aad84160e6f",
     "semantic_hash": ""
   },
   "Frontend/pages/Task/index.vue": {
@@ -2850,8 +2850,8 @@
     "semantic_hash": ""
   },
   "package.json": {
-    "mtime": 1789092176.6733027,
-    "ast_hash": "89b65fac48930d901333ec1b1a419c7f",
+    "mtime": 1787256737.2145765,
+    "ast_hash": "7c237f93644c911e352b45364c4742ce",
     "semantic_hash": ""
   },
   ".github/copilot-instructions.md": {
@@ -2980,13 +2980,13 @@
     "semantic_hash": ""
   },
   "Project/REQUISITOS.md": {
-    "mtime": 1789094981.327381,
-    "ast_hash": "064d770087a21a8d2c83b25f7bd6dc20",
+    "mtime": 1788664265.796741,
+    "ast_hash": "10294a303023df6a5a0fe356221916eb",
     "semantic_hash": ""
   },
   "Project/adr/001-why-nestjs-mongoose.md": {
-    "mtime": 1789094981.3764162,
-    "ast_hash": "f60746f431d163227952ab47e6d202db",
+    "mtime": 1788664359.518713,
+    "ast_hash": "01d25366609a56125544ca642831cc95",
     "semantic_hash": ""
   },
   "Project/adr/002-module-separation.md": {

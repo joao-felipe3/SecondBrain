@@ -59,7 +59,7 @@ Adotar **NestJS** como framework do backend e **Mongoose** como ODM para MongoDB
 ### Mitigações
 
 - Padrões de query: projeções, paginação, `lean()` quando apropriado, índices explícitos.
-- Revisão contínua em refactors (Fase 2.5) para manter services menores e regras claras.
+- Revisão contínua em refactors (Fase 3 - DevOps & Refactoring) para manter services menores e regras claras.
 - Travar versões e revisar upgrades de Nest/Mongoose com atenção a peer dependencies.
 
 ## Alternativas consideradas

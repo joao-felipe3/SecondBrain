@@ -1,7 +1,7 @@
 # 📋 Acompanhamento de Requisitos - Second Brain
 
-> **Última atualização:** 10/08/2026  
-> **Status do Projeto:** MVP + Fase 1 + Fase 2 + Fase 2.5 100% Completas
+> **Última atualização:** 06/09/2026  
+> **Status do Projeto:** Fase 0 (MVP) + Fase 1 + Fase 2 + Fase 3 100% Completas
 
 ---
 
@@ -12,24 +12,24 @@
 | Fase 0 - MVP                                        | 14    | 14/14 ✅    | 14/14 ✅ | 14/14 ✅ | 14/14 ✅ | 🟢 100%   |
 | Fase 1 - Eficiência                                 | 29    | 29/29 ✅    | 29/29 ✅ | 29/29 ✅ | 29/29 ✅ | 🟢 100%   |
 | Fase 2 - Micro-Tarefas                              | 22    | 22/22 ✅    | 22/22 ✅ | 22/22 ✅ | 22/22 ✅ | 🟢 100%   |
-| Fase 2.5 - DevOps & Refactoring                     | 38    | 38/38 ✅    | Docs ✅  | 38/38 ✅ | 38/38 ✅ | 🟢 100%   |
-| Fase 3 - Produtividade Avançada                     | 22    | 0/22        | 0/22     | 0/22     | 0/22     | ⬜ 0%     |
-| Fase 3.5 - Refatoração & Interface RPG (Frontend)   | 95    | 33/95       | 33/95 ✅ | UI/VFX   | 33/95    | 🟡 34.7%  |
-| Fase 4 - Gamificação Essencial                      | 25    | 0/25        | 0/25     | 0/25     | 0/25     | ⬜ 0%     |
-| Fase 4.5 - Feature Freeze II (EDA, DDD & CQRS)      | 14    | 0/14        | 0/14     | 0/14     | 0/14     | ⬜ 0%     |
-| Fase 5 - Criação de Projetos com Agente             | 9     | 0/9         | 0/9      | 0/9      | 0/9      | ⬜ 0%     |
-| Fase 6 - Rotina Invisível, Âncoras e Desligamento   | 31    | 0/31        | 0/31     | 0/31     | 0/31     | ⬜ 0%     |
-| Fase 7 - Narrativa e Motor RPG                      | 42    | 0/42        | 0/42     | 0/42     | 0/42     | ⬜ 0%     |
-| Fase 8 - Monitoramento e Interpretação Assistida    | 10    | 0/10        | 0/10     | 0/10     | 0/10     | ⬜ 0%     |
-| Fase 9 - Arquitetura Cognitiva                      | 28    | 0/28        | 0/28     | 0/28     | 0/28     | ⬜ 0%     |
-| Fase 10 - IA Autônoma e Guardião do OS              | 36    | 0/36        | 0/36     | 0/36     | 0/36     | ⬜ 0%     |
-| Fase 11 - Espelho Metacognitivo e Energia Biológica | 44    | 0/44        | 0/44     | 0/44     | 0/44     | ⬜ 0%     |
-| Fase 12 - Polimento e Segurança                     | 10    | 0/10        | 0/10     | 0/10     | 0/10     | ⬜ 0%     |
-| Fase 13 - Agentes Tutores e Aprendizado Acelerado   | 15    | 0/15        | 0/15     | 0/15     | 0/15     | ⬜ 0%     |
+| Fase 3 - DevOps & Refactoring                       | 38    | 38/38 ✅    | Docs ✅  | 38/38 ✅ | 38/38 ✅ | 🟢 100%   |
+| Fase 4 - Refatoração & Interface RPG (Frontend)     | 95    | 33/95       | 33/95 ✅ | UI/VFX   | 33/95    | 🟡 34.7%  |
+| Fase 5 - Produtividade Avançada                     | 22    | 0/22        | 0/22     | 0/22     | 0/22     | ⬜ 0%     |
+| Fase 6 - Gamificação Essencial                      | 25    | 0/25        | 0/25     | 0/25     | 0/25     | ⬜ 0%     |
+| Fase 7 - Feature Freeze II (EDA, DDD & CQRS)        | 14    | 0/14        | 0/14     | 0/14     | 0/14     | ⬜ 0%     |
+| Fase 8 - Criação de Projetos com Agente             | 9     | 0/9         | 0/9      | 0/9      | 0/9      | ⬜ 0%     |
+| Fase 9 - Rotina Invisível, Âncoras e Desligamento   | 31    | 0/31        | 0/31     | 0/31     | 0/31     | ⬜ 0%     |
+| Fase 10 - Narrativa e Motor RPG                     | 42    | 0/42        | 0/42     | 0/42     | 0/42     | ⬜ 0%     |
+| Fase 11 - Monitoramento e Interpretação Assistida   | 10    | 0/10        | 0/10     | 0/10     | 0/10     | ⬜ 0%     |
+| Fase 12 - Arquitetura Cognitiva                     | 28    | 0/28        | 0/28     | 0/28     | 0/28     | ⬜ 0%     |
+| Fase 13 - IA Autônoma e Guardião do OS              | 36    | 0/36        | 0/36     | 0/36     | 0/36     | ⬜ 0%     |
+| Fase 14 - Espelho Metacognitivo e Energia Biológica | 44    | 0/44        | 0/44     | 0/44     | 0/44     | ⬜ 0%     |
+| Fase 15 - Polimento e Segurança                     | 10    | 0/10        | 0/10     | 0/10     | 0/10     | ⬜ 0%     |
+| Fase 16 - Agentes Tutores e Aprendizado Acelerado   | 15    | 0/15        | 0/15     | 0/15     | 0/15     | ⬜ 0%     |
 
 ---
 
-## 🚀 MVP - Funcionalidades Essenciais
+## 🚀 Fase 0 - MVP - Funcionalidades Essenciais
 
 ### Gestão de Tarefas
 
@@ -68,7 +68,7 @@
 
 ---
 
-## ⚡ Eficiência - Integração de LLM na Definição e Gestão de Projetos
+## ⚡ Fase 1 - Eficiência: Integração de LLM na Definição e Gestão de Projetos
 
 ### Definição e Clarificação de Projetos (Catchball via Chat)
 
@@ -146,7 +146,7 @@
 
 ---
 
-## ⚙️ Micro-Tarefas - Gerenciamento de Tarefas de Curta Duração (≤3h)
+## ⚙️ Fase 2 - Micro-Tarefas: Gerenciamento de Tarefas de Curta Duração (≤3h)
 
 > **Objetivo:** Integrar LLM para garantir excelência operacional, rastreabilidade e eficiência em tarefas de curta duração e hábitos recorrentes, evitando erros humanos e "gold plating", aplicando técnicas de qualidade, PERT adaptado, RTM simplificada, recorrência estruturada e feedback contínuo.
 
@@ -204,7 +204,7 @@
 
 ---
 
-## Fase 2.5 - DevOps & Refactoring: Arquitetura, Documentação e Qualidade
+## 🔧 Fase 3 - DevOps & Refactoring: Arquitetura, Documentação e Qualidade
 
 > **Status:** 🟢 100% Concluído (Sprints 1-7 completos)  
 > **Objetivo:** Preparar codebase para escalar com qualidade, documentando decisões arquiteturais e refatorando módulos críticos (TasksService: 2067 linhas, ProjectsService: 804 linhas)  
@@ -282,75 +282,7 @@
 
 ---
 
-## ��� Fase 3 - Produtividade Avançada
-
-> **Objetivo:** Reduzir fricção e aumentar consistência no dia a dia, transformando backlog → plano executável. A fase foca em **planejamento visual**, **captura rápida**, **busca/organização**, **priorização assistida** e **foco**, mantendo a criação e execução de tarefas rápidas e previsíveis.
-
-### Planejamento Visual (Calendário/Agenda)
-
-| #   | Requisito                                                                    | Tipo      | Protótipo | Frontend | Backend | QA  |
-| --- | ---------------------------------------------------------------------------- | --------- | :-------: | :------: | :-----: | :-: |
-| 1   | Visualizar tarefas com prazo em formato de calendário (mês/semana/dia)       | Funcional |    ⬜     |    ⬜    |   ⬜    | ⬜  |
-| 2   | Reagendar prazo diretamente no calendário (drag & drop ou edição rápida)     | Funcional |    ⬜     |    ⬜    |   ⬜    | ⬜  |
-| 3   | Visualizar “Hoje” e “Próximos 7 dias” como lista/agenda para execução rápida | Funcional |    ⬜     |    ⬜    |   ⬜    | ⬜  |
-
-### Captura Rápida e Templates (Velocidade)
-
-| #   | Requisito                                                                                | Tipo          | Protótipo | Frontend | Backend | QA  |
-| --- | ---------------------------------------------------------------------------------------- | ------------- | :-------: | :------: | :-----: | :-: |
-| 4   | Criar tarefa em 1 linha (Quick Add) com preenchimento automático de campos padrão        | Não Funcional |    ⬜     |    ⬜    |   ⬜    | ⬜  |
-| 5   | Interpretar texto do Quick Add (ex.: data “amanhã”, prioridade “alta”) e sugerir valores | Funcional     |    ⬜     |    ⬜    |   ⬜    | ⬜  |
-| 6   | Templates de tarefas/projetos/hábitos (campos e subtarefas padrão) para repetir rotinas  | Funcional     |    ⬜     |    ⬜    |   ⬜    | ⬜  |
-
-### Busca, Filtros e Organização
-
-| #   | Requisito                                                                                | Tipo      | Protótipo | Frontend | Backend | QA  |
-| --- | ---------------------------------------------------------------------------------------- | --------- | :-------: | :------: | :-----: | :-: |
-| 7   | Busca full-text em tarefas e projetos (nome e descrição)                                 | Funcional |    ⬜     |    ⬜    |   ⬜    | ⬜  |
-| 8   | Filtros e ordenação por prazo, prioridade, status, dificuldade e projeto                 | Funcional |    ⬜     |    ⬜    |   ⬜    | ⬜  |
-| 9   | “Visões salvas” (filtros favoritos) para rotinas (ex.: “Hoje”, “Esta semana”, “Backlog”) | Funcional |    ⬜     |    ⬜    |   ⬜    | ⬜  |
-
-### Priorização e Planejamento Assistidos (Inteligência)
-
-| #   | Requisito                                                                             | Tipo      | Protótipo | Frontend | Backend | QA  |
-| --- | ------------------------------------------------------------------------------------- | --------- | :-------: | :------: | :-----: | :-: |
-| 10  | Gerar sugestão de “Top tarefas do dia” considerando prazos, urgência e esforço        | Funcional |    ⬜     |    ⬜    |   ⬜    | ⬜  |
-| 11  | Identificar tarefas em risco (prazo próximo/atrasadas) e sugerir replanejamento       | Funcional |    ⬜     |    ⬜    |   ⬜    | ⬜  |
-| 12  | Aplicar limite de WIP (trabalho em progresso) com alerta quando exceder o foco do dia | Funcional |    ⬜     |    ⬜    |   ⬜    | ⬜  |
-
-### Foco e Execução
-
-| #   | Requisito                                                                   | Tipo      | Protótipo | Frontend | Backend | QA  |
-| --- | --------------------------------------------------------------------------- | --------- | :-------: | :------: | :-----: | :-: |
-| 13  | Pomodoro embutido com seleção de tarefa ativa e registro simples de sessões | Funcional |    ⬜     |    ⬜    |   ⬜    | ⬜  |
-| 14  | “Modo foco” (reduzir distrações na UI) durante sessão de execução           | Funcional |    ⬜     |    ⬜    |   ⬜    | ⬜  |
-
-### Notificações e Rotinas
-
-| #   | Requisito                                                                                        | Tipo      | Protótipo | Frontend | Backend | QA  |
-| --- | ------------------------------------------------------------------------------------------------ | --------- | :-------: | :------: | :-----: | :-: |
-| 15  | Notificações para tarefas próximas do prazo (configurável)                                       | Funcional |    ⬜     |    ⬜    |   ⬜    | ⬜  |
-| 16  | Detectar inatividade prolongada e sugerir retomada do foco (configurável)                        | Funcional |    ⬜     |    ⬜    |   ⬜    | ⬜  |
-| 17  | Rotina de revisão semanal: checklist de revisão (limpar backlog, reagendar, encerrar pendências) | Funcional |    ⬜     |    ⬜    |   ⬜    | ⬜  |
-
-### Requisitos Não Funcionais (Fase 3)
-
-| #   | Requisito                                                                          | Tipo          | Protótipo | Frontend | Backend | QA  |
-| --- | ---------------------------------------------------------------------------------- | ------------- | :-------: | :------: | :-----: | :-: |
-| 18  | Compatibilidade com dispositivos móveis e desktop (layout e interações principais) | Não Funcional |    ⬜     |    ⬜    |   ⬜    | ⬜  |
-
-### Novos requisitos propostos (cognição e produtividade)
-
-| #   | Requisito                                                                                                                                                                | Tipo      | Protótipo | Frontend | Backend | QA  |
-| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------- | :-------: | :------: | :-----: | :-: |
-| 19  | Ao trocar a tarefa ativa, exigir “razão de troca” (dropdown: urgência real, bloqueio, energia caiu, interrupção externa) e registrar como dado de metacognição/analytics | Funcional |    ⬜     |    ⬜    |   ⬜    | ⬜  |
-| 20  | Botão “Começar em 2 minutos”: criar automaticamente um micro-passinho (≤2 min) e iniciar um timer curto para reduzir fricção de início                                   | Funcional |    ⬜     |    ⬜    |   ⬜    | ⬜  |
-| 21  | “Modo hoje minimalista”: limitar a lista “Hoje” a no máximo 7 itens, com overflow colapsado                                                                              | Funcional |    ⬜     |    ⬜    |   ⬜    | ⬜  |
-| 22  | Ao abrir a agenda do dia, sugerir automaticamente 1–3 blocos de execução (timebox) baseado em energia/carga (sem auto-agendar rígido)                                    | Funcional |    ⬜     |    ⬜    |   ⬜    | ⬜  |
-
----
-
-## 🛡️ Fase 3.5 - Refatoração & Interface RPG Diegética (Frontend)
+## 🛡️ Fase 4 - Refatoração & Interface RPG Diegética (Frontend)
 
 > **Status:** 🟡 34.7% Em Progresso (33/95 concluídos)  
 > **Objetivo:** Refatorar a interface do SecondBrain para uma experiência diegética imersiva de RPG Medieval Fantástico ("Guilda de Aventureiros"), com suporte a 3 camadas de UI (_Depth Stacking_), responsividade fluida (<960px), componentes físicos atomic e efeitos visuais/sonoros em 60 FPS.  
@@ -498,7 +430,75 @@
 
 ---
 
-## 🎮 Fase 4 - Gamificação Essencial (Manual-First)
+## 🎯 Fase 5 - Produtividade Avançada
+
+> **Objetivo:** Reduzir fricção e aumentar consistência no dia a dia, transformando backlog → plano executável. A fase foca em **planejamento visual**, **captura rápida**, **busca/organização**, **priorização assistida** e **foco**, mantendo a criação e execução de tarefas rápidas e previsíveis.
+
+### Planejamento Visual (Calendário/Agenda)
+
+| #   | Requisito                                                                    | Tipo      | Protótipo | Frontend | Backend | QA  |
+| --- | ---------------------------------------------------------------------------- | --------- | :-------: | :------: | :-----: | :-: |
+| 1   | Visualizar tarefas com prazo em formato de calendário (mês/semana/dia)       | Funcional |    ⬜     |    ⬜    |   ⬜    | ⬜  |
+| 2   | Reagendar prazo diretamente no calendário (drag & drop ou edição rápida)     | Funcional |    ⬜     |    ⬜    |   ⬜    | ⬜  |
+| 3   | Visualizar “Hoje” e “Próximos 7 dias” como lista/agenda para execução rápida | Funcional |    ⬜     |    ⬜    |   ⬜    | ⬜  |
+
+### Captura Rápida e Templates (Velocidade)
+
+| #   | Requisito                                                                                | Tipo          | Protótipo | Frontend | Backend | QA  |
+| --- | ---------------------------------------------------------------------------------------- | ------------- | :-------: | :------: | :-----: | :-: |
+| 4   | Criar tarefa em 1 linha (Quick Add) com preenchimento automático de campos padrão        | Não Funcional |    ⬜     |    ⬜    |   ⬜    | ⬜  |
+| 5   | Interpretar texto do Quick Add (ex.: data “amanhã”, prioridade “alta”) e sugerir valores | Funcional     |    ⬜     |    ⬜    |   ⬜    | ⬜  |
+| 6   | Templates de tarefas/projetos/hábitos (campos e subtarefas padrão) para repetir rotinas  | Funcional     |    ⬜     |    ⬜    |   ⬜    | ⬜  |
+
+### Busca, Filtros e Organização
+
+| #   | Requisito                                                                                | Tipo      | Protótipo | Frontend | Backend | QA  |
+| --- | ---------------------------------------------------------------------------------------- | --------- | :-------: | :------: | :-----: | :-: |
+| 7   | Busca full-text em tarefas e projetos (nome e descrição)                                 | Funcional |    ⬜     |    ⬜    |   ⬜    | ⬜  |
+| 8   | Filtros e ordenação por prazo, prioridade, status, dificuldade e projeto                 | Funcional |    ⬜     |    ⬜    |   ⬜    | ⬜  |
+| 9   | “Visões salvas” (filtros favoritos) para rotinas (ex.: “Hoje”, “Esta semana”, “Backlog”) | Funcional |    ⬜     |    ⬜    |   ⬜    | ⬜  |
+
+### Priorização e Planejamento Assistidos (Inteligência)
+
+| #   | Requisito                                                                             | Tipo      | Protótipo | Frontend | Backend | QA  |
+| --- | ------------------------------------------------------------------------------------- | --------- | :-------: | :------: | :-----: | :-: |
+| 10  | Gerar sugestão de “Top tarefas do dia” considerando prazos, urgência e esforço        | Funcional |    ⬜     |    ⬜    |   ⬜    | ⬜  |
+| 11  | Identificar tarefas em risco (prazo próximo/atrasadas) e sugerir replanejamento       | Funcional |    ⬜     |    ⬜    |   ⬜    | ⬜  |
+| 12  | Aplicar limite de WIP (trabalho em progresso) com alerta quando exceder o foco do dia | Funcional |    ⬜     |    ⬜    |   ⬜    | ⬜  |
+
+### Foco e Execução
+
+| #   | Requisito                                                                   | Tipo      | Protótipo | Frontend | Backend | QA  |
+| --- | --------------------------------------------------------------------------- | --------- | :-------: | :------: | :-----: | :-: |
+| 13  | Pomodoro embutido com seleção de tarefa ativa e registro simples de sessões | Funcional |    ⬜     |    ⬜    |   ⬜    | ⬜  |
+| 14  | “Modo foco” (reduzir distrações na UI) durante sessão de execução           | Funcional |    ⬜     |    ⬜    |   ⬜    | ⬜  |
+
+### Notificações e Rotinas
+
+| #   | Requisito                                                                                        | Tipo      | Protótipo | Frontend | Backend | QA  |
+| --- | ------------------------------------------------------------------------------------------------ | --------- | :-------: | :------: | :-----: | :-: |
+| 15  | Notificações para tarefas próximas do prazo (configurável)                                       | Funcional |    ⬜     |    ⬜    |   ⬜    | ⬜  |
+| 16  | Detectar inatividade prolongada e sugerir retomada do foco (configurável)                        | Funcional |    ⬜     |    ⬜    |   ⬜    | ⬜  |
+| 17  | Rotina de revisão semanal: checklist de revisão (limpar backlog, reagendar, encerrar pendências) | Funcional |    ⬜     |    ⬜    |   ⬜    | ⬜  |
+
+### Requisitos Não Funcionais (Fase 5)
+
+| #   | Requisito                                                                          | Tipo          | Protótipo | Frontend | Backend | QA  |
+| --- | ---------------------------------------------------------------------------------- | ------------- | :-------: | :------: | :-----: | :-: |
+| 18  | Compatibilidade com dispositivos móveis e desktop (layout e interações principais) | Não Funcional |    ⬜     |    ⬜    |   ⬜    | ⬜  |
+
+### Novos requisitos propostos (cognição e produtividade)
+
+| #   | Requisito                                                                                                                                                                | Tipo      | Protótipo | Frontend | Backend | QA  |
+| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------- | :-------: | :------: | :-----: | :-: |
+| 19  | Ao trocar a tarefa ativa, exigir “razão de troca” (dropdown: urgência real, bloqueio, energia caiu, interrupção externa) e registrar como dado de metacognição/analytics | Funcional |    ⬜     |    ⬜    |   ⬜    | ⬜  |
+| 20  | Botão “Começar em 2 minutos”: criar automaticamente um micro-passinho (≤2 min) e iniciar um timer curto para reduzir fricção de início                                   | Funcional |    ⬜     |    ⬜    |   ⬜    | ⬜  |
+| 21  | “Modo hoje minimalista”: limitar a lista “Hoje” a no máximo 7 itens, com overflow colapsado                                                                              | Funcional |    ⬜     |    ⬜    |   ⬜    | ⬜  |
+| 22  | Ao abrir a agenda do dia, sugerir automaticamente 1–3 blocos de execução (timebox) baseado em energia/carga (sem auto-agendar rígido)                                    | Funcional |    ⬜     |    ⬜    |   ⬜    | ⬜  |
+
+---
+
+## 🎮 Fase 6 - Gamificação Essencial (Manual-First)
 
 > **Objetivo:** Introduzir um loop de gameplay **sem depender de monitoramento automático**: check-ins manuais, recompensas, streaks e mecânicas “gentis” para aumentar consistência sem frustração. A fase funciona 100% mesmo sem desktop/OS.
 
@@ -574,10 +574,10 @@
 
 ---
 
-## 🛠️ Fase 4.5 - Feature Freeze II: Arquitetura de Eventos, Desacoplamento DDD e CQRS
+## 🛠️ Fase 7 - Feature Freeze II: Arquitetura de Eventos, Desacoplamento DDD e CQRS
 
-> **Status:** Planejado para execução após Fase 4  
-> **Objetivo:** Interromper temporariamente a inclusão de novas funcionalidades para desacoplar a arquitetura monolítica acumulada. Implementar Arquitetura Orientada a Eventos (EDA), segmentação de Bounded Contexts nos schemas de dados e projeções de leitura otimizadas (CQRS) antes de iniciar os Agentes Autônomos das Fases 5+.  
+> **Status:** Planejado para execução após Fase 6  
+> **Objetivo:** Interromper temporariamente a inclusão de novas funcionalidades para desacoplar a arquitetura monolítica acumulada. Implementar Arquitetura Orientada a Eventos (EDA), segmentação de Bounded Contexts nos schemas de dados e projeções de leitura otimizadas (CQRS) antes de iniciar os Agentes Autônomos das Fases 8+.  
 > **Duração Estimada:** 3-4 sprints (~140h)
 
 ### Arquitetura Orientada a Eventos (EDA)
@@ -603,7 +603,7 @@
 | 7   | Criar projeções de leitura assíncronas denormalizadas para Dashboards (Gantt, PERT, X-Matrix, Gamificação) eliminando cálculos síncronos em requisições GET | Performance |    ⬜     |    ⬜    |   ⬜    | ⬜  |
 | 8   | Implementar invalidação de cache seletivo via Redis e streaming de visões atualizadas via Server-Sent Events (SSE)                                          | Arquitetura |    ⬜     |    ⬜    |   ⬜    | ⬜  |
 
-### Pipeline de Agentes de IA & Guardrails (Preparação para Fase 5)
+### Pipeline de Agentes de IA & Guardrails (Preparação para Fase 8)
 
 | #   | Requisito                                                                                                         | Tipo           | Protótipo | Frontend | Backend | QA  |
 | --- | ----------------------------------------------------------------------------------------------------------------- | -------------- | :-------: | :------: | :-----: | :-: |
@@ -621,7 +621,7 @@
 
 ---
 
-## 🤖 Fase 5 - Criação Estratégica de Projetos com Agente de IA
+## 🤖 Fase 8 - Criação Estratégica de Projetos com Agente de IA
 
 > **Objetivo:** Transformar o LLM num Cientista Autônomo e Mentor que não apenas divide tarefas, mas executa uma pesquisa estruturada e ativa de mercado (potencializada por Deep Research Pro e Gemini Embedding 2), oferecendo trilhas de conhecimento e dados reais (benchmarking) antes do início da jornada no Second Brain.
 
@@ -651,7 +651,7 @@
 
 ---
 
-## 🧭 Fase 6 - Rotina Invisível, Âncoras e Desligamento (Anti-Tábula Rasa)
+## 🧭 Fase 9 - Rotina Invisível, Âncoras e Desligamento (Anti-Tábula Rasa)
 
 > **Objetivo:** Corrigir a “Falácia da Tábula Rasa”: o dia **não** começa com 24h em branco. Ele já nasce com grande parte do orçamento comprometido (aulas, deslocamento, alimentação, sono, manutenção). Esta fase adiciona mecânicas para **planejar capacidade real**, inserir hábitos por **ancoragem (habit stacking)**, proteger blocos do **Maker’s Schedule (timeboxing)** e encerrar o dia com o ritual da **Taverna (Save/Shutdown)**.
 
@@ -682,9 +682,9 @@
 | --- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- | :-------: | :------: | :-----: | :-: |
 | 12  | Criar “Bloco Maker” como uma sessão de execução com **timebox** (ex.: 60/90/120 min) vinculada a **1 tarefa**                                                                                   | Funcional |    ⬜     |    ⬜    |   ⬜    | ⬜  |
 | 13  | Durante o Bloco Maker, desencorajar alternância: trocar a tarefa ativa deve exigir confirmação (custo de troca/Resíduo de Atenção)                                                              | Funcional |    ⬜     |    ⬜    |   ⬜    | ⬜  |
-| 14  | Registrar interrupções (manual-first, com integração opcional ao Guardião do OS da Fase 10) e aplicar uma regra de “Custo da Interrupção” (ex.: cooldown sugerido de 25 min para retomar fluxo) | Funcional |    ⬜     |    ⬜    |   ⬜    | ⬜  |
+| 14  | Registrar interrupções (manual-first, com integração opcional ao Guardião do OS da Fase 13) e aplicar uma regra de “Custo da Interrupção” (ex.: cooldown sugerido de 25 min para retomar fluxo) | Funcional |    ⬜     |    ⬜    |   ⬜    | ⬜  |
 | 15  | Diferenciar visualmente Blocos Maker (deep work) de janelas curtas tipo “Manager” (tarefas administrativas) para reduzir frustração por fragmentação                                            | Funcional |    ⬜     |    ⬜    |   ⬜    | ⬜  |
-| 16  | Ao encerrar um Bloco Maker, registrar rapidamente: progresso, próximo passo e impedimento (se houver), alimentando o debriefing/metacognição (Fase 11)                                          | Funcional |    ⬜     |    ⬜    |   ⬜    | ⬜  |
+| 16  | Ao encerrar um Bloco Maker, registrar rapidamente: progresso, próximo passo e impedimento (se houver), alimentando o debriefing/metacognição (Fase 14)                                          | Funcional |    ⬜     |    ⬜    |   ⬜    | ⬜  |
 
 ### Boundary Management: “A Taverna” e o Ritual de Save (Shutdown)
 
@@ -718,9 +718,9 @@
 
 ---
 
-## 🧙 Fase 7 - Narrativa e Motor RPG (SRS)
+## 🧙 Fase 10 - Narrativa e Motor RPG (SRS)
 
-> **Objetivo:** Transformar tarefas e projetos em um loop de gameplay consistente (dungeons, bosses, estados de combate, buffs/debuffs), com requisitos técnicos claros (workers assíncronos, FSM, WebSockets, cron jobs) e integração com o sistema de energia/recuperação (Fase 11) para não virar "if/else" nem travar a UI.
+> **Objetivo:** Transformar tarefas e projetos em um loop de gameplay consistente (dungeons, bosses, estados de combate, buffs/debuffs), com requisitos técnicos claros (workers assíncronos, FSM, WebSockets, cron jobs) e integração com o sistema de energia/recuperação (Fase 14) para não virar "if/else" nem travar a UI.
 
 ### 1) O "Gerador de Masmorras" (LLM Procedural Generation)
 
@@ -754,13 +754,13 @@
 | 16  | Se faltar menos de 24h, usar `Threat_Level` para drenar "Sanidade" e disparar notificação push severa ("O Golem está em fúria! Defenda-se!") | Funcional     |    ⬜     |    ⬜    |   ⬜    | ⬜  |
 | 17  | Notificações push devem ser configuráveis (opt-in) e respeitar privacidade/quiet hours                                                       | Não Funcional |    ⬜     |    ⬜    |   ⬜    | ⬜  |
 
-### 4) Integração com Energia do Personagem (dependência da Fase 11)
+### 4) Integração com Energia do Personagem (dependência da Fase 14)
 
 | #   | Requisito                                                                                                                                                           | Tipo          | Protótipo | Frontend | Backend | QA  |
 | --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------- | :-------: | :------: | :-----: | :-: |
-| 18  | O motor RPG deve **consumir** (read-only) o estado de Energia/Mana/Sanidade calculado na Fase 11, sem reimplementar ingestão biométrica nesta fase                  | Não Funcional |    ⬜     |    ⬜    |   ⬜    | ⬜  |
+| 18  | O motor RPG deve **consumir** (read-only) o estado de Energia/Mana/Sanidade calculado na Fase 14, sem reimplementar ingestão biométrica nesta fase                  | Não Funcional |    ⬜     |    ⬜    |   ⬜    | ⬜  |
 | 19  | A Energia/Stamina deve influenciar o combate: stamina baixa reduz janela de `FLOW_STATE`, aumenta chance de `INTERRUPTED` e sugere pausa/recuperação                | Funcional     |    ⬜     |    ⬜    |   ⬜    | ⬜  |
-| 20  | Fallback sem biometria: quando o usuário definir energia manualmente (Fase 11), o combate deve continuar funcional sem degradar para "travado"                      | Funcional     |    ⬜     |    ⬜    |   ⬜    | ⬜  |
+| 20  | Fallback sem biometria: quando o usuário definir energia manualmente (Fase 14), o combate deve continuar funcional sem degradar para "travado"                      | Funcional     |    ⬜     |    ⬜    |   ⬜    | ⬜  |
 | 21  | Expor snapshot versionado do status do personagem (Energia/Mana/Sanidade/buffs) para o frontend e para eventos via WebSocket, evitando expor dados brutos sensíveis | Não Funcional |    ⬜     |    ⬜    |   ⬜    | ⬜  |
 
 ### 5) Classes de Personagem (Design Patterns no Backend)
@@ -781,7 +781,7 @@
 | 28  | Tarefas críticas como "Chefes de Fase" que bloqueiam progresso                                                              | Funcional |    ⬜     |    ⬜    |   ⬜    | ⬜  |
 | 29  | Tela da guilda com elementos visuais dinâmicos                                                                              | Funcional |    ⬜     |    ⬜    |   ⬜    | ⬜  |
 | 30  | "Diário de aventuras" visual das missões completadas                                                                        | Funcional |    ⬜     |    ⬜    |   ⬜    | ⬜  |
-| 31  | Integrar streaks e recompensas de consistência já definidas na Fase 4 ao contexto narrativo (sem duplicar lógica de streak) | Funcional |    ⬜     |    ⬜    |   ⬜    | ⬜  |
+| 31  | Integrar streaks e recompensas de consistência já definidas na Fase 6 ao contexto narrativo (sem duplicar lógica de streak) | Funcional |    ⬜     |    ⬜    |   ⬜    | ⬜  |
 | 32  | Escolha narrativa ao concluir projeto grande                                                                                | Funcional |    ⬜     |    ⬜    |   ⬜    | ⬜  |
 | 33  | NPC "Bardo" que escreve crônica semanal baseada nas tarefas                                                                 | Funcional |    ⬜     |    ⬜    |   ⬜    | ⬜  |
 | 34  | Progresso visual (Landmark) ao invés de barra de porcentagem                                                                | Funcional |    ⬜     |    ⬜    |   ⬜    | ⬜  |
@@ -806,9 +806,9 @@
 
 ---
 
-## 📡 Fase 8 - Monitoramento e Interpretação Assistida (IA)
+## 📡 Fase 11 - Monitoramento e Interpretação Assistida (IA)
 
-> **Objetivo:** Adicionar monitoramento (manual + automatizável), classificação assistida por IA e intervenções leves — **sem** tornar o sistema dependente do desktop/OS. Integrações com Guardião do OS (Fase 10) entram como fonte opcional de sinais.
+> **Objetivo:** Adicionar monitoramento (manual + automatizável), classificação assistida por IA e intervenções leves — **sem** tornar o sistema dependente do desktop/OS. Integrações com Guardião do OS (Fase 13) entram como fonte opcional de sinais.
 
 ### Controles de Monitoramento e Privacidade
 
@@ -821,7 +821,7 @@
 
 | #   | Requisito                                                                                                                                                                         | Tipo      | Protótipo | Frontend | Backend | QA  |
 | --- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- | :-------: | :------: | :-----: | :-: |
-| 3   | Registrar “sinais de contexto” como texto **sanitizado** (ex.: rótulo/descrição curta), coletados via check-in manual e/ou por integração opcional com o Guardião do OS (Fase 10) | Funcional |    ⬜     |    ⬜    |   ⬜    | ⬜  |
+| 3   | Registrar “sinais de contexto” como texto **sanitizado** (ex.: rótulo/descrição curta), coletados via check-in manual e/ou por integração opcional com o Guardião do OS (Fase 13) | Funcional |    ⬜     |    ⬜    |   ⬜    | ⬜  |
 
 ### Interpretação por IA (Classificação) + Feedback
 
@@ -847,7 +847,7 @@
 
 ---
 
-## 🧩 Fase 9 - Arquitetura Cognitiva e Psicologia Comportamental
+## 🧩 Fase 12 - Arquitetura Cognitiva e Psicologia Comportamental
 
 > **Objetivo:** Estruturar o app para respeitar limites cognitivos e reforçar motivação sustentável (competência, autonomia), engajamento saudável (Zeigarnik/Hook) e foco (Flow) — reduzindo fadiga mental e aumentando consistência.
 
@@ -857,7 +857,7 @@
 | --- | -------------------------------------------------------------------------------------------------------------------------------------- | ------------- | :-------: | :------: | :-----: | :-: |
 | 1   | Limitar a quantidade de itens simultâneos na tela (padrão: 7±2) e priorizar exibição do “próximo passo”                                | Não Funcional |    ⬜     |    ⬜    |   ⬜    | ⬜  |
 | 2   | Aplicar _Chunking_ automaticamente em projetos grandes: agrupar tarefas em sub-etapas e usar disclosure progressivo                    | Funcional     |    ⬜     |    ⬜    |   ⬜    | ⬜  |
-| 3   | Evoluir o “Modo foco” da Fase 3 para um “Modo execução” minimalista (livre de distrações) para uma tarefa ativa, com foco no essencial | Funcional     |    ⬜     |    ⬜    |   ⬜    | ⬜  |
+| 3   | Evoluir o “Modo foco” da Fase 5 para um “Modo execução” minimalista (livre de distrações) para uma tarefa ativa, com foco no essencial | Funcional     |    ⬜     |    ⬜    |   ⬜    | ⬜  |
 | 4   | Reduzir “atenção dividida”: evitar que o usuário precise alternar entre áreas distantes para entender/agir em uma tarefa               | Não Funcional |    ⬜     |    ⬜    |   ⬜    | ⬜  |
 | 5   | Remover redundâncias e fricções: textos objetivos, campos consistentes e ações principais sempre no mesmo local                        | Não Funcional |    ⬜     |    ⬜    |   ⬜    | ⬜  |
 
@@ -876,7 +876,7 @@
 | --- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- | :-------: | :------: | :-----: | :-: |
 | 10  | “Tarefas Ativas”: tarefas em andamento devem permanecer visíveis até resolução, com status claro                                                               | Funcional |    ⬜     |    ⬜    |   ⬜    | ⬜  |
 | 11  | Aplicar o Efeito Zeigarnik de forma útil: destacar pendências iniciadas/interrompidas e sugerir fechamento                                                     | Funcional |    ⬜     |    ⬜    |   ⬜    | ⬜  |
-| 12  | Recompensa variável ao concluir tarefas (magnitude/celebração/pontos), preferencialmente utilizando o sistema de recompensas da Fase 4, com opção de desativar | Funcional |    ⬜     |    ⬜    |   ⬜    | ⬜  |
+| 12  | Recompensa variável ao concluir tarefas (magnitude/celebração/pontos), preferencialmente utilizando o sistema de recompensas da Fase 6, com opção de desativar | Funcional |    ⬜     |    ⬜    |   ⬜    | ⬜  |
 | 13  | “Valor armazenado”: diário/histórico visual do que foi feito (linha do tempo, vitórias e aprendizados)                                                         | Funcional |    ⬜     |    ⬜    |   ⬜    | ⬜  |
 | 14  | O app deve ficar mais útil com o uso: preferências e padrões aprendidos (com transparência e controle do usuário)                                              | Funcional |    ⬜     |    ⬜    |   ⬜    | ⬜  |
 
@@ -887,7 +887,7 @@
 | 15  | Detectar tarefas “ansiosas” (muito difíceis/grandes) e sugerir decomposição em passos menores com metas claras                                | Funcional |    ⬜     |    ⬜    |   ⬜    | ⬜  |
 | 16  | Detectar tarefas “entediantes” (muito triviais) e sugerir agrupamento/batch ou micro-recompensas                                              | Funcional |    ⬜     |    ⬜    |   ⬜    | ⬜  |
 | 17  | Metas claras e feedback rápido: cada tarefa pode ter critérios de sucesso visíveis durante a execução                                         | Funcional |    ⬜     |    ⬜    |   ⬜    | ⬜  |
-| 18  | Evoluir o Pomodoro da Fase 3 para “sessões de foco guiadas”: escolher 1 tarefa por vez, confirmar intenção e registrar conclusão/impedimentos | Funcional |    ⬜     |    ⬜    |   ⬜    | ⬜  |
+| 18  | Evoluir o Pomodoro da Fase 5 para “sessões de foco guiadas”: escolher 1 tarefa por vez, confirmar intenção e registrar conclusão/impedimentos | Funcional |    ⬜     |    ⬜    |   ⬜    | ⬜  |
 
 ### Ferramentas de Foco
 
@@ -911,7 +911,7 @@
 
 ---
 
-## 🧠 Fase 10 - IA Autônoma, Memória Semântica e Guardião do OS
+## 🛡️ Fase 13 - IA Autônoma, Memória Semântica e Guardião do OS
 
 > **Objetivo:** Evoluir o SecondBrain de “app com IA” para um **sistema agentivo** com memória (RAG) e automação segura, capaz de planejar, lembrar contexto, adaptar-se ao usuário e intervir contra distrações — com controle, privacidade e _feature flags_.
 
@@ -988,7 +988,7 @@
 
 ---
 
-## 🧠 Fase 11 - Espelho Metacognitivo, Energia Biológica e Game Master Preditivo
+## 🧬 Fase 14 - Espelho Metacognitivo, Energia Biológica e Game Master Preditivo
 
 > **Objetivo:** Substituir o “app-capataz” por um sistema que **investiga gargalos**, **calibra energia** (HRV/Sono/Estresse + RPE) e **ajusta o plano** para evitar esgotamento — com gamificação (Mana/Rested XP) e privacidade por padrão.
 
@@ -1076,7 +1076,7 @@
 | 43  | **CTL/ATL/TSB (analogia cognitiva)**: modelar carga crônica, fadiga aguda e balanço de estresse para prever risco de burnout e recomendar substituições (work-heavy → recuperação ativa)                                 | Funcional     |    ⬜     |    ⬜    |   ⬜    | ⬜  |
 | 44  | **Detecção de estresse multimodal (opt-in)**: usar padrões de sono/biometria e sinais semânticos (ex.: tags/diário/check-ins) para rebaixar carga sugerida e priorizar manutenção/recuperação com transparência e bypass | Não Funcional |    ⬜     |    ⬜    |   ⬜    | ⬜  |
 
-## 🏰 Fase 12 - Polimento e Segurança
+## 💎 Fase 15 - Polimento e Segurança
 
 ### Usabilidade
 
@@ -1110,7 +1110,7 @@
 
 ---
 
-## 📚 Fase 13 - Agentes Tutores e Aprendizado Acelerado (Estudos Sem Fricção)
+## 🎓 Fase 16 - Agentes Tutores e Aprendizado Acelerado (Estudos Sem Fricção)
 
 > **Objetivo:** Facilitar a aprendizagem autônoma e acelerada por meio de agentes tutores inteligentes baseados em IA. A IA atua pesquisando profundamente sobre o tema de estudo na web (Deep Research), gerando roteiros de estudo (roadmaps) personalizados e calibrados, disponibilizando curadoria de conteúdos sem fricção (artigos, vídeos, resumos), gerando exercícios ativos (Active Recall, Flashcards, SRS) e oferecendo suporte contínuo via chat para tirar dúvidas, além de detectar e intervir ativamente em bloqueios cognitivos.
 
@@ -1130,7 +1130,7 @@
 | 10  | **Chat Integrado com o Tutor**: Canal de comunicação contínuo associado ao projeto de estudos para tirar dúvidas de sintaxe, teoria ou conceitos específicos                                                                  | Funcional     |    ⬜     |    ⬜    |   ⬜    | ⬜  |
 | 11  | **Detecção de Bloqueios e Fadiga de Estudo**: Identificar anomalias cognitivas (ex: tempo excessivo na mesma lição, desvio de estimativa, RPE subjetivo alto) e propor uma intervenção leve                                   | Funcional     |    ⬜     |    ⬜    |   ⬜    | ⬜  |
 | 12  | **Intervenção Tutorada Antiprocrastinação**: Oferecer alternativas personalizadas de coping ao travar, como "iniciar micro-exercício de 2 min", "analisar código de exemplo pronto" ou "fazer uma pausa ativa"                | Funcional     |    ⬜     |    ⬜    |   ⬜    | ⬜  |
-| 13  | **Painel de Progresso do Aprendizado (Skill Trees)**: Visualizar os tópicos aprendidos, proficiência estimada pela IA e progresso do aprendizado de forma gamificada, conectada às skill trees da Fase 7                      | Funcional     |    ⬜     |    ⬜    |   ⬜    | ⬜  |
+| 13  | **Painel de Progresso do Aprendizado (Skill Trees)**: Visualizar os tópicos aprendidos, proficiência estimada pela IA e progresso do aprendizado de forma gamificada, conectada às skill trees da Fase 10                     | Funcional     |    ⬜     |    ⬜    |   ⬜    | ⬜  |
 | 14  | **Modo de Estudo Minimalista (Foco Livre de Distrações)**: Interface dedicada de leitura/estudo que oculta o resto do sistema e exibe apenas o texto de estudo, o cronômetro (Pomodoro) e a caixa de notas rápidas            | Usabilidade   |    ⬜     |    ⬜    |   ⬜    | ⬜  |
 | 15  | **Privacidade e Funcionamento Local**: Permitir ao usuário exportar seu histórico de estudos e logs de tutoria em Markdown e escolher quais dados de pesquisa e biografia de estudos enviar para a IA                         | Não Funcional |    ⬜     |    ⬜    |   ⬜    | ⬜  |
 
@@ -1140,6 +1140,8 @@
 
 | Data       | Descrição                                                                                                                                                                                                                                |
 | ---------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 06/09/2026 | Inversão da Fase 4 e Fase 5: Fase 4 agora é "Refatoração & Interface RPG (Frontend)" e Fase 5 agora é "Produtividade Avançada", atualizando tabela de resumo, ordem de seções e referências cruzadas.                                    |
+| 06/09/2026 | Reorganização da numeração de fases para números inteiros (Fase 0 a Fase 16), convertendo fases intermediárias decimais (2.5, 3.5 e 4.5) em fases inteiras sequenciais (Fases 3, 5 e 7) e sincronizando todas as referências cruzadas.   |
 | 06/07/2026 | Adicionada Fase 13 - Agentes Tutores e Aprendizado Acelerado (Estudos Sem Fricção) contendo 15 requisitos detalhados para tutoria inteligente baseada em IA e redução de fricção.                                                        |
 | 18/05/2026 | Requisitos do relatório analítico convertidos e inseridos nas fases 4 (Octalysis/anti-gaming), 7 (skill trees/meta-progressão) e 10 (state-driven generation/knowledge graph/agendamento procedural) + atualização dos totais no resumo. |
 | 13/05/2026 | Adicionados requisitos de Periodização da Produtividade/Autorregulação (readiness, DAPRE, CTL/ATL/TSB) na Fase 11 e de RL/Nivelamento Dinâmico (Flow) na Fase 10.                                                                        |
