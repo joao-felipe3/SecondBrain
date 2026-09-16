@@ -185,8 +185,8 @@
     "semantic_hash": ""
   },
   "Backend/src/ai/services/tasks/suggestions-ai.service.ts": {
-    "mtime": 1789444841.2056518,
-    "ast_hash": "62e9745627bb3e7ae35f44ea301c2b0e",
+    "mtime": 1787246089.8666267,
+    "ast_hash": "8c5084004391a9bd1f2a9928d25b268e",
     "semantic_hash": ""
   },
   "Backend/src/ai/services/wiki/ai-wiki.service.spec.ts": {
@@ -1360,8 +1360,8 @@
     "semantic_hash": ""
   },
   "Backend/tests/unit/ai/services/tasks/drafts-ai.service.spec.ts": {
-    "mtime": 1789527332.867275,
-    "ast_hash": "abff7b4e175aad2b5b5313477c408a7d",
+    "mtime": 1788319017.3096473,
+    "ast_hash": "cd79982950e050481af20f3bdef1f38c",
     "semantic_hash": ""
   },
   "Backend/tests/unit/ai/services/tasks/pert-ai.service.spec.ts": {
@@ -1370,8 +1370,8 @@
     "semantic_hash": ""
   },
   "Backend/tests/unit/ai/services/tasks/suggestions-ai.service.spec.ts": {
-    "mtime": 1789444814.902526,
-    "ast_hash": "ce3d09d3d08f635850340217d8d00bb0",
+    "mtime": 1784988360.699576,
+    "ast_hash": "dd8708fc84c6bf2ea6c0b423ce991062",
     "semantic_hash": ""
   },
   "Backend/tests/unit/ai/services/wiki/ai-wiki.service.spec.ts": {
@@ -1540,8 +1540,8 @@
     "semantic_hash": ""
   },
   "Backend/tests/unit/projects/services/wbs/conversion/task-conversion-helper.service.spec.ts": {
-    "mtime": 1789527333.2116995,
-    "ast_hash": "f078870308a96d543845705ab5ff4cca",
+    "mtime": 1784917146.4165728,
+    "ast_hash": "1cd5e3e0b2ca28ad9a8e58bd338b6031",
     "semantic_hash": ""
   },
   "Backend/tests/unit/projects/services/wbs/conversion/wbs-conversion-orchestrator.service.spec.ts": {
@@ -1660,8 +1660,8 @@
     "semantic_hash": ""
   },
   "Backend/tests/unit/tasks/controllers/cpm.controller.spec.ts": {
-    "mtime": 1789527333.4576106,
-    "ast_hash": "4ea7a98d06ce18ad906550cb77ba0c7f",
+    "mtime": 1788489699.806495,
+    "ast_hash": "a3a900bf7e053c2cbac475e0bd1ed4db",
     "semantic_hash": ""
   },
   "Backend/tests/unit/tasks/controllers/habits.controller.spec.ts": {

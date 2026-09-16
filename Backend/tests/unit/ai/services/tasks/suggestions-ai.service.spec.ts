@@ -94,5 +94,120 @@ describe('SuggestionsAiService', () => {
       expect(result.isFallback).toBe(true);
       expect(result.suggestions.length).toBe(3);
     });
+
+    it('should return model name from gemini executor', () => {
+      mockGeminiService.getModelName = jest.fn().mockReturnValue('gemini-2.5-flash');
+      expect(service.getModelName()).toBe('gemini-2.5-flash');
+    });
+
+    it('should handle generateCompletionFeedback with non-string fields and non-string raw input', async () => {
+      mockGeminiService.generateContent.mockResolvedValueOnce(
+        JSON.stringify({
+          praise: null,
+          learning: 123,
+          nextStep: undefined,
+          finalText: 456,
+        }),
+      );
+
+      const feedback = await service.generateCompletionFeedback({ taskName: 'T' });
+      const parsed = JSON.parse(feedback);
+      expect(parsed.praise).toBe('');
+      expect(parsed.learning).toBe('');
+      expect(parsed.finalText).toBe('');
+
+      // When raw is non-string or fails to parse
+      mockGeminiService.generateContent.mockResolvedValueOnce(null);
+      const feedbackNull = await service.generateCompletionFeedback({ taskName: 'T' });
+      const parsedNull = JSON.parse(feedbackNull);
+      expect(parsedNull.finalText).toBe('');
+    });
+
+    it('should handle generateCompletionFeedbackStructured with fallback keys and without json mode support', async () => {
+      mockGeminiService.supportsJsonMode.mockReturnValue(false);
+      mockGeminiService.generateContent.mockResolvedValueOnce(
+        JSON.stringify({
+          praise: 'Celebrated fallback',
+          learning: 'Validated fallback',
+          nextStep: 'Next step fallback',
+          finalText: 'Suggestion fallback',
+        }),
+      );
+
+      const struct = await service.generateCompletionFeedbackStructured('prompt');
+      expect(struct.celebration).toBe('Celebrated fallback');
+      expect(struct.validation).toBe('Validated fallback');
+      expect(struct.question).toBe('Next step fallback');
+      expect(struct.suggestion).toBe('Suggestion fallback');
+    });
+
+    it('should handle generateNextSteps with items missing titles and when json mode is disabled', async () => {
+      mockGeminiService.supportsJsonMode.mockReturnValue(false);
+      mockGeminiService.generateContent.mockResolvedValueOnce(
+        JSON.stringify([
+          { title: 'Step 1', description: null },
+          { title: '', description: 'No title' },
+          { title: 123, description: 'Non-string title' },
+        ]),
+      );
+
+      const steps = await service.generateNextSteps({ taskName: 'Task' });
+      expect(steps.length).toBe(1);
+      expect(steps[0].title).toBe('Step 1');
+      expect(steps[0].description).toBe('');
+
+      // When parsed is an object instead of array
+      mockGeminiService.generateContent.mockResolvedValueOnce(JSON.stringify({ notAnArray: true }));
+      const fallbackSteps = await service.generateNextSteps({ taskName: 'Task Object' });
+      expect(fallbackSteps[0].title).toContain('Task Object');
+    });
+
+    it('should handle getTaskSuggestions when AI returns non-array and with item fallbacks', async () => {
+      // Non-array returns fallback
+      mockGeminiService.generateContent.mockResolvedValueOnce(JSON.stringify({}));
+      const resFallback = await service.getTaskSuggestions({ projectName: '' });
+      expect(resFallback.isFallback).toBe(true);
+      expect(resFallback.suggestions[0].name).toContain('Projeto');
+
+      // Array with missing/invalid fields
+      mockGeminiService.generateContent.mockResolvedValueOnce(
+        JSON.stringify([
+          {
+            name: null,
+            deadline: '2026-12-31',
+            pomodoros: 'invalid',
+            priority: 'invalid',
+            difficulty: 'invalid',
+            selected: 1,
+          },
+        ]),
+      );
+
+      const resParsed = await service.getTaskSuggestions({ projectName: 'Custom Proj' });
+      expect(resParsed.isFallback).toBe(false);
+      expect(resParsed.suggestions[0].name).toBe('');
+      expect(resParsed.suggestions[0].deadline).toBe('2026-12-31');
+      expect(resParsed.suggestions[0].pomodoros).toBe(0);
+      expect(resParsed.suggestions[0].selected).toBe(true);
+    });
+
+    it('should test safeParseJson fallback mechanisms', () => {
+      const safeParse = (service as any).safeParseJson.bind(service);
+
+      expect(safeParse('')).toBeNull();
+      expect(safeParse(null)).toBeNull();
+
+      // Markdown wrapped JSON -> extractJsonObject
+      const markdownJson = 'Here is the json:\n```json\n{"key": "value"}\n```';
+      expect(safeParse(markdownJson)).toEqual({ key: 'value' });
+
+      // Raw string with embedded array of numbers matched by regex
+      const textWithArray = 'Leading text [1, 2, 3] trailing text';
+      expect(safeParse(textWithArray)).toEqual([1, 2, 3]);
+
+      // String matching regex bracket but invalid json inside
+      const brokenRegex = 'Leading [ bad, json, 123 ]';
+      expect(safeParse(brokenRegex)).toBeNull();
+    });
   });
 });

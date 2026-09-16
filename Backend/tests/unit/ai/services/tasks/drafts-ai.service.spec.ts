@@ -302,5 +302,292 @@ describe('DraftsAiService', () => {
       expect(detailsList.length).toBe(2);
       expect(detailsList[0].description).toBe('d1');
     });
+
+    it('should throw error when generateDetails validation fails', async () => {
+      mockGeminiExecutor.generateContent.mockResolvedValueOnce(JSON.stringify({ invalid: true }));
+
+      await expect(
+        service.generateDetails(
+          {
+            outline: { name: 'O1' } as any,
+            targetMinutes: 60,
+            params: { project: {}, node: { name: 'N1' }, currentPath: 'path', level: 1 } as any,
+          } as any,
+          900,
+          0.15,
+        ),
+      ).rejects.toThrow('Details inválidos');
+    });
+
+    it('should throw error when generateDetailsBatch receives non-array JSON', async () => {
+      mockGeminiExecutor.generateContent.mockResolvedValueOnce(JSON.stringify({ notAnArray: true }));
+
+      await expect(
+        service.generateDetailsBatch(
+          {
+            enrichParams: {
+              outlines: [{ name: 'O1' }] as any,
+              sliceMinutes: [60],
+              params: {} as any,
+            },
+          } as any,
+          1800,
+          0.15,
+        ),
+      ).rejects.toThrow();
+    });
+
+    it('should throw error when generateDetailsBatch returns fewer items than outlines', async () => {
+      mockGeminiExecutor.generateContent.mockResolvedValueOnce(JSON.stringify([]));
+
+      await expect(
+        service.generateDetailsBatch(
+          {
+            enrichParams: {
+              outlines: [{ name: 'O1' }] as any,
+              sliceMinutes: [60],
+              params: {} as any,
+            },
+          } as any,
+          1800,
+          0.15,
+        ),
+      ).rejects.toThrow('esperado 1');
+    });
+
+    it('should throw error when generateDetailsBatch contains an invalid detail item', async () => {
+      mockGeminiExecutor.generateContent.mockResolvedValueOnce(JSON.stringify([{ invalid: 'detail' }]));
+
+      await expect(
+        service.generateDetailsBatch(
+          {
+            enrichParams: {
+              outlines: [{ name: 'O1' }] as any,
+              sliceMinutes: [60],
+              params: {} as any,
+            },
+          } as any,
+          1800,
+          0.15,
+        ),
+      ).rejects.toThrow('Details inválidos no lote');
+    });
+
+    describe('error handling, validation and retries across single pass and outlines', () => {
+      const validDraft = {
+        name: 'Valid Task',
+        description: 'Desc',
+        pomodorosPlanned: 2,
+        priority: 2,
+        difficult: 2,
+        microTaskType: 'code',
+        themeTag: 'tech',
+        contextTag: 'dev',
+        cognitiveMode: 'deep',
+        checklist: ['step 1', 'step 2'],
+        definitionOfDone: 'done',
+      };
+
+      const validOutline = {
+        name: 'Valid Outline',
+        pomodorosPlanned: 2,
+        priority: 2,
+        difficult: 2,
+        microTaskType: 'code',
+        themeTag: 'tech',
+        contextTag: 'dev',
+        cognitiveMode: 'deep',
+      };
+
+      it('should throw validation error when generateSinglePassWithoutPlan receives invalid schema', async () => {
+        mockGeminiExecutor.generateContent.mockResolvedValue(JSON.stringify([{ invalid: true }]));
+
+        await expect(
+          service.generateSinglePassWithoutPlan({ node: { name: 'N' } } as any, [60], []),
+        ).rejects.toThrow();
+      });
+
+      it('should throw error when generateSinglePassWithoutPlan item count does not match chunkMinutes', async () => {
+        mockGeminiExecutor.generateContent.mockResolvedValue(JSON.stringify([validDraft, validDraft]));
+
+        await expect(
+          service.generateSinglePassWithoutPlan({ node: { name: 'N' } } as any, [60], []),
+        ).rejects.toThrow();
+      });
+
+      it('should retry single item on json error in generateSinglePassWithoutPlan', async () => {
+        mockGeminiExecutor.generateContent
+          .mockResolvedValueOnce('{ broken json')
+          .mockResolvedValueOnce(JSON.stringify([validDraft]));
+
+        const res = await service.generateSinglePassWithoutPlan(
+          { node: { name: 'N' } } as any,
+          [60],
+          [],
+          'custom-model',
+          3000,
+          0.2,
+        );
+        expect(res.length).toBe(1);
+      });
+
+      it('should rethrow non-json error in generateSinglePassWithoutPlan', async () => {
+        mockGeminiExecutor.generateContent.mockRejectedValueOnce(new Error('Network error'));
+
+        await expect(
+          service.generateSinglePassWithoutPlan({ node: { name: 'N' } } as any, [60], []),
+        ).rejects.toThrow('Network error');
+      });
+
+      it('should throw validation error when generateSinglePassWithPlan receives invalid schema', async () => {
+        mockGeminiExecutor.generateContent.mockResolvedValue(JSON.stringify([{ bad: true }]));
+
+        await expect(
+          service.generateSinglePassWithPlan({ node: { name: 'N' }, plan: {} } as any, [60], []),
+        ).rejects.toThrow();
+      });
+
+      it('should throw error when generateSinglePassWithPlan item count does not match chunkMinutes', async () => {
+        mockGeminiExecutor.generateContent.mockResolvedValue(JSON.stringify([]));
+
+        await expect(
+          service.generateSinglePassWithPlan({ node: { name: 'N' }, plan: {} } as any, [60], []),
+        ).rejects.toThrow();
+      });
+
+      it('should split chunk on JSON error in generateSinglePassWithPlan', async () => {
+        mockGeminiExecutor.generateContent
+          .mockResolvedValueOnce('{ broken')
+          .mockResolvedValueOnce(JSON.stringify([validDraft]))
+          .mockResolvedValueOnce(JSON.stringify([{ ...validDraft, name: 'Task 2' }]));
+
+        const drafts = await service.generateSinglePassWithPlan(
+          { node: { name: 'N' }, plan: {} } as any,
+          [60, 60],
+          [],
+          'custom-model',
+          3000,
+          0.25,
+        );
+        expect(drafts.length).toBe(2);
+      });
+
+      it('should retry single item on JSON error in generateSinglePassWithPlan', async () => {
+        mockGeminiExecutor.generateContent
+          .mockResolvedValueOnce('{ broken')
+          .mockResolvedValueOnce(JSON.stringify([validDraft]));
+
+        const drafts = await service.generateSinglePassWithPlan(
+          { node: { name: 'N' }, plan: {} } as any,
+          [60],
+          [],
+        );
+        expect(drafts.length).toBe(1);
+      });
+
+      it('should rethrow non-json error in generateSinglePassWithPlan', async () => {
+        mockGeminiExecutor.generateContent.mockRejectedValueOnce(new Error('Auth failed'));
+
+        await expect(
+          service.generateSinglePassWithPlan({ node: { name: 'N' }, plan: {} } as any, [60], []),
+        ).rejects.toThrow('Auth failed');
+      });
+
+      it('should throw validation error when generateOutlineWithoutPlan receives invalid schema', async () => {
+        mockGeminiExecutor.generateContent.mockResolvedValue(JSON.stringify([{ notAnOutline: true }]));
+
+        await expect(
+          service.generateOutlineWithoutPlan({ node: { name: 'N' } } as any, [60], []),
+        ).rejects.toThrow();
+      });
+
+      it('should throw error when generateOutlineWithoutPlan item count does not match chunkMinutes', async () => {
+        mockGeminiExecutor.generateContent.mockResolvedValue(JSON.stringify([]));
+
+        await expect(
+          service.generateOutlineWithoutPlan({ node: { name: 'N' } } as any, [60], []),
+        ).rejects.toThrow();
+      });
+
+      it('should retry single item on JSON error in generateOutlineWithoutPlan', async () => {
+        mockGeminiExecutor.generateContent
+          .mockResolvedValueOnce('{ bad json')
+          .mockResolvedValueOnce(JSON.stringify([validOutline]));
+
+        const outlines = await service.generateOutlineWithoutPlan(
+          { node: { name: 'N' } } as any,
+          [60],
+          [],
+          'custom-model',
+          2000,
+          0.3,
+        );
+        expect(outlines.length).toBe(1);
+      });
+
+      it('should rethrow non-json error in generateOutlineWithoutPlan', async () => {
+        mockGeminiExecutor.generateContent.mockRejectedValueOnce(new Error('Timeout'));
+
+        await expect(
+          service.generateOutlineWithoutPlan({ node: { name: 'N' } } as any, [60], []),
+        ).rejects.toThrow('Timeout');
+      });
+
+      it('should throw validation error when generateOutlineWithPlan receives invalid schema', async () => {
+        mockGeminiExecutor.generateContent.mockResolvedValue(JSON.stringify([{ notAnOutline: true }]));
+
+        await expect(
+          service.generateOutlineWithPlan({ node: { name: 'N' }, plan: {} } as any, [60], []),
+        ).rejects.toThrow();
+      });
+
+      it('should throw error when generateOutlineWithPlan item count does not match chunkMinutes', async () => {
+        mockGeminiExecutor.generateContent.mockResolvedValue(
+          JSON.stringify([validOutline, validOutline]),
+        );
+
+        await expect(
+          service.generateOutlineWithPlan({ node: { name: 'N' }, plan: {} } as any, [60], []),
+        ).rejects.toThrow();
+      });
+
+      it('should split chunk on JSON error in generateOutlineWithPlan', async () => {
+        mockGeminiExecutor.generateContent
+          .mockResolvedValueOnce('{ broken')
+          .mockResolvedValueOnce(JSON.stringify([validOutline]))
+          .mockResolvedValueOnce(JSON.stringify([{ ...validOutline, name: 'Outline 2' }]));
+
+        const outlines = await service.generateOutlineWithPlan(
+          { node: { name: 'N' }, plan: {} } as any,
+          [60, 60],
+          [],
+          'custom-model',
+          2500,
+          0.2,
+        );
+        expect(outlines.length).toBe(2);
+      });
+
+      it('should retry single item on JSON error in generateOutlineWithPlan', async () => {
+        mockGeminiExecutor.generateContent
+          .mockResolvedValueOnce('{ broken')
+          .mockResolvedValueOnce(JSON.stringify([validOutline]));
+
+        const outlines = await service.generateOutlineWithPlan(
+          { node: { name: 'N' }, plan: {} } as any,
+          [60],
+          [],
+        );
+        expect(outlines.length).toBe(1);
+      });
+
+      it('should rethrow non-json error in generateOutlineWithPlan', async () => {
+        mockGeminiExecutor.generateContent.mockRejectedValueOnce(new Error('Quota exceeded'));
+
+        await expect(
+          service.generateOutlineWithPlan({ node: { name: 'N' }, plan: {} } as any, [60], []),
+        ).rejects.toThrow('Quota exceeded');
+      });
+    });
   });
 });

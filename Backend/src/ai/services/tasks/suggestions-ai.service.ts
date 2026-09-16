@@ -217,7 +217,12 @@ export class SuggestionsAiService {
     try {
       return JSON.parse(str);
     } catch {
-      const extracted = extractJsonObject<Record<string, unknown>>(str);
+      let extracted: Record<string, unknown> | null = null;
+      try {
+        extracted = extractJsonObject<Record<string, unknown>>(str);
+      } catch {
+        extracted = null;
+      }
       if (extracted) return extracted;
       try {
         const match = str.match(/\[[\s\S]*\]|\{[\s\S]*\}/);
