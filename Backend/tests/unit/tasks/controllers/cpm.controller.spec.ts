@@ -468,7 +468,7 @@ describe('CPMController', () => {
         maxEdgesPerLeaf: 2, // clamped to 5
         maxInterLeafEdges: 150, // clamped to 120
         includeInterLeafGates: false,
-      } as any);
+      });
       expect(resClamped.maxInterLeafEdges).toBe(120);
       expect(resClamped.includeInterLeafGates).toBe(false);
       expect(resClamped.interLeafStrategy).toBe('none');

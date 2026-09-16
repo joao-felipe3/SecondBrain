@@ -302,7 +302,7 @@ describe('TaskConversionHelperService', () => {
       await service.auditAndResolveLeafDiscrepancy({
         node,
         nodePath: 'path',
-        leafTaskDtos: [] as any,
+        leafTaskDtos: [],
         budgetHours: 2,
         generatedHoursBefore: 2,
         result,

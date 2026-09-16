@@ -1385,8 +1385,8 @@
     "semantic_hash": ""
   },
   "Backend/tests/unit/ai/utils/rolling-wave-rebalance.helper.spec.ts": {
-    "mtime": 1789527861.4019818,
-    "ast_hash": "73edf6ea90ed5d48fdc29b9ce38a2dbd",
+    "mtime": 1784905898.5078118,
+    "ast_hash": "d1f03e7765bcb752c20f09278a8c2476",
     "semantic_hash": ""
   },
   "Backend/tests/unit/app.controller.spec.ts": {
@@ -1465,8 +1465,8 @@
     "semantic_hash": ""
   },
   "Backend/tests/unit/projects/services/evm/utils/evm-curve.util.spec.ts": {
-    "mtime": 1789527823.7149637,
-    "ast_hash": "349eec65b1bb99cabf73cc1c7bef2394",
+    "mtime": 1784904794.3539941,
+    "ast_hash": "a65f11c13cd13605fef83b7efd8fa2cf",
     "semantic_hash": ""
   },
   "Backend/tests/unit/projects/services/execution/leaf-tasks-buffer.service.spec.ts": {
@@ -1510,8 +1510,8 @@
     "semantic_hash": ""
   },
   "Backend/tests/unit/projects/services/strategy/utils/rolling-wave-replan-helpers.util.spec.ts": {
-    "mtime": 1789527971.2308624,
-    "ast_hash": "75921bee4ea47842fcfd499b088f4d59",
+    "mtime": 1784904717.2202573,
+    "ast_hash": "cf0119b8c9837aac7461687bc0155838",
     "semantic_hash": ""
   },
   "Backend/tests/unit/projects/services/visualization/gantt.service.spec.ts": {
@@ -1540,8 +1540,8 @@
     "semantic_hash": ""
   },
   "Backend/tests/unit/projects/services/wbs/conversion/task-conversion-helper.service.spec.ts": {
-    "mtime": 1789527490.6140113,
-    "ast_hash": "78bb11c525925eec3e916040bd5692c6",
+    "mtime": 1789527333.2116995,
+    "ast_hash": "f078870308a96d543845705ab5ff4cca",
     "semantic_hash": ""
   },
   "Backend/tests/unit/projects/services/wbs/conversion/wbs-conversion-orchestrator.service.spec.ts": {
@@ -1660,8 +1660,8 @@
     "semantic_hash": ""
   },
   "Backend/tests/unit/tasks/controllers/cpm.controller.spec.ts": {
-    "mtime": 1789527490.6140113,
-    "ast_hash": "5dbdc4eb9339fe86162ebe4d23c96fd3",
+    "mtime": 1789527333.4576106,
+    "ast_hash": "4ea7a98d06ce18ad906550cb77ba0c7f",
     "semantic_hash": ""
   },
   "Backend/tests/unit/tasks/controllers/habits.controller.spec.ts": {
@@ -1735,8 +1735,8 @@
     "semantic_hash": ""
   },
   "Backend/tests/unit/tasks/services/dependencies/utils/cpm-analysis.utils.spec.ts": {
-    "mtime": 1789528166.3014321,
-    "ast_hash": "5e937c45f82994fa10024c4e3a4277e6",
+    "mtime": 1784936495.8691418,
+    "ast_hash": "cf3e7bd99b30c3e2b9b86360737cdf21",
     "semantic_hash": ""
   },
   "Backend/tests/unit/tasks/services/dependencies/utils/cpm-passes.utils.spec.ts": {
@@ -1775,8 +1775,8 @@
     "semantic_hash": ""
   },
   "Backend/tests/unit/tasks/services/monitoring/alerts.service.spec.ts": {
-    "mtime": 1789527883.7494974,
-    "ast_hash": "8669425430e96a7f915dc19d2553459a",
+    "mtime": 1784936496.0657995,
+    "ast_hash": "537704fc6783ce8050820e8902e1d5e9",
     "semantic_hash": ""
   },
   "Backend/tests/unit/tasks/services/monitoring/deviation-detection.service.spec.ts": {
@@ -3587,11 +3587,6 @@
   "Backend/tests/unit/tasks/services/workflow/utils/recurring.utils.spec.ts": {
     "mtime": 1788489497.1290405,
     "ast_hash": "1d3fc9c1f7e28a20b00765dfd6b799ba",
-    "semantic_hash": ""
-  },
-  "Backend/tests/unit/tasks/services/intelligence/utils/ai-suggestions.utils.spec.ts": {
-    "mtime": 1789527843.0875306,
-    "ast_hash": "99ea236d047e563b30cf6f55ee2af82d",
     "semantic_hash": ""
   }
 }
