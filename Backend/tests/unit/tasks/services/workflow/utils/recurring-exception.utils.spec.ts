@@ -26,11 +26,15 @@ describe('recurring-exception.utils', () => {
 
   describe('cleanExceptions & isRecurringDateExcluded', () => {
     it('should filter out exceptions past endDate or pruned past exceptions', () => {
+      // Datas relativas a "hoje" para o teste não expirar com o passar do tempo
+      const DAY_MS = 24 * 60 * 60 * 1000;
+      const future = new Date(Date.now() + 30 * DAY_MS);
+      const endDate = new Date(Date.now() + 365 * DAY_MS);
       const exceptions = [
-        { date: new Date('2026-10-01T00:00:00Z'), reason: 'Futuro' },
+        { date: future, reason: 'Futuro' },
         { date: new Date('2020-01-01T00:00:00Z'), reason: 'Passado' },
       ];
-      const cleaned = cleanExceptions(exceptions, new Date('2026-12-31'), true);
+      const cleaned = cleanExceptions(exceptions, endDate, true);
       expect(cleaned.length).toBe(1);
       expect(cleaned[0].reason).toBe('Futuro');
     });
