@@ -1,26 +1,21 @@
-import { defineStore } from "pinia";
-import { useTasksApi } from "~/composables/api/useTasksApi";
-import type { Task } from "~/models/Task";
+import { defineStore } from 'pinia';
+import { useApi } from '~/composables/api/useApi';
+import { useTasksApi } from '~/composables/api/useTasksApi';
+import type { Task } from '~/models/Task';
 
 function isRecurringTemplate(task: Partial<Task> | null | undefined): boolean {
   // Template recorrente: possui recurringRule, mas NÃO é uma ocorrência.
   // O backend cria template (isRecurringInstance: false) + ocorrência (isRecurringInstance: true).
   // O template não deve aparecer no Kanban para não duplicar papers.
-  return (
-    Boolean(task?.recurringRule) &&
-    task?.isRecurringInstance === false &&
-    !task?.parentRecurringId
-  );
+  return Boolean(task?.recurringRule) && task?.isRecurringInstance === false && !task?.parentRecurringId;
 }
 
 function cleanPayload<T>(value: T): T {
   if (Array.isArray(value)) {
-    return value
-      .map((v) => cleanPayload(v))
-      .filter((v) => v !== null && v !== undefined) as any;
+    return value.map((v) => cleanPayload(v)).filter((v) => v !== null && v !== undefined) as any;
   }
 
-  if (value && typeof value === "object") {
+  if (value && typeof value === 'object') {
     const out: any = {};
     for (const [key, v] of Object.entries(value as any)) {
       if (v === null || v === undefined) continue;
@@ -34,15 +29,15 @@ function cleanPayload<T>(value: T): T {
 
 function isRequestAborted(error: any) {
   return (
-    error?.code === "ERR_CANCELED" ||
-    error?.name === "CanceledError" ||
-    error?.message?.includes?.("aborted")
+    error?.code === 'ERR_CANCELED' ||
+    error?.name === 'CanceledError' ||
+    error?.message?.includes?.('aborted')
   );
 }
 
 let loadTasksPromise: Promise<void> | null = null;
 
-export const useTaskStore = defineStore("task", {
+export const useTaskStore = defineStore('task', {
   state: () => ({
     tasks: [] as Task[],
     isLoading: false,
@@ -72,79 +67,56 @@ export const useTaskStore = defineStore("task", {
   }),
 
   getters: {
-    activeTasks: (state) =>
-      state.tasks.filter((t) => !isRecurringTemplate(t) && !t.isConcluded),
+    activeTasks: (state) => state.tasks.filter((t) => !isRecurringTemplate(t) && !t.isConcluded),
 
-    completedTasks: (state) =>
-      state.tasks.filter((t) => !isRecurringTemplate(t) && t.isConcluded),
+    completedTasks: (state) => state.tasks.filter((t) => !isRecurringTemplate(t) && t.isConcluded),
 
-    lateTasks: (state) =>
-      state.tasks.filter(
-        (t) => !isRecurringTemplate(t) && t.late && !t.isConcluded,
-      ),
+    lateTasks: (state) => state.tasks.filter((t) => !isRecurringTemplate(t) && t.late && !t.isConcluded),
 
-    getTaskById: (state) => (id: string) =>
-      state.tasks.find((t) => t._id === id),
+    getTaskById: (state) => (id: string) => state.tasks.find((t) => t._id === id),
 
     tasksByProject: (state) => (projectId: string) =>
-      state.tasks.filter(
-        (t) => !isRecurringTemplate(t) && t.project === projectId,
-      ),
+      state.tasks.filter((t) => !isRecurringTemplate(t) && t.project === projectId),
 
     getMicroTasksForProject: (state) => (projectId: string) =>
-      state.tasks.filter(
-        (t) =>
-          !isRecurringTemplate(t) &&
-          t.project === projectId &&
-          !!t.microTaskType,
-      ),
+      state.tasks.filter((t) => !isRecurringTemplate(t) && t.project === projectId && !!t.microTaskType),
 
     /**
      * Sprint 2: Get completion percentage for a micro-task's checklist
      */
     getChecklistProgress: (state) => (taskId: string) => {
       const task = state.tasks.find((t) => t._id === taskId);
-      if (
-        !task ||
-        !Array.isArray(task.checklist) ||
-        task.checklist.length === 0
-      ) {
+      if (!task || !Array.isArray(task.checklist) || task.checklist.length === 0) {
         return 0;
       }
 
-      const completed = task.checklist.filter(
-        (item: any) => item.completed,
-      ).length;
+      const completed = task.checklist.filter((item: any) => item.completed).length;
       return Math.round((completed / task.checklist.length) * 100);
     },
 
     /**
      * Get tasks filtered by status and optionally by project, sorted by kanban order and priority
      */
-    getTasksByStatus:
-      (state) =>
-      (status: "todo" | "doing" | "review" | "done", projectId?: string) => {
-        let filtered = state.tasks.filter(
-          (t) => !isRecurringTemplate(t) && t.status === status,
-        );
+    getTasksByStatus: (state) => (status: 'todo' | 'doing' | 'review' | 'done', projectId?: string) => {
+      let filtered = state.tasks.filter((t) => !isRecurringTemplate(t) && t.status === status);
 
-        if (projectId) {
-          filtered = filtered.filter((t) => t.project === projectId);
+      if (projectId) {
+        filtered = filtered.filter((t) => t.project === projectId);
+      }
+
+      // Sort by kanbanOrder (if present), then by priority, then by createdAt
+      return filtered.sort((a, b) => {
+        if (a.kanbanOrder !== undefined && b.kanbanOrder !== undefined) {
+          return a.kanbanOrder - b.kanbanOrder;
         }
-
-        // Sort by kanbanOrder (if present), then by priority, then by createdAt
-        return filtered.sort((a, b) => {
-          if (a.kanbanOrder !== undefined && b.kanbanOrder !== undefined) {
-            return a.kanbanOrder - b.kanbanOrder;
-          }
-          const priorityA = a.priority || 0;
-          const priorityB = b.priority || 0;
-          if (priorityA !== priorityB) return priorityB - priorityA;
-          const dateA = new Date(a.createdAt || 0).getTime();
-          const dateB = new Date(b.createdAt || 0).getTime();
-          return dateB - dateA;
-        });
-      },
+        const priorityA = a.priority || 0;
+        const priorityB = b.priority || 0;
+        if (priorityA !== priorityB) return priorityB - priorityA;
+        const dateA = new Date(a.createdAt || 0).getTime();
+        const dateB = new Date(b.createdAt || 0).getTime();
+        return dateB - dateA;
+      });
+    },
 
     /**
      * Get ancestor chain (lineage) of a task by walking up parent references
@@ -166,11 +138,7 @@ export const useTaskStore = defineStore("task", {
       state.tasks.filter(
         (task) =>
           !isRecurringTemplate(task) &&
-          Boolean(
-            task.recurringRule ||
-            task.parentRecurringId ||
-            task.microTaskType === "habit",
-          ),
+          Boolean(task.recurringRule || task.parentRecurringId || task.microTaskType === 'habit'),
       ),
 
     habitDashboardHabits: (state) => state.habitsDashboard?.habits || [],
@@ -182,9 +150,7 @@ export const useTaskStore = defineStore("task", {
       let list = state.tasks.filter(
         (t) =>
           !isRecurringTemplate(t) &&
-          (t.microTaskType === "habit" ||
-            Boolean(t.recurringRule) ||
-            Boolean(t.parentRecurringId)),
+          (t.microTaskType === 'habit' || Boolean(t.recurringRule) || Boolean(t.parentRecurringId)),
       );
       if (filters?.projectId) {
         list = list.filter((t) => t.project === filters.projectId);
@@ -196,17 +162,11 @@ export const useTaskStore = defineStore("task", {
      * Return streak data for a recurring series from the dashboard if available
      */
     getStreakForHabit: (state) => (parentRecurringId: string) => {
-      if (
-        !state.habitsDashboard ||
-        !Array.isArray(state.habitsDashboard.habits)
-      ) {
+      if (!state.habitsDashboard || !Array.isArray(state.habitsDashboard.habits)) {
         return { currentStreak: 0, longestStreak: 0, aderencePercent: 0 };
       }
-      const found = state.habitsDashboard.habits.find(
-        (h) => String(h.id) === String(parentRecurringId),
-      );
-      if (!found)
-        return { currentStreak: 0, longestStreak: 0, aderencePercent: 0 };
+      const found = state.habitsDashboard.habits.find((h) => String(h.id) === String(parentRecurringId));
+      if (!found) return { currentStreak: 0, longestStreak: 0, aderencePercent: 0 };
       return {
         currentStreak: found.currentStreak || 0,
         longestStreak: found.longestStreak || 0,
@@ -218,12 +178,8 @@ export const useTaskStore = defineStore("task", {
      * Habits sorted by streak (descending)
      */
     getHabitsByStreak: (state) => () => {
-      const list = state.habitsDashboard?.habits
-        ? state.habitsDashboard.habits.slice()
-        : [];
-      return list.sort(
-        (a, b) => (b.currentStreak || 0) - (a.currentStreak || 0),
-      );
+      const list = state.habitsDashboard?.habits ? state.habitsDashboard.habits.slice() : [];
+      return list.sort((a, b) => (b.currentStreak || 0) - (a.currentStreak || 0));
     },
   },
 
@@ -242,7 +198,7 @@ export const useTaskStore = defineStore("task", {
           if (!error) {
             this.tasks = data;
           } else if (!isRequestAborted(error)) {
-            console.error("Erro ao carregar tarefas:", error);
+            console.error('Erro ao carregar tarefas:', error);
           }
         } finally {
           this.isLoading = false;
@@ -266,7 +222,7 @@ export const useTaskStore = defineStore("task", {
         }
 
         if (!isRequestAborted(error)) {
-          console.error("Erro ao carregar dashboard de hábitos:", error);
+          console.error('Erro ao carregar dashboard de hábitos:', error);
         }
 
         return null;
@@ -276,12 +232,11 @@ export const useTaskStore = defineStore("task", {
     },
 
     async createTask(newTask: Partial<Task>) {
-      const { post } = useApi("/tasks");
+      const { post } = useApi('/tasks');
       const payload: any = cleanPayload({
         ...newTask,
         pomodorosPlanned:
-          newTask.pomodorosPlanned === null ||
-          newTask.pomodorosPlanned === undefined
+          newTask.pomodorosPlanned === null || newTask.pomodorosPlanned === undefined
             ? 1
             : newTask.pomodorosPlanned,
       });
@@ -292,18 +247,17 @@ export const useTaskStore = defineStore("task", {
         this.tasks.push(data);
         return data;
       } else {
-        console.error("Erro ao criar tarefa:", error);
+        console.error('Erro ao criar tarefa:', error);
         return null;
       }
     },
 
     async createMicroTask(newTask: Partial<Task>) {
-      const { post } = useApi("/tasks/micro");
+      const { post } = useApi('/tasks/micro');
       const payload: any = cleanPayload({
         ...newTask,
         pomodorosPlanned:
-          newTask.pomodorosPlanned === null ||
-          newTask.pomodorosPlanned === undefined
+          newTask.pomodorosPlanned === null || newTask.pomodorosPlanned === undefined
             ? 1
             : newTask.pomodorosPlanned,
       });
@@ -314,28 +268,27 @@ export const useTaskStore = defineStore("task", {
         return data;
       }
 
-      console.error("Erro ao criar micro-tarefa:", error);
+      console.error('Erro ao criar micro-tarefa:', error);
       return null;
     },
 
     async createHabit(newTask: Partial<Task>) {
       const payload: Partial<Task> = {
         ...newTask,
-        microTaskType: "habit",
+        microTaskType: 'habit',
         recurringRule: newTask.recurringRule || {
-          frequency: "daily",
+          frequency: 'daily',
           interval: 1,
           daysOfWeek: [],
           exceptions: [],
         },
       };
 
-      const { post } = useApi("/tasks/habit/create");
+      const { post } = useApi('/tasks/habit/create');
       const cleaned: any = cleanPayload({
         ...payload,
         pomodorosPlanned:
-          payload.pomodorosPlanned === null ||
-          payload.pomodorosPlanned === undefined
+          payload.pomodorosPlanned === null || payload.pomodorosPlanned === undefined
             ? 1
             : payload.pomodorosPlanned,
       });
@@ -346,11 +299,11 @@ export const useTaskStore = defineStore("task", {
         return data;
       }
 
-      console.error("Erro ao criar hábito:", error);
+      console.error('Erro ao criar hábito:', error);
       return null;
     },
 
-    async updateMicroTaskChecklist(id: string, checklist: Task["checklist"]) {
+    async updateMicroTaskChecklist(id: string, checklist: Task['checklist']) {
       const { post } = useApi(`/tasks/${id}/checklist`);
       const { data, error } = await post({ checklist });
 
@@ -362,18 +315,14 @@ export const useTaskStore = defineStore("task", {
         return data;
       }
 
-      console.error("Erro ao atualizar checklist da micro-tarefa:", error);
+      console.error('Erro ao atualizar checklist da micro-tarefa:', error);
       return null;
     },
 
     /**
      * Sprint 2: Update a single checklist item by index
      */
-    async updateMicroTaskChecklistItem(
-      taskId: string,
-      itemIndex: number,
-      completed: boolean,
-    ) {
+    async updateMicroTaskChecklistItem(taskId: string, itemIndex: number, completed: boolean) {
       const { patch } = useApi(`/tasks/${taskId}/checklist/${itemIndex}`);
       const { data, error } = await patch({ completed });
 
@@ -385,17 +334,14 @@ export const useTaskStore = defineStore("task", {
         return data;
       }
 
-      console.error("Erro ao atualizar item do checklist:", error);
+      console.error('Erro ao atualizar item do checklist:', error);
       return null;
     },
 
     /**
      * Sprint 2: Update full checklist with new items
      */
-    async updateMicroTaskChecklistFull(
-      id: string,
-      checklist: Task["checklist"],
-    ) {
+    async updateMicroTaskChecklistFull(id: string, checklist: Task['checklist']) {
       const { post } = useApi(`/tasks/${id}/checklist`);
       const { data, error } = await post({ checklist });
 
@@ -407,7 +353,7 @@ export const useTaskStore = defineStore("task", {
         return data;
       }
 
-      console.error("Erro ao atualizar checklist completo:", error);
+      console.error('Erro ao atualizar checklist completo:', error);
       return null;
     },
 
@@ -422,7 +368,7 @@ export const useTaskStore = defineStore("task", {
         }
         return data;
       } else {
-        console.error("Erro ao atualizar tarefa:", error);
+        console.error('Erro ao atualizar tarefa:', error);
         return null;
       }
     },
@@ -435,7 +381,7 @@ export const useTaskStore = defineStore("task", {
         this.tasks = this.tasks.filter((t) => t._id !== id);
         return true;
       } else {
-        console.error("Erro ao remover tarefa:", error);
+        console.error('Erro ao remover tarefa:', error);
         return false;
       }
     },
@@ -451,7 +397,7 @@ export const useTaskStore = defineStore("task", {
         }
         return data;
       } else {
-        console.error("Erro ao concluir tarefa:", error);
+        console.error('Erro ao concluir tarefa:', error);
         return null;
       }
     },
@@ -467,7 +413,7 @@ export const useTaskStore = defineStore("task", {
         }
         return data;
       } else {
-        console.error("Erro ao incrementar pomodoro:", error);
+        console.error('Erro ao incrementar pomodoro:', error);
         return null;
       }
     },
@@ -481,15 +427,12 @@ export const useTaskStore = defineStore("task", {
      * If status='done': calls PATCH /tasks/:id/conclude (with checklist validation)
      * Otherwise: calls PATCH /tasks/:id/status
      */
-    async setTaskStatus(
-      id: string,
-      toStatus: "todo" | "doing" | "review" | "done",
-    ) {
+    async setTaskStatus(id: string, toStatus: 'todo' | 'doing' | 'review' | 'done') {
       try {
         let data: Task | null = null;
         let error: any = null;
 
-        if (toStatus === "done") {
+        if (toStatus === 'done') {
           // Moving to done = concluding the task
           const { patch } = useApi(`/tasks/${id}/conclude`);
           const result = await patch();
@@ -511,15 +454,13 @@ export const useTaskStore = defineStore("task", {
           return { success: true, data };
         } else {
           // Try to extract detailed message from axios error if present
-          const detailed =
-            error?.response?.data?.message || error?.message || "Unknown error";
-          console.error("Erro ao mover tarefa para status:", detailed, error);
+          const detailed = error?.response?.data?.message || error?.message || 'Unknown error';
+          console.error('Erro ao mover tarefa para status:', detailed, error);
           return { success: false, error: detailed };
         }
       } catch (err: any) {
-        const detailed =
-          err?.response?.data?.message || err?.message || "Unknown error";
-        console.error("Erro ao setTaskStatus:", detailed, err);
+        const detailed = err?.response?.data?.message || err?.message || 'Unknown error';
+        console.error('Erro ao setTaskStatus:', detailed, err);
         return { success: false, error: detailed };
       }
     },
@@ -527,10 +468,7 @@ export const useTaskStore = defineStore("task", {
     /**
      * Alias for setTaskStatus with better naming semantics
      */
-    async moveTaskToStatus(
-      id: string,
-      toStatus: "todo" | "doing" | "review" | "done",
-    ) {
+    async moveTaskToStatus(id: string, toStatus: 'todo' | 'doing' | 'review' | 'done') {
       return this.setTaskStatus(id, toStatus);
     },
 
@@ -545,33 +483,24 @@ export const useTaskStore = defineStore("task", {
         }
 
         if (this.habitsDashboard?.habits) {
-          const dashboardHabit = this.habitsDashboard.habits.find(
-            (habit) => habit.id === id,
-          );
+          const dashboardHabit = this.habitsDashboard.habits.find((habit) => habit.id === id);
           if (dashboardHabit) {
             dashboardHabit.status = data.status || dashboardHabit.status;
-            dashboardHabit.currentStreak = Math.max(
-              0,
-              dashboardHabit.currentStreak,
-            );
+            dashboardHabit.currentStreak = Math.max(0, dashboardHabit.currentStreak);
           }
         }
 
         return { success: true, data };
       }
 
-      console.error("Erro ao pular hábito:", error);
+      console.error('Erro ao pular hábito:', error);
       return {
         success: false,
-        error:
-          error?.response?.data?.message || error?.message || "Unknown error",
+        error: error?.response?.data?.message || error?.message || 'Unknown error',
       };
     },
 
-    async updateRecurringRule(
-      id: string,
-      recurringRule: Task["recurringRule"],
-    ) {
+    async updateRecurringRule(id: string, recurringRule: Task['recurringRule']) {
       const { patch } = useApi(`/tasks/${id}/recurring-rule`);
       const { data, error } = await patch({ recurringRule });
 
@@ -584,11 +513,10 @@ export const useTaskStore = defineStore("task", {
         return { success: true, data };
       }
 
-      console.error("Erro ao atualizar regra recorrente:", error);
+      console.error('Erro ao atualizar regra recorrente:', error);
       return {
         success: false,
-        error:
-          error?.response?.data?.message || error?.message || "Unknown error",
+        error: error?.response?.data?.message || error?.message || 'Unknown error',
       };
     },
 
@@ -600,7 +528,7 @@ export const useTaskStore = defineStore("task", {
      */
     async handleRecurringCompletion(id: string) {
       // Primeiro, mover para status "done"
-      const moveResult = await this.setTaskStatus(id, "done");
+      const moveResult = await this.setTaskStatus(id, 'done');
       if (!moveResult.success) {
         return moveResult;
       }
@@ -616,14 +544,11 @@ export const useTaskStore = defineStore("task", {
         // Atualizar aderência no dashboard se existir
         if (this.habitsDashboard?.habits) {
           const dashboardHabit = this.habitsDashboard.habits.find(
-            (habit) =>
-              habit.id === id || habit.id === nextOccurrence.parentRecurringId,
+            (habit) => habit.id === id || habit.id === nextOccurrence.parentRecurringId,
           );
           if (dashboardHabit && nextOccurrence.streakData) {
-            dashboardHabit.currentStreak =
-              nextOccurrence.streakData.currentStreak || 0;
-            dashboardHabit.aderencePercent =
-              nextOccurrence.streakData.aderencePercent || 0;
+            dashboardHabit.currentStreak = nextOccurrence.streakData.currentStreak || 0;
+            dashboardHabit.aderencePercent = nextOccurrence.streakData.aderencePercent || 0;
           }
         }
 
@@ -634,10 +559,7 @@ export const useTaskStore = defineStore("task", {
       }
 
       // Se não conseguiu gerar próxima, ainda assim a conclusão foi bem-sucedida
-      console.warn(
-        "Não foi possível gerar próxima ocorrência:",
-        error?.message,
-      );
+      console.warn('Não foi possível gerar próxima ocorrência:', error?.message);
       return { success: true, data: moveResult.data };
     },
 
@@ -647,9 +569,7 @@ export const useTaskStore = defineStore("task", {
 
       if (!error) {
         this.tasks = this.tasks.filter(
-          (task) =>
-            task._id !== parentRecurringId &&
-            task.parentRecurringId !== parentRecurringId,
+          (task) => task._id !== parentRecurringId && task.parentRecurringId !== parentRecurringId,
         );
 
         if (this.habitsDashboard?.habits) {
@@ -661,11 +581,10 @@ export const useTaskStore = defineStore("task", {
         return { success: true };
       }
 
-      console.error("Erro ao remover série recorrente:", error);
+      console.error('Erro ao remover série recorrente:', error);
       return {
         success: false,
-        error:
-          error?.response?.data?.message || error?.message || "Unknown error",
+        error: error?.response?.data?.message || error?.message || 'Unknown error',
       };
     },
   },

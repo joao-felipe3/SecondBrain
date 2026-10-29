@@ -1,2 +1,9 @@
-export { default as UiParchmentCard } from './UiParchmentCard.vue'
-export { default as UiWaxSeal } from './UiWaxSeal.vue'
+export { default as UiParchmentCard } from './UiParchmentCard.vue';
+export { default as UiWaxSeal } from './UiWaxSeal.vue';
+export { default as UiIronDagger } from './UiIronDagger.vue';
+export { default as UiIronNail } from './UiIronNail.vue';
+export { default as UiWoodenFrame } from './UiWoodenFrame.vue';
+export { default as UiRunicTile } from './UiRunicTile.vue';
+export { default as UiHourglass } from './UiHourglass.vue';
+export { default as UiRibbonMedal } from './UiRibbonMedal.vue';
+export { default as UiGrimoireBook } from './UiGrimoireBook.vue';

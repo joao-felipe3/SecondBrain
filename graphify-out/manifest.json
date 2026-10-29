@@ -2195,8 +2195,8 @@
     "semantic_hash": ""
   },
   "Frontend/components/features/tasks/kanban/KanbanBoard.vue": {
-    "mtime": 1780519839.8045588,
-    "ast_hash": "e877827090b54df0a48ccb861216ed67",
+    "mtime": 1793316698.5511017,
+    "ast_hash": "a9cd142aae7f3ca54fc0ec5840446248",
     "semantic_hash": ""
   },
   "Frontend/components/features/tasks/layout/Main.vue": {
@@ -2700,8 +2700,8 @@
     "semantic_hash": ""
   },
   "Frontend/nuxt.config.ts": {
-    "mtime": 1786924574.5454707,
-    "ast_hash": "7f5e9964c8f4be64eea6d6459705f336",
+    "mtime": 1793316699.4100986,
+    "ast_hash": "d1e7e271cb8e2625a60f5188a9953c55",
     "semantic_hash": ""
   },
   "Frontend/package.json": {
@@ -2710,8 +2710,8 @@
     "semantic_hash": ""
   },
   "Frontend/pages/Task/index.vue": {
-    "mtime": 1780519839.8536997,
-    "ast_hash": "0661f2eac6173c72355a53b40de8f40c",
+    "mtime": 1793316699.5492105,
+    "ast_hash": "60b97329ef4673c4e7f529440cb9e181",
     "semantic_hash": ""
   },
   "Frontend/pages/index.vue": {
@@ -2720,8 +2720,8 @@
     "semantic_hash": ""
   },
   "Frontend/pages/projects/index.vue": {
-    "mtime": 1780519839.8556993,
-    "ast_hash": "078ca24672d32d48208de4b79235204b",
+    "mtime": 1793316699.6625044,
+    "ast_hash": "e9a309720af3bd85dfbc690c0feeb126",
     "semantic_hash": ""
   },
   "Frontend/plugins/axios.ts": {
@@ -2770,8 +2770,8 @@
     "semantic_hash": ""
   },
   "Frontend/stores/task.ts": {
-    "mtime": 1786924576.3756902,
-    "ast_hash": "1c1b236f5e479dc3e9380f6d27ea9830",
+    "mtime": 1793316699.886861,
+    "ast_hash": "0a6f6966ef1a512a23c28ff4e4841581",
     "semantic_hash": ""
   },
   "Frontend/tailwind.config.js": {
@@ -2795,8 +2795,8 @@
     "semantic_hash": ""
   },
   "Frontend/tests/unit/components.snapshot.spec.ts": {
-    "mtime": 1780519839.8612616,
-    "ast_hash": "58f5d5db0f679a6c44edecc332c14015",
+    "mtime": 1793316700.0363214,
+    "ast_hash": "6bac42e4a13fa96e669451e5cc849b76",
     "semantic_hash": ""
   },
   "Frontend/tests/unit/performance.spec.ts": {
@@ -2840,8 +2840,8 @@
     "semantic_hash": ""
   },
   "Frontend/vitest.config.ts": {
-    "mtime": 1780519839.86919,
-    "ast_hash": "76740455d2746fe0215c81bab7f3cd08",
+    "mtime": 1793316700.0533235,
+    "ast_hash": "f35e63ed13631d108707ad9e2b776f2b",
     "semantic_hash": ""
   },
   "commitlint.config.js": {
@@ -3155,8 +3155,8 @@
     "semantic_hash": ""
   },
   "Frontend/components/ui/diegetic/index.ts": {
-    "mtime": 1786924574.5324967,
-    "ast_hash": "371b1de357889a6eb00cf3f65afdc766",
+    "mtime": 1793316699.3839123,
+    "ast_hash": "f7e1c88bd90760a48b4a7218a110b9a5",
     "semantic_hash": ""
   },
   "Frontend/composables/ui/useGuildAudio.ts": {
@@ -3365,8 +3365,8 @@
     "semantic_hash": ""
   },
   "Project/FRONTEND_REFACTORING_PLAN.md": {
-    "mtime": 1793309497.713509,
-    "ast_hash": "a632f01f307d944759facaa89cafee7c",
+    "mtime": 1793316697.7911506,
+    "ast_hash": "183be6221feac83c4f2e2d15430716c3",
     "semantic_hash": ""
   },
   "Project/adr/004-validation-strategy.md": {
@@ -3592,6 +3592,71 @@
   "Backend/tests/unit/tasks/services/intelligence/utils/ai-suggestions.utils.spec.ts": {
     "mtime": 1789527843.0875306,
     "ast_hash": "99ea236d047e563b30cf6f55ee2af82d",
+    "semantic_hash": ""
+  },
+  "Frontend/components/features/calendar/CalendarDrawerMobile.vue": {
+    "mtime": 1793316697.9069042,
+    "ast_hash": "8cd9610dff297788a629573fb558f7d9",
+    "semantic_hash": ""
+  },
+  "Frontend/components/features/projects/GrimoireGridMobile.vue": {
+    "mtime": 1793316697.9938338,
+    "ast_hash": "8e232fa42325dc9d780207e9346a4f33",
+    "semantic_hash": ""
+  },
+  "Frontend/components/features/projects/GrimoireShelf.vue": {
+    "mtime": 1793316698.1120155,
+    "ast_hash": "37b55e2a64bfa6a88a5d86f1caa4b991",
+    "semantic_hash": ""
+  },
+  "Frontend/components/features/tasks/kanban/FieldJournalMobile.vue": {
+    "mtime": 1793316698.1994848,
+    "ast_hash": "ce3bd3a6d63f7e16745734312f4d5a7d",
+    "semantic_hash": ""
+  },
+  "Frontend/components/ui/diegetic/UiGrimoireBook.vue": {
+    "mtime": 1793316698.6558208,
+    "ast_hash": "e49caf3706ef1598f99f2809d0d636d6",
+    "semantic_hash": ""
+  },
+  "Frontend/components/ui/diegetic/UiHourglass.vue": {
+    "mtime": 1793316698.747244,
+    "ast_hash": "1b9bd2747f0b68be5a424c8632250fc3",
+    "semantic_hash": ""
+  },
+  "Frontend/components/ui/diegetic/UiIronDagger.vue": {
+    "mtime": 1793316698.8826632,
+    "ast_hash": "910044672d50de42efac84e2ef6e4a43",
+    "semantic_hash": ""
+  },
+  "Frontend/components/ui/diegetic/UiIronNail.vue": {
+    "mtime": 1793316699.009172,
+    "ast_hash": "021b57ede0aa33172a1af3208fdaf68a",
+    "semantic_hash": ""
+  },
+  "Frontend/components/ui/diegetic/UiRibbonMedal.vue": {
+    "mtime": 1793316699.0967019,
+    "ast_hash": "b903146fbdb5f422928e7f811d1fa6f7",
+    "semantic_hash": ""
+  },
+  "Frontend/components/ui/diegetic/UiRunicTile.vue": {
+    "mtime": 1793316699.283336,
+    "ast_hash": "88ed3098e096a63696750d33e634409a",
+    "semantic_hash": ""
+  },
+  "Frontend/components/ui/diegetic/UiWoodenFrame.vue": {
+    "mtime": 1793316699.363837,
+    "ast_hash": "987c9e96f921b6c967bc2d01323226d7",
+    "semantic_hash": ""
+  },
+  "Frontend/pages/tasks/index.vue": {
+    "mtime": 1793316699.688807,
+    "ast_hash": "d619a96413c8a91761c2fd9058b31eaf",
+    "semantic_hash": ""
+  },
+  "Frontend/tests/mocks/app.ts": {
+    "mtime": 1793316699.960314,
+    "ast_hash": "87953a1a12f4216cf7c266562af6295a",
     "semantic_hash": ""
   }
 }

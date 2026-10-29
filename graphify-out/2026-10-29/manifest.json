@@ -1465,8 +1465,8 @@
     "semantic_hash": ""
   },
   "Backend/tests/unit/projects/services/evm/utils/evm-curve.util.spec.ts": {
-    "mtime": 1789527823.7149637,
-    "ast_hash": "349eec65b1bb99cabf73cc1c7bef2394",
+    "mtime": 1789530813.6309967,
+    "ast_hash": "f111e24ea03acfd899507eeb70170ed0",
     "semantic_hash": ""
   },
   "Backend/tests/unit/projects/services/execution/leaf-tasks-buffer.service.spec.ts": {
@@ -1835,8 +1835,8 @@
     "semantic_hash": ""
   },
   "Backend/tests/unit/tasks/services/workflow/utils/recurring-exception.utils.spec.ts": {
-    "mtime": 1784904900.931361,
-    "ast_hash": "158dd17967b75573bb46f462bf010ab0",
+    "mtime": 1793310696.991111,
+    "ast_hash": "7012ccdfd6192856cf5f968a0b8762f1",
     "semantic_hash": ""
   },
   "Backend/tests/unit/tasks/services/workflow/write.service.spec.ts": {
@@ -2195,8 +2195,8 @@
     "semantic_hash": ""
   },
   "Frontend/components/features/tasks/kanban/KanbanBoard.vue": {
-    "mtime": 1780519839.8045588,
-    "ast_hash": "e877827090b54df0a48ccb861216ed67",
+    "mtime": 1793316204.9424388,
+    "ast_hash": "744d3c695b2816d44c6dd41c788ccd1d",
     "semantic_hash": ""
   },
   "Frontend/components/features/tasks/layout/Main.vue": {
@@ -2700,8 +2700,8 @@
     "semantic_hash": ""
   },
   "Frontend/nuxt.config.ts": {
-    "mtime": 1786924574.5454707,
-    "ast_hash": "7f5e9964c8f4be64eea6d6459705f336",
+    "mtime": 1793314745.2638814,
+    "ast_hash": "eab31af57d77df21dc71e1596ee22f2a",
     "semantic_hash": ""
   },
   "Frontend/package.json": {
@@ -2710,18 +2710,18 @@
     "semantic_hash": ""
   },
   "Frontend/pages/Task/index.vue": {
-    "mtime": 1780519839.8536997,
-    "ast_hash": "0661f2eac6173c72355a53b40de8f40c",
+    "mtime": 1793316193.4785852,
+    "ast_hash": "0e66087c6d8245c41cf9748dc47bfd18",
     "semantic_hash": ""
   },
   "Frontend/pages/index.vue": {
-    "mtime": 1787194750.5150552,
-    "ast_hash": "53a62123f6e207dff67029806d227271",
+    "mtime": 1793309529.6384668,
+    "ast_hash": "1c18f7517a61a2901cb27d3c14053916",
     "semantic_hash": ""
   },
   "Frontend/pages/projects/index.vue": {
-    "mtime": 1780519839.8556993,
-    "ast_hash": "078ca24672d32d48208de4b79235204b",
+    "mtime": 1793314745.3147764,
+    "ast_hash": "b33e19fd9b87c842fb98a4e30e49f3b1",
     "semantic_hash": ""
   },
   "Frontend/plugins/axios.ts": {
@@ -2770,8 +2770,8 @@
     "semantic_hash": ""
   },
   "Frontend/stores/task.ts": {
-    "mtime": 1786924576.3756902,
-    "ast_hash": "1c1b236f5e479dc3e9380f6d27ea9830",
+    "mtime": 1793315970.0810554,
+    "ast_hash": "0deb20154d7944dc040c914f81cbd5fd",
     "semantic_hash": ""
   },
   "Frontend/tailwind.config.js": {
@@ -2795,8 +2795,8 @@
     "semantic_hash": ""
   },
   "Frontend/tests/unit/components.snapshot.spec.ts": {
-    "mtime": 1780519839.8612616,
-    "ast_hash": "58f5d5db0f679a6c44edecc332c14015",
+    "mtime": 1793316099.5040705,
+    "ast_hash": "48c57ac92d4c64e9ce7dd3a09d7b884d",
     "semantic_hash": ""
   },
   "Frontend/tests/unit/performance.spec.ts": {
@@ -2840,8 +2840,8 @@
     "semantic_hash": ""
   },
   "Frontend/vitest.config.ts": {
-    "mtime": 1780519839.86919,
-    "ast_hash": "76740455d2746fe0215c81bab7f3cd08",
+    "mtime": 1793316143.4090624,
+    "ast_hash": "ff21f1f308f8af4993937ded2644af5a",
     "semantic_hash": ""
   },
   "commitlint.config.js": {
@@ -3005,8 +3005,8 @@
     "semantic_hash": ""
   },
   "docs/profiling-guide.md": {
-    "mtime": 1785036129.7958288,
-    "ast_hash": "97e387740b5b28db2018386702829206",
+    "mtime": 1793310783.3065925,
+    "ast_hash": "afc894f9c0daec2c27405979aa4ba934",
     "semantic_hash": ""
   },
   "Frontend/assets/img/background.jpg": {
@@ -3130,13 +3130,13 @@
     "semantic_hash": ""
   },
   "Frontend/components/features/hall/GuildNpcSpeechBubble.vue": {
-    "mtime": 1786924574.5204966,
-    "ast_hash": "a50876fc1e48577482bb243d70e46ef2",
+    "mtime": 1793309529.2323906,
+    "ast_hash": "a7bfc3de1ac29cb6142996f7cd729c93",
     "semantic_hash": ""
   },
   "Frontend/components/features/hall/GuildParticlesCanvas.vue": {
-    "mtime": 1787248185.4208498,
-    "ast_hash": "7f412c1a0d975cb17149b970e3456cd0",
+    "mtime": 1793309529.328262,
+    "ast_hash": "3ab799f0fb88870264efa83032012750",
     "semantic_hash": ""
   },
   "Frontend/components/features/hall/GuildReceptionDesk.vue": {
@@ -3155,8 +3155,8 @@
     "semantic_hash": ""
   },
   "Frontend/components/ui/diegetic/index.ts": {
-    "mtime": 1786924574.5324967,
-    "ast_hash": "371b1de357889a6eb00cf3f65afdc766",
+    "mtime": 1793312882.7957897,
+    "ast_hash": "af9260ae117e46d810a694f08d6bbd8f",
     "semantic_hash": ""
   },
   "Frontend/composables/ui/useGuildAudio.ts": {
@@ -3305,18 +3305,18 @@
     "semantic_hash": ""
   },
   "Frontend/components/features/hall/GuildArchPortal.vue": {
-    "mtime": 1786924574.514495,
-    "ast_hash": "cfd9d9bca00923bc0f02d014e05abf18",
+    "mtime": 1793309528.6006587,
+    "ast_hash": "33be1bea8f03d191465637530d3b3c07",
     "semantic_hash": ""
   },
   "Frontend/components/features/hall/GuildDiegeticHotspots.vue": {
-    "mtime": 1788144705.49398,
-    "ast_hash": "0d4440263bfc9c92a7e8f96d1e4bab12",
+    "mtime": 1793309528.9521654,
+    "ast_hash": "f1e5c9e6dd65ca5df3198ee01403b208",
     "semantic_hash": ""
   },
   "Frontend/components/features/hall/GuildMobileJournal.vue": {
-    "mtime": 1786924574.5194955,
-    "ast_hash": "75ea673a57f7f765268637992da84410",
+    "mtime": 1793309529.1332383,
+    "ast_hash": "12d13473819ebd98ffb21a7c9505f5ac",
     "semantic_hash": ""
   },
   "Frontend/components/features/hall/GuildTopBanner.vue": {
@@ -3325,8 +3325,8 @@
     "semantic_hash": ""
   },
   "Frontend/components/features/hall/GuildVfxLayer.vue": {
-    "mtime": 1786924574.5254962,
-    "ast_hash": "9bd31015cd10876717ac9d0be0bd89e5",
+    "mtime": 1793309529.439627,
+    "ast_hash": "ebe727ae209bac27a75f5e8ad6ceb84c",
     "semantic_hash": ""
   },
   "Frontend/public/imagens/Entrada-mobile.png": {
@@ -3340,8 +3340,8 @@
     "semantic_hash": ""
   },
   "Frontend/components/features/hall/GuildLibraryPortal.vue": {
-    "mtime": 1786924574.5184975,
-    "ast_hash": "56531a7a3ab307ad04bd998eabb3286a",
+    "mtime": 1793309529.0916052,
+    "ast_hash": "cc2feaed7089baaf0eff42bc47794cb7",
     "semantic_hash": ""
   },
   "Frontend/public/vfx/chair.png": {
@@ -3365,8 +3365,8 @@
     "semantic_hash": ""
   },
   "Project/FRONTEND_REFACTORING_PLAN.md": {
-    "mtime": 1787972358.1241343,
-    "ast_hash": "f2ac978d1132089a80610cd14541251a",
+    "mtime": 1793316254.0168998,
+    "ast_hash": "b6ba823d6de2b39c8ed6a334f2d200f0",
     "semantic_hash": ""
   },
   "Project/adr/004-validation-strategy.md": {
@@ -3592,6 +3592,71 @@
   "Backend/tests/unit/tasks/services/intelligence/utils/ai-suggestions.utils.spec.ts": {
     "mtime": 1789527843.0875306,
     "ast_hash": "99ea236d047e563b30cf6f55ee2af82d",
+    "semantic_hash": ""
+  },
+  "Frontend/components/features/calendar/CalendarDrawerMobile.vue": {
+    "mtime": 1793314745.0167446,
+    "ast_hash": "c27c0c8cab148c8971cc79543537214e",
+    "semantic_hash": ""
+  },
+  "Frontend/components/features/projects/GrimoireGridMobile.vue": {
+    "mtime": 1793313136.2179213,
+    "ast_hash": "ada027d82c8c772ac9dd6f7f64544470",
+    "semantic_hash": ""
+  },
+  "Frontend/components/features/projects/GrimoireShelf.vue": {
+    "mtime": 1793313136.3702698,
+    "ast_hash": "b0acb025128f61ea84338309cbe9aeea",
+    "semantic_hash": ""
+  },
+  "Frontend/components/features/tasks/kanban/FieldJournalMobile.vue": {
+    "mtime": 1793313136.4908004,
+    "ast_hash": "71d1ca7dc3072f2ecdd2c377cc5b9474",
+    "semantic_hash": ""
+  },
+  "Frontend/components/ui/diegetic/UiGrimoireBook.vue": {
+    "mtime": 1793313136.6141243,
+    "ast_hash": "9078b72879a515659868e8dae541d356",
+    "semantic_hash": ""
+  },
+  "Frontend/components/ui/diegetic/UiHourglass.vue": {
+    "mtime": 1793313136.724727,
+    "ast_hash": "eb84b89182cd863ef258905dc9557184",
+    "semantic_hash": ""
+  },
+  "Frontend/components/ui/diegetic/UiIronDagger.vue": {
+    "mtime": 1793314745.0938642,
+    "ast_hash": "7a482a89cc97c5189f5971e0e76caf94",
+    "semantic_hash": ""
+  },
+  "Frontend/components/ui/diegetic/UiIronNail.vue": {
+    "mtime": 1793314745.155503,
+    "ast_hash": "a10cacf785a94d251e1dbea1b0b0577d",
+    "semantic_hash": ""
+  },
+  "Frontend/components/ui/diegetic/UiRibbonMedal.vue": {
+    "mtime": 1793313138.1412096,
+    "ast_hash": "e3dad8268911e95e9886aefe77491ed9",
+    "semantic_hash": ""
+  },
+  "Frontend/components/ui/diegetic/UiRunicTile.vue": {
+    "mtime": 1793313138.273781,
+    "ast_hash": "2c4cb2ef455285ca708cb259552a4e07",
+    "semantic_hash": ""
+  },
+  "Frontend/components/ui/diegetic/UiWoodenFrame.vue": {
+    "mtime": 1793313138.7183,
+    "ast_hash": "aef67ae6ab34b000342d70a2c2d6a985",
+    "semantic_hash": ""
+  },
+  "Frontend/pages/tasks/index.vue": {
+    "mtime": 1793315118.4746368,
+    "ast_hash": "0bc20df9340cbad4bbcc5751b0941bef",
+    "semantic_hash": ""
+  },
+  "Frontend/tests/mocks/app.ts": {
+    "mtime": 1793316063.738468,
+    "ast_hash": "e95a5acbb7850604453322fc5a72ab4f",
     "semantic_hash": ""
   }
 }

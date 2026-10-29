@@ -1,0 +1,69 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`Component Snapshots - Sprint 5 Habits > HabitPreview > should render with default habit data 1`] = `
+"<div data-v-cc3b9753="" class="pt-3 px-5 card-content">
+  <div data-v-cc3b9753="" class="title" title=""><strong data-v-cc3b9753="">Morning Exercise</strong></div><em data-v-cc3b9753="" class="description">Daily 30-minute workout</em><br data-v-cc3b9753=""> - 50 EXP &amp; 100 Coins<br data-v-cc3b9753=""><!-- Próxima data do hábito -->
+  <div data-v-cc3b9753="" class="habit-next-date"> 📅 Próximo: OVERDUE!</div><!-- Streak visual em destaque -->
+  <div data-v-cc3b9753="" class="streak-display"><span data-v-cc3b9753="" class="streak-emoji">🔥</span><span data-v-cc3b9753="" class="streak-count">7 dias</span></div><!-- PERT summary (se houver) -->
+  <!--v-if-->
+  <!-- Mini-stats: aderência % -->
+  <div data-v-cc3b9753="" class="adherence-stats"> ✓ Aderência: <strong data-v-cc3b9753="">85%</strong></div><!-- Ações rápidas: Completar e Pular -->
+  <div data-v-cc3b9753="" class="habit-actions"><button data-v-cc3b9753="" class="habit-action-btn complete"> ✅ </button><button data-v-cc3b9753="" class="habit-action-btn skip"> ⏭️ </button></div>
+</div>"
+`;
+
+exports[`Component Snapshots - Sprint 5 Habits > HabitPreview > should render with high streak 1`] = `
+"<div data-v-cc3b9753="" class="pt-3 px-5 card-content">
+  <div data-v-cc3b9753="" class="title" title=""><strong data-v-cc3b9753="">Meditation</strong></div><em data-v-cc3b9753="" class="description">Daily meditation practice</em><br data-v-cc3b9753=""> - 30 EXP &amp; 60 Coins<br data-v-cc3b9753=""><!-- Próxima data do hábito -->
+  <div data-v-cc3b9753="" class="habit-next-date"> 📅 Próximo: OVERDUE!</div><!-- Streak visual em destaque -->
+  <div data-v-cc3b9753="" class="streak-display"><span data-v-cc3b9753="" class="streak-emoji">🔥</span><span data-v-cc3b9753="" class="streak-count">45 dias</span></div><!-- PERT summary (se houver) -->
+  <!--v-if-->
+  <!-- Mini-stats: aderência % -->
+  <div data-v-cc3b9753="" class="adherence-stats"> ✓ Aderência: <strong data-v-cc3b9753="">100%</strong></div><!-- Ações rápidas: Completar e Pular -->
+  <div data-v-cc3b9753="" class="habit-actions"><button data-v-cc3b9753="" class="habit-action-btn complete"> ✅ </button><button data-v-cc3b9753="" class="habit-action-btn skip"> ⏭️ </button></div>
+</div>"
+`;
+
+exports[`Component Snapshots - Sprint 5 Habits > HabitPreview > should render with no streak data 1`] = `
+"<div data-v-cc3b9753="" class="pt-3 px-5 card-content">
+  <div data-v-cc3b9753="" class="title" title=""><strong data-v-cc3b9753="">New Habit</strong></div><em data-v-cc3b9753="" class="description">Just started</em><br data-v-cc3b9753=""> - 10 EXP &amp; 20 Coins<br data-v-cc3b9753=""><!-- Próxima data do hábito -->
+  <div data-v-cc3b9753="" class="habit-next-date"> 📅 Próximo: OVERDUE!</div><!-- Streak visual em destaque -->
+  <div data-v-cc3b9753="" class="streak-display"><span data-v-cc3b9753="" class="streak-emoji">🔥</span><span data-v-cc3b9753="" class="streak-count">0 dias</span></div><!-- PERT summary (se houver) -->
+  <!--v-if-->
+  <!-- Mini-stats: aderência % -->
+  <div data-v-cc3b9753="" class="adherence-stats"> ✓ Aderência: <strong data-v-cc3b9753="">0%</strong></div><!-- Ações rápidas: Completar e Pular -->
+  <div data-v-cc3b9753="" class="habit-actions"><button data-v-cc3b9753="" class="habit-action-btn complete"> ✅ </button><button data-v-cc3b9753="" class="habit-action-btn skip"> ⏭️ </button></div>
+</div>"
+`;
+
+exports[`Component Snapshots - Sprint 5 Habits > HabitPreview > should render with weekly schedule 1`] = `
+"<div data-v-cc3b9753="" class="pt-3 px-5 card-content">
+  <div data-v-cc3b9753="" class="title" title=""><strong data-v-cc3b9753="">Gym Days</strong></div><em data-v-cc3b9753="" class="description">Mon, Wed, Fri</em><br data-v-cc3b9753=""> - 75 EXP &amp; 150 Coins<br data-v-cc3b9753=""><!-- Próxima data do hábito -->
+  <div data-v-cc3b9753="" class="habit-next-date"> 📅 Próximo: OVERDUE!</div><!-- Streak visual em destaque -->
+  <div data-v-cc3b9753="" class="streak-display"><span data-v-cc3b9753="" class="streak-emoji">🔥</span><span data-v-cc3b9753="" class="streak-count">5 dias</span></div><!-- PERT summary (se houver) -->
+  <!--v-if-->
+  <!-- Mini-stats: aderência % -->
+  <div data-v-cc3b9753="" class="adherence-stats"> ✓ Aderência: <strong data-v-cc3b9753="">78%</strong></div><!-- Ações rápidas: Completar e Pular -->
+  <div data-v-cc3b9753="" class="habit-actions"><button data-v-cc3b9753="" class="habit-action-btn complete"> ✅ </button><button data-v-cc3b9753="" class="habit-action-btn skip"> ⏭️ </button></div>
+</div>"
+`;
+
+exports[`Component Snapshots - Sprint 5 Habits > Paper > should render paper with habit component 1`] = `
+"<div data-v-175b7f65="" class="task-paper hover-enabled" style="left: 200px; top: 150px; cursor: pointer;">
+  <div data-v-175b7f65="" class="v-img-stub" src="/svg/old-paper-4.svg" alt="Old Paper" width="160" height="200" style="z-index: 3;"></div>
+  <div data-v-175b7f65="" class="stamp-stub" zoomed="false" colors="[object Object]" style="z-index: 400;"></div>
+  <div data-v-175b7f65="" class="habit-preview-stub" habit="[object Object]"></div><!-- Hint minimalista: peeks (abas) ficam à direita no zoom -->
+  <!--v-if-->
+  <!--v-if-->
+</div>"
+`;
+
+exports[`Component Snapshots - Sprint 5 Habits > Paper > should render task paper collapsed 1`] = `
+"<div data-v-175b7f65="" class="task-paper hover-enabled" style="left: 100px; top: 100px; cursor: pointer;">
+  <div data-v-175b7f65="" class="v-img-stub" src="/svg/old-paper-4.svg" alt="Old Paper" width="160" height="200" style="z-index: 3;"></div>
+  <div data-v-175b7f65="" class="stamp-stub" zoomed="false" colors="[object Object]" style="z-index: 400;"></div>
+  <div data-v-175b7f65="" class="task-preview-stub" task="[object Object]"></div><!-- Hint minimalista: peeks (abas) ficam à direita no zoom -->
+  <!--v-if-->
+  <!--v-if-->
+</div>"
+`;

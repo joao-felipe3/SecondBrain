@@ -1,9 +1,13 @@
-import { describe, it, expect } from 'vitest'
-import { mount } from '@vue/test-utils'
-import HabitPreview from '~/components/features/tasks/board/HabitPreview.vue'
-import Paper from '~/components/features/tasks/board/Paper.vue'
+import { describe, it, expect, beforeEach } from 'vitest';
+import { mount } from '@vue/test-utils';
+import { setActivePinia, createPinia } from 'pinia';
+import HabitPreview from '~/components/features/tasks/board/HabitPreview.vue';
+import Paper from '~/components/features/tasks/board/Paper.vue';
 
 describe('Component Snapshots - Sprint 5 Habits', () => {
+  beforeEach(() => {
+    setActivePinia(createPinia());
+  });
   describe('HabitPreview', () => {
     it('should render with default habit data', () => {
       const habit = {
@@ -19,7 +23,7 @@ describe('Component Snapshots - Sprint 5 Habits', () => {
           longestStreak: 14,
           aderencePercent: 85,
         },
-      }
+      };
 
       const wrapper = mount(HabitPreview, {
         props: { habit },
@@ -28,10 +32,10 @@ describe('Component Snapshots - Sprint 5 Habits', () => {
             teleport: true,
           },
         },
-      })
+      });
 
-      expect(wrapper.html()).toMatchSnapshot()
-    })
+      expect(wrapper.html()).toMatchSnapshot();
+    });
 
     it('should render with high streak', () => {
       const habit = {
@@ -47,7 +51,7 @@ describe('Component Snapshots - Sprint 5 Habits', () => {
           longestStreak: 60,
           aderencePercent: 100,
         },
-      }
+      };
 
       const wrapper = mount(HabitPreview, {
         props: { habit },
@@ -56,10 +60,10 @@ describe('Component Snapshots - Sprint 5 Habits', () => {
             teleport: true,
           },
         },
-      })
+      });
 
-      expect(wrapper.html()).toMatchSnapshot()
-    })
+      expect(wrapper.html()).toMatchSnapshot();
+    });
 
     it('should render with no streak data', () => {
       const habit = {
@@ -70,7 +74,7 @@ describe('Component Snapshots - Sprint 5 Habits', () => {
         prize: 20,
         deadline: new Date('2026-05-06T10:00:00Z'),
         recurringRule: { frequency: 'weekly', daysOfWeek: [1, 3, 5] },
-      }
+      };
 
       const wrapper = mount(HabitPreview, {
         props: { habit },
@@ -79,10 +83,10 @@ describe('Component Snapshots - Sprint 5 Habits', () => {
             teleport: true,
           },
         },
-      })
+      });
 
-      expect(wrapper.html()).toMatchSnapshot()
-    })
+      expect(wrapper.html()).toMatchSnapshot();
+    });
 
     it('should render with weekly schedule', () => {
       const habit = {
@@ -101,7 +105,7 @@ describe('Component Snapshots - Sprint 5 Habits', () => {
           longestStreak: 15,
           aderencePercent: 78,
         },
-      }
+      };
 
       const wrapper = mount(HabitPreview, {
         props: { habit },
@@ -110,11 +114,11 @@ describe('Component Snapshots - Sprint 5 Habits', () => {
             teleport: true,
           },
         },
-      })
+      });
 
-      expect(wrapper.html()).toMatchSnapshot()
-    })
-  })
+      expect(wrapper.html()).toMatchSnapshot();
+    });
+  });
 
   describe('Paper', () => {
     it('should render task paper collapsed', () => {
@@ -122,7 +126,7 @@ describe('Component Snapshots - Sprint 5 Habits', () => {
         _id: '123',
         name: 'Exercise Task',
         description: 'Daily exercise',
-      }
+      };
 
       const wrapper = mount(Paper, {
         props: {
@@ -152,10 +156,10 @@ describe('Component Snapshots - Sprint 5 Habits', () => {
             },
           },
         },
-      })
+      });
 
-      expect(wrapper.html()).toMatchSnapshot()
-    })
+      expect(wrapper.html()).toMatchSnapshot();
+    });
 
     it('should render paper with habit component', () => {
       const habit = {
@@ -167,7 +171,7 @@ describe('Component Snapshots - Sprint 5 Habits', () => {
           currentStreak: 10,
           aderencePercent: 90,
         },
-      }
+      };
 
       const wrapper = mount(Paper, {
         props: {
@@ -197,9 +201,9 @@ describe('Component Snapshots - Sprint 5 Habits', () => {
             },
           },
         },
-      })
+      });
 
-      expect(wrapper.html()).toMatchSnapshot()
-    })
-  })
-})
+      expect(wrapper.html()).toMatchSnapshot();
+    });
+  });
+});
