@@ -1465,8 +1465,8 @@
     "semantic_hash": ""
   },
   "Backend/tests/unit/projects/services/evm/utils/evm-curve.util.spec.ts": {
-    "mtime": 1789527823.7149637,
-    "ast_hash": "349eec65b1bb99cabf73cc1c7bef2394",
+    "mtime": 1789530813.6309967,
+    "ast_hash": "f111e24ea03acfd899507eeb70170ed0",
     "semantic_hash": ""
   },
   "Backend/tests/unit/projects/services/execution/leaf-tasks-buffer.service.spec.ts": {
@@ -2715,8 +2715,8 @@
     "semantic_hash": ""
   },
   "Frontend/pages/index.vue": {
-    "mtime": 1787194750.5150552,
-    "ast_hash": "53a62123f6e207dff67029806d227271",
+    "mtime": 1793309529.6384668,
+    "ast_hash": "1c18f7517a61a2901cb27d3c14053916",
     "semantic_hash": ""
   },
   "Frontend/pages/projects/index.vue": {
@@ -3130,13 +3130,13 @@
     "semantic_hash": ""
   },
   "Frontend/components/features/hall/GuildNpcSpeechBubble.vue": {
-    "mtime": 1786924574.5204966,
-    "ast_hash": "a50876fc1e48577482bb243d70e46ef2",
+    "mtime": 1793309529.2323906,
+    "ast_hash": "a7bfc3de1ac29cb6142996f7cd729c93",
     "semantic_hash": ""
   },
   "Frontend/components/features/hall/GuildParticlesCanvas.vue": {
-    "mtime": 1787248185.4208498,
-    "ast_hash": "7f412c1a0d975cb17149b970e3456cd0",
+    "mtime": 1793309529.328262,
+    "ast_hash": "3ab799f0fb88870264efa83032012750",
     "semantic_hash": ""
   },
   "Frontend/components/features/hall/GuildReceptionDesk.vue": {
@@ -3305,18 +3305,18 @@
     "semantic_hash": ""
   },
   "Frontend/components/features/hall/GuildArchPortal.vue": {
-    "mtime": 1786924574.514495,
-    "ast_hash": "cfd9d9bca00923bc0f02d014e05abf18",
+    "mtime": 1793309528.6006587,
+    "ast_hash": "33be1bea8f03d191465637530d3b3c07",
     "semantic_hash": ""
   },
   "Frontend/components/features/hall/GuildDiegeticHotspots.vue": {
-    "mtime": 1788144705.49398,
-    "ast_hash": "0d4440263bfc9c92a7e8f96d1e4bab12",
+    "mtime": 1793309528.9521654,
+    "ast_hash": "f1e5c9e6dd65ca5df3198ee01403b208",
     "semantic_hash": ""
   },
   "Frontend/components/features/hall/GuildMobileJournal.vue": {
-    "mtime": 1786924574.5194955,
-    "ast_hash": "75ea673a57f7f765268637992da84410",
+    "mtime": 1793309529.1332383,
+    "ast_hash": "12d13473819ebd98ffb21a7c9505f5ac",
     "semantic_hash": ""
   },
   "Frontend/components/features/hall/GuildTopBanner.vue": {
@@ -3325,8 +3325,8 @@
     "semantic_hash": ""
   },
   "Frontend/components/features/hall/GuildVfxLayer.vue": {
-    "mtime": 1786924574.5254962,
-    "ast_hash": "9bd31015cd10876717ac9d0be0bd89e5",
+    "mtime": 1793309529.439627,
+    "ast_hash": "ebe727ae209bac27a75f5e8ad6ceb84c",
     "semantic_hash": ""
   },
   "Frontend/public/imagens/Entrada-mobile.png": {
@@ -3340,8 +3340,8 @@
     "semantic_hash": ""
   },
   "Frontend/components/features/hall/GuildLibraryPortal.vue": {
-    "mtime": 1786924574.5184975,
-    "ast_hash": "56531a7a3ab307ad04bd998eabb3286a",
+    "mtime": 1793309529.0916052,
+    "ast_hash": "cc2feaed7089baaf0eff42bc47794cb7",
     "semantic_hash": ""
   },
   "Frontend/public/vfx/chair.png": {
@@ -3365,8 +3365,8 @@
     "semantic_hash": ""
   },
   "Project/FRONTEND_REFACTORING_PLAN.md": {
-    "mtime": 1787972358.1241343,
-    "ast_hash": "f2ac978d1132089a80610cd14541251a",
+    "mtime": 1793309497.713509,
+    "ast_hash": "a632f01f307d944759facaa89cafee7c",
     "semantic_hash": ""
   },
   "Project/adr/004-validation-strategy.md": {

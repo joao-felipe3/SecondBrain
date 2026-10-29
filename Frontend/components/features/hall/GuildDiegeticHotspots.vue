@@ -1,9 +1,9 @@
 <template>
-  <div v-if="!isMobile" class="diegetic-hotspots-layer">
+  <div class="diegetic-hotspots-layer" :class="{ 'is-mobile-hotspots': isMobile }">
     <!-- HOTSPOT CENTRAL: ESCADARIA & MEZANINO (CARTOGRAFIA / CALENDÁRIO -> /calendar) -->
     <div
       class="staircase-hotspot-zone"
-      :class="{ 'is-active': isStairsHovered }"
+      :class="{ 'is-active': isStairsActive }"
       @click="onStairsClick"
       @mouseenter="onStairsHover"
       @mouseleave="onStairsLeave"
@@ -15,7 +15,7 @@
 
     <!-- FLÂMULA PENDURADA NO MEZANINO BALANÇANDO AO FOCAR A ESCADARIA -->
     <GuildStaircasePennant
-      :is-hovered="isStairsHovered"
+      :is-hovered="isStairsActive"
       :is-zooming="isTransitioning"
       @hover="onStairsHover"
       @leave="onStairsLeave"
@@ -24,7 +24,9 @@
 
     <!-- HOTSPOT DIREITO: PORTAL ANIMADO DA BIBLIOTECA DA GUILDA (/projects) -->
     <GuildLibraryPortal
+      :is-mobile="isMobile"
       :is-transitioning="isTransitioning"
+      :force-open="isRightDoorHovered"
       @hover="onLibraryHover"
       @leave="onLibraryLeave"
       @door-click="onLibraryClick"
@@ -49,6 +51,13 @@
       @mouseleave="emit('updateTooltip', null)"
     >
       <div class="dagger-highlight-aura"></div>
+      <img
+        v-if="isMobile"
+        src="/images/guild/dagger-sprite.png"
+        alt="Adaga Fincada no Balcão"
+        class="dagger-sprite-img"
+        draggable="false"
+      />
       <span v-if="isDaggerShaking" class="dagger-sparks">✨</span>
     </div>
 
@@ -79,20 +88,32 @@
         <span class="gold-text">+1 Gold 🪙</span>
       </div>
     </div>
+
+    <!-- EASTER EGG: CANECA DE HIDROMEL NA MESA -->
+    <div
+      class="hotspot-area mead-easter-egg-area"
+      :class="{ 'animate-mead-toast': isMeadToasting }"
+      @click="triggerMeadInteraction"
+      @mouseenter="emit('updateTooltip', '🍺 Brindar com Caneca de Hidromel')"
+      @mouseleave="emit('updateTooltip', null)"
+    >
+      <span v-if="isMeadToasting" class="mead-foam-bubbles">🍺✨ Saúde!</span>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
-import UiWaxSeal from '~/components/ui/diegetic/UiWaxSeal.vue';
+import { ref, computed } from 'vue';
 import GuildDeskBookWidget from '~/components/features/hall/GuildDeskBookWidget.vue';
 import GuildLibraryPortal from '~/components/features/hall/GuildLibraryPortal.vue';
 import GuildStaircasePennant from '~/components/features/hall/GuildStaircasePennant.vue';
 import { useGuildAudio } from '~/composables/ui/useGuildAudio';
 
-defineProps<{
+const props = defineProps<{
   isMobile: boolean;
   isTransitioning?: boolean;
+  isRightDoorHovered?: boolean;
+  isStairsHovered?: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -108,31 +129,38 @@ const emit = defineEmits<{
 
 const { playCoinsSound, playDaggerSound, playPennantFlutterSound } = useGuildAudio();
 
-const isStairsHovered = ref(false);
+const isStairsHoveredLocal = ref(false);
+const isStairsActive = computed(() => isStairsHoveredLocal.value || Boolean(props.isStairsHovered));
 
 function onStairsHover() {
-  isStairsHovered.value = true;
+  if (props.isMobile) return;
+  isStairsHoveredLocal.value = true;
   playPennantFlutterSound();
   emit('updateTooltip', '📜 Mezanino da Guilda: Calendário & Cartografia');
   emit('stairsHover');
 }
 
 function onStairsLeave() {
-  isStairsHovered.value = false;
+  if (props.isMobile) return;
+  isStairsHoveredLocal.value = false;
   emit('updateTooltip', null);
   emit('stairsLeave');
 }
 
 function onStairsClick() {
+  isStairsHoveredLocal.value = true;
+  playPennantFlutterSound();
   emit('stairsClick');
 }
 
 function onLibraryHover() {
+  if (props.isMobile) return;
   emit('updateTooltip', '📜 Acessar Biblioteca de Arquivos e Projetos');
   emit('rightDoorHover');
 }
 
 function onLibraryLeave() {
+  if (props.isMobile) return;
   emit('updateTooltip', null);
   emit('rightDoorLeave');
 }
@@ -143,6 +171,7 @@ function onLibraryClick() {
 
 const isDaggerShaking = ref(false);
 const isCoinsPopping = ref(false);
+const isMeadToasting = ref(false);
 
 interface GoldPopup {
   id: number;
@@ -171,15 +200,29 @@ function triggerCoinsInteraction(event: MouseEvent) {
   }, 250);
 
   const id = ++goldIdCounter;
-  const rect = (event.currentTarget as HTMLElement).getBoundingClientRect();
-  const x = event.clientX - rect.left - 16;
-  const y = event.clientY - rect.top - 20;
+  const target = event.currentTarget as HTMLElement | null;
+  let x = 10;
+  let y = -10;
+  if (target && event.clientX) {
+    const rect = target.getBoundingClientRect();
+    x = event.clientX - rect.left - 16;
+    y = event.clientY - rect.top - 20;
+  }
 
   goldPopups.value.push({ id, x, y });
 
   setTimeout(() => {
     goldPopups.value = goldPopups.value.filter((p) => p.id !== id);
   }, 1200);
+}
+
+// Easter Egg: Caneca de Hidromel
+function triggerMeadInteraction() {
+  playCoinsSound();
+  isMeadToasting.value = true;
+  setTimeout(() => {
+    isMeadToasting.value = false;
+  }, 900);
 }
 </script>
 
@@ -211,6 +254,7 @@ function triggerCoinsInteraction(event: MouseEvent) {
   align-items: center;
   justify-content: center;
   transition: all 0.3s ease;
+  -webkit-tap-highlight-color: transparent;
 }
 
 /* HOTSPOT CENTRAL: ESCADARIA & MEZANINO (/calendar) */
@@ -224,6 +268,7 @@ function triggerCoinsInteraction(event: MouseEvent) {
   z-index: 5;
   overflow: visible;
   transition: all 0.3s ease;
+  -webkit-tap-highlight-color: transparent;
 }
 
 /* BRILHO AMBIENTE DIFUSO DO MEZANINO (SUAVE E DIEGÉTICO) */
@@ -289,14 +334,6 @@ function triggerCoinsInteraction(event: MouseEvent) {
   }
 }
 
-/* BIBLIOTECA DE ARQUIVOS (PORTA DIREITA DA ARTE) */
-.arch-library-area {
-  top: 25%;
-  right: 3%;
-  width: 18%;
-  height: 60%;
-}
-
 /* WIDGET DO LIVRO ABERTO (BALCÃO) */
 .desk-book-widget-container {
   position: absolute;
@@ -306,6 +343,14 @@ function triggerCoinsInteraction(event: MouseEvent) {
   height: 16%;
   cursor: pointer;
   z-index: 8;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.diegetic-hotspots-layer.is-mobile-hotspots .desk-book-widget-container {
+  bottom: 20%;
+  left: 60%;
+  width: 14%;
+  height: 16%;
 }
 
 /* EASTER EGG: ADAGA FINCADA */
@@ -318,6 +363,21 @@ function triggerCoinsInteraction(event: MouseEvent) {
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+.diegetic-hotspots-layer.is-mobile-hotspots .dagger-easter-egg-area {
+  bottom: 17%;
+  left: 69%;
+  width: 5%;
+  height: 13%;
+}
+
+.dagger-sprite-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.7));
+  pointer-events: none;
 }
 
 .dagger-highlight-aura {
@@ -367,6 +427,13 @@ function triggerCoinsInteraction(event: MouseEvent) {
   user-select: none;
 }
 
+.diegetic-hotspots-layer.is-mobile-hotspots .coins-easter-egg-area {
+  bottom: 14%;
+  left: 73%;
+  width: 9.5%;
+  height: 11%;
+}
+
 .coins-sprite-img {
   width: 100%;
   height: 100%;
@@ -413,51 +480,33 @@ function triggerCoinsInteraction(event: MouseEvent) {
   z-index: 10;
 }
 
-/* EFEITOS E ANIMAÇÕES DOS OUTROS HOTSPOTS */
-.hotspot-arch-glow {
+/* EASTER EGG: CANECA DE HIDROMEL NA MESA */
+.mead-easter-egg-area {
+  top: 108%;
+  left: 25%;
+  width: 7%;
+  height: 14%;
+  z-index: 9;
+}
+
+.diegetic-hotspots-layer.is-mobile-hotspots .mead-easter-egg-area {
+  top: 128%;
+  left: 26%;
+  width: 8%;
+  height: 15%;
+}
+
+.mead-foam-bubbles {
   position: absolute;
-  inset: 0;
-  border-radius: 40% 40% 0 0;
-  opacity: 0;
-  transition: opacity 0.3s ease;
-  pointer-events: none;
-}
-
-.arch-library-area:hover .hotspot-arch-glow {
-  opacity: 1;
-}
-
-.hotspot-diegetic-label {
-  background: radial-gradient(
-    circle at 50% 50%,
-    var(--guild-parchment-base, #f4e4bc) 0%,
-    var(--guild-parchment-dark, #d8bc82) 100%
-  );
-  border: 2px solid var(--guild-wood-mid, #5c3a1e);
-  border-radius: 8px;
-  padding: 0.5rem 1rem;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.6);
-  transition:
-    transform 0.25s ease,
-    border-color 0.25s ease,
-    box-shadow 0.25s ease;
-  z-index: 2;
-}
-
-.arch-library-area:hover .hotspot-diegetic-label {
-  transform: translateY(-6px) scale(1.06);
-  border-color: var(--guild-blue-glow, #4fc3f7);
-  box-shadow: 0 10px 24px rgba(40, 160, 230, 0.5);
-}
-
-.label-title {
+  top: -22px;
   font-family: var(--font-guild-title, serif);
   font-weight: bold;
-  color: var(--guild-wood-dark, #2b1810);
-  font-size: 0.95rem;
+  font-size: 0.9rem;
+  color: #fef08a;
+  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.9);
+  white-space: nowrap;
+  pointer-events: none;
+  animation: float-up-gold 0.9s ease-out forwards;
 }
 
 /* ANIMAÇÃO SHAKE DE ADAGA */

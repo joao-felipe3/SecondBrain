@@ -1,9 +1,17 @@
 <template>
-  <canvas ref="canvasRef" class="guild-particles-canvas"></canvas>
+  <canvas
+    ref="canvasRef"
+    class="guild-particles-canvas"
+    :class="{ 'is-mobile-canvas': isMobile }"
+  ></canvas>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onBeforeUnmount } from "vue";
+import { ref, onMounted, onBeforeUnmount } from 'vue';
+
+const props = defineProps<{
+  isMobile?: boolean;
+}>();
 
 const canvasRef = ref<HTMLCanvasElement | null>(null);
 let animId: number | null = null;
@@ -27,7 +35,7 @@ interface Particle {
   phase: number;
   shimmerSpeed: number;
   hasGlint: boolean;
-  type: "ember" | "dust";
+  type: 'ember' | 'dust';
 }
 
 const particles: Particle[] = [];
@@ -49,30 +57,32 @@ const pointer = {
 };
 
 const GOLD_PALETTE = [
-  { main: "#ffd700", glow: "#ffb700" }, // Ouro Nobre
-  { main: "#ffe082", glow: "#ffa000" }, // Âmbar Quente
-  { main: "#ffec8b", glow: "#ffc107" }, // Ouro Claro
-  { main: "#fff4b8", glow: "#ffeb3b" }, // Centelha Brilhante
-  { main: "#f5c542", glow: "#e65100" }, // Ouro Antigo
+  { main: '#ffd700', glow: '#ffb700' }, // Ouro Nobre
+  { main: '#ffe082', glow: '#ffa000' }, // Âmbar Quente
+  { main: '#ffec8b', glow: '#ffc107' }, // Ouro Claro
+  { main: '#fff4b8', glow: '#ffeb3b' }, // Centelha Brilhante
+  { main: '#f5c542', glow: '#e65100' }, // Ouro Antigo
 ];
 
 const EMBER_PALETTE = [
-  { main: "#ffaa00", glow: "#ff5500" },
-  { main: "#ff6a00", glow: "#d82b00" },
-  { main: "#ffd700", glow: "#ff7b00" },
-  { main: "#ff4500", glow: "#b71c1c" },
+  { main: '#ffaa00', glow: '#ff5500' },
+  { main: '#ff6a00', glow: '#d82b00' },
+  { main: '#ffd700', glow: '#ff7b00' },
+  { main: '#ff4500', glow: '#b71c1c' },
 ];
 
 function createEmber(width: number, height: number): Particle {
-  // Posição base na lareira ao fundo (~59.3% X, ~49.5% Y em relação ao saguão)
-  const baseX = width * 0.593 + (Math.random() * (width * 0.02) - width * 0.01);
-  const baseY =
-    height * 0.495 + (Math.random() * (height * 0.015) - height * 0.0075);
+  // Posição base na lareira ao fundo (ajustada para 16:9 desktop ou 9:16 mobile)
+  const ratioX = props.isMobile ? 0.655 : 0.593;
+  const ratioY = props.isMobile ? 0.608 : 0.495;
+  const spreadY = props.isMobile ? 0.006 : 0.015;
+  const baseX = width * ratioX + (Math.random() * (width * 0.02) - width * 0.01);
+  const baseY = height * ratioY + (Math.random() * (height * spreadY) - height * (spreadY / 2));
 
   const themeIndex = Math.floor(Math.random() * EMBER_PALETTE.length);
   const theme = EMBER_PALETTE[themeIndex] ?? {
-    main: "#ffaa00",
-    glow: "#ff5500",
+    main: '#ffaa00',
+    glow: '#ff5500',
   };
   const maxLife = Math.random() * 110 + 60;
 
@@ -95,19 +105,15 @@ function createEmber(width: number, height: number): Particle {
     phase: Math.random() * Math.PI * 2,
     shimmerSpeed: Math.random() * 0.1 + 0.05,
     hasGlint: false,
-    type: "ember",
+    type: 'ember',
   };
 }
 
-function createDust(
-  width: number,
-  height: number,
-  isInitial = false,
-): Particle {
+function createDust(width: number, height: number, isInitial = false): Particle {
   const themeIndex = Math.floor(Math.random() * GOLD_PALETTE.length);
   const theme = GOLD_PALETTE[themeIndex] ?? {
-    main: "#ffd700",
-    glow: "#ffb700",
+    main: '#ffd700',
+    glow: '#ffb700',
   };
   const size = Math.random() * 2.2 + 0.8;
   const isSpecial = Math.random() < 0.25 && size > 1.6;
@@ -131,7 +137,7 @@ function createDust(
     phase: Math.random() * Math.PI * 2,
     shimmerSpeed: Math.random() * 0.06 + 0.02,
     hasGlint: isSpecial,
-    type: "dust",
+    type: 'dust',
   };
 }
 
@@ -223,7 +229,7 @@ function drawGlintStar(
 function render() {
   const canvas = canvasRef.value;
   if (!canvas) return;
-  const ctx = canvas.getContext("2d");
+  const ctx = canvas.getContext('2d');
   if (!ctx) return;
 
   const width = canvas.width;
@@ -234,7 +240,7 @@ function render() {
   updatePointerPhysics();
 
   ctx.save();
-  ctx.globalCompositeOperation = "lighter";
+  ctx.globalCompositeOperation = 'lighter';
 
   const isPointerActive = pointer.active && pointer.x > -1000;
   const pointerRadiusSq = pointer.radius * pointer.radius;
@@ -287,9 +293,7 @@ function render() {
 
     // 3. Atualização de posição com convecção e oscilação orgânica
     p.x += p.vx + Math.sin(p.life * p.waveFreq + p.phase) * p.waveAmp;
-    p.y +=
-      p.vy +
-      Math.cos(p.life * (p.waveFreq * 0.8) + p.phase) * (p.waveAmp * 0.6);
+    p.y += p.vy + Math.cos(p.life * (p.waveFreq * 0.8) + p.phase) * (p.waveAmp * 0.6);
 
     // 4. Cálculo de transparência e cintilação (shimmer)
     const shimmer = Math.sin(p.life * p.shimmerSpeed + p.phase) * 0.22;
@@ -310,11 +314,11 @@ function render() {
       ctx.save();
       ctx.globalAlpha = currentAlpha;
       ctx.fillStyle = p.color;
-      ctx.shadowBlur = p.type === "ember" ? 5 : p.hasGlint ? 6 : 3;
+      ctx.shadowBlur = p.type === 'ember' ? 5 : p.hasGlint ? 6 : 3;
       ctx.shadowColor = p.glowColor;
 
       // Desenho de ponto ou glint especial
-      if (p.hasGlint && p.type === "dust" && shimmer > 0.08) {
+      if (p.hasGlint && p.type === 'dust' && shimmer > 0.08) {
         drawGlintStar(ctx, p.x, p.y, p.size * 0.9, p.color, currentAlpha);
       } else {
         ctx.beginPath();
@@ -326,17 +330,8 @@ function render() {
     }
 
     // 6. Reciclagem ao expirar ou sair dos limites
-    if (
-      p.life >= p.maxLife ||
-      p.y < -30 ||
-      p.y > height + 30 ||
-      p.x < -40 ||
-      p.x > width + 40
-    ) {
-      particles[i] =
-        p.type === "ember"
-          ? createEmber(width, height)
-          : createDust(width, height, false);
+    if (p.life >= p.maxLife || p.y < -30 || p.y > height + 30 || p.x < -40 || p.x > width + 40) {
+      particles[i] = p.type === 'ember' ? createEmber(width, height) : createDust(width, height, false);
     }
   }
 
@@ -384,10 +379,11 @@ let resizeObserver: ResizeObserver | null = null;
 function handleResize() {
   const canvas = canvasRef.value;
   if (!canvas) return;
-  const parent = canvas.parentElement || document.body;
 
-  const width = parent.clientWidth || window.innerWidth || 1920;
-  const height = parent.clientHeight || window.innerHeight || 1080;
+  const rect = canvas.getBoundingClientRect();
+  const width = Math.round(rect.width) || canvas.parentElement?.clientWidth || window.innerWidth || 1920;
+  const height =
+    Math.round(rect.height) || canvas.parentElement?.clientHeight || window.innerHeight || 1080;
 
   // Manter resolução proporcional e nítida
   if (canvas.width !== width || canvas.height !== height) {
@@ -399,28 +395,25 @@ function handleResize() {
 
 onMounted(() => {
   handleResize();
-  initParticles(
-    canvasRef.value?.width || 1920,
-    canvasRef.value?.height || 1080,
-  );
+  initParticles(canvasRef.value?.width || 1920, canvasRef.value?.height || 1080);
   render();
 
-  if (typeof ResizeObserver !== "undefined" && canvasRef.value?.parentElement) {
+  if (typeof ResizeObserver !== 'undefined' && canvasRef.value?.parentElement) {
     resizeObserver = new ResizeObserver(() => {
       handleResize();
     });
     resizeObserver.observe(canvasRef.value.parentElement);
   }
 
-  window.addEventListener("resize", handleResize, { passive: true });
-  window.addEventListener("pointermove", handlePointerMove, { passive: true });
-  window.addEventListener("pointerleave", handlePointerLeave, {
+  window.addEventListener('resize', handleResize, { passive: true });
+  window.addEventListener('pointermove', handlePointerMove, { passive: true });
+  window.addEventListener('pointerleave', handlePointerLeave, {
     passive: true,
   });
-  window.addEventListener("touchstart", handleTouchMove, { passive: true });
-  window.addEventListener("touchmove", handleTouchMove, { passive: true });
-  window.addEventListener("touchend", handleTouchEnd, { passive: true });
-  window.addEventListener("touchcancel", handleTouchEnd, { passive: true });
+  window.addEventListener('touchstart', handleTouchMove, { passive: true });
+  window.addEventListener('touchmove', handleTouchMove, { passive: true });
+  window.addEventListener('touchend', handleTouchEnd, { passive: true });
+  window.addEventListener('touchcancel', handleTouchEnd, { passive: true });
 });
 
 onBeforeUnmount(() => {
@@ -431,14 +424,14 @@ onBeforeUnmount(() => {
     resizeObserver.disconnect();
     resizeObserver = null;
   }
-  if (typeof window !== "undefined") {
-    window.removeEventListener("resize", handleResize);
-    window.removeEventListener("pointermove", handlePointerMove);
-    window.removeEventListener("pointerleave", handlePointerLeave);
-    window.removeEventListener("touchstart", handleTouchMove);
-    window.removeEventListener("touchmove", handleTouchMove);
-    window.removeEventListener("touchend", handleTouchEnd);
-    window.removeEventListener("touchcancel", handleTouchEnd);
+  if (typeof window !== 'undefined') {
+    window.removeEventListener('resize', handleResize);
+    window.removeEventListener('pointermove', handlePointerMove);
+    window.removeEventListener('pointerleave', handlePointerLeave);
+    window.removeEventListener('touchstart', handleTouchMove);
+    window.removeEventListener('touchmove', handleTouchMove);
+    window.removeEventListener('touchend', handleTouchEnd);
+    window.removeEventListener('touchcancel', handleTouchEnd);
   }
 });
 </script>
@@ -453,5 +446,13 @@ onBeforeUnmount(() => {
   pointer-events: none;
   z-index: 15;
   will-change: transform;
+}
+
+/* No modo mobile, estende o canvas por toda a extensão vertical de Entrada-mobile.png */
+.guild-particles-canvas.is-mobile-canvas {
+  left: -0.364%;
+  top: -170.422%;
+  width: 91.096%;
+  height: 361.558%;
 }
 </style>

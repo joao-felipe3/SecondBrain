@@ -85,7 +85,7 @@ describe('evm-curve.util', () => {
         endDate: new Date('2026-01-05'),
       };
 
-      const result = buildEVMCurvePoints(dto as any);
+      const result = buildEVMCurvePoints(dto);
       expect(result.dates).toEqual([]);
       expect(result.plannedValue).toEqual([]);
       expect(result.actualValue).toEqual([]);

@@ -1,12 +1,8 @@
 <template>
   <!-- Wrapper da zona da biblioteca -->
-  <div ref="wrapperRef" class="library-portal-wrapper">
+  <div ref="wrapperRef" class="library-portal-wrapper" :class="{ 'is-mobile': isMobile }">
     <!-- CAMADA 1: Efeito de Vazamento de Luz Omnidirecional com Desvanecimento por Distância -->
-    <div
-      class="golden-light-leak"
-      :class="{ 'is-active': currentFrame > 0 }"
-      :style="lightLeakStyle"
-    >
+    <div class="golden-light-leak" :class="{ 'is-active': currentFrame > 0 }" :style="lightLeakStyle">
       <!-- Brilho Omnidirecional Volumétrico (Radiante em 360 graus com Falloff Suave) -->
       <div class="door-omnidirectional-glow"></div>
       <div class="door-core-halo"></div>
@@ -36,35 +32,30 @@
       title="Biblioteca & Arquivos"
     />
 
-    <!-- Tag Flutuante no Hover -->
-    <div class="portal-tooltip" v-if="isDoorHovered">
-      📜 Biblioteca & Arquivos
-    </div>
+    <!-- Tag Flutuante no Hover / Tap -->
+    <div class="portal-tooltip" v-if="isDoorHovered || forceOpen">📜 Biblioteca & Arquivos</div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from "vue";
-import { useGuildAudio } from "~/composables/ui/useGuildAudio";
+import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
+import { useGuildAudio } from '~/composables/ui/useGuildAudio';
 
 const props = defineProps<{
+  isMobile?: boolean;
   isTransitioning?: boolean;
+  forceOpen?: boolean;
 }>();
 
 const emit = defineEmits<{
-  (e: "hover"): void;
-  (e: "leave"): void;
-  (e: "doorClick"): void;
+  (e: 'hover'): void;
+  (e: 'leave'): void;
+  (e: 'doorClick'): void;
 }>();
 
 const { playDoorOpenSound, playDoorCloseSound } = useGuildAudio();
 
 // ─── Dados do Sprite (offsets em pixels analisados do PNG real) ───
-// PNG total: 2584 x 924 px | 9 frames de larguras variaveis
-// Frame 0 = porta fechada de frente; Frame 8 = quase totalmente aberta
-// offsetY: compensacao vertical (em px do sprite) para ancorar a base da porta.
-// Valores positivos deslocam o sprite para baixo (compensam a subida da base no spritesheet).
-// Ajuste finamente inspecionando visualmente frame a frame.
 const SPRITE_FRAMES = [
   { x: 0, w: 324, offsetY: 0 }, // frame 0 - porta fechada (referencia)
   { x: 327, w: 319, offsetY: 0 }, // frame 1
@@ -118,10 +109,7 @@ function startAnim(from: number, to: number, duration: number) {
     const rawT = Math.min(elapsed / animDuration, 1);
     const t = easeOutCubic(rawT);
     const frameIndex = Math.round(animFrom + (animTo - animFrom) * t);
-    currentFrame.value = Math.max(
-      0,
-      Math.min(SPRITE_FRAMES.length - 1, frameIndex),
-    );
+    currentFrame.value = Math.max(0, Math.min(SPRITE_FRAMES.length - 1, frameIndex));
     if (rawT < 1) {
       animRaf = requestAnimationFrame(tick);
     } else {
@@ -131,6 +119,17 @@ function startAnim(from: number, to: number, duration: number) {
 
   animRaf = requestAnimationFrame(tick);
 }
+
+// Dispara abertura dos 9 frames quando acionado pelo toque ou Diário Mobile
+watch(
+  () => props.forceOpen,
+  (val) => {
+    if (val) {
+      isDoorHovered.value = true;
+      startAnim(currentFrame.value, SPRITE_FRAMES.length - 1, OPEN_DURATION_MS);
+    }
+  },
+);
 
 // ─── Estilo calculado do sprite em pixels ───
 const spriteStyleFull = computed(() => {
@@ -149,7 +148,7 @@ const spriteStyleFull = computed(() => {
     backgroundImage: "url('/vfx/door-spritesheet.png')",
     backgroundSize: `${scaledTotalW}px ${scaledTotalH}px`,
     backgroundPosition: `-${scaledOffsetX}px ${scaledOffsetY}px`,
-    backgroundRepeat: "no-repeat",
+    backgroundRepeat: 'no-repeat',
     width: `${frame.w * scale}px`,
     height: `${scaledTotalH}px`,
   };
@@ -167,38 +166,44 @@ const lightLeakStyle = computed(() => {
   const progress = currentFrame.value / (SPRITE_FRAMES.length - 1);
 
   if (progress <= 0 || gapWidth <= 2) {
-    return { opacity: 0, display: "none" };
+    return { opacity: 0, display: 'none' };
   }
 
   return {
-    display: "block",
+    display: 'block',
     opacity: Math.min(progress * 1.1, 0.85),
     left: `${doorWidth - 6}px`,
     width: `${gapWidth + 28}px`,
     height: `${SPRITE_HEIGHT * scale * 0.9}px`,
     transform: `scaleX(${0.4 + progress * 0.6})`,
-    transformOrigin: "left center",
+    transformOrigin: 'left center',
   };
 });
 
 // ─── Handlers ───
 function onDoorHover() {
+  if (props.isMobile) return;
   isDoorHovered.value = true;
   playDoorOpenSound(OPEN_DURATION_MS);
-  emit("hover");
+  emit('hover');
   startAnim(currentFrame.value, SPRITE_FRAMES.length - 1, OPEN_DURATION_MS);
 }
 
 function onDoorLeave() {
+  if (props.isMobile) return;
   isDoorHovered.value = false;
   playDoorCloseSound(CLOSE_DURATION_MS);
-  emit("leave");
+  emit('leave');
   startAnim(currentFrame.value, 0, CLOSE_DURATION_MS);
 }
 
 function onDoorClick() {
-  playDoorOpenSound();
-  emit("doorClick");
+  isDoorHovered.value = true;
+  playDoorOpenSound(OPEN_DURATION_MS);
+  if (currentFrame.value < SPRITE_FRAMES.length - 1) {
+    startAnim(currentFrame.value, SPRITE_FRAMES.length - 1, OPEN_DURATION_MS);
+  }
+  emit('doorClick');
 }
 
 // ─── Lifecycle ───
@@ -231,6 +236,12 @@ onUnmounted(() => {
   z-index: 6;
   overflow: visible;
   pointer-events: none;
+}
+
+/* Alinhamento calibrado para o arco da biblioteca em Entrada-mobile.png */
+.library-portal-wrapper.is-mobile {
+  top: 26%;
+  right: 0.2%;
 }
 
 /* CAMADA 1: VAZAMENTO DE LUZ ALARANJADA OMNIDIRECIONAL */
@@ -385,17 +396,6 @@ onUnmounted(() => {
   animation: moteFloat 3.4s ease-in-out infinite 1.2s;
 }
 
-@keyframes lightRayPulse {
-  0% {
-    transform: scale(0.96) rotate(-1deg);
-    opacity: 0.8;
-  }
-  100% {
-    transform: scale(1.05) rotate(1deg);
-    opacity: 1;
-  }
-}
-
 @keyframes moteFloat {
   0% {
     opacity: 0;
@@ -451,7 +451,7 @@ onUnmounted(() => {
   -webkit-tap-highlight-color: transparent;
 }
 
-/* TAG FLUTUANTE NO HOVER */
+/* TAG FLUTUANTE NO HOVER / TAP */
 .portal-tooltip {
   position: absolute;
   top: 40%;
@@ -476,6 +476,12 @@ onUnmounted(() => {
   pointer-events: none;
   z-index: 20;
   animation: tooltipPop 0.25s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+.library-portal-wrapper.is-mobile .portal-tooltip {
+  font-size: 0.78rem;
+  padding: 0.35rem 0.75rem;
+  right: 65%;
 }
 
 @keyframes tooltipPop {

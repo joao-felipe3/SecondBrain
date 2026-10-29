@@ -32,8 +32,8 @@
 - [x] Implementar sistema de ancoragem de UI (`HUD Layer`) com `pointer-events: none` (`.guild-hud-layer`).
 - [x] Criar composable de áudio `useGuildAudio()` (gerenciamento de SFX, volume, mutar e variação de tom/pitch com Web Audio API).
 - [x] Construir `UiParchmentCard.vue` utilizando HSL CSS puro e gradientes orgânicos em substituição a SVGs estáticos.
-- [ ] Criar a pasta `components/ui/diegetic/` para isolamento dos componentes físicos do jogo e arquivo de exportação unificado `index.ts`.
-- [ ] Construir `UiWaxSeal.vue` com suporte a variações de cores: Vermelho Sangue (`#8B0000` / Alta), Azul Místico (`#0077BE` / Média), Verde Musgo (`#2E8B57` / Concluída) e Âmbar (`#D4AF37` / Hábito).
+- [x] Criar a pasta `components/ui/diegetic/` para isolamento dos componentes físicos do jogo e arquivo de exportação unificado `index.ts`.
+- [x] Construir `UiWaxSeal.vue` com suporte a variações de cores: Vermelho Sangue (`#8B0000` / Alta), Azul Místico (`#0077BE` / Média), Verde Musgo (`#2E8B57` / Concluída) e Âmbar (`#D4AF37` / Hábito).
 - [ ] Construir `UiIronDagger.vue` e `UiIronNail.vue` utilizando `drop-shadow` CSS para fixar tarefas urgentes e atrasadas.
 - [ ] Construir `UiWoodenFrame.vue` com grid flexível e textura rústica para containers do Kanban e tabelas.
 - [ ] Construir `UiRunicTile.vue` para placas de cabeçalho das 3 colunas Kanban e dos 7 dias da semana no Calendário.
@@ -69,7 +69,7 @@
 - [x] **Dessincronização de Brilhos:** Aplicar `radial-gradient` + `mix-blend-mode: color-dodge` com `animation-delay` em cada tocha.
 - [x] **Lareira ao Fundo:** Animação de pulso do fogo + emissão de fagulhas em loop (`GuildParticlesCanvas.vue` + `@keyframes sparkRise`).
 - [x] **Banners nas Colunas:** Aplicar balanço suave de vento (`@keyframes bannerSway`) com `transform-origin: top center`.
-- [ ] **Velas & Candelabros Secundários:** Spritesheet de chama variante para velinhas das mesas/balcão.
+- [x] **Velas & Candelabros Secundários:** Spritesheet de chama variante para velinhas das mesas/balcão.
 - [x] **Partículas Interativas de Poeira Dourada:** Poeira/fagulhas reagindo com repulsão sutil ao movimento do cursor.
 
 ### 3.3. Portais & Interatividade de Navegação
@@ -98,13 +98,13 @@
 
 - [x] **NPCs (Anão & Elfa):**
   - [ ] Posicionar sprite `.png` dos NPCs em `GuildNpcSpeechBubble.vue`.
-  - [ ] Aplicar animação CSS de respiração idle (`@keyframes npcIdle`).
+  - [x] Aplicar animação CSS de respiração idle (`@keyframes npcIdle`).
   - [x] Clique nos NPCs ativa balão de fala com frases dinâmicas de progresso do usuário.
   - [ ] Spritesheet animado do Anão Ferreiro batendo o martelo na bigorna em loop.
   - [ ] Spritesheet animado da Elfa Arcanista folheando pergaminhos em loop.
 - [x] **Pilha de Moedas no Balcão:** Clique toca SFX de ouro (`playCoinsSound`) + animação floating `+1 Gold`
-- [ ] **Adaga Fincada no Balcão:** Clique ativa tremedeira metálica (`playDaggerSound` + `@keyframes daggerVibrate`).
-- [ ] **Caneca de Hidromel:** Clique ativa animação de espuma subindo + SFX de brinde/gole.
+- [x] **Adaga Fincada no Balcão:** Clique ativa tremedeira metálica (`playDaggerSound` + `@keyframes daggerVibrate`).
+- [x] **Caneca de Hidromel:** Clique ativa animação de espuma subindo + SFX de brinde/gole.
 
 ---
 

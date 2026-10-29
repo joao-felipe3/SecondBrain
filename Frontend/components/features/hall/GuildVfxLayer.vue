@@ -54,29 +54,100 @@
       <div class="fire-sprite"></div>
     </div>
 
-    <!-- Tocha 10 (Mezanino Direito Extremo) -->
-    <div class="torch-container torch-10">
+    <!-- Tocha 10 (Mezanino Direito Extremo - apenas Desktop Expandido) -->
+    <div v-if="!isMobile" class="torch-container torch-10">
       <div class="torch-light-glow"></div>
       <div class="fire-sprite"></div>
     </div>
 
-    <!-- Tocha 11 (Ao lado da pilastra Centro-Esquerda) -->
-    <div class="torch-container torch-11">
+    <!-- Tocha 11 (Ao lado da pilastra Centro-Esquerda - apenas Desktop Expandido) -->
+    <div v-if="!isMobile" class="torch-container torch-11">
       <div class="torch-light-glow"></div>
       <div class="fire-sprite"></div>
     </div>
 
-    <!-- Tocha 12 (Ao lado da pilastra Centro-Direita) -->
-    <div class="torch-container torch-12">
+    <!-- Tocha 12 (Ao lado da pilastra Centro-Direita - apenas Desktop Expandido) -->
+    <div v-if="!isMobile" class="torch-container torch-12">
       <div class="torch-light-glow"></div>
       <div class="fire-sprite"></div>
     </div>
 
-    <!-- Tocha 13 (Parede Esquerda fora da safe zone) -->
-    <div class="torch-container torch-13">
+    <!-- Tocha 13 (Parede Esquerda fora da safe zone - apenas Desktop Expandido) -->
+    <div v-if="!isMobile" class="torch-container torch-13">
       <div class="torch-light-glow"></div>
       <div class="fire-sprite"></div>
     </div>
+
+    <!-- Velas das Mesas de Primeiro Plano (Desktop Expandido) -->
+    <template v-if="!isMobile">
+      <div class="torch-container candle-flame dc-1">
+        <div class="torch-light-glow candle-glow"></div>
+        <div class="fire-sprite"></div>
+      </div>
+      <div class="torch-container candle-flame dc-2">
+        <div class="torch-light-glow candle-glow"></div>
+        <div class="fire-sprite"></div>
+      </div>
+    </template>
+
+    <!-- Lustres & Velas das Mesas (Mobile Portrait - Entrada-mobile.png) -->
+    <template v-if="isMobile">
+      <!-- Lustre Superior Esquerdo (3 velas principais) -->
+      <div class="torch-container candle-flame mc-1">
+        <div class="torch-light-glow candle-glow"></div>
+        <div class="fire-sprite"></div>
+      </div>
+      <div class="torch-container candle-flame mc-2">
+        <div class="torch-light-glow candle-glow"></div>
+        <div class="fire-sprite"></div>
+      </div>
+      <div class="torch-container candle-flame mc-3">
+        <div class="torch-light-glow candle-glow"></div>
+        <div class="fire-sprite"></div>
+      </div>
+
+      <!-- Lustre Central do Mezanino (3 velas) -->
+      <div class="torch-container candle-flame mc-4">
+        <div class="torch-light-glow candle-glow"></div>
+        <div class="fire-sprite"></div>
+      </div>
+      <div class="torch-container candle-flame mc-5">
+        <div class="torch-light-glow candle-glow"></div>
+        <div class="fire-sprite"></div>
+      </div>
+      <div class="torch-container candle-flame mc-6">
+        <div class="torch-light-glow candle-glow"></div>
+        <div class="fire-sprite"></div>
+      </div>
+
+      <!-- Lustre Superior Direito (3 velas principais) -->
+      <div class="torch-container candle-flame mc-7">
+        <div class="torch-light-glow candle-glow"></div>
+        <div class="fire-sprite"></div>
+      </div>
+      <div class="torch-container candle-flame mc-8">
+        <div class="torch-light-glow candle-glow"></div>
+        <div class="fire-sprite"></div>
+      </div>
+      <div class="torch-container candle-flame mc-9">
+        <div class="torch-light-glow candle-glow"></div>
+        <div class="fire-sprite"></div>
+      </div>
+
+      <!-- Velas das Mesas Inferiores (Mesa Esquerda + 2 Velas da Mesa do Mapa) -->
+      <div class="torch-container candle-flame mc-10">
+        <div class="torch-light-glow candle-glow"></div>
+        <div class="fire-sprite"></div>
+      </div>
+      <div class="torch-container candle-flame mc-11">
+        <div class="torch-light-glow candle-glow"></div>
+        <div class="fire-sprite"></div>
+      </div>
+      <div class="torch-container candle-flame mc-12">
+        <div class="torch-light-glow candle-glow"></div>
+        <div class="fire-sprite"></div>
+      </div>
+    </template>
 
     <!-- Lareira ao Fundo + Labaredas + Fagulhas (.hearth-flames) -->
     <div class="hearth-area hearth-flames">
@@ -93,7 +164,10 @@
 </template>
 
 <script setup lang="ts">
-// Camada de efeitos visuais (12 tochas + lareira e fagulhas 2D)
+// Camada de efeitos visuais (tochas, lustres, velas + lareira e fagulhas 2D)
+defineProps<{
+  isMobile?: boolean;
+}>();
 </script>
 
 <style scoped>
@@ -130,7 +204,7 @@
 .fire-sprite {
   width: 100%;
   height: 100%;
-  background-image: url("~/assets/img/fire-spritesheet-16.png");
+  background-image: url('~/assets/img/fire-spritesheet-16.png');
   background-size: 1600% 100%; /* 16 frames */
   background-repeat: no-repeat;
   animation: playFire 1s steps(15) infinite;
@@ -366,6 +440,195 @@
 .torch-13 .torch-light-glow {
   animation: lightPulse 1.75s ease-in-out infinite alternate;
   animation-delay: 0.6s;
+}
+
+/* VELAS & CANDELABROS SECUNDÁRIOS (DESKTOP & MOBILE) */
+.candle-flame {
+  aspect-ratio: 14 / 21;
+}
+
+.candle-glow {
+  inset: -140%;
+  filter: blur(10px);
+  animation: lightPulse 1.5s ease-in-out infinite alternate;
+}
+
+/* Velas Desktop Expandido (Mesas inferiores) */
+.dc-1 {
+  top: 103.5%;
+  left: 10.6%;
+  width: 1.6%;
+}
+.dc-1 .fire-sprite {
+  animation-duration: 1.15s;
+  animation-delay: 0.25s;
+}
+
+.dc-2 {
+  top: 118.5%;
+  left: 82.8%;
+  width: 1.6%;
+}
+.dc-2 .fire-sprite {
+  animation-duration: 1.05s;
+  animation-delay: 0.55s;
+}
+
+/* Lustres e Velas Mobile (Entrada-mobile.png) */
+.mc-1 {
+  top: -98.5%;
+  left: 5.56%;
+  width: 2%;
+}
+.mc-1 .fire-sprite {
+  animation-duration: 1.1s;
+  animation-delay: 0.1s;
+}
+.mc-1 .candle-glow {
+  animation-delay: 0.1s;
+}
+
+.mc-2 {
+  top: -104.8%;
+  left: 18.4%;
+  width: 2.2%;
+}
+.mc-2 .fire-sprite {
+  animation-duration: 0.95s;
+  animation-delay: 0.35s;
+}
+.mc-2 .candle-glow {
+  animation-delay: 0.35s;
+}
+
+.mc-3 {
+  top: -96.5%;
+  left: 31.88%;
+  width: 2%;
+}
+.mc-3 .fire-sprite {
+  animation-duration: 1.2s;
+  animation-delay: 0.6s;
+}
+.mc-3 .candle-glow {
+  animation-delay: 0.6s;
+}
+
+.mc-4 {
+  top: -64.5%;
+  left: 35.62%;
+  width: 1.5%;
+}
+.mc-4 .fire-sprite {
+  animation-duration: 1.15s;
+  animation-delay: 0.2s;
+}
+.mc-4 .candle-glow {
+  animation-delay: 0.2s;
+}
+
+.mc-5 {
+  top: -69.2%;
+  left: 44.45%;
+  width: 1.6%;
+}
+.mc-5 .fire-sprite {
+  animation-duration: 1.05s;
+  animation-delay: 0.45s;
+}
+.mc-5 .candle-glow {
+  animation-delay: 0.45s;
+}
+
+.mc-6 {
+  top: -64.5%;
+  left: 53.11%;
+  width: 1.5%;
+}
+.mc-6 .fire-sprite {
+  animation-duration: 1.25s;
+  animation-delay: 0.7s;
+}
+.mc-6 .candle-glow {
+  animation-delay: 0.7s;
+}
+
+.mc-7 {
+  top: -96.5%;
+  left: 56.39%;
+  width: 2%;
+}
+.mc-7 .fire-sprite {
+  animation-duration: 1.08s;
+  animation-delay: 0.15s;
+}
+.mc-7 .candle-glow {
+  animation-delay: 0.15s;
+}
+
+.mc-8 {
+  top: -104.8%;
+  left: 69.78%;
+  width: 2.2%;
+}
+.mc-8 .fire-sprite {
+  animation-duration: 1.18s;
+  animation-delay: 0.5s;
+}
+.mc-8 .candle-glow {
+  animation-delay: 0.5s;
+}
+
+.mc-9 {
+  top: -98.5%;
+  left: 82.62%;
+  width: 2%;
+}
+.mc-9 .fire-sprite {
+  animation-duration: 1.02s;
+  animation-delay: 0.3s;
+}
+.mc-9 .candle-glow {
+  animation-delay: 0.3s;
+}
+
+.mc-10 {
+  top: 107.5%;
+  left: 2.82%;
+  width: 1.85%;
+}
+.mc-10 .fire-sprite {
+  animation-duration: 1.12s;
+  animation-delay: 0.25s;
+}
+.mc-10 .candle-glow {
+  animation-delay: 0.25s;
+}
+
+.mc-11 {
+  top: 127.8%;
+  left: 61.95%;
+  width: 2.1%;
+}
+.mc-11 .fire-sprite {
+  animation-duration: 0.98s;
+  animation-delay: 0.4s;
+}
+.mc-11 .candle-glow {
+  animation-delay: 0.4s;
+}
+
+.mc-12 {
+  top: 123.5%;
+  left: 65.86%;
+  width: 2.1%;
+}
+.mc-12 .fire-sprite {
+  animation-duration: 1.16s;
+  animation-delay: 0.65s;
+}
+.mc-12 .candle-glow {
+  animation-delay: 0.65s;
 }
 
 /* LAREIRA AO FUNDO + LABAREDAS (.hearth-flames) */

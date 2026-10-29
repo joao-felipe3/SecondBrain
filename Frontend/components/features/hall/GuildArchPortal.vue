@@ -1,18 +1,11 @@
 <template>
-  <div>
+  <div :class="{ 'is-mobile-portal': isMobile }">
     <!-- CAMADA DE OVERLAY SVG PARA ALINHAMENTO PRECISO (VIEWBOX 1000 x 562.5) -->
-    <svg
-      v-if="!isMobile"
-      class="guild-svg-overlay"
-      viewBox="0 0 1000 562.5"
-      preserveAspectRatio="none"
-    >
+    <svg class="guild-svg-overlay" viewBox="0 0 1000 562.5" preserveAspectRatio="none">
       <defs>
         <!-- ClipPath do Arco da Esquerda (Ajustado estritamente ao vão de pedra) -->
         <clipPath id="left-arch-clip">
-          <path
-            d="M 10 550 L 52 240 Q 52 116 144 116 Q 236 116 236 240 L 236 550 Z"
-          />
+          <path d="M 10 550 L 52 240 Q 52 116 144 116 Q 236 116 236 240 L 236 550 Z" />
         </clipPath>
 
         <!-- Gradiente Radial para Luz Interna Pulsante Suave -->
@@ -31,13 +24,7 @@
         </radialGradient>
 
         <!-- Filter Nitido para Brilho Mágico de Runas (Blur Reduzido) -->
-        <filter
-          id="rune-glow-filter"
-          x="-10%"
-          y="-10%"
-          width="120%"
-          height="120%"
-        >
+        <filter id="rune-glow-filter" x="-10%" y="-10%" width="120%" height="120%">
           <feGaussianBlur stdDeviation="0.8" result="blur" />
           <feMerge>
             <feMergeNode in="blur" />
@@ -56,11 +43,14 @@
           height="562.5"
           fill="url(#portal-glow-gradient)"
           class="arch-internal-glow"
-          :class="{ 'is-hovered': isHovered }"
+          :class="{ 'is-hovered': isHovered, 'is-mobile-idle': isMobile && !isHovered }"
         />
 
-        <!-- VÓRTICE DE NÉVOA RÚNICA (ATIVADO NO HOVER DO ARCO) -->
-        <g class="runic-fog-group" :class="{ 'is-active': isHovered }">
+        <!-- VÓRTICE DE NÉVOA RÚNICA (ATIVADO NO HOVER / TAP DO ARCO) -->
+        <g
+          class="runic-fog-group"
+          :class="{ 'is-active': isHovered, 'is-mobile-idle': isMobile && !isHovered }"
+        >
           <ellipse
             cx="144"
             cy="320"
@@ -83,7 +73,7 @@
       <!-- CONTORNO DE ENERGIA RÚNICA NÍTIDO NO PERFIL DA PEDRA -->
       <path
         class="portal-energy-contour"
-        :class="{ 'is-active': isHovered }"
+        :class="{ 'is-active': isHovered, 'is-mobile-idle': isMobile && !isHovered }"
         d="M 44 460 L 40 240 Q 52 114 128 114 Q 200 128 200 240 L 200 390"
         fill="none"
         stroke="#ffe082"
@@ -92,18 +82,13 @@
       />
     </svg>
 
-    <!-- CAMADA HITBOX INTERATIVA SVG (Z-INDEX: 10 - GARANTE CLIQUE E HOVER 100% FUNCIONAL) -->
-    <svg
-      v-if="!isMobile"
-      class="guild-arch-hitbox-overlay"
-      viewBox="0 0 1000 562.5"
-      preserveAspectRatio="none"
-    >
+    <!-- CAMADA HITBOX INTERATIVA SVG (Z-INDEX: 10 - GARANTE CLIQUE/TOQUE E HOVER 100% FUNCIONAL) -->
+    <svg class="guild-arch-hitbox-overlay" viewBox="0 0 1000 562.5" preserveAspectRatio="none">
       <!-- PATH INTERATIVO DO ARCO DA ESQUERDA (ALINHADO AO VÃO) -->
       <path
         class="portal-arch-left"
         d="M 52 550 L 52 240 Q 52 116 144 116 Q 236 116 236 240 L 236 550 Z"
-        @click="emit('click')"
+        @click="handleClick"
         @mouseenter="handleMouseEnter"
         @mouseleave="emit('leave')"
       />
@@ -111,9 +96,8 @@
 
     <!-- ETIQUETA FLUTUANTE DINÂMICA (⚔️ Mural de Missões) -->
     <div
-      v-if="!isMobile"
       class="floating-arch-tag left-arch-tag"
-      :class="{ 'is-visible': isHovered }"
+      :class="{ 'is-visible': isHovered, 'is-mobile-tag': isMobile }"
     >
       <div class="arch-tag-content">
         <UiWaxSeal color="red" size="sm" icon="⚔️" />
@@ -124,25 +108,34 @@
 </template>
 
 <script setup lang="ts">
-import UiWaxSeal from "~/components/ui/diegetic/UiWaxSeal.vue";
-import { useGuildAudio } from "~/composables/ui/useGuildAudio";
+import UiWaxSeal from '~/components/ui/diegetic/UiWaxSeal.vue';
+import { useGuildAudio } from '~/composables/ui/useGuildAudio';
 
-defineProps<{
+const props = defineProps<{
   isMobile: boolean;
   isHovered: boolean;
 }>();
 
 const emit = defineEmits<{
-  (e: "click"): void;
-  (e: "hover"): void;
-  (e: "leave"): void;
+  (e: 'click'): void;
+  (e: 'hover'): void;
+  (e: 'leave'): void;
 }>();
 
 const { playPortalHumSound } = useGuildAudio();
 
 function handleMouseEnter() {
+  if (props.isMobile) return;
   playPortalHumSound();
-  emit("hover");
+  emit('hover');
+}
+
+function handleClick() {
+  if (props.isMobile) {
+    playPortalHumSound();
+    emit('hover');
+  }
+  emit('click');
 }
 </script>
 
@@ -184,6 +177,7 @@ function handleMouseEnter() {
   fill: transparent;
   stroke: transparent;
   cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
 }
 
 /* LUZ INTERNA DIEGÉTICA NO ARCO DA ESQUERDA (SUAVE E SEM NEVOEIRO DENSE) */
@@ -192,6 +186,11 @@ function handleMouseEnter() {
   mix-blend-mode: screen;
   transition: opacity 0.35s ease;
   pointer-events: none;
+}
+
+.arch-internal-glow.is-mobile-idle {
+  opacity: 0.14;
+  animation: hoverGlowPulse 3.2s ease-in-out infinite alternate;
 }
 
 .arch-internal-glow.is-hovered {
@@ -222,6 +221,10 @@ function handleMouseEnter() {
   pointer-events: none;
 }
 
+.runic-fog-group.is-mobile-idle {
+  opacity: 0.22;
+}
+
 .runic-fog-group.is-active {
   opacity: 0.45;
 }
@@ -230,11 +233,13 @@ function handleMouseEnter() {
   transform-origin: 144px 320px;
 }
 
-.runic-fog-group.is-active .mist-layer-1 {
+.runic-fog-group.is-active .mist-layer-1,
+.runic-fog-group.is-mobile-idle .mist-layer-1 {
   animation: mistSwirlOne 6s ease-in-out infinite alternate;
 }
 
-.runic-fog-group.is-active .mist-layer-2 {
+.runic-fog-group.is-active .mist-layer-2,
+.runic-fog-group.is-mobile-idle .mist-layer-2 {
   animation: mistSwirlTwo 4.5s ease-in-out infinite alternate;
 }
 
@@ -280,6 +285,12 @@ function handleMouseEnter() {
   z-index: 1;
 }
 
+.portal-energy-contour.is-mobile-idle {
+  opacity: 0.45;
+  stroke-dashoffset: 0;
+  animation: contourPulse 2.8s ease-in-out infinite alternate;
+}
+
 .portal-energy-contour.is-active {
   opacity: 0.9;
   stroke-dashoffset: 0;
@@ -314,6 +325,14 @@ function handleMouseEnter() {
 .floating-arch-tag.left-arch-tag.is-visible {
   opacity: 1;
   transform: translate(-50%, -50%);
+}
+
+.floating-arch-tag.left-arch-tag.is-mobile-tag .arch-tag-content {
+  padding: 0.35rem 0.75rem;
+}
+
+.floating-arch-tag.left-arch-tag.is-mobile-tag .arch-tag-text {
+  font-size: 0.8rem;
 }
 
 .arch-tag-content {
