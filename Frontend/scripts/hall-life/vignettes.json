@@ -1,0 +1,846 @@
+{
+  "_doc": "area = [u0, v0, u1, v1] em frações de Entrada-expandida.png onde a ação acontece (o script expande para uma proporção aceita pelo modelo e salva o retângulo em pixels em work/state.json). Janela visível no desktop 16:9: u 0.245–0.833, v 0.334–0.828; ultrawide corta abaixo de v 0.682. 'order' define a ordem de pintura (fundo -> frente) e a ordem em que as placas são tiradas da composição acumulada. frames[0] é gerado a partir da placa; os demais são edições do frame A. hold = [min, max] em ms que o frame fica parado.",
+  "model": "gemini-3-pro-image",
+  "draftModel": "gemini-3.1-flash-image",
+  "vignettes": [
+    {
+      "id": "mezzanine-crowd",
+      "order": 10,
+      "area": [0.4778, 0.4369, 0.5819, 0.4941],
+      "who": "three small distant guild members leaning on the wooden balcony railing of the middle gallery: a wizard in a blue pointed hat, a bard holding a lute and a hooded rogue",
+      "doing": "standing BEHIND the wooden balcony railing of the middle gallery, chatting and looking down at the hall. They are on the far side of the railing: the horizontal rail and every vertical baluster must be drawn OVER their bodies, so only their heads, shoulders and forearms resting on the top rail are visible above it, and their bodies are only glimpsed through the gaps between the balusters",
+      "frames": [
+        {
+          "name": "a",
+          "hold": [2600, 5200]
+        },
+        {
+          "name": "b",
+          "change": "the bard strums the lute and the wizard turns his head toward the bard",
+          "hold": [1400, 2600],
+          "tweens": [
+            {
+              "auto": "a>b_1"
+            },
+            {
+              "auto": "a>b"
+            }
+          ]
+        },
+        {
+          "name": "c",
+          "change": "the hooded rogue leans forward over the railing and points down at the hall, the wizard looks where he points",
+          "hold": [1500, 2500],
+          "tweens": [
+            "the hooded rogue starts leaning forward over the railing, his arm half raised, not pointing yet; the wizard still looks ahead",
+            {
+              "auto": "c_1>c_2"
+            },
+            {
+              "auto": "c_1>c_2"
+            },
+            "the hooded rogue leans further over the railing and his arm lowers to point down toward the hall, almost fully pointing; the wizard begins to look where he points"
+          ]
+        }
+      ],
+      "light": {
+        "source": "torch",
+        "gain": 0.05
+      },
+      "tooltip": null,
+      "sequence": "gestures"
+    },
+    {
+      "id": "stair-bard",
+      "order": 20,
+      "area": [0.415, 0.5124, 0.467, 0.629],
+      "who": "a young half-elf bard in a wine-red doublet and feathered cap",
+      "doing": "sitting sideways on one of the lower steps of the wooden staircase, playing a lute, one foot on the step below",
+      "frames": [
+        {
+          "name": "a",
+          "hold": [700, 1200]
+        },
+        {
+          "name": "b",
+          "change": "the strumming hand moves down across the strings and the head tilts slightly with the music",
+          "hold": [700, 1200]
+        },
+        {
+          "name": "c",
+          "change": "the strumming hand moves up again and the bard taps the foot",
+          "hold": [700, 1200],
+          "tweens": [
+            {
+              "auto": "b>c"
+            }
+          ]
+        },
+        {
+          "name": "d",
+          "change": "he looks up toward the balcony above with a broad smile while his fingers keep playing the lute",
+          "hold": [900, 1400],
+          "tweens": [
+            "he starts lifting his head toward the balcony above, chin raised halfway, a small smile appearing; his fingers keep playing",
+            "he lifts his head a bit more, almost looking straight up at the balcony, his smile widening; his fingers keep playing",
+            {
+              "auto": "d_2>d"
+            },
+            {
+              "auto": "d_3>d"
+            }
+          ]
+        }
+      ],
+      "light": {
+        "source": "torch",
+        "gain": 0.07
+      },
+      "tooltip": "🎵 Bardo aquecendo as cordas",
+      "sequence": "loop"
+    },
+    {
+      "id": "planners-table",
+      "order": 30,
+      "area": [0.4517, 0.5467, 0.5222, 0.6427],
+      "who": "two adventurers: a human ranger woman in a green hooded cloak and a bald bearded human warrior",
+      "doing": "sitting on the benches on both sides of the left long wooden table, leaning over a parchment map spread on the table, planning a route; the ranger points at the map",
+      "frames": [
+        {
+          "name": "a",
+          "hold": [2200, 4200]
+        },
+        {
+          "name": "b",
+          "change": "the warrior points at another spot of the map and the ranger looks up at him",
+          "hold": [1800, 3200],
+          "tweens": [
+            {
+              "auto": "a>b_1"
+            },
+            "the warrior's hand starts sliding across the map toward another spot, arm half extended; the ranger starts lifting her head, eyes moving up",
+            "the warrior's arm extends further across the map, his finger almost touching the new spot; the ranger's head is raised, looking up at him",
+            {
+              "auto": "b_2>b"
+            },
+            {
+              "auto": "b_4>b"
+            }
+          ]
+        },
+        {
+          "name": "c",
+          "change": "the warrior leans back and crosses his arms while the ranger keeps tracing the route on the map",
+          "hold": [1800, 3000],
+          "tweens": [
+            "the warrior starts leaning back from the table, hands lifting off the map toward his chest; the ranger keeps tracing the route",
+            "the warrior leans back further, his forearms starting to cross over his chest but not fully crossed yet; the ranger keeps tracing the route",
+            {
+              "auto": "c_2>c"
+            }
+          ]
+        },
+        {
+          "name": "d",
+          "change": "both laugh together, the ranger covering her smile with one hand",
+          "hold": [1200, 2000],
+          "tweens": [
+            "both start smiling, the warrior's mouth opening into a grin; the ranger's free hand starts rising toward her mouth, at chest height",
+            "both laugh a bit more: the warrior grins widely and the ranger's hand is now just below her mouth",
+            {
+              "auto": "d_2>d"
+            }
+          ]
+        }
+      ],
+      "light": {
+        "source": "torch",
+        "gain": 0.06
+      },
+      "tooltip": "🗺️ Traçando a rota do próximo contrato",
+      "sequence": "gestures"
+    },
+    {
+      "id": "drinkers-hearth",
+      "order": 40,
+      "area": [0.5283, 0.5375, 0.6079, 0.6427],
+      "who": "four adventurers: a red-bearded dwarf, a blonde elf archer, a young human knight without helmet and an old gnome with a pointed hat",
+      "doing": "sitting on the benches around the right long table next to the fireplace, chatting and holding wooden mugs of mead",
+      "frames": [
+        {
+          "name": "a",
+          "hold": [3000, 6000]
+        },
+        {
+          "name": "b",
+          "change": "all of them raise their mugs together over the table in a toast",
+          "hold": [1100, 1700],
+          "tweens": [
+            "all of them start lifting their mugs off the table: every mug is about a hand's height above the table, not yet raised high",
+            "all the mugs rise higher, now at shoulder height and moving toward the middle of the table, but not touching yet",
+            {
+              "auto": "b_2>b_3"
+            },
+            {
+              "auto": "b_2>b"
+            }
+          ]
+        },
+        {
+          "name": "c",
+          "change": "the red-bearded dwarf leans back laughing loudly with his head thrown back, the others smile at him",
+          "hold": [1400, 2200],
+          "tweens": [
+            "the red-bearded dwarf starts leaning back with a wide grin, head tilted back only halfway, mouth opening to laugh; the others start smiling",
+            {
+              "auto": "c_1>c_2"
+            },
+            {
+              "auto": "c_1>c_2"
+            },
+            "the red-bearded dwarf leans back a bit more, head tilted further back, mouth open wider laughing; the others smile"
+          ]
+        },
+        {
+          "name": "d",
+          "change": "the blonde elf drinks from her mug while the knight tells a story gesturing with his free hand",
+          "hold": [1600, 2600],
+          "tweens": [
+            "the blonde elf lifts her mug toward her mouth, mug at chin height; the knight raises his free hand halfway, starting to gesture",
+            "the blonde elf's mug is now almost at her lips; the knight's free hand is raised a bit higher, gesturing as he talks",
+            {
+              "auto": "d_2>d_3"
+            },
+            {
+              "auto": "d_2>d"
+            }
+          ]
+        }
+      ],
+      "light": {
+        "source": "hearth",
+        "gain": 0.14
+      },
+      "tooltip": "🍺 Brinde à última missão cumprida",
+      "foreground": {
+        "box": [0.5, 0.15, 0.82, 0.7],
+        "_why": "cavaleiro e gnomo ficam na frente da chama animada da lareira (GuildVfxLayer)"
+      },
+      "sequence": "gestures"
+    },
+    {
+      "id": "hearth-cat",
+      "order": 45,
+      "area": [0.5834, 0.5741, 0.6171, 0.6176],
+      "who": "a fat orange tabby cat",
+      "doing": "sleeping curled up on the warm stone hearth in front of the fireplace",
+      "frames": [
+        {
+          "name": "a",
+          "hold": [3500, 7000]
+        },
+        {
+          "name": "b",
+          "change": "the cat's tail tip is lifted and curled and one ear twitches",
+          "hold": [600, 1000],
+          "tweens": [
+            "the cat's tail tip starts lifting slightly and one ear tilts a little",
+            "the cat's tail tip rises a bit higher and starts to curl; the ear twitches",
+            {
+              "auto": "b_2>b_3"
+            },
+            {
+              "auto": "b_2>b"
+            }
+          ]
+        },
+        {
+          "name": "c",
+          "change": "the cat lifts its head and yawns widely, eyes closed, still lying curled",
+          "hold": [700, 1100],
+          "tweens": [
+            "the cat lifts its head slightly and its mouth starts to open in a small yawn, eyes half closed",
+            "the cat lifts its head a bit more and opens its mouth wider in a yawn, eyes closed"
+          ]
+        }
+      ],
+      "light": {
+        "source": "hearth",
+        "gain": 0.16
+      },
+      "tooltip": "🐈 Brasa, o gato oficial da guilda",
+      "sequence": "gestures"
+    },
+    {
+      "id": "receptionist",
+      "order": 50,
+      "area": [0.6324, 0.5215, 0.7059, 0.6313],
+      "who": "a plump middle-aged human woman, the guild receptionist, grey-streaked auburn hair in a bun, round spectacles, dark green dress with a leather apron",
+      "doing": "standing BEHIND the back wooden counter (the counter hides her from the waist down), writing in a big ledger with a quill",
+      "frames": [
+        {
+          "name": "a",
+          "hold": [2500, 5000]
+        },
+        {
+          "name": "b",
+          "change": "she lifts her head and the quill and smiles toward the hall entrance",
+          "hold": [1600, 2600],
+          "tweens": [
+            "she starts lifting her head and the quill: her head is raised halfway and the quill is lifted just above the page, a small smile appearing",
+            {
+              "auto": "b_1>b_2"
+            },
+            {
+              "auto": "b_1>b_2"
+            },
+            "she raises her head a bit more and lifts the quill higher, her smile widening as she looks toward the hall entrance",
+            {
+              "auto": "b_2>b"
+            }
+          ]
+        },
+        {
+          "name": "c",
+          "change": "she turns a page of the big ledger with her free hand, the quill raised in the other hand",
+          "hold": [1000, 1600],
+          "tweens": [
+            {
+              "auto": "a>c_1"
+            },
+            {
+              "auto": "a>c_1"
+            },
+            "her free hand moves to the edge of the ledger page and starts lifting the page corner; the quill starts rising in the other hand",
+            "her free hand lifts the page higher, the page now standing up halfway through being turned; the quill is raised in the other hand",
+            {
+              "auto": "c_3>c_4"
+            },
+            {
+              "auto": "c_2>c"
+            }
+          ]
+        },
+        {
+          "name": "d",
+          "change": "she pushes her round spectacles up her nose with one finger and looks down at the ledger",
+          "hold": [1000, 1600],
+          "tweens": [
+            {
+              "auto": "a>d_1"
+            },
+            {
+              "auto": "a>d_1"
+            },
+            "she starts raising one hand toward her face: her finger is at chin height, not yet touching the spectacles",
+            "her finger now reaches the bridge of her round spectacles, starting to push them up",
+            {
+              "auto": "d_3>d_4"
+            },
+            {
+              "auto": "d_2>d"
+            }
+          ]
+        }
+      ],
+      "light": {
+        "source": "torch",
+        "gain": 0.08
+      },
+      "tooltip": "📜 Mestra Agda, recepcionista da guilda",
+      "sequence": "gestures"
+    },
+    {
+      "id": "library-reader",
+      "order": 55,
+      "area": [0.7396, 0.549, 0.7978, 0.6565],
+      "who": "an old elf scholar in deep blue robes with a long white braid",
+      "doing": "sitting in the red armchair inside the library room, reading a thick open book under the lantern light",
+      "frames": [
+        {
+          "name": "a",
+          "hold": [4000, 8000]
+        },
+        {
+          "name": "b",
+          "change": "the scholar turns a page of the book with one hand",
+          "hold": [700, 1100],
+          "tweens": [
+            "the scholar's hand moves to the edge of the right page and starts lifting the page corner",
+            {
+              "auto": "b_1>b_2"
+            },
+            "the scholar's hand lifts the page higher, the page standing up halfway through being turned",
+            {
+              "auto": "b_2>b"
+            }
+          ]
+        },
+        {
+          "name": "c",
+          "change": "the scholar lowers the open book onto his lap with both hands and raises his whole head to look straight ahead toward the viewer, eyebrows raised in curiosity, mouth slightly open",
+          "hold": [1500, 2500],
+          "tweens": [
+            {
+              "auto": "a>c"
+            }
+          ]
+        }
+      ],
+      "light": {
+        "source": "torch",
+        "gain": 0.07
+      },
+      "tooltip": "📚 O arquivista nunca sai da biblioteca",
+      "extract": {
+        "blur": 4.0,
+        "threshold": 13.0
+      },
+      "sequence": "gestures"
+    },
+    {
+      "id": "board-readers",
+      "order": 60,
+      "area": [0.271, 0.4804, 0.3507, 0.6702],
+      "who": "a tall green-skinned orc warrior with a big axe strapped to his back and a short halfling rogue in a brown hood",
+      "doing": "standing with their backs to the viewer in front of the contracts board inside the left arch, reading the posted contracts",
+      "frames": [
+        {
+          "name": "a",
+          "hold": [2600, 5000]
+        },
+        {
+          "name": "b",
+          "change": "the orc raises one arm and points at a contract high on the board while the halfling stands on tiptoe",
+          "hold": [1500, 2600],
+          "tweens": [
+            {
+              "auto": "a>b_1"
+            },
+            "the orc starts raising one arm toward the board, the arm at shoulder height, not pointing high yet; the halfling starts rising on his toes",
+            "the orc's arm rises higher, now above his head, almost pointing at the contract; the halfling is on tiptoe",
+            {
+              "auto": "b_3>b_4"
+            },
+            {
+              "auto": "b_2>b"
+            }
+          ]
+        },
+        {
+          "name": "c",
+          "change": "the halfling points at a lower contract on the board and the orc tilts his head down to look at it",
+          "hold": [1600, 2600],
+          "tweens": [
+            {
+              "auto": "a>c_1"
+            },
+            {
+              "auto": "a>c_1"
+            },
+            "the halfling starts raising his arm toward a lower contract, arm halfway up; the orc starts tilting his head down",
+            "the halfling's arm extends further toward the lower contract, almost pointing at it; the orc tilts his head down a bit more",
+            {
+              "auto": "c_2>c"
+            }
+          ]
+        },
+        {
+          "name": "d",
+          "change": "the orc crosses his big arms over his chest, thinking, while the halfling scratches his chin",
+          "hold": [2000, 3200],
+          "tweens": [
+            {
+              "auto": "a>d_1"
+            },
+            "the orc starts folding his arms, both forearms moving toward his chest but not crossed yet; the halfling's hand starts rising toward his chin",
+            "the orc's forearms now overlap in front of his chest, almost crossed; the halfling's hand reaches his chin"
+          ]
+        }
+      ],
+      "light": {
+        "source": "torch",
+        "gain": 0.1
+      },
+      "tooltip": "⚔️ Aventureiros escolhendo contratos",
+      "sequence": "gestures"
+    },
+    {
+      "id": "dwarf-crate",
+      "order": 70,
+      "area": [0.3583, 0.565, 0.4196, 0.6702],
+      "who": "Gloin, a stocky red-bearded dwarf warrior with a braided beard, iron pauldrons and brown leather armor",
+      "doing": "sitting on the small wooden crate next to the barrel, legs apart, holding a big wooden mug of mead resting on his knee",
+      "frames": [
+        {
+          "name": "a",
+          "hold": [3500, 7000]
+        },
+        {
+          "name": "b",
+          "change": "he raises the mug to his mouth and drinks",
+          "hold": [1500, 2500],
+          "tweens": 24,
+          "tweenMs": 40,
+          "rig": {
+            "remove": "his whole right arm below the shoulder armor (on the LEFT side of the image): the upper arm, the elbow, the forearm, the bracer, the hand and the wooden mug it holds. Paint what was hidden behind it: the side of his torso and brown leather tunic, his belt with its square metal buckle, his thigh and knee, and the stone wall behind him.",
+            "tweens": 24,
+            "poly_rest": [
+              [439, 1168],
+              [533, 1157],
+              [654, 1224],
+              [765, 1257],
+              [886, 1212],
+              [1118, 1201],
+              [1129, 1522],
+              [897, 1527],
+              [732, 1456],
+              [566, 1450],
+              [444, 1411]
+            ],
+            "poly_key": [
+              [466, 1157],
+              [588, 1091],
+              [743, 947],
+              [875, 914],
+              [886, 815],
+              [1019, 798],
+              [1168, 898],
+              [1168, 1113],
+              [1024, 1146],
+              [930, 1141],
+              [842, 1163],
+              [765, 1301],
+              [665, 1433],
+              [466, 1433]
+            ],
+            "pins_rest": {
+              "S2": [444, 1201],
+              "S": [522, 1190],
+              "E": [533, 1384],
+              "W": [809, 1367],
+              "T": [1002, 1229],
+              "B": [1002, 1494]
+            },
+            "pins_key": {
+              "S2": [444, 1201],
+              "S": [522, 1190],
+              "E": [541, 1369],
+              "W": [838, 1038],
+              "T": [930, 871],
+              "B": [1093, 1085]
+            },
+            "chain": [
+              ["S", "E"],
+              ["E", "W"],
+              ["W", "T"],
+              ["W", "B"]
+            ],
+            "fit": ["W", "T", "B"],
+            "keep": [[0, 0, 693, 1188]],
+            "key_regions": [[809, 677, 997, 770, 0.75]],
+            "roi": [312, 726, 1284, 1666],
+            "morph": [0.45, 1.0],
+            "morph_ramp": [0.55, 0.4],
+            "ik": ["S", "E", "W"],
+            "whole_poly": [
+              [440, 1188],
+              [640, 1188],
+              [690, 1260],
+              [690, 1360],
+              [620, 1440],
+              [470, 1440],
+              [440, 1390]
+            ],
+            "loop": {
+              "pivot": "T",
+              "angle": -14,
+              "frames": 16,
+              "cycles": 2,
+              "ms": 120,
+              "continuous": true
+            },
+            "gulp": {
+              "center": [752, 892],
+              "radius": 82,
+              "amount": 0.09,
+              "count": 2,
+              "width": 0.26
+            }
+          },
+          "loop": 16,
+          "loopMs": 70
+        },
+        {
+          "name": "c",
+          "change": "he wipes the beer foam from his moustache with the back of his free hand, eyes closed with satisfaction",
+          "hold": [1200, 1800],
+          "tweens": 24,
+          "tweenMs": 40,
+          "rig": {
+            "remove": "his whole left arm below the shoulder armor (on the RIGHT side of the image, near the barrel): the upper arm, the forearm and the hand resting on his knee. Paint what was hidden behind it: the side of his brown leather tunic and belt, his thigh and knee, and the wooden barrel behind him.",
+            "tweens": 24,
+            "roi": [800, 640, 1460, 1480],
+            "chain": [
+              ["S", "E"],
+              ["E", "W"],
+              ["W", "H"]
+            ],
+            "keys": [
+              {
+                "frame": "a",
+                "t": 0.0,
+                "pins": {
+                  "S2": [1110, 930],
+                  "S": [1140, 1040],
+                  "E": [1265, 1175],
+                  "W": [1245, 1280],
+                  "H": [1300, 1350]
+                },
+                "poly": [
+                  [1080, 1050],
+                  [1200, 1040],
+                  [1280, 1130],
+                  [1330, 1250],
+                  [1400, 1290],
+                  [1415, 1425],
+                  [1185, 1425],
+                  [1160, 1330],
+                  [1090, 1260]
+                ]
+              },
+              {
+                "frame": "c_1",
+                "t": 0.14,
+                "pins": {
+                  "S2": [1110, 930],
+                  "S": [1140, 1040],
+                  "E": [1265, 1165],
+                  "W": [1210, 1235],
+                  "H": [1278, 1270]
+                },
+                "poly": [
+                  [1080, 1050],
+                  [1200, 1040],
+                  [1280, 1130],
+                  [1330, 1210],
+                  [1335, 1345],
+                  [1150, 1345],
+                  [1090, 1260]
+                ],
+                "morph": [0.35, 0.65]
+              },
+              {
+                "frame": "c_2",
+                "pins": {
+                  "S2": [1110, 930],
+                  "S": [1140, 1040],
+                  "E": [1270, 1150],
+                  "W": [1210, 1220],
+                  "H": [1150, 1260]
+                },
+                "poly": [
+                  [1060, 1040],
+                  [1200, 1040],
+                  [1300, 1090],
+                  [1320, 1190],
+                  [1250, 1280],
+                  [1210, 1370],
+                  [1050, 1370],
+                  [1050, 1160]
+                ],
+                "t": 0.32,
+                "morph": [0.35, 0.65]
+              },
+              {
+                "frame": "c_3",
+                "t": 0.5,
+                "pins": {
+                  "S2": [1110, 930],
+                  "S": [1140, 1040],
+                  "E": [1270, 1150],
+                  "W": [1110, 1105],
+                  "H": [1035, 1120]
+                },
+                "poly": [
+                  [940, 1030],
+                  [1080, 1020],
+                  [1200, 1030],
+                  [1300, 1080],
+                  [1355, 1160],
+                  [1330, 1240],
+                  [1200, 1230],
+                  [1100, 1215],
+                  [940, 1215]
+                ],
+                "morph": [0.35, 0.65]
+              },
+              {
+                "frame": "c_5",
+                "t": 0.72,
+                "pins": {
+                  "S2": [1110, 930],
+                  "S": [1140, 1040],
+                  "E": [1260, 1200],
+                  "W": [1105, 1070],
+                  "H": [990, 1030]
+                },
+                "poly": [
+                  [860, 950],
+                  [1090, 940],
+                  [1180, 990],
+                  [1300, 1090],
+                  [1335, 1210],
+                  [1310, 1270],
+                  [1210, 1270],
+                  [1100, 1160],
+                  [860, 1120]
+                ],
+                "morph": [0.35, 0.65]
+              },
+              {
+                "frame": "c_7",
+                "pins": {
+                  "S2": [1110, 930],
+                  "S": [1140, 1040],
+                  "E": [1290, 1150],
+                  "W": [1090, 1000],
+                  "H": [990, 960]
+                },
+                "poly": [
+                  [900, 860],
+                  [1100, 850],
+                  [1200, 950],
+                  [1330, 1080],
+                  [1340, 1220],
+                  [1280, 1250],
+                  [1180, 1200],
+                  [1080, 1080],
+                  [900, 1050]
+                ],
+                "t": 0.88,
+                "morph": [0.35, 0.65]
+              },
+              {
+                "frame": "drawn",
+                "t": 1.0,
+                "pins": {
+                  "S2": [1110, 930],
+                  "S": [1140, 1040],
+                  "E": [1260, 1060],
+                  "W": [1075, 945],
+                  "H": [975, 915]
+                },
+                "poly": [
+                  [850, 830],
+                  [1100, 830],
+                  [1210, 910],
+                  [1310, 990],
+                  [1330, 1100],
+                  [1290, 1160],
+                  [1190, 1140],
+                  [1080, 1020],
+                  [850, 1010]
+                ],
+                "morph": [0.35, 0.65]
+              }
+            ],
+            "key_regions": [
+              [780, 670, 1000, 780, 0.8],
+              [830, 790, 990, 1010, 0.85]
+            ],
+            "loop_rive": {
+              "pivot": "E",
+              "angle": 6,
+              "rotate": ["W", "H"],
+              "cycles": 2,
+              "signed": true,
+              "frames": 20,
+              "ms": 60
+            }
+          }
+        }
+      ],
+      "light": {
+        "source": "torch",
+        "gain": 0.08
+      },
+      "tooltip": "🍺 Gloin descansando as pernas",
+      "sequence": "gestures",
+      "puppet_state": {
+        "vars": {
+          "dirt": {
+            "overlay": "overlay_dirt.png",
+            "region": [720, 790, 1060, 1120],
+            "origin": [900, 845],
+            "stages": 3,
+            "lift": 20
+          }
+        },
+        "effects": {
+          "b": [
+            {
+              "var": "dirt",
+              "add": 1,
+              "at": "return"
+            }
+          ],
+          "c": [
+            {
+              "var": "dirt",
+              "to": 0,
+              "at": "loop"
+            }
+          ]
+        },
+        "weightBy": {
+          "c": "dirt"
+        }
+      }
+    }
+  ],
+  "walkers": [
+    {
+      "id": "traveler",
+      "who": "a weary adult human traveler, life-size, with a big backpack with a rolled bedroll on top and a dusty hooded brown cloak, hands free (no staff)",
+      "generate_area": [0.42, 0.535, 0.48, 0.678],
+      "cycle": [
+        {
+          "name": "a",
+          "pose": "CONTACT: right leg stepping forward with the heel touching the floor, left leg straight behind on its toes, left arm swinging forward and right arm back"
+        },
+        {
+          "name": "b",
+          "pose": "PASSING: right leg planted straight under the body carrying the weight, left leg bent and passing next to it with the foot lifted, arms close to the body"
+        },
+        {
+          "name": "c",
+          "pose": "CONTACT (mirror of the first step): LEFT leg stepping forward with the heel touching the floor, right leg straight behind on its toes, right arm swinging forward and left arm back"
+        },
+        {
+          "name": "d",
+          "pose": "PASSING (mirror): LEFT leg planted straight under the body carrying the weight, right leg bent and passing next to it with the foot lifted, arms close to the body"
+        }
+      ],
+      "route": {
+        "_doc": "pontos em fracoes da imagem (pes); horizon = v onde a altura de uma pessoa tende a zero (perspectiva do piso)",
+        "points": [
+          [0.25, 0.69],
+          [0.555, 0.686]
+        ],
+        "horizon": 0.54,
+        "fadeIn": 0.035
+      },
+      "behaviour": {
+        "_doc": "ms; stepLength = fracao da altura do corpo percorrida por passo (meio ciclo)",
+        "stepLength": 0.36,
+        "stepMs": 300,
+        "idleAtEnd": [6000, 11000],
+        "waitBetween": [9000, 20000],
+        "returns": true,
+        "standFrame": "b"
+      },
+      "tooltip": "🎒 Um viajante acabou de chegar à guilda"
+    }
+  ]
+}

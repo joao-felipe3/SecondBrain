@@ -3780,8 +3780,8 @@
     "semantic_hash": ""
   },
   "Frontend/scripts/hall-life/vignettes.json": {
-    "mtime": 1794437976.0576923,
-    "ast_hash": "36598abcdf974314424d1aaf4de789b4",
+    "mtime": 1794439870.9412,
+    "ast_hash": "b4c4c4c814d7453c899cf60911ba22fc",
     "semantic_hash": ""
   },
   "Frontend/scripts/hall-life/walker.py": {
@@ -3810,8 +3810,8 @@
     "semantic_hash": ""
   },
   "Frontend/scripts/hall-life/README.md": {
-    "mtime": 1794438778.9613814,
-    "ast_hash": "012cd49637a7ab93a756084db6da47ba",
+    "mtime": 1794439870.8321695,
+    "ast_hash": "eae1349a58af81180fc77c37a3577f65",
     "semantic_hash": ""
   },
   "Frontend/public/vfx/hall-life/board-readers/a.webp": {
