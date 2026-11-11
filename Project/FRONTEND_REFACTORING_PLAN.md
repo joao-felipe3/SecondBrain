@@ -4,7 +4,7 @@
 > **Padrão de UI:** Viewport 16:9 (Desktop) / 9:16 (Mobile < 960px) — Arquitetura Diegética em 3 Camadas (_Depth Stacking_).  
 > **Assets de Referência Visual:** 8 mockups em `public/images/guild/` (`*-web.webp`, `*-mobile.webp`).  
 > **Documento Consolidado:** Incorpora o escopo de `FRONTEND_GUILD_REFACTORING_PLAN.md`.  
-> **Última Atualização:** 29/10/2026  
+> **Última Atualização:** 10/11/2026  
 > **Status:** Abordagem A Concluída | Engenharia de Software & Componentes Diegéticos Prontos | Spritesheets em Stand-By Artístico
 
 ---
@@ -15,14 +15,14 @@
 | -------------------------------------------------------------------------- | :--------: | :-------: | :----------: |
 | 🏛️ 1. Infraestrutura & Atomic Design Diegético (`components/ui/diegetic/`) |     12     |   12/12   |   🟢 100%    |
 | 🎨 2. Tokens CSS, HSL & Responsividade Dinâmica (<960px)                   |     8      |    8/8    |   🟢 100%    |
-| 🏰 3. Saguão Central da Guilda (`/`)                                       |     21     |   15/21   |   🟡 71.4%   |
+| 🏰 3. Saguão Central da Guilda (`/`)                                       |     21     |   16/21   |   🟡 76.2%   |
 | ⚔️ 4. Mural de Contratos / Kanban (`/tasks`)                               |     12     |   4/12    |   🟡 33.3%   |
 | 📜 5. Sala de Arquivos & Grimórios (`/projects`)                           |     10     |   7/10    |   🟡 70.0%   |
 | 🗺️ 6. Sala do Astrolábio & Cartografia (`/calendar`)                       |     10     |   6/10    |   🟡 60.0%   |
 | 📋 7. Modais & Overlays Globais Diegéticos                                 |     10     |   7/10    |   🟡 70.0%   |
 | ⚙️ 8. Pinia Stores & Data Mapping RPG                                      |     6      |    5/6    |   🟡 83.3%   |
 | ⚡ 9. Otimização & Asset Pipeline                                          |     6      |    4/6    |   🟡 66.7%   |
-| **TOTAL**                                                                  |   **95**   | **68/95** | **🟡 71.6%** |
+| **TOTAL**                                                                  |   **95**   | **69/95** | **🟡 72.6%** |
 
 ---
 
@@ -56,7 +56,7 @@
 
 ---
 
-## 🏰 3. Tela: Saguão Central da Guilda (`/`) 🟡 EM PROGRESSO (15/21)
+## 🏰 3. Tela: Saguão Central da Guilda (`/`) 🟡 EM PROGRESSO (16/21)
 
 ### 3.1. Cenário Base & Camadas Estáticas
 
@@ -97,11 +97,21 @@
 ### 3.4. Micro-Interações & Sprites de NPCs (Easter Eggs & Props)
 
 - [x] **NPCs (Anão & Elfa):**
-  - [ ] Posicionar sprite `.png` dos NPCs em `GuildNpcSpeechBubble.vue`.
-  - [x] Aplicar animação CSS de respiração idle (`@keyframes npcIdle`).
+  - [x] Posicionar sprites `.png` dos NPCs na cena (`GuildNpcLayer.vue`, âncoras em `assets/data/npc-sprites.json`).
+  - [x] Aplicar animação CSS de respiração idle (`@keyframes npcIdle` / `npcBreathe`).
   - [x] Clique nos NPCs ativa balão de fala com frases dinâmicas de progresso do usuário.
   - [ ] [STAND-BY: ARTÍSTICO] Spritesheet animado do Anão Ferreiro batendo o martelo na bigorna em loop.
   - [ ] [STAND-BY: ARTÍSTICO] Spritesheet animado da Elfa Arcanista folheando pergaminhos em loop.
+- [ ] **Vida na Cena — vinhetas pintadas na própria ilustração (pipeline `Frontend/scripts/hall-life/`, ver README):**
+  - [x] Corrigir coordenadas: `GuildSceneSpace.vue` + `useSceneSpace.ts` reproduzem o cover/scale do `.master-bg` (grade de calibração em `/?sceneDebug=1`).
+  - [x] Pipeline: placa da composição acumulada → edição in-scene no Gemini → extração por diferença (ECC + ΔE + máscara-união) → portão de qualidade → Photoshop opcional (`Hall-Life.psd`, ida e volta sem perda) → WebP.
+  - [x] Runtime: `GuildNpcLayer.vue` + `useHallLife.ts` (crossfade 220 ms, tempos sorteados por frame, brilho no ritmo das tochas/lareira, pausa em aba oculta, `prefers-reduced-motion`).
+  - [x] Elenco desktop (10 vinhetas, todas aprovadas no portão de qualidade): Gloin no caixote, bardo na escada, recepcionista, orc & halfling no mural, mezanino, planejadores na mesa, brinde na lareira, gato no braseiro, arquivista na biblioteca, viajante chegando.
+  - [ ] Versão mobile (`Entrada-mobile.png`) reaproveitando o pipeline com outra imagem base.
+  - [ ] Ligar `npcClick` às falas do `GuildNpcSpeechBubble.vue` e SFX por vinheta (`useGuildAudio`).
+  - [x] Gestos por vinheta (repouso → gesto sorteado → repouso; bardo em loop).
+  - [x] Caminhante: viajante entra pela esquerda, para no balcão e volta (`walker.py`, ciclo de 4 passos).
+  - [ ] Mais caminhantes (garçom entre as mesas, alguém subindo a escada).
 - [x] **Pilha de Moedas no Balcão:** Clique toca SFX de ouro (`playCoinsSound`) + animação floating `+1 Gold`
 - [x] **Adaga Fincada no Balcão:** Clique ativa tremedeira metálica (`playDaggerSound` + `@keyframes daggerVibrate`).
 - [x] **Caneca de Hidromel:** Clique ativa animação de espuma subindo + SFX de brinde/gole.

@@ -24,6 +24,18 @@
       <!-- CAMADA DE EFEITOS VISUAIS DE ILUMINAÇÃO & LABAREDAS 2D (VFX LAYER) -->
       <GuildVfxLayer :is-mobile="isMobile" />
 
+      <!-- VIDA NA CENA (primeiro plano): silhuetas que ficam na frente do fogo/tochas do GuildVfxLayer -->
+      <GuildSceneSpace :hidden="isMobile || isPortrait" :z-index="5">
+        <GuildNpcLayer layer="foreground" />
+        <!-- caminhantes passam na frente das tochas e das vinhetas -->
+        <GuildWalkerLayer @update-tooltip="(msg) => (hoverTooltip = msg)" />
+      </GuildSceneSpace>
+
+      <!-- VIDA NA CENA: contêiner alinhado à imagem de fundo (frações da imagem); só desktop -->
+      <GuildSceneSpace :hidden="isMobile || isPortrait">
+        <GuildNpcLayer @update-tooltip="(msg) => (hoverTooltip = msg)" />
+      </GuildSceneSpace>
+
       <!-- NPCS VIVOS & BALÕES DE FALA -->
       <GuildNpcSpeechBubble :is-mobile="isMobile" />
 
@@ -95,6 +107,9 @@ import { useGuildAudio } from '~/composables/ui/useGuildAudio';
 import UiParchmentCard from '~/components/ui/diegetic/UiParchmentCard.vue';
 import GuildParticlesCanvas from '~/components/features/hall/GuildParticlesCanvas.vue';
 import GuildVfxLayer from '~/components/features/hall/GuildVfxLayer.vue';
+import GuildSceneSpace from '~/components/features/hall/GuildSceneSpace.vue';
+import GuildNpcLayer from '~/components/features/hall/GuildNpcLayer.vue';
+import GuildWalkerLayer from '~/components/features/hall/GuildWalkerLayer.vue';
 import GuildNpcSpeechBubble from '~/components/features/hall/GuildNpcSpeechBubble.vue';
 import GuildArchPortal from '~/components/features/hall/GuildArchPortal.vue';
 import GuildDiegeticHotspots from '~/components/features/hall/GuildDiegeticHotspots.vue';

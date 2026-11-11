@@ -1,0 +1,672 @@
+{
+  "mezzanine-crowd": {
+    "order": 10,
+    "rect": [2545, 1504, 233, 149],
+    "frames": [
+      {
+        "name": "a",
+        "src": "/vfx/hall-life/mezzanine-crowd/a.webp",
+        "hold": [2600, 5200]
+      },
+      {
+        "name": "b",
+        "src": "/vfx/hall-life/mezzanine-crowd/b.webp",
+        "hold": [1400, 2600],
+        "tweens": [
+          {
+            "name": "b_1",
+            "src": "/vfx/hall-life/mezzanine-crowd/b_1.webp"
+          },
+          {
+            "name": "b_2",
+            "src": "/vfx/hall-life/mezzanine-crowd/b_2.webp"
+          }
+        ]
+      },
+      {
+        "name": "c",
+        "src": "/vfx/hall-life/mezzanine-crowd/c.webp",
+        "hold": [1500, 2500],
+        "tweens": [
+          {
+            "name": "c_1",
+            "src": "/vfx/hall-life/mezzanine-crowd/c_1.webp"
+          },
+          {
+            "name": "c_2",
+            "src": "/vfx/hall-life/mezzanine-crowd/c_2.webp"
+          },
+          {
+            "name": "c_3",
+            "src": "/vfx/hall-life/mezzanine-crowd/c_3.webp"
+          },
+          {
+            "name": "c_4",
+            "src": "/vfx/hall-life/mezzanine-crowd/c_4.webp"
+          }
+        ]
+      }
+    ],
+    "light": {
+      "source": "torch",
+      "gain": 0.05
+    },
+    "tooltip": null,
+    "sequence": "gestures"
+  },
+  "stair-bard": {
+    "order": 20,
+    "rect": [2124, 1840, 144, 250],
+    "frames": [
+      {
+        "name": "a",
+        "src": "/vfx/hall-life/stair-bard/a.webp",
+        "hold": [700, 1200]
+      },
+      {
+        "name": "b",
+        "src": "/vfx/hall-life/stair-bard/b.webp",
+        "hold": [700, 1200]
+      },
+      {
+        "name": "c",
+        "src": "/vfx/hall-life/stair-bard/c.webp",
+        "hold": [700, 1200],
+        "tweens": [
+          {
+            "name": "c_1",
+            "src": "/vfx/hall-life/stair-bard/c_1.webp"
+          }
+        ]
+      },
+      {
+        "name": "d",
+        "src": "/vfx/hall-life/stair-bard/d.webp",
+        "hold": [900, 1400],
+        "tweens": [
+          {
+            "name": "d_1",
+            "src": "/vfx/hall-life/stair-bard/d_1.webp"
+          },
+          {
+            "name": "d_2",
+            "src": "/vfx/hall-life/stair-bard/d_2.webp"
+          },
+          {
+            "name": "d_3",
+            "src": "/vfx/hall-life/stair-bard/d_3.webp"
+          },
+          {
+            "name": "d_4",
+            "src": "/vfx/hall-life/stair-bard/d_4.webp"
+          }
+        ]
+      }
+    ],
+    "light": {
+      "source": "torch",
+      "gain": 0.07
+    },
+    "tooltip": "🎵 Bardo aquecendo as cordas",
+    "sequence": "loop"
+  },
+  "planners-table": {
+    "order": 30,
+    "rect": [2317, 1925, 289, 242],
+    "frames": [
+      {
+        "name": "a",
+        "src": "/vfx/hall-life/planners-table/a.webp",
+        "hold": [2200, 4200]
+      },
+      {
+        "name": "b",
+        "src": "/vfx/hall-life/planners-table/b.webp",
+        "hold": [1800, 3200],
+        "tweens": [
+          {
+            "name": "b_1",
+            "src": "/vfx/hall-life/planners-table/b_1.webp"
+          },
+          {
+            "name": "b_2",
+            "src": "/vfx/hall-life/planners-table/b_2.webp"
+          },
+          {
+            "name": "b_3",
+            "src": "/vfx/hall-life/planners-table/b_3.webp"
+          },
+          {
+            "name": "b_4",
+            "src": "/vfx/hall-life/planners-table/b_4.webp"
+          },
+          {
+            "name": "b_5",
+            "src": "/vfx/hall-life/planners-table/b_5.webp"
+          }
+        ]
+      },
+      {
+        "name": "c",
+        "src": "/vfx/hall-life/planners-table/c.webp",
+        "hold": [1800, 3000],
+        "tweens": [
+          {
+            "name": "c_1",
+            "src": "/vfx/hall-life/planners-table/c_1.webp"
+          },
+          {
+            "name": "c_2",
+            "src": "/vfx/hall-life/planners-table/c_2.webp"
+          },
+          {
+            "name": "c_3",
+            "src": "/vfx/hall-life/planners-table/c_3.webp"
+          }
+        ]
+      },
+      {
+        "name": "d",
+        "src": "/vfx/hall-life/planners-table/d.webp",
+        "hold": [1200, 2000],
+        "tweens": [
+          {
+            "name": "d_1",
+            "src": "/vfx/hall-life/planners-table/d_1.webp"
+          },
+          {
+            "name": "d_2",
+            "src": "/vfx/hall-life/planners-table/d_2.webp"
+          },
+          {
+            "name": "d_3",
+            "src": "/vfx/hall-life/planners-table/d_3.webp"
+          }
+        ]
+      }
+    ],
+    "light": {
+      "source": "torch",
+      "gain": 0.06
+    },
+    "tooltip": "🗺️ Traçando a rota do próximo contrato",
+    "sequence": "gestures"
+  },
+  "drinkers-hearth": {
+    "order": 40,
+    "rect": [2652, 1864, 444, 310],
+    "frames": [
+      {
+        "name": "a",
+        "src": "/vfx/hall-life/drinkers-hearth/a.webp",
+        "hold": [3000, 6000]
+      },
+      {
+        "name": "b",
+        "src": "/vfx/hall-life/drinkers-hearth/b.webp",
+        "hold": [1100, 1700],
+        "tweens": [
+          {
+            "name": "b_1",
+            "src": "/vfx/hall-life/drinkers-hearth/b_1.webp"
+          },
+          {
+            "name": "b_2",
+            "src": "/vfx/hall-life/drinkers-hearth/b_2.webp"
+          },
+          {
+            "name": "b_3",
+            "src": "/vfx/hall-life/drinkers-hearth/b_3.webp"
+          },
+          {
+            "name": "b_4",
+            "src": "/vfx/hall-life/drinkers-hearth/b_4.webp"
+          }
+        ]
+      },
+      {
+        "name": "c",
+        "src": "/vfx/hall-life/drinkers-hearth/c.webp",
+        "hold": [1400, 2200],
+        "tweens": [
+          {
+            "name": "c_1",
+            "src": "/vfx/hall-life/drinkers-hearth/c_1.webp"
+          },
+          {
+            "name": "c_2",
+            "src": "/vfx/hall-life/drinkers-hearth/c_2.webp"
+          },
+          {
+            "name": "c_3",
+            "src": "/vfx/hall-life/drinkers-hearth/c_3.webp"
+          },
+          {
+            "name": "c_4",
+            "src": "/vfx/hall-life/drinkers-hearth/c_4.webp"
+          }
+        ]
+      },
+      {
+        "name": "d",
+        "src": "/vfx/hall-life/drinkers-hearth/d.webp",
+        "hold": [1600, 2600],
+        "tweens": [
+          {
+            "name": "d_1",
+            "src": "/vfx/hall-life/drinkers-hearth/d_1.webp"
+          },
+          {
+            "name": "d_2",
+            "src": "/vfx/hall-life/drinkers-hearth/d_2.webp"
+          },
+          {
+            "name": "d_3",
+            "src": "/vfx/hall-life/drinkers-hearth/d_3.webp"
+          },
+          {
+            "name": "d_4",
+            "src": "/vfx/hall-life/drinkers-hearth/d_4.webp"
+          }
+        ]
+      }
+    ],
+    "light": {
+      "source": "hearth",
+      "gain": 0.14
+    },
+    "tooltip": "🍺 Brinde à última missão cumprida",
+    "sequence": "gestures",
+    "foreground": {
+      "rect": [2874, 1910, 142, 171],
+      "frames": [
+        {
+          "name": "a",
+          "src": "/vfx/hall-life/drinkers-hearth/a.fg.webp"
+        },
+        {
+          "name": "b",
+          "src": "/vfx/hall-life/drinkers-hearth/b.fg.webp"
+        },
+        {
+          "name": "b_1",
+          "src": "/vfx/hall-life/drinkers-hearth/b_1.fg.webp"
+        },
+        {
+          "name": "b_2",
+          "src": "/vfx/hall-life/drinkers-hearth/b_2.fg.webp"
+        },
+        {
+          "name": "b_3",
+          "src": "/vfx/hall-life/drinkers-hearth/b_3.fg.webp"
+        },
+        {
+          "name": "b_4",
+          "src": "/vfx/hall-life/drinkers-hearth/b_4.fg.webp"
+        },
+        {
+          "name": "c",
+          "src": "/vfx/hall-life/drinkers-hearth/c.fg.webp"
+        },
+        {
+          "name": "c_1",
+          "src": "/vfx/hall-life/drinkers-hearth/c_1.fg.webp"
+        },
+        {
+          "name": "c_2",
+          "src": "/vfx/hall-life/drinkers-hearth/c_2.fg.webp"
+        },
+        {
+          "name": "c_3",
+          "src": "/vfx/hall-life/drinkers-hearth/c_3.fg.webp"
+        },
+        {
+          "name": "c_4",
+          "src": "/vfx/hall-life/drinkers-hearth/c_4.fg.webp"
+        },
+        {
+          "name": "d",
+          "src": "/vfx/hall-life/drinkers-hearth/d.fg.webp"
+        },
+        {
+          "name": "d_1",
+          "src": "/vfx/hall-life/drinkers-hearth/d_1.fg.webp"
+        },
+        {
+          "name": "d_2",
+          "src": "/vfx/hall-life/drinkers-hearth/d_2.fg.webp"
+        },
+        {
+          "name": "d_3",
+          "src": "/vfx/hall-life/drinkers-hearth/d_3.fg.webp"
+        },
+        {
+          "name": "d_4",
+          "src": "/vfx/hall-life/drinkers-hearth/d_4.fg.webp"
+        }
+      ]
+    }
+  },
+  "hearth-cat": {
+    "order": 45,
+    "rect": [2998, 1983, 105, 101],
+    "frames": [
+      {
+        "name": "a",
+        "src": "/vfx/hall-life/hearth-cat/a.webp",
+        "hold": [3500, 7000]
+      },
+      {
+        "name": "b",
+        "src": "/vfx/hall-life/hearth-cat/b.webp",
+        "hold": [600, 1000],
+        "tweens": [
+          {
+            "name": "b_1",
+            "src": "/vfx/hall-life/hearth-cat/b_1.webp"
+          },
+          {
+            "name": "b_2",
+            "src": "/vfx/hall-life/hearth-cat/b_2.webp"
+          },
+          {
+            "name": "b_3",
+            "src": "/vfx/hall-life/hearth-cat/b_3.webp"
+          },
+          {
+            "name": "b_4",
+            "src": "/vfx/hall-life/hearth-cat/b_4.webp"
+          }
+        ]
+      },
+      {
+        "name": "c",
+        "src": "/vfx/hall-life/hearth-cat/c.webp",
+        "hold": [700, 1100],
+        "tweens": [
+          {
+            "name": "c_1",
+            "src": "/vfx/hall-life/hearth-cat/c_1.webp"
+          },
+          {
+            "name": "c_2",
+            "src": "/vfx/hall-life/hearth-cat/c_2.webp"
+          }
+        ]
+      }
+    ],
+    "light": {
+      "source": "hearth",
+      "gain": 0.16
+    },
+    "tooltip": "🐈 Brasa, o gato oficial da guilda",
+    "sequence": "gestures"
+  },
+  "receptionist": {
+    "order": 50,
+    "rect": [3233, 1843, 271, 288],
+    "frames": [
+      {
+        "name": "a",
+        "src": "/vfx/hall-life/receptionist/a.webp",
+        "hold": [2500, 5000]
+      },
+      {
+        "name": "b",
+        "src": "/vfx/hall-life/receptionist/b.webp",
+        "hold": [1600, 2600],
+        "tweens": [
+          {
+            "name": "b_1",
+            "src": "/vfx/hall-life/receptionist/b_1.webp"
+          },
+          {
+            "name": "b_2",
+            "src": "/vfx/hall-life/receptionist/b_2.webp"
+          },
+          {
+            "name": "b_3",
+            "src": "/vfx/hall-life/receptionist/b_3.webp"
+          },
+          {
+            "name": "b_4",
+            "src": "/vfx/hall-life/receptionist/b_4.webp"
+          },
+          {
+            "name": "b_5",
+            "src": "/vfx/hall-life/receptionist/b_5.webp"
+          }
+        ]
+      },
+      {
+        "name": "c",
+        "src": "/vfx/hall-life/receptionist/c.webp",
+        "hold": [1000, 1600],
+        "tweens": [
+          {
+            "name": "c_1",
+            "src": "/vfx/hall-life/receptionist/c_1.webp"
+          },
+          {
+            "name": "c_2",
+            "src": "/vfx/hall-life/receptionist/c_2.webp"
+          },
+          {
+            "name": "c_3",
+            "src": "/vfx/hall-life/receptionist/c_3.webp"
+          },
+          {
+            "name": "c_4",
+            "src": "/vfx/hall-life/receptionist/c_4.webp"
+          },
+          {
+            "name": "c_5",
+            "src": "/vfx/hall-life/receptionist/c_5.webp"
+          },
+          {
+            "name": "c_6",
+            "src": "/vfx/hall-life/receptionist/c_6.webp"
+          }
+        ]
+      },
+      {
+        "name": "d",
+        "src": "/vfx/hall-life/receptionist/d.webp",
+        "hold": [1000, 1600],
+        "tweens": [
+          {
+            "name": "d_1",
+            "src": "/vfx/hall-life/receptionist/d_1.webp"
+          },
+          {
+            "name": "d_2",
+            "src": "/vfx/hall-life/receptionist/d_2.webp"
+          },
+          {
+            "name": "d_3",
+            "src": "/vfx/hall-life/receptionist/d_3.webp"
+          },
+          {
+            "name": "d_4",
+            "src": "/vfx/hall-life/receptionist/d_4.webp"
+          },
+          {
+            "name": "d_5",
+            "src": "/vfx/hall-life/receptionist/d_5.webp"
+          },
+          {
+            "name": "d_6",
+            "src": "/vfx/hall-life/receptionist/d_6.webp"
+          }
+        ]
+      }
+    ],
+    "light": {
+      "source": "torch",
+      "gain": 0.08
+    },
+    "tooltip": "📜 Mestra Agda, recepcionista da guilda",
+    "sequence": "gestures"
+  },
+  "library-reader": {
+    "order": 55,
+    "rect": [3739, 1896, 238, 333],
+    "frames": [
+      {
+        "name": "a",
+        "src": "/vfx/hall-life/library-reader/a.webp",
+        "hold": [4000, 8000]
+      },
+      {
+        "name": "b",
+        "src": "/vfx/hall-life/library-reader/b.webp",
+        "hold": [700, 1100],
+        "tweens": [
+          {
+            "name": "b_1",
+            "src": "/vfx/hall-life/library-reader/b_1.webp"
+          },
+          {
+            "name": "b_2",
+            "src": "/vfx/hall-life/library-reader/b_2.webp"
+          },
+          {
+            "name": "b_3",
+            "src": "/vfx/hall-life/library-reader/b_3.webp"
+          },
+          {
+            "name": "b_4",
+            "src": "/vfx/hall-life/library-reader/b_4.webp"
+          }
+        ]
+      },
+      {
+        "name": "c",
+        "src": "/vfx/hall-life/library-reader/c.webp",
+        "hold": [1500, 2500],
+        "tweens": [
+          {
+            "name": "c_1",
+            "src": "/vfx/hall-life/library-reader/c_1.webp"
+          }
+        ]
+      }
+    ],
+    "light": {
+      "source": "torch",
+      "gain": 0.07
+    },
+    "tooltip": "📚 O arquivista nunca sai da biblioteca",
+    "sequence": "gestures"
+  },
+  "board-readers": {
+    "order": 60,
+    "rect": [1420, 1786, 318, 443],
+    "frames": [
+      {
+        "name": "a",
+        "src": "/vfx/hall-life/board-readers/a.webp",
+        "hold": [2600, 5000]
+      },
+      {
+        "name": "b",
+        "src": "/vfx/hall-life/board-readers/b.webp",
+        "hold": [1500, 2600],
+        "tweens": [
+          {
+            "name": "b_1",
+            "src": "/vfx/hall-life/board-readers/b_1.webp"
+          },
+          {
+            "name": "b_2",
+            "src": "/vfx/hall-life/board-readers/b_2.webp"
+          },
+          {
+            "name": "b_3",
+            "src": "/vfx/hall-life/board-readers/b_3.webp"
+          },
+          {
+            "name": "b_4",
+            "src": "/vfx/hall-life/board-readers/b_4.webp"
+          },
+          {
+            "name": "b_5",
+            "src": "/vfx/hall-life/board-readers/b_5.webp"
+          }
+        ]
+      },
+      {
+        "name": "c",
+        "src": "/vfx/hall-life/board-readers/c.webp",
+        "hold": [1600, 2600],
+        "tweens": [
+          {
+            "name": "c_1",
+            "src": "/vfx/hall-life/board-readers/c_1.webp"
+          },
+          {
+            "name": "c_2",
+            "src": "/vfx/hall-life/board-readers/c_2.webp"
+          },
+          {
+            "name": "c_3",
+            "src": "/vfx/hall-life/board-readers/c_3.webp"
+          },
+          {
+            "name": "c_4",
+            "src": "/vfx/hall-life/board-readers/c_4.webp"
+          },
+          {
+            "name": "c_5",
+            "src": "/vfx/hall-life/board-readers/c_5.webp"
+          }
+        ]
+      },
+      {
+        "name": "d",
+        "src": "/vfx/hall-life/board-readers/d.webp",
+        "hold": [2000, 3200],
+        "tweens": [
+          {
+            "name": "d_1",
+            "src": "/vfx/hall-life/board-readers/d_1.webp"
+          },
+          {
+            "name": "d_2",
+            "src": "/vfx/hall-life/board-readers/d_2.webp"
+          },
+          {
+            "name": "d_3",
+            "src": "/vfx/hall-life/board-readers/d_3.webp"
+          }
+        ]
+      }
+    ],
+    "light": {
+      "source": "torch",
+      "gain": 0.1
+    },
+    "tooltip": "⚔️ Aventureiros escolhendo contratos",
+    "sequence": "gestures"
+  },
+  "dwarf-crate": {
+    "order": 70,
+    "rect": [1863, 1977, 210, 278],
+    "frames": [
+      {
+        "name": "a",
+        "src": "/vfx/hall-life/dwarf-crate/a.webp",
+        "hold": [3500, 7000]
+      }
+    ],
+    "light": {
+      "source": "torch",
+      "gain": 0.08
+    },
+    "tooltip": "🍺 Gloin descansando as pernas",
+    "sequence": "gestures",
+    "puppet": {
+      "src": "/vfx/hall-life/dwarf-crate/puppet/puppet.json"
+    }
+  }
+}

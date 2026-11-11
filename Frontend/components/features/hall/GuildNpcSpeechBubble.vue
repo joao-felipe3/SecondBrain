@@ -114,12 +114,13 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped>
+/* desktop: sobre o Gloin (vinheta dwarf-crate, ao lado do barril) */
 .npc-hotspot-container {
   position: absolute;
-  top: 48%;
-  left: 33%;
-  width: 14%;
-  height: 25%;
+  top: 46%;
+  left: 20.2%;
+  width: 8%;
+  height: 20%;
   cursor: pointer;
   z-index: 10;
   display: flex;
@@ -127,6 +128,14 @@ onBeforeUnmount(() => {
   align-items: center;
   justify-content: flex-start;
   -webkit-tap-highlight-color: transparent;
+}
+
+/* ultrawide (.master-bg com scale 2.3): a cabeça do Gloin cai em ~72.7% da altura do palco
+   (calculado com imageToStageRect em composables/ui/useSceneSpace.ts) */
+@media (min-aspect-ratio: 2.4/1) {
+  .npc-hotspot-container:not(.is-mobile-npc) {
+    top: 68.5%;
+  }
 }
 
 .npc-hotspot-container.is-mobile-npc {
