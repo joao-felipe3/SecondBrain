@@ -2715,8 +2715,8 @@
     "semantic_hash": ""
   },
   "Frontend/pages/index.vue": {
-    "mtime": 1794333805.5576386,
-    "ast_hash": "cba53c03da72c1b9f677a28038feb8e0",
+    "mtime": 1794498178.4394846,
+    "ast_hash": "20f95ac836314d940ffbd2f10b1de349",
     "semantic_hash": ""
   },
   "Frontend/pages/projects/index.vue": {
@@ -3160,8 +3160,8 @@
     "semantic_hash": ""
   },
   "Frontend/composables/ui/useGuildAudio.ts": {
-    "mtime": 1787801048.2228289,
-    "ast_hash": "8e1e30d100fbde04cd54b58cd74751a9",
+    "mtime": 1794455285.0848658,
+    "ast_hash": "8a6ae9c3598ad91f49522c01d5a6e63a",
     "semantic_hash": ""
   },
   "Frontend/composables/ui/useResponsive.ts": {
@@ -3660,23 +3660,18 @@
     "semantic_hash": ""
   },
   "Frontend/assets/data/hall-life.json": {
-    "mtime": 1794440152.2302022,
-    "ast_hash": "5310ef3d89664403f888f552c0eabb78",
-    "semantic_hash": ""
-  },
-  "Frontend/assets/data/hall-walkers.json": {
-    "mtime": 1794334321.6588707,
-    "ast_hash": "b235dae61405205739611ab00f764523",
+    "mtime": 1794522842.56829,
+    "ast_hash": "ed4366b26dd912972ef02786d26f5f6f",
     "semantic_hash": ""
   },
   "Frontend/components/features/hall/GuildNpcLayer.vue": {
-    "mtime": 1794426322.2105272,
-    "ast_hash": "3d948158026904f857a126255a286fa2",
+    "mtime": 1794456987.6029289,
+    "ast_hash": "fb1d128c6e8e4020c695aca19e1d5089",
     "semantic_hash": ""
   },
   "Frontend/components/features/hall/GuildPuppetCanvas.vue": {
-    "mtime": 1794438105.2189322,
-    "ast_hash": "997b8b99a14eb3a92a26258c535392dd",
+    "mtime": 1794513314.7055745,
+    "ast_hash": "138f402b766feec7cc0650203015a831",
     "semantic_hash": ""
   },
   "Frontend/components/features/hall/GuildSceneSpace.vue": {
@@ -3684,24 +3679,14 @@
     "ast_hash": "b67fa12b2808d5720ce323e2d6230beb",
     "semantic_hash": ""
   },
-  "Frontend/components/features/hall/GuildWalkerLayer.vue": {
-    "mtime": 1794340623.0354073,
-    "ast_hash": "3eb77a440514419353168a0943cbe824",
-    "semantic_hash": ""
-  },
   "Frontend/composables/features/useHallLife.ts": {
     "mtime": 1794426322.3352172,
     "ast_hash": "20dcf75bd9e811072287a919291214b0",
     "semantic_hash": ""
   },
-  "Frontend/composables/features/useHallWalkers.ts": {
-    "mtime": 1794340622.7961705,
-    "ast_hash": "c7b45732600021b90027374b4a601981",
-    "semantic_hash": ""
-  },
   "Frontend/composables/ui/puppet.ts": {
-    "mtime": 1794438104.8909543,
-    "ast_hash": "a5176091554bae9c45a9b7f1dd279841",
+    "mtime": 1794513220.4499798,
+    "ast_hash": "28781342cf3864126dd5c1761a16ee8f",
     "semantic_hash": ""
   },
   "Frontend/composables/ui/useSceneSpace.ts": {
@@ -3770,8 +3755,8 @@
     "semantic_hash": ""
   },
   "Frontend/scripts/hall-life/rive_rig.py": {
-    "mtime": 1794437965.8348432,
-    "ast_hash": "4f20259f4bbcb4c9dfb35404454e4436",
+    "mtime": 1794515379.5442846,
+    "ast_hash": "c6c4054cdff7c18378a09b466aada246",
     "semantic_hash": ""
   },
   "Frontend/scripts/hall-life/run_photoshop.py": {
@@ -3780,13 +3765,8 @@
     "semantic_hash": ""
   },
   "Frontend/scripts/hall-life/vignettes.json": {
-    "mtime": 1794439870.9412,
-    "ast_hash": "b4c4c4c814d7453c899cf60911ba22fc",
-    "semantic_hash": ""
-  },
-  "Frontend/scripts/hall-life/walker.py": {
-    "mtime": 1794333678.490655,
-    "ast_hash": "883c18048d34ac0dd5cf8ecc0807b8ed",
+    "mtime": 1794521123.0194602,
+    "ast_hash": "1bf5d98f71ad5abb08ec78f7740b0d8f",
     "semantic_hash": ""
   },
   "Frontend/tests/unit/hall-life.spec.ts": {
@@ -3794,14 +3774,9 @@
     "ast_hash": "46843bce047f0d23ec13f2eb9076426a",
     "semantic_hash": ""
   },
-  "Frontend/tests/unit/hall-walkers.spec.ts": {
-    "mtime": 1794333833.43121,
-    "ast_hash": "35188ee7c0e5ee1009ff2c08789d8692",
-    "semantic_hash": ""
-  },
   "Frontend/tests/unit/puppet.spec.ts": {
-    "mtime": 1794438164.4830513,
-    "ast_hash": "f07bd8583c33fb1646f08aa467204d3c",
+    "mtime": 1794513931.2907674,
+    "ast_hash": "d13f9ba42c5d3b516e8880f6516441f0",
     "semantic_hash": ""
   },
   "Frontend/tests/unit/scene-space.spec.ts": {
@@ -3810,8 +3785,8 @@
     "semantic_hash": ""
   },
   "Frontend/scripts/hall-life/README.md": {
-    "mtime": 1794439870.8321695,
-    "ast_hash": "eae1349a58af81180fc77c37a3577f65",
+    "mtime": 1794522878.3520834,
+    "ast_hash": "324d56b32c46a42eeddda72691ac6b75",
     "semantic_hash": ""
   },
   "Frontend/public/vfx/hall-life/board-readers/a.webp": {
@@ -4360,173 +4335,163 @@
     "semantic_hash": ""
   },
   "Frontend/public/vfx/hall-life/receptionist/a.webp": {
-    "mtime": 1794371113.892188,
+    "mtime": 1794498444.8037379,
     "ast_hash": "7a1d52491800692f05980a3d0d9d4666",
     "semantic_hash": ""
   },
-  "Frontend/public/vfx/hall-life/receptionist/b.webp": {
-    "mtime": 1794371115.9293077,
-    "ast_hash": "106bec03650707414dd7c40c03eb1ace",
-    "semantic_hash": ""
-  },
-  "Frontend/public/vfx/hall-life/receptionist/b_1.webp": {
-    "mtime": 1794371118.0291345,
-    "ast_hash": "976fb02b3c402a76d41fa53ce49c81e2",
-    "semantic_hash": ""
-  },
-  "Frontend/public/vfx/hall-life/receptionist/b_2.webp": {
-    "mtime": 1794371120.0781102,
-    "ast_hash": "fb7bfa7110bcec57011a3ee6b0f89d72",
-    "semantic_hash": ""
-  },
-  "Frontend/public/vfx/hall-life/receptionist/b_3.webp": {
-    "mtime": 1794371122.3460245,
-    "ast_hash": "42710a4293c819c7bc770ce59cb7a645",
-    "semantic_hash": ""
-  },
-  "Frontend/public/vfx/hall-life/receptionist/b_4.webp": {
-    "mtime": 1794371124.6078563,
-    "ast_hash": "4a2c0a779ba54b54d70a80ab97c12a12",
-    "semantic_hash": ""
-  },
-  "Frontend/public/vfx/hall-life/receptionist/b_5.webp": {
-    "mtime": 1794371126.646032,
-    "ast_hash": "67ee9dae4d8cdbb2468a55264a4c5bc9",
-    "semantic_hash": ""
-  },
-  "Frontend/public/vfx/hall-life/receptionist/c.webp": {
-    "mtime": 1794371128.695716,
-    "ast_hash": "cc75f9384cae353ad05ce0614b084f98",
-    "semantic_hash": ""
-  },
-  "Frontend/public/vfx/hall-life/receptionist/c_1.webp": {
-    "mtime": 1794371130.7596223,
-    "ast_hash": "bfc7b8683e92af149164403eb3ea5a38",
-    "semantic_hash": ""
-  },
-  "Frontend/public/vfx/hall-life/receptionist/c_2.webp": {
-    "mtime": 1794371132.8088906,
-    "ast_hash": "4b27ebc6675db74a07618ed3943fd361",
-    "semantic_hash": ""
-  },
-  "Frontend/public/vfx/hall-life/receptionist/c_3.webp": {
-    "mtime": 1794371134.8996384,
-    "ast_hash": "7be8389514e7bd16b199728d4f560e53",
-    "semantic_hash": ""
-  },
-  "Frontend/public/vfx/hall-life/receptionist/c_4.webp": {
-    "mtime": 1794371136.939994,
-    "ast_hash": "ced5b568690ace8ea5446d3865354e64",
-    "semantic_hash": ""
-  },
-  "Frontend/public/vfx/hall-life/receptionist/c_5.webp": {
-    "mtime": 1794371139.034018,
-    "ast_hash": "4bb84bac146af8dadfc8002faadff3f2",
-    "semantic_hash": ""
-  },
-  "Frontend/public/vfx/hall-life/receptionist/c_6.webp": {
-    "mtime": 1794371141.1161535,
-    "ast_hash": "a73fb4671c5331d75f2138e96e27b63a",
-    "semantic_hash": ""
-  },
-  "Frontend/public/vfx/hall-life/receptionist/d.webp": {
-    "mtime": 1794371143.1929078,
-    "ast_hash": "1966cce19c26868146017a4c496c63d5",
-    "semantic_hash": ""
-  },
-  "Frontend/public/vfx/hall-life/receptionist/d_1.webp": {
-    "mtime": 1794371145.2407525,
-    "ast_hash": "be012667e446c75c8b350e51761bed68",
-    "semantic_hash": ""
-  },
-  "Frontend/public/vfx/hall-life/receptionist/d_2.webp": {
-    "mtime": 1794371147.3044012,
-    "ast_hash": "b1fe9e5b13b02d10628977e4ac0608e5",
-    "semantic_hash": ""
-  },
-  "Frontend/public/vfx/hall-life/receptionist/d_3.webp": {
-    "mtime": 1794371149.367089,
-    "ast_hash": "adf1a270b55e8089c9cd6dab7c1aac3a",
-    "semantic_hash": ""
-  },
-  "Frontend/public/vfx/hall-life/receptionist/d_4.webp": {
-    "mtime": 1794371151.4250276,
-    "ast_hash": "b3a28307bb4f9ad0ed36cf498455726d",
-    "semantic_hash": ""
-  },
-  "Frontend/public/vfx/hall-life/receptionist/d_5.webp": {
-    "mtime": 1794371153.483077,
-    "ast_hash": "4a4497d371e055a8f7dbc9dd9b2193cb",
-    "semantic_hash": ""
-  },
-  "Frontend/public/vfx/hall-life/receptionist/d_6.webp": {
-    "mtime": 1794371155.540707,
-    "ast_hash": "a03995f398892dcafe8b7cf07317094b",
-    "semantic_hash": ""
-  },
   "Frontend/public/vfx/hall-life/stair-bard/a.webp": {
-    "mtime": 1794370984.8996499,
+    "mtime": 1794442164.383007,
     "ast_hash": "e9dad94dc62af2611544231c47492d85",
     "semantic_hash": ""
   },
-  "Frontend/public/vfx/hall-life/stair-bard/b.webp": {
-    "mtime": 1794370986.0349083,
-    "ast_hash": "5782a7488389b0afa572c10c3b1becb1",
+  "Frontend/composables/ui/useHallMusic.ts": {
+    "mtime": 1794456982.6602225,
+    "ast_hash": "b436a6564ec3ae0e434cda5f02196e0a",
     "semantic_hash": ""
   },
-  "Frontend/public/vfx/hall-life/stair-bard/c.webp": {
-    "mtime": 1794370987.2005618,
-    "ast_hash": "2c574774ccb3881b57dad8a3a43ba381",
+  "Frontend/public/vfx/hall-life/receptionist/puppet/puppet.json": {
+    "mtime": 1794521216.5649507,
+    "ast_hash": "f17e663ce341104fc0ca098ef212eda7",
     "semantic_hash": ""
   },
-  "Frontend/public/vfx/hall-life/stair-bard/c_1.webp": {
-    "mtime": 1794370988.3586228,
-    "ast_hash": "d8c22f54e6e9fdcbd57e7178112358c0",
+  "Frontend/public/vfx/hall-life/stair-bard/puppet/puppet.json": {
+    "mtime": 1794456936.7381444,
+    "ast_hash": "cc0de993bf2e81e6b1873adbed08f701",
     "semantic_hash": ""
   },
-  "Frontend/public/vfx/hall-life/stair-bard/d.webp": {
-    "mtime": 1794370989.5576937,
-    "ast_hash": "5a99101a89ac996849abe4f0fed05043",
+  "Frontend/scripts/hall-life/loop_rig.py": {
+    "mtime": 1794521119.8259199,
+    "ast_hash": "c839ea3a39b2e1797a9d29973a1110e4",
     "semantic_hash": ""
   },
-  "Frontend/public/vfx/hall-life/stair-bard/d_1.webp": {
-    "mtime": 1794370990.746678,
-    "ast_hash": "dfa3a5f89b600d6892888acdf931d1c4",
+  "Frontend/tests/unit/hall-music.spec.ts": {
+    "mtime": 1794457090.996124,
+    "ast_hash": "f5150c38131bfe626bb94774d892367d",
     "semantic_hash": ""
   },
-  "Frontend/public/vfx/hall-life/stair-bard/d_2.webp": {
-    "mtime": 1794370991.9097526,
-    "ast_hash": "d38db97becbfa779cecadab85f4ee3f9",
+  "Frontend/public/vfx/hall-life/receptionist/puppet/base.webp": {
+    "mtime": 1794521216.527513,
+    "ast_hash": "ac144972a1185d8bc0e93aa99d4e5c3b",
     "semantic_hash": ""
   },
-  "Frontend/public/vfx/hall-life/stair-bard/d_3.webp": {
-    "mtime": 1794370993.0693564,
-    "ast_hash": "4f3889b0affda1760ff2dd2b53ff94fd",
+  "Frontend/public/vfx/hall-life/receptionist/puppet/figura.webp": {
+    "mtime": 1794521216.3754332,
+    "ast_hash": "21a1f845ab6ce1fdd32df1e1b96eb0d2",
     "semantic_hash": ""
   },
-  "Frontend/public/vfx/hall-life/stair-bard/d_4.webp": {
-    "mtime": 1794370994.2944643,
-    "ast_hash": "cec6829dbb6fbb9de8f95f7a9134b7ac",
+  "Frontend/public/vfx/hall-life/receptionist/puppet/maos_frente.webp": {
+    "mtime": 1794521216.4592142,
+    "ast_hash": "1aab7663579f2d5b5aaccc12cadd1b12",
     "semantic_hash": ""
   },
-  "Frontend/public/vfx/hall-life/walker-traveler/a.webp": {
-    "mtime": 1794334310.1943276,
-    "ast_hash": "121ef253ed629db53b69ba42d5e3d9f3",
+  "Frontend/public/vfx/hall-life/receptionist/puppet/pagina01.webp": {
+    "mtime": 1794521216.5048642,
+    "ast_hash": "2e4f2c3ba6e8971cf720e89bf9789032",
     "semantic_hash": ""
   },
-  "Frontend/public/vfx/hall-life/walker-traveler/b.webp": {
-    "mtime": 1794334312.554292,
-    "ast_hash": "923df0013e81bf3f5cbe35782ea276a1",
+  "Frontend/public/vfx/hall-life/receptionist/puppet/pagina02.webp": {
+    "mtime": 1794521216.5305145,
+    "ast_hash": "88ea8ce3d311c7551f3d78c52a0227c1",
     "semantic_hash": ""
   },
-  "Frontend/public/vfx/hall-life/walker-traveler/c.webp": {
-    "mtime": 1794334315.7065039,
-    "ast_hash": "5f8babce6a7c5db44fd39326e65ef2ee",
+  "Frontend/public/vfx/hall-life/receptionist/puppet/pagina03.webp": {
+    "mtime": 1794521216.399127,
+    "ast_hash": "7f7a77e6775d6c1d8efd55b912bb5d75",
     "semantic_hash": ""
   },
-  "Frontend/public/vfx/hall-life/walker-traveler/d.webp": {
-    "mtime": 1794334318.4052374,
-    "ast_hash": "e7aa5d4fe7a02008e599f007acc60746",
+  "Frontend/public/vfx/hall-life/receptionist/puppet/pagina04.webp": {
+    "mtime": 1794521216.3637872,
+    "ast_hash": "8c434c6584ec88c69e9c816e2fcc0aef",
+    "semantic_hash": ""
+  },
+  "Frontend/public/vfx/hall-life/receptionist/puppet/pagina05.webp": {
+    "mtime": 1794521216.381436,
+    "ast_hash": "99069c117cf31e71431141075c167b75",
+    "semantic_hash": ""
+  },
+  "Frontend/public/vfx/hall-life/receptionist/puppet/pagina06.webp": {
+    "mtime": 1794521216.3784332,
+    "ast_hash": "a52fafc1337cbfa7b2d25340478a7d5d",
+    "semantic_hash": ""
+  },
+  "Frontend/public/vfx/hall-life/receptionist/puppet/pagina07.webp": {
+    "mtime": 1794521216.5381973,
+    "ast_hash": "90c3700580098dc2df5221d5135382de",
+    "semantic_hash": ""
+  },
+  "Frontend/public/vfx/hall-life/receptionist/puppet/pagina08.webp": {
+    "mtime": 1794521216.5342,
+    "ast_hash": "8d60f34be1a26f0f8961e2efcc4e8206",
+    "semantic_hash": ""
+  },
+  "Frontend/public/vfx/hall-life/receptionist/puppet/pagina09.webp": {
+    "mtime": 1794521216.5619502,
+    "ast_hash": "2544b5c5359a950f132724b31402ea8c",
+    "semantic_hash": ""
+  },
+  "Frontend/public/vfx/hall-life/receptionist/puppet/pagina10.webp": {
+    "mtime": 1794521216.3861253,
+    "ast_hash": "9a3b2643d7763dc9b5cb29d2fe16e7c3",
+    "semantic_hash": ""
+  },
+  "Frontend/public/vfx/hall-life/receptionist/puppet/pagina11.webp": {
+    "mtime": 1794521216.4798958,
+    "ast_hash": "2bbf5b5d2e1f7c2f52c38f2ab1197cc8",
+    "semantic_hash": ""
+  },
+  "Frontend/public/vfx/hall-life/receptionist/puppet/pagina12.webp": {
+    "mtime": 1794521216.4662125,
+    "ast_hash": "eb7afca0d225f88e5e9cffee5e3ef622",
+    "semantic_hash": ""
+  },
+  "Frontend/public/vfx/hall-life/receptionist/puppet/pagina13.webp": {
+    "mtime": 1794521216.448268,
+    "ast_hash": "8b90105a827a3bdd54d3e52d37dac0d3",
+    "semantic_hash": ""
+  },
+  "Frontend/public/vfx/hall-life/receptionist/puppet/pagina14.webp": {
+    "mtime": 1794521216.3891256,
+    "ast_hash": "6b251a53f3a9b65326c149f2a19fac23",
+    "semantic_hash": ""
+  },
+  "Frontend/public/vfx/hall-life/receptionist/puppet/pagina15.webp": {
+    "mtime": 1794521216.4698951,
+    "ast_hash": "27e915356fa0f085ee3d256dac896c0f",
+    "semantic_hash": ""
+  },
+  "Frontend/public/vfx/hall-life/receptionist/puppet/pagina16.webp": {
+    "mtime": 1794521216.3530922,
+    "ast_hash": "dbebf069c1acc99ab3b989fd18b7727c",
+    "semantic_hash": ""
+  },
+  "Frontend/public/vfx/hall-life/receptionist/puppet/pose_canto_mao.webp": {
+    "mtime": 1794521216.5499895,
+    "ast_hash": "fa37a608f678fb50a202b389a4f466f5",
+    "semantic_hash": ""
+  },
+  "Frontend/public/vfx/hall-life/receptionist/puppet/pose_canto_tampa.webp": {
+    "mtime": 1794521216.4912176,
+    "ast_hash": "96957cf6390acbe0637b7d04f3053aa9",
+    "semantic_hash": ""
+  },
+  "Frontend/public/vfx/hall-life/receptionist/puppet/rosto_blink.webp": {
+    "mtime": 1794521216.5018637,
+    "ast_hash": "262aa64f5be7754711a3e09d4822980b",
+    "semantic_hash": ""
+  },
+  "Frontend/public/vfx/hall-life/receptionist/puppet/rosto_look.webp": {
+    "mtime": 1794521216.515864,
+    "ast_hash": "7e5c8fd539832fe8f5b53f6b8327cd8a",
+    "semantic_hash": ""
+  },
+  "Frontend/public/vfx/hall-life/stair-bard/puppet/base.webp": {
+    "mtime": 1794456936.7351446,
+    "ast_hash": "0509d6f54b768cdad0564c730f2f8fe0",
+    "semantic_hash": ""
+  },
+  "Frontend/public/vfx/hall-life/stair-bard/puppet/figura.webp": {
+    "mtime": 1794456936.7162342,
+    "ast_hash": "b83ece6aa83474f07b00bad3e3e7db95",
     "semantic_hash": ""
   }
 }
