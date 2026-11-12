@@ -62,45 +62,6 @@
         "name": "a",
         "src": "/vfx/hall-life/stair-bard/a.webp",
         "hold": [700, 1200]
-      },
-      {
-        "name": "b",
-        "src": "/vfx/hall-life/stair-bard/b.webp",
-        "hold": [700, 1200]
-      },
-      {
-        "name": "c",
-        "src": "/vfx/hall-life/stair-bard/c.webp",
-        "hold": [700, 1200],
-        "tweens": [
-          {
-            "name": "c_1",
-            "src": "/vfx/hall-life/stair-bard/c_1.webp"
-          }
-        ]
-      },
-      {
-        "name": "d",
-        "src": "/vfx/hall-life/stair-bard/d.webp",
-        "hold": [900, 1400],
-        "tweens": [
-          {
-            "name": "d_1",
-            "src": "/vfx/hall-life/stair-bard/d_1.webp"
-          },
-          {
-            "name": "d_2",
-            "src": "/vfx/hall-life/stair-bard/d_2.webp"
-          },
-          {
-            "name": "d_3",
-            "src": "/vfx/hall-life/stair-bard/d_3.webp"
-          },
-          {
-            "name": "d_4",
-            "src": "/vfx/hall-life/stair-bard/d_4.webp"
-          }
-        ]
       }
     ],
     "light": {
@@ -108,7 +69,10 @@
       "gain": 0.07
     },
     "tooltip": "🎵 Bardo aquecendo as cordas",
-    "sequence": "loop"
+    "sequence": "loop",
+    "puppet": {
+      "src": "/vfx/hall-life/stair-bard/puppet/puppet.json"
+    }
   },
   "planners-table": {
     "order": 30,
@@ -410,95 +374,6 @@
         "name": "a",
         "src": "/vfx/hall-life/receptionist/a.webp",
         "hold": [2500, 5000]
-      },
-      {
-        "name": "b",
-        "src": "/vfx/hall-life/receptionist/b.webp",
-        "hold": [1600, 2600],
-        "tweens": [
-          {
-            "name": "b_1",
-            "src": "/vfx/hall-life/receptionist/b_1.webp"
-          },
-          {
-            "name": "b_2",
-            "src": "/vfx/hall-life/receptionist/b_2.webp"
-          },
-          {
-            "name": "b_3",
-            "src": "/vfx/hall-life/receptionist/b_3.webp"
-          },
-          {
-            "name": "b_4",
-            "src": "/vfx/hall-life/receptionist/b_4.webp"
-          },
-          {
-            "name": "b_5",
-            "src": "/vfx/hall-life/receptionist/b_5.webp"
-          }
-        ]
-      },
-      {
-        "name": "c",
-        "src": "/vfx/hall-life/receptionist/c.webp",
-        "hold": [1000, 1600],
-        "tweens": [
-          {
-            "name": "c_1",
-            "src": "/vfx/hall-life/receptionist/c_1.webp"
-          },
-          {
-            "name": "c_2",
-            "src": "/vfx/hall-life/receptionist/c_2.webp"
-          },
-          {
-            "name": "c_3",
-            "src": "/vfx/hall-life/receptionist/c_3.webp"
-          },
-          {
-            "name": "c_4",
-            "src": "/vfx/hall-life/receptionist/c_4.webp"
-          },
-          {
-            "name": "c_5",
-            "src": "/vfx/hall-life/receptionist/c_5.webp"
-          },
-          {
-            "name": "c_6",
-            "src": "/vfx/hall-life/receptionist/c_6.webp"
-          }
-        ]
-      },
-      {
-        "name": "d",
-        "src": "/vfx/hall-life/receptionist/d.webp",
-        "hold": [1000, 1600],
-        "tweens": [
-          {
-            "name": "d_1",
-            "src": "/vfx/hall-life/receptionist/d_1.webp"
-          },
-          {
-            "name": "d_2",
-            "src": "/vfx/hall-life/receptionist/d_2.webp"
-          },
-          {
-            "name": "d_3",
-            "src": "/vfx/hall-life/receptionist/d_3.webp"
-          },
-          {
-            "name": "d_4",
-            "src": "/vfx/hall-life/receptionist/d_4.webp"
-          },
-          {
-            "name": "d_5",
-            "src": "/vfx/hall-life/receptionist/d_5.webp"
-          },
-          {
-            "name": "d_6",
-            "src": "/vfx/hall-life/receptionist/d_6.webp"
-          }
-        ]
       }
     ],
     "light": {
@@ -506,7 +381,10 @@
       "gain": 0.08
     },
     "tooltip": "📜 Mestra Agda, recepcionista da guilda",
-    "sequence": "gestures"
+    "sequence": "gestures",
+    "puppet": {
+      "src": "/vfx/hall-life/receptionist/puppet/puppet.json"
+    }
   },
   "library-reader": {
     "order": 55,

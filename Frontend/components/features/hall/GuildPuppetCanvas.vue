@@ -8,17 +8,25 @@ import { ref, onMounted, onBeforeUnmount } from 'vue';
 import {
   applyVars,
   boneWorlds,
+  cuesBetween,
   evalPose,
+  meshUv,
   pickNext,
   skinMesh,
   varsAt,
   type Puppet,
   type PuppetAnim,
+  type PuppetCue,
   type PuppetState,
 } from '~/composables/ui/puppet';
 
 const props = defineProps<{ src: string }>();
-const emit = defineEmits<{ (e: 'ready'): void; (e: 'failed'): void }>();
+const emit = defineEmits<{
+  (e: 'ready'): void;
+  (e: 'failed'): void;
+  /** batida nas cordas (quem toca em loop): o saguão transforma em som */
+  (e: 'cue', cue: PuppetCue): void;
+}>();
 
 const canvas = ref<HTMLCanvasElement | null>(null);
 const ready = ref(false);
@@ -147,7 +155,7 @@ onMounted(async () => {
           id: d.id,
           tex,
           pos: buf(g.ARRAY_BUFFER, skin, g.DYNAMIC_DRAW),
-          uv: buf(g.ARRAY_BUFFER, new Float32Array(d.mesh.uv), g.STATIC_DRAW),
+          uv: buf(g.ARRAY_BUFFER, meshUv(d.mesh, puppet.images[d.image]!), g.STATIC_DRAW),
           idx: buf(g.ELEMENT_ARRAY_BUFFER, new Uint16Array(d.mesh.tri), g.STATIC_DRAW),
           count: d.mesh.tri.length,
           skin,
@@ -210,15 +218,18 @@ onMounted(async () => {
     let state: PuppetState = Object.fromEntries(
       Object.keys(puppet.vars ?? {}).map((k) => [k, Number(query.get(`puppet_${k}`) ?? 0)]),
     );
+    let lastF = -1e-6; // último quadro do trecho atual já "tocado"
     const next = (now: number) => {
       if (anim) state = varsAt(puppet, anim, anim.frames, state); // fim do gesto: efeito fica
-      const k = anim ? -1 : pickNext(puppet, Math.random, state);
+      // sem peso de "parado" (ex.: bardo em loop): emenda um trecho no outro, sem pausa
+      const k = anim && puppet.weights.idle > 0 ? -1 : pickNext(puppet, Math.random, state);
       anim = k >= 0 ? puppet.anims[k]! : null;
       started = now;
+      lastF = -1e-6;
       until = now + (anim ? (anim.frames / puppet.fps) * 1000 : i0 + Math.random() * (i1 - i0));
     };
     until = performance.now() + i0 * Math.random();
-    // inspeção: ?puppetT=b@1.2 congela o gesto b em 1,2 s (como o ?walkerT= do caminhante)
+    // inspeção: ?puppetT=b@1.2 congela o gesto b em 1,2 s
     // (e ?puppet_dirt=2 começa com a barba suja)
     const freeze = query.get('puppetT')?.split('@');
     const frozen = freeze ? puppet.anims.find((a) => a.name === `gesto_${freeze[0]}`) : undefined;
@@ -236,6 +247,10 @@ onMounted(async () => {
           ? ((now - started) / 1000) * puppet.fps
           : 0;
       const pose = evalPose(puppet, playing, f);
+      if (puppet.music && anim && !frozen && f > lastF) {
+        for (const cue of cuesBetween(puppet.music, puppet.fps, lastF, f)) emit('cue', cue);
+        lastF = f;
+      }
       applyVars(puppet, varsAt(puppet, playing, f, state), pose.opacity);
       const worlds = boneWorlds(puppet, pose);
 

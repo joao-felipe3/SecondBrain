@@ -136,23 +136,6 @@ em tempo real a 60 fps, sem quadros pré-renderizados (Gloin: ~300 KB contra 1,4
 - Pegadinhas do RML: o PRIMEIRO elemento desenhado fica NA FRENTE; cada `ImageAsset` precisa de
   `assetId` próprio (senão a imagem some sem erro).
 
-## Caminhantes (`walker.py`)
-
-NPCs que atravessam o saguão. Ficam em `"walkers"` no manifesto e saem em `assets/data/hall-walkers.json`.
-
-```bash
-python walker.py gen-a   --only traveler --variants 2   # passo A pintado num trecho real do piso
-python walker.py pick    --only traveler --variant 1
-python walker.py frames  --only traveler               # passos b, c, d numa grade 2x2 (mesmo personagem)
-python walker.py extract --only traveler               # silhueta + sombra preta translúcida
-python walker.py export  --only traveler
-```
-
-- Os passos são gerados numa única imagem em grade 2×2 a partir do passo A: o modelo mantém o personagem idêntico entre os quadros.
-- A silhueta separa corpo de sombra (piso escurecido sem mudar de cor) e a sombra vira uma camada preta translúcida, então nenhum pedaço de piso desliza junto com ele. Passos que saem espelhados são virados automaticamente.
-- No front (`GuildWalkerLayer.vue` + `useHallWalkers.ts`): a escala acompanha a profundidade (`route.horizon`), a velocidade é proporcional ao tamanho do passo (pés não patinam), e o roteiro é esperar → entrar → parar no balcão → voltar espelhado → sair.
-- Calibração: `/?walkerT=0.4&walkerFrame=1` congela o caminhante numa posição da rota.
-
 ## Personagem na frente de um efeito animado
 
 Os efeitos do `GuildVfxLayer` (chamas das tochas e da lareira) são desenhados acima das vinhetas. Quando um personagem está na frente de uma chama, adicione ao manifesto:
@@ -202,3 +185,37 @@ limpar o bigode só é sorteado com a barba suja (e fica mais provável quanto m
 
 O gole na garganta (`rig.gulp`: `center`, `radius`, `amount`, `count`) e o punho em um movimento só
 (`loop.continuous`) também ficam no rig do gesto.
+
+## Marionete em loop (`loop_rig.py`): personagem que não para (ex.: bardo)
+
+Para quem repete um movimento contínuo (tocar, mexer o caldeirão), não há poses desenhadas. Uma
+malha cobre as regiões que se mexem e é deformada por ossos com pesos suaves (mesh deform, como no
+Spine/Rive). Os movimentos são procedurais e seguem um andamento:
+
+- `strum`: desce rápido no tempo, sobe devagar;
+- `nod`: a cabeça marca a batida, com `sway` (balanço lento);
+- `tap`: a ponta do pé sobe e bate no tempo.
+
+Por baixo da malha fica a `base`, o repouso com as regiões móveis preenchidas por inpaint. Assim,
+quando a mão sobe, aparece alaúde/fundo, e não uma segunda mão.
+
+Config em `vignettes.json` → `loop_rig` (`bpm`, `bones`, `motions`, `anims`; ver o docstring do script).
+Cada trecho de `anims` tem a duração de alguns tempos. `look` vira um osso e volta (o bardo olha para
+o mezanino). Os trechos se emendam sem pausa (`weights.idle = 0`).
+
+python Frontend/scripts/hall-life/loop_rig.py --only stair-bard --site
+python Frontend/scripts/hall-life/export.py --only stair-bard # o site passa a guardar só o repouso
+
+### Virar a página (recepcionista)
+
+- `page_flip`: a página da direita gira em volta da lombada e pousa à esquerda (quadros renderizados,
+  troca seca de um por quadro). `occluders` + `front` (contorno traçado à mão, refinado por GrabCut na
+  linha de tinta; `front_cut` tira sobras como a página junto ao bico da pena) viram uma peça própria
+  (`maos_frente`), presa aos mesmos ossos e desenhada por cima da folha: a mão pode se afastar e o
+  recorte vai junto.
+- Embaixo do que se move, `fill` de um osso pode ser uma cena limpa do Gemini sem aquela parte
+  (`rig.py overlay --name nowrite ...`), em vez de inpaint.
+- `poses`: mão desenhada pelo Gemini numa pose nova (ex.: no canto da página). Da pose entram só a
+  silhueta da mão (`hand` + `hand_cut`) e um tampão (`clean`: cena sem a mão antiga). Com `reach`, a
+  mão anda até a pose por um trilho (`from` → `to`, com `lift` e `turn`) em vez de dissolver.
+- `vars` + `weightBy`: só vira depois de escrever algumas linhas (`linhas`).

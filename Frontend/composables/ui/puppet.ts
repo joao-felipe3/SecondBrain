@@ -24,7 +24,8 @@ export interface PuppetBone {
 export interface PuppetMesh {
   /** posições na pose de ligação (pares x, y, em px do artboard) */
   v: number[];
-  uv: number[];
+  /** sem `uv`: a textura cobre o retângulo da imagem no artboard (`meshUv` calcula de `v`) */
+  uv?: number[];
   tri: number[];
   /** por vértice: [osso0, peso0, osso1, peso1] (índices em `bones` desta malha) */
   w: number[];
@@ -61,10 +62,33 @@ export interface PuppetAnim {
   name: string;
   frames: number;
   effects?: PuppetEffect[];
+  /** peso relativo no sorteio (padrão 1) */
+  weight?: number;
   /** peso do sorteio multiplicado por esta variável (0 = nunca; ex.: só limpa a barba se estiver suja) */
   weightBy?: string;
   /** objeto -> propriedade (rotation | length | scale | opacity) -> [[quadro, valor]] */
   tracks: Record<string, Record<string, [number, number][]>>;
+  /** trilhas que se repetem (ex.: dedilhar a cada tempo): objeto -> período em quadros */
+  periods?: Record<string, number>;
+}
+
+/**
+ * Música de quem toca em loop (ex.: bardo): eventos [tempo, nota, ganho, duração em tempos], contados
+ * do início do trecho; o trecho dura um múltiplo de `length` tempos e a música recomeça junto.
+ */
+export interface PuppetMusic {
+  bpm: number;
+  bar: number;
+  length: number;
+  events: [number, string, number, number][];
+}
+
+export interface PuppetCue {
+  beat: number;
+  note: string;
+  gain: number;
+  /** quanto a nota soa antes de abafar */
+  seconds: number;
 }
 
 export interface Puppet {
@@ -79,6 +103,7 @@ export interface Puppet {
   idleMs: [number, number];
   weights: { idle: number; gesture: number };
   vars?: Record<string, PuppetVar>;
+  music?: PuppetMusic;
 }
 
 export interface PuppetPose {
@@ -112,8 +137,10 @@ export function evalPose(p: Puppet, anim: PuppetAnim | null, frame: number): Pup
   for (const d of p.draw) pose.opacity[d.id] = d.opacity;
   if (!anim) return pose;
   for (const [obj, props] of Object.entries(anim.tracks)) {
+    const period = anim.periods?.[obj];
+    const f = period ? ((frame % period) + period) % period : frame;
     for (const [prop, keys] of Object.entries(props)) {
-      const val = sampleTrack(keys, frame);
+      const val = sampleTrack(keys, f);
       if (prop === 'opacity') pose.opacity[obj] = val;
       else if (pose.bones[obj] && (prop === 'rotation' || prop === 'length' || prop === 'scale'))
         pose.bones[obj][prop] = val;
@@ -196,6 +223,18 @@ export function skinMesh(
   return out;
 }
 
+/** Coordenadas de textura da malha: as gravadas, ou a posição de ligação dentro do retângulo da imagem. */
+export function meshUv(mesh: PuppetMesh, rect: [string, number, number, number, number]): Float32Array {
+  if (mesh.uv) return new Float32Array(mesh.uv);
+  const [, x, y, w, h] = rect;
+  const out = new Float32Array(mesh.v.length);
+  for (let k = 0; k < mesh.v.length; k += 2) {
+    out[k] = (mesh.v[k]! - x) / w;
+    out[k + 1] = (mesh.v[k + 1]! - y) / h;
+  }
+  return out;
+}
+
 const clamp = (x: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, x));
 
 /** Variáveis no quadro `frame` do gesto, partindo do estado `s` (sem gesto: o próprio estado). */
@@ -224,7 +263,9 @@ export function applyVars(p: Puppet, s: PuppetState, opacity: Record<string, num
  * cada, vezes a variável `weightBy` se houver). Devolve o índice do gesto ou -1 (parado).
  */
 export function pickNext(p: Puppet, rng: () => number = Math.random, s: PuppetState = {}): number {
-  const w = p.anims.map((a) => p.weights.gesture * (a.weightBy ? (s[a.weightBy] ?? 0) : 1));
+  const w = p.anims.map(
+    (a) => p.weights.gesture * (a.weight ?? 1) * (a.weightBy ? (s[a.weightBy] ?? 0) : 1),
+  );
   const total = p.weights.idle + w.reduce((x, y) => x + y, 0);
   let r = rng() * total - p.weights.idle;
   if (r < 0) return -1;
@@ -233,4 +274,23 @@ export function pickNext(p: Puppet, rng: () => number = Math.random, s: PuppetSt
     if (r < 0 && w[i]! > 0) return i;
   }
   return -1;
+}
+
+/**
+ * Notas que começam entre os quadros `f0` (exclusivo) e `f1` (inclusivo) de um trecho — tocadas no
+ * mesmo relógio da animação, então a mão desenhada e o som andam juntos.
+ */
+export function cuesBetween(m: PuppetMusic, fps: number, f0: number, f1: number): PuppetCue[] {
+  const perBeat = (fps * 60) / m.bpm;
+  const out: PuppetCue[] = [];
+  const r0 = Math.max(0, Math.floor(f0 / perBeat / m.length));
+  const r1 = Math.floor(f1 / perBeat / m.length);
+  for (let rep = r0; rep <= r1; rep++) {
+    for (const [beat, note, gain, dur] of m.events) {
+      const f = (rep * m.length + beat) * perBeat;
+      if (f > f0 && f <= f1)
+        out.push({ beat: rep * m.length + beat, note, gain, seconds: (dur * 60) / m.bpm });
+    }
+  }
+  return out;
 }

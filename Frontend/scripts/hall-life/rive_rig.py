@@ -203,13 +203,13 @@ class Doc:
         self.n += 1
         return f"0:{self.n}"
 
-    def asset(self, out_dir, name: str, rgb: np.ndarray, alpha: np.ndarray):
+    def asset(self, out_dir, name: str, rgb: np.ndarray, alpha: np.ndarray, quality: int = 92):
         ys, xs = np.where(alpha > 0.01)
         if not len(xs):
             return None
         x0, y0, x1, y1 = xs.min(), ys.min(), xs.max() + 1, ys.max() + 1
         rgba = np.dstack([rgb[y0:y1, x0:x1], alpha[y0:y1, x0:x1] * 255]).round().astype(np.uint8)
-        Image.fromarray(rgba, "RGBA").save(out_dir / f"{name}.webp", "WEBP", quality=92, alpha_quality=100, method=6)
+        Image.fromarray(rgba, "RGBA").save(out_dir / f"{name}.webp", "WEBP", quality=quality, alpha_quality=100, method=6)
         aid = self.id()
         self.asset_n += 1
         self.assets.append(f'<ImageAsset file="{name}.webp" assetId="{self.asset_n}" name="{name}" id="{aid}"/>')
@@ -678,9 +678,9 @@ def install(vid: str) -> None:
     """Copia a marionete (puppet.json + imagens) para o site e liga no hall-life.json."""
     src = RIVE_DIR / vid
     dest = C.PUBLIC_OUT / vid / "puppet"
-    if dest.exists():
-        shutil.rmtree(dest)
-    dest.mkdir(parents=True)
+    dest.mkdir(parents=True, exist_ok=True)
+    for p in dest.iterdir():  # esvazia sem apagar a pasta (o dev server / um terminal pode estar nela)
+        shutil.rmtree(p) if p.is_dir() else p.unlink()
     puppet = json.loads((src / "puppet.json").read_text(encoding="utf-8"))
     used = {img[0] for img in puppet["images"].values()}
     for f in used:

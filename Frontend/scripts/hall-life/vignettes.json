@@ -97,7 +97,222 @@
         "gain": 0.07
       },
       "tooltip": "🎵 Bardo aquecendo as cordas",
-      "sequence": "loop"
+      "sequence": "loop",
+      "loop_rig": {
+        "bpm": 100,
+        "idleMs": [200, 400],
+        "bones": {
+          "cabeca": {
+            "pivot": [628, 1088],
+            "tip": [615, 880],
+            "blur": 2.5,
+            "region": [
+              [430, 705],
+              [640, 690],
+              [790, 730],
+              [800, 870],
+              [730, 885],
+              [712, 990],
+              [690, 1060],
+              [672, 1090],
+              [590, 1092],
+              [548, 1060],
+              [505, 965],
+              [425, 820]
+            ],
+            "fill": "plate"
+          },
+          "antebraco": {
+            "pivot": [300, 1290],
+            "tip": [455, 1320],
+            "blur": 2,
+            "region": [
+              [245, 1225],
+              [460, 1262],
+              [470, 1362],
+              [300, 1372],
+              [238, 1320]
+            ],
+            "fill": "inpaint"
+          },
+          "mao": {
+            "parent": "antebraco",
+            "pivot": [455, 1320],
+            "tip": [590, 1330],
+            "blur": 1.5,
+            "region": [
+              [445, 1290],
+              [480, 1255],
+              [560, 1262],
+              [600, 1290],
+              [595, 1330],
+              [560, 1350],
+              [520, 1395],
+              [470, 1400],
+              [440, 1370]
+            ],
+            "fill": "inpaint"
+          },
+          "pe": {
+            "pivot": [545, 2135],
+            "tip": [365, 2110],
+            "blur": 2,
+            "region": [
+              [348, 2022],
+              [572, 2015],
+              [582, 2162],
+              [348, 2162]
+            ],
+            "fill": "plate"
+          },
+          "mao_acorde": {
+            "pivot": [885, 1220],
+            "tip": [875, 1060],
+            "blur": 1.5,
+            "fill": "inpaint",
+            "region": [
+              [815, 1060],
+              [860, 1040],
+              [930, 1050],
+              [945, 1130],
+              [935, 1222],
+              [900, 1236],
+              [860, 1226],
+              [820, 1140]
+            ]
+          }
+        },
+        "motions": {
+          "mao": {
+            "kind": "strum",
+            "amp": 5,
+            "lag": 0.85
+          },
+          "antebraco": {
+            "kind": "strum",
+            "amp": 1.5,
+            "lag": 0.9
+          },
+          "cabeca": {
+            "kind": "nod",
+            "amp": 1.6,
+            "sway": 2,
+            "sway_beats": 8
+          },
+          "pe": {
+            "kind": "tap",
+            "amp": 9
+          },
+          "mao_acorde": {
+            "kind": "chords",
+            "amp": 2.5,
+            "bar": 3,
+            "lead": 0.35,
+            "steps": [
+              0, 0, 1, -0.3, 0, 0, 0.4, 0.4, 0, 0, 1, -0.3, 0, 0.4, 0, 0, 0.6, -0.3, 1, -0.3, 0, 0, 0.4,
+              0.4, 0.6, -0.3, 1, -0.3, 0, 0.4, 0, 0
+            ]
+          }
+        },
+        "anims": [
+          {
+            "name": "tocar",
+            "beats": 96,
+            "weight": 2
+          },
+          {
+            "name": "olhar",
+            "beats": 96,
+            "weight": 1,
+            "looks": [
+              {
+                "bone": "cabeca",
+                "angle": -5,
+                "from": 49,
+                "to": 58
+              },
+              {
+                "bone": "cabeca",
+                "angle": -5,
+                "from": 73,
+                "to": 82
+              }
+            ]
+          }
+        ],
+        "music": {
+          "piece": "Greensleeves (tradicional inglesa, séc. XVI, domínio público)",
+          "bar": 3,
+          "melody": [
+            "C5:2 D5:1",
+            "E5:1.5 F5:.5 E5:1",
+            "D5:2 B4:1",
+            "G4:1.5 A4:.5 B4:1",
+            "C5:2 A4:1",
+            "A4:1.5 G#4:.5 A4:1",
+            "B4:2 G#4:1",
+            "E4:2 A4:1",
+            "C5:2 D5:1",
+            "E5:1.5 F5:.5 E5:1",
+            "D5:2 B4:1",
+            "G4:1.5 A4:.5 B4:1",
+            "C5:1.5 B4:.5 A4:1",
+            "G#4:1.5 F#4:.5 G#4:1",
+            "A4:3",
+            "A4:3",
+            "G5:3",
+            "G5:1.5 F#5:.5 E5:1",
+            "D5:2 B4:1",
+            "G4:1.5 A4:.5 B4:1",
+            "C5:2 A4:1",
+            "A4:1.5 G#4:.5 A4:1",
+            "B4:2 G#4:1",
+            "E4:3",
+            "G5:3",
+            "G5:1.5 F#5:.5 E5:1",
+            "D5:2 B4:1",
+            "G4:1.5 A4:.5 B4:1",
+            "C5:1.5 B4:.5 A4:1",
+            "G#4:1.5 F#4:.5 G#4:1",
+            "A4:3",
+            "A4:2 A4:1"
+          ],
+          "chords": [
+            "Am",
+            "Am",
+            "G",
+            "Em",
+            "Am",
+            "Am",
+            "E",
+            "E",
+            "Am",
+            "Am",
+            "G",
+            "Em",
+            "Am",
+            "E",
+            "Am",
+            "Am",
+            "C",
+            "Em",
+            "G",
+            "Em",
+            "Am",
+            "Am",
+            "E",
+            "E",
+            "C",
+            "Em",
+            "G",
+            "Em",
+            "Am",
+            "E",
+            "Am",
+            "Am"
+          ]
+        }
+      }
     },
     {
       "id": "planners-table",
@@ -348,7 +563,337 @@
         "gain": 0.08
       },
       "tooltip": "📜 Mestra Agda, recepcionista da guilda",
-      "sequence": "gestures"
+      "sequence": "gestures",
+      "loop_rig": {
+        "bpm": 60,
+        "idleMs": [200, 400],
+        "bones": {
+          "cabeca": {
+            "pivot": [880, 1100],
+            "tip": [880, 700],
+            "blur": 2.5,
+            "fill": "plate",
+            "region": [
+              [660, 470],
+              [860, 450],
+              [1000, 560],
+              [1130, 700],
+              [1150, 860],
+              [1100, 960],
+              [1020, 1040],
+              [960, 1085],
+              [880, 1100],
+              [800, 1085],
+              [740, 980],
+              [680, 900],
+              [640, 700]
+            ]
+          },
+          "antebraco": {
+            "pivot": [500, 1590],
+            "tip": [810, 1600],
+            "blur": 2,
+            "fill": "overlay_nowrite.png",
+            "region": [
+              [520, 1490],
+              [700, 1505],
+              [830, 1540],
+              [840, 1660],
+              [700, 1685],
+              [540, 1685],
+              [500, 1600]
+            ]
+          },
+          "mao": {
+            "parent": "antebraco",
+            "pivot": [810, 1600],
+            "tip": [995, 1735],
+            "blur": 1.5,
+            "fill": "overlay_nowrite.png",
+            "region": [
+              [695, 1300],
+              [745, 1280],
+              [790, 1360],
+              [900, 1500],
+              [960, 1560],
+              [1000, 1600],
+              [1015, 1745],
+              [960, 1750],
+              [880, 1710],
+              [820, 1680],
+              [790, 1610],
+              [800, 1560],
+              [760, 1460]
+            ]
+          },
+          "mao_livre": {
+            "pivot": [1170, 1520],
+            "tip": [1060, 1660],
+            "blur": 1.5,
+            "fill": "inpaint",
+            "region": [
+              [1000, 1520],
+              [1080, 1480],
+              [1200, 1460],
+              [1215, 1560],
+              [1150, 1700],
+              [1050, 1710],
+              [995, 1640]
+            ]
+          }
+        },
+        "motions": {
+          "mao": {
+            "kind": "scribble",
+            "amp": 2.2
+          },
+          "antebraco": {
+            "kind": "line",
+            "amp": 3,
+            "period": 6
+          },
+          "cabeca": {
+            "kind": "sway",
+            "amp": 1.0,
+            "period": 6
+          },
+          "mao_livre": {
+            "kind": "line",
+            "amp": -1.5,
+            "period": 6
+          }
+        },
+        "anims": [
+          {
+            "name": "escrever",
+            "beats": 12,
+            "weight": 3,
+            "blinks": [1.4, 5.1, 8.6, 10.3],
+            "effects": [
+              {
+                "var": "linhas",
+                "add": 1,
+                "from": 11,
+                "until": 12
+              }
+            ]
+          },
+          {
+            "name": "olhar",
+            "beats": 12,
+            "weight": 1,
+            "blinks": [0.8, 11.0],
+            "looks": [
+              {
+                "bone": "cabeca",
+                "angle": -4,
+                "from": 2,
+                "to": 10,
+                "quiet": ["mao", "antebraco", "mao_livre"],
+                "patch": "look"
+              }
+            ]
+          },
+          {
+            "name": "virar",
+            "beats": 12,
+            "weight": 1,
+            "weightBy": "linhas",
+            "blinks": [2.2, 9.4],
+            "looks": [
+              {
+                "bone": "cabeca",
+                "angle": 1.5,
+                "from": 2,
+                "to": 7,
+                "quiet": ["mao", "antebraco", "mao_livre"]
+              },
+              {
+                "bone": "antebraco",
+                "angle": -14,
+                "from": 2.9,
+                "to": 5.3
+              },
+              {
+                "bone": "mao",
+                "angle": -12,
+                "from": 2.9,
+                "to": 5.3
+              }
+            ],
+            "flip": {
+              "from": 3.45,
+              "to": 4.65
+            },
+            "effects": [
+              {
+                "var": "linhas",
+                "to": 0,
+                "from": 4,
+                "until": 5
+              }
+            ],
+            "pose": {
+              "name": "canto",
+              "in": [2.7, 3.3],
+              "out": [4.85, 5.45]
+            }
+          }
+        ],
+        "cell": 9,
+        "patches": {
+          "blink": {
+            "overlay": "overlay_blink.png",
+            "region": [780, 835, 1100, 960],
+            "bone": "cabeca",
+            "feather": 8
+          },
+          "look": {
+            "overlay": "overlay_look.png",
+            "region": [770, 800, 1110, 1045],
+            "bone": "cabeca",
+            "feather": 10
+          }
+        },
+        "page_flip": {
+          "spine": [
+            [1005, 1660],
+            [1185, 1835]
+          ],
+          "right": [
+            [1300, 1640],
+            [1555, 1775]
+          ],
+          "left": [
+            [575, 1685],
+            [800, 1830]
+          ],
+          "frames": 16,
+          "curl": 0.5,
+          "lift": 1.15,
+          "occluders": ["mao", "antebraco"],
+          "front": [
+            [
+              [505, 1490],
+              [580, 1458],
+              [680, 1465],
+              [702, 1485],
+              [740, 1515],
+              [790, 1552],
+              [840, 1530],
+              [793, 1460],
+              [710, 1310],
+              [705, 1298],
+              [735, 1296],
+              [830, 1370],
+              [905, 1500],
+              [925, 1555],
+              [950, 1575],
+              [978, 1635],
+              [995, 1675],
+              [1022, 1742],
+              [1005, 1748],
+              [960, 1710],
+              [880, 1714],
+              [800, 1690],
+              [760, 1674],
+              [680, 1662],
+              [580, 1642],
+              [515, 1622],
+              [500, 1560]
+            ]
+          ],
+          "front_cut": [
+            [
+              [880, 1700],
+              [992, 1700],
+              [1011, 1733],
+              [1011, 1770],
+              [880, 1770]
+            ],
+            [
+              [1004, 1700],
+              [1045, 1688],
+              [1055, 1770],
+              [1021, 1770],
+              [1020, 1733]
+            ]
+          ]
+        },
+        "vars": {
+          "linhas": {
+            "max": 6
+          }
+        },
+        "poses": {
+          "canto": {
+            "overlay": "overlay_turnflat.png",
+            "cover": "mao_livre",
+            "clean": "overlay_nohand.png",
+            "hand": [
+              [1200, 1430],
+              [1290, 1400],
+              [1360, 1440],
+              [1445, 1500],
+              [1530, 1550],
+              [1558, 1605],
+              [1568, 1665],
+              [1555, 1718],
+              [1495, 1728],
+              [1440, 1700],
+              [1400, 1675],
+              [1340, 1685],
+              [1300, 1600],
+              [1250, 1560],
+              [1205, 1500]
+            ],
+            "cover_extra": [
+              [
+                [1190, 1450],
+                [1290, 1420],
+                [1350, 1480],
+                [1320, 1560],
+                [1230, 1585],
+                [1190, 1540]
+              ]
+            ],
+            "reach": {
+              "cuff": [1310, 1460],
+              "wrist": [1450, 1565],
+              "to": [1480, 1600],
+              "from": [1110, 1600],
+              "turn": 25,
+              "lift": 35,
+              "fade": 0.3
+            },
+            "paper_rg": 0,
+            "hand_cut": [
+              [
+                [1330, 1650],
+                [1395, 1667],
+                [1440, 1673],
+                [1468, 1688],
+                [1478, 1715],
+                [1440, 1745],
+                [1330, 1745]
+              ],
+              [
+                [1300, 1600],
+                [1386, 1612],
+                [1392, 1640],
+                [1390, 1700],
+                [1300, 1700]
+              ],
+              [
+                [1470, 1724],
+                [1535, 1724],
+                [1535, 1770],
+                [1470, 1770]
+              ]
+            ]
+          }
+        }
+      }
     },
     {
       "id": "library-reader",
@@ -797,50 +1342,6 @@
           "c": "dirt"
         }
       }
-    }
-  ],
-  "walkers": [
-    {
-      "id": "traveler",
-      "who": "a weary adult human traveler, life-size, with a big backpack with a rolled bedroll on top and a dusty hooded brown cloak, hands free (no staff)",
-      "generate_area": [0.42, 0.535, 0.48, 0.678],
-      "cycle": [
-        {
-          "name": "a",
-          "pose": "CONTACT: right leg stepping forward with the heel touching the floor, left leg straight behind on its toes, left arm swinging forward and right arm back"
-        },
-        {
-          "name": "b",
-          "pose": "PASSING: right leg planted straight under the body carrying the weight, left leg bent and passing next to it with the foot lifted, arms close to the body"
-        },
-        {
-          "name": "c",
-          "pose": "CONTACT (mirror of the first step): LEFT leg stepping forward with the heel touching the floor, right leg straight behind on its toes, right arm swinging forward and left arm back"
-        },
-        {
-          "name": "d",
-          "pose": "PASSING (mirror): LEFT leg planted straight under the body carrying the weight, right leg bent and passing next to it with the foot lifted, arms close to the body"
-        }
-      ],
-      "route": {
-        "_doc": "pontos em fracoes da imagem (pes); horizon = v onde a altura de uma pessoa tende a zero (perspectiva do piso)",
-        "points": [
-          [0.25, 0.69],
-          [0.555, 0.686]
-        ],
-        "horizon": 0.54,
-        "fadeIn": 0.035
-      },
-      "behaviour": {
-        "_doc": "ms; stepLength = fracao da altura do corpo percorrida por passo (meio ciclo)",
-        "stepLength": 0.36,
-        "stepMs": 300,
-        "idleAtEnd": [6000, 11000],
-        "waitBetween": [9000, 20000],
-        "returns": true,
-        "standFrame": "b"
-      },
-      "tooltip": "🎒 Um viajante acabou de chegar à guilda"
     }
   ]
 }

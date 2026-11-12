@@ -25,6 +25,7 @@
         class="hall-frame-puppet"
         @ready="puppetReady[v.id] = true"
         @failed="puppetFailed[v.id] = true"
+        @cue="music.play"
       />
       <img
         v-for="f in v.puppet ? [] : v.frames"
@@ -57,9 +58,10 @@
 </template>
 
 <script setup lang="ts">
-import { reactive } from 'vue';
+import { onMounted, reactive } from 'vue';
 import GuildPuppetCanvas from './GuildPuppetCanvas.vue';
 import { useHallLife, type HallLifeLayer } from '~/composables/features/useHallLife';
+import { useHallMusic } from '~/composables/ui/useHallMusic';
 
 /** NPCs marionete: pronto (esconde o repouso pintado) / não carregou (fica no repouso) */
 const puppetReady = reactive<Record<string, boolean>>({});
@@ -73,6 +75,12 @@ const emit = defineEmits<{
 }>();
 
 const { views, active, previous, fade } = useHallLife({ layer: props.layer });
+
+// som do saguão: alaúde do bardo (sincronizado com a mão) + ambiente; liga no primeiro gesto
+const music = useHallMusic();
+onMounted(() => {
+  if (props.layer === 'base') music.arm();
+});
 </script>
 
 <style scoped>

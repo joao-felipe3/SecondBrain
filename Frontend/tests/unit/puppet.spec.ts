@@ -182,4 +182,129 @@ describe('marionete (player próprio)', () => {
     applyVars(p, { dirt: 0 }, op);
     expect(Object.values(op).every((x) => x === 0)).toBe(true);
   });
+
+  it('bardo real: os trechos em loop emendam sem salto e a malha parte do desenho', () => {
+    const p = JSON.parse(
+      readFileSync(
+        resolve(__dirname, '../../public/vfx/hall-life/stair-bard/puppet/puppet.json'),
+        'utf-8',
+      ),
+    ) as Puppet;
+    expect(p.weights.idle).toBe(0); // toca sem parar
+    const idle = evalPose(p, null, 0);
+    for (const a of p.anims) {
+      const start = evalPose(p, a, 0);
+      const end = evalPose(p, a, a.frames);
+      for (const b of p.bones) {
+        expect(start.bones[b.id]!.rotation).toBeCloseTo(end.bones[b.id]!.rotation, 4);
+        expect(start.bones[b.id]!.rotation).toBeCloseTo(idle.bones[b.id]!.rotation, 4);
+      }
+    }
+    // com os ossos na pose de ligação, a malha fica exatamente sobre o desenho
+    const fig = p.draw.find((d) => d.mesh)!;
+    const bind = evalPose(p, null, 0);
+    for (const b of p.bones) {
+      const m = fig.mesh!.bind[fig.mesh!.bones.indexOf(b.id)];
+      if (m && !b.parent) bind.bones[b.id]!.rotation = Math.atan2(m[1], m[0]);
+    }
+    const mao = p.bones.find((b) => b.parent)!;
+    const par = fig.mesh!.bind[fig.mesh!.bones.indexOf(mao.parent!)]!;
+    const own = fig.mesh!.bind[fig.mesh!.bones.indexOf(mao.id)]!;
+    bind.bones[mao.id]!.rotation = Math.atan2(own[1], own[0]) - Math.atan2(par[1], par[0]);
+    const out = skinMesh(fig.mesh!, boneWorlds(p, bind), new Float32Array(fig.mesh!.v.length));
+    const err = Math.max(...Array.from(out).map((x, i) => Math.abs(x - fig.mesh!.v[i]!)));
+    expect(err).toBeLessThan(0.05);
+  });
+
+  it('recepcionista real: escreve sem parar e os trechos emendam sem salto', () => {
+    const p = JSON.parse(
+      readFileSync(
+        resolve(__dirname, '../../public/vfx/hall-life/receptionist/puppet/puppet.json'),
+        'utf-8',
+      ),
+    ) as Puppet;
+    expect(p.weights.idle).toBe(0);
+    const idle = evalPose(p, null, 0);
+    for (const a of p.anims) {
+      for (const f of [0, a.frames]) {
+        const pose = evalPose(p, a, f);
+        for (const b of p.bones)
+          expect(pose.bones[b.id]!.rotation).toBeCloseTo(idle.bones[b.id]!.rotation, 4);
+      }
+    }
+    // olhando para cima ela para de escrever: a mão fica no lugar do meio do olhar
+    const olhar = p.anims.find((a) => a.name === 'gesto_olhar')!;
+    const mid = (olhar.frames / 12) * 6;
+    const r = (f: number) => evalPose(p, olhar, f).bones.mao!.rotation;
+    expect(Math.abs(r(mid) - r(mid + 7))).toBeLessThan(0.002);
+  });
+
+  it('recepcionista real: vira a página depois de escrever algumas linhas, um quadro de folha por vez', () => {
+    const p = JSON.parse(
+      readFileSync(
+        resolve(__dirname, '../../public/vfx/hall-life/receptionist/puppet/puppet.json'),
+        'utf-8',
+      ),
+    ) as Puppet;
+    const virar = p.anims.find((a) => a.name === 'gesto_virar')!;
+    const escrever = p.anims.find((a) => a.name === 'gesto_escrever')!;
+    const folhas = p.draw.filter((d) => d.id.startsWith('pagina')).map((d) => d.id);
+    expect(folhas.length).toBeGreaterThan(8);
+    // nunca vira sem ter escrito; cada linha escrita deixa a virada mais provável
+    expect(virar.weightBy).toBe('linhas');
+    expect(pickNext(p, () => 0.999, { linhas: 0 })).not.toBe(p.anims.indexOf(virar));
+    expect(varsAt(p, escrever, escrever.frames, { linhas: 2 }).linhas).toBe(3);
+    expect(varsAt(p, virar, virar.frames, { linhas: 4 }).linhas).toBe(0);
+    // no máximo uma folha visível por quadro (sem "folha dupla"), e nenhuma fora do trecho
+    let shown = 0;
+    for (let f = 0; f <= virar.frames; f++) {
+      const vis = folhas.filter((id) => evalPose(p, virar, f).opacity[id]! > 0.5);
+      expect(vis.length).toBeLessThanOrEqual(1);
+      shown += vis.length;
+    }
+    expect(shown).toBeGreaterThan(folhas.length);
+    for (const id of folhas) expect(evalPose(p, escrever, escrever.frames / 2).opacity[id]).toBe(0);
+  });
+
+  it('recepcionista real: a mão anda até o canto da página (sem saltar) antes da folha subir', () => {
+    const p = JSON.parse(
+      readFileSync(
+        resolve(__dirname, '../../public/vfx/hall-life/receptionist/puppet/puppet.json'),
+        'utf-8',
+      ),
+    ) as Puppet;
+    const virar = p.anims.find((a) => a.name === 'gesto_virar')!;
+    const mao = p.draw.find((d) => d.id === 'pose_canto_mao')!;
+    const osso = mao.mesh!.bones[1]!;
+    const folhas = p.draw.filter((d) => d.id.startsWith('pagina')).map((d) => d.id);
+    const at = (f: number) => {
+      const pose = evalPose(p, virar, f);
+      const m = boneWorlds(p, pose)[osso]!;
+      return {
+        x: m[4],
+        y: m[5],
+        op: pose.opacity[mao.id]!,
+        folha: folhas.some((id) => pose.opacity[id]! > 0.5),
+      };
+    };
+    let prev = at(0);
+    let path = 0;
+    let firstFolha = -1;
+    let arrived = -1;
+    for (let f = 1; f <= virar.frames; f++) {
+      const cur = at(f);
+      if (cur.op > 0.05 && prev.op > 0.05) {
+        const step = Math.hypot(cur.x - prev.x, cur.y - prev.y);
+        expect(step).toBeLessThan(25); // anda, não teletransporta
+        path += step;
+      }
+      const home = Math.hypot(cur.x - mao.mesh!.bind[1]![4], cur.y - mao.mesh!.bind[1]![5]);
+      if (arrived < 0 && cur.op > 0.99 && home < 0.5) arrived = f;
+      if (firstFolha < 0 && cur.folha) firstFolha = f;
+      prev = cur;
+    }
+    expect(path).toBeGreaterThan(300); // vai e volta visível (px do artboard)
+    expect(arrived).toBeGreaterThan(0);
+    expect(firstFolha).toBeGreaterThan(arrived); // a folha só sobe com a mão já no canto
+  });
 });
