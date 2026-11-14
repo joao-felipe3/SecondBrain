@@ -4415,8 +4415,8 @@
     "semantic_hash": ""
   },
   "Frontend/public/vfx/hall-life/board-readers/puppet/puppet.json": {
-    "mtime": 1794630315.084005,
-    "ast_hash": "1337aa90309e6bf58b02cc36e2877d76",
+    "mtime": 1794655981.2023172,
+    "ast_hash": "499ee6684094dc2f6c99411bf6da880f",
     "semantic_hash": ""
   },
   "Frontend/scripts/hall-life/head_tween.py": {

@@ -445,79 +445,6 @@
         "name": "a",
         "src": "/vfx/hall-life/board-readers/a.webp",
         "hold": [2600, 5000]
-      },
-      {
-        "name": "b",
-        "src": "/vfx/hall-life/board-readers/b.webp",
-        "hold": [1500, 2600],
-        "tweens": [
-          {
-            "name": "b_1",
-            "src": "/vfx/hall-life/board-readers/b_1.webp"
-          },
-          {
-            "name": "b_2",
-            "src": "/vfx/hall-life/board-readers/b_2.webp"
-          },
-          {
-            "name": "b_3",
-            "src": "/vfx/hall-life/board-readers/b_3.webp"
-          },
-          {
-            "name": "b_4",
-            "src": "/vfx/hall-life/board-readers/b_4.webp"
-          },
-          {
-            "name": "b_5",
-            "src": "/vfx/hall-life/board-readers/b_5.webp"
-          }
-        ]
-      },
-      {
-        "name": "c",
-        "src": "/vfx/hall-life/board-readers/c.webp",
-        "hold": [1600, 2600],
-        "tweens": [
-          {
-            "name": "c_1",
-            "src": "/vfx/hall-life/board-readers/c_1.webp"
-          },
-          {
-            "name": "c_2",
-            "src": "/vfx/hall-life/board-readers/c_2.webp"
-          },
-          {
-            "name": "c_3",
-            "src": "/vfx/hall-life/board-readers/c_3.webp"
-          },
-          {
-            "name": "c_4",
-            "src": "/vfx/hall-life/board-readers/c_4.webp"
-          },
-          {
-            "name": "c_5",
-            "src": "/vfx/hall-life/board-readers/c_5.webp"
-          }
-        ]
-      },
-      {
-        "name": "d",
-        "src": "/vfx/hall-life/board-readers/d.webp",
-        "hold": [2000, 3200],
-        "tweens": [
-          {
-            "name": "d_1",
-            "src": "/vfx/hall-life/board-readers/d_1.webp"
-          },
-          {
-            "name": "d_2",
-            "src": "/vfx/hall-life/board-readers/d_2.webp"
-          },
-          {
-            "name": "d_3",
-            "src": "/vfx/hall-life/board-readers/d_3.webp"
-          }
-        ]
       }
     ],
     "light": {
@@ -525,7 +452,10 @@
       "gain": 0.1
     },
     "tooltip": "⚔️ Aventureiros escolhendo contratos",
-    "sequence": "gestures"
+    "sequence": "gestures",
+    "puppet": {
+      "src": "/vfx/hall-life/board-readers/puppet/puppet.json"
+    }
   },
   "dwarf-crate": {
     "order": 70,

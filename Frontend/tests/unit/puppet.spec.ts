@@ -307,4 +307,280 @@ describe('marionete (player próprio)', () => {
     expect(arrived).toBeGreaterThan(0);
     expect(firstFolha).toBeGreaterThan(arrived); // a folha só sobe com a mão já no canto
   });
+
+  it('mural real: trechos emendam sem salto, o braço levanta em 3 segmentos com arrasto e as camadas trocam sem dissolver parado', () => {
+    const p = JSON.parse(
+      readFileSync(
+        resolve(__dirname, '../../public/vfx/hall-life/board-readers/puppet/puppet.json'),
+        'utf-8',
+      ),
+    ) as Puppet;
+    expect(p.weights.idle).toBe(0);
+    const idle = evalPose(p, null, 0);
+    // parado = quadro 0 = último quadro de qualquer trecho (inclusive os ossos escondidos dos braços)
+    for (const a of p.anims) {
+      for (const f of [0, a.frames]) {
+        const pose = evalPose(p, a, f);
+        for (const b of p.bones) {
+          expect(pose.bones[b.id]!.rotation).toBeCloseTo(idle.bones[b.id]!.rotation, 4);
+          expect(pose.bones[b.id]!.length).toBeCloseTo(idle.bones[b.id]!.length, 2);
+        }
+        for (const d of p.draw)
+          if (d.id.startsWith('pose_') || d.id.startsWith('rosto_')) expect(pose.opacity[d.id]).toBe(0);
+      }
+    }
+    const orc = p.anims.find((a) => a.name === 'gesto_orc_aponta')!;
+    const beat = orc.frames / 12;
+    const arm = p.draw.find((d) => d.id === 'pose_apontar_orc_mao')!;
+    const rest = p.draw.find((d) => d.id === 'pose_apontar_orc_rest')!;
+    const tampa = p.draw.find((d) => d.id === 'pose_apontar_orc_tampa')!;
+    const [, u, f, m] = arm.mesh!.bones; // ombro preso ao tronco + braço, antebraço, mão
+    const abs = (frame: number, id: string) => {
+      const w = boneWorlds(p, evalPose(p, orc, frame))[id]!;
+      return Math.atan2(w[1], w[0]);
+    };
+    // em repouso o braço do repouso é o que se vê; no ponto final, só o da pose
+    const at = (b: number) => evalPose(p, orc, b * beat).opacity;
+    expect(at(0.5)[rest.id]).toBe(0);
+    expect(at(1.5)[rest.id]).toBeGreaterThan(0.95); // começou o recuo: troca seca, idêntica ao desenho
+    expect(at(4.5)[arm.id]).toBeCloseTo(1, 2);
+    expect(at(4.5)[rest.id]).toBeCloseTo(0, 2);
+    expect(at(4.5)[tampa.id]).toBe(1);
+    // a troca entre os dois braços acontece em movimento (no meio da subida), nunca com o braço parado
+    let swapAt = -1;
+    for (let b = 1.4; b <= 2.9; b += 0.02) {
+      const o = at(b);
+      if (swapAt < 0 && o[arm.id]! > 0.5) swapAt = b;
+    }
+    expect(swapAt).toBeGreaterThan(1.6);
+    const speed = (b: number) => Math.abs(abs((b + 0.03) * beat, u!) - abs((b - 0.03) * beat, u!));
+    expect(speed(swapAt)).toBeGreaterThan(0.005);
+    // arrasto: durante a subida cada segmento está atrás do anterior (o cotovelo e a mão chegam por último)
+    const lag = (b: number) => [abs(b * beat, u!), abs(b * beat, f!), abs(b * beat, m!)];
+    const final = lag(4.5);
+    const mid = lag(2.0);
+    const togo = mid.map((x, i) => Math.abs(x - final[i]!));
+    expect(togo[1]!).toBeGreaterThan(togo[0]! * 0.99);
+    expect(togo[2]!).toBeGreaterThan(togo[1]! * 0.99);
+    // passa um pouco do ponto e assenta (mola): o ângulo do braço passa do final e volta
+    let overshoot = 0;
+    for (let b = 2.2; b <= 3.6; b += 0.02) {
+      const sign = Math.sign(final[0]! - abs(1.4 * beat, u!));
+      overshoot = Math.max(overshoot, sign * (abs(b * beat, u!) - final[0]!));
+    }
+    expect(overshoot).toBeGreaterThan(0.005);
+    expect(Math.abs(abs(4.5 * beat, u!) - final[0]!)).toBeLessThan(0.01);
+    // com o tronco em repouso e o braço no ponto final, a malha da pose quase não se mexe (só mola/tremor)
+    const hold = evalPose(p, orc, 4.5 * beat);
+    hold.bones.torso = { ...idle.bones.torso! };
+    const out = skinMesh(arm.mesh!, boneWorlds(p, hold), new Float32Array(arm.mesh!.v.length));
+    const err = Math.max(...Array.from(out).map((x, i) => Math.abs(x - arm.mesh!.v[i]!)));
+    expect(err).toBeLessThan(4);
+    // e o tronco inclinado leva o braço junto: com ele inclinado a malha se desloca (ombro preso ao corpo)
+    const lean = skinMesh(
+      arm.mesh!,
+      boneWorlds(p, evalPose(p, orc, 4.5 * beat)),
+      new Float32Array(arm.mesh!.v.length),
+    );
+    const moved = Math.max(...Array.from(lean).map((x, i) => Math.abs(x - arm.mesh!.v[i]!)));
+    expect(moved).toBeGreaterThan(err);
+    // pensando: rosto e mão chegam juntos (rosto cheio quando a mão já está cheia)
+    const pensar = p.anims.find((a) => a.name === 'gesto_pensar')!;
+    const mid2 = evalPose(p, pensar, 5 * (pensar.frames / 12));
+    expect(mid2.opacity.rosto_pensar).toBeCloseTo(1, 2);
+    expect(mid2.opacity.pose_pensar_mao).toBeCloseTo(1, 2);
+    // respira: o peito expande (escala do tronco) e o repouso pesa mais que os gestos
+    const ler = p.anims.find((a) => a.name === 'gesto_ler')!;
+    const scales = [0, 1, 2, 3, 4].map(
+      (b) => evalPose(p, ler, b * (ler.frames / 12)).bones.torso!.scale,
+    );
+    expect(Math.max(...scales)).toBeGreaterThan(1.003);
+    expect(scales[0]).toBeCloseTo(1, 5);
+    expect(ler.weight).toBeGreaterThan(1);
+  });
+
+  it('mural real: antebraço e mão crescem do cotovelo ao levantar e as cabeças olham um contrato de cada vez', () => {
+    const p = JSON.parse(
+      readFileSync(
+        resolve(__dirname, '../../public/vfx/hall-life/board-readers/puppet/puppet.json'),
+        'utf-8',
+      ),
+    ) as Puppet;
+    const idle = evalPose(p, null, 0);
+    // parado = quadro 0 = último quadro: escala dos ossos (respiração, ponta dos pés, antebraço) também volta
+    for (const a of p.anims)
+      for (const f of [0, a.frames]) {
+        const pose = evalPose(p, a, f);
+        for (const b of p.bones) expect(pose.bones[b.id]!.scale).toBeCloseTo(idle.bones[b.id]!.scale, 4);
+      }
+    // antebraço e mão: pequenos no começo (a perspectiva ainda fecha o braço atrás do corpo) e inteiros no fim
+    const orc = p.anims.find((a) => a.name === 'gesto_orc_aponta')!;
+    const beat = orc.frames / 12;
+    const fore = p.bones.find((b) => b.id === 'f_apontar_orc')!;
+    const hand = p.bones.find((b) => b.id === 'm_apontar_orc')!;
+    const sc = (b: number, id: string) => evalPose(p, orc, b * beat).bones[id]!.scale;
+    expect(sc(1, fore.id)).toBeLessThan(0.6);
+    expect(sc(4.5, fore.id)).toBeCloseTo(1, 2);
+    expect(sc(4.5, hand.id)).toBeCloseTo(1, 2);
+    let last = 0;
+    for (let b = 1.5; b <= 2.6; b += 0.05) {
+      const v = sc(b, fore.id);
+      expect(v).toBeGreaterThanOrEqual(last - 1e-3); // só cresce enquanto levanta
+      last = v;
+    }
+    const fh = p.draw.find((d) => d.id === 'pose_apontar_orc_fh')!;
+    const op = (b: number) => evalPose(p, orc, b * beat).opacity[fh.id]!;
+    expect(op(1.45)).toBeLessThan(0.05); // a mão não aparece pronta de repente
+    expect(op(4.5)).toBeCloseTo(1, 2);
+    // volta: o braço desce até o repouso sem passar do ponto (nada de balanço de pêndulo) e a mão da pose
+    // some junto com a troca para o braço do repouso (sem mão fantasma sobre ele)
+    const ombroU = 'u_apontar_orc';
+    const angU = (b: number) => {
+      // ângulo do braço em relação ao ombro (o ombro acompanha o tronco, que respira e se inclina)
+      const w = boneWorlds(p, evalPose(p, orc, b * beat));
+      return (
+        Math.atan2(w[ombroU]![1], w[ombroU]![0]) -
+        Math.atan2(w.ombro_apontar_orc![1], w.ombro_apontar_orc![0])
+      );
+    };
+    const restAng = angU(0);
+    let before = angU(7.3);
+    for (let b = 7.35; b <= 9.6; b += 0.05) {
+      const a = angU(b);
+      expect(Math.abs(a - restAng)).toBeLessThanOrEqual(Math.abs(before - restAng) + 1e-3);
+      expect((a - restAng) * (before - restAng)).toBeGreaterThanOrEqual(-1e-9);
+      before = a;
+    }
+    const resto = p.draw.find((d) => d.id === 'pose_apontar_orc_rest')!;
+    const at2 = (b: number) => evalPose(p, orc, b * beat).opacity;
+    expect(at2(8.6)[resto.id]).toBeCloseTo(1, 2);
+    expect(at2(8.6)[fh.id]).toBeLessThan(0.15);
+    // leitura: cada trecho tem poucos olhares (pausas de contemplação), mas juntos mostram as três cabeças
+    // do orc, cada uma cheia em algum momento, nunca mais de duas ao mesmo tempo
+    const heads = ['orc_esq', 'orc_dir', 'orc_baixo'].map((k) => `rosto_${k}`);
+    const peak = new Map(heads.map((h) => [h, 0]));
+    for (const nome of ['gesto_ler', 'gesto_ler2']) {
+      const a = p.anims.find((x) => x.name === nome)!;
+      const doAnim = new Map(heads.map((h) => [h, 0]));
+      let parado = 0; // quadros com o repouso (nenhuma cabeça): há pausas, a cabeça não gira sem parar
+      for (let f = 0; f <= a.frames; f += 2) {
+        const o = evalPose(p, a, f).opacity;
+        const on = heads.filter((h) => o[h]! > 0.02);
+        expect(on.length).toBeLessThanOrEqual(2);
+        expect(heads.reduce((t, h) => t + o[h]!, 0)).toBeLessThan(1.25);
+        if (on.length === 0) parado++;
+        for (const h of heads) {
+          doAnim.set(h, Math.max(doAnim.get(h)!, o[h]!));
+          peak.set(h, Math.max(peak.get(h)!, o[h]!));
+        }
+      }
+      expect([...doAnim.values()].filter((v) => v > 0.99).length).toBeGreaterThanOrEqual(2);
+      expect(parado * 2).toBeGreaterThan(a.frames * 0.15); // pelo menos ~15% do trecho com a cabeça no repouso
+    }
+    for (const h of heads) expect(peak.get(h)).toBeGreaterThan(0.99);
+    // giro contínuo: cada olhar passa por quadros intermediários, em ordem, e nunca mostra o repouso no meio
+    const orcCabecas = p.draw.filter((d) => /^rosto_orc_(esq|dir|baixo)/.test(d.id)).map((d) => d.id);
+    const hobCabecas = p.draw.filter((d) => /^rosto_hob_(esq|cima)/.test(d.id)).map((d) => d.id);
+    expect(orcCabecas.length).toBeGreaterThanOrEqual(12); // 3 olhares x (q25, meio, q75, final)
+    expect(hobCabecas.length).toBeGreaterThanOrEqual(5);
+    for (const [nome, grupo] of [
+      ['gesto_ler', orcCabecas],
+      ['gesto_ler2', orcCabecas],
+      ['gesto_ler', hobCabecas],
+    ] as [string, string[]][]) {
+      const a = p.anims.find((x) => x.name === nome)!;
+      const cob: number[] = [];
+      for (let f = 0; f <= a.frames; f++) {
+        const o = evalPose(p, a, f).opacity;
+        cob.push(1 - grupo.reduce((t, id) => t * (1 - (o[id] ?? 0)), 1));
+      }
+      // blocos de cabeça visível (separados por pelo menos 6 quadros sem nenhuma): sem buraco dentro do bloco
+      let i = 0;
+      let blocos = 0;
+      while (i < cob.length) {
+        if (cob[i]! < 0.99) {
+          i++;
+          continue;
+        }
+        let fim = i;
+        let vazio = 0;
+        for (let k = i; k < cob.length; k++) {
+          if (cob[k]! < 0.02) vazio++;
+          else vazio = 0;
+          if (vazio >= 6) break;
+          if (cob[k]! >= 0.99) fim = k;
+        }
+        for (let k = i; k <= fim; k++) expect(cob[k]).toBeGreaterThan(0.9);
+        blocos++;
+        i = fim + 1;
+      }
+      expect(blocos).toBeGreaterThanOrEqual(2);
+    }
+    // ordem dos quadros na entrada: q25 antes do meio, antes do q75, antes do final
+    const ler1 = p.anims.find((x) => x.name === 'gesto_ler')!;
+    const primeiro = (id: string) => {
+      for (let f = 0; f <= ler1.frames; f++) if (evalPose(p, ler1, f).opacity[id]! > 0.5) return f;
+      return -1;
+    };
+    const ordem = ['rosto_orc_esq_q25', 'rosto_orc_esq_m50', 'rosto_orc_esq_q75', 'rosto_orc_esq'].map(
+      primeiro,
+    );
+    expect(ordem.every((f) => f > 0)).toBe(true);
+    expect([...ordem].sort((x, y) => x - y)).toEqual(ordem);
+    // o giro é UMA curva contínua com ease-in/out (arranca e freia uma vez), não uma sequência de pulsos:
+    // o "avanço" da pose (0 = repouso ... 4 = final) dura uns 0,5 s e sua velocidade sobe e desce sem patamares
+    const avanco = (f: number) => {
+      const o = evalPose(p, ler1, f).opacity;
+      let idx = 0;
+      let resto = 1;
+      ['rosto_orc_esq', 'rosto_orc_esq_q75', 'rosto_orc_esq_m50', 'rosto_orc_esq_q25'].forEach(
+        (id, k) => {
+          idx += resto * o[id]! * (4 - k);
+          resto *= 1 - o[id]!;
+        },
+      );
+      return idx;
+    };
+    const f0 = ordem[0]! - 40;
+    const serie = Array.from({ length: 160 }, (_, i) => avanco(f0 + i));
+    const ini = serie.findIndex((x) => x > 0.05);
+    const fim = serie.findIndex((x) => x > 3.95);
+    expect((fim - ini) / 60).toBeGreaterThan(0.9); // contemplando: giro lento
+    expect((fim - ini) / 60).toBeLessThan(1.7);
+    const vel = serie.slice(ini, fim).map((x, i, a) => (i ? (x - a[i - 1]!) * 60 : 0));
+    const pico = Math.max(...vel);
+    expect(pico).toBeLessThan(8); // antes: 33 quadros/s (giro de 0,22 s)
+    // arranque suave: nos primeiros 0,1 s a velocidade média é bem menor que o pico
+    const arranque = vel.slice(1, 7).reduce((t, x) => t + x, 0) / 6;
+    expect(arranque).toBeLessThan(pico * 0.7);
+    // sem patamar no meio do giro: depois de 25% e até 75% do avanço a velocidade nunca cai abaixo de 40% do pico
+    for (let i = 1; i < vel.length; i++) {
+      const q = serie[ini + i]!;
+      if (q > 1 && q < 3) expect(vel[i]).toBeGreaterThan(pico * 0.4);
+    }
+    // fluidez: a cabeça gira de verdade (vários graus, não parada) e sem trancos (aceleração limitada)
+    for (const nome of ['gesto_ler', 'gesto_ler2']) {
+      const a = p.anims.find((x) => x.name === nome)!;
+      for (const osso of ['cabeca', 'cabeza']) {
+        const th = Array.from(
+          { length: a.frames + 1 },
+          (_, f) => (evalPose(p, a, f).bones[osso]!.rotation * 180) / Math.PI,
+        );
+        const vel = th.slice(1).map((x, i) => (x - th[i]!) * 60);
+        // aceleração numa janela de 0,1 s (quadro a quadro só mede os vértices da interpolação linear)
+        const th6 = th.filter((_, i) => i % 6 === 0);
+        const v6 = th6.slice(1).map((x, i) => (x - th6[i]!) * 10);
+        const acc = v6.slice(1).map((x, i) => (x - v6[i]!) * 10);
+        expect(Math.max(...th) - Math.min(...th)).toBeGreaterThan(5); // antes: ~3,5° e parecia parado
+        expect(Math.max(...vel.map(Math.abs))).toBeGreaterThan(3);
+        expect(Math.max(...vel.map(Math.abs))).toBeLessThan(40);
+        expect(Math.max(...acc.map(Math.abs))).toBeLessThan(400); // sem tranco
+      }
+    }
+    // o giro vem antes da troca de imagem (a cabeça já está virando quando a outra cabeça aparece)
+    const ler = p.anims.find((x) => x.name === 'gesto_ler')!;
+    const beat2 = ler.frames / 12;
+    const ang = (b: number) => (evalPose(p, ler, b * beat2).bones.cabeca!.rotation * 180) / Math.PI;
+    expect(Math.abs(ang(1.0) - ang(0.6))).toBeGreaterThan(0.5);
+  });
 });
