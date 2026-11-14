@@ -203,13 +203,13 @@ class Doc:
         self.n += 1
         return f"0:{self.n}"
 
-    def asset(self, out_dir, name: str, rgb: np.ndarray, alpha: np.ndarray, quality: int = 92):
+    def asset(self, out_dir, name: str, rgb: np.ndarray, alpha: np.ndarray, quality: int = 92, alpha_quality: int = 100):
         ys, xs = np.where(alpha > 0.01)
         if not len(xs):
             return None
         x0, y0, x1, y1 = xs.min(), ys.min(), xs.max() + 1, ys.max() + 1
         rgba = np.dstack([rgb[y0:y1, x0:x1], alpha[y0:y1, x0:x1] * 255]).round().astype(np.uint8)
-        Image.fromarray(rgba, "RGBA").save(out_dir / f"{name}.webp", "WEBP", quality=quality, alpha_quality=100, method=6)
+        Image.fromarray(rgba, "RGBA").save(out_dir / f"{name}.webp", "WEBP", quality=quality, alpha_quality=alpha_quality, method=6)
         aid = self.id()
         self.asset_n += 1
         self.assets.append(f'<ImageAsset file="{name}.webp" assetId="{self.asset_n}" name="{name}" id="{aid}"/>')

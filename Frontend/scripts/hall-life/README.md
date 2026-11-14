@@ -37,6 +37,17 @@ python export.py --only dwarf-crate
 
 Requisitos: Python com `pillow`, `numpy` e `opencv-python-headless`. A chave vem de `Backend/.env` (`GEMINI_API_KEY`).
 
+## Qual caminho usar para cada personagem
+
+| O que o personagem faz                                                      | Caminho                                                                | Onde está                               |
+| --------------------------------------------------------------------------- | ---------------------------------------------------------------------- | --------------------------------------- |
+| Poucos gestos pontuais, sem movimento fino (gato dormindo, gente na sacada) | Quadros pintados trocando (`generate.py` → `extract.py` → `export.py`) | seções "Fluxo" e "Intermediários"       |
+| Um gesto grande com um membro (Gloin bebendo)                               | Marionete de gestos (`rig.py` → `rive_rig.py`)                         | "Marionete" e "Marionete em tempo real" |
+| Movimento contínuo e vários gestos sorteados (bardo, recepcionista, mural)  | Marionete em loop (`loop_rig.py`)                                      | "Marionete em loop"                     |
+
+Todos terminam em `public/vfx/hall-life/<id>/` e `assets/data/hall-life.json`. Os dois tipos de marionete rodam
+no site com o mesmo player (`GuildPuppetCanvas.vue`).
+
 ## Regras que evitam a colagem
 
 - **Placa nativa, nunca redimensionada para cima**: o patch volta exatamente para o pixel de onde saiu.
@@ -160,13 +171,15 @@ Rode pelo **PowerShell** (o terminal Bash do agente não abre aplicativos com ja
 
 - `components/features/hall/GuildSceneSpace.vue` — contêiner que coincide com a imagem renderizada (mesmo cover, posição e escala do `.master-bg`). Filhos usam frações da imagem.
 - `composables/ui/useSceneSpace.ts` — a geometria em funções puras (`sceneSpaceStyle`, `imageToStageRect`). Se o CSS do `.master-bg` mudar, atualize `HALL_STAGE_MODES`.
+- `components/features/hall/GuildPuppetCanvas.vue` + `composables/ui/puppet.ts` — o player das marionetes (WebGL2, desenha num buffer e reduz ao tamanho real da tela com média de área: nítido mesmo com `transform: scale`). Trechos sorteados por peso, estado entre trechos (`vars`) e notas de música (`music`) no relógio da animação. `?puppetT=<gesto>@<s>` congela um instante; `?puppet_<var>=n` começa com um estado.
+- `composables/ui/useHallMusic.ts` — o alaúde do bardo (Karplus-Strong, sem arquivos de áudio), ligado ao primeiro gesto do usuário e ao mudo do saguão.
 - `components/features/hall/GuildNpcLayer.vue` + `composables/features/useHallLife.ts` — empilha os frames, troca com crossfade de 220 ms em tempos sorteados por frame (`hold`), pulsa o brilho no ritmo das tochas/lareira (`light`), pausa com a aba oculta e respeita `prefers-reduced-motion`.
 
 ## Pasta `work/`
 
 Tudo em `work/` é intermediário e fica fora do git (placas, saídas brutas do Gemini, extrações, prévias, PSD de trabalho, `state.json` com as variações escolhidas).
 
-### Estado entre gestos (ex.: barba suja → limpar)
+## Estado entre gestos (ex.: barba suja → limpar)
 
 O gesto pode mudar o personagem de forma duradoura. No Gloin, cada gole suja a barba de espuma, e
 limpar o bigode só é sorteado com a barba suja (e fica mais provável quanto mais suja).
@@ -186,36 +199,152 @@ limpar o bigode só é sorteado com a barba suja (e fica mais provável quanto m
 O gole na garganta (`rig.gulp`: `center`, `radius`, `amount`, `count`) e o punho em um movimento só
 (`loop.continuous`) também ficam no rig do gesto.
 
-## Marionete em loop (`loop_rig.py`): personagem que não para (ex.: bardo)
+## Marionete em loop (`loop_rig.py`): personagens que não param (bardo, recepcionista, mural)
 
-Para quem repete um movimento contínuo (tocar, mexer o caldeirão), não há poses desenhadas. Uma
-malha cobre as regiões que se mexem e é deformada por ossos com pesos suaves (mesh deform, como no
-Spine/Rive). Os movimentos são procedurais e seguem um andamento:
+Para quem repete movimentos e sorteia gestos (tocar, escrever, ler um mural). Uma malha cobre as regiões que se
+mexem e é deformada por ossos com pesos suaves (mesh deform, como no Spine/Rive). Os movimentos são procedurais e
+seguem um andamento (`bpm`): `strum` (desce rápido no tempo, sobe devagar), `nod`, `tap`, `scribble`, `line`
+(avança devagar, volta rápido), `sway` (balanço lento), `chords`. Por baixo fica a `base`, o repouso com as peças
+que se movem preenchidas (a cena real, ou inpaint), para aparecer fundo plausível e não uma segunda mão.
+Os trechos (`anims`) se emendam sem pausa (`weights.idle = 0`), são sorteados por peso e podem ter estado entre
+eles (`vars`, `weightBy`). O docstring de `loop_rig.py` lista todas as opções.
 
-- `strum`: desce rápido no tempo, sobe devagar;
-- `nod`: a cabeça marca a batida, com `sway` (balanço lento);
-- `tap`: a ponta do pé sobe e bate no tempo.
+### Passo a passo: da vinheta ao site
 
-Por baixo da malha fica a `base`, o repouso com as regiões móveis preenchidas por inpaint. Assim,
-quando a mão sobe, aparece alaúde/fundo, e não uma segunda mão.
+1. **Vinheta e frames de referência.** `generate.py plate-and-a`, `pick` e `frames` (seção "Fluxo"). Os frames
+   b, c… servem para o `extract.py` descobrir onde o personagem se mexe.
+2. **Extração.** `python extract.py --only <id>` grava `work/extract/<id>/mask-union.png` e `alpha.png`: só o
+   personagem se mexe, a malha não arrasta degraus nem corrimão.
+3. **Configuração.** `vignettes.json` → `loop_rig` (coordenadas em pixels do quadro A bruto, `work/raw/<id>/a-N.png`):
+   `bpm`, `bones` (`pivot`, `tip`, `region` = polígono grosso, `fill`), `motions`, `anims`. **Desenhe os polígonos
+   sobre a imagem (`cv2.polylines`) e olhe antes de gerar**: quase todo erro de recorte vem de uma região mal traçada.
+4. **Arte que o desenho original não tem** (só onde precisa), com `rig.py overlay`:
+   - rostos (piscar, olhar): `--name blink --region x0 y0 x1 y1 --desc "..."` → `patches`;
+   - cena limpa sem uma peça (`--name noorcarm`): vira o `fill` do osso ou o `clean` de uma pose;
+   - poses de braço e mão (`--name turnflat`) → `poses`.
+     O comando grava `overlay_<nome>-1..N.png`: **olhe todas** e copie a melhor para `overlay_<nome>.png`.
+5. **Giros de cabeça** (opcional): variantes de rosto + quadros intermediários, ver "Quadros intermediários da
+   cabeça (RIFE)" abaixo.
+6. **Gerar e instalar.** `python loop_rig.py --only <id> --site` monta `work/rive/<id>/puppet.json` + imagens,
+   copia para `public/vfx/hall-life/<id>/puppet/` e liga no `hall-life.json`.
+7. **Deixar só o repouso.** `python export.py --only <id>`: o site passa a guardar só o frame A. O `--site` e o
+   `export.py` reformatam o JSON: rode `npx prettier --write assets/data/hall-life.json` antes de commitar.
+8. **Conferir.**
+   - `npx vitest run` (testes em `tests/unit/puppet.spec.ts`; no Windows, de um terminal com `C:\` maiúsculo);
+   - no navegador, `/?puppetT=<gesto>@<segundos>` congela o gesto naquele instante (`virar@3.5`, `orc_aponta@2.1`),
+     para capturar quadros de cada momento; capture em passos de 0,1 s o que quiser avaliar;
+   - para movimento, **meça**: a curva de ângulos de `puppet.json` (velocidade e aceleração) e as opacidades das
+     camadas ao longo do tempo. "Parece brusco" quase sempre aparece nesses números (giro de 0,2 s, arranque a 57%
+     da velocidade máxima, duas camadas translúcidas ao mesmo tempo).
+9. **Tamanho.** Ver "Tamanho do pacote".
 
-Config em `vignettes.json` → `loop_rig` (`bpm`, `bones`, `motions`, `anims`; ver o docstring do script).
-Cada trecho de `anims` tem a duração de alguns tempos. `look` vira um osso e volta (o bardo olha para
-o mezanino). Os trechos se emendam sem pausa (`weights.idle = 0`).
+Para rodar outro personagem, os passos 3–6 mudam de dados, não de código: tudo está em `vignettes.json`.
 
-python Frontend/scripts/hall-life/loop_rig.py --only stair-bard --site
-python Frontend/scripts/hall-life/export.py --only stair-bard # o site passa a guardar só o repouso
+### Gerenciar o crédito do Gemini
+
+Os créditos são finitos (já acabaram uma vez, erro 402). Em ordem: (1) o que é de graça primeiro: procedural,
+inpaint, fluxo óptico, RIFE; (2) o Gemini só onde o grátis falhar, no máximo 2 variantes, **olhando os arquivos
+rejeitados antes de repetir** (o modelo costuma copiar a pose final: reformule o pedido); (3) nunca tentar contornar
+um 402. Já tentado e que NÃO funciona: quartos de caminho de cabeça pelo Gemini (copia o vizinho ou passa do destino).
+
+### Braços (`poses[].chain`)
+
+Um braço de 3 segmentos (braço, antebraço, mão) preso a um osso do corpo (`anchor`: o ombro acompanha a respiração e
+a inclinação do tronco). `pts` são as juntas na pose (ombro, cotovelo, pulso, ponta) e `rest` as mesmas no braço
+pendurado do repouso. O recorte do braço da pose é `refine: "diff"` (o que a pose tem a mais que a cena limpa
+`clean`, dentro de um contorno grosso `hand`; funciona onde manga e fundo têm quase a mesma cor, em que o GrabCut
+erra) ou `refine: true` (GrabCut guiado pelo contorno). `free: true` solta o recorte da máscara da extração (que
+limita o alcance dos gestos ao redor do personagem parado e cortaria o braço esticado); `root_fade` faz a raiz do
+braço sumir no ombro, para "nascer" do corpo.
+
+- **Subida:** cada segmento chega `lag` s depois do anterior (arrasto), sobe com mola (`zeta`: passa um pouco do
+  ponto e assenta), recua antes de levantar (`anticipation`) e treme de leve ao segurar (`tremor`).
+- **Duas camadas nos mesmos ossos:** o braço do repouso (o desenho original, `rest_mode`) e o da pose, que trocam
+  em movimento (`morph`), nunca com o braço parado. O tampão (`cover_bone`, cena limpa presa ao tronco) esconde o
+  braço original enquanto o gesto dura.
+- **`emerge`:** antebraço e mão são uma camada à parte (`pose_*_fh`) que cresce a partir do cotovelo (escala do
+  osso: a perspectiva abrindo quando o braço sai de trás do corpo), em vez de aparecer pronta. O `rest` define o
+  tamanho inicial (encolhido se o antebraço fica escondido no repouso); `fh_in` controla quando entra.
+- **Volta** (parâmetros próprios, a subida não muda): `zeta_out >= 1` (criticamente amortecida: desce com peso e
+  para ao lado do corpo sem passar do ponto; menos que isso balança e atravessa o tronco), `lag_out` (arrasto só na
+  volta, ~0,03: o antebraço assenta junto), `shrink_out` (o antebraço encolhe mais cedo, `progresso^shrink_out`).
+- **Troca para o braço do repouso na volta:** o braço do repouso é só a parte visível do desenho (o antebraço fica
+  atrás do corpo), então, longe do repouso, lê como uma folha verde chapada. O braço da POSE segue até quase
+  pendurado e a troca é por TEMPO: em `swap_s` s (~0,05) quando o avanço cai abaixo de `swap_at` (~0,12); o antebraço
+  some `fh_early` s antes. Por progresso (`morph_out`, `fh_out`) a descida assenta devagar e os dois braços ficavam
+  sobrepostos e translúcidos por ~0,3 s.
 
 ### Virar a página (recepcionista)
 
-- `page_flip`: a página da direita gira em volta da lombada e pousa à esquerda (quadros renderizados,
-  troca seca de um por quadro). `occluders` + `front` (contorno traçado à mão, refinado por GrabCut na
-  linha de tinta; `front_cut` tira sobras como a página junto ao bico da pena) viram uma peça própria
-  (`maos_frente`), presa aos mesmos ossos e desenhada por cima da folha: a mão pode se afastar e o
-  recorte vai junto.
-- Embaixo do que se move, `fill` de um osso pode ser uma cena limpa do Gemini sem aquela parte
+- `page_flip`: a página da direita gira em volta da lombada e pousa à esquerda (quadros renderizados, troca seca de
+  um por quadro). `occluders` + `front` (contorno traçado à mão, refinado por GrabCut na linha de tinta;
+  `front_cut` tira sobras, como a página junto ao bico da pena) viram uma peça própria (`maos_frente`), presa aos
+  mesmos ossos e desenhada por cima da folha: a mão pode se afastar e o recorte vai junto.
+- `poses` com `reach`: a mão desenhada pelo Gemini anda até a pose por um trilho (`from` → `to`, com `lift` e
+  `turn`) em vez de dissolver. Da pose entram só a silhueta da mão (`hand` + `hand_cut`) e um tampão (`clean`).
+- Embaixo do que se move, o `fill` de um osso pode ser uma cena limpa do Gemini sem aquela parte
   (`rig.py overlay --name nowrite ...`), em vez de inpaint.
-- `poses`: mão desenhada pelo Gemini numa pose nova (ex.: no canto da página). Da pose entram só a
-  silhueta da mão (`hand` + `hand_cut`) e um tampão (`clean`: cena sem a mão antiga). Com `reach`, a
-  mão anda até a pose por um trilho (`from` → `to`, com `lift` e `turn`) em vez de dissolver.
-- `vars` + `weightBy`: só vira depois de escrever algumas linhas (`linhas`).
+- `vars` + `weightBy`: só vira a página depois de escrever algumas linhas (`linhas`).
+
+### Cabeças que leem (mural)
+
+Cada olhar é uma troca de rosto presa ao osso da cabeça (`patches` + `looks[].seq`), acompanhada de um giro do osso.
+
+- **Giro lento e contínuo** (os personagens contemplam): `patch_ramp: [a, b, c, e]` com ~1,2 s de `a` a `b`. A
+  cabeça gira por UMA curva com ease-in/out, e o quadro `j` da sequência sobe LINEAR enquanto a curva passa de `j`
+  a `j+1`, um logo depois do outro. Quando cada quadro subia por uma curva suave e parava antes do próximo, a cabeça
+  andava em pulsos, mesmo com vários quadros. Giros de ~0,2 s parecem secos.
+- `looks[].spring {zeta, rise, fall}`: o osso gira 3–5° com inércia (±2° parece parado), começando um pouco antes da
+  troca de imagem. Entre dois olhares a cabeça volta ao repouso, e cada trecho tem poucos olhares, com pausas.
+- A varredura de linha (`motions.cabeca.kind: "line"`, `ret`: fração da volta) e a ponta dos pés do halfling
+  (`looks[].scale`, o osso cresce em volta da origem, nos pés) completam a leitura.
+- **Ordem dos `patches` = ordem da sequência.** Cada quadro é desenhado por cima do anterior: o novo sobe sobre o
+  antigo, ainda opaco, e só então o antigo some. Fora dessa ordem, dois quadros a 50% cobrem só 75% e a cabeça de
+  baixo transparece. Intermediários aparecem ~50 ms: `quality`/`alpha_quality` baixos no `patch`.
+- `patches[].free: true` quando a cabeça sai da silhueta do personagem em repouso (capuz levantado, cabeça
+  abaixada): o recorte cobre a caixa inteira (com a borda suave) em vez de parar nessa silhueta; senão a ponta do
+  capuz e o topo da cabeça do repouso aparecem como fantasma por baixo.
+
+### Quadros intermediários da cabeça (`head_tween.py` e RIFE)
+
+Trocar a cabeça por uma pose distante dá um corte: ela precisa passar por poses no meio. O repouso é o "centro" de
+todos os olhares (a cabeça sempre passa por ele), então cada giro é repouso → variante. Escolha pelo custo:
+
+| Comando             | O que faz                                                                                                       | Quando                                                                           |
+| ------------------- | --------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
+| `rife`              | q25 (meio repouso→meio) e q75 (meio meio→final) pela rede RIFE (`rife-anime`)                                   | padrão: uma cabeça limpa, sem duplo contorno, sem crédito                        |
+| `rife --deep`       | 7 quadros `p1..p7` (passos de 1/8, por recursão, com `-x`)                                                      | giro forte (cabeça para cima: o rosto aparece do nada)                           |
+| `rife --make-mid`   | o próprio meio (`m50`) também pelo RIFE                                                                         | quando não há meio do Gemini                                                     |
+| `gen`               | o Gemini desenha o MEIO vendo repouso e variante, com checagem de caminho (dentro do intervalo, longe dos dois) | só se o RIFE falhar; peça "só uns 15°" e `--pct 35` quando a variante é marcante |
+| `quarters` / `flow` | fluxo óptico (DIS fino nos contornos, só a silhueta se deforma)                                                 | alternativa sem RIFE; deixa um contorno fantasma fraco                           |
+| `sheet`             | folha de revisão: repouso, intermediários, variante                                                             | SEMPRE, antes de ligar                                                           |
+
+    python head_tween.py rife --only board-readers --names orc_esq orc_dir orc_baixo hob_cima
+    python head_tween.py rife --only board-readers --names hob_cima orc_baixo --deep
+    python head_tween.py sheet --only board-readers --names orc_dir
+
+Depois ligue no `vignettes.json`: um `patch` por quadro (`overlay_<nome>_q25.png`…), `looks[].seq` com a ordem
+(`[p1..p7, final]`) e `patch_ramp`. O fluxo óptico de `head_tween.py` segue o DESENHO, não o brilho (é calculado no
+mapa de contornos e refinado no brilho; só a silhueta, pela máscara da extração, se deforma, para o fundo não ganhar
+rabiscos).
+
+**Instalar o RIFE** (uma vez, ~65 MB, em `scripts/hall-life/work/tools/rife/`, ignorada pelo git): baixar
+`rife-ncnn-vulkan-20221029-windows.zip` da release de `nihui/rife-ncnn-vulkan` (411 MB, traz 11 modelos) e copiar só
+`rife-ncnn-vulkan.exe`, as `.dll` e a pasta `rife-anime`. Não precisa de Python nem PyTorch (Vulkan, roda em qualquer
+GPU: as imagens têm uns 350×400 px). A escala 2x e o `-z` não ajudaram; o ganho vem de passos menores.
+
+### Tamanho do pacote
+
+`loop_rig` aceita `quality` e `alpha_quality` (o alfa chega a ser metade do peso de uma imagem: 60 quase não muda a
+borda), `cell` (lado da célula da malha), `precision`, `weight_precision` e `thin` (tolerância das chaves tiradas).
+Cada `patch`/`pose` tem os seus. Medido no mural (2 personagens, 4 trechos, 29 trocas de rosto, 3 braços): ~515 KB em
+disco, JSON de ~190 KB (45 KB comprimido). Os quadros intermediários de cabeça somam ~5 KB cada.
+
+### Armadilhas conhecidas
+
+- Vitest falha em todos os specs com o cwd em `c:\` minúsculo: rode de `C:\` maiúsculo.
+- `--site` apaga e recria a pasta do boneco; com um terminal dentro dela falha com "arquivo em uso".
+- O servidor de desenvolvimento pode cair no meio de uma sessão: confira com `curl localhost:3000` antes de capturar.
+- A máscara da extração limita o alcance de um gesto: braço esticado longe do corpo some sem `free: true`.
+- Duas camadas com formas diferentes sobrepostas (crossfade parado) leem como um segundo membro translúcido: troque
+  em movimento e de forma curta.
