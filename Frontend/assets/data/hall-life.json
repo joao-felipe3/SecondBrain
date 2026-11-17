@@ -81,72 +81,7 @@
       {
         "name": "a",
         "src": "/vfx/hall-life/planners-table/a.webp",
-        "hold": [2200, 4200]
-      },
-      {
-        "name": "b",
-        "src": "/vfx/hall-life/planners-table/b.webp",
-        "hold": [1800, 3200],
-        "tweens": [
-          {
-            "name": "b_1",
-            "src": "/vfx/hall-life/planners-table/b_1.webp"
-          },
-          {
-            "name": "b_2",
-            "src": "/vfx/hall-life/planners-table/b_2.webp"
-          },
-          {
-            "name": "b_3",
-            "src": "/vfx/hall-life/planners-table/b_3.webp"
-          },
-          {
-            "name": "b_4",
-            "src": "/vfx/hall-life/planners-table/b_4.webp"
-          },
-          {
-            "name": "b_5",
-            "src": "/vfx/hall-life/planners-table/b_5.webp"
-          }
-        ]
-      },
-      {
-        "name": "c",
-        "src": "/vfx/hall-life/planners-table/c.webp",
-        "hold": [1800, 3000],
-        "tweens": [
-          {
-            "name": "c_1",
-            "src": "/vfx/hall-life/planners-table/c_1.webp"
-          },
-          {
-            "name": "c_2",
-            "src": "/vfx/hall-life/planners-table/c_2.webp"
-          },
-          {
-            "name": "c_3",
-            "src": "/vfx/hall-life/planners-table/c_3.webp"
-          }
-        ]
-      },
-      {
-        "name": "d",
-        "src": "/vfx/hall-life/planners-table/d.webp",
-        "hold": [1200, 2000],
-        "tweens": [
-          {
-            "name": "d_1",
-            "src": "/vfx/hall-life/planners-table/d_1.webp"
-          },
-          {
-            "name": "d_2",
-            "src": "/vfx/hall-life/planners-table/d_2.webp"
-          },
-          {
-            "name": "d_3",
-            "src": "/vfx/hall-life/planners-table/d_3.webp"
-          }
-        ]
+        "hold": [1500, 2400]
       }
     ],
     "light": {
@@ -154,7 +89,10 @@
       "gain": 0.06
     },
     "tooltip": "🗺️ Traçando a rota do próximo contrato",
-    "sequence": "gestures"
+    "sequence": "conversation",
+    "puppet": {
+      "src": "/vfx/hall-life/planners-table/puppet/puppet.json"
+    }
   },
   "drinkers-hearth": {
     "order": 40,

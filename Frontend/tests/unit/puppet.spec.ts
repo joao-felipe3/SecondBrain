@@ -583,4 +583,71 @@ describe('marionete (player próprio)', () => {
     const ang = (b: number) => (evalPose(p, ler, b * beat2).bones.cabeca!.rotation * 180) / Math.PI;
     expect(Math.abs(ang(1.0) - ang(0.6))).toBeGreaterThan(0.5);
   });
+
+  it('mesa do mapa real: trechos emendam sem salto, o braço sai de trás da barba e as sequências pintadas vão e voltam', () => {
+    const p = JSON.parse(
+      readFileSync(
+        resolve(__dirname, '../../public/vfx/hall-life/planners-table/puppet/puppet.json'),
+        'utf-8',
+      ),
+    ) as Puppet;
+    expect(p.weights.idle).toBe(0);
+    const idle = evalPose(p, null, 0);
+    for (const a of p.anims)
+      for (const f of [0, a.frames]) {
+        const pose = evalPose(p, a, f);
+        for (const b of p.bones) {
+          expect(pose.bones[b.id]!.rotation).toBeCloseTo(idle.bones[b.id]!.rotation, 4);
+          expect(pose.bones[b.id]!.scale).toBeCloseTo(idle.bones[b.id]!.scale, 4);
+        }
+        for (const d of p.draw)
+          if (d.id.startsWith('pose_') || d.id.startsWith('rosto_')) expect(pose.opacity[d.id]).toBe(0);
+      }
+    // apontar: o braço da pose e os oclusores (barba, braço da frente) aparecem juntos, por cima dele
+    const aponta = p.anims.find((a) => a.name === 'gesto_aponta')!;
+    const ids = p.draw.map((d) => d.id);
+    const meio = evalPose(p, aponta, (aponta.frames / 12) * 4.5).opacity;
+    expect(meio.pose_aponta_fh).toBeCloseTo(1, 2);
+    for (const oc of ['pose_aponta_frente0', 'pose_aponta_frente1']) {
+      expect(meio[oc]).toBe(1);
+      expect(ids.indexOf(oc)).toBeGreaterThan(ids.indexOf('pose_aponta_fh'));
+    }
+    // cruzar os braços e rir: a sequência chega ao quadro final pintado; os quadros andam presos ao tronco,
+    // então o peito continua respirando por baixo deles (antes o corpo congelava quase o trecho inteiro)
+    for (const [nome, ultimo, osso] of [
+      ['gesto_cruza', 'rosto_w_cross_s12', 'warrior_chest'],
+      ['gesto_riem', 'rosto_r_laugh_s15', 'ranger_chest'],
+    ] as const) {
+      const a = p.anims.find((x) => x.name === nome)!;
+      let cheio = -1;
+      for (let f = 0; f <= a.frames; f += 2) if (evalPose(p, a, f).opacity[ultimo]! > 0.99) cheio = f;
+      expect(cheio).toBeGreaterThan(0);
+      expect(p.draw.find((d) => d.id === ultimo)!.mesh.bones).toContain(osso);
+      const sc = Array.from({ length: a.frames + 1 }, (_, f) => evalPose(p, a, f).bones[osso]!.scale);
+      expect(Math.max(...sc) - Math.min(...sc)).toBeGreaterThan(0.005);
+    }
+    // cruzar é pose a pose: o quadro de cima está sempre inteiro ou ausente, nunca dois braços misturados (borrão)
+    const cruza = p.anims.find((x) => x.name === 'gesto_cruza')!;
+    const quadros = p.draw.filter((d) => d.id.startsWith('rosto_w_cross_')).map((d) => d.id);
+    expect(quadros.length).toBe(12);
+    for (let f = 0; f <= cruza.frames; f++) {
+      const op = evalPose(p, cruza, f).opacity;
+      const topo = Math.max(...quadros.map((q) => op[q] ?? 0));
+      expect(topo < 0.02 || topo > 0.98).toBe(true);
+    }
+    // parado mas vivo: respiração e balanço grandes o bastante para aparecer nesse tamanho de tela,
+    // e a cabeça vai junto com o tronco (filha do peito)
+    const estudar = p.anims.find((x) => x.name === 'gesto_estudar')!;
+    for (const [peito, cabeca] of [
+      ['ranger_chest', 'ranger_head'],
+      ['warrior_chest', 'warrior_head'],
+    ] as const) {
+      expect(p.bones.find((b) => b.id === cabeca)!.parent).toBe(peito);
+      const poses = Array.from({ length: estudar.frames + 1 }, (_, f) => evalPose(p, estudar, f));
+      const sc = poses.map((q) => q.bones[peito]!.scale);
+      const rot = poses.map((q) => (q.bones[peito]!.rotation * 180) / Math.PI);
+      expect(Math.max(...sc) - Math.min(...sc)).toBeGreaterThan(0.02);
+      expect(Math.max(...rot) - Math.min(...rot)).toBeGreaterThan(1.5);
+    }
+  });
 });

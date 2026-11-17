@@ -323,12 +323,13 @@
       "frames": [
         {
           "name": "a",
-          "hold": [2200, 4200]
+          "hold": [1500, 2400]
         },
         {
           "name": "b",
           "change": "the warrior points at another spot of the map and the ranger looks up at him",
-          "hold": [1800, 3200],
+          "hold": [1200, 2100],
+          "tweenMs": 140,
           "tweens": [
             {
               "auto": "a>b_1"
@@ -346,7 +347,8 @@
         {
           "name": "c",
           "change": "the warrior leans back and crosses his arms while the ranger keeps tracing the route on the map",
-          "hold": [1800, 3000],
+          "hold": [1200, 2100],
+          "tweenMs": 145,
           "tweens": [
             "the warrior starts leaning back from the table, hands lifting off the map toward his chest; the ranger keeps tracing the route",
             "the warrior leans back further, his forearms starting to cross over his chest but not fully crossed yet; the ranger keeps tracing the route",
@@ -358,7 +360,8 @@
         {
           "name": "d",
           "change": "both laugh together, the ranger covering her smile with one hand",
-          "hold": [1200, 2000],
+          "hold": [900, 1500],
+          "tweenMs": 140,
           "tweens": [
             "both start smiling, the warrior's mouth opening into a grin; the ranger's free hand starts rising toward her mouth, at chest height",
             "both laugh a bit more: the warrior grins widely and the ranger's hand is now just below her mouth",
@@ -373,7 +376,910 @@
         "gain": 0.06
       },
       "tooltip": "🗺️ Traçando a rota do próximo contrato",
-      "sequence": "gestures"
+      "sequence": "conversation",
+      "loop_rig": {
+        "bpm": 60,
+        "cell": 14,
+        "quality": 84,
+        "alpha_quality": 60,
+        "bones": {
+          "ranger_chest": {
+            "pivot": [650, 1010],
+            "tip": [730, 850],
+            "blur": 3,
+            "fill": "plate",
+            "region": [
+              [500, 895],
+              [555, 835],
+              [650, 825],
+              [750, 850],
+              [800, 910],
+              [790, 970],
+              [735, 1010],
+              [640, 990],
+              [560, 1020],
+              [510, 970]
+            ]
+          },
+          "ranger_head": {
+            "pivot": [730, 850],
+            "tip": [720, 650],
+            "blur": 2.5,
+            "fill": "plate",
+            "region": [
+              [610, 710],
+              [630, 610],
+              [700, 555],
+              [790, 570],
+              [860, 650],
+              [850, 755],
+              [790, 825],
+              [700, 820]
+            ],
+            "parent": "ranger_chest"
+          },
+          "warrior_chest": {
+            "pivot": [1540, 1070],
+            "tip": [1435, 900],
+            "blur": 3,
+            "fill": "plate",
+            "region": [
+              [1400, 930],
+              [1440, 850],
+              [1520, 825],
+              [1610, 850],
+              [1670, 925],
+              [1675, 1000],
+              [1610, 1050],
+              [1520, 1030],
+              [1450, 1010]
+            ]
+          },
+          "warrior_head": {
+            "pivot": [1435, 900],
+            "tip": [1370, 700],
+            "blur": 2.5,
+            "fill": "plate",
+            "region": [
+              [1220, 755],
+              [1240, 670],
+              [1320, 625],
+              [1420, 640],
+              [1490, 720],
+              [1480, 820],
+              [1420, 885],
+              [1330, 900]
+            ],
+            "parent": "warrior_chest"
+          },
+          "r_fore": {
+            "pivot": [700, 1030],
+            "tip": [865, 1050],
+            "blur": 1.5,
+            "fill": "inpaint",
+            "region": [
+              [690, 990],
+              [870, 998],
+              [882, 1078],
+              [700, 1082]
+            ]
+          },
+          "r_hand": {
+            "parent": "r_fore",
+            "pivot": [865, 1050],
+            "tip": [1005, 1080],
+            "blur": 1.2,
+            "fill": "inpaint",
+            "region": [
+              [850, 1000],
+              [962, 1012],
+              [1018, 1074],
+              [1004, 1098],
+              [868, 1098]
+            ]
+          }
+        },
+        "motions": {
+          "ranger_chest": {
+            "kind": "sway",
+            "amp": 1.1,
+            "period": 4,
+            "breathe": 0.026,
+            "breathe_period": 3
+          },
+          "ranger_head": {
+            "kind": "sway",
+            "amp": 1.8,
+            "period": 6
+          },
+          "warrior_chest": {
+            "kind": "sway",
+            "amp": 1.0,
+            "period": 6,
+            "breathe": 0.022,
+            "breathe_period": 4
+          },
+          "warrior_head": {
+            "kind": "sway",
+            "amp": 1.5,
+            "period": 4
+          },
+          "r_fore": {
+            "kind": "keys",
+            "period": 6,
+            "keys": [
+              [0, 0],
+              [0.7, 0],
+              [1.7, 9],
+              [2.7, 9],
+              [3.7, -6],
+              [4.6, -6],
+              [5.5, 0],
+              [6, 0]
+            ]
+          },
+          "r_hand": {
+            "kind": "keys",
+            "period": 6,
+            "keys": [
+              [0, 0],
+              [0.7, 0],
+              [1.7, -9],
+              [1.95, -9],
+              [2.07, -14],
+              [2.2, -9],
+              [2.32, -14],
+              [2.45, -9],
+              [2.7, -9],
+              [3.7, 6],
+              [4.0, 6],
+              [4.12, 1],
+              [4.27, 6],
+              [4.6, 6],
+              [5.5, 0],
+              [6, 0]
+            ]
+          }
+        },
+        "anims": [
+          {
+            "name": "estudar",
+            "beats": 12,
+            "weight": 3,
+            "looks": [
+              {
+                "bone": "ranger_head",
+                "angle": -2.5,
+                "from": 2,
+                "to": 6,
+                "spring": {
+                  "zeta": 0.8,
+                  "rise": 1.0,
+                  "fall": 1.2
+                }
+              },
+              {
+                "bone": "warrior_head",
+                "angle": 2.0,
+                "from": 5,
+                "to": 9,
+                "spring": {
+                  "zeta": 0.8,
+                  "rise": 1.0,
+                  "fall": 1.2
+                }
+              }
+            ]
+          },
+          {
+            "name": "estudar2",
+            "beats": 12,
+            "weight": 2,
+            "looks": [
+              {
+                "bone": "warrior_head",
+                "angle": -2.0,
+                "from": 1.5,
+                "to": 5,
+                "spring": {
+                  "zeta": 0.8,
+                  "rise": 1.0,
+                  "fall": 1.2
+                }
+              },
+              {
+                "bone": "ranger_head",
+                "angle": 2.0,
+                "from": 6,
+                "to": 10,
+                "spring": {
+                  "zeta": 0.8,
+                  "rise": 1.0,
+                  "fall": 1.2
+                }
+              }
+            ]
+          },
+          {
+            "name": "aponta",
+            "beats": 12,
+            "weight": 1.5,
+            "looks": [
+              {
+                "bone": "warrior_chest",
+                "angle": 0,
+                "from": 1.0,
+                "to": 9.2,
+                "quiet": ["warrior_head"],
+                "quiet_gain": 6
+              },
+              {
+                "bone": "warrior_chest",
+                "angle": 0,
+                "from": 1.0,
+                "to": 9.2,
+                "quiet": ["warrior_chest"],
+                "quiet_gain": 0.6
+              },
+              {
+                "bone": "ranger_head",
+                "angle": 3.5,
+                "from": 2.4,
+                "to": 8.0,
+                "spring": {
+                  "zeta": 0.8,
+                  "rise": 1.0,
+                  "fall": 1.2
+                }
+              },
+              {
+                "bone": "r_fore",
+                "angle": 0,
+                "from": 2.0,
+                "to": 8.4,
+                "quiet": ["r_fore", "r_hand"],
+                "quiet_gain": 6
+              }
+            ],
+            "pose": {
+              "name": "aponta",
+              "in": [1.6, 2.9],
+              "out": [7.0, 8.6]
+            }
+          },
+          {
+            "name": "cruza",
+            "beats": 12,
+            "weight": 1,
+            "looks": [
+              {
+                "bone": "warrior_chest",
+                "angle": 0,
+                "from": 1.0,
+                "to": 10.8,
+                "quiet": ["warrior_head"],
+                "quiet_gain": 6
+              },
+              {
+                "bone": "warrior_chest",
+                "angle": 0,
+                "from": 1.0,
+                "to": 10.8,
+                "quiet": ["warrior_chest"],
+                "quiet_gain": 0.6
+              },
+              {
+                "bone": "fixo",
+                "from": 1.8,
+                "to": 9.6,
+                "seq": [
+                  "w_cross_g0",
+                  "w_cross_s3",
+                  "w_cross_r1",
+                  "w_cross_s4",
+                  "w_cross_q2",
+                  "w_cross_g05",
+                  "w_cross_g1",
+                  "w_cross_g15",
+                  "w_cross_s8",
+                  "w_cross_s11",
+                  "w_cross_r5",
+                  "w_cross_s12"
+                ],
+                "patch_ramp": [1.8, 3.2, 8.2, 9.6],
+                "step": true
+              },
+              {
+                "bone": "ranger_head",
+                "angle": 2.0,
+                "from": 3.0,
+                "to": 7.5,
+                "spring": {
+                  "zeta": 0.8,
+                  "rise": 1.0,
+                  "fall": 1.2
+                }
+              }
+            ]
+          },
+          {
+            "name": "riem",
+            "beats": 12,
+            "weight": 1,
+            "looks": [
+              {
+                "bone": "warrior_chest",
+                "angle": 0,
+                "from": 1.0,
+                "to": 9.4,
+                "quiet": ["warrior_head", "ranger_head", "r_fore", "r_hand"],
+                "quiet_gain": 6
+              },
+              {
+                "bone": "warrior_chest",
+                "angle": 0,
+                "from": 1.0,
+                "to": 9.4,
+                "quiet": ["warrior_chest"],
+                "quiet_gain": 0.6
+              },
+              {
+                "bone": "ranger_chest",
+                "angle": 0,
+                "from": 1.0,
+                "to": 9.4,
+                "quiet": ["ranger_chest"],
+                "quiet_gain": 0.6
+              },
+              {
+                "bone": "fixo",
+                "from": 1.8,
+                "to": 8.0,
+                "seq": [
+                  "w_laugh_s1",
+                  "w_laugh_s2",
+                  "w_laugh_s3",
+                  "w_laugh_s4",
+                  "w_laugh_s5",
+                  "w_laugh_s6",
+                  "w_laugh_s7",
+                  "w_laugh_s8",
+                  "w_laugh_s9",
+                  "w_laugh_s10",
+                  "w_laugh_s11",
+                  "w_laugh_s12"
+                ],
+                "patch_ramp": [1.8, 3.2, 6.6, 8.0]
+              },
+              {
+                "bone": "fixo",
+                "from": 2.0,
+                "to": 8.6,
+                "seq": [
+                  "r_laugh_s1",
+                  "r_laugh_s2",
+                  "r_laugh_s3",
+                  "r_laugh_s4",
+                  "r_laugh_s5",
+                  "r_laugh_s6",
+                  "r_laugh_s7",
+                  "r_laugh_s8",
+                  "r_laugh_s9",
+                  "r_laugh_s10",
+                  "r_laugh_s11",
+                  "r_laugh_s12",
+                  "r_laugh_s13",
+                  "r_laugh_s14",
+                  "r_laugh_s15"
+                ],
+                "patch_ramp": [2.0, 3.2, 7.2, 8.4],
+                "step": true
+              },
+              {
+                "bone": "ranger_chest",
+                "angle": -3.0,
+                "from": 3.0,
+                "to": 7.8,
+                "spring": {
+                  "zeta": 0.6,
+                  "rise": 0.5,
+                  "fall": 0.8
+                },
+                "shake": {
+                  "amp": 2.2,
+                  "hz": 3.2
+                }
+              }
+            ]
+          }
+        ],
+        "precision": 1,
+        "weight_precision": 3,
+        "thin": 3,
+        "patches": {
+          "r_laugh_s1": {
+            "overlay": "overlay_r_laugh_s1.png",
+            "region": [560, 560, 935, 1012],
+            "bone": "ranger_chest",
+            "quality": 60,
+            "alpha_quality": 45,
+            "feather": 10,
+            "cut": "figure"
+          },
+          "r_laugh_s2": {
+            "overlay": "overlay_r_laugh_s2.png",
+            "region": [560, 560, 935, 1012],
+            "bone": "ranger_chest",
+            "quality": 60,
+            "alpha_quality": 45,
+            "feather": 10,
+            "cut": "figure"
+          },
+          "r_laugh_s3": {
+            "overlay": "overlay_r_laugh_s3.png",
+            "region": [560, 560, 935, 1012],
+            "bone": "ranger_chest",
+            "quality": 60,
+            "alpha_quality": 45,
+            "feather": 10,
+            "cut": "figure"
+          },
+          "r_laugh_s4": {
+            "overlay": "overlay_r_laugh_s4.png",
+            "region": [560, 560, 935, 1012],
+            "bone": "ranger_chest",
+            "quality": 60,
+            "alpha_quality": 45,
+            "feather": 10,
+            "cut": "figure"
+          },
+          "r_laugh_s5": {
+            "overlay": "overlay_r_laugh_s5.png",
+            "region": [560, 560, 935, 1012],
+            "bone": "ranger_chest",
+            "quality": 60,
+            "alpha_quality": 45,
+            "feather": 10,
+            "cut": "figure"
+          },
+          "r_laugh_s6": {
+            "overlay": "overlay_r_laugh_s6.png",
+            "region": [560, 560, 935, 1012],
+            "bone": "ranger_chest",
+            "quality": 60,
+            "alpha_quality": 45,
+            "feather": 10,
+            "cut": "figure"
+          },
+          "r_laugh_s7": {
+            "overlay": "overlay_r_laugh_s7.png",
+            "region": [560, 560, 935, 1012],
+            "bone": "ranger_chest",
+            "quality": 60,
+            "alpha_quality": 45,
+            "feather": 10,
+            "cut": "figure"
+          },
+          "r_laugh_s8": {
+            "overlay": "overlay_r_laugh_s8.png",
+            "region": [560, 560, 935, 1012],
+            "bone": "ranger_chest",
+            "quality": 60,
+            "alpha_quality": 45,
+            "feather": 10,
+            "cut": "figure"
+          },
+          "r_laugh_s9": {
+            "overlay": "overlay_r_laugh_s9.png",
+            "region": [560, 560, 935, 1012],
+            "bone": "ranger_chest",
+            "quality": 60,
+            "alpha_quality": 45,
+            "feather": 10,
+            "cut": "figure"
+          },
+          "r_laugh_s10": {
+            "overlay": "overlay_r_laugh_s10.png",
+            "region": [560, 560, 935, 1012],
+            "bone": "ranger_chest",
+            "quality": 60,
+            "alpha_quality": 45,
+            "feather": 10,
+            "cut": "figure"
+          },
+          "r_laugh_s11": {
+            "overlay": "overlay_r_laugh_s11.png",
+            "region": [560, 560, 935, 1012],
+            "bone": "ranger_chest",
+            "quality": 60,
+            "alpha_quality": 45,
+            "feather": 10,
+            "cut": "figure"
+          },
+          "r_laugh_s12": {
+            "overlay": "overlay_r_laugh_s12.png",
+            "region": [560, 560, 935, 1012],
+            "bone": "ranger_chest",
+            "quality": 60,
+            "alpha_quality": 45,
+            "feather": 10,
+            "cut": "figure"
+          },
+          "r_laugh_s13": {
+            "overlay": "overlay_r_laugh_s13.png",
+            "region": [560, 560, 935, 1012],
+            "bone": "ranger_chest",
+            "quality": 60,
+            "alpha_quality": 45,
+            "feather": 10,
+            "cut": "figure"
+          },
+          "r_laugh_s14": {
+            "overlay": "overlay_r_laugh_s14.png",
+            "region": [560, 560, 935, 1012],
+            "bone": "ranger_chest",
+            "quality": 60,
+            "alpha_quality": 45,
+            "feather": 10,
+            "cut": "figure"
+          },
+          "r_laugh_s15": {
+            "overlay": "overlay_r_laugh_s15.png",
+            "region": [560, 560, 935, 1012],
+            "bone": "ranger_chest",
+            "quality": 60,
+            "alpha_quality": 45,
+            "feather": 10,
+            "cut": "figure"
+          },
+          "w_laugh_s1": {
+            "overlay": "overlay_w_laugh_s1.png",
+            "region": [1200, 600, 1520, 960],
+            "bone": "warrior_head",
+            "quality": 60,
+            "alpha_quality": 45,
+            "feather": 10,
+            "cut": "figure"
+          },
+          "w_laugh_s2": {
+            "overlay": "overlay_w_laugh_s2.png",
+            "region": [1200, 600, 1520, 960],
+            "bone": "warrior_head",
+            "quality": 60,
+            "alpha_quality": 45,
+            "feather": 10,
+            "cut": "figure"
+          },
+          "w_laugh_s3": {
+            "overlay": "overlay_w_laugh_s3.png",
+            "region": [1200, 600, 1520, 960],
+            "bone": "warrior_head",
+            "quality": 60,
+            "alpha_quality": 45,
+            "feather": 10,
+            "cut": "figure"
+          },
+          "w_laugh_s4": {
+            "overlay": "overlay_w_laugh_s4.png",
+            "region": [1200, 600, 1520, 960],
+            "bone": "warrior_head",
+            "quality": 60,
+            "alpha_quality": 45,
+            "feather": 10,
+            "cut": "figure"
+          },
+          "w_laugh_s5": {
+            "overlay": "overlay_w_laugh_s5.png",
+            "region": [1200, 600, 1520, 960],
+            "bone": "warrior_head",
+            "quality": 60,
+            "alpha_quality": 45,
+            "feather": 10,
+            "cut": "figure"
+          },
+          "w_laugh_s6": {
+            "overlay": "overlay_w_laugh_s6.png",
+            "region": [1200, 600, 1520, 960],
+            "bone": "warrior_head",
+            "quality": 60,
+            "alpha_quality": 45,
+            "feather": 10,
+            "cut": "figure"
+          },
+          "w_laugh_s7": {
+            "overlay": "overlay_w_laugh_s7.png",
+            "region": [1200, 600, 1520, 960],
+            "bone": "warrior_head",
+            "quality": 60,
+            "alpha_quality": 45,
+            "feather": 10,
+            "cut": "figure"
+          },
+          "w_laugh_s8": {
+            "overlay": "overlay_w_laugh_s8.png",
+            "region": [1200, 600, 1520, 960],
+            "bone": "warrior_head",
+            "quality": 60,
+            "alpha_quality": 45,
+            "feather": 10,
+            "cut": "figure"
+          },
+          "w_laugh_s9": {
+            "overlay": "overlay_w_laugh_s9.png",
+            "region": [1200, 600, 1520, 960],
+            "bone": "warrior_head",
+            "quality": 60,
+            "alpha_quality": 45,
+            "feather": 10,
+            "cut": "figure"
+          },
+          "w_laugh_s10": {
+            "overlay": "overlay_w_laugh_s10.png",
+            "region": [1200, 600, 1520, 960],
+            "bone": "warrior_head",
+            "quality": 60,
+            "alpha_quality": 45,
+            "feather": 10,
+            "cut": "figure"
+          },
+          "w_laugh_s11": {
+            "overlay": "overlay_w_laugh_s11.png",
+            "region": [1200, 600, 1520, 960],
+            "bone": "warrior_head",
+            "quality": 60,
+            "alpha_quality": 45,
+            "feather": 10,
+            "cut": "figure"
+          },
+          "w_laugh_s12": {
+            "overlay": "overlay_w_laugh_s12.png",
+            "region": [1200, 600, 1520, 960],
+            "bone": "warrior_head",
+            "quality": 60,
+            "alpha_quality": 45,
+            "feather": 10,
+            "cut": "figure"
+          },
+          "w_cross_g0": {
+            "overlay": "overlay_w_cross_g0.png",
+            "region": [1120, 580, 1880, 1250],
+            "bone": "warrior_chest",
+            "quality": 60,
+            "alpha_quality": 45,
+            "feather": 10,
+            "cut": "figure",
+            "cut_thresh": 45
+          },
+          "w_cross_s3": {
+            "overlay": "overlay_w_cross_s3.png",
+            "region": [1120, 580, 1880, 1250],
+            "bone": "warrior_chest",
+            "quality": 60,
+            "alpha_quality": 45,
+            "feather": 10,
+            "cut": "figure",
+            "cut_thresh": 45
+          },
+          "w_cross_r1": {
+            "overlay": "overlay_w_cross_r1.png",
+            "region": [1120, 580, 1880, 1250],
+            "bone": "warrior_chest",
+            "quality": 60,
+            "alpha_quality": 45,
+            "feather": 10,
+            "cut": "figure",
+            "cut_thresh": 45
+          },
+          "w_cross_s4": {
+            "overlay": "overlay_w_cross_s4.png",
+            "region": [1120, 580, 1880, 1250],
+            "bone": "warrior_chest",
+            "quality": 60,
+            "alpha_quality": 45,
+            "feather": 10,
+            "cut": "figure",
+            "cut_thresh": 45
+          },
+          "w_cross_q2": {
+            "overlay": "overlay_w_cross_q2.png",
+            "region": [1120, 580, 1880, 1250],
+            "bone": "warrior_chest",
+            "quality": 60,
+            "alpha_quality": 45,
+            "feather": 10,
+            "cut": "figure",
+            "cut_thresh": 45
+          },
+          "w_cross_g05": {
+            "overlay": "overlay_w_cross_g05.png",
+            "region": [1120, 580, 1880, 1250],
+            "bone": "warrior_chest",
+            "quality": 60,
+            "alpha_quality": 45,
+            "feather": 10,
+            "cut": "figure",
+            "cut_thresh": 45
+          },
+          "w_cross_g1": {
+            "overlay": "overlay_w_cross_g1.png",
+            "region": [1120, 580, 1880, 1250],
+            "bone": "warrior_chest",
+            "quality": 60,
+            "alpha_quality": 45,
+            "feather": 10,
+            "cut": "figure",
+            "cut_thresh": 45
+          },
+          "w_cross_g15": {
+            "overlay": "overlay_w_cross_g15.png",
+            "region": [1120, 580, 1880, 1250],
+            "bone": "warrior_chest",
+            "quality": 60,
+            "alpha_quality": 45,
+            "feather": 10,
+            "cut": "figure",
+            "cut_thresh": 45
+          },
+          "w_cross_s8": {
+            "overlay": "overlay_w_cross_s8.png",
+            "region": [1120, 580, 1880, 1250],
+            "bone": "warrior_chest",
+            "quality": 60,
+            "alpha_quality": 45,
+            "feather": 10,
+            "cut": "figure",
+            "cut_thresh": 45
+          },
+          "w_cross_s11": {
+            "overlay": "overlay_w_cross_s11.png",
+            "region": [1120, 580, 1880, 1250],
+            "bone": "warrior_chest",
+            "quality": 60,
+            "alpha_quality": 45,
+            "feather": 10,
+            "cut": "figure",
+            "cut_thresh": 45
+          },
+          "w_cross_r5": {
+            "overlay": "overlay_w_cross_r5.png",
+            "region": [1120, 580, 1880, 1250],
+            "bone": "warrior_chest",
+            "quality": 60,
+            "alpha_quality": 45,
+            "feather": 10,
+            "cut": "figure",
+            "cut_thresh": 45
+          },
+          "w_cross_s12": {
+            "overlay": "overlay_w_cross_s12.png",
+            "region": [1120, 580, 1880, 1250],
+            "bone": "warrior_chest",
+            "quality": 60,
+            "alpha_quality": 45,
+            "feather": 10,
+            "cut": "figure",
+            "cut_thresh": 45
+          }
+        },
+        "poses": {
+          "aponta": {
+            "overlay": "b.png",
+            "clean": "overlay_nofarhand.png",
+            "refine": true,
+            "band": 10,
+            "thr": 24,
+            "free": true,
+            "cell": 12,
+            "hand": [
+              [1310, 893],
+              [1312, 950],
+              [1250, 985],
+              [1165, 1035],
+              [1110, 1060],
+              [1060, 1078],
+              [1000, 1094],
+              [980, 1078],
+              [1010, 1052],
+              [1060, 1020],
+              [1110, 975],
+              [1135, 950],
+              [1200, 925],
+              [1265, 903]
+            ],
+            "rest_poly": [
+              [
+                [1258, 965],
+                [1385, 955],
+                [1395, 1050],
+                [1335, 1102],
+                [1262, 1098]
+              ]
+            ],
+            "cover_extra": [
+              [
+                [1258, 965],
+                [1385, 955],
+                [1395, 1050],
+                [1335, 1102],
+                [1262, 1098]
+              ]
+            ],
+            "cover_bone": "warrior_chest",
+            "front": [
+              {
+                "poly": [
+                  [1290, 860],
+                  [1330, 820],
+                  [1410, 825],
+                  [1415, 905],
+                  [1395, 962],
+                  [1345, 968],
+                  [1305, 930]
+                ],
+                "bone": "warrior_head"
+              },
+              {
+                "poly": [
+                  [1390, 870],
+                  [1500, 860],
+                  [1570, 980],
+                  [1540, 1150],
+                  [1450, 1200],
+                  [1330, 1210],
+                  [1225, 1165],
+                  [1185, 1080],
+                  [1200, 1025],
+                  [1255, 1020],
+                  [1325, 1062],
+                  [1380, 1000],
+                  [1385, 930]
+                ],
+                "bone": "warrior_chest",
+                "cut": [
+                  [
+                    [1258, 965],
+                    [1385, 955],
+                    [1395, 1050],
+                    [1335, 1102],
+                    [1262, 1098]
+                  ]
+                ]
+              }
+            ],
+            "chain": {
+              "anchor": "warrior_chest",
+              "pts": [
+                [1440, 895],
+                [1290, 925],
+                [1150, 1010],
+                [990, 1080]
+              ],
+              "rest": [
+                [1440, 895],
+                [1400, 960],
+                [1350, 990],
+                [1280, 1060]
+              ],
+              "lag": 0.07,
+              "zeta": 0.75,
+              "zeta_out": 1.0,
+              "lead": 0.18,
+              "anticipation": 0.05,
+              "tremor": 0.5,
+              "blend": [40, 30, 25],
+              "emerge": true,
+              "morph": [0.25, 0.42],
+              "fh_in": 0.25,
+              "lag_out": 0.03,
+              "shrink_out": 1.4,
+              "swap_at": 0.12,
+              "swap_s": 0.05,
+              "fh_early": 0.04
+            }
+          }
+        },
+        "idleMs": [200, 400]
+      }
     },
     {
       "id": "drinkers-hearth",

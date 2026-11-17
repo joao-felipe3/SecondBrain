@@ -274,6 +274,34 @@ braço sumir no ombro, para "nascer" do corpo.
   some `fh_early` s antes. Por progresso (`morph_out`, `fh_out`) a descida assenta devagar e os dois braços ficavam
   sobrepostos e translúcidos por ~0,3 s.
 
+### Gesto já pintado em vários quadros (`head_tween.py path`)
+
+Quando um gesto já tem quadros intermediários pintados num caminho coerente (o guerreiro cruzando os braços: c_1,
+c_2, c_3, c), não precisa de braço articulado: o RIFE põe um quadro no meio de cada par vizinho, só dentro de uma
+caixa, e a sequência toca como `looks[].seq` (patches presos a `fixo`, com `free: true`).
+
+    python head_tween.py path --only planners-table --name w_cross --frames c_1 c_2 c_3 c --box 1120 580 1880 1250
+    python head_tween.py path --only planners-table --name r_laugh --frames d_1 d_2 d_3 d --skip d_3 --box 560 560 900 1000
+
+- `--deep`: 3 quadros do RIFE por par (1/4, 1/2, 3/4) em vez de 1; com poses distantes a mistura de 1 só quadro
+  ainda mostra braços fantasmas. Ramps longos (`patch_ramp` de ~2 s para um gesto do corpo inteiro).
+- **Confira se o caminho pintado anda numa direção só.** No cruzar de braços, o c_2 já mostrava os braços cruzados e
+  o c_3 os descruzava: tocado em sequência, os braços iam e voltavam. Olhe a folha dos quadros pintados antes e
+  descarte com `--skip` o que voltar atrás.
+- Com caixas grandes a GPU integrada às vezes devolve um quadro PRETO sem erro. O `rife_mid` confere a média do
+  quadro e refaz sem o TTA e, por fim, na CPU (mais lento, mas certo).
+- Use `--skip` para quadros que desviam do caminho (a mão que vai à orelha antes da boca). Se o caminho pintado vai
+  e volta (o braço estica, recua, estica), prefira o braço articulado (`chain`).
+- Pare o corpo embaixo enquanto a sequência está visível: `looks` com `quiet` (os ossos daquela pessoa) e
+  `quiet_gain` alto (~6), para a respiração e o balanço pararem logo no começo; senão a caixa treme sobre o corpo.
+- Os períodos dos movimentos têm que dividir a duração dos trechos (12 tempos: 2, 3, 4, 6): senão a mão salta na
+  emenda entre um trecho e outro (o teste de emenda pega).
+
+**Braço que passa por trás de outra coisa** (`poses[].front`): pedaços do desenho em repouso (a barba, o braço da
+frente) desenhados por cima do braço que se move durante o gesto, presos ao osso do corpo. Com `cut`, o próprio
+braço que se move é tirado do oclusor (senão fica uma cópia dele parada). Ex.: o braço de trás do guerreiro da mesa
+do mapa sai de trás da barba para apontar.
+
 ### Virar a página (recepcionista)
 
 - `page_flip`: a página da direita gira em volta da lombada e pousa à esquerda (quadros renderizados, troca seca de

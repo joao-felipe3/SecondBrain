@@ -11,6 +11,7 @@ ponta repouso -> variante. Entre as duas, dois jeitos de ganhar quadros:
                     crédito: use onde o fluxo mostrar duas cabeças sobrepostas (ex.: virar a nuca)
   rife              (recomendado) quadros q25/q75 pela rede RIFE (rife-anime): uma cabeça limpa, sem duplo contorno
   quarters          com o quadro do meio, o fluxo faz só o meio de cada metade (q25 e q75): vizinhas próximas
+  path              gesto pintado em vários quadros: RIFE entre cada par vizinho, dentro de uma caixa
   sheet             folha de revisão: repouso | intermediários | variante
 
   python Frontend/scripts/hall-life/head_tween.py flow  --only board-readers --names orc_esq orc_dir ... [--ts 0.33 0.67]
@@ -128,15 +129,26 @@ def rife_mid(a: np.ndarray, b: np.ndarray, box, flags=()) -> np.ndarray:
     x0, y0, x1, y1 = box
     x1 -= (x1 - x0) % 2  # a rede pede dimensões pares
     y1 -= (y1 - y0) % 2
-    with tempfile.TemporaryDirectory() as td:
-        t = Path(td)
-        Image.fromarray(a[y0:y1, x0:x1]).save(t / "a.png")
-        Image.fromarray(b[y0:y1, x0:x1]).save(t / "b.png")
-        r = subprocess.run([str(exe), "-0", str(t / "a.png"), "-1", str(t / "b.png"), "-o", str(t / "m.png"),
-                            "-m", str(RIFE_DIR / "rife-anime"), "-g", "0", *flags], capture_output=True, text=True)
-        if not (t / "m.png").exists():
-            raise SystemExit(f"RIFE falhou: {r.stderr[-400:]}")
-        mid = np.asarray(Image.open(t / "m.png").convert("RGB"))
+    ref = (a[y0:y1, x0:x1].astype(np.float32) + b[y0:y1, x0:x1].astype(np.float32)) / 2
+    mid = None
+    # a GPU (sobretudo a integrada) às vezes devolve um quadro PRETO sem erro com imagens grandes: confere e tenta de
+    # novo sem o TTA e, por fim, na CPU (lenta, mas certa)
+    for fl, gpu in ((list(flags), "0"), ([], "0"), ([], "-1")):
+        with tempfile.TemporaryDirectory() as td:
+            t = Path(td)
+            Image.fromarray(a[y0:y1, x0:x1]).save(t / "a.png")
+            Image.fromarray(b[y0:y1, x0:x1]).save(t / "b.png")
+            subprocess.run([str(exe), "-0", str(t / "a.png"), "-1", str(t / "b.png"), "-o", str(t / "m.png"),
+                            "-m", str(RIFE_DIR / "rife-anime"), "-g", gpu, *fl], capture_output=True, text=True)
+            if not (t / "m.png").exists():
+                continue
+            cand = np.asarray(Image.open(t / "m.png").convert("RGB"))
+        if abs(float(cand.mean()) - float(ref.mean())) < 25:  # parecido com a média dos dois: deu certo
+            mid = cand
+            break
+        print(f"  RIFE devolveu um quadro inválido (média {cand.mean():.0f} vs {ref.mean():.0f}); tentando de novo")
+    if mid is None:
+        raise SystemExit("RIFE falhou nas três tentativas (GPU com e sem TTA, CPU)")
     full = a.copy()
     full[y0:y1, x0:x1] = mid
     return full
@@ -172,6 +184,39 @@ def cmd_rife(args):
         Image.fromarray(rife_mid(a, m, box)).save(d / f"overlay_{name}_q25.png")
         Image.fromarray(rife_mid(m, fin, box)).save(d / f"overlay_{name}_q75.png")
         print(f"[{v['id']}] {name}: q25 e q75 por RIFE")
+
+
+def cmd_path(args):
+    """Gesto já pintado em vários quadros (ex.: c_1, c_2, c_3, c): o RIFE põe um quadro no meio de cada par vizinho
+    (começando no repouso), só dentro de `--box`. Grava overlay_<name>_s1..sN.png na ordem (o último é o quadro final
+    pintado) e imprime a sequência para o `looks[].seq` do vignettes.json. `--skip` descarta quadros que desviam
+    do caminho (ex.: uma mão que vai à orelha antes de ir à boca)."""
+    import gc
+    manifest, state = C.load_manifest(), C.load_state()
+    v = next(x for x in manifest["vignettes"] if x["id"] == args.only)
+    st = state["vignettes"][v["id"]]
+    d = RG.raw_dir(v)
+    a = RG.load_rest(v, st)
+    box = tuple(args.box)
+    keys = [a] + [RG.load_like(d / f"{n}.png", a) for n in args.frames if n not in (args.skip or [])]
+    out = []
+    for i in range(len(keys) - 1):
+        m = rife_mid(keys[i], keys[i + 1], box, ["-x"])
+        if args.deep:  # 3 quadros por par (1/4, 1/2, 3/4): passos menores, menos braço fantasma na mistura
+            out += [rife_mid(keys[i], m, box, ["-x"]), m, rife_mid(m, keys[i + 1], box, ["-x"])]
+        else:
+            out.append(m)
+        out.append(keys[i + 1])
+    names = []
+    for k, im in enumerate(out, 1):
+        full = a.copy()
+        x0, y0, x1, y1 = box
+        full[y0:y1, x0:x1] = im[y0:y1, x0:x1]  # só a caixa: fora dela, o repouso
+        Image.fromarray(full).save(d / f"overlay_{args.name}_s{k}.png")
+        names.append(f"{args.name}_s{k}")
+    del keys, out
+    gc.collect()
+    print(f"[{v['id']}] {args.name}: {len(names)} quadros (pintados + RIFE): {names}")
 
 
 def cmd_flow(args):
@@ -281,6 +326,13 @@ def cmd_sheet(args):
 def main():
     ap = argparse.ArgumentParser()
     sub = ap.add_subparsers(dest="cmd", required=True)
+    p = sub.add_parser("path")
+    p.add_argument("--only", required=True)
+    p.add_argument("--name", required=True, help="prefixo dos quadros gerados (overlay_<name>_sK.png)")
+    p.add_argument("--frames", nargs="+", required=True, help="quadros pintados em ordem, sem o repouso (ex.: c_1 c_2 c_3 c)")
+    p.add_argument("--box", nargs=4, type=int, required=True, help="x0 y0 x1 y1 no quadro bruto")
+    p.add_argument("--skip", nargs="*", help="quadros que desviam do caminho")
+    p.add_argument("--deep", action="store_true", help="3 quadros do RIFE por par, em vez de 1")
     for n in ("flow", "gen", "quarters", "rife", "sheet"):
         p = sub.add_parser(n)
         p.add_argument("--only", required=True)
@@ -297,7 +349,7 @@ def main():
             p.add_argument("--to", help="quadro de destino (nome do overlay), em vez do final: ex. orc_esq_m50")
             p.add_argument("--tag", help="sufixo do arquivo de saída (padrão m<pct>): ex. g25")
     args = ap.parse_args()
-    {"flow": cmd_flow, "gen": cmd_gen, "quarters": cmd_quarters, "rife": cmd_rife, "sheet": cmd_sheet}[args.cmd](args)
+    {"flow": cmd_flow, "gen": cmd_gen, "quarters": cmd_quarters, "rife": cmd_rife, "sheet": cmd_sheet, "path": cmd_path}[args.cmd](args)
 
 
 if __name__ == "__main__":

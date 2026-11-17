@@ -17,6 +17,7 @@ Config em vignettes.json, na vinheta, chave "loop_rig" (coordenadas no quadro A 
            real (`plate`, sobre o fundo) ou o entorno preenchido (`inpaint`, ex.: mão sobre o alaúde)
   motions: {osso: {kind: strum|nod|tap|scribble|line|sway|chords, amp (graus), lag?, sway?, sway_beats?,
            period? (line/sway, em tempos), ret? (line: fração do período na volta)}}
+           keys: {period, keys: [[tempo, ângulo], ...]} caminho à mão (ex.: dedo traçando a rota no mapa)
            chords: {steps: [posição por compasso], bar, lead} — a mão dos acordes troca antes do 1
   music:   {bar, melody: ["NOTA:tempos ..." por compasso], chords: [acorde por compasso]}
            -> puppet.json "music": eventos [tempo, nota, ganho, duração] (ver arrange)
@@ -33,17 +34,20 @@ Config em vignettes.json, na vinheta, chave "loop_rig" (coordenadas no quadro A 
                   sobe com mola (passa um pouco do ponto), recua antes de levantar e treme de leve ao segurar
            rest_poly / rest_mode ("diff" | "refine") / rest_band / rest_cut: recorte do braço do repouso (a camada que
                   se mistura com o braço da pose); `refine` guia o GrabCut por rest_poly
+           front: [{poly, bone, band?, refine?, cut?}]: pedaços do repouso desenhados POR CIMA do braço durante o gesto
+                  (o braço passa por trás da barba, do braço da frente)
            cover_bone: osso do corpo a que o tampão fica preso (acompanha respiração e inclinação)
            motions[].breathe: amplitude (fração) da escala do osso: peito expandindo (breathe_period em tempos)
            fade: fração da janela in/out que dura o dissolve da pose (sem chain/reach; padrão 1)
            looks[].patch_ramp: [sobe de, até, desce de, até] (tempos): entrada/saída do rosto do `patch`
            free: true: o recorte da pose não é limitado pela máscara da extração (braço esticado longe do corpo)
+           patches[].cut: "figure" (+ cut_thresh): silhueta do repouso + o que mudou fora dela (diff_cut), em vez da caixa
            refine: true: `hand` é um contorno grosso (ou lista de contornos) e o GrabCut acha a borda de tinta;
                    "diff": o braço é o que difere da cena limpa (`clean`) dentro do contorno (thr, band, min_part)
            cover: osso cuja região é coberta (opcional) + cover_extra: polígonos; clean: cena sem a peça (Gemini)
   vars:    {nome: {max}} + nos trechos `effects: [{var, add|to, from, until}]` e `weightBy`
            looks[].seq: [q1, ..., final] + patch_ramp [a,b,c,e]: o giro passa por quadros intermediários (ver head_tween.py)
-  anims:   [{name, beats, weight?, blinks?, looks?: [{bone, angle, from, to, quiet?, patch?, spring?: {zeta, rise, fall}}]}]  (looks: vira e volta entre
+  anims:   [{name, beats, weight?, blinks?, looks?: [{bone, angle, from, to, quiet?, quiet_gain?, patch?, spring?: {zeta, rise, fall}, shake?: {amp, hz}}]}]  (looks: vira e volta entre
            os tempos from..to; `quiet`: ossos que param nesse meio tempo; beats = múltiplo da música)
 
   python Frontend/scripts/hall-life/loop_rig.py --only stair-bard [--site]
@@ -106,6 +110,14 @@ def motion_value(mo: dict, beat: float) -> float:
         return mo["amp"] * (saw - 0.5)
     if mo["kind"] == "sway":  # balanço lento
         return mo["amp"] * math.sin(2 * math.pi * beat / mo["period"])
+    if mo["kind"] == "keys":  # caminho escrito à mão: [[tempo, ângulo], ...] num período, suave entre as chaves
+        u = beat % mo["period"]
+        ks = mo["keys"]
+        for (t0, a0), (t1, a1) in zip(ks, ks[1:]):
+            if t0 <= u <= t1:
+                x = (u - t0) / max(t1 - t0, 1e-9)
+                return a0 + (a1 - a0) * x * x * (3 - 2 * x)
+        return ks[-1][1]
     off = mo["amp"] * beat_shape(mo["kind"], (beat - mo.get("lag", 0.0)) % 1.0)
     if mo.get("sway"):  # balanço lento (período em tempos; divide o trecho)
         off += mo["sway"] * math.sin(2 * math.pi * beat / mo.get("sway_beats", 8))
@@ -208,6 +220,18 @@ def expand_seq(lk: dict) -> list[dict]:
     t_out = lambda q: c + (e - c) * inv_smooth((n - q) / n)  # noqa: E731  (na volta: de N até 0)
     snap = 0.008  # sobe/desce "de uma vez" (menos de meio quadro): só ocorre debaixo de um quadro opaco
     out = []
+    if lk.get("step"):
+        # pose a pose: cada quadro entra de uma vez e fica sozinho até o próximo (sem mistura entre dois quadros,
+        # que num braço que atravessa o corpo vira borrão). O quadro j ocupa o trecho em que o avanço vai de j a j+1.
+        for j, name in enumerate(seq):
+            on = t_in(j)
+            if j < n - 1:
+                out.append({"patch": name, "patch_ramp": [on, on + snap, t_in(j + 1) + snap, t_in(j + 1) + 2 * snap], "linear": True})
+                back = t_out(j + 1) - 2 * snap  # na volta reaparece por baixo do j+1 um instante antes de ele sumir
+                out.append({"patch": name, "patch_ramp": [back, back + snap, t_out(j), t_out(j) + snap], "linear": True})
+            else:
+                out.append({"patch": name, "patch_ramp": [on, on + snap, t_out(j), t_out(j) + snap], "linear": True})
+        return out
     for j, name in enumerate(seq):
         rise = [t_in(j), t_in(j + 1)]
         # ida: sobe linear no seu trecho; os intermediários caem quando o quadro de cima termina de subir
@@ -247,6 +271,25 @@ def thin(keys: list, tol: float) -> list:
 
 def poly_mask_dil(m: np.ndarray, r: int) -> np.ndarray:
     return cv2.dilate(m, cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (2 * r + 1, 2 * r + 1)))
+
+
+def diff_cut(a: np.ndarray, img: np.ndarray, region, thresh: float = 30) -> np.ndarray:
+    """Máscara do que mudou entre o repouso `a` e o quadro `img` (já alinhado e com a cor casada), dentro de
+    `region`: diferença acima de `thresh`, sem pontinhos, buracos fechados, folga de ~8 px e borda suave."""
+    x0, y0, x1, y1 = region
+    d = np.abs(cv2.GaussianBlur(a.astype(np.float32), (0, 0), 2) - cv2.GaussianBlur(img.astype(np.float32), (0, 0), 2)).max(axis=2)
+    m = np.zeros(d.shape, np.uint8)
+    m[y0:y1, x0:x1] = d[y0:y1, x0:x1] > thresh
+    m = cv2.morphologyEx(m, cv2.MORPH_OPEN, np.ones((5, 5), np.uint8))
+    m = cv2.morphologyEx(m, cv2.MORPH_CLOSE, cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (31, 31)))
+    n, lab, stats, _ = cv2.connectedComponentsWithStats(m)
+    m = np.isin(lab, [i for i in range(1, n) if stats[i, 4] > 1500]).astype(np.uint8)
+    hh, ww = m.shape
+    ff = m.copy()
+    cv2.floodFill(ff, np.zeros((hh + 2, ww + 2), np.uint8), (0, 0), 1)
+    m = m | (1 - ff)  # buracos fechados
+    m = cv2.dilate(m, cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (17, 17)))
+    return np.clip(cv2.GaussianBlur(m.astype(np.float32), (0, 0), 5) * 1.3, 0, 1)
 
 
 def refine_cut(a: np.ndarray, poly_mask: np.ndarray, band: int = 14, cuts: list | None = None) -> np.ndarray:
@@ -589,10 +632,17 @@ def build(v: dict, st: dict) -> None:
         m[y0:y1, x0:x1] = 1
         m = np.clip(cv2.GaussianBlur(m, (0, 0), pc.get("feather", 10)) * 1.4, 0, 1)
         rgb, al = RR.to_art(img, m, A, (AW, AH), gains, offs)
-        # `free`: a troca cobre a caixa inteira (borda suave), sem o limite da silhueta do personagem em repouso;
-        # preciso quando a cabeça sai dessa silhueta (capuz levantado, cabeça abaixada): senão o repouso aparece por baixo
-        got = doc.asset(out_dir, f"rosto_{pname}", rgb, al if pc.get("free") else al * alpha,
-                        int(pc.get("quality", Q)), int(pc.get("alpha_quality", AQ)))
+        if pc.get("cut") == "figure":
+            # silhueta do personagem em repouso (a borda cai no contorno escuro e some) + o que mudou fora dela
+            # (braço que sai da silhueta, mapa que aparece onde o braço estava). O fundo vem do repouso: a caixa
+            # inteira trazia mesa e parede do quadro gerado, com outra cor, balançando junto com o peito
+            _, al_d = RR.to_art(img, diff_cut(a, img, pc["region"], pc.get("cut_thresh", 30)), A, (AW, AH), gains, offs)
+            pal = np.maximum(al * alpha, al_d)
+        else:
+            # `free`: a troca cobre a caixa inteira (borda suave), sem o limite da silhueta do personagem em repouso;
+            # preciso quando a cabeça sai dessa silhueta (capuz levantado, cabeça abaixada): senão o repouso aparece por baixo
+            pal = al if pc.get("free") else al * alpha
+        got = doc.asset(out_dir, f"rosto_{pname}", rgb, pal, int(pc.get("quality", Q)), int(pc.get("alpha_quality", AQ)))
         if not got:
             continue
         (px0, py0), (ph_, pw_) = got[1], got[2].shape
@@ -633,7 +683,7 @@ def build(v: dict, st: dict) -> None:
 
     # poses desenhadas (ex.: mão no canto da página para virá-la): do overlay do Gemini só entram a
     # silhueta da mão nova (por cima da folha que vira) e um "tampão" onde a mão estava antes
-    pose_cover, pose_hand, pose_rest = [], [], []
+    pose_cover, pose_hand, pose_rest, pose_front = [], [], [], []
     reach: dict = {}  # pose -> dados do caminho da mão (osso de trilho + osso da mão)
     pose_fade: dict = {}  # pose -> fração da janela de entrada/saída que dura a troca (dissolve)
     for pname, pc in cfg.get("poses", {}).items():
@@ -854,6 +904,26 @@ def build(v: dict, st: dict) -> None:
                               "mesh": {"v": [round(c, PR) for c in vr.reshape(-1)], "tri": tr_r,
                                        "w": chain_weights(vr, R0), "bones": mb,
                                        "bind": [[round(x, 6) for x in b] for b in bind_rest]}})
+            # oclusores: pedaços do desenho em repouso (barba, braço da frente) por cima do braço que se move, presos a
+            # um osso do corpo; o braço passa POR TRÁS deles (ex.: o braço de trás do guerreiro sai de trás da barba)
+            for oi, oc in enumerate(pc.get("front", [])):
+                om = np.zeros((h, w), np.uint8)
+                cv2.fillPoly(om, [np.array(oc["poly"], np.int32)], 1)
+                omask = refine_cut(a, om, oc.get("band", 8)) if oc.get("refine", True) else                     np.clip(cv2.GaussianBlur(om.astype(np.float32), (0, 0), 1.2), 0, 1)
+                if oc.get("cut"):  # tira do oclusor o próprio braço que se move (senão fica uma cópia dele parada)
+                    cm = np.zeros((h, w), np.uint8)
+                    for poly in oc["cut"]:
+                        cv2.fillPoly(cm, [np.array(poly, np.int32)], 1)
+                    omask = omask * (1 - np.clip(cv2.GaussianBlur(cm.astype(np.float32), (0, 0), 2.0), 0, 1))
+                rgb_o, al_o = RR.to_art(a, omask, A, (AW, AH), gains, offs)
+                got_o = doc.asset(out_dir, f"pose_{pname}_frente{oi}", rgb_o, al_o, Q, AQ)
+                if got_o:
+                    (qx0, qy0), qal = got_o[1], got_o[2]
+                    qh, qw = qal.shape
+                    pose_front.append({"id": f"pose_{pname}_frente{oi}", "image": got_o[0], "opacity": 0, "pose": pname,
+                                       "mesh": {"v": [qx0, qy0, qx0 + qw, qy0, qx0 + qw, qy0 + qh, qx0, qy0 + qh],
+                                                "tri": [0, 1, 2, 0, 2, 3], "w": [1, 1, 0, 0] * 4, "bones": ["fixo", oc["bone"]],
+                                                "bind": [[1, 0, 0, 1, 0, 0], [round(x, 6) for x in world[oc["bone"]]]]}})
             reach[pname] = {"chain": {"ids": ids, "om_abs": om_abs, "fin": fin, "dk": dk, "cfg": ch,
                                       "lens_r": lens_r, "lens_f": lens_f, "sc0": sc0}, "fade": 1.0}
             print(f"[{vid}] pose {pname}: braço de 3 segmentos ({len(vpos)} + {len(vr)} vértices), giros "
@@ -914,7 +984,8 @@ def build(v: dict, st: dict) -> None:
                 periods[bone] = beat_f
                 continue
             # movimentos lentos (cabeça, troca de acorde): menos chaves; rápidos parados por `quiet`: todas
-            step = STEP if mo["kind"] in ("strum", "tap", "scribble") else 2 * STEP
+            shaking = any(lk["bone"] == bone and lk.get("shake") for lk in looks)
+            step = STEP if mo["kind"] in ("strum", "tap", "scribble", "keys") or shaking else 2 * STEP
             keys = []
             for f in list(range(0, frames, step)) + [frames]:
                 beat = f / beat_f
@@ -924,10 +995,13 @@ def build(v: dict, st: dict) -> None:
                     envs.append((lk, look_env(lk, beat, beat_s)))
                 for lk, env in envs:
                     if bone in lk.get("quiet", []):  # para o que estava fazendo enquanto olha
-                        off *= 1 - min(1.0, env * 1.6)
+                        off *= 1 - min(1.0, env * lk.get("quiet_gain", 1.6))
                 for lk, env in envs:
                     if lk["bone"] == bone:
                         off += lk.get("angle", 0) * env
+                        if lk.get("shake"):  # sacudida de risada: os ombros pulam no ritmo, só enquanto o olhar dura
+                            sh = lk["shake"]
+                            off += sh["amp"] * env * math.sin(2 * math.pi * sh["hz"] * beat * beat_s)
                 keys.append([f, round(rest_rot[bone] + math.radians(off), 5)])
             tracks[bone] = {"rotation": keys}
             lk_sc = [lk for lk in looks if lk["bone"] == bone and lk.get("scale")]
@@ -936,7 +1010,11 @@ def build(v: dict, st: dict) -> None:
                 pb = mo.get("breathe_period", mo.get("period", 4))
                 sk = []
                 for f, _ in keys:
-                    val = 1 + mo.get("breathe", 0) * (1 - math.cos(2 * math.pi * f / beat_f / pb)) / 2
+                    br = mo.get("breathe", 0) * (1 - math.cos(2 * math.pi * f / beat_f / pb)) / 2
+                    for lk in looks:  # `quiet` pausa a respiração também (uma sequência pintada por cima precisa do corpo parado)
+                        if bone in lk.get("quiet", []):
+                            br *= 1 - min(1.0, look_env(lk, f / beat_f, beat_s) * lk.get("quiet_gain", 1.6))
+                    val = 1 + br
                     for lk in lk_sc:
                         u = min(1.0, max(0.0, (f / beat_f - lk["from"]) / (lk["to"] - lk["from"])))
                         val += (lk["scale"] - 1) * math.sin(math.pi * u) ** 2
@@ -970,7 +1048,7 @@ def build(v: dict, st: dict) -> None:
                 keys = [[0, 0.0], [a0 - 1, 0.0], [a0, 1.0], [max(a0, a1 - 1), 1.0], [max(a0 + 1, a1), 0.0], [frames, 0.0]]
             tracks[fl["id"]] = {"opacity": keys}
         ps = an.get("pose")
-        for d in pose_cover + pose_hand:  # a mão vai até a pose (aparece no começo do caminho) e volta
+        for d in pose_cover + pose_hand + pose_front:  # a mão vai até a pose (aparece no começo do caminho) e volta
             keys = [[0, 0.0], [frames, 0.0]]
             if ps and ps["name"] == d["pose"]:
                 (i0, i1), (o0, o1) = ps["in"], ps["out"]
@@ -1067,7 +1145,7 @@ def build(v: dict, st: dict) -> None:
                 return [[f, keys[f]] for f in sorted(keys)]
 
             name = ps["name"]
-            for d in pose_cover:
+            for d in pose_cover + pose_front:
                 if d["pose"] == name:
                     tracks[d["id"]] = {"opacity": window([1.0] * len(fs))}
             for d in pose_rest:
@@ -1135,6 +1213,7 @@ def build(v: dict, st: dict) -> None:
             *front,
             *[{k: d[k] for k in ("id", "image", "opacity", "mesh") if k in d} for d in pose_rest],
             *[{k: d[k] for k in ("id", "image", "opacity", "mesh") if k in d} for d in pose_hand],
+            *[{k: d[k] for k in ("id", "image", "opacity", "mesh") if k in d} for d in pose_front],
         ],
         "anims": anims,
         "idleMs": cfg.get("idleMs", [300, 600]),

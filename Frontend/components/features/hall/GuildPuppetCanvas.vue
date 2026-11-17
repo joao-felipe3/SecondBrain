@@ -223,10 +223,14 @@ onMounted(async () => {
       if (anim) state = varsAt(puppet, anim, anim.frames, state); // fim do gesto: efeito fica
       // sem peso de "parado" (ex.: bardo em loop): emenda um trecho no outro, sem pausa
       const k = anim && puppet.weights.idle > 0 ? -1 : pickNext(puppet, Math.random, state);
+      // emenda: o próximo trecho começa quando o anterior TERMINOU (until), não quando o quadro percebeu (now);
+      // senão cada emenda perde até um quadro e repete a pose (um tranco a cada troca de gesto).
+      // Depois de muito atraso (aba em segundo plano), recomeça do agora.
+      const seam = anim && k >= 0 && now - until < 250;
       anim = k >= 0 ? puppet.anims[k]! : null;
-      started = now;
+      started = seam ? until : now;
       lastF = -1e-6;
-      until = now + (anim ? (anim.frames / puppet.fps) * 1000 : i0 + Math.random() * (i1 - i0));
+      until = started + (anim ? (anim.frames / puppet.fps) * 1000 : i0 + Math.random() * (i1 - i0));
     };
     until = performance.now() + i0 * Math.random();
     // inspeção: ?puppetT=b@1.2 congela o gesto b em 1,2 s
