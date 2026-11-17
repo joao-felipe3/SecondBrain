@@ -124,7 +124,7 @@ onMounted(() => {
   opacity: 1;
   z-index: 2;
   /* dissolve contínuo: dura o passo inteiro, então o próximo desenho começa quando este termina */
-  transition: opacity var(--fade, 220ms) linear;
+  transition: opacity var(--fade, 220ms) cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .hall-frame.hall-frame-base {

@@ -40,6 +40,14 @@ describe('useHallLife', () => {
     expect(nextFrame(frames, 0, () => 0, 'gestures', 1).index).toBe(2);
   });
 
+  it("modo 'conversation' percorre os gestos em ordem, retornando ao repouso entre eles", () => {
+    expect(nextFrame(frames, 0, () => 0.99, 'conversation').index).toBe(1);
+    expect(nextFrame(frames, 1, () => 0, 'conversation', 1).index).toBe(0);
+    expect(nextFrame(frames, 0, () => 0, 'conversation', 1).index).toBe(2);
+    expect(nextFrame(frames, 2, () => 0, 'conversation', 2).index).toBe(0);
+    expect(nextFrame(frames, 0, () => 0, 'conversation', 2).index).toBe(1);
+  });
+
   it('toca os intermediários na ida ao gesto e ao contrário na volta ao repouso', () => {
     const withTweens: HallLifeFrame[] = [
       frames[0]!,

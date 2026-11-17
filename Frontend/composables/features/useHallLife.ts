@@ -104,7 +104,7 @@ export function pickHold(hold: [number, number], rng: () => number = Math.random
   return Math.round(min + (max - min) * rng());
 }
 
-export type HallLifeSequence = 'loop' | 'gestures';
+export type HallLifeSequence = 'loop' | 'gestures' | 'conversation';
 
 /** Duração MÉDIA de cada passo do movimento (o ease estica as pontas e encurta o meio). */
 export const TWEEN_MS = 140;
@@ -176,6 +176,8 @@ export function nextFrame(
   let index: number;
   if (sequence === 'loop' || frames.length === 2) {
     index = (current + 1) % frames.length;
+  } else if (sequence === 'conversation') {
+    index = current === 0 ? (previous <= 0 || previous === frames.length - 1 ? 1 : previous + 1) : 0;
   } else if (current !== 0) {
     index = 0;
   } else {

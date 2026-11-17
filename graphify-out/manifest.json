@@ -1265,8 +1265,8 @@
     "semantic_hash": ""
   },
   "Backend/src/tasks/tasks.controller.ts": {
-    "mtime": 1794272759.7171254,
-    "ast_hash": "1853b0aed8730f6459fd85d778cc3abc",
+    "mtime": 1794657044.9235158,
+    "ast_hash": "8d9cece2db66e0a87f125ff44c304101",
     "semantic_hash": ""
   },
   "Backend/src/tasks/tasks.module.ts": {
@@ -1675,8 +1675,8 @@
     "semantic_hash": ""
   },
   "Backend/tests/unit/tasks/controllers/tasks.controller.spec.ts": {
-    "mtime": 1794272759.7211273,
-    "ast_hash": "f95dfcbbf4e771250ebb98d979992f22",
+    "mtime": 1794657044.9235158,
+    "ast_hash": "5149b180f91a7686a99c7c9398bbd317",
     "semantic_hash": ""
   },
   "Backend/tests/unit/tasks/helpers/tasks-service-test-providers.ts": {
@@ -3660,18 +3660,18 @@
     "semantic_hash": ""
   },
   "Frontend/assets/data/hall-life.json": {
-    "mtime": 1794630637.4444108,
-    "ast_hash": "d664e822f6c40e77f8e035a78b40284c",
+    "mtime": 1794934407.9619274,
+    "ast_hash": "31dec7ae0f5eb7c4239e1c73a99dc413",
     "semantic_hash": ""
   },
   "Frontend/components/features/hall/GuildNpcLayer.vue": {
-    "mtime": 1794456987.6029289,
-    "ast_hash": "fb1d128c6e8e4020c695aca19e1d5089",
+    "mtime": 1794675864.2286947,
+    "ast_hash": "329590b79e6f82028d0c3a49da879fd9",
     "semantic_hash": ""
   },
   "Frontend/components/features/hall/GuildPuppetCanvas.vue": {
-    "mtime": 1794513314.7055745,
-    "ast_hash": "138f402b766feec7cc0650203015a831",
+    "mtime": 1794782524.9170375,
+    "ast_hash": "37fdc6a7dec0c757a951bf7c2e43e414",
     "semantic_hash": ""
   },
   "Frontend/components/features/hall/GuildSceneSpace.vue": {
@@ -3680,8 +3680,8 @@
     "semantic_hash": ""
   },
   "Frontend/composables/features/useHallLife.ts": {
-    "mtime": 1794426322.3352172,
-    "ast_hash": "20dcf75bd9e811072287a919291214b0",
+    "mtime": 1794659083.6676166,
+    "ast_hash": "ad6c4b88fbe76e1adc5d42ea088d9f6f",
     "semantic_hash": ""
   },
   "Frontend/composables/ui/puppet.ts": {
@@ -3765,18 +3765,18 @@
     "semantic_hash": ""
   },
   "Frontend/scripts/hall-life/vignettes.json": {
-    "mtime": 1794630002.5981586,
-    "ast_hash": "536c2cc36f2a2c5113ac141d0057a962",
+    "mtime": 1794933605.8118641,
+    "ast_hash": "1765e8427fd51bb29082e696af5f61da",
     "semantic_hash": ""
   },
   "Frontend/tests/unit/hall-life.spec.ts": {
-    "mtime": 1794426322.5236397,
-    "ast_hash": "46843bce047f0d23ec13f2eb9076426a",
+    "mtime": 1794659106.436346,
+    "ast_hash": "c6f836384add1a2b979e8304367c78c0",
     "semantic_hash": ""
   },
   "Frontend/tests/unit/puppet.spec.ts": {
-    "mtime": 1794618865.6826987,
-    "ast_hash": "6925045e9e3d608937582413d9108275",
+    "mtime": 1794885718.7347608,
+    "ast_hash": "ebdd43ad011df97354e48ea993c93efb",
     "semantic_hash": ""
   },
   "Frontend/tests/unit/scene-space.spec.ts": {
@@ -3785,8 +3785,8 @@
     "semantic_hash": ""
   },
   "Frontend/scripts/hall-life/README.md": {
-    "mtime": 1794655744.290942,
-    "ast_hash": "d84a4d6e6225e4b65592d199b86a0eee",
+    "mtime": 1794785839.4875176,
+    "ast_hash": "e5285239ead6269ba3373e446a9c7fad",
     "semantic_hash": ""
   },
   "Frontend/public/vfx/hall-life/board-readers/a.webp": {
@@ -4180,78 +4180,8 @@
     "semantic_hash": ""
   },
   "Frontend/public/vfx/hall-life/planners-table/a.webp": {
-    "mtime": 1794370996.7224634,
+    "mtime": 1794781844.8255591,
     "ast_hash": "4beb0be0507a70537fa08e5a91269d54",
-    "semantic_hash": ""
-  },
-  "Frontend/public/vfx/hall-life/planners-table/b.webp": {
-    "mtime": 1794370999.115126,
-    "ast_hash": "36beaac2aa7404bcd8b2c33529a9a377",
-    "semantic_hash": ""
-  },
-  "Frontend/public/vfx/hall-life/planners-table/b_1.webp": {
-    "mtime": 1794371001.435571,
-    "ast_hash": "8352f08dd638dd255e48a974c2a536db",
-    "semantic_hash": ""
-  },
-  "Frontend/public/vfx/hall-life/planners-table/b_2.webp": {
-    "mtime": 1794371003.7613375,
-    "ast_hash": "676dd8d1d9d655672cd938e2ae351862",
-    "semantic_hash": ""
-  },
-  "Frontend/public/vfx/hall-life/planners-table/b_3.webp": {
-    "mtime": 1794371006.112941,
-    "ast_hash": "0cdbe8e9749e6ee654f0bbb579cfadb2",
-    "semantic_hash": ""
-  },
-  "Frontend/public/vfx/hall-life/planners-table/b_4.webp": {
-    "mtime": 1794371008.4770975,
-    "ast_hash": "44673f529ed5432aeb7ae896023083b4",
-    "semantic_hash": ""
-  },
-  "Frontend/public/vfx/hall-life/planners-table/b_5.webp": {
-    "mtime": 1794371010.8549707,
-    "ast_hash": "b05e26cc64a5969b49016ef351c8587d",
-    "semantic_hash": ""
-  },
-  "Frontend/public/vfx/hall-life/planners-table/c.webp": {
-    "mtime": 1794371013.2053144,
-    "ast_hash": "3cc24c38eacce0ae133dd8594e5a8351",
-    "semantic_hash": ""
-  },
-  "Frontend/public/vfx/hall-life/planners-table/c_1.webp": {
-    "mtime": 1794371015.559247,
-    "ast_hash": "21526c0634f6a4b5842a655ef1f0761a",
-    "semantic_hash": ""
-  },
-  "Frontend/public/vfx/hall-life/planners-table/c_2.webp": {
-    "mtime": 1794371017.883515,
-    "ast_hash": "6dc0a3c7e835a75f2ca3229096cef7c3",
-    "semantic_hash": ""
-  },
-  "Frontend/public/vfx/hall-life/planners-table/c_3.webp": {
-    "mtime": 1794371020.202131,
-    "ast_hash": "81bc337a3a46780c97681725449bafcc",
-    "semantic_hash": ""
-  },
-  "Frontend/public/vfx/hall-life/planners-table/d.webp": {
-    "mtime": 1794371022.5718098,
-    "ast_hash": "f8dc4f8f63540da0651b3aa97b753312",
-    "semantic_hash": ""
-  },
-  "Frontend/public/vfx/hall-life/planners-table/d_1.webp": {
-    "mtime": 1794371024.924839,
-    "ast_hash": "670ef0a9ee5fc9ac1c2f0e135bc7ff39",
-    "semantic_hash": ""
-  },
-  "Frontend/public/vfx/hall-life/planners-table/d_2.webp": {
-    "mtime": 1794371027.2568061,
-    "ast_hash": "d815e3c94852f0e3ef217adda5c3257b",
-    "semantic_hash": ""
-  },
-  "Frontend/public/vfx/hall-life/planners-table/d_3.webp": {
-    "mtime": 1794371029.620673,
-    "ast_hash": "454daa465c71ea44a2da53fbce4ccf79",
     "semantic_hash": ""
   },
   "Frontend/public/vfx/hall-life/receptionist/a.webp": {
@@ -4280,8 +4210,8 @@
     "semantic_hash": ""
   },
   "Frontend/scripts/hall-life/loop_rig.py": {
-    "mtime": 1794629194.5043516,
-    "ast_hash": "8e17f63fe3d98ef4f7b09ebb1377ac39",
+    "mtime": 1794931706.2287765,
+    "ast_hash": "9ddbde6bf6b92fca439bc3cca3f5a188",
     "semantic_hash": ""
   },
   "Frontend/tests/unit/hall-music.spec.ts": {
@@ -4420,8 +4350,8 @@
     "semantic_hash": ""
   },
   "Frontend/scripts/hall-life/head_tween.py": {
-    "mtime": 1794622943.2845695,
-    "ast_hash": "96027df9cc3db0e305be8c30a0fa2cf4",
+    "mtime": 1794784621.0308325,
+    "ast_hash": "ef463e4292b7ffc0cb1206908855b486",
     "semantic_hash": ""
   },
   "Frontend/public/vfx/hall-life/board-readers/puppet/base.webp": {
@@ -4627,6 +4557,251 @@
   "Frontend/public/vfx/hall-life/board-readers/puppet/rosto_pensar.webp": {
     "mtime": 1794630314.8526251,
     "ast_hash": "d8ca3e128f62644db2d89047a760140e",
+    "semantic_hash": ""
+  },
+  "Frontend/public/vfx/hall-life/planners-table/puppet/puppet.json": {
+    "mtime": 1794933865.0413723,
+    "ast_hash": "305b19bbd87b2463464c208b58852d75",
+    "semantic_hash": ""
+  },
+  "Frontend/planners-preview.png": {
+    "mtime": 1794682558.944517,
+    "ast_hash": "b0a2c847d2ff0d8c4984d2feab2031d7",
+    "semantic_hash": ""
+  },
+  "Frontend/public/vfx/hall-life/planners-table/puppet/base.webp": {
+    "mtime": 1794933864.6610177,
+    "ast_hash": "87366d914df78276d06ee100b8e96ae8",
+    "semantic_hash": ""
+  },
+  "Frontend/public/vfx/hall-life/planners-table/puppet/figura.webp": {
+    "mtime": 1794933864.9383671,
+    "ast_hash": "4f79ea229862aae4c601e46899ba2e6c",
+    "semantic_hash": ""
+  },
+  "Frontend/public/vfx/hall-life/planners-table/puppet/pose_aponta_fh.webp": {
+    "mtime": 1794933864.578185,
+    "ast_hash": "8583929af766bcbbdc4db826a212695e",
+    "semantic_hash": ""
+  },
+  "Frontend/public/vfx/hall-life/planners-table/puppet/pose_aponta_frente0.webp": {
+    "mtime": 1794933864.7396758,
+    "ast_hash": "988b0b7a597b2685fc677449c14e3310",
+    "semantic_hash": ""
+  },
+  "Frontend/public/vfx/hall-life/planners-table/puppet/pose_aponta_frente1.webp": {
+    "mtime": 1794933864.8030393,
+    "ast_hash": "9409c8b2b211e0ad48146a21d8f1c3b0",
+    "semantic_hash": ""
+  },
+  "Frontend/public/vfx/hall-life/planners-table/puppet/pose_aponta_mao.webp": {
+    "mtime": 1794933864.4881783,
+    "ast_hash": "6ccb9d2380bd2a8d05ea2d5f85e2256c",
+    "semantic_hash": ""
+  },
+  "Frontend/public/vfx/hall-life/planners-table/puppet/pose_aponta_rest.webp": {
+    "mtime": 1794933864.9503653,
+    "ast_hash": "6eb8772f9162ecbc8903b4cfcc96d19a",
+    "semantic_hash": ""
+  },
+  "Frontend/public/vfx/hall-life/planners-table/puppet/pose_aponta_tampa.webp": {
+    "mtime": 1794933864.9133632,
+    "ast_hash": "90a3d95829faabf91c58996b26435c15",
+    "semantic_hash": ""
+  },
+  "Frontend/public/vfx/hall-life/planners-table/puppet/rosto_r_laugh_s1.webp": {
+    "mtime": 1794933864.618186,
+    "ast_hash": "22519854d6d99f32d179df7c34184f6f",
+    "semantic_hash": ""
+  },
+  "Frontend/public/vfx/hall-life/planners-table/puppet/rosto_r_laugh_s10.webp": {
+    "mtime": 1794933865.0233696,
+    "ast_hash": "42dfceb108c3bfaa043bf21583957e1f",
+    "semantic_hash": ""
+  },
+  "Frontend/public/vfx/hall-life/planners-table/puppet/rosto_r_laugh_s11.webp": {
+    "mtime": 1794933864.519177,
+    "ast_hash": "bb0d52c433a795672a17b003ba2cac8e",
+    "semantic_hash": ""
+  },
+  "Frontend/public/vfx/hall-life/planners-table/puppet/rosto_r_laugh_s12.webp": {
+    "mtime": 1794933864.682017,
+    "ast_hash": "8ba6951eb9234d9ea036bd16ee9b43eb",
+    "semantic_hash": ""
+  },
+  "Frontend/public/vfx/hall-life/planners-table/puppet/rosto_r_laugh_s13.webp": {
+    "mtime": 1794933864.7646632,
+    "ast_hash": "36ee0e75dbb1775bb53092d3906e870c",
+    "semantic_hash": ""
+  },
+  "Frontend/public/vfx/hall-life/planners-table/puppet/rosto_r_laugh_s14.webp": {
+    "mtime": 1794933864.4661758,
+    "ast_hash": "3f9b80b49d6d8994f710e9377be14086",
+    "semantic_hash": ""
+  },
+  "Frontend/public/vfx/hall-life/planners-table/puppet/rosto_r_laugh_s15.webp": {
+    "mtime": 1794933864.6231875,
+    "ast_hash": "a2dff4dc5e9ef9951ebefc7d653b706a",
+    "semantic_hash": ""
+  },
+  "Frontend/public/vfx/hall-life/planners-table/puppet/rosto_r_laugh_s2.webp": {
+    "mtime": 1794933864.9623666,
+    "ast_hash": "b5e3799335becad94dd970109ecf3aeb",
+    "semantic_hash": ""
+  },
+  "Frontend/public/vfx/hall-life/planners-table/puppet/rosto_r_laugh_s3.webp": {
+    "mtime": 1794933864.7786655,
+    "ast_hash": "65d82ac8123a61399baf5c734823ebaa",
+    "semantic_hash": ""
+  },
+  "Frontend/public/vfx/hall-life/planners-table/puppet/rosto_r_laugh_s4.webp": {
+    "mtime": 1794933864.751662,
+    "ast_hash": "28bf170a5e177d9f1ddb52d69a01a6bc",
+    "semantic_hash": ""
+  },
+  "Frontend/public/vfx/hall-life/planners-table/puppet/rosto_r_laugh_s5.webp": {
+    "mtime": 1794933864.6485007,
+    "ast_hash": "45c52c3384f72a9df721b11ba01577e2",
+    "semantic_hash": ""
+  },
+  "Frontend/public/vfx/hall-life/planners-table/puppet/rosto_r_laugh_s6.webp": {
+    "mtime": 1794933864.674015,
+    "ast_hash": "5523f29da9a0cb2ab6badd219be06364",
+    "semantic_hash": ""
+  },
+  "Frontend/public/vfx/hall-life/planners-table/puppet/rosto_r_laugh_s7.webp": {
+    "mtime": 1794933864.7060175,
+    "ast_hash": "21361ebde4fa977650e96a644889805e",
+    "semantic_hash": ""
+  },
+  "Frontend/public/vfx/hall-life/planners-table/puppet/rosto_r_laugh_s8.webp": {
+    "mtime": 1794933864.8243356,
+    "ast_hash": "ae96f4b4d1d8189befa548f7de9edab2",
+    "semantic_hash": ""
+  },
+  "Frontend/public/vfx/hall-life/planners-table/puppet/rosto_r_laugh_s9.webp": {
+    "mtime": 1794933864.7172623,
+    "ast_hash": "2d572769a3a3ee2248dd218212331f63",
+    "semantic_hash": ""
+  },
+  "Frontend/public/vfx/hall-life/planners-table/puppet/rosto_w_cross_g0.webp": {
+    "mtime": 1794933864.6041858,
+    "ast_hash": "51ab904a71fef52c419207483757f2b6",
+    "semantic_hash": ""
+  },
+  "Frontend/public/vfx/hall-life/planners-table/puppet/rosto_w_cross_g05.webp": {
+    "mtime": 1794933864.4561758,
+    "ast_hash": "ca96a5bc4f5a70c41458aad07bd6f981",
+    "semantic_hash": ""
+  },
+  "Frontend/public/vfx/hall-life/planners-table/puppet/rosto_w_cross_g1.webp": {
+    "mtime": 1794933864.565183,
+    "ast_hash": "f2ba4fa8d74b8f446fe3226f2fd346a2",
+    "semantic_hash": ""
+  },
+  "Frontend/public/vfx/hall-life/planners-table/puppet/rosto_w_cross_g15.webp": {
+    "mtime": 1794933864.9003623,
+    "ast_hash": "c4557133a712315e3e77bde379a879cd",
+    "semantic_hash": ""
+  },
+  "Frontend/public/vfx/hall-life/planners-table/puppet/rosto_w_cross_q2.webp": {
+    "mtime": 1794933865.0393727,
+    "ast_hash": "f49a91717847749b3919c74b18118670",
+    "semantic_hash": ""
+  },
+  "Frontend/public/vfx/hall-life/planners-table/puppet/rosto_w_cross_r1.webp": {
+    "mtime": 1794933864.593187,
+    "ast_hash": "5d3a9a1ea3874844c4aed8b1e3ae9374",
+    "semantic_hash": ""
+  },
+  "Frontend/public/vfx/hall-life/planners-table/puppet/rosto_w_cross_r5.webp": {
+    "mtime": 1794933864.7272635,
+    "ast_hash": "a5871590c4b6ee101125abc232d28d9f",
+    "semantic_hash": ""
+  },
+  "Frontend/public/vfx/hall-life/planners-table/puppet/rosto_w_cross_s11.webp": {
+    "mtime": 1794933864.694018,
+    "ast_hash": "0d6373e69f45467bca4ad1e0125610a8",
+    "semantic_hash": ""
+  },
+  "Frontend/public/vfx/hall-life/planners-table/puppet/rosto_w_cross_s12.webp": {
+    "mtime": 1794933864.534181,
+    "ast_hash": "b59f83ff1c252af20c9b0682e524df54",
+    "semantic_hash": ""
+  },
+  "Frontend/public/vfx/hall-life/planners-table/puppet/rosto_w_cross_s3.webp": {
+    "mtime": 1794933864.5031798,
+    "ast_hash": "eca5fd03c89380f509bbb29a95b24ff0",
+    "semantic_hash": ""
+  },
+  "Frontend/public/vfx/hall-life/planners-table/puppet/rosto_w_cross_s4.webp": {
+    "mtime": 1794933864.4771755,
+    "ast_hash": "ef5fcda684d995645f7cda0fda0ab201",
+    "semantic_hash": ""
+  },
+  "Frontend/public/vfx/hall-life/planners-table/puppet/rosto_w_cross_s8.webp": {
+    "mtime": 1794933864.8351943,
+    "ast_hash": "095feba588240f95d92a121aadb693fd",
+    "semantic_hash": ""
+  },
+  "Frontend/public/vfx/hall-life/planners-table/puppet/rosto_w_laugh_s1.webp": {
+    "mtime": 1794933864.990368,
+    "ast_hash": "b63d51dd8358db5187c1aa5bc9d63db0",
+    "semantic_hash": ""
+  },
+  "Frontend/public/vfx/hall-life/planners-table/puppet/rosto_w_laugh_s10.webp": {
+    "mtime": 1794933864.7916667,
+    "ast_hash": "1339f6bbc0634404501f3b9a805d796f",
+    "semantic_hash": ""
+  },
+  "Frontend/public/vfx/hall-life/planners-table/puppet/rosto_w_laugh_s11.webp": {
+    "mtime": 1794933865.0143688,
+    "ast_hash": "2dd78ad06053f73e029f93dc16cf1ec0",
+    "semantic_hash": ""
+  },
+  "Frontend/public/vfx/hall-life/planners-table/puppet/rosto_w_laugh_s12.webp": {
+    "mtime": 1794933864.6455007,
+    "ast_hash": "9b2cb1f645c4e35fcc9dc658933c9feb",
+    "semantic_hash": ""
+  },
+  "Frontend/public/vfx/hall-life/planners-table/puppet/rosto_w_laugh_s2.webp": {
+    "mtime": 1794933864.9763703,
+    "ast_hash": "30be975f95ac7ed6b257ec6fb7b588fc",
+    "semantic_hash": ""
+  },
+  "Frontend/public/vfx/hall-life/planners-table/puppet/rosto_w_laugh_s3.webp": {
+    "mtime": 1794933864.8143344,
+    "ast_hash": "16ca655909497ead80aaa1af9662ed4a",
+    "semantic_hash": ""
+  },
+  "Frontend/public/vfx/hall-life/planners-table/puppet/rosto_w_laugh_s4.webp": {
+    "mtime": 1794933864.5521805,
+    "ast_hash": "b98010f5413f6c6472a73fff25e15d22",
+    "semantic_hash": ""
+  },
+  "Frontend/public/vfx/hall-life/planners-table/puppet/rosto_w_laugh_s5.webp": {
+    "mtime": 1794933864.9263632,
+    "ast_hash": "585eca37056ae9c0df9eebebf462b76a",
+    "semantic_hash": ""
+  },
+  "Frontend/public/vfx/hall-life/planners-table/puppet/rosto_w_laugh_s6.webp": {
+    "mtime": 1794933864.7736626,
+    "ast_hash": "54b6f4fe58811df51e6712253f054db4",
+    "semantic_hash": ""
+  },
+  "Frontend/public/vfx/hall-life/planners-table/puppet/rosto_w_laugh_s7.webp": {
+    "mtime": 1794933864.5481803,
+    "ast_hash": "5979993fb47ad635ae38309eaf116225",
+    "semantic_hash": ""
+  },
+  "Frontend/public/vfx/hall-life/planners-table/puppet/rosto_w_laugh_s8.webp": {
+    "mtime": 1794933865.00137,
+    "ast_hash": "26ca84a284058f4a606dbed2a90cd0a8",
+    "semantic_hash": ""
+  },
+  "Frontend/public/vfx/hall-life/planners-table/puppet/rosto_w_laugh_s9.webp": {
+    "mtime": 1794933864.631186,
+    "ast_hash": "3eb8c76821009fec48fc36f2c68d8b39",
     "semantic_hash": ""
   }
 }
