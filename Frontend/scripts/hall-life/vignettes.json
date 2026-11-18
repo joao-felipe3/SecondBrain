@@ -48,7 +48,169 @@
         "gain": 0.05
       },
       "tooltip": null,
-      "sequence": "gestures"
+      "sequence": "gestures",
+      "loop_rig": {
+        "bpm": 90,
+        "idleMs": [200, 400],
+        "bones": {
+          "mago_cabeca": {
+            "pivot": [1065, 640],
+            "tip": [1000, 320],
+            "blur": 2.5,
+            "fill": "plate",
+            "region": [
+              [870, 280],
+              [1000, 280],
+              [1190, 370],
+              [1195, 470],
+              [1110, 480],
+              [1100, 600],
+              [1080, 650],
+              [1030, 650],
+              [990, 590],
+              [975, 480],
+              [860, 455]
+            ]
+          },
+          "mago_mao": {
+            "pivot": [1140, 650],
+            "tip": [1270, 575],
+            "blur": 2,
+            "fill": "inpaint",
+            "region": [
+              [1120, 600],
+              [1180, 545],
+              [1240, 540],
+              [1290, 555],
+              [1290, 610],
+              [1230, 650],
+              [1170, 690],
+              [1115, 690]
+            ]
+          },
+          "bardo_cabeca": {
+            "pivot": [1415, 525],
+            "tip": [1400, 340],
+            "blur": 2.5,
+            "fill": "plate",
+            "region": [
+              [1300, 320],
+              [1350, 330],
+              [1500, 350],
+              [1505, 430],
+              [1480, 500],
+              [1450, 535],
+              [1380, 535],
+              [1345, 490],
+              [1325, 420]
+            ]
+          },
+          "bardo_mao": {
+            "pivot": [1300, 670],
+            "tip": [1430, 640],
+            "blur": 2,
+            "fill": "inpaint",
+            "region": [
+              [1265, 630],
+              [1380, 600],
+              [1460, 605],
+              [1465, 670],
+              [1400, 690],
+              [1300, 705],
+              [1260, 690]
+            ]
+          },
+          "ladino_cabeca": {
+            "pivot": [1775, 575],
+            "tip": [1770, 390],
+            "blur": 2.5,
+            "fill": "plate",
+            "region": [
+              [1700, 390],
+              [1760, 370],
+              [1840, 385],
+              [1880, 440],
+              [1880, 540],
+              [1840, 580],
+              [1720, 585],
+              [1695, 500]
+            ]
+          }
+        },
+        "motions": {
+          "bardo_mao": {
+            "kind": "strum",
+            "amp": 7,
+            "lag": 0.85
+          },
+          "bardo_cabeca": {
+            "kind": "nod",
+            "amp": 2.2,
+            "sway": 2.5,
+            "sway_beats": 8
+          },
+          "mago_cabeca": {
+            "kind": "sway",
+            "amp": 2.5,
+            "period": 16
+          },
+          "mago_mao": {
+            "kind": "keys",
+            "period": 8,
+            "keys": [
+              [0, 0],
+              [1, 0],
+              [1.6, -13],
+              [2.2, -3],
+              [2.8, -14],
+              [3.6, -4],
+              [4.4, 0],
+              [8, 0]
+            ]
+          },
+          "ladino_cabeca": {
+            "kind": "sway",
+            "amp": 2,
+            "period": 12
+          }
+        },
+        "anims": [
+          {
+            "name": "conversa",
+            "beats": 32,
+            "weight": 2
+          },
+          {
+            "name": "olhar",
+            "beats": 32,
+            "weight": 1,
+            "looks": [
+              {
+                "bone": "ladino_cabeca",
+                "angle": 8,
+                "from": 6,
+                "to": 18,
+                "spring": {
+                  "zeta": 0.8,
+                  "rise": 0.6,
+                  "fall": 0.8
+                }
+              },
+              {
+                "bone": "mago_cabeca",
+                "angle": 6,
+                "from": 10,
+                "to": 20,
+                "spring": {
+                  "zeta": 0.8,
+                  "rise": 0.6,
+                  "fall": 0.8
+                }
+              }
+            ]
+          }
+        ]
+      }
     },
     {
       "id": "stair-bard",
@@ -1340,14 +1502,692 @@
       ],
       "light": {
         "source": "hearth",
-        "gain": 0.14
+        "gain": 0,
+        "_why": "o brilho da lareira (GuildVfxLayer part=\"hearth-glow\") passa por cima desta vinheta igual ao chão em volta; um pulso próprio fazia o retângulo piscar descasado"
       },
       "tooltip": "🍺 Brinde à última missão cumprida",
       "foreground": {
         "box": [0.5, 0.15, 0.82, 0.7],
         "_why": "cavaleiro e gnomo ficam na frente da chama animada da lareira (GuildVfxLayer)"
       },
-      "sequence": "gestures"
+      "sequence": "gestures",
+      "loop_rig": {
+        "bpm": 60,
+        "idleMs": [200, 400],
+        "cell": 8,
+        "quality": 84,
+        "alpha_quality": 60,
+        "precision": 1,
+        "weight_precision": 3,
+        "thin": 3,
+        "bones": {
+          "elf_head": {
+            "pivot": [640, 905],
+            "tip": [650, 822],
+            "blur": 2.5,
+            "fill": "plate",
+            "region": [
+              [540, 715],
+              [600, 695],
+              [705, 715],
+              [740, 800],
+              [722, 872],
+              [682, 912],
+              [600, 918],
+              [558, 880],
+              [538, 800]
+            ]
+          },
+          "dwarf_chest": {
+            "pivot": [955, 1060],
+            "tip": [950, 800],
+            "blur": 3,
+            "fill": "plate",
+            "region": [
+              [715, 780],
+              [880, 758],
+              [1030, 765],
+              [1150, 795],
+              [1155, 960],
+              [1100, 1000],
+              [780, 1000],
+              [712, 900]
+            ]
+          },
+          "dwarf_head": {
+            "parent": "dwarf_chest",
+            "pivot": [950, 800],
+            "tip": [970, 712],
+            "blur": 2.5,
+            "fill": "plate",
+            "region": [
+              [835, 560],
+              [1045, 555],
+              [1065, 700],
+              [1045, 860],
+              [985, 905],
+              [900, 895],
+              [850, 800],
+              [828, 680]
+            ]
+          },
+          "gnome_head": {
+            "pivot": [1365, 905],
+            "tip": [1345, 815],
+            "blur": 2.5,
+            "fill": "plate",
+            "region": [
+              [1215, 705],
+              [1300, 560],
+              [1400, 520],
+              [1565, 575],
+              [1565, 800],
+              [1455, 835],
+              [1440, 950],
+              [1350, 965],
+              [1290, 905],
+              [1255, 805]
+            ]
+          },
+          "gnome_hand": {
+            "pivot": [1300, 1040],
+            "tip": [1360, 950],
+            "blur": 1.5,
+            "fill": "inpaint",
+            "region": [
+              [1288, 912],
+              [1400, 898],
+              [1425, 958],
+              [1405, 1012],
+              [1322, 1035],
+              [1280, 992]
+            ]
+          },
+          "knight_head": {
+            "pivot": [1680, 885],
+            "tip": [1680, 820],
+            "blur": 2.5,
+            "fill": "plate",
+            "region": [
+              [1588, 690],
+              [1660, 648],
+              [1782, 668],
+              [1795, 760],
+              [1762, 852],
+              [1722, 884],
+              [1640, 890],
+              [1598, 832],
+              [1578, 760]
+            ]
+          },
+          "knight_fore": {
+            "pivot": [1640, 1060],
+            "tip": [1500, 930],
+            "blur": 1.5,
+            "fill": "inpaint",
+            "region": [
+              [1458, 880],
+              [1560, 858],
+              [1602, 928],
+              [1682, 1008],
+              [1684, 1092],
+              [1620, 1104],
+              [1556, 1042],
+              [1478, 1002]
+            ]
+          },
+          "elf_jaw": {
+            "parent": "elf_head",
+            "pivot": [650, 822],
+            "tip": [700, 885],
+            "blur": 1.2,
+            "fill": "plate",
+            "region": [
+              [660, 848],
+              [702, 844],
+              [726, 855],
+              [719, 881],
+              [696, 899],
+              [664, 901],
+              [648, 880]
+            ]
+          },
+          "dwarf_jaw": {
+            "parent": "dwarf_head",
+            "pivot": [970, 712],
+            "tip": [970, 870],
+            "blur": 2,
+            "fill": "plate",
+            "region": [
+              [880, 712],
+              [1060, 706],
+              [1075, 800],
+              [1050, 862],
+              [1000, 872],
+              [940, 872],
+              [892, 860],
+              [870, 790]
+            ]
+          },
+          "gnome_jaw": {
+            "parent": "gnome_head",
+            "pivot": [1345, 815],
+            "tip": [1345, 895],
+            "blur": 1.5,
+            "fill": "plate",
+            "region": [
+              [1292, 818],
+              [1400, 812],
+              [1420, 858],
+              [1405, 892],
+              [1300, 896],
+              [1282, 862]
+            ]
+          },
+          "knight_jaw": {
+            "parent": "knight_head",
+            "pivot": [1680, 820],
+            "tip": [1620, 862],
+            "blur": 1.2,
+            "fill": "plate",
+            "region": [
+              [1600, 816],
+              [1650, 812],
+              [1690, 830],
+              [1682, 870],
+              [1640, 886],
+              [1604, 876],
+              [1594, 846]
+            ]
+          }
+        },
+        "motions": {
+          "elf_head": {
+            "kind": "sway",
+            "amp": 1.5,
+            "period": 6
+          },
+          "dwarf_chest": {
+            "kind": "sway",
+            "amp": 0.7,
+            "period": 5,
+            "breathe": 0.02,
+            "breathe_period": 3
+          },
+          "dwarf_head": {
+            "kind": "sway",
+            "amp": 1.6,
+            "period": 4
+          },
+          "gnome_head": {
+            "kind": "sway",
+            "amp": 2.0,
+            "period": 3
+          },
+          "gnome_hand": {
+            "kind": "keys",
+            "period": 6,
+            "keys": [
+              [0, 0],
+              [1, 5],
+              [2, -3],
+              [3, 4],
+              [4, 0],
+              [6, 0]
+            ]
+          },
+          "knight_head": {
+            "kind": "sway",
+            "amp": 1.5,
+            "period": 5
+          },
+          "elf_jaw": {
+            "kind": "talk",
+            "amp": 8,
+            "period": 12,
+            "bursts": [
+              [0.5, 2.5],
+              [7.5, 9]
+            ],
+            "phase": 0.0
+          },
+          "dwarf_jaw": {
+            "kind": "talk",
+            "talk_scale": 0.09,
+            "period": 12,
+            "bursts": [[3, 5.5]],
+            "phase": 0.4
+          },
+          "gnome_jaw": {
+            "kind": "talk",
+            "talk_scale": 0.1,
+            "period": 12,
+            "bursts": [
+              [5.8, 7.5],
+              [10, 11.6]
+            ],
+            "phase": 0.9
+          },
+          "knight_jaw": {
+            "kind": "talk",
+            "amp": -8,
+            "period": 12,
+            "bursts": [
+              [1.2, 3.2],
+              [8.6, 10.2]
+            ],
+            "phase": 0.2
+          },
+          "knight_fore": {
+            "kind": "keys",
+            "period": 6,
+            "keys": [
+              [0, 0],
+              [1, 0],
+              [1.8, 7],
+              [2.6, 2],
+              [3.4, 8],
+              [4.4, 0],
+              [6, 0]
+            ]
+          }
+        },
+        "patches": {
+          "elf_drink_s1": {
+            "overlay": "overlay_elf_drink_s1.png",
+            "region": [380, 590, 1010, 1330],
+            "bone": "fixo",
+            "quality": 60,
+            "alpha_quality": 45,
+            "feather": 10,
+            "cut": "figure"
+          },
+          "elf_drink_s2": {
+            "overlay": "overlay_elf_drink_s2.png",
+            "region": [380, 590, 1010, 1330],
+            "bone": "fixo",
+            "quality": 60,
+            "alpha_quality": 45,
+            "feather": 10,
+            "cut": "figure"
+          },
+          "elf_drink_s3": {
+            "overlay": "overlay_elf_drink_s3.png",
+            "region": [380, 590, 1010, 1330],
+            "bone": "fixo",
+            "quality": 60,
+            "alpha_quality": 45,
+            "feather": 10,
+            "cut": "figure"
+          },
+          "elf_drink_s4": {
+            "overlay": "overlay_elf_drink_s4.png",
+            "region": [380, 590, 1010, 1330],
+            "bone": "fixo",
+            "quality": 60,
+            "alpha_quality": 45,
+            "feather": 10,
+            "cut": "figure"
+          },
+          "elf_drink_s5": {
+            "overlay": "overlay_elf_drink_s5.png",
+            "region": [380, 590, 1010, 1330],
+            "bone": "fixo",
+            "quality": 60,
+            "alpha_quality": 45,
+            "feather": 10,
+            "cut": "figure"
+          },
+          "dw_laugh_s1": {
+            "overlay": "overlay_dw_laugh_s1.png",
+            "region": [715, 500, 1215, 1015],
+            "bone": "dwarf_chest",
+            "quality": 60,
+            "alpha_quality": 45,
+            "feather": 10,
+            "cut": "figure"
+          },
+          "dw_laugh_s2": {
+            "overlay": "overlay_dw_laugh_s2.png",
+            "region": [715, 500, 1215, 1015],
+            "bone": "dwarf_chest",
+            "quality": 60,
+            "alpha_quality": 45,
+            "feather": 10,
+            "cut": "figure"
+          },
+          "dw_laugh_s3": {
+            "overlay": "overlay_dw_laugh_s3.png",
+            "region": [715, 500, 1215, 1015],
+            "bone": "dwarf_chest",
+            "quality": 60,
+            "alpha_quality": 45,
+            "feather": 10,
+            "cut": "figure"
+          },
+          "dw_laugh_s4": {
+            "overlay": "overlay_dw_laugh_s4.png",
+            "region": [715, 500, 1215, 1015],
+            "bone": "dwarf_chest",
+            "quality": 60,
+            "alpha_quality": 45,
+            "feather": 10,
+            "cut": "figure"
+          },
+          "dw_laugh_s5": {
+            "overlay": "overlay_dw_laugh_s5.png",
+            "region": [715, 500, 1215, 1015],
+            "bone": "dwarf_chest",
+            "quality": 60,
+            "alpha_quality": 45,
+            "feather": 10,
+            "cut": "figure"
+          },
+          "dw_drink_s1": {
+            "overlay": "overlay_dw_drink_s1.png",
+            "region": [715, 495, 1215, 1035],
+            "bone": "fixo",
+            "quality": 60,
+            "alpha_quality": 45,
+            "feather": 10,
+            "cut": "figure"
+          },
+          "dw_drink_s2": {
+            "overlay": "overlay_dw_drink_s2.png",
+            "region": [715, 495, 1215, 1035],
+            "bone": "fixo",
+            "quality": 60,
+            "alpha_quality": 45,
+            "feather": 10,
+            "cut": "figure"
+          },
+          "gn_drink_s1": {
+            "overlay": "overlay_gn_drink_s1.png",
+            "region": [1095, 495, 1578, 1065],
+            "bone": "fixo",
+            "quality": 60,
+            "alpha_quality": 45,
+            "feather": 10,
+            "cut": "figure"
+          },
+          "gn_drink_s2": {
+            "overlay": "overlay_gn_drink_s2.png",
+            "region": [1095, 495, 1578, 1065],
+            "bone": "fixo",
+            "quality": 60,
+            "alpha_quality": 45,
+            "feather": 10,
+            "cut": "figure"
+          },
+          "kn_drink_s1": {
+            "overlay": "overlay_kn_drink_s1.png",
+            "region": [1350, 640, 1900, 1330],
+            "bone": "fixo",
+            "quality": 60,
+            "alpha_quality": 45,
+            "feather": 10,
+            "cut": "figure"
+          },
+          "kn_drink_s2": {
+            "overlay": "overlay_kn_drink_s2.png",
+            "region": [1350, 640, 1900, 1330],
+            "bone": "fixo",
+            "quality": 60,
+            "alpha_quality": 45,
+            "feather": 10,
+            "cut": "figure"
+          },
+          "kn_drink_s3": {
+            "overlay": "overlay_kn_drink_s3.png",
+            "region": [1350, 640, 1900, 1330],
+            "bone": "fixo",
+            "quality": 60,
+            "alpha_quality": 45,
+            "feather": 10,
+            "cut": "figure"
+          }
+        },
+        "anims": [
+          {
+            "name": "conversa",
+            "beats": 12,
+            "weight": 2,
+            "looks": [
+              {
+                "bone": "elf_head",
+                "angle": 2.5,
+                "from": 2,
+                "to": 6,
+                "spring": {
+                  "zeta": 0.8,
+                  "rise": 1.0,
+                  "fall": 1.2
+                }
+              },
+              {
+                "bone": "dwarf_head",
+                "angle": -2.5,
+                "from": 6,
+                "to": 10,
+                "spring": {
+                  "zeta": 0.8,
+                  "rise": 1.0,
+                  "fall": 1.2
+                }
+              }
+            ]
+          },
+          {
+            "name": "rir",
+            "beats": 12,
+            "weight": 1,
+            "looks": [
+              {
+                "bone": "dwarf_chest",
+                "angle": 0,
+                "from": 1.0,
+                "to": 10.0,
+                "quiet": ["dwarf_head", "dwarf_jaw"],
+                "quiet_gain": 6
+              },
+              {
+                "bone": "fixo",
+                "from": 1.5,
+                "to": 9.5,
+                "seq": ["dw_laugh_s1", "dw_laugh_s2", "dw_laugh_s3", "dw_laugh_s4", "dw_laugh_s5"],
+                "patch_ramp": [1.5, 3.0, 8.0, 9.5],
+                "step": true
+              },
+              {
+                "bone": "dwarf_chest",
+                "angle": -1.5,
+                "from": 3.0,
+                "to": 8.4,
+                "spring": {
+                  "zeta": 0.6,
+                  "rise": 0.5,
+                  "fall": 0.8
+                },
+                "shake": {
+                  "amp": 1.4,
+                  "hz": 3.2
+                }
+              },
+              {
+                "bone": "elf_head",
+                "angle": 3,
+                "from": 3.2,
+                "to": 8.0,
+                "spring": {
+                  "zeta": 0.8,
+                  "rise": 1.0,
+                  "fall": 1.2
+                }
+              },
+              {
+                "bone": "gnome_head",
+                "angle": -3,
+                "from": 3.5,
+                "to": 8.5,
+                "spring": {
+                  "zeta": 0.8,
+                  "rise": 1.0,
+                  "fall": 1.2
+                }
+              }
+            ]
+          },
+          {
+            "name": "beber_elfa",
+            "beats": 9,
+            "weight": 1.5,
+            "looks": [
+              {
+                "bone": "elf_head",
+                "angle": 0,
+                "from": 1.0,
+                "to": 8.2,
+                "quiet": ["elf_head", "elf_jaw"],
+                "quiet_gain": 6
+              },
+              {
+                "bone": "fixo",
+                "from": 1.5,
+                "to": 7.6,
+                "seq": ["elf_drink_s1", "elf_drink_s2", "elf_drink_s3", "elf_drink_s4", "elf_drink_s5"],
+                "patch_ramp": [1.5, 3.3, 5.8, 7.6],
+                "step": true
+              }
+            ]
+          },
+          {
+            "name": "beber_anao",
+            "beats": 9,
+            "weight": 1.5,
+            "looks": [
+              {
+                "bone": "dwarf_head",
+                "angle": 0,
+                "from": 1.0,
+                "to": 7.1,
+                "quiet": ["dwarf_head", "dwarf_chest", "dwarf_jaw"],
+                "quiet_gain": 6
+              },
+              {
+                "bone": "fixo",
+                "from": 1.5,
+                "to": 6.5,
+                "seq": ["dw_drink_s1", "dw_drink_s2"],
+                "patch_ramp": [1.5, 2.5, 5.5, 6.5],
+                "step": true
+              }
+            ]
+          },
+          {
+            "name": "beber_gnomo",
+            "beats": 9,
+            "weight": 1.5,
+            "looks": [
+              {
+                "bone": "gnome_head",
+                "angle": 0,
+                "from": 1.0,
+                "to": 7.1,
+                "quiet": ["gnome_head", "gnome_hand", "gnome_jaw"],
+                "quiet_gain": 6
+              },
+              {
+                "bone": "fixo",
+                "from": 1.5,
+                "to": 6.5,
+                "seq": ["gn_drink_s1", "gn_drink_s2"],
+                "patch_ramp": [1.5, 2.5, 5.5, 6.5],
+                "step": true
+              }
+            ]
+          },
+          {
+            "name": "beber_cavaleiro",
+            "beats": 9,
+            "weight": 1.5,
+            "looks": [
+              {
+                "bone": "knight_head",
+                "angle": 0,
+                "from": 1.0,
+                "to": 8.1,
+                "quiet": ["knight_head", "knight_fore", "knight_jaw"],
+                "quiet_gain": 6
+              },
+              {
+                "bone": "fixo",
+                "from": 1.5,
+                "to": 7.5,
+                "seq": ["kn_drink_s1", "kn_drink_s2", "kn_drink_s3"],
+                "patch_ramp": [1.5, 3.0, 6.0, 7.5],
+                "step": true
+              }
+            ]
+          },
+          {
+            "name": "conta",
+            "beats": 12,
+            "weight": 1,
+            "looks": [
+              {
+                "bone": "knight_fore",
+                "angle": 9,
+                "from": 1.5,
+                "to": 8.5,
+                "spring": {
+                  "zeta": 0.6,
+                  "rise": 0.7,
+                  "fall": 1.0
+                }
+              },
+              {
+                "bone": "knight_head",
+                "angle": 3,
+                "from": 2,
+                "to": 8,
+                "spring": {
+                  "zeta": 0.8,
+                  "rise": 1.0,
+                  "fall": 1.2
+                }
+              },
+              {
+                "bone": "knight_jaw",
+                "from": 1.5,
+                "to": 8.5,
+                "talk": true
+              },
+              {
+                "bone": "gnome_head",
+                "angle": 4,
+                "from": 2.5,
+                "to": 8.5,
+                "spring": {
+                  "zeta": 0.8,
+                  "rise": 1.0,
+                  "fall": 1.2
+                }
+              },
+              {
+                "bone": "dwarf_head",
+                "angle": 3,
+                "from": 3,
+                "to": 9,
+                "spring": {
+                  "zeta": 0.8,
+                  "rise": 1.0,
+                  "fall": 1.2
+                }
+              }
+            ]
+          }
+        ]
+      }
     },
     {
       "id": "hearth-cat",
@@ -1387,10 +2227,15 @@
       ],
       "light": {
         "source": "hearth",
-        "gain": 0.16
+        "gain": 0,
+        "_why": "o brilho da lareira (GuildVfxLayer part=\"hearth-glow\") passa por cima desta vinheta igual ao chão em volta; um pulso próprio fazia o retângulo piscar descasado"
       },
       "tooltip": "🐈 Brasa, o gato oficial da guilda",
-      "sequence": "gestures"
+      "sequence": "gestures",
+      "foreground": {
+        "box": [0, 0, 1, 1],
+        "_why": "a marionete da mesa da lareira é desenhada na frente dos efeitos e cobre o canto do gato; ele vem para a mesma camada, por cima (order maior)"
+      }
     },
     {
       "id": "receptionist",
@@ -3197,6 +4042,31 @@
         "weightBy": {
           "c": "dirt"
         }
+      }
+    },
+    {
+      "id": "counter-ledger",
+      "order": 75,
+      "area": [0.5973, 0.6197, 0.7753, 0.8187],
+      "who": "one large sheet of blank aged parchment (the daily mission list) with a red wax seal, a brass inkwell and a quill",
+      "doing": "lying flat on the reception counter, following its perspective",
+      "frames": [
+        {
+          "name": "a",
+          "hold": [999999, 999999]
+        }
+      ],
+      "light": {
+        "source": "torch",
+        "gain": 0.06
+      },
+      "tooltip": null,
+      "_why": "folha de missões do dia pintada no balcão; o GuildCounterLedger escreve as tarefas em tinta por cima, na mesma perspectiva",
+      "extract": {
+        "threshold": 22,
+        "blur": 3.0,
+        "feather": 2.5,
+        "min_area": 0.004
       }
     }
   ]

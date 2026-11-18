@@ -1,173 +1,184 @@
 <template>
   <div class="vfx-layer">
-    <!-- Tocha 1 (Parede Esquerda) -->
-    <div class="torch-container torch-1">
-      <div class="torch-light-glow"></div>
-      <div class="fire-sprite"></div>
-    </div>
-
-    <!-- Tocha 2 (Mural Interno / Quadro de Missões) -->
-    <div class="torch-container torch-2">
-      <div class="torch-light-glow"></div>
-      <div class="fire-sprite"></div>
-    </div>
-
-    <!-- Tocha 3 (Pilastra Centro-Esquerda) -->
-    <div class="torch-container torch-3">
-      <div class="torch-light-glow"></div>
-      <div class="fire-sprite"></div>
-    </div>
-
-    <!-- Tocha 4 (Pilastra Centro-Direita) -->
-    <div class="torch-container torch-4">
-      <div class="torch-light-glow"></div>
-      <div class="fire-sprite"></div>
-    </div>
-
-    <!-- Tocha 5 (Mezanino Superior Esquerdo) -->
-    <div class="torch-container torch-5">
-      <div class="torch-light-glow"></div>
-      <div class="fire-sprite"></div>
-    </div>
-
-    <!-- Tocha 6 (Mezanino Superior Direito) -->
-    <div class="torch-container torch-6">
-      <div class="torch-light-glow"></div>
-      <div class="fire-sprite"></div>
-    </div>
-
-    <!-- Tocha 7 (Térreo Fundo Esquerdo) -->
-    <div class="torch-container torch-7">
-      <div class="torch-light-glow"></div>
-      <div class="fire-sprite"></div>
-    </div>
-
-    <!-- Tocha 8 (Térreo Fundo Direito) -->
-    <div class="torch-container torch-8">
-      <div class="torch-light-glow"></div>
-      <div class="fire-sprite"></div>
-    </div>
-
-    <!-- Tocha 9 (Mezanino Esquerdo Extremo - Parede Escada) -->
-    <div class="torch-container torch-9">
-      <div class="torch-light-glow"></div>
-      <div class="fire-sprite"></div>
-    </div>
-
-    <!-- Tocha 10 (Mezanino Direito Extremo - apenas Desktop Expandido) -->
-    <div v-if="!isMobile" class="torch-container torch-10">
-      <div class="torch-light-glow"></div>
-      <div class="fire-sprite"></div>
-    </div>
-
-    <!-- Tocha 11 (Ao lado da pilastra Centro-Esquerda - apenas Desktop Expandido) -->
-    <div v-if="!isMobile" class="torch-container torch-11">
-      <div class="torch-light-glow"></div>
-      <div class="fire-sprite"></div>
-    </div>
-
-    <!-- Tocha 12 (Ao lado da pilastra Centro-Direita - apenas Desktop Expandido) -->
-    <div v-if="!isMobile" class="torch-container torch-12">
-      <div class="torch-light-glow"></div>
-      <div class="fire-sprite"></div>
-    </div>
-
-    <!-- Tocha 13 (Parede Esquerda fora da safe zone - apenas Desktop Expandido) -->
-    <div v-if="!isMobile" class="torch-container torch-13">
-      <div class="torch-light-glow"></div>
-      <div class="fire-sprite"></div>
-    </div>
-
-    <!-- Velas das Mesas de Primeiro Plano (Desktop Expandido) -->
-    <template v-if="!isMobile">
-      <div class="torch-container candle-flame dc-1">
-        <div class="torch-light-glow candle-glow"></div>
-        <div class="fire-sprite"></div>
-      </div>
-      <div class="torch-container candle-flame dc-2">
-        <div class="torch-light-glow candle-glow"></div>
-        <div class="fire-sprite"></div>
-      </div>
-    </template>
-
-    <!-- Lustres & Velas das Mesas (Mobile Portrait - Entrada-mobile.png) -->
-    <template v-if="isMobile">
-      <!-- Lustre Superior Esquerdo (3 velas principais) -->
-      <div class="torch-container candle-flame mc-1">
-        <div class="torch-light-glow candle-glow"></div>
-        <div class="fire-sprite"></div>
-      </div>
-      <div class="torch-container candle-flame mc-2">
-        <div class="torch-light-glow candle-glow"></div>
-        <div class="fire-sprite"></div>
-      </div>
-      <div class="torch-container candle-flame mc-3">
-        <div class="torch-light-glow candle-glow"></div>
-        <div class="fire-sprite"></div>
-      </div>
-
-      <!-- Lustre Central do Mezanino (3 velas) -->
-      <div class="torch-container candle-flame mc-4">
-        <div class="torch-light-glow candle-glow"></div>
-        <div class="fire-sprite"></div>
-      </div>
-      <div class="torch-container candle-flame mc-5">
-        <div class="torch-light-glow candle-glow"></div>
-        <div class="fire-sprite"></div>
-      </div>
-      <div class="torch-container candle-flame mc-6">
-        <div class="torch-light-glow candle-glow"></div>
-        <div class="fire-sprite"></div>
-      </div>
-
-      <!-- Lustre Superior Direito (3 velas principais) -->
-      <div class="torch-container candle-flame mc-7">
-        <div class="torch-light-glow candle-glow"></div>
-        <div class="fire-sprite"></div>
-      </div>
-      <div class="torch-container candle-flame mc-8">
-        <div class="torch-light-glow candle-glow"></div>
-        <div class="fire-sprite"></div>
-      </div>
-      <div class="torch-container candle-flame mc-9">
-        <div class="torch-light-glow candle-glow"></div>
-        <div class="fire-sprite"></div>
-      </div>
-
-      <!-- Velas das Mesas Inferiores (Mesa Esquerda + 2 Velas da Mesa do Mapa) -->
-      <div class="torch-container candle-flame mc-10">
-        <div class="torch-light-glow candle-glow"></div>
-        <div class="fire-sprite"></div>
-      </div>
-      <div class="torch-container candle-flame mc-11">
-        <div class="torch-light-glow candle-glow"></div>
-        <div class="fire-sprite"></div>
-      </div>
-      <div class="torch-container candle-flame mc-12">
-        <div class="torch-light-glow candle-glow"></div>
-        <div class="fire-sprite"></div>
-      </div>
-    </template>
-
-    <!-- Lareira ao Fundo + Labaredas + Fagulhas (.hearth-flames) -->
-    <div class="hearth-area hearth-flames">
+    <!-- brilho da lareira à parte: fica ACIMA das vinhetas da frente (marionete da mesa da lareira),
+         senão a área coberta por elas não recebe o pulso de luz e destoa do chão em volta -->
+    <div v-if="part === 'hearth-glow'" class="hearth-area">
       <div class="hearth-fire-glow"></div>
-      <div class="hearth-flame-mask">
-        <div class="fire-sprite hearth-sprite"></div>
-      </div>
-      <span class="spark spark-1"></span>
-      <span class="spark spark-2"></span>
-      <span class="spark spark-3"></span>
-      <span class="spark spark-4"></span>
     </div>
+    <template v-else>
+      <!-- Tocha 1 (Parede Esquerda) -->
+      <div class="torch-container torch-1">
+        <div class="torch-light-glow"></div>
+        <div class="fire-sprite"></div>
+      </div>
+
+      <!-- Tocha 2 (Mural Interno / Quadro de Missões) -->
+      <div class="torch-container torch-2">
+        <div class="torch-light-glow"></div>
+        <div class="fire-sprite"></div>
+      </div>
+
+      <!-- Tocha 3 (Pilastra Centro-Esquerda) -->
+      <div class="torch-container torch-3">
+        <div class="torch-light-glow"></div>
+        <div class="fire-sprite"></div>
+      </div>
+
+      <!-- Tocha 4 (Pilastra Centro-Direita) -->
+      <div class="torch-container torch-4">
+        <div class="torch-light-glow"></div>
+        <div class="fire-sprite"></div>
+      </div>
+
+      <!-- Tocha 5 (Mezanino Superior Esquerdo) -->
+      <div class="torch-container torch-5">
+        <div class="torch-light-glow"></div>
+        <div class="fire-sprite"></div>
+      </div>
+
+      <!-- Tocha 6 (Mezanino Superior Direito) -->
+      <div class="torch-container torch-6">
+        <div class="torch-light-glow"></div>
+        <div class="fire-sprite"></div>
+      </div>
+
+      <!-- Tocha 7 (Térreo Fundo Esquerdo) -->
+      <div class="torch-container torch-7">
+        <div class="torch-light-glow"></div>
+        <div class="fire-sprite"></div>
+      </div>
+
+      <!-- Tocha 8 (Térreo Fundo Direito) -->
+      <div class="torch-container torch-8">
+        <div class="torch-light-glow"></div>
+        <div class="fire-sprite"></div>
+      </div>
+
+      <!-- Tocha 9 (Mezanino Esquerdo Extremo - Parede Escada) -->
+      <div class="torch-container torch-9">
+        <div class="torch-light-glow"></div>
+        <div class="fire-sprite"></div>
+      </div>
+
+      <!-- Tocha 10 (Mezanino Direito Extremo - apenas Desktop Expandido) -->
+      <div v-if="!isMobile" class="torch-container torch-10">
+        <div class="torch-light-glow"></div>
+        <div class="fire-sprite"></div>
+      </div>
+
+      <!-- Tocha 11 (Ao lado da pilastra Centro-Esquerda - apenas Desktop Expandido) -->
+      <div v-if="!isMobile" class="torch-container torch-11">
+        <div class="torch-light-glow"></div>
+        <div class="fire-sprite"></div>
+      </div>
+
+      <!-- Tocha 12 (Ao lado da pilastra Centro-Direita - apenas Desktop Expandido) -->
+      <div v-if="!isMobile" class="torch-container torch-12">
+        <div class="torch-light-glow"></div>
+        <div class="fire-sprite"></div>
+      </div>
+
+      <!-- Tocha 13 (Parede Esquerda fora da safe zone - apenas Desktop Expandido) -->
+      <div v-if="!isMobile" class="torch-container torch-13">
+        <div class="torch-light-glow"></div>
+        <div class="fire-sprite"></div>
+      </div>
+
+      <!-- Velas das Mesas de Primeiro Plano (Desktop Expandido) -->
+      <template v-if="!isMobile">
+        <div class="torch-container candle-flame dc-1">
+          <div class="torch-light-glow candle-glow"></div>
+          <div class="fire-sprite"></div>
+        </div>
+        <div class="torch-container candle-flame dc-2">
+          <div class="torch-light-glow candle-glow"></div>
+          <div class="fire-sprite"></div>
+        </div>
+      </template>
+
+      <!-- Lustres & Velas das Mesas (Mobile Portrait - Entrada-mobile.png) -->
+      <template v-if="isMobile">
+        <!-- Lustre Superior Esquerdo (3 velas principais) -->
+        <div class="torch-container candle-flame mc-1">
+          <div class="torch-light-glow candle-glow"></div>
+          <div class="fire-sprite"></div>
+        </div>
+        <div class="torch-container candle-flame mc-2">
+          <div class="torch-light-glow candle-glow"></div>
+          <div class="fire-sprite"></div>
+        </div>
+        <div class="torch-container candle-flame mc-3">
+          <div class="torch-light-glow candle-glow"></div>
+          <div class="fire-sprite"></div>
+        </div>
+
+        <!-- Lustre Central do Mezanino (3 velas) -->
+        <div class="torch-container candle-flame mc-4">
+          <div class="torch-light-glow candle-glow"></div>
+          <div class="fire-sprite"></div>
+        </div>
+        <div class="torch-container candle-flame mc-5">
+          <div class="torch-light-glow candle-glow"></div>
+          <div class="fire-sprite"></div>
+        </div>
+        <div class="torch-container candle-flame mc-6">
+          <div class="torch-light-glow candle-glow"></div>
+          <div class="fire-sprite"></div>
+        </div>
+
+        <!-- Lustre Superior Direito (3 velas principais) -->
+        <div class="torch-container candle-flame mc-7">
+          <div class="torch-light-glow candle-glow"></div>
+          <div class="fire-sprite"></div>
+        </div>
+        <div class="torch-container candle-flame mc-8">
+          <div class="torch-light-glow candle-glow"></div>
+          <div class="fire-sprite"></div>
+        </div>
+        <div class="torch-container candle-flame mc-9">
+          <div class="torch-light-glow candle-glow"></div>
+          <div class="fire-sprite"></div>
+        </div>
+
+        <!-- Velas das Mesas Inferiores (Mesa Esquerda + 2 Velas da Mesa do Mapa) -->
+        <div class="torch-container candle-flame mc-10">
+          <div class="torch-light-glow candle-glow"></div>
+          <div class="fire-sprite"></div>
+        </div>
+        <div class="torch-container candle-flame mc-11">
+          <div class="torch-light-glow candle-glow"></div>
+          <div class="fire-sprite"></div>
+        </div>
+        <div class="torch-container candle-flame mc-12">
+          <div class="torch-light-glow candle-glow"></div>
+          <div class="fire-sprite"></div>
+        </div>
+      </template>
+
+      <!-- Lareira ao Fundo + Labaredas + Fagulhas (.hearth-flames); o brilho vai na camada part="hearth-glow" -->
+      <div class="hearth-area hearth-flames">
+        <div class="hearth-flame-mask">
+          <div class="fire-sprite hearth-sprite"></div>
+        </div>
+        <span class="spark spark-1"></span>
+        <span class="spark spark-2"></span>
+        <span class="spark spark-3"></span>
+        <span class="spark spark-4"></span>
+      </div>
+    </template>
   </div>
 </template>
 
 <script setup lang="ts">
 // Camada de efeitos visuais (tochas, lustres, velas + lareira e fagulhas 2D)
-defineProps<{
-  isMobile?: boolean;
-}>();
+withDefaults(
+  defineProps<{
+    isMobile?: boolean;
+    /** 'effects': tochas, velas, labaredas e fagulhas; 'hearth-glow': só o brilho da lareira (camada de cima) */
+    part?: 'effects' | 'hearth-glow';
+  }>(),
+  { part: 'effects' },
+);
 </script>
 
 <style scoped>
@@ -632,7 +643,7 @@ defineProps<{
 }
 
 /* LAREIRA AO FUNDO + LABAREDAS (.hearth-flames) */
-.hearth-area.hearth-flames {
+.hearth-area {
   position: absolute;
   top: 44.4%;
   left: 56.4%;
@@ -678,9 +689,12 @@ defineProps<{
   position: absolute;
   inset: -140%;
   border-radius: 50%;
+  /* miolo vazio: este brilho fica por cima das labaredas (camada part="hearth-glow") e não deve lavá-las */
   background: radial-gradient(
     ellipse at center,
-    rgba(255, 160, 30, 0.5) 0%,
+    rgba(255, 160, 30, 0) 0%,
+    rgba(255, 160, 30, 0.12) 10%,
+    rgba(255, 160, 30, 0.45) 20%,
     rgba(255, 90, 10, 0.25) 42%,
     rgba(210, 50, 0, 0.06) 75%,
     transparent 100%

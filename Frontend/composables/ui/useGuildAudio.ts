@@ -105,33 +105,56 @@ export function useGuildAudio() {
     if (isMuted.value) return;
     const ctx = getAudioContext();
     if (!ctx) return;
+    // no primeiro gesto o contexto ainda está suspenso: agenda só depois de retomar
+    if (ctx.state !== 'running') {
+      ctx
+        .resume()
+        .then(() => renderPaperFlip(ctx))
+        .catch(() => {});
+      return;
+    }
+    renderPaperFlip(ctx);
+  }
 
-    const now = ctx.currentTime;
-    const bufferSize = ctx.sampleRate * 0.12;
-    const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
-    const output = buffer.getChannelData(0);
-
-    for (let i = 0; i < bufferSize; i++) {
-      output[i] = Math.random() * 2 - 1;
+  /** página virando: sobe com um chiado crocante (fibras do papel) e assenta com um "flap" curto */
+  function renderPaperFlip(ctx: AudioContext) {
+    const now = ctx.currentTime + 0.01;
+    const dur = 0.42;
+    const len = Math.floor(ctx.sampleRate * dur);
+    const buffer = ctx.createBuffer(1, len, ctx.sampleRate);
+    const data = buffer.getChannelData(0);
+    let crackle = 0;
+    for (let i = 0; i < len; i++) {
+      if (Math.random() < 0.004) crackle = 1;
+      crackle *= 0.995;
+      data[i] = (Math.random() * 2 - 1) * (0.55 + 0.45 * crackle);
     }
 
-    const whiteNoise = ctx.createBufferSource();
-    whiteNoise.buffer = buffer;
+    const src = ctx.createBufferSource();
+    src.buffer = buffer;
+    src.playbackRate.value = 0.92 + Math.random() * 0.16; // cada folheada um pouco diferente
 
-    const filter = ctx.createBiquadFilter();
-    filter.type = 'bandpass';
-    filter.frequency.setValueAtTime(1200, now);
-    filter.Q.setValueAtTime(2.5, now);
+    const highpass = ctx.createBiquadFilter();
+    highpass.type = 'highpass';
+    highpass.frequency.value = 350;
+
+    const band = ctx.createBiquadFilter();
+    band.type = 'bandpass';
+    band.Q.value = 0.9;
+    band.frequency.setValueAtTime(900, now);
+    band.frequency.exponentialRampToValueAtTime(3200, now + 0.22);
+    band.frequency.exponentialRampToValueAtTime(1800, now + dur);
 
     const gain = ctx.createGain();
-    gain.gain.setValueAtTime(0.12, now);
-    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.12);
+    gain.gain.setValueAtTime(0.0001, now);
+    gain.gain.exponentialRampToValueAtTime(0.32, now + 0.08); // a página sobe
+    gain.gain.exponentialRampToValueAtTime(0.12, now + 0.24);
+    gain.gain.linearRampToValueAtTime(0.4, now + 0.3); // e assenta
+    gain.gain.exponentialRampToValueAtTime(0.001, now + dur);
 
-    whiteNoise.connect(filter);
-    filter.connect(gain);
-    gain.connect(ctx.destination);
-
-    whiteNoise.start(now);
+    src.connect(highpass).connect(band).connect(gain).connect(ctx.destination);
+    src.start(now);
+    src.stop(now + dur + 0.05);
   }
 
   // 4. SOM DIEGÉTICO DE RANGER DE PORTA (Carrega .wav ou .wav com ajuste dinâmico de duração)

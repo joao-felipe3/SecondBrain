@@ -7,44 +7,6 @@
         "name": "a",
         "src": "/vfx/hall-life/mezzanine-crowd/a.webp",
         "hold": [2600, 5200]
-      },
-      {
-        "name": "b",
-        "src": "/vfx/hall-life/mezzanine-crowd/b.webp",
-        "hold": [1400, 2600],
-        "tweens": [
-          {
-            "name": "b_1",
-            "src": "/vfx/hall-life/mezzanine-crowd/b_1.webp"
-          },
-          {
-            "name": "b_2",
-            "src": "/vfx/hall-life/mezzanine-crowd/b_2.webp"
-          }
-        ]
-      },
-      {
-        "name": "c",
-        "src": "/vfx/hall-life/mezzanine-crowd/c.webp",
-        "hold": [1500, 2500],
-        "tweens": [
-          {
-            "name": "c_1",
-            "src": "/vfx/hall-life/mezzanine-crowd/c_1.webp"
-          },
-          {
-            "name": "c_2",
-            "src": "/vfx/hall-life/mezzanine-crowd/c_2.webp"
-          },
-          {
-            "name": "c_3",
-            "src": "/vfx/hall-life/mezzanine-crowd/c_3.webp"
-          },
-          {
-            "name": "c_4",
-            "src": "/vfx/hall-life/mezzanine-crowd/c_4.webp"
-          }
-        ]
       }
     ],
     "light": {
@@ -52,7 +14,10 @@
       "gain": 0.05
     },
     "tooltip": null,
-    "sequence": "gestures"
+    "sequence": "gestures",
+    "puppet": {
+      "src": "/vfx/hall-life/mezzanine-crowd/puppet/puppet.json"
+    }
   },
   "stair-bard": {
     "order": 20,
@@ -96,162 +61,36 @@
   },
   "drinkers-hearth": {
     "order": 40,
-    "rect": [2652, 1864, 444, 310],
+    "rect": [2652, 1863, 444, 311],
     "frames": [
       {
         "name": "a",
         "src": "/vfx/hall-life/drinkers-hearth/a.webp",
         "hold": [3000, 6000]
-      },
-      {
-        "name": "b",
-        "src": "/vfx/hall-life/drinkers-hearth/b.webp",
-        "hold": [1100, 1700],
-        "tweens": [
-          {
-            "name": "b_1",
-            "src": "/vfx/hall-life/drinkers-hearth/b_1.webp"
-          },
-          {
-            "name": "b_2",
-            "src": "/vfx/hall-life/drinkers-hearth/b_2.webp"
-          },
-          {
-            "name": "b_3",
-            "src": "/vfx/hall-life/drinkers-hearth/b_3.webp"
-          },
-          {
-            "name": "b_4",
-            "src": "/vfx/hall-life/drinkers-hearth/b_4.webp"
-          }
-        ]
-      },
-      {
-        "name": "c",
-        "src": "/vfx/hall-life/drinkers-hearth/c.webp",
-        "hold": [1400, 2200],
-        "tweens": [
-          {
-            "name": "c_1",
-            "src": "/vfx/hall-life/drinkers-hearth/c_1.webp"
-          },
-          {
-            "name": "c_2",
-            "src": "/vfx/hall-life/drinkers-hearth/c_2.webp"
-          },
-          {
-            "name": "c_3",
-            "src": "/vfx/hall-life/drinkers-hearth/c_3.webp"
-          },
-          {
-            "name": "c_4",
-            "src": "/vfx/hall-life/drinkers-hearth/c_4.webp"
-          }
-        ]
-      },
-      {
-        "name": "d",
-        "src": "/vfx/hall-life/drinkers-hearth/d.webp",
-        "hold": [1600, 2600],
-        "tweens": [
-          {
-            "name": "d_1",
-            "src": "/vfx/hall-life/drinkers-hearth/d_1.webp"
-          },
-          {
-            "name": "d_2",
-            "src": "/vfx/hall-life/drinkers-hearth/d_2.webp"
-          },
-          {
-            "name": "d_3",
-            "src": "/vfx/hall-life/drinkers-hearth/d_3.webp"
-          },
-          {
-            "name": "d_4",
-            "src": "/vfx/hall-life/drinkers-hearth/d_4.webp"
-          }
-        ]
       }
     ],
     "light": {
       "source": "hearth",
-      "gain": 0.14
+      "gain": 0
     },
     "tooltip": "🍺 Brinde à última missão cumprida",
     "sequence": "gestures",
+    "puppet": {
+      "src": "/vfx/hall-life/drinkers-hearth/puppet/puppet.json"
+    },
     "foreground": {
       "rect": [2874, 1910, 142, 171],
       "frames": [
         {
           "name": "a",
           "src": "/vfx/hall-life/drinkers-hearth/a.fg.webp"
-        },
-        {
-          "name": "b",
-          "src": "/vfx/hall-life/drinkers-hearth/b.fg.webp"
-        },
-        {
-          "name": "b_1",
-          "src": "/vfx/hall-life/drinkers-hearth/b_1.fg.webp"
-        },
-        {
-          "name": "b_2",
-          "src": "/vfx/hall-life/drinkers-hearth/b_2.fg.webp"
-        },
-        {
-          "name": "b_3",
-          "src": "/vfx/hall-life/drinkers-hearth/b_3.fg.webp"
-        },
-        {
-          "name": "b_4",
-          "src": "/vfx/hall-life/drinkers-hearth/b_4.fg.webp"
-        },
-        {
-          "name": "c",
-          "src": "/vfx/hall-life/drinkers-hearth/c.fg.webp"
-        },
-        {
-          "name": "c_1",
-          "src": "/vfx/hall-life/drinkers-hearth/c_1.fg.webp"
-        },
-        {
-          "name": "c_2",
-          "src": "/vfx/hall-life/drinkers-hearth/c_2.fg.webp"
-        },
-        {
-          "name": "c_3",
-          "src": "/vfx/hall-life/drinkers-hearth/c_3.fg.webp"
-        },
-        {
-          "name": "c_4",
-          "src": "/vfx/hall-life/drinkers-hearth/c_4.fg.webp"
-        },
-        {
-          "name": "d",
-          "src": "/vfx/hall-life/drinkers-hearth/d.fg.webp"
-        },
-        {
-          "name": "d_1",
-          "src": "/vfx/hall-life/drinkers-hearth/d_1.fg.webp"
-        },
-        {
-          "name": "d_2",
-          "src": "/vfx/hall-life/drinkers-hearth/d_2.fg.webp"
-        },
-        {
-          "name": "d_3",
-          "src": "/vfx/hall-life/drinkers-hearth/d_3.fg.webp"
-        },
-        {
-          "name": "d_4",
-          "src": "/vfx/hall-life/drinkers-hearth/d_4.fg.webp"
         }
       ]
     }
   },
   "hearth-cat": {
     "order": 45,
-    "rect": [2998, 1983, 105, 101],
+    "rect": [2993, 1983, 110, 101],
     "frames": [
       {
         "name": "a",
@@ -299,10 +138,51 @@
     ],
     "light": {
       "source": "hearth",
-      "gain": 0.16
+      "gain": 0
     },
     "tooltip": "🐈 Brasa, o gato oficial da guilda",
-    "sequence": "gestures"
+    "sequence": "gestures",
+    "foreground": {
+      "rect": [2993, 1983, 110, 101],
+      "frames": [
+        {
+          "name": "a",
+          "src": "/vfx/hall-life/hearth-cat/a.fg.webp"
+        },
+        {
+          "name": "b",
+          "src": "/vfx/hall-life/hearth-cat/b.fg.webp"
+        },
+        {
+          "name": "b_1",
+          "src": "/vfx/hall-life/hearth-cat/b_1.fg.webp"
+        },
+        {
+          "name": "b_2",
+          "src": "/vfx/hall-life/hearth-cat/b_2.fg.webp"
+        },
+        {
+          "name": "b_3",
+          "src": "/vfx/hall-life/hearth-cat/b_3.fg.webp"
+        },
+        {
+          "name": "b_4",
+          "src": "/vfx/hall-life/hearth-cat/b_4.fg.webp"
+        },
+        {
+          "name": "c",
+          "src": "/vfx/hall-life/hearth-cat/c.fg.webp"
+        },
+        {
+          "name": "c_1",
+          "src": "/vfx/hall-life/hearth-cat/c_1.fg.webp"
+        },
+        {
+          "name": "c_2",
+          "src": "/vfx/hall-life/hearth-cat/c_2.fg.webp"
+        }
+      ]
+    }
   },
   "receptionist": {
     "order": 50,
@@ -414,5 +294,22 @@
     "puppet": {
       "src": "/vfx/hall-life/dwarf-crate/puppet/puppet.json"
     }
+  },
+  "counter-ledger": {
+    "order": 75,
+    "rect": [3278, 2319, 573, 263],
+    "frames": [
+      {
+        "name": "a",
+        "src": "/vfx/hall-life/counter-ledger/a.webp",
+        "hold": [999999, 999999]
+      }
+    ],
+    "light": {
+      "source": "torch",
+      "gain": 0.06
+    },
+    "tooltip": null,
+    "sequence": "gestures"
   }
 }

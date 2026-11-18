@@ -1,23 +1,23 @@
 <template>
+  <!-- versão mobile/retrato (lá não há a folha pintada no balcão: o fundo é outra imagem) -->
   <div class="guild-desk-book-widget">
     <div class="book-page-content">
       <div class="book-widget-header">
         <span class="header-title">📜 MISSÕES DO DIA</span>
       </div>
 
-      <!-- Lista de 3 Micro-tarefas Prioritárias -->
-      <div v-if="urgentTasks.length > 0" class="book-tasks-list">
+      <div v-if="missions.length > 0" class="book-tasks-list">
         <div
-          v-for="task in urgentTasks"
-          :key="task._id || task.id"
+          v-for="task in missions"
+          :key="missionId(task)"
           class="book-task-item"
-          :class="{ 'is-completed': task.status === 'done' || task.status === 'completed' }"
-          @click.stop="toggleTask(task)"
+          :class="{ 'is-completed': isDone(task) }"
+          @click.stop="toggleMission(task)"
         >
           <div class="custom-handwritten-checkbox">
-            <span v-if="task.status === 'done' || task.status === 'completed'">✓</span>
+            <span v-if="isDone(task)">✓</span>
           </div>
-          <span class="task-handwritten-text">{{ task.name || task.title }}</span>
+          <span class="task-handwritten-text">{{ missionTitle(task) }}</span>
         </div>
       </div>
 
@@ -29,32 +29,9 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
-import { useTaskStore } from '~/stores/task'
-import { useGuildAudio } from '~/composables/ui/useGuildAudio'
-import type { Task } from '~/models/Task'
+import { useDailyMissions } from '~/composables/features/useDailyMissions';
 
-const taskStore = useTaskStore()
-const { playPaperFlipSound } = useGuildAudio()
-
-// Filtra as 3 tarefas pendentes mais urgentes
-const urgentTasks = computed(() => {
-  const pending = taskStore.tasks.filter(
-    (t) => t.status === 'todo' || t.status === 'doing' || t.status === 'pending'
-  )
-  return pending.slice(0, 3)
-})
-
-async function toggleTask(task: Task) {
-  playPaperFlipSound()
-  const newStatus =
-    task.status === 'done' || task.status === 'completed' ? 'todo' : 'done'
-
-  const taskId = (task as any)._id || task.id
-  if (taskId) {
-    await taskStore.setTaskStatus?.(taskId, newStatus)
-  }
-}
+const { missions, isDone, missionId, missionTitle, toggleMission } = useDailyMissions();
 </script>
 
 <style scoped>

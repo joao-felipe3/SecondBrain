@@ -11,7 +11,7 @@
     >
       <!-- repouso fixo por baixo: nunca aparece o cenário "vazio" e a volta ao repouso também dissolve -->
       <img
-        v-if="v.frames[0] && !(v.puppet && puppetReady[v.id] && !puppetFailed[v.id])"
+        v-if="v.frames[0] && !(puppetReady[v.id] && !puppetFailed[v.id])"
         :src="v.frames[0].src"
         class="hall-frame hall-frame-base"
         alt=""
@@ -58,14 +58,15 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, reactive } from 'vue';
+import { onMounted } from 'vue';
 import GuildPuppetCanvas from './GuildPuppetCanvas.vue';
-import { useHallLife, type HallLifeLayer } from '~/composables/features/useHallLife';
+import {
+  useHallLife,
+  puppetReady,
+  puppetFailed,
+  type HallLifeLayer,
+} from '~/composables/features/useHallLife';
 import { useHallMusic } from '~/composables/ui/useHallMusic';
-
-/** NPCs marionete: pronto (esconde o repouso pintado) / não carregou (fica no repouso) */
-const puppetReady = reactive<Record<string, boolean>>({});
-const puppetFailed = reactive<Record<string, boolean>>({});
 
 const props = withDefaults(defineProps<{ layer?: HallLifeLayer }>(), { layer: 'base' });
 

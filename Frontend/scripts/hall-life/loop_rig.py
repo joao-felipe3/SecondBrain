@@ -19,6 +19,9 @@ Config em vignettes.json, na vinheta, chave "loop_rig" (coordenadas no quadro A 
            period? (line/sway, em tempos), ret? (line: fração do período na volta)}}
            keys: {period, keys: [[tempo, ângulo], ...]} caminho à mão (ex.: dedo traçando a rota no mapa)
            chords: {steps: [posição por compasso], bar, lead} — a mão dos acordes troca antes do 1
+           talk: {amp (graus do queixo) | talk_scale (barba descendo, escala a partir da boca), period, bursts:
+                 [[de, até], ...], hz?, phase?}: sílabas irregulares nos trechos de fala; osso filho da cabeça
+                 (a ponta da cabeça = articulação da mandíbula); looks[].talk: true faz falar durante o gesto
   music:   {bar, melody: ["NOTA:tempos ..." por compasso], chords: [acorde por compasso]}
            -> puppet.json "music": eventos [tempo, nota, ganho, duração] (ver arrange)
   patches: {nome: {overlay, region [x0 y0 x1 y1], bone, feather?}}  rostos do Gemini (rig.py overlay)
@@ -93,8 +96,27 @@ def beat_shape(kind: str, p: float) -> float:
     raise ValueError(kind)
 
 
+def talk_open(mo: dict, beat: float, beat_s: float, gate: float = 0.0) -> float:
+    """Abertura da boca (0..1) falando: sílabas irregulares (~4 por segundo) dentro dos trechos de fala
+    (`bursts`: [[de, até], ...] em tempos, repetidos a cada `period`) ou onde `gate` (um olhar com talk) liga."""
+    u = beat % mo.get("period", 12)
+    for b0, b1 in mo.get("bursts", []):
+        e = min(1.0, max(0.0, (u - b0) / 0.25), max(0.0, (b1 - u) / 0.25)) if b0 <= u <= b1 else 0.0
+        gate = max(gate, e)
+    if gate <= 0:
+        return 0.0
+    t = beat * beat_s + mo.get("phase", 0.0)
+    hz = mo.get("hz", 4.2)
+    v = 0.6 * math.sin(2 * math.pi * hz * t) + 0.4 * math.sin(2 * math.pi * hz * 0.67 * t + 1.3)
+    v = max(0.0, v) ** 0.8  # boca fecha entre sílabas (não fica entreaberta o tempo todo)
+    pause = 0.5 + 0.5 * math.sin(2 * math.pi * 0.37 * t + 2.1)  # respira entre frases
+    return gate * v * min(1.0, 0.35 + pause)
+
+
 def motion_value(mo: dict, beat: float) -> float:
     """Ângulo (graus) de um movimento no tempo `beat` (contado desde o início do trecho)."""
+    if mo["kind"] == "talk":  # ângulo do queixo; a parte em escala (barba) sai em `talk_scale`
+        return mo.get("amp", 0.0) * talk_open(mo, beat, mo.get("_beat_s", 1.0))
     if mo["kind"] == "chords":  # mão dos acordes: uma posição por compasso, troca pouco antes do 1
         bar, steps = mo.get("bar", 4), mo["steps"]
         k = int(beat // bar)
@@ -975,6 +997,7 @@ def build(v: dict, st: dict) -> None:
         periods: dict = {}
         looks = an.get("looks", [])  # [{bone, angle, from, to}]: olha para cima e volta (em tempos)
         for bone, mo in cfg["motions"].items():
+            mo = {**mo, "_beat_s": beat_s}
             looking = any(lk["bone"] == bone or bone in lk.get("quiet", []) for lk in looks)
             # dedilhar/bater o pé/rabiscar repetem a cada tempo: um tempo só, repetido pelo player (periods)
             if mo["kind"] in ("strum", "tap", "scribble") and not mo.get("sway") and not looking:
@@ -985,25 +1008,37 @@ def build(v: dict, st: dict) -> None:
                 continue
             # movimentos lentos (cabeça, troca de acorde): menos chaves; rápidos parados por `quiet`: todas
             shaking = any(lk["bone"] == bone and lk.get("shake") for lk in looks)
-            step = STEP if mo["kind"] in ("strum", "tap", "scribble", "keys") or shaking else 2 * STEP
+            step = STEP if mo["kind"] in ("strum", "tap", "scribble", "keys", "talk") or shaking else 2 * STEP
             keys = []
+            talk_sc = []  # barba que desce falando (escala a partir da boca)
             for f in list(range(0, frames, step)) + [frames]:
                 beat = f / beat_f
-                off = motion_value(mo, beat)
                 envs = []
                 for lk in looks:
                     envs.append((lk, look_env(lk, beat, beat_s)))
+                if mo["kind"] == "talk":  # um olhar com `talk` faz o personagem falar durante o gesto
+                    gate = max([env for lk, env in envs if lk["bone"] == bone and lk.get("talk")] + [0.0])
+                    opening = talk_open(mo, beat, beat_s, gate)
+                    off = mo.get("amp", 0.0) * opening
+                else:
+                    off = motion_value(mo, beat)
+                    opening = 0.0
+                hush = 1.0
                 for lk, env in envs:
                     if bone in lk.get("quiet", []):  # para o que estava fazendo enquanto olha
-                        off *= 1 - min(1.0, env * lk.get("quiet_gain", 1.6))
+                        hush *= 1 - min(1.0, env * lk.get("quiet_gain", 1.6))
+                off *= hush
+                talk_sc.append([f, round(1 + mo.get("talk_scale", 0.0) * opening * hush, 5)])
                 for lk, env in envs:
-                    if lk["bone"] == bone:
+                    if lk["bone"] == bone and not lk.get("talk"):
                         off += lk.get("angle", 0) * env
                         if lk.get("shake"):  # sacudida de risada: os ombros pulam no ritmo, só enquanto o olhar dura
                             sh = lk["shake"]
                             off += sh["amp"] * env * math.sin(2 * math.pi * sh["hz"] * beat * beat_s)
                 keys.append([f, round(rest_rot[bone] + math.radians(off), 5)])
             tracks[bone] = {"rotation": keys}
+            if mo.get("talk_scale"):
+                tracks[bone]["scale"] = talk_sc
             lk_sc = [lk for lk in looks if lk["bone"] == bone and lk.get("scale")]
             if mo.get("breathe") or lk_sc:
                 # peito expandindo e voltando; `looks[].scale`: crescer um pouco em volta da origem (ficar na ponta dos pés)

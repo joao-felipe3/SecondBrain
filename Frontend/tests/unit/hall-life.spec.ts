@@ -199,4 +199,31 @@ describe('useHallLife', () => {
     const baseDrinkers = base.find((v) => v.id === 'drinkers')!;
     expect(fg[0]!.style['--light-delay']).toBe(baseDrinkers.style['--light-delay']);
   });
+
+  it('marionete com primeiro plano anima na frente dos efeitos; a base fica só com o repouso', () => {
+    const data: HallLifeData = {
+      drinkers: {
+        order: 40,
+        rect: [0, 0, 5056, 3392],
+        frames,
+        light: { source: 'hearth', gain: 0.14 },
+        tooltip: 'Brinde',
+        puppet: { src: '/drinkers/puppet.json' },
+        foreground: {
+          rect: [2528, 1696, 505.6, 339.2],
+          frames: frames.map(({ name }) => ({ name, src: `/${name}.fg.webp` })),
+        },
+      },
+    };
+    const [base] = buildVignetteViews(data, 'base');
+    const [fg] = buildVignetteViews(data, 'foreground');
+    expect(base!.puppet).toBeNull();
+    expect(base!.frames.map((f) => f.name)).toEqual(['a']);
+    expect(base!.tooltip).toBe('Brinde');
+    expect(fg!.puppet).toEqual({ src: '/drinkers/puppet.json' });
+    expect(fg!.frames).toEqual([]);
+    // a marionete usa o retângulo inteiro da vinheta, não o recorte do primeiro plano
+    expect(fg!.style.left).toBe('0%');
+    expect(fg!.tooltip).toBeNull();
+  });
 });

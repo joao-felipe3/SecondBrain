@@ -13,7 +13,7 @@
  * GuildVfxLayer — ex.: o cavaleiro sentado na frente da chama da lareira. As duas camadas leem o
  * mesmo estado de frame (agendador compartilhado), então trocam juntas.
  */
-import { ref, computed, onMounted, onBeforeUnmount } from 'vue';
+import { ref, reactive, computed, onMounted, onBeforeUnmount } from 'vue';
 import hallLifeData from '~/assets/data/hall-life.json';
 import { imageRectToPercentStyle, type Rect } from '~/composables/ui/useSceneSpace';
 
@@ -197,7 +197,10 @@ export function buildVignetteViews(data: HallLifeData, layer: HallLifeLayer = 'b
     .map(([id, v], i) => ({ id, v, i }))
     .filter(({ v }) => layer === 'base' || !!v.foreground)
     .map(({ id, v, i }) => {
-      const src = layer === 'base' ? v : v.foreground!;
+      // marionete com primeiro plano: anima inteira NA FRENTE dos efeitos (o fogo fica atrás de quem se mexe);
+      // a base guarda só o repouso, de reserva até a marionete carregar
+      const puppetOnTop = !!(v.puppet && v.foreground);
+      const src = layer === 'base' || puppetOnTop ? v : v.foreground!;
       const [x, y, w, h] = src.rect;
       // chaves primeiro (frame A em baixo de tudo), depois os intermediários
       const extras = (f: HallLifeFrame) => [...(f.tweens ?? []), ...(f.loop ?? [])];
@@ -209,10 +212,13 @@ export function buildVignetteViews(data: HallLifeData, layer: HallLifeLayer = 'b
       return {
         id,
         // NPC marionete: só o repouso (aparece até carregar e serve de reserva)
-        frames: (layer === 'base' && v.puppet ? keys.slice(0, 1) : [...keys, ...tweens]).map(
-          ({ name, src: url }) => ({ name, src: url }),
-        ),
-        puppet: layer === 'base' ? (v.puppet ?? null) : null,
+        frames: (layer === 'base' && v.puppet
+          ? keys.slice(0, 1)
+          : puppetOnTop
+            ? []
+            : [...keys, ...tweens]
+        ).map(({ name, src: url }) => ({ name, src: url })),
+        puppet: (layer === 'base') !== puppetOnTop ? (v.puppet ?? null) : null,
         // tooltip/hitbox só na base (o primeiro plano é decorativo)
         tooltip: layer === 'base' ? v.tooltip : null,
         lightClass: `light-${v.light.source}`,
@@ -230,6 +236,14 @@ export function buildVignetteViews(data: HallLifeData, layer: HallLifeLayer = 'b
 // ─── Agendador compartilhado entre as camadas (base e primeiro plano) ───
 const allData = hallLifeData as unknown as HallLifeData;
 /** nome do frame exibido e do anterior (que fica opaco por baixo durante o crossfade) */
+/**
+ * Marionetes prontas / que falharam, por vinheta. Compartilhado entre as camadas: a marionete pode estar no
+ * primeiro plano enquanto o repouso de reserva fica na base, e o repouso precisa sumir quando ela carrega
+ * (senão a cabeça parada aparece por baixo da cabeça que gira).
+ */
+export const puppetReady = reactive<Record<string, boolean>>({});
+export const puppetFailed = reactive<Record<string, boolean>>({});
+
 const sharedActive = ref<Record<string, string>>({});
 const sharedPrevious = ref<Record<string, string>>({});
 /** duração do dissolve do frame ativo (= duração do passo: dissolve contínuo entre poses) */

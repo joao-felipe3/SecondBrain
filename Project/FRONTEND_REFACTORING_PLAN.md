@@ -4,25 +4,25 @@
 > **Padrão de UI:** Viewport 16:9 (Desktop) / 9:16 (Mobile < 960px) — Arquitetura Diegética em 3 Camadas (_Depth Stacking_).  
 > **Assets de Referência Visual:** 8 mockups em `public/images/guild/` (`*-web.webp`, `*-mobile.webp`).  
 > **Documento Consolidado:** Incorpora o escopo de `FRONTEND_GUILD_REFACTORING_PLAN.md`.  
-> **Última Atualização:** 10/11/2026  
+> **Última Atualização:** 18/11/2026  
 > **Status:** Abordagem A Concluída | Engenharia de Software & Componentes Diegéticos Prontos | Spritesheets em Stand-By Artístico
 
 ---
 
 ## 📊 Resumo de Progresso do Frontend
 
-| Fase / Seção                                                               | Requisitos | Concluído |    Status    |
-| -------------------------------------------------------------------------- | :--------: | :-------: | :----------: |
-| 🏛️ 1. Infraestrutura & Atomic Design Diegético (`components/ui/diegetic/`) |     12     |   12/12   |   🟢 100%    |
-| 🎨 2. Tokens CSS, HSL & Responsividade Dinâmica (<960px)                   |     8      |    8/8    |   🟢 100%    |
-| 🏰 3. Saguão Central da Guilda (`/`)                                       |     21     |   16/21   |   🟡 76.2%   |
-| ⚔️ 4. Mural de Contratos / Kanban (`/tasks`)                               |     12     |   4/12    |   🟡 33.3%   |
-| 📜 5. Sala de Arquivos & Grimórios (`/projects`)                           |     10     |   7/10    |   🟡 70.0%   |
-| 🗺️ 6. Sala do Astrolábio & Cartografia (`/calendar`)                       |     10     |   6/10    |   🟡 60.0%   |
-| 📋 7. Modais & Overlays Globais Diegéticos                                 |     10     |   7/10    |   🟡 70.0%   |
-| ⚙️ 8. Pinia Stores & Data Mapping RPG                                      |     6      |    5/6    |   🟡 83.3%   |
-| ⚡ 9. Otimização & Asset Pipeline                                          |     6      |    4/6    |   🟡 66.7%   |
-| **TOTAL**                                                                  |   **95**   | **69/95** | **🟡 72.6%** |
+| Fase / Seção                                                               | Requisitos | Concluído  |    Status    |
+| -------------------------------------------------------------------------- | :--------: | :--------: | :----------: |
+| 🏛️ 1. Infraestrutura & Atomic Design Diegético (`components/ui/diegetic/`) |     12     |   12/12    |   🟢 100%    |
+| 🎨 2. Tokens CSS, HSL & Responsividade Dinâmica (<960px)                   |     8      |    8/8     |   🟢 100%    |
+| 🏰 3. Saguão Central da Guilda (`/`)                                       |     44     |   39/44    |   🟡 88.6%   |
+| ⚔️ 4. Mural de Contratos / Kanban (`/tasks`)                               |     12     |    4/12    |   🟡 33.3%   |
+| 📜 5. Sala de Arquivos & Grimórios (`/projects`)                           |     10     |    7/10    |   🟡 70.0%   |
+| 🗺️ 6. Sala do Astrolábio & Cartografia (`/calendar`)                       |     10     |    6/10    |   🟡 60.0%   |
+| 📋 7. Modais & Overlays Globais Diegéticos                                 |     10     |    7/10    |   🟡 70.0%   |
+| ⚙️ 8. Pinia Stores & Data Mapping RPG                                      |     6      |    5/6     |   🟡 83.3%   |
+| ⚡ 9. Otimização & Asset Pipeline                                          |     6      |    4/6     |   🟡 66.7%   |
+| **TOTAL**                                                                  |  **118**   | **92/118** | **🟡 78.0%** |
 
 ---
 
@@ -56,7 +56,7 @@
 
 ---
 
-## 🏰 3. Tela: Saguão Central da Guilda (`/`) 🟡 EM PROGRESSO (16/21)
+## 🏰 3. Tela: Saguão Central da Guilda (`/`) 🟡 EM PROGRESSO (39/44)
 
 ### 3.1. Cenário Base & Camadas Estáticas
 
@@ -112,8 +112,14 @@
   - [x] Gestos por vinheta (repouso → gesto sorteado → repouso; bardo em loop).
   - [x] Caminhante: viajante entra pela esquerda, para no balcão e volta (`walker.py`, ciclo de 4 passos).
   - [ ] Mais caminhantes (garçom entre as mesas, alguém subindo a escada).
-- [x] **Pilha de Moedas no Balcão:** Clique toca SFX de ouro (`playCoinsSound`) + animação floating `+1 Gold`
-- [x] **Adaga Fincada no Balcão:** Clique ativa tremedeira metálica (`playDaggerSound` + `@keyframes daggerVibrate`).
+  - [x] Marionetes em loop (`GuildPuppetCanvas.vue` WebGL2, gerado por `loop_rig.py`): Gloin, bardo, recepcionista, mural (orc & halfling), planejadores, mezanino e mesa da lareira — ossos com balanço/aceno, gestos sorteados, patches de rosto/braço gerados por IA em sequência com dissolve.
+  - [x] Mesa da lareira: cavaleiro reiluminado com a luz da cena; todos bebem (elfa, anão, gnomo, cavaleiro), mandíbulas falando em rajadas, anão rindo, cavaleiro contando história.
+  - [x] Camada da frente para marionetes (`foreground` no manifesto): a mesa da lareira anima na frente das labaredas; o gato vai junto para a mesma camada.
+  - [x] Brilho da lareira em camada própria (`GuildVfxLayer part="hearth-glow"`) acima das vinhetas da frente, para a área da mesa pulsar junto com o chão em volta.
+- [x] **Missões do Dia na folha do balcão:** pergaminho com selo, tinteiro e pena pintado na cena (vinheta `counter-ledger`); `GuildCounterLedger.vue` escreve as 3 missões a tinta projetadas nos cantos da folha (`useQuadTransform.ts`, homografia `matrix3d`), marcáveis com SFX de folhear; clique abre o Grimório. Mobile/retrato mantém o cartão `GuildDeskBookWidget.vue` (`useDailyMissions.ts` compartilhado).
+- [x] **Camada de hotspots com `pointer-events: none`:** só as áreas clicáveis capturam o mouse (antes engolia o hover das vinhetas).
+- [x] **SFX de folhear audível:** `playPaperFlipSound` refeito (0,42 s, chiado + assentar) e agendado só após o `AudioContext` retomar.
+- ~~**Pilha de Moedas no Balcão**~~ e ~~**Adaga Fincada no Balcão**~~: removidas (destoavam da cena).
 - [x] **Caneca de Hidromel:** Clique ativa animação de espuma subindo + SFX de brinde/gole.
 
 ---

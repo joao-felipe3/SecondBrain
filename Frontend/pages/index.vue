@@ -29,9 +29,14 @@
         <GuildNpcLayer layer="foreground" />
       </GuildSceneSpace>
 
+      <!-- brilho da lareira por cima das vinhetas da frente (a área delas pulsa junto com o chão em volta) -->
+      <GuildVfxLayer :is-mobile="isMobile" part="hearth-glow" />
+
       <!-- VIDA NA CENA: contêiner alinhado à imagem de fundo (frações da imagem); só desktop -->
       <GuildSceneSpace :hidden="isMobile || isPortrait">
         <GuildNpcLayer @update-tooltip="(msg) => (hoverTooltip = msg)" />
+        <!-- MISSÕES DO DIA escritas na folha de pergaminho pintada no balcão -->
+        <GuildCounterLedger @update-tooltip="(msg) => (hoverTooltip = msg)" @open="openReception" />
       </GuildSceneSpace>
 
       <!-- NPCS VIVOS & BALÕES DE FALA -->
@@ -52,6 +57,7 @@
         :is-transitioning="isTransitioning"
         :is-right-door-hovered="isRightDoorHovered"
         :is-stairs-hovered="isStairsHovered"
+        :show-desk-book="isMobile || isPortrait"
         @open-reception="openReception"
         @right-door-hover="onRightDoorHover"
         @right-door-leave="onRightDoorLeave"
@@ -107,6 +113,7 @@ import GuildParticlesCanvas from '~/components/features/hall/GuildParticlesCanva
 import GuildVfxLayer from '~/components/features/hall/GuildVfxLayer.vue';
 import GuildSceneSpace from '~/components/features/hall/GuildSceneSpace.vue';
 import GuildNpcLayer from '~/components/features/hall/GuildNpcLayer.vue';
+import GuildCounterLedger from '~/components/features/hall/GuildCounterLedger.vue';
 import GuildNpcSpeechBubble from '~/components/features/hall/GuildNpcSpeechBubble.vue';
 import GuildArchPortal from '~/components/features/hall/GuildArchPortal.vue';
 import GuildDiegeticHotspots from '~/components/features/hall/GuildDiegeticHotspots.vue';
@@ -241,7 +248,8 @@ function handleRightDoorClick() {
 }
 
 function openReception() {
-  playDoorOpenSound();
+  // abrir o Grimório pela folha do balcão: som de papel, não de porta
+  playSFX('paper');
   uiGuildStore.openReceptionModal();
 }
 
