@@ -37,7 +37,7 @@
 
         <!-- VIDA NA CENA: contêiner alinhado à imagem de fundo (frações da imagem) -->
         <GuildSceneSpace>
-          <GuildNpcLayer @update-tooltip="(msg) => (hoverTooltip = msg)" />
+          <GuildNpcLayer />
           <!-- MISSÕES DO DIA escritas na folha de pergaminho pintada no balcão -->
           <GuildCounterLedger @update-tooltip="(msg) => (hoverTooltip = msg)" @open="openReception" />
         </GuildSceneSpace>

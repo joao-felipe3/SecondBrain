@@ -5,7 +5,7 @@
       v-for="v in views"
       :key="v.id"
       class="hall-vignette"
-      :class="[v.lightClass, { 'is-interactive': !!v.tooltip }]"
+      :class="v.lightClass"
       :style="v.style"
       :data-vignette="v.id"
     >
@@ -41,18 +41,6 @@
         decoding="async"
         draggable="false"
       />
-      <!-- hitbox só na metade central do patch (o patch inclui pixels de cenário em volta) -->
-      <button
-        v-if="v.tooltip"
-        class="hall-vignette-hit"
-        type="button"
-        :aria-label="v.tooltip"
-        @mouseenter="emit('updateTooltip', v.tooltip)"
-        @mouseleave="emit('updateTooltip', null)"
-        @focus="emit('updateTooltip', v.tooltip)"
-        @blur="emit('updateTooltip', null)"
-        @click="emit('npcClick', v.id)"
-      />
     </div>
   </div>
 </template>
@@ -69,11 +57,6 @@ import {
 import { useHallMusic } from '~/composables/ui/useHallMusic';
 
 const props = withDefaults(defineProps<{ layer?: HallLifeLayer }>(), { layer: 'base' });
-
-const emit = defineEmits<{
-  (e: 'updateTooltip', msg: string | null): void;
-  (e: 'npcClick', id: string): void;
-}>();
 
 const { views, active, previous, fade } = useHallLife({ layer: props.layer });
 
@@ -133,31 +116,8 @@ onMounted(() => {
   z-index: 0;
 }
 
-.hall-vignette-hit {
-  position: absolute;
-  inset: 18% 22%;
-  background: transparent;
-  border: 0;
-  padding: 0;
-  cursor: pointer;
-  pointer-events: auto;
-  border-radius: 40%;
-}
-
 .hall-frame-puppet {
   z-index: 3;
-}
-
-.hall-vignette.is-interactive:hover .hall-frame.is-active,
-.hall-vignette.is-interactive:focus-within .hall-frame.is-active,
-.hall-vignette.is-interactive:hover .hall-frame-puppet,
-.hall-vignette.is-interactive:focus-within .hall-frame-puppet {
-  filter: drop-shadow(0 0 6px rgba(255, 200, 90, 0.55));
-}
-
-.hall-vignette-hit:focus-visible {
-  outline: 2px solid var(--guild-gold-glow, #ffc83d);
-  outline-offset: 2px;
 }
 
 /* mesma curva do @keyframes lightPulse das tochas, aplicada como brilho */

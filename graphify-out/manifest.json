@@ -1265,8 +1265,8 @@
     "semantic_hash": ""
   },
   "Backend/src/tasks/tasks.controller.ts": {
-    "mtime": 1794657044.9235158,
-    "ast_hash": "8d9cece2db66e0a87f125ff44c304101",
+    "mtime": 1795022313.8078325,
+    "ast_hash": "1853b0aed8730f6459fd85d778cc3abc",
     "semantic_hash": ""
   },
   "Backend/src/tasks/tasks.module.ts": {
@@ -1675,8 +1675,8 @@
     "semantic_hash": ""
   },
   "Backend/tests/unit/tasks/controllers/tasks.controller.spec.ts": {
-    "mtime": 1794657044.9235158,
-    "ast_hash": "5149b180f91a7686a99c7c9398bbd317",
+    "mtime": 1795022317.3922596,
+    "ast_hash": "f95dfcbbf4e771250ebb98d979992f22",
     "semantic_hash": ""
   },
   "Backend/tests/unit/tasks/helpers/tasks-service-test-providers.ts": {
@@ -2715,8 +2715,8 @@
     "semantic_hash": ""
   },
   "Frontend/pages/index.vue": {
-    "mtime": 1795015828.4617522,
-    "ast_hash": "23a881628497c71443f1ddbfdff3e1a8",
+    "mtime": 1795029920.460036,
+    "ast_hash": "e8c2a7262abc44d030960e5768dd4071",
     "semantic_hash": ""
   },
   "Frontend/pages/projects/index.vue": {
@@ -3645,8 +3645,8 @@
     "semantic_hash": ""
   },
   "Frontend/components/features/hall/GuildNpcLayer.vue": {
-    "mtime": 1794938138.2342825,
-    "ast_hash": "d63e5629fcda182edaec1581d5700132",
+    "mtime": 1795029920.455295,
+    "ast_hash": "38f21542f3a8a455bc2e0731b4847268",
     "semantic_hash": ""
   },
   "Frontend/components/features/hall/GuildPuppetCanvas.vue": {
