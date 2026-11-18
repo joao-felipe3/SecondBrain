@@ -33,6 +33,9 @@ const ready = ref(false);
 let raf = 0;
 let stopped = false;
 let observer: ResizeObserver | null = null;
+// fora da tela (câmera do mobile arrastada para o outro lado): não desenha
+let visObserver: IntersectionObserver | null = null;
+let onScreen = true;
 let stopFit: (() => void) | null = null;
 let gl: WebGLRenderingContext | WebGL2RenderingContext | null = null;
 
@@ -204,6 +207,12 @@ onMounted(async () => {
     fit();
     observer = new ResizeObserver(fit);
     observer.observe(el);
+    if ('IntersectionObserver' in window) {
+      visObserver = new IntersectionObserver((entries) => {
+        onScreen = entries.some((e) => e.isIntersecting);
+      });
+      visObserver.observe(el);
+    }
     window.addEventListener('resize', fit);
     stopFit = () => window.removeEventListener('resize', fit);
     let fitTick = 0;
@@ -219,6 +228,7 @@ onMounted(async () => {
       Object.keys(puppet.vars ?? {}).map((k) => [k, Number(query.get(`puppet_${k}`) ?? 0)]),
     );
     let lastF = -1e-6; // último quadro do trecho atual já "tocado"
+    let paused = false; // voltou de uma pausa: não dispara de uma vez as notas do tempo parado
     const next = (now: number) => {
       if (anim) state = varsAt(puppet, anim, anim.frames, state); // fim do gesto: efeito fica
       // sem peso de "parado" (ex.: bardo em loop): emenda um trecho no outro, sem pausa
@@ -240,7 +250,11 @@ onMounted(async () => {
 
     const frame = (now: number) => {
       raf = requestAnimationFrame(frame);
-      if (document.hidden) return;
+      // aba oculta ou marionete fora da tela: não desenha (depois do primeiro quadro, que avisa "ready")
+      if (document.hidden || (!onScreen && ready.value)) {
+        paused = true;
+        return;
+      }
       // a escala do saguão pode mudar sem redimensionar a janela (zoom do palco): confere de vez em quando
       if (++fitTick % 30 === 0) fit();
       if (!frozen && now >= until) next(now);
@@ -251,6 +265,10 @@ onMounted(async () => {
           ? ((now - started) / 1000) * puppet.fps
           : 0;
       const pose = evalPose(puppet, playing, f);
+      if (paused) {
+        paused = false;
+        lastF = Math.max(lastF, f);
+      }
       if (puppet.music && anim && !frozen && f > lastF) {
         for (const cue of cuesBetween(puppet.music, puppet.fps, lastF, f)) emit('cue', cue);
         lastF = f;
@@ -326,6 +344,7 @@ onBeforeUnmount(() => {
   stopped = true;
   cancelAnimationFrame(raf);
   observer?.disconnect();
+  visObserver?.disconnect();
   stopFit?.();
   gl?.getExtension('WEBGL_lose_context')?.loseContext();
 });

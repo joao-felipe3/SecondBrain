@@ -133,16 +133,9 @@ onBeforeUnmount(() => {
 /* ultrawide (.master-bg com scale 2.3): a cabeça do Gloin cai em ~72.7% da altura do palco
    (calculado com imageToStageRect em composables/ui/useSceneSpace.ts) */
 @media (min-aspect-ratio: 2.4/1) {
-  .npc-hotspot-container:not(.is-mobile-npc) {
+  .npc-hotspot-container {
     top: 68.5%;
   }
-}
-
-.npc-hotspot-container.is-mobile-npc {
-  top: 46%;
-  left: 34%;
-  width: 16%;
-  height: 24%;
 }
 
 .npc-avatar-indicator {

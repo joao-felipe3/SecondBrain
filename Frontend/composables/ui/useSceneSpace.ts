@@ -106,6 +106,66 @@ export function sceneSpaceStyle(
   };
 }
 
+/**
+ * Enquadramento do mobile (frações da imagem): faixa vertical que preenche a altura da tela e
+ * ponto horizontal onde a câmera começa (entre a lareira e o balcão). A faixa precisa caber nas
+ * linhas que o `cover` do modo desktop deixa visíveis (~0.107..0.945); fora disso é cortada.
+ */
+export const MOBILE_FRAME = { top: 0.11, bottom: 0.94, startX: 0.63 } as const;
+
+export interface MobileStageLayout {
+  /** tamanho do palco 16:9 (.safe-zone) em px */
+  stageW: number;
+  stageH: number;
+  /** posição do palco dentro do "mundo" (a imagem inteira), em px */
+  stageLeft: number;
+  stageTop: number;
+  /** largura da imagem renderizada (= largura do mundo arrastável) */
+  worldW: number;
+  /** limites e ponto inicial da câmera (deslocamento horizontal do mundo, em px) */
+  panMin: number;
+  panMax: number;
+  panStart: number;
+}
+
+/**
+ * Mobile = câmera sobre o MESMO palco do desktop: o .safe-zone mantém a geometria do modo
+ * `desktop` (todas as camadas em % do palco continuam certas), só muda de escala para a faixa
+ * `frame.top..bottom` da imagem preencher a altura da tela, e o mundo desliza na horizontal.
+ */
+export function mobileStageLayout(
+  vw: number,
+  vh: number,
+  frame: { top: number; bottom: number; startX: number } = MOBILE_FRAME,
+  mode: StageMode = HALL_STAGE_MODES.desktop,
+): MobileStageLayout {
+  // a imagem inteira em frações do palco (x/y relativos ao canto do palco, w/h em larguras/alturas)
+  const img = imageToStageRect({ x: 0, y: 0, w: HALL_IMAGE.width, h: HALL_IMAGE.height }, mode);
+  // o <img> com `cover` recorta a imagem dentro da própria caixa: só as linhas dentro dela
+  // existem na tela. Enquadrar além disso deixaria faixas pretas em cima/embaixo.
+  const box = coverBox(mode);
+  const top = Math.max(frame.top, -box.y / box.h);
+  const bottom = Math.min(frame.bottom, (1 - box.y) / box.h);
+  const imgHPerStageW = img.h / STAGE_ASPECT; // altura da imagem em larguras do palco
+  const stageW = vh / ((bottom - top) * imgHPerStageW);
+  const stageH = stageW / STAGE_ASPECT;
+  const imgH = img.h * stageH;
+  const worldW = img.w * stageW;
+  const panMax = Math.max(0, worldW - vw);
+  const center = frame.startX * worldW - vw / 2;
+  return {
+    stageW,
+    stageH,
+    stageLeft: -img.x * stageW,
+    // o topo da faixa enquadrada encosta no topo da tela
+    stageTop: -top * imgH - img.y * stageH,
+    worldW,
+    panMin: 0,
+    panMax,
+    panStart: worldW <= vw ? (worldW - vw) / 2 : Math.min(panMax, Math.max(0, center)),
+  };
+}
+
 /** Retângulo em pixels da imagem -> estilo `%` dentro do scene space. */
 export function imageRectToPercentStyle(
   rect: Rect,
