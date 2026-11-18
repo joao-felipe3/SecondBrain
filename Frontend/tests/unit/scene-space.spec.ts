@@ -6,6 +6,8 @@ import {
   imageToStageRect,
   sceneSpaceStyle,
   imageRectToPercentStyle,
+  mobileStageLayout,
+  MOBILE_FRAME,
 } from '~/composables/ui/useSceneSpace';
 
 const close = (a: number, b: number, eps = 1e-4) => expect(Math.abs(a - b)).toBeLessThan(eps);
@@ -79,5 +81,55 @@ describe('useSceneSpace', () => {
   it('converte retângulo em pixels da imagem para % do scene space', () => {
     const s = imageRectToPercentStyle({ x: 2528, y: 1696, w: 505.6, h: 339.2 });
     expect(s).toEqual({ left: '50%', top: '50%', width: '10%', height: '10%' });
+  });
+  it('mobile: a faixa enquadrada da imagem preenche a altura da tela e o palco mantém 16:9', () => {
+    const vw = 390;
+    const vh = 844;
+    const L = mobileStageLayout(vw, vh);
+    close(L.stageH, L.stageW * (9 / 16));
+    // imagem inteira em px, a partir do palco posicionado no mundo
+    const img = imageToStageRect(
+      { x: 0, y: 0, w: HALL_IMAGE.width, h: HALL_IMAGE.height },
+      HALL_STAGE_MODES.desktop,
+    );
+    const imgTop = L.stageTop + img.y * L.stageH;
+    const imgH = img.h * L.stageH;
+    close(imgTop + MOBILE_FRAME.top * imgH, 0, 1e-6); // topo da faixa no topo da tela
+    close(imgTop + MOBILE_FRAME.bottom * imgH, vh, 1e-6); // base da faixa na base da tela
+    // o mundo começa na borda esquerda da imagem e tem a largura dela
+    close(L.stageLeft + img.x * L.stageW, 0, 1e-6);
+    close(L.worldW, img.w * L.stageW, 1e-6);
+    close(L.worldW / imgH, HALL_IMAGE.width / HALL_IMAGE.height, 1e-6);
+  });
+
+  it('mobile: o enquadramento nunca passa das linhas que o cover deixa visíveis (sem faixa preta)', () => {
+    const box = coverBox(HALL_STAGE_MODES.desktop);
+    const visTop = -box.y / box.h;
+    const visBottom = (1 - box.y) / box.h;
+    expect(MOBILE_FRAME.top).toBeGreaterThanOrEqual(visTop);
+    expect(MOBILE_FRAME.bottom).toBeLessThanOrEqual(visBottom);
+    // pedir a imagem inteira cai na faixa visível: a caixa do .master-bg cobre a tela de ponta a ponta
+    const vh = 844;
+    const L = mobileStageLayout(390, vh, { top: 0, bottom: 1, startX: 0.5 });
+    const bgTop = L.stageTop + HALL_STAGE_MODES.desktop.posY * (1 - 1.7) * L.stageH;
+    close(bgTop, 0, 1e-6);
+    close(bgTop + 1.7 * L.stageH, vh, 1e-6);
+  });
+
+  it('mobile: a câmera começa centrada no ponto inicial e fica presa às bordas da imagem', () => {
+    const L = mobileStageLayout(390, 844);
+    expect(L.panMin).toBe(0);
+    close(L.panMax, L.worldW - 390, 1e-6);
+    close(L.panStart + 195, MOBILE_FRAME.startX * L.worldW, 1e-6);
+    // ponto inicial perto da borda: preso ao limite
+    expect(mobileStageLayout(390, 844, { ...MOBILE_FRAME, startX: 0.99 }).panStart).toBeCloseTo(
+      L.panMax,
+      6,
+    );
+    expect(mobileStageLayout(390, 844, { ...MOBILE_FRAME, startX: 0 }).panStart).toBe(0);
+    // tela mais larga que o mundo: centraliza e não arrasta
+    const wide = mobileStageLayout(5000, 844);
+    expect(wide.panMax).toBe(0);
+    close(wide.panStart, (wide.worldW - 5000) / 2, 1e-6);
   });
 });

@@ -238,12 +238,6 @@ onUnmounted(() => {
   pointer-events: none;
 }
 
-/* Alinhamento calibrado para o arco da biblioteca em Entrada-mobile.png */
-.library-portal-wrapper.is-mobile {
-  top: 26%;
-  right: 0.2%;
-}
-
 /* CAMADA 1: VAZAMENTO DE LUZ ALARANJADA OMNIDIRECIONAL */
 .golden-light-leak {
   position: absolute;

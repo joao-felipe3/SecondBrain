@@ -1,17 +1,9 @@
 <template>
-  <canvas
-    ref="canvasRef"
-    class="guild-particles-canvas"
-    :class="{ 'is-mobile-canvas': isMobile }"
-  ></canvas>
+  <canvas ref="canvasRef" class="guild-particles-canvas"></canvas>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted, onBeforeUnmount } from 'vue';
-
-const props = defineProps<{
-  isMobile?: boolean;
-}>();
 
 const canvasRef = ref<HTMLCanvasElement | null>(null);
 let animId: number | null = null;
@@ -72,10 +64,10 @@ const EMBER_PALETTE = [
 ];
 
 function createEmber(width: number, height: number): Particle {
-  // Posição base na lareira ao fundo (ajustada para 16:9 desktop ou 9:16 mobile)
-  const ratioX = props.isMobile ? 0.655 : 0.593;
-  const ratioY = props.isMobile ? 0.608 : 0.495;
-  const spreadY = props.isMobile ? 0.006 : 0.015;
+  // Posição base na lareira ao fundo (mesmo palco 16:9 no desktop e no mobile)
+  const ratioX = 0.593;
+  const ratioY = 0.495;
+  const spreadY = 0.015;
   const baseX = width * ratioX + (Math.random() * (width * 0.02) - width * 0.01);
   const baseY = height * ratioY + (Math.random() * (height * spreadY) - height * (spreadY / 2));
 
@@ -446,13 +438,5 @@ onBeforeUnmount(() => {
   pointer-events: none;
   z-index: 15;
   will-change: transform;
-}
-
-/* No modo mobile, estende o canvas por toda a extensão vertical de Entrada-mobile.png */
-.guild-particles-canvas.is-mobile-canvas {
-  left: -0.364%;
-  top: -170.422%;
-  width: 91.096%;
-  height: 361.558%;
 }
 </style>

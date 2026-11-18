@@ -1,82 +1,94 @@
 <template>
-  <div class="viewport" :class="{ 'is-mobile-view': isMobile }">
+  <div ref="viewportEl" class="viewport" :class="{ 'is-mobile-view': isMobile }">
     <!-- OVERLAY DE TRANSIÇÃO DE LUZ (FADE DIEGÉTICO DURANTE CAMERA ZOOM) -->
     <div class="light-transition-overlay" :class="{ 'is-active': isTransitioning }"></div>
 
-    <!-- CONTAINER SAFE ZONE 16:9 (WORLD SPACE - PROPORÇÃO TRAVADA 16:9) -->
-    <div
-      class="safe-zone"
-      :class="{
-        'is-camera-hovering':
-          (isLeftArchHovered || isRightDoorHovered || isStairsHovered) && !isTransitioning,
-        'is-camera-zooming': isTransitioning,
-      }"
-      :style="{
-        transformOrigin: zoomTransformOrigin,
-      }"
-    >
-      <!-- IMAGEM DE FUNDO MASTER (DESKTOP 16:9 / MOBILE PORTRAIT) -->
-      <img :src="backgroundImageUrl" alt="Saguão da Guilda Master Background" class="master-bg" />
+    <!-- CÂMERA: no mobile é o "mundo" (a imagem inteira) que o dedo arrasta na horizontal -->
+    <div ref="cameraEl" class="hall-camera" :style="cameraStyle">
+      <!-- CONTAINER SAFE ZONE 16:9 (WORLD SPACE - PROPORÇÃO TRAVADA 16:9) -->
+      <div
+        class="safe-zone"
+        :class="{
+          'is-camera-hovering':
+            (isLeftArchHovered || isRightDoorHovered || isStairsHovered) && !isTransitioning,
+          'is-camera-zooming': isTransitioning,
+        }"
+        :style="{
+          ...safeZoneStyle,
+          transformOrigin: zoomTransformOrigin,
+        }"
+      >
+        <!-- IMAGEM DE FUNDO MASTER (DESKTOP 16:9 / MOBILE PORTRAIT) -->
+        <img :src="backgroundImageUrl" alt="Saguão da Guilda Master Background" class="master-bg" />
 
-      <!-- CANVAS DE PARTÍCULAS & VFX (LAREIRA E POEIRA DOURADA 60 FPS) -->
-      <GuildParticlesCanvas :is-mobile="isMobile" />
+        <!-- CANVAS DE PARTÍCULAS & VFX (LAREIRA E POEIRA DOURADA 60 FPS) -->
+        <GuildParticlesCanvas />
 
-      <!-- CAMADA DE EFEITOS VISUAIS DE ILUMINAÇÃO & LABAREDAS 2D (VFX LAYER) -->
-      <GuildVfxLayer :is-mobile="isMobile" />
+        <!-- CAMADA DE EFEITOS VISUAIS DE ILUMINAÇÃO & LABAREDAS 2D (VFX LAYER) -->
+        <GuildVfxLayer />
 
-      <!-- VIDA NA CENA (primeiro plano): silhuetas que ficam na frente do fogo/tochas do GuildVfxLayer -->
-      <GuildSceneSpace :hidden="isMobile || isPortrait" :z-index="5">
-        <GuildNpcLayer layer="foreground" />
-      </GuildSceneSpace>
+        <!-- VIDA NA CENA (primeiro plano): silhuetas que ficam na frente do fogo/tochas do GuildVfxLayer -->
+        <GuildSceneSpace :z-index="5">
+          <GuildNpcLayer layer="foreground" />
+        </GuildSceneSpace>
 
-      <!-- brilho da lareira por cima das vinhetas da frente (a área delas pulsa junto com o chão em volta) -->
-      <GuildVfxLayer :is-mobile="isMobile" part="hearth-glow" />
+        <!-- brilho da lareira por cima das vinhetas da frente (a área delas pulsa junto com o chão em volta) -->
+        <GuildVfxLayer part="hearth-glow" />
 
-      <!-- VIDA NA CENA: contêiner alinhado à imagem de fundo (frações da imagem); só desktop -->
-      <GuildSceneSpace :hidden="isMobile || isPortrait">
-        <GuildNpcLayer @update-tooltip="(msg) => (hoverTooltip = msg)" />
-        <!-- MISSÕES DO DIA escritas na folha de pergaminho pintada no balcão -->
-        <GuildCounterLedger @update-tooltip="(msg) => (hoverTooltip = msg)" @open="openReception" />
-      </GuildSceneSpace>
+        <!-- VIDA NA CENA: contêiner alinhado à imagem de fundo (frações da imagem) -->
+        <GuildSceneSpace>
+          <GuildNpcLayer @update-tooltip="(msg) => (hoverTooltip = msg)" />
+          <!-- MISSÕES DO DIA escritas na folha de pergaminho pintada no balcão -->
+          <GuildCounterLedger @update-tooltip="(msg) => (hoverTooltip = msg)" @open="openReception" />
+        </GuildSceneSpace>
 
-      <!-- NPCS VIVOS & BALÕES DE FALA -->
-      <GuildNpcSpeechBubble :is-mobile="isMobile" />
+        <!-- NPCS VIVOS & BALÕES DE FALA -->
+        <GuildNpcSpeechBubble :is-mobile="isMobile" />
 
-      <!-- ARCO DA ESQUERDA (MURAL DE MISSÕES) -->
-      <GuildArchPortal
-        :is-mobile="isMobile"
-        :is-hovered="isLeftArchHovered"
-        @click="handleLeftArchClick"
-        @hover="onLeftArchHover"
-        @leave="onLeftArchLeave"
-      />
+        <!-- ARCO DA ESQUERDA (MURAL DE MISSÕES) -->
+        <GuildArchPortal
+          :is-mobile="isMobile"
+          :is-hovered="isLeftArchHovered"
+          @click="handleLeftArchClick"
+          @hover="onLeftArchHover"
+          @leave="onLeftArchLeave"
+        />
 
-      <!-- HOTSPOTS DIEGÉTICOS (BIBLIOTECA, ESCADARIA/FLÂMULA, WIDGET DO LIVRO, EASTER EGGS) -->
-      <GuildDiegeticHotspots
-        :is-mobile="isMobile"
-        :is-transitioning="isTransitioning"
-        :is-right-door-hovered="isRightDoorHovered"
-        :is-stairs-hovered="isStairsHovered"
-        :show-desk-book="isMobile || isPortrait"
-        @open-reception="openReception"
-        @right-door-hover="onRightDoorHover"
-        @right-door-leave="onRightDoorLeave"
-        @right-door-click="handleRightDoorClick"
-        @stairs-hover="onStairsHover"
-        @stairs-leave="onStairsLeave"
-        @stairs-click="handleStairsClick"
-        @update-tooltip="(msg) => (hoverTooltip = msg)"
-      />
+        <!-- HOTSPOTS DIEGÉTICOS (BIBLIOTECA, ESCADARIA/FLÂMULA, WIDGET DO LIVRO, EASTER EGGS) -->
+        <GuildDiegeticHotspots
+          :is-mobile="isMobile"
+          :is-transitioning="isTransitioning"
+          :is-right-door-hovered="isRightDoorHovered"
+          :is-stairs-hovered="isStairsHovered"
+          @open-reception="openReception"
+          @right-door-hover="onRightDoorHover"
+          @right-door-leave="onRightDoorLeave"
+          @right-door-click="handleRightDoorClick"
+          @stairs-hover="onStairsHover"
+          @stairs-leave="onStairsLeave"
+          @stairs-click="handleStairsClick"
+          @update-tooltip="(msg) => (hoverTooltip = msg)"
+        />
 
-      <!-- TOOLTIP DIEGÉTICO FLUTUANTE (DESKTOP) -->
-      <Transition name="fade-tooltip">
-        <div v-if="hoverTooltip && !isMobile && !isLeftArchHovered" class="diegetic-tooltip-container">
-          <UiParchmentCard class="tooltip-parchment-box">
-            <span class="tooltip-text">{{ hoverTooltip }}</span>
-          </UiParchmentCard>
-        </div>
-      </Transition>
+        <!-- TOOLTIP DIEGÉTICO FLUTUANTE (DESKTOP) -->
+        <Transition name="fade-tooltip">
+          <div v-if="hoverTooltip && !isMobile && !isLeftArchHovered" class="diegetic-tooltip-container">
+            <UiParchmentCard class="tooltip-parchment-box">
+              <span class="tooltip-text">{{ hoverTooltip }}</span>
+            </UiParchmentCard>
+          </div>
+        </Transition>
+      </div>
     </div>
+
+    <!-- DICA DE ARRASTE (mobile, primeira visita): some no primeiro arraste -->
+    <Transition name="fade-tooltip">
+      <div v-if="isMobile && showPanHint" class="pan-hint" aria-hidden="true">
+        <span class="pan-hint-arrow">‹</span>
+        <span class="pan-hint-text">Arraste para explorar o salão</span>
+        <span class="pan-hint-arrow">›</span>
+      </div>
+    </Transition>
 
     <!-- CAMADA 3: HUD ANCORADO NA TELA FÍSICA (SCREEN SPACE) -->
     <div class="guild-hud-layer">
@@ -101,6 +113,8 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
+import { mobileStageLayout } from '~/composables/ui/useSceneSpace';
+import { useHallPan } from '~/composables/ui/useHallPan';
 import { useRouter } from 'vue-router';
 import { useResponsive } from '~/composables/ui/useResponsive';
 import { useUiGuildStore } from '~/stores/uiGuild';
@@ -126,7 +140,7 @@ definePageMeta({
 });
 
 const router = useRouter();
-const { isMobile, isPortrait } = useResponsive();
+const { isMobile, windowWidth, windowHeight } = useResponsive();
 const uiGuildStore = useUiGuildStore();
 const taskStore = useTaskStore();
 const projectStore = useProjectStore();
@@ -145,12 +159,64 @@ const isStairsHovered = ref(false);
 const isRightDoorHovered = ref(false);
 const hoverTooltip = ref<string | null>(null);
 
-// Fundo limpo conforme orientação (Retrato/Mobile -> Entrada-mobile.png, Horizontal -> Entrada-expandida.png)
-const backgroundImageUrl = computed(() => {
-  return isMobile.value || isPortrait.value
-    ? '/imagens/Entrada-mobile.png'
-    : '/imagens/Entrada-expandida.png';
+// Mesma cena no desktop e no mobile: no mobile o palco 16:9 é o do desktop, só que maior e
+// dentro de um "mundo" arrastável (a imagem inteira, com abóbadas e lustres no topo)
+const backgroundImageUrl = '/imagens/Entrada-expandida.webp';
+
+const mobileLayout = computed(() =>
+  isMobile.value ? mobileStageLayout(windowWidth.value, windowHeight.value) : null,
+);
+
+const px = (n: number) => `${n.toFixed(2)}px`;
+const safeZoneStyle = computed<Record<string, string>>(() => {
+  const L = mobileLayout.value;
+  if (!L) return {};
+  return {
+    position: 'absolute',
+    left: px(L.stageLeft),
+    top: px(L.stageTop),
+    width: px(L.stageW),
+    height: px(L.stageH),
+    maxWidth: 'none',
+    maxHeight: 'none',
+  };
 });
+const cameraStyle = computed<Record<string, string>>(() => {
+  const L = mobileLayout.value;
+  return L
+    ? { width: px(L.worldW), display: 'block', inset: 'auto', left: '0', top: '0', height: '100%' }
+    : {};
+});
+
+// câmera arrastável (só mobile) + dica de arraste na primeira visita
+const viewportEl = ref<HTMLElement | null>(null);
+const cameraEl = ref<HTMLElement | null>(null);
+const PAN_HINT_KEY = 'guild-hall-pan-hint-seen';
+const showPanHint = ref(false);
+function hidePanHint() {
+  showPanHint.value = false;
+  try {
+    localStorage.setItem(PAN_HINT_KEY, '1');
+  } catch {
+    /* armazenamento bloqueado: a dica só volta na próxima visita */
+  }
+}
+const { panTo, centerOn } = useHallPan({
+  surface: viewportEl,
+  camera: cameraEl,
+  bounds: computed(() => {
+    const L = mobileLayout.value;
+    return L ? { min: L.panMin, max: L.panMax, start: L.panStart } : null;
+  }),
+  onFirstDrag: hidePanHint,
+});
+
+/** no mobile, leva a câmera até o ponto do palco (frações) antes do zoom do portal */
+async function bringIntoView(stageX: number) {
+  const L = mobileLayout.value;
+  if (!L) return;
+  await panTo(centerOn(L.stageLeft + stageX * L.stageW));
+}
 
 // Eventos do Arco da Esquerda (Mural de Missões)
 function onLeftArchHover() {
@@ -167,12 +233,13 @@ function onLeftArchLeave() {
 }
 
 // Clique/Toque no Arco da Esquerda -> Portal Glow + Camera Zoom + SFX + Redirecionamento para /tasks
-function handleLeftArchClick() {
+async function handleLeftArchClick() {
   if (isTransitioning.value) return;
 
   isLeftArchHovered.value = true;
   isTransitioning.value = true;
-  zoomTransformOrigin.value = isMobile.value ? '16% 52%' : '16% 45%';
+  await bringIntoView(0.16);
+  zoomTransformOrigin.value = '16% 45%';
 
   if (isMobile.value) {
     playPortalHumSound();
@@ -198,12 +265,13 @@ function onStairsLeave() {
   }
 }
 
-function handleStairsClick() {
+async function handleStairsClick() {
   if (isTransitioning.value) return;
 
   isStairsHovered.value = true;
   isTransitioning.value = true;
-  zoomTransformOrigin.value = isMobile.value ? '47% 28%' : '48% 25%';
+  await bringIntoView(0.48);
+  zoomTransformOrigin.value = '48% 25%';
 
   if (isMobile.value) {
     playPennantFlutterSound();
@@ -229,12 +297,13 @@ function onRightDoorLeave() {
   }
 }
 
-function handleRightDoorClick() {
+async function handleRightDoorClick() {
   if (isTransitioning.value) return;
 
   isRightDoorHovered.value = true;
   isTransitioning.value = true;
-  zoomTransformOrigin.value = isMobile.value ? '82% 52%' : '85% 45%';
+  await bringIntoView(0.85);
+  zoomTransformOrigin.value = '85% 45%';
 
   if (isMobile.value) {
     playDoorOpenSound(500);
@@ -254,6 +323,11 @@ function openReception() {
 }
 
 onMounted(() => {
+  try {
+    showPanHint.value = !localStorage.getItem(PAN_HINT_KEY);
+  } catch {
+    showPanHint.value = true;
+  }
   uiGuildStore.setActiveRoom('hall');
   taskStore.loadTasks?.();
   projectStore.loadProjects?.();
@@ -272,6 +346,16 @@ onMounted(() => {
   justify-content: center;
   background-color: #000;
   z-index: 100;
+}
+
+/* CÂMERA: no desktop só centraliza o palco; no mobile vira o mundo arrastável (estilo inline) */
+.hall-camera {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  will-change: transform;
 }
 
 /* CONTAINER SAFE ZONE 16:9 (WORLD SPACE - PROPORÇÃO TRAVADA 16:9) */
@@ -321,50 +405,11 @@ onMounted(() => {
   }
 }
 
-/* MODO MOBILE E PORTRAIT: MANTÉM O PALCO 16:9 DOS ELEMENTOS DIEGÉTICOS SINCRONIZADO 1:1 COM ENTRADA-MOBILE.PNG (1376x3072) */
-.viewport.is-mobile-view .safe-zone {
-  --mob-cover-w: max(100vw, calc(100vh * 1376 / 3072));
-  width: calc(var(--mob-cover-w) * 1.09775);
-  height: auto;
-  max-width: none;
-  max-height: none;
-  aspect-ratio: 16 / 9;
-  flex-shrink: 0;
-  left: calc(var(--mob-cover-w) * 0.0529);
-  top: calc(var(--mob-cover-w) * -0.06);
-}
-
-.viewport.is-mobile-view .master-bg {
-  inset: auto;
-  left: -0.364%;
-  top: -170.422%;
-  width: 91.096%;
-  height: 361.558%;
-  transform: none;
-  object-fit: fill;
-}
-
-@media (orientation: portrait) {
-  .safe-zone {
-    --mob-cover-w: max(100vw, calc(100vh * 1376 / 3072));
-    width: calc(var(--mob-cover-w) * 1.09775);
-    height: auto;
-    max-width: none;
-    max-height: none;
-    aspect-ratio: 16 / 9;
-    flex-shrink: 0;
-    left: calc(var(--mob-cover-w) * 0.0529);
-    top: calc(var(--mob-cover-w) * -0.06);
-  }
-  .master-bg {
-    inset: auto;
-    left: -0.364%;
-    top: -170.422%;
-    width: 91.096%;
-    height: 361.558%;
-    transform: none;
-    object-fit: fill;
-  }
+/* MOBILE: a tela não rola; o dedo arrasta a câmera (useHallPan) */
+.viewport.is-mobile-view {
+  display: block;
+  height: 100dvh;
+  touch-action: none;
 }
 
 /* PRÉVIA DO GIRO DE CÂMERA 3D À DIREITA NO HOVER */
@@ -443,6 +488,53 @@ onMounted(() => {
   font-family: var(--font-guild-title, serif);
   font-size: 0.95rem;
   font-weight: bold;
+}
+
+/* DICA DE ARRASTE (MOBILE) */
+.pan-hint {
+  position: absolute;
+  left: 50%;
+  bottom: calc(128px + env(safe-area-inset-bottom, 0px));
+  transform: translateX(-50%);
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.45rem 1rem;
+  border-radius: 999px;
+  background: rgba(28, 20, 14, 0.82);
+  border: 1px solid rgba(212, 175, 55, 0.6);
+  color: var(--guild-parchment-base, #f4e4bc);
+  font-family: var(--font-guild-title, serif);
+  font-size: 0.85rem;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+.pan-hint-arrow {
+  font-size: 1.3rem;
+  line-height: 1;
+  color: var(--guild-gold-glow, #ffc83d);
+  animation: panHintNudge 1.2s ease-in-out infinite alternate;
+}
+
+.pan-hint-arrow:first-child {
+  animation-direction: alternate-reverse;
+}
+
+@keyframes panHintNudge {
+  from {
+    transform: translateX(-3px);
+  }
+  to {
+    transform: translateX(3px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pan-hint-arrow {
+    animation: none;
+  }
 }
 
 .fade-tooltip-enter-active,

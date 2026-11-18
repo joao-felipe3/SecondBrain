@@ -1,5 +1,5 @@
 <template>
-  <div class="diegetic-hotspots-layer" :class="{ 'is-mobile-hotspots': isMobile }">
+  <div class="diegetic-hotspots-layer">
     <!-- HOTSPOT CENTRAL: ESCADARIA & MEZANINO (CARTOGRAFIA / CALENDÁRIO -> /calendar) -->
     <div
       class="staircase-hotspot-zone"
@@ -32,17 +32,6 @@
       @door-click="onLibraryClick"
     />
 
-    <!-- WIDGET DO LIVRO ABERTO (mobile/retrato; no desktop a folha pintada no balcão é o GuildCounterLedger) -->
-    <div
-      v-if="showDeskBook"
-      class="desk-book-widget-container"
-      @click="emit('openReception')"
-      @mouseenter="emit('updateTooltip', '📖 Clique para abrir Grimório Completo da Guilda')"
-      @mouseleave="emit('updateTooltip', null)"
-    >
-      <GuildDeskBookWidget />
-    </div>
-
     <!-- EASTER EGG: CANECA DE HIDROMEL NA MESA -->
     <div
       class="hotspot-area mead-easter-egg-area"
@@ -58,7 +47,6 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue';
-import GuildDeskBookWidget from '~/components/features/hall/GuildDeskBookWidget.vue';
 import GuildLibraryPortal from '~/components/features/hall/GuildLibraryPortal.vue';
 import GuildStaircasePennant from '~/components/features/hall/GuildStaircasePennant.vue';
 import { useGuildAudio } from '~/composables/ui/useGuildAudio';
@@ -68,8 +56,6 @@ const props = defineProps<{
   isTransitioning?: boolean;
   isRightDoorHovered?: boolean;
   isStairsHovered?: boolean;
-  /** cartão de missões flutuante: só onde a cena não tem a folha pintada (mobile/retrato) */
-  showDeskBook?: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -152,7 +138,6 @@ function triggerMeadInteraction() {
 
 .staircase-hotspot-zone,
 .hotspot-area,
-.desk-book-widget-container,
 .diegetic-hotspots-layer :deep(.staircase-pennant-wrapper) {
   pointer-events: auto;
 }
@@ -254,25 +239,6 @@ function triggerMeadInteraction() {
   }
 }
 
-/* WIDGET DO LIVRO ABERTO (BALCÃO) */
-.desk-book-widget-container {
-  position: absolute;
-  bottom: 19%;
-  left: 64%;
-  width: 12%;
-  height: 16%;
-  cursor: pointer;
-  z-index: 8;
-  -webkit-tap-highlight-color: transparent;
-}
-
-.diegetic-hotspots-layer.is-mobile-hotspots .desk-book-widget-container {
-  bottom: 20%;
-  left: 60%;
-  width: 14%;
-  height: 16%;
-}
-
 /* EASTER EGG: CANECA DE HIDROMEL NA MESA */
 .mead-easter-egg-area {
   top: 108%;
@@ -280,13 +246,6 @@ function triggerMeadInteraction() {
   width: 7%;
   height: 14%;
   z-index: 9;
-}
-
-.diegetic-hotspots-layer.is-mobile-hotspots .mead-easter-egg-area {
-  top: 128%;
-  left: 26%;
-  width: 8%;
-  height: 15%;
 }
 
 .mead-foam-bubbles {
