@@ -150,3 +150,7 @@ graphify-out/*.py
 graphify-out/cache
 
 Frontend/imagens-geradas
+# Arte do Saguão: PSDs grandes e arquivos intermediários do pipeline hall-life (regeneráveis)
+/Entrada-expandida.psd
+Frontend/scripts/hall-life/work/
+__pycache__/

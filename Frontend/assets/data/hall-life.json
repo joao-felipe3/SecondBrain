@@ -1,0 +1,315 @@
+{
+  "mezzanine-crowd": {
+    "order": 10,
+    "rect": [2545, 1504, 233, 149],
+    "frames": [
+      {
+        "name": "a",
+        "src": "/vfx/hall-life/mezzanine-crowd/a.webp",
+        "hold": [2600, 5200]
+      }
+    ],
+    "light": {
+      "source": "torch",
+      "gain": 0.05
+    },
+    "tooltip": null,
+    "sequence": "gestures",
+    "puppet": {
+      "src": "/vfx/hall-life/mezzanine-crowd/puppet/puppet.json"
+    }
+  },
+  "stair-bard": {
+    "order": 20,
+    "rect": [2124, 1840, 144, 250],
+    "frames": [
+      {
+        "name": "a",
+        "src": "/vfx/hall-life/stair-bard/a.webp",
+        "hold": [700, 1200]
+      }
+    ],
+    "light": {
+      "source": "torch",
+      "gain": 0.07
+    },
+    "tooltip": "🎵 Bardo aquecendo as cordas",
+    "sequence": "loop",
+    "puppet": {
+      "src": "/vfx/hall-life/stair-bard/puppet/puppet.json"
+    }
+  },
+  "planners-table": {
+    "order": 30,
+    "rect": [2317, 1925, 289, 242],
+    "frames": [
+      {
+        "name": "a",
+        "src": "/vfx/hall-life/planners-table/a.webp",
+        "hold": [1500, 2400]
+      }
+    ],
+    "light": {
+      "source": "torch",
+      "gain": 0.06
+    },
+    "tooltip": "🗺️ Traçando a rota do próximo contrato",
+    "sequence": "conversation",
+    "puppet": {
+      "src": "/vfx/hall-life/planners-table/puppet/puppet.json"
+    }
+  },
+  "drinkers-hearth": {
+    "order": 40,
+    "rect": [2652, 1863, 444, 311],
+    "frames": [
+      {
+        "name": "a",
+        "src": "/vfx/hall-life/drinkers-hearth/a.webp",
+        "hold": [3000, 6000]
+      }
+    ],
+    "light": {
+      "source": "hearth",
+      "gain": 0
+    },
+    "tooltip": "🍺 Brinde à última missão cumprida",
+    "sequence": "gestures",
+    "puppet": {
+      "src": "/vfx/hall-life/drinkers-hearth/puppet/puppet.json"
+    },
+    "foreground": {
+      "rect": [2874, 1910, 142, 171],
+      "frames": [
+        {
+          "name": "a",
+          "src": "/vfx/hall-life/drinkers-hearth/a.fg.webp"
+        }
+      ]
+    }
+  },
+  "hearth-cat": {
+    "order": 45,
+    "rect": [2993, 1983, 110, 101],
+    "frames": [
+      {
+        "name": "a",
+        "src": "/vfx/hall-life/hearth-cat/a.webp",
+        "hold": [3500, 7000]
+      },
+      {
+        "name": "b",
+        "src": "/vfx/hall-life/hearth-cat/b.webp",
+        "hold": [600, 1000],
+        "tweens": [
+          {
+            "name": "b_1",
+            "src": "/vfx/hall-life/hearth-cat/b_1.webp"
+          },
+          {
+            "name": "b_2",
+            "src": "/vfx/hall-life/hearth-cat/b_2.webp"
+          },
+          {
+            "name": "b_3",
+            "src": "/vfx/hall-life/hearth-cat/b_3.webp"
+          },
+          {
+            "name": "b_4",
+            "src": "/vfx/hall-life/hearth-cat/b_4.webp"
+          }
+        ]
+      },
+      {
+        "name": "c",
+        "src": "/vfx/hall-life/hearth-cat/c.webp",
+        "hold": [700, 1100],
+        "tweens": [
+          {
+            "name": "c_1",
+            "src": "/vfx/hall-life/hearth-cat/c_1.webp"
+          },
+          {
+            "name": "c_2",
+            "src": "/vfx/hall-life/hearth-cat/c_2.webp"
+          }
+        ]
+      }
+    ],
+    "light": {
+      "source": "hearth",
+      "gain": 0
+    },
+    "tooltip": "🐈 Brasa, o gato oficial da guilda",
+    "sequence": "gestures",
+    "foreground": {
+      "rect": [2993, 1983, 110, 101],
+      "frames": [
+        {
+          "name": "a",
+          "src": "/vfx/hall-life/hearth-cat/a.fg.webp"
+        },
+        {
+          "name": "b",
+          "src": "/vfx/hall-life/hearth-cat/b.fg.webp"
+        },
+        {
+          "name": "b_1",
+          "src": "/vfx/hall-life/hearth-cat/b_1.fg.webp"
+        },
+        {
+          "name": "b_2",
+          "src": "/vfx/hall-life/hearth-cat/b_2.fg.webp"
+        },
+        {
+          "name": "b_3",
+          "src": "/vfx/hall-life/hearth-cat/b_3.fg.webp"
+        },
+        {
+          "name": "b_4",
+          "src": "/vfx/hall-life/hearth-cat/b_4.fg.webp"
+        },
+        {
+          "name": "c",
+          "src": "/vfx/hall-life/hearth-cat/c.fg.webp"
+        },
+        {
+          "name": "c_1",
+          "src": "/vfx/hall-life/hearth-cat/c_1.fg.webp"
+        },
+        {
+          "name": "c_2",
+          "src": "/vfx/hall-life/hearth-cat/c_2.fg.webp"
+        }
+      ]
+    }
+  },
+  "receptionist": {
+    "order": 50,
+    "rect": [3233, 1843, 271, 288],
+    "frames": [
+      {
+        "name": "a",
+        "src": "/vfx/hall-life/receptionist/a.webp",
+        "hold": [2500, 5000]
+      }
+    ],
+    "light": {
+      "source": "torch",
+      "gain": 0.08
+    },
+    "tooltip": "📜 Mestra Agda, recepcionista da guilda",
+    "sequence": "gestures",
+    "puppet": {
+      "src": "/vfx/hall-life/receptionist/puppet/puppet.json"
+    }
+  },
+  "library-reader": {
+    "order": 55,
+    "rect": [3739, 1896, 238, 333],
+    "frames": [
+      {
+        "name": "a",
+        "src": "/vfx/hall-life/library-reader/a.webp",
+        "hold": [4000, 8000]
+      },
+      {
+        "name": "b",
+        "src": "/vfx/hall-life/library-reader/b.webp",
+        "hold": [700, 1100],
+        "tweens": [
+          {
+            "name": "b_1",
+            "src": "/vfx/hall-life/library-reader/b_1.webp"
+          },
+          {
+            "name": "b_2",
+            "src": "/vfx/hall-life/library-reader/b_2.webp"
+          },
+          {
+            "name": "b_3",
+            "src": "/vfx/hall-life/library-reader/b_3.webp"
+          },
+          {
+            "name": "b_4",
+            "src": "/vfx/hall-life/library-reader/b_4.webp"
+          }
+        ]
+      },
+      {
+        "name": "c",
+        "src": "/vfx/hall-life/library-reader/c.webp",
+        "hold": [1500, 2500],
+        "tweens": [
+          {
+            "name": "c_1",
+            "src": "/vfx/hall-life/library-reader/c_1.webp"
+          }
+        ]
+      }
+    ],
+    "light": {
+      "source": "torch",
+      "gain": 0.07
+    },
+    "tooltip": "📚 O arquivista nunca sai da biblioteca",
+    "sequence": "gestures"
+  },
+  "board-readers": {
+    "order": 60,
+    "rect": [1420, 1786, 318, 443],
+    "frames": [
+      {
+        "name": "a",
+        "src": "/vfx/hall-life/board-readers/a.webp",
+        "hold": [2600, 5000]
+      }
+    ],
+    "light": {
+      "source": "torch",
+      "gain": 0.1
+    },
+    "tooltip": "⚔️ Aventureiros escolhendo contratos",
+    "sequence": "gestures",
+    "puppet": {
+      "src": "/vfx/hall-life/board-readers/puppet/puppet.json"
+    }
+  },
+  "dwarf-crate": {
+    "order": 70,
+    "rect": [1863, 1977, 210, 278],
+    "frames": [
+      {
+        "name": "a",
+        "src": "/vfx/hall-life/dwarf-crate/a.webp",
+        "hold": [3500, 7000]
+      }
+    ],
+    "light": {
+      "source": "torch",
+      "gain": 0.08
+    },
+    "tooltip": "🍺 Gloin descansando as pernas",
+    "sequence": "gestures",
+    "puppet": {
+      "src": "/vfx/hall-life/dwarf-crate/puppet/puppet.json"
+    }
+  },
+  "counter-ledger": {
+    "order": 75,
+    "rect": [3278, 2319, 573, 263],
+    "frames": [
+      {
+        "name": "a",
+        "src": "/vfx/hall-life/counter-ledger/a.webp",
+        "hold": [999999, 999999]
+      }
+    ],
+    "light": {
+      "source": "torch",
+      "gain": 0.06
+    },
+    "tooltip": null,
+    "sequence": "gestures"
+  }
+}

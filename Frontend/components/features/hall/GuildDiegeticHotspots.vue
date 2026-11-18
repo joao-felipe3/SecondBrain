@@ -32,61 +32,15 @@
       @door-click="onLibraryClick"
     />
 
-    <!-- WIDGET DO LIVRO ABERTO -->
+    <!-- WIDGET DO LIVRO ABERTO (mobile/retrato; no desktop a folha pintada no balcão é o GuildCounterLedger) -->
     <div
+      v-if="showDeskBook"
       class="desk-book-widget-container"
       @click="emit('openReception')"
       @mouseenter="emit('updateTooltip', '📖 Clique para abrir Grimório Completo da Guilda')"
       @mouseleave="emit('updateTooltip', null)"
     >
       <GuildDeskBookWidget />
-    </div>
-
-    <!-- EASTER EGG: ADAGA FINCADA NA MADEIRA -->
-    <div
-      class="hotspot-area dagger-easter-egg-area"
-      :class="{ 'animate-dagger-shake': isDaggerShaking }"
-      @click="triggerDaggerInteraction"
-      @mouseenter="emit('updateTooltip', '🗡️ Testar a lâmina da adaga fincada')"
-      @mouseleave="emit('updateTooltip', null)"
-    >
-      <div class="dagger-highlight-aura"></div>
-      <img
-        v-if="isMobile"
-        src="/images/guild/dagger-sprite.png"
-        alt="Adaga Fincada no Balcão"
-        class="dagger-sprite-img"
-        draggable="false"
-      />
-      <span v-if="isDaggerShaking" class="dagger-sparks">✨</span>
-    </div>
-
-    <!-- EASTER EGG: PILHA DE MOEDAS DE OURO -->
-    <div
-      class="hotspot-area coins-easter-egg-area"
-      :class="{ 'is-popping': isCoinsPopping }"
-      @click="triggerCoinsInteraction"
-      @mouseenter="emit('updateTooltip', '🪙 Pilha de Moedas no Balcão (+1 Gold)')"
-      @mouseleave="emit('updateTooltip', null)"
-    >
-      <div class="coins-highlight-aura"></div>
-      <img
-        src="/vfx/coins-stack.png"
-        alt="Pilha de Moedas de Ouro"
-        class="coins-sprite-img"
-        draggable="false"
-      />
-      <span v-if="isCoinsPopping" class="coins-click-sparks">✨</span>
-
-      <!-- ANIMAÇÃO FLUTUANTE DE +1 GOLD -->
-      <div
-        v-for="pop in goldPopups"
-        :key="pop.id"
-        class="floating-gold-popup"
-        :style="{ left: `${pop.x}px`, top: `${pop.y}px` }"
-      >
-        <span class="gold-text">+1 Gold 🪙</span>
-      </div>
     </div>
 
     <!-- EASTER EGG: CANECA DE HIDROMEL NA MESA -->
@@ -114,6 +68,8 @@ const props = defineProps<{
   isTransitioning?: boolean;
   isRightDoorHovered?: boolean;
   isStairsHovered?: boolean;
+  /** cartão de missões flutuante: só onde a cena não tem a folha pintada (mobile/retrato) */
+  showDeskBook?: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -127,7 +83,7 @@ const emit = defineEmits<{
   (e: 'stairsClick'): void;
 }>();
 
-const { playCoinsSound, playDaggerSound, playPennantFlutterSound } = useGuildAudio();
+const { playCoinsSound, playPennantFlutterSound } = useGuildAudio();
 
 const isStairsHoveredLocal = ref(false);
 const isStairsActive = computed(() => isStairsHoveredLocal.value || Boolean(props.isStairsHovered));
@@ -169,52 +125,7 @@ function onLibraryClick() {
   emit('rightDoorClick');
 }
 
-const isDaggerShaking = ref(false);
-const isCoinsPopping = ref(false);
 const isMeadToasting = ref(false);
-
-interface GoldPopup {
-  id: number;
-  x: number;
-  y: number;
-}
-const goldPopups = ref<GoldPopup[]>([]);
-let goldIdCounter = 0;
-
-// Easter Egg: Adaga na Madeira
-function triggerDaggerInteraction() {
-  playDaggerSound();
-  isDaggerShaking.value = true;
-  setTimeout(() => {
-    isDaggerShaking.value = false;
-  }, 400);
-}
-
-// Easter Egg: Pilha de Moedas no Balcão
-function triggerCoinsInteraction(event: MouseEvent) {
-  playCoinsSound();
-
-  isCoinsPopping.value = true;
-  setTimeout(() => {
-    isCoinsPopping.value = false;
-  }, 250);
-
-  const id = ++goldIdCounter;
-  const target = event.currentTarget as HTMLElement | null;
-  let x = 10;
-  let y = -10;
-  if (target && event.clientX) {
-    const rect = target.getBoundingClientRect();
-    x = event.clientX - rect.left - 16;
-    y = event.clientY - rect.top - 20;
-  }
-
-  goldPopups.value.push({ id, x, y });
-
-  setTimeout(() => {
-    goldPopups.value = goldPopups.value.filter((p) => p.id !== id);
-  }, 1200);
-}
 
 // Easter Egg: Caneca de Hidromel
 function triggerMeadInteraction() {
@@ -235,6 +146,15 @@ function triggerMeadInteraction() {
   height: 100%;
   z-index: 5;
   transition: transform 0.3s ease;
+  /* a camada cobre a cena inteira: sem isso ela engolia o mouse das vinhetas e da folha de missões */
+  pointer-events: none;
+}
+
+.staircase-hotspot-zone,
+.hotspot-area,
+.desk-book-widget-container,
+.diegetic-hotspots-layer :deep(.staircase-pennant-wrapper) {
+  pointer-events: auto;
 }
 
 /* SUPER ULTRAWIDE (32:9, 5120x1440 e superior - min-aspect-ratio: 2.4/1): Sincroniza os hotspots com ancoragem 50% 50% e compensação de object-position */
@@ -353,133 +273,6 @@ function triggerMeadInteraction() {
   height: 16%;
 }
 
-/* EASTER EGG: ADAGA FINCADA */
-.dagger-easter-egg-area {
-  bottom: 7%;
-  left: 76%;
-  width: 4%;
-  height: 14%;
-  z-index: 9;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.diegetic-hotspots-layer.is-mobile-hotspots .dagger-easter-egg-area {
-  bottom: 17%;
-  left: 69%;
-  width: 5%;
-  height: 13%;
-}
-
-.dagger-sprite-img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.7));
-  pointer-events: none;
-}
-
-.dagger-highlight-aura {
-  position: absolute;
-  inset: -8px;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(255, 215, 0, 0.05) 0%, transparent 75%);
-  opacity: 0;
-  transition: opacity 0.2s ease;
-  pointer-events: none;
-}
-
-.dagger-easter-egg-area:hover .dagger-highlight-aura {
-  opacity: 1;
-}
-
-.dagger-sparks {
-  position: absolute;
-  top: -15px;
-  font-size: 1.6rem;
-  animation: spark-fade 0.4s ease-out;
-}
-
-@keyframes spark-fade {
-  0% {
-    opacity: 1;
-    transform: scale(0.8) translateY(0);
-  }
-  100% {
-    opacity: 0;
-    transform: scale(1.5) translateY(-20px);
-  }
-}
-
-/* EASTER EGG: PILHA DE MOEDAS DE OURO */
-.coins-easter-egg-area {
-  bottom: 0.5%;
-  left: 79%;
-  width: 9.5%;
-  height: 11%;
-  z-index: 9;
-  position: absolute;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  user-select: none;
-}
-
-.diegetic-hotspots-layer.is-mobile-hotspots .coins-easter-egg-area {
-  bottom: 14%;
-  left: 73%;
-  width: 9.5%;
-  height: 11%;
-}
-
-.coins-sprite-img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.75)) drop-shadow(0 0 6px rgba(245, 158, 11, 0.25));
-  transition:
-    transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1),
-    filter 0.2s ease;
-  pointer-events: none;
-}
-
-.coins-easter-egg-area:hover .coins-sprite-img {
-  transform: scale(1.08) translateY(-2px);
-  filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.85)) drop-shadow(0 0 12px rgba(251, 191, 36, 0.7))
-    brightness(1.1);
-}
-
-.coins-highlight-aura {
-  position: absolute;
-  inset: -12px;
-  border-radius: 50%;
-  background: radial-gradient(
-    circle,
-    rgba(255, 215, 0, 0.2) 0%,
-    rgba(245, 158, 11, 0.08) 45%,
-    transparent 75%
-  );
-  opacity: 0;
-  transition: opacity 0.25s ease;
-  pointer-events: none;
-  mix-blend-mode: screen;
-}
-
-.coins-easter-egg-area:hover .coins-highlight-aura {
-  opacity: 1;
-}
-
-.coins-click-sparks {
-  position: absolute;
-  top: -10px;
-  font-size: 1.4rem;
-  pointer-events: none;
-  animation: spark-fade 0.4s ease-out;
-  z-index: 10;
-}
-
 /* EASTER EGG: CANECA DE HIDROMEL NA MESA */
 .mead-easter-egg-area {
   top: 108%;
@@ -509,50 +302,7 @@ function triggerMeadInteraction() {
   animation: float-up-gold 0.9s ease-out forwards;
 }
 
-/* ANIMAÇÃO SHAKE DE ADAGA */
-@keyframes dagger-shake {
-  0% {
-    transform: rotate(0deg);
-  }
-  25% {
-    transform: rotate(-10deg) scale(1.1);
-  }
-  50% {
-    transform: rotate(10deg) scale(1.1);
-  }
-  75% {
-    transform: rotate(-5deg);
-  }
-  100% {
-    transform: rotate(0deg);
-  }
-}
-
-.animate-dagger-shake {
-  animation: dagger-shake 0.35s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
-}
-
-/* ANIMAÇÃO BOUNCE/POP DA PILHA DE MOEDAS */
-@keyframes coins-pop {
-  0% {
-    transform: scale(1);
-  }
-  40% {
-    transform: scale(0.92) translateY(2px);
-  }
-  75% {
-    transform: scale(1.08) translateY(-3px);
-  }
-  100% {
-    transform: scale(1) translateY(0);
-  }
-}
-
-.coins-easter-egg-area.is-popping {
-  animation: coins-pop 0.25s cubic-bezier(0.34, 1.56, 0.64, 1) both;
-}
-
-/* ANIMATED FLOATING GOLD POPUP */
+/* SUBIDA DO "SAÚDE!" DA CANECA */
 @keyframes float-up-gold {
   0% {
     opacity: 0;
@@ -570,27 +320,5 @@ function triggerMeadInteraction() {
     opacity: 0;
     transform: translateY(-56px) scale(0.95);
   }
-}
-
-.floating-gold-popup {
-  position: absolute;
-  pointer-events: none;
-  font-family: var(--font-guild-title, serif);
-  font-weight: 800;
-  font-size: 1.05rem;
-  color: #fef08a;
-  text-shadow:
-    0 0 10px rgba(245, 158, 11, 0.9),
-    0 2px 4px rgba(0, 0, 0, 0.95);
-  animation: float-up-gold 1.2s cubic-bezier(0.22, 1, 0.36, 1) forwards;
-  z-index: 50;
-  white-space: nowrap;
-  user-select: none;
-}
-
-.gold-text {
-  display: inline-block;
-  letter-spacing: 0.04em;
-  filter: drop-shadow(0 2px 6px rgba(251, 191, 36, 0.7));
 }
 </style>

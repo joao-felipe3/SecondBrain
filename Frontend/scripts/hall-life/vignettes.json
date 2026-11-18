@@ -1,0 +1,4073 @@
+{
+  "_doc": "area = [u0, v0, u1, v1] em frações de Entrada-expandida.png onde a ação acontece (o script expande para uma proporção aceita pelo modelo e salva o retângulo em pixels em work/state.json). Janela visível no desktop 16:9: u 0.245–0.833, v 0.334–0.828; ultrawide corta abaixo de v 0.682. 'order' define a ordem de pintura (fundo -> frente) e a ordem em que as placas são tiradas da composição acumulada. frames[0] é gerado a partir da placa; os demais são edições do frame A. hold = [min, max] em ms que o frame fica parado.",
+  "model": "gemini-3-pro-image",
+  "draftModel": "gemini-3.1-flash-image",
+  "vignettes": [
+    {
+      "id": "mezzanine-crowd",
+      "order": 10,
+      "area": [0.4778, 0.4369, 0.5819, 0.4941],
+      "who": "three small distant guild members leaning on the wooden balcony railing of the middle gallery: a wizard in a blue pointed hat, a bard holding a lute and a hooded rogue",
+      "doing": "standing BEHIND the wooden balcony railing of the middle gallery, chatting and looking down at the hall. They are on the far side of the railing: the horizontal rail and every vertical baluster must be drawn OVER their bodies, so only their heads, shoulders and forearms resting on the top rail are visible above it, and their bodies are only glimpsed through the gaps between the balusters",
+      "frames": [
+        {
+          "name": "a",
+          "hold": [2600, 5200]
+        },
+        {
+          "name": "b",
+          "change": "the bard strums the lute and the wizard turns his head toward the bard",
+          "hold": [1400, 2600],
+          "tweens": [
+            {
+              "auto": "a>b_1"
+            },
+            {
+              "auto": "a>b"
+            }
+          ]
+        },
+        {
+          "name": "c",
+          "change": "the hooded rogue leans forward over the railing and points down at the hall, the wizard looks where he points",
+          "hold": [1500, 2500],
+          "tweens": [
+            "the hooded rogue starts leaning forward over the railing, his arm half raised, not pointing yet; the wizard still looks ahead",
+            {
+              "auto": "c_1>c_2"
+            },
+            {
+              "auto": "c_1>c_2"
+            },
+            "the hooded rogue leans further over the railing and his arm lowers to point down toward the hall, almost fully pointing; the wizard begins to look where he points"
+          ]
+        }
+      ],
+      "light": {
+        "source": "torch",
+        "gain": 0.05
+      },
+      "tooltip": null,
+      "sequence": "gestures",
+      "loop_rig": {
+        "bpm": 90,
+        "idleMs": [200, 400],
+        "bones": {
+          "mago_cabeca": {
+            "pivot": [1065, 640],
+            "tip": [1000, 320],
+            "blur": 2.5,
+            "fill": "plate",
+            "region": [
+              [870, 280],
+              [1000, 280],
+              [1190, 370],
+              [1195, 470],
+              [1110, 480],
+              [1100, 600],
+              [1080, 650],
+              [1030, 650],
+              [990, 590],
+              [975, 480],
+              [860, 455]
+            ]
+          },
+          "mago_mao": {
+            "pivot": [1140, 650],
+            "tip": [1270, 575],
+            "blur": 2,
+            "fill": "inpaint",
+            "region": [
+              [1120, 600],
+              [1180, 545],
+              [1240, 540],
+              [1290, 555],
+              [1290, 610],
+              [1230, 650],
+              [1170, 690],
+              [1115, 690]
+            ]
+          },
+          "bardo_cabeca": {
+            "pivot": [1415, 525],
+            "tip": [1400, 340],
+            "blur": 2.5,
+            "fill": "plate",
+            "region": [
+              [1300, 320],
+              [1350, 330],
+              [1500, 350],
+              [1505, 430],
+              [1480, 500],
+              [1450, 535],
+              [1380, 535],
+              [1345, 490],
+              [1325, 420]
+            ]
+          },
+          "bardo_mao": {
+            "pivot": [1300, 670],
+            "tip": [1430, 640],
+            "blur": 2,
+            "fill": "inpaint",
+            "region": [
+              [1265, 630],
+              [1380, 600],
+              [1460, 605],
+              [1465, 670],
+              [1400, 690],
+              [1300, 705],
+              [1260, 690]
+            ]
+          },
+          "ladino_cabeca": {
+            "pivot": [1775, 575],
+            "tip": [1770, 390],
+            "blur": 2.5,
+            "fill": "plate",
+            "region": [
+              [1700, 390],
+              [1760, 370],
+              [1840, 385],
+              [1880, 440],
+              [1880, 540],
+              [1840, 580],
+              [1720, 585],
+              [1695, 500]
+            ]
+          }
+        },
+        "motions": {
+          "bardo_mao": {
+            "kind": "strum",
+            "amp": 7,
+            "lag": 0.85
+          },
+          "bardo_cabeca": {
+            "kind": "nod",
+            "amp": 2.2,
+            "sway": 2.5,
+            "sway_beats": 8
+          },
+          "mago_cabeca": {
+            "kind": "sway",
+            "amp": 2.5,
+            "period": 16
+          },
+          "mago_mao": {
+            "kind": "keys",
+            "period": 8,
+            "keys": [
+              [0, 0],
+              [1, 0],
+              [1.6, -13],
+              [2.2, -3],
+              [2.8, -14],
+              [3.6, -4],
+              [4.4, 0],
+              [8, 0]
+            ]
+          },
+          "ladino_cabeca": {
+            "kind": "sway",
+            "amp": 2,
+            "period": 12
+          }
+        },
+        "anims": [
+          {
+            "name": "conversa",
+            "beats": 32,
+            "weight": 2
+          },
+          {
+            "name": "olhar",
+            "beats": 32,
+            "weight": 1,
+            "looks": [
+              {
+                "bone": "ladino_cabeca",
+                "angle": 8,
+                "from": 6,
+                "to": 18,
+                "spring": {
+                  "zeta": 0.8,
+                  "rise": 0.6,
+                  "fall": 0.8
+                }
+              },
+              {
+                "bone": "mago_cabeca",
+                "angle": 6,
+                "from": 10,
+                "to": 20,
+                "spring": {
+                  "zeta": 0.8,
+                  "rise": 0.6,
+                  "fall": 0.8
+                }
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "stair-bard",
+      "order": 20,
+      "area": [0.415, 0.5124, 0.467, 0.629],
+      "who": "a young half-elf bard in a wine-red doublet and feathered cap",
+      "doing": "sitting sideways on one of the lower steps of the wooden staircase, playing a lute, one foot on the step below",
+      "frames": [
+        {
+          "name": "a",
+          "hold": [700, 1200]
+        },
+        {
+          "name": "b",
+          "change": "the strumming hand moves down across the strings and the head tilts slightly with the music",
+          "hold": [700, 1200]
+        },
+        {
+          "name": "c",
+          "change": "the strumming hand moves up again and the bard taps the foot",
+          "hold": [700, 1200],
+          "tweens": [
+            {
+              "auto": "b>c"
+            }
+          ]
+        },
+        {
+          "name": "d",
+          "change": "he looks up toward the balcony above with a broad smile while his fingers keep playing the lute",
+          "hold": [900, 1400],
+          "tweens": [
+            "he starts lifting his head toward the balcony above, chin raised halfway, a small smile appearing; his fingers keep playing",
+            "he lifts his head a bit more, almost looking straight up at the balcony, his smile widening; his fingers keep playing",
+            {
+              "auto": "d_2>d"
+            },
+            {
+              "auto": "d_3>d"
+            }
+          ]
+        }
+      ],
+      "light": {
+        "source": "torch",
+        "gain": 0.07
+      },
+      "tooltip": "🎵 Bardo aquecendo as cordas",
+      "sequence": "loop",
+      "loop_rig": {
+        "bpm": 100,
+        "idleMs": [200, 400],
+        "bones": {
+          "cabeca": {
+            "pivot": [628, 1088],
+            "tip": [615, 880],
+            "blur": 2.5,
+            "region": [
+              [430, 705],
+              [640, 690],
+              [790, 730],
+              [800, 870],
+              [730, 885],
+              [712, 990],
+              [690, 1060],
+              [672, 1090],
+              [590, 1092],
+              [548, 1060],
+              [505, 965],
+              [425, 820]
+            ],
+            "fill": "plate"
+          },
+          "antebraco": {
+            "pivot": [300, 1290],
+            "tip": [455, 1320],
+            "blur": 2,
+            "region": [
+              [245, 1225],
+              [460, 1262],
+              [470, 1362],
+              [300, 1372],
+              [238, 1320]
+            ],
+            "fill": "inpaint"
+          },
+          "mao": {
+            "parent": "antebraco",
+            "pivot": [455, 1320],
+            "tip": [590, 1330],
+            "blur": 1.5,
+            "region": [
+              [445, 1290],
+              [480, 1255],
+              [560, 1262],
+              [600, 1290],
+              [595, 1330],
+              [560, 1350],
+              [520, 1395],
+              [470, 1400],
+              [440, 1370]
+            ],
+            "fill": "inpaint"
+          },
+          "pe": {
+            "pivot": [545, 2135],
+            "tip": [365, 2110],
+            "blur": 2,
+            "region": [
+              [348, 2022],
+              [572, 2015],
+              [582, 2162],
+              [348, 2162]
+            ],
+            "fill": "plate"
+          },
+          "mao_acorde": {
+            "pivot": [885, 1220],
+            "tip": [875, 1060],
+            "blur": 1.5,
+            "fill": "inpaint",
+            "region": [
+              [815, 1060],
+              [860, 1040],
+              [930, 1050],
+              [945, 1130],
+              [935, 1222],
+              [900, 1236],
+              [860, 1226],
+              [820, 1140]
+            ]
+          }
+        },
+        "motions": {
+          "mao": {
+            "kind": "strum",
+            "amp": 5,
+            "lag": 0.85
+          },
+          "antebraco": {
+            "kind": "strum",
+            "amp": 1.5,
+            "lag": 0.9
+          },
+          "cabeca": {
+            "kind": "nod",
+            "amp": 1.6,
+            "sway": 2,
+            "sway_beats": 8
+          },
+          "pe": {
+            "kind": "tap",
+            "amp": 9
+          },
+          "mao_acorde": {
+            "kind": "chords",
+            "amp": 2.5,
+            "bar": 3,
+            "lead": 0.35,
+            "steps": [
+              0, 0, 1, -0.3, 0, 0, 0.4, 0.4, 0, 0, 1, -0.3, 0, 0.4, 0, 0, 0.6, -0.3, 1, -0.3, 0, 0, 0.4,
+              0.4, 0.6, -0.3, 1, -0.3, 0, 0.4, 0, 0
+            ]
+          }
+        },
+        "anims": [
+          {
+            "name": "tocar",
+            "beats": 96,
+            "weight": 2
+          },
+          {
+            "name": "olhar",
+            "beats": 96,
+            "weight": 1,
+            "looks": [
+              {
+                "bone": "cabeca",
+                "angle": -5,
+                "from": 49,
+                "to": 58
+              },
+              {
+                "bone": "cabeca",
+                "angle": -5,
+                "from": 73,
+                "to": 82
+              }
+            ]
+          }
+        ],
+        "music": {
+          "piece": "Greensleeves (tradicional inglesa, séc. XVI, domínio público)",
+          "bar": 3,
+          "melody": [
+            "C5:2 D5:1",
+            "E5:1.5 F5:.5 E5:1",
+            "D5:2 B4:1",
+            "G4:1.5 A4:.5 B4:1",
+            "C5:2 A4:1",
+            "A4:1.5 G#4:.5 A4:1",
+            "B4:2 G#4:1",
+            "E4:2 A4:1",
+            "C5:2 D5:1",
+            "E5:1.5 F5:.5 E5:1",
+            "D5:2 B4:1",
+            "G4:1.5 A4:.5 B4:1",
+            "C5:1.5 B4:.5 A4:1",
+            "G#4:1.5 F#4:.5 G#4:1",
+            "A4:3",
+            "A4:3",
+            "G5:3",
+            "G5:1.5 F#5:.5 E5:1",
+            "D5:2 B4:1",
+            "G4:1.5 A4:.5 B4:1",
+            "C5:2 A4:1",
+            "A4:1.5 G#4:.5 A4:1",
+            "B4:2 G#4:1",
+            "E4:3",
+            "G5:3",
+            "G5:1.5 F#5:.5 E5:1",
+            "D5:2 B4:1",
+            "G4:1.5 A4:.5 B4:1",
+            "C5:1.5 B4:.5 A4:1",
+            "G#4:1.5 F#4:.5 G#4:1",
+            "A4:3",
+            "A4:2 A4:1"
+          ],
+          "chords": [
+            "Am",
+            "Am",
+            "G",
+            "Em",
+            "Am",
+            "Am",
+            "E",
+            "E",
+            "Am",
+            "Am",
+            "G",
+            "Em",
+            "Am",
+            "E",
+            "Am",
+            "Am",
+            "C",
+            "Em",
+            "G",
+            "Em",
+            "Am",
+            "Am",
+            "E",
+            "E",
+            "C",
+            "Em",
+            "G",
+            "Em",
+            "Am",
+            "E",
+            "Am",
+            "Am"
+          ]
+        }
+      }
+    },
+    {
+      "id": "planners-table",
+      "order": 30,
+      "area": [0.4517, 0.5467, 0.5222, 0.6427],
+      "who": "two adventurers: a human ranger woman in a green hooded cloak and a bald bearded human warrior",
+      "doing": "sitting on the benches on both sides of the left long wooden table, leaning over a parchment map spread on the table, planning a route; the ranger points at the map",
+      "frames": [
+        {
+          "name": "a",
+          "hold": [1500, 2400]
+        },
+        {
+          "name": "b",
+          "change": "the warrior points at another spot of the map and the ranger looks up at him",
+          "hold": [1200, 2100],
+          "tweenMs": 140,
+          "tweens": [
+            {
+              "auto": "a>b_1"
+            },
+            "the warrior's hand starts sliding across the map toward another spot, arm half extended; the ranger starts lifting her head, eyes moving up",
+            "the warrior's arm extends further across the map, his finger almost touching the new spot; the ranger's head is raised, looking up at him",
+            {
+              "auto": "b_2>b"
+            },
+            {
+              "auto": "b_4>b"
+            }
+          ]
+        },
+        {
+          "name": "c",
+          "change": "the warrior leans back and crosses his arms while the ranger keeps tracing the route on the map",
+          "hold": [1200, 2100],
+          "tweenMs": 145,
+          "tweens": [
+            "the warrior starts leaning back from the table, hands lifting off the map toward his chest; the ranger keeps tracing the route",
+            "the warrior leans back further, his forearms starting to cross over his chest but not fully crossed yet; the ranger keeps tracing the route",
+            {
+              "auto": "c_2>c"
+            }
+          ]
+        },
+        {
+          "name": "d",
+          "change": "both laugh together, the ranger covering her smile with one hand",
+          "hold": [900, 1500],
+          "tweenMs": 140,
+          "tweens": [
+            "both start smiling, the warrior's mouth opening into a grin; the ranger's free hand starts rising toward her mouth, at chest height",
+            "both laugh a bit more: the warrior grins widely and the ranger's hand is now just below her mouth",
+            {
+              "auto": "d_2>d"
+            }
+          ]
+        }
+      ],
+      "light": {
+        "source": "torch",
+        "gain": 0.06
+      },
+      "tooltip": "🗺️ Traçando a rota do próximo contrato",
+      "sequence": "conversation",
+      "loop_rig": {
+        "bpm": 60,
+        "cell": 14,
+        "quality": 84,
+        "alpha_quality": 60,
+        "bones": {
+          "ranger_chest": {
+            "pivot": [650, 1010],
+            "tip": [730, 850],
+            "blur": 3,
+            "fill": "plate",
+            "region": [
+              [500, 895],
+              [555, 835],
+              [650, 825],
+              [750, 850],
+              [800, 910],
+              [790, 970],
+              [735, 1010],
+              [640, 990],
+              [560, 1020],
+              [510, 970]
+            ]
+          },
+          "ranger_head": {
+            "pivot": [730, 850],
+            "tip": [720, 650],
+            "blur": 2.5,
+            "fill": "plate",
+            "region": [
+              [610, 710],
+              [630, 610],
+              [700, 555],
+              [790, 570],
+              [860, 650],
+              [850, 755],
+              [790, 825],
+              [700, 820]
+            ],
+            "parent": "ranger_chest"
+          },
+          "warrior_chest": {
+            "pivot": [1540, 1070],
+            "tip": [1435, 900],
+            "blur": 3,
+            "fill": "plate",
+            "region": [
+              [1400, 930],
+              [1440, 850],
+              [1520, 825],
+              [1610, 850],
+              [1670, 925],
+              [1675, 1000],
+              [1610, 1050],
+              [1520, 1030],
+              [1450, 1010]
+            ]
+          },
+          "warrior_head": {
+            "pivot": [1435, 900],
+            "tip": [1370, 700],
+            "blur": 2.5,
+            "fill": "plate",
+            "region": [
+              [1220, 755],
+              [1240, 670],
+              [1320, 625],
+              [1420, 640],
+              [1490, 720],
+              [1480, 820],
+              [1420, 885],
+              [1330, 900]
+            ],
+            "parent": "warrior_chest"
+          },
+          "r_fore": {
+            "pivot": [700, 1030],
+            "tip": [865, 1050],
+            "blur": 1.5,
+            "fill": "inpaint",
+            "region": [
+              [690, 990],
+              [870, 998],
+              [882, 1078],
+              [700, 1082]
+            ]
+          },
+          "r_hand": {
+            "parent": "r_fore",
+            "pivot": [865, 1050],
+            "tip": [1005, 1080],
+            "blur": 1.2,
+            "fill": "inpaint",
+            "region": [
+              [850, 1000],
+              [962, 1012],
+              [1018, 1074],
+              [1004, 1098],
+              [868, 1098]
+            ]
+          }
+        },
+        "motions": {
+          "ranger_chest": {
+            "kind": "sway",
+            "amp": 1.1,
+            "period": 4,
+            "breathe": 0.026,
+            "breathe_period": 3
+          },
+          "ranger_head": {
+            "kind": "sway",
+            "amp": 1.8,
+            "period": 6
+          },
+          "warrior_chest": {
+            "kind": "sway",
+            "amp": 1.0,
+            "period": 6,
+            "breathe": 0.022,
+            "breathe_period": 4
+          },
+          "warrior_head": {
+            "kind": "sway",
+            "amp": 1.5,
+            "period": 4
+          },
+          "r_fore": {
+            "kind": "keys",
+            "period": 6,
+            "keys": [
+              [0, 0],
+              [0.7, 0],
+              [1.7, 9],
+              [2.7, 9],
+              [3.7, -6],
+              [4.6, -6],
+              [5.5, 0],
+              [6, 0]
+            ]
+          },
+          "r_hand": {
+            "kind": "keys",
+            "period": 6,
+            "keys": [
+              [0, 0],
+              [0.7, 0],
+              [1.7, -9],
+              [1.95, -9],
+              [2.07, -14],
+              [2.2, -9],
+              [2.32, -14],
+              [2.45, -9],
+              [2.7, -9],
+              [3.7, 6],
+              [4.0, 6],
+              [4.12, 1],
+              [4.27, 6],
+              [4.6, 6],
+              [5.5, 0],
+              [6, 0]
+            ]
+          }
+        },
+        "anims": [
+          {
+            "name": "estudar",
+            "beats": 12,
+            "weight": 3,
+            "looks": [
+              {
+                "bone": "ranger_head",
+                "angle": -2.5,
+                "from": 2,
+                "to": 6,
+                "spring": {
+                  "zeta": 0.8,
+                  "rise": 1.0,
+                  "fall": 1.2
+                }
+              },
+              {
+                "bone": "warrior_head",
+                "angle": 2.0,
+                "from": 5,
+                "to": 9,
+                "spring": {
+                  "zeta": 0.8,
+                  "rise": 1.0,
+                  "fall": 1.2
+                }
+              }
+            ]
+          },
+          {
+            "name": "estudar2",
+            "beats": 12,
+            "weight": 2,
+            "looks": [
+              {
+                "bone": "warrior_head",
+                "angle": -2.0,
+                "from": 1.5,
+                "to": 5,
+                "spring": {
+                  "zeta": 0.8,
+                  "rise": 1.0,
+                  "fall": 1.2
+                }
+              },
+              {
+                "bone": "ranger_head",
+                "angle": 2.0,
+                "from": 6,
+                "to": 10,
+                "spring": {
+                  "zeta": 0.8,
+                  "rise": 1.0,
+                  "fall": 1.2
+                }
+              }
+            ]
+          },
+          {
+            "name": "aponta",
+            "beats": 12,
+            "weight": 1.5,
+            "looks": [
+              {
+                "bone": "warrior_chest",
+                "angle": 0,
+                "from": 1.0,
+                "to": 9.2,
+                "quiet": ["warrior_head"],
+                "quiet_gain": 6
+              },
+              {
+                "bone": "warrior_chest",
+                "angle": 0,
+                "from": 1.0,
+                "to": 9.2,
+                "quiet": ["warrior_chest"],
+                "quiet_gain": 0.6
+              },
+              {
+                "bone": "ranger_head",
+                "angle": 3.5,
+                "from": 2.4,
+                "to": 8.0,
+                "spring": {
+                  "zeta": 0.8,
+                  "rise": 1.0,
+                  "fall": 1.2
+                }
+              },
+              {
+                "bone": "r_fore",
+                "angle": 0,
+                "from": 2.0,
+                "to": 8.4,
+                "quiet": ["r_fore", "r_hand"],
+                "quiet_gain": 6
+              }
+            ],
+            "pose": {
+              "name": "aponta",
+              "in": [1.6, 2.9],
+              "out": [7.0, 8.6]
+            }
+          },
+          {
+            "name": "cruza",
+            "beats": 12,
+            "weight": 1,
+            "looks": [
+              {
+                "bone": "warrior_chest",
+                "angle": 0,
+                "from": 1.0,
+                "to": 10.8,
+                "quiet": ["warrior_head"],
+                "quiet_gain": 6
+              },
+              {
+                "bone": "warrior_chest",
+                "angle": 0,
+                "from": 1.0,
+                "to": 10.8,
+                "quiet": ["warrior_chest"],
+                "quiet_gain": 0.6
+              },
+              {
+                "bone": "fixo",
+                "from": 1.8,
+                "to": 9.6,
+                "seq": [
+                  "w_cross_g0",
+                  "w_cross_s3",
+                  "w_cross_r1",
+                  "w_cross_s4",
+                  "w_cross_q2",
+                  "w_cross_g05",
+                  "w_cross_g1",
+                  "w_cross_g15",
+                  "w_cross_s8",
+                  "w_cross_s11",
+                  "w_cross_r5",
+                  "w_cross_s12"
+                ],
+                "patch_ramp": [1.8, 3.2, 8.2, 9.6],
+                "step": true
+              },
+              {
+                "bone": "ranger_head",
+                "angle": 2.0,
+                "from": 3.0,
+                "to": 7.5,
+                "spring": {
+                  "zeta": 0.8,
+                  "rise": 1.0,
+                  "fall": 1.2
+                }
+              }
+            ]
+          },
+          {
+            "name": "riem",
+            "beats": 12,
+            "weight": 1,
+            "looks": [
+              {
+                "bone": "warrior_chest",
+                "angle": 0,
+                "from": 1.0,
+                "to": 9.4,
+                "quiet": ["warrior_head", "ranger_head", "r_fore", "r_hand"],
+                "quiet_gain": 6
+              },
+              {
+                "bone": "warrior_chest",
+                "angle": 0,
+                "from": 1.0,
+                "to": 9.4,
+                "quiet": ["warrior_chest"],
+                "quiet_gain": 0.6
+              },
+              {
+                "bone": "ranger_chest",
+                "angle": 0,
+                "from": 1.0,
+                "to": 9.4,
+                "quiet": ["ranger_chest"],
+                "quiet_gain": 0.6
+              },
+              {
+                "bone": "fixo",
+                "from": 1.8,
+                "to": 8.0,
+                "seq": [
+                  "w_laugh_s1",
+                  "w_laugh_s2",
+                  "w_laugh_s3",
+                  "w_laugh_s4",
+                  "w_laugh_s5",
+                  "w_laugh_s6",
+                  "w_laugh_s7",
+                  "w_laugh_s8",
+                  "w_laugh_s9",
+                  "w_laugh_s10",
+                  "w_laugh_s11",
+                  "w_laugh_s12"
+                ],
+                "patch_ramp": [1.8, 3.2, 6.6, 8.0]
+              },
+              {
+                "bone": "fixo",
+                "from": 2.0,
+                "to": 8.6,
+                "seq": [
+                  "r_laugh_s1",
+                  "r_laugh_s2",
+                  "r_laugh_s3",
+                  "r_laugh_s4",
+                  "r_laugh_s5",
+                  "r_laugh_s6",
+                  "r_laugh_s7",
+                  "r_laugh_s8",
+                  "r_laugh_s9",
+                  "r_laugh_s10",
+                  "r_laugh_s11",
+                  "r_laugh_s12",
+                  "r_laugh_s13",
+                  "r_laugh_s14",
+                  "r_laugh_s15"
+                ],
+                "patch_ramp": [2.0, 3.2, 7.2, 8.4],
+                "step": true
+              },
+              {
+                "bone": "ranger_chest",
+                "angle": -3.0,
+                "from": 3.0,
+                "to": 7.8,
+                "spring": {
+                  "zeta": 0.6,
+                  "rise": 0.5,
+                  "fall": 0.8
+                },
+                "shake": {
+                  "amp": 2.2,
+                  "hz": 3.2
+                }
+              }
+            ]
+          }
+        ],
+        "precision": 1,
+        "weight_precision": 3,
+        "thin": 3,
+        "patches": {
+          "r_laugh_s1": {
+            "overlay": "overlay_r_laugh_s1.png",
+            "region": [560, 560, 935, 1012],
+            "bone": "ranger_chest",
+            "quality": 60,
+            "alpha_quality": 45,
+            "feather": 10,
+            "cut": "figure"
+          },
+          "r_laugh_s2": {
+            "overlay": "overlay_r_laugh_s2.png",
+            "region": [560, 560, 935, 1012],
+            "bone": "ranger_chest",
+            "quality": 60,
+            "alpha_quality": 45,
+            "feather": 10,
+            "cut": "figure"
+          },
+          "r_laugh_s3": {
+            "overlay": "overlay_r_laugh_s3.png",
+            "region": [560, 560, 935, 1012],
+            "bone": "ranger_chest",
+            "quality": 60,
+            "alpha_quality": 45,
+            "feather": 10,
+            "cut": "figure"
+          },
+          "r_laugh_s4": {
+            "overlay": "overlay_r_laugh_s4.png",
+            "region": [560, 560, 935, 1012],
+            "bone": "ranger_chest",
+            "quality": 60,
+            "alpha_quality": 45,
+            "feather": 10,
+            "cut": "figure"
+          },
+          "r_laugh_s5": {
+            "overlay": "overlay_r_laugh_s5.png",
+            "region": [560, 560, 935, 1012],
+            "bone": "ranger_chest",
+            "quality": 60,
+            "alpha_quality": 45,
+            "feather": 10,
+            "cut": "figure"
+          },
+          "r_laugh_s6": {
+            "overlay": "overlay_r_laugh_s6.png",
+            "region": [560, 560, 935, 1012],
+            "bone": "ranger_chest",
+            "quality": 60,
+            "alpha_quality": 45,
+            "feather": 10,
+            "cut": "figure"
+          },
+          "r_laugh_s7": {
+            "overlay": "overlay_r_laugh_s7.png",
+            "region": [560, 560, 935, 1012],
+            "bone": "ranger_chest",
+            "quality": 60,
+            "alpha_quality": 45,
+            "feather": 10,
+            "cut": "figure"
+          },
+          "r_laugh_s8": {
+            "overlay": "overlay_r_laugh_s8.png",
+            "region": [560, 560, 935, 1012],
+            "bone": "ranger_chest",
+            "quality": 60,
+            "alpha_quality": 45,
+            "feather": 10,
+            "cut": "figure"
+          },
+          "r_laugh_s9": {
+            "overlay": "overlay_r_laugh_s9.png",
+            "region": [560, 560, 935, 1012],
+            "bone": "ranger_chest",
+            "quality": 60,
+            "alpha_quality": 45,
+            "feather": 10,
+            "cut": "figure"
+          },
+          "r_laugh_s10": {
+            "overlay": "overlay_r_laugh_s10.png",
+            "region": [560, 560, 935, 1012],
+            "bone": "ranger_chest",
+            "quality": 60,
+            "alpha_quality": 45,
+            "feather": 10,
+            "cut": "figure"
+          },
+          "r_laugh_s11": {
+            "overlay": "overlay_r_laugh_s11.png",
+            "region": [560, 560, 935, 1012],
+            "bone": "ranger_chest",
+            "quality": 60,
+            "alpha_quality": 45,
+            "feather": 10,
+            "cut": "figure"
+          },
+          "r_laugh_s12": {
+            "overlay": "overlay_r_laugh_s12.png",
+            "region": [560, 560, 935, 1012],
+            "bone": "ranger_chest",
+            "quality": 60,
+            "alpha_quality": 45,
+            "feather": 10,
+            "cut": "figure"
+          },
+          "r_laugh_s13": {
+            "overlay": "overlay_r_laugh_s13.png",
+            "region": [560, 560, 935, 1012],
+            "bone": "ranger_chest",
+            "quality": 60,
+            "alpha_quality": 45,
+            "feather": 10,
+            "cut": "figure"
+          },
+          "r_laugh_s14": {
+            "overlay": "overlay_r_laugh_s14.png",
+            "region": [560, 560, 935, 1012],
+            "bone": "ranger_chest",
+            "quality": 60,
+            "alpha_quality": 45,
+            "feather": 10,
+            "cut": "figure"
+          },
+          "r_laugh_s15": {
+            "overlay": "overlay_r_laugh_s15.png",
+            "region": [560, 560, 935, 1012],
+            "bone": "ranger_chest",
+            "quality": 60,
+            "alpha_quality": 45,
+            "feather": 10,
+            "cut": "figure"
+          },
+          "w_laugh_s1": {
+            "overlay": "overlay_w_laugh_s1.png",
+            "region": [1200, 600, 1520, 960],
+            "bone": "warrior_head",
+            "quality": 60,
+            "alpha_quality": 45,
+            "feather": 10,
+            "cut": "figure"
+          },
+          "w_laugh_s2": {
+            "overlay": "overlay_w_laugh_s2.png",
+            "region": [1200, 600, 1520, 960],
+            "bone": "warrior_head",
+            "quality": 60,
+            "alpha_quality": 45,
+            "feather": 10,
+            "cut": "figure"
+          },
+          "w_laugh_s3": {
+            "overlay": "overlay_w_laugh_s3.png",
+            "region": [1200, 600, 1520, 960],
+            "bone": "warrior_head",
+            "quality": 60,
+            "alpha_quality": 45,
+            "feather": 10,
+            "cut": "figure"
+          },
+          "w_laugh_s4": {
+            "overlay": "overlay_w_laugh_s4.png",
+            "region": [1200, 600, 1520, 960],
+            "bone": "warrior_head",
+            "quality": 60,
+            "alpha_quality": 45,
+            "feather": 10,
+            "cut": "figure"
+          },
+          "w_laugh_s5": {
+            "overlay": "overlay_w_laugh_s5.png",
+            "region": [1200, 600, 1520, 960],
+            "bone": "warrior_head",
+            "quality": 60,
+            "alpha_quality": 45,
+            "feather": 10,
+            "cut": "figure"
+          },
+          "w_laugh_s6": {
+            "overlay": "overlay_w_laugh_s6.png",
+            "region": [1200, 600, 1520, 960],
+            "bone": "warrior_head",
+            "quality": 60,
+            "alpha_quality": 45,
+            "feather": 10,
+            "cut": "figure"
+          },
+          "w_laugh_s7": {
+            "overlay": "overlay_w_laugh_s7.png",
+            "region": [1200, 600, 1520, 960],
+            "bone": "warrior_head",
+            "quality": 60,
+            "alpha_quality": 45,
+            "feather": 10,
+            "cut": "figure"
+          },
+          "w_laugh_s8": {
+            "overlay": "overlay_w_laugh_s8.png",
+            "region": [1200, 600, 1520, 960],
+            "bone": "warrior_head",
+            "quality": 60,
+            "alpha_quality": 45,
+            "feather": 10,
+            "cut": "figure"
+          },
+          "w_laugh_s9": {
+            "overlay": "overlay_w_laugh_s9.png",
+            "region": [1200, 600, 1520, 960],
+            "bone": "warrior_head",
+            "quality": 60,
+            "alpha_quality": 45,
+            "feather": 10,
+            "cut": "figure"
+          },
+          "w_laugh_s10": {
+            "overlay": "overlay_w_laugh_s10.png",
+            "region": [1200, 600, 1520, 960],
+            "bone": "warrior_head",
+            "quality": 60,
+            "alpha_quality": 45,
+            "feather": 10,
+            "cut": "figure"
+          },
+          "w_laugh_s11": {
+            "overlay": "overlay_w_laugh_s11.png",
+            "region": [1200, 600, 1520, 960],
+            "bone": "warrior_head",
+            "quality": 60,
+            "alpha_quality": 45,
+            "feather": 10,
+            "cut": "figure"
+          },
+          "w_laugh_s12": {
+            "overlay": "overlay_w_laugh_s12.png",
+            "region": [1200, 600, 1520, 960],
+            "bone": "warrior_head",
+            "quality": 60,
+            "alpha_quality": 45,
+            "feather": 10,
+            "cut": "figure"
+          },
+          "w_cross_g0": {
+            "overlay": "overlay_w_cross_g0.png",
+            "region": [1120, 580, 1880, 1250],
+            "bone": "warrior_chest",
+            "quality": 60,
+            "alpha_quality": 45,
+            "feather": 10,
+            "cut": "figure",
+            "cut_thresh": 45
+          },
+          "w_cross_s3": {
+            "overlay": "overlay_w_cross_s3.png",
+            "region": [1120, 580, 1880, 1250],
+            "bone": "warrior_chest",
+            "quality": 60,
+            "alpha_quality": 45,
+            "feather": 10,
+            "cut": "figure",
+            "cut_thresh": 45
+          },
+          "w_cross_r1": {
+            "overlay": "overlay_w_cross_r1.png",
+            "region": [1120, 580, 1880, 1250],
+            "bone": "warrior_chest",
+            "quality": 60,
+            "alpha_quality": 45,
+            "feather": 10,
+            "cut": "figure",
+            "cut_thresh": 45
+          },
+          "w_cross_s4": {
+            "overlay": "overlay_w_cross_s4.png",
+            "region": [1120, 580, 1880, 1250],
+            "bone": "warrior_chest",
+            "quality": 60,
+            "alpha_quality": 45,
+            "feather": 10,
+            "cut": "figure",
+            "cut_thresh": 45
+          },
+          "w_cross_q2": {
+            "overlay": "overlay_w_cross_q2.png",
+            "region": [1120, 580, 1880, 1250],
+            "bone": "warrior_chest",
+            "quality": 60,
+            "alpha_quality": 45,
+            "feather": 10,
+            "cut": "figure",
+            "cut_thresh": 45
+          },
+          "w_cross_g05": {
+            "overlay": "overlay_w_cross_g05.png",
+            "region": [1120, 580, 1880, 1250],
+            "bone": "warrior_chest",
+            "quality": 60,
+            "alpha_quality": 45,
+            "feather": 10,
+            "cut": "figure",
+            "cut_thresh": 45
+          },
+          "w_cross_g1": {
+            "overlay": "overlay_w_cross_g1.png",
+            "region": [1120, 580, 1880, 1250],
+            "bone": "warrior_chest",
+            "quality": 60,
+            "alpha_quality": 45,
+            "feather": 10,
+            "cut": "figure",
+            "cut_thresh": 45
+          },
+          "w_cross_g15": {
+            "overlay": "overlay_w_cross_g15.png",
+            "region": [1120, 580, 1880, 1250],
+            "bone": "warrior_chest",
+            "quality": 60,
+            "alpha_quality": 45,
+            "feather": 10,
+            "cut": "figure",
+            "cut_thresh": 45
+          },
+          "w_cross_s8": {
+            "overlay": "overlay_w_cross_s8.png",
+            "region": [1120, 580, 1880, 1250],
+            "bone": "warrior_chest",
+            "quality": 60,
+            "alpha_quality": 45,
+            "feather": 10,
+            "cut": "figure",
+            "cut_thresh": 45
+          },
+          "w_cross_s11": {
+            "overlay": "overlay_w_cross_s11.png",
+            "region": [1120, 580, 1880, 1250],
+            "bone": "warrior_chest",
+            "quality": 60,
+            "alpha_quality": 45,
+            "feather": 10,
+            "cut": "figure",
+            "cut_thresh": 45
+          },
+          "w_cross_r5": {
+            "overlay": "overlay_w_cross_r5.png",
+            "region": [1120, 580, 1880, 1250],
+            "bone": "warrior_chest",
+            "quality": 60,
+            "alpha_quality": 45,
+            "feather": 10,
+            "cut": "figure",
+            "cut_thresh": 45
+          },
+          "w_cross_s12": {
+            "overlay": "overlay_w_cross_s12.png",
+            "region": [1120, 580, 1880, 1250],
+            "bone": "warrior_chest",
+            "quality": 60,
+            "alpha_quality": 45,
+            "feather": 10,
+            "cut": "figure",
+            "cut_thresh": 45
+          }
+        },
+        "poses": {
+          "aponta": {
+            "overlay": "b.png",
+            "clean": "overlay_nofarhand.png",
+            "refine": true,
+            "band": 10,
+            "thr": 24,
+            "free": true,
+            "cell": 12,
+            "hand": [
+              [1310, 893],
+              [1312, 950],
+              [1250, 985],
+              [1165, 1035],
+              [1110, 1060],
+              [1060, 1078],
+              [1000, 1094],
+              [980, 1078],
+              [1010, 1052],
+              [1060, 1020],
+              [1110, 975],
+              [1135, 950],
+              [1200, 925],
+              [1265, 903]
+            ],
+            "rest_poly": [
+              [
+                [1258, 965],
+                [1385, 955],
+                [1395, 1050],
+                [1335, 1102],
+                [1262, 1098]
+              ]
+            ],
+            "cover_extra": [
+              [
+                [1258, 965],
+                [1385, 955],
+                [1395, 1050],
+                [1335, 1102],
+                [1262, 1098]
+              ]
+            ],
+            "cover_bone": "warrior_chest",
+            "front": [
+              {
+                "poly": [
+                  [1290, 860],
+                  [1330, 820],
+                  [1410, 825],
+                  [1415, 905],
+                  [1395, 962],
+                  [1345, 968],
+                  [1305, 930]
+                ],
+                "bone": "warrior_head"
+              },
+              {
+                "poly": [
+                  [1390, 870],
+                  [1500, 860],
+                  [1570, 980],
+                  [1540, 1150],
+                  [1450, 1200],
+                  [1330, 1210],
+                  [1225, 1165],
+                  [1185, 1080],
+                  [1200, 1025],
+                  [1255, 1020],
+                  [1325, 1062],
+                  [1380, 1000],
+                  [1385, 930]
+                ],
+                "bone": "warrior_chest",
+                "cut": [
+                  [
+                    [1258, 965],
+                    [1385, 955],
+                    [1395, 1050],
+                    [1335, 1102],
+                    [1262, 1098]
+                  ]
+                ]
+              }
+            ],
+            "chain": {
+              "anchor": "warrior_chest",
+              "pts": [
+                [1440, 895],
+                [1290, 925],
+                [1150, 1010],
+                [990, 1080]
+              ],
+              "rest": [
+                [1440, 895],
+                [1400, 960],
+                [1350, 990],
+                [1280, 1060]
+              ],
+              "lag": 0.07,
+              "zeta": 0.75,
+              "zeta_out": 1.0,
+              "lead": 0.18,
+              "anticipation": 0.05,
+              "tremor": 0.5,
+              "blend": [40, 30, 25],
+              "emerge": true,
+              "morph": [0.25, 0.42],
+              "fh_in": 0.25,
+              "lag_out": 0.03,
+              "shrink_out": 1.4,
+              "swap_at": 0.12,
+              "swap_s": 0.05,
+              "fh_early": 0.04
+            }
+          }
+        },
+        "idleMs": [200, 400]
+      }
+    },
+    {
+      "id": "drinkers-hearth",
+      "order": 40,
+      "area": [0.5283, 0.5375, 0.6079, 0.6427],
+      "who": "four adventurers: a red-bearded dwarf, a blonde elf archer, a young human knight without helmet and an old gnome with a pointed hat",
+      "doing": "sitting on the benches around the right long table next to the fireplace, chatting and holding wooden mugs of mead",
+      "frames": [
+        {
+          "name": "a",
+          "hold": [3000, 6000]
+        },
+        {
+          "name": "b",
+          "change": "all of them raise their mugs together over the table in a toast",
+          "hold": [1100, 1700],
+          "tweens": [
+            "all of them start lifting their mugs off the table: every mug is about a hand's height above the table, not yet raised high",
+            "all the mugs rise higher, now at shoulder height and moving toward the middle of the table, but not touching yet",
+            {
+              "auto": "b_2>b_3"
+            },
+            {
+              "auto": "b_2>b"
+            }
+          ]
+        },
+        {
+          "name": "c",
+          "change": "the red-bearded dwarf leans back laughing loudly with his head thrown back, the others smile at him",
+          "hold": [1400, 2200],
+          "tweens": [
+            "the red-bearded dwarf starts leaning back with a wide grin, head tilted back only halfway, mouth opening to laugh; the others start smiling",
+            {
+              "auto": "c_1>c_2"
+            },
+            {
+              "auto": "c_1>c_2"
+            },
+            "the red-bearded dwarf leans back a bit more, head tilted further back, mouth open wider laughing; the others smile"
+          ]
+        },
+        {
+          "name": "d",
+          "change": "the blonde elf drinks from her mug while the knight tells a story gesturing with his free hand",
+          "hold": [1600, 2600],
+          "tweens": [
+            "the blonde elf lifts her mug toward her mouth, mug at chin height; the knight raises his free hand halfway, starting to gesture",
+            "the blonde elf's mug is now almost at her lips; the knight's free hand is raised a bit higher, gesturing as he talks",
+            {
+              "auto": "d_2>d_3"
+            },
+            {
+              "auto": "d_2>d"
+            }
+          ]
+        }
+      ],
+      "light": {
+        "source": "hearth",
+        "gain": 0,
+        "_why": "o brilho da lareira (GuildVfxLayer part=\"hearth-glow\") passa por cima desta vinheta igual ao chão em volta; um pulso próprio fazia o retângulo piscar descasado"
+      },
+      "tooltip": "🍺 Brinde à última missão cumprida",
+      "foreground": {
+        "box": [0.5, 0.15, 0.82, 0.7],
+        "_why": "cavaleiro e gnomo ficam na frente da chama animada da lareira (GuildVfxLayer)"
+      },
+      "sequence": "gestures",
+      "loop_rig": {
+        "bpm": 60,
+        "idleMs": [200, 400],
+        "cell": 8,
+        "quality": 84,
+        "alpha_quality": 60,
+        "precision": 1,
+        "weight_precision": 3,
+        "thin": 3,
+        "bones": {
+          "elf_head": {
+            "pivot": [640, 905],
+            "tip": [650, 822],
+            "blur": 2.5,
+            "fill": "plate",
+            "region": [
+              [540, 715],
+              [600, 695],
+              [705, 715],
+              [740, 800],
+              [722, 872],
+              [682, 912],
+              [600, 918],
+              [558, 880],
+              [538, 800]
+            ]
+          },
+          "dwarf_chest": {
+            "pivot": [955, 1060],
+            "tip": [950, 800],
+            "blur": 3,
+            "fill": "plate",
+            "region": [
+              [715, 780],
+              [880, 758],
+              [1030, 765],
+              [1150, 795],
+              [1155, 960],
+              [1100, 1000],
+              [780, 1000],
+              [712, 900]
+            ]
+          },
+          "dwarf_head": {
+            "parent": "dwarf_chest",
+            "pivot": [950, 800],
+            "tip": [970, 712],
+            "blur": 2.5,
+            "fill": "plate",
+            "region": [
+              [835, 560],
+              [1045, 555],
+              [1065, 700],
+              [1045, 860],
+              [985, 905],
+              [900, 895],
+              [850, 800],
+              [828, 680]
+            ]
+          },
+          "gnome_head": {
+            "pivot": [1365, 905],
+            "tip": [1345, 815],
+            "blur": 2.5,
+            "fill": "plate",
+            "region": [
+              [1215, 705],
+              [1300, 560],
+              [1400, 520],
+              [1565, 575],
+              [1565, 800],
+              [1455, 835],
+              [1440, 950],
+              [1350, 965],
+              [1290, 905],
+              [1255, 805]
+            ]
+          },
+          "gnome_hand": {
+            "pivot": [1300, 1040],
+            "tip": [1360, 950],
+            "blur": 1.5,
+            "fill": "inpaint",
+            "region": [
+              [1288, 912],
+              [1400, 898],
+              [1425, 958],
+              [1405, 1012],
+              [1322, 1035],
+              [1280, 992]
+            ]
+          },
+          "knight_head": {
+            "pivot": [1680, 885],
+            "tip": [1680, 820],
+            "blur": 2.5,
+            "fill": "plate",
+            "region": [
+              [1588, 690],
+              [1660, 648],
+              [1782, 668],
+              [1795, 760],
+              [1762, 852],
+              [1722, 884],
+              [1640, 890],
+              [1598, 832],
+              [1578, 760]
+            ]
+          },
+          "knight_fore": {
+            "pivot": [1640, 1060],
+            "tip": [1500, 930],
+            "blur": 1.5,
+            "fill": "inpaint",
+            "region": [
+              [1458, 880],
+              [1560, 858],
+              [1602, 928],
+              [1682, 1008],
+              [1684, 1092],
+              [1620, 1104],
+              [1556, 1042],
+              [1478, 1002]
+            ]
+          },
+          "elf_jaw": {
+            "parent": "elf_head",
+            "pivot": [650, 822],
+            "tip": [700, 885],
+            "blur": 1.2,
+            "fill": "plate",
+            "region": [
+              [660, 848],
+              [702, 844],
+              [726, 855],
+              [719, 881],
+              [696, 899],
+              [664, 901],
+              [648, 880]
+            ]
+          },
+          "dwarf_jaw": {
+            "parent": "dwarf_head",
+            "pivot": [970, 712],
+            "tip": [970, 870],
+            "blur": 2,
+            "fill": "plate",
+            "region": [
+              [880, 712],
+              [1060, 706],
+              [1075, 800],
+              [1050, 862],
+              [1000, 872],
+              [940, 872],
+              [892, 860],
+              [870, 790]
+            ]
+          },
+          "gnome_jaw": {
+            "parent": "gnome_head",
+            "pivot": [1345, 815],
+            "tip": [1345, 895],
+            "blur": 1.5,
+            "fill": "plate",
+            "region": [
+              [1292, 818],
+              [1400, 812],
+              [1420, 858],
+              [1405, 892],
+              [1300, 896],
+              [1282, 862]
+            ]
+          },
+          "knight_jaw": {
+            "parent": "knight_head",
+            "pivot": [1680, 820],
+            "tip": [1620, 862],
+            "blur": 1.2,
+            "fill": "plate",
+            "region": [
+              [1600, 816],
+              [1650, 812],
+              [1690, 830],
+              [1682, 870],
+              [1640, 886],
+              [1604, 876],
+              [1594, 846]
+            ]
+          }
+        },
+        "motions": {
+          "elf_head": {
+            "kind": "sway",
+            "amp": 1.5,
+            "period": 6
+          },
+          "dwarf_chest": {
+            "kind": "sway",
+            "amp": 0.7,
+            "period": 5,
+            "breathe": 0.02,
+            "breathe_period": 3
+          },
+          "dwarf_head": {
+            "kind": "sway",
+            "amp": 1.6,
+            "period": 4
+          },
+          "gnome_head": {
+            "kind": "sway",
+            "amp": 2.0,
+            "period": 3
+          },
+          "gnome_hand": {
+            "kind": "keys",
+            "period": 6,
+            "keys": [
+              [0, 0],
+              [1, 5],
+              [2, -3],
+              [3, 4],
+              [4, 0],
+              [6, 0]
+            ]
+          },
+          "knight_head": {
+            "kind": "sway",
+            "amp": 1.5,
+            "period": 5
+          },
+          "elf_jaw": {
+            "kind": "talk",
+            "amp": 8,
+            "period": 12,
+            "bursts": [
+              [0.5, 2.5],
+              [7.5, 9]
+            ],
+            "phase": 0.0
+          },
+          "dwarf_jaw": {
+            "kind": "talk",
+            "talk_scale": 0.09,
+            "period": 12,
+            "bursts": [[3, 5.5]],
+            "phase": 0.4
+          },
+          "gnome_jaw": {
+            "kind": "talk",
+            "talk_scale": 0.1,
+            "period": 12,
+            "bursts": [
+              [5.8, 7.5],
+              [10, 11.6]
+            ],
+            "phase": 0.9
+          },
+          "knight_jaw": {
+            "kind": "talk",
+            "amp": -8,
+            "period": 12,
+            "bursts": [
+              [1.2, 3.2],
+              [8.6, 10.2]
+            ],
+            "phase": 0.2
+          },
+          "knight_fore": {
+            "kind": "keys",
+            "period": 6,
+            "keys": [
+              [0, 0],
+              [1, 0],
+              [1.8, 7],
+              [2.6, 2],
+              [3.4, 8],
+              [4.4, 0],
+              [6, 0]
+            ]
+          }
+        },
+        "patches": {
+          "elf_drink_s1": {
+            "overlay": "overlay_elf_drink_s1.png",
+            "region": [380, 590, 1010, 1330],
+            "bone": "fixo",
+            "quality": 60,
+            "alpha_quality": 45,
+            "feather": 10,
+            "cut": "figure"
+          },
+          "elf_drink_s2": {
+            "overlay": "overlay_elf_drink_s2.png",
+            "region": [380, 590, 1010, 1330],
+            "bone": "fixo",
+            "quality": 60,
+            "alpha_quality": 45,
+            "feather": 10,
+            "cut": "figure"
+          },
+          "elf_drink_s3": {
+            "overlay": "overlay_elf_drink_s3.png",
+            "region": [380, 590, 1010, 1330],
+            "bone": "fixo",
+            "quality": 60,
+            "alpha_quality": 45,
+            "feather": 10,
+            "cut": "figure"
+          },
+          "elf_drink_s4": {
+            "overlay": "overlay_elf_drink_s4.png",
+            "region": [380, 590, 1010, 1330],
+            "bone": "fixo",
+            "quality": 60,
+            "alpha_quality": 45,
+            "feather": 10,
+            "cut": "figure"
+          },
+          "elf_drink_s5": {
+            "overlay": "overlay_elf_drink_s5.png",
+            "region": [380, 590, 1010, 1330],
+            "bone": "fixo",
+            "quality": 60,
+            "alpha_quality": 45,
+            "feather": 10,
+            "cut": "figure"
+          },
+          "dw_laugh_s1": {
+            "overlay": "overlay_dw_laugh_s1.png",
+            "region": [715, 500, 1215, 1015],
+            "bone": "dwarf_chest",
+            "quality": 60,
+            "alpha_quality": 45,
+            "feather": 10,
+            "cut": "figure"
+          },
+          "dw_laugh_s2": {
+            "overlay": "overlay_dw_laugh_s2.png",
+            "region": [715, 500, 1215, 1015],
+            "bone": "dwarf_chest",
+            "quality": 60,
+            "alpha_quality": 45,
+            "feather": 10,
+            "cut": "figure"
+          },
+          "dw_laugh_s3": {
+            "overlay": "overlay_dw_laugh_s3.png",
+            "region": [715, 500, 1215, 1015],
+            "bone": "dwarf_chest",
+            "quality": 60,
+            "alpha_quality": 45,
+            "feather": 10,
+            "cut": "figure"
+          },
+          "dw_laugh_s4": {
+            "overlay": "overlay_dw_laugh_s4.png",
+            "region": [715, 500, 1215, 1015],
+            "bone": "dwarf_chest",
+            "quality": 60,
+            "alpha_quality": 45,
+            "feather": 10,
+            "cut": "figure"
+          },
+          "dw_laugh_s5": {
+            "overlay": "overlay_dw_laugh_s5.png",
+            "region": [715, 500, 1215, 1015],
+            "bone": "dwarf_chest",
+            "quality": 60,
+            "alpha_quality": 45,
+            "feather": 10,
+            "cut": "figure"
+          },
+          "dw_drink_s1": {
+            "overlay": "overlay_dw_drink_s1.png",
+            "region": [715, 495, 1215, 1035],
+            "bone": "fixo",
+            "quality": 60,
+            "alpha_quality": 45,
+            "feather": 10,
+            "cut": "figure"
+          },
+          "dw_drink_s2": {
+            "overlay": "overlay_dw_drink_s2.png",
+            "region": [715, 495, 1215, 1035],
+            "bone": "fixo",
+            "quality": 60,
+            "alpha_quality": 45,
+            "feather": 10,
+            "cut": "figure"
+          },
+          "gn_drink_s1": {
+            "overlay": "overlay_gn_drink_s1.png",
+            "region": [1095, 495, 1578, 1065],
+            "bone": "fixo",
+            "quality": 60,
+            "alpha_quality": 45,
+            "feather": 10,
+            "cut": "figure"
+          },
+          "gn_drink_s2": {
+            "overlay": "overlay_gn_drink_s2.png",
+            "region": [1095, 495, 1578, 1065],
+            "bone": "fixo",
+            "quality": 60,
+            "alpha_quality": 45,
+            "feather": 10,
+            "cut": "figure"
+          },
+          "kn_drink_s1": {
+            "overlay": "overlay_kn_drink_s1.png",
+            "region": [1350, 640, 1900, 1330],
+            "bone": "fixo",
+            "quality": 60,
+            "alpha_quality": 45,
+            "feather": 10,
+            "cut": "figure"
+          },
+          "kn_drink_s2": {
+            "overlay": "overlay_kn_drink_s2.png",
+            "region": [1350, 640, 1900, 1330],
+            "bone": "fixo",
+            "quality": 60,
+            "alpha_quality": 45,
+            "feather": 10,
+            "cut": "figure"
+          },
+          "kn_drink_s3": {
+            "overlay": "overlay_kn_drink_s3.png",
+            "region": [1350, 640, 1900, 1330],
+            "bone": "fixo",
+            "quality": 60,
+            "alpha_quality": 45,
+            "feather": 10,
+            "cut": "figure"
+          }
+        },
+        "anims": [
+          {
+            "name": "conversa",
+            "beats": 12,
+            "weight": 2,
+            "looks": [
+              {
+                "bone": "elf_head",
+                "angle": 2.5,
+                "from": 2,
+                "to": 6,
+                "spring": {
+                  "zeta": 0.8,
+                  "rise": 1.0,
+                  "fall": 1.2
+                }
+              },
+              {
+                "bone": "dwarf_head",
+                "angle": -2.5,
+                "from": 6,
+                "to": 10,
+                "spring": {
+                  "zeta": 0.8,
+                  "rise": 1.0,
+                  "fall": 1.2
+                }
+              }
+            ]
+          },
+          {
+            "name": "rir",
+            "beats": 12,
+            "weight": 1,
+            "looks": [
+              {
+                "bone": "dwarf_chest",
+                "angle": 0,
+                "from": 1.0,
+                "to": 10.0,
+                "quiet": ["dwarf_head", "dwarf_jaw"],
+                "quiet_gain": 6
+              },
+              {
+                "bone": "fixo",
+                "from": 1.5,
+                "to": 9.5,
+                "seq": ["dw_laugh_s1", "dw_laugh_s2", "dw_laugh_s3", "dw_laugh_s4", "dw_laugh_s5"],
+                "patch_ramp": [1.5, 3.0, 8.0, 9.5],
+                "step": true
+              },
+              {
+                "bone": "dwarf_chest",
+                "angle": -1.5,
+                "from": 3.0,
+                "to": 8.4,
+                "spring": {
+                  "zeta": 0.6,
+                  "rise": 0.5,
+                  "fall": 0.8
+                },
+                "shake": {
+                  "amp": 1.4,
+                  "hz": 3.2
+                }
+              },
+              {
+                "bone": "elf_head",
+                "angle": 3,
+                "from": 3.2,
+                "to": 8.0,
+                "spring": {
+                  "zeta": 0.8,
+                  "rise": 1.0,
+                  "fall": 1.2
+                }
+              },
+              {
+                "bone": "gnome_head",
+                "angle": -3,
+                "from": 3.5,
+                "to": 8.5,
+                "spring": {
+                  "zeta": 0.8,
+                  "rise": 1.0,
+                  "fall": 1.2
+                }
+              }
+            ]
+          },
+          {
+            "name": "beber_elfa",
+            "beats": 9,
+            "weight": 1.5,
+            "looks": [
+              {
+                "bone": "elf_head",
+                "angle": 0,
+                "from": 1.0,
+                "to": 8.2,
+                "quiet": ["elf_head", "elf_jaw"],
+                "quiet_gain": 6
+              },
+              {
+                "bone": "fixo",
+                "from": 1.5,
+                "to": 7.6,
+                "seq": ["elf_drink_s1", "elf_drink_s2", "elf_drink_s3", "elf_drink_s4", "elf_drink_s5"],
+                "patch_ramp": [1.5, 3.3, 5.8, 7.6],
+                "step": true
+              }
+            ]
+          },
+          {
+            "name": "beber_anao",
+            "beats": 9,
+            "weight": 1.5,
+            "looks": [
+              {
+                "bone": "dwarf_head",
+                "angle": 0,
+                "from": 1.0,
+                "to": 7.1,
+                "quiet": ["dwarf_head", "dwarf_chest", "dwarf_jaw"],
+                "quiet_gain": 6
+              },
+              {
+                "bone": "fixo",
+                "from": 1.5,
+                "to": 6.5,
+                "seq": ["dw_drink_s1", "dw_drink_s2"],
+                "patch_ramp": [1.5, 2.5, 5.5, 6.5],
+                "step": true
+              }
+            ]
+          },
+          {
+            "name": "beber_gnomo",
+            "beats": 9,
+            "weight": 1.5,
+            "looks": [
+              {
+                "bone": "gnome_head",
+                "angle": 0,
+                "from": 1.0,
+                "to": 7.1,
+                "quiet": ["gnome_head", "gnome_hand", "gnome_jaw"],
+                "quiet_gain": 6
+              },
+              {
+                "bone": "fixo",
+                "from": 1.5,
+                "to": 6.5,
+                "seq": ["gn_drink_s1", "gn_drink_s2"],
+                "patch_ramp": [1.5, 2.5, 5.5, 6.5],
+                "step": true
+              }
+            ]
+          },
+          {
+            "name": "beber_cavaleiro",
+            "beats": 9,
+            "weight": 1.5,
+            "looks": [
+              {
+                "bone": "knight_head",
+                "angle": 0,
+                "from": 1.0,
+                "to": 8.1,
+                "quiet": ["knight_head", "knight_fore", "knight_jaw"],
+                "quiet_gain": 6
+              },
+              {
+                "bone": "fixo",
+                "from": 1.5,
+                "to": 7.5,
+                "seq": ["kn_drink_s1", "kn_drink_s2", "kn_drink_s3"],
+                "patch_ramp": [1.5, 3.0, 6.0, 7.5],
+                "step": true
+              }
+            ]
+          },
+          {
+            "name": "conta",
+            "beats": 12,
+            "weight": 1,
+            "looks": [
+              {
+                "bone": "knight_fore",
+                "angle": 9,
+                "from": 1.5,
+                "to": 8.5,
+                "spring": {
+                  "zeta": 0.6,
+                  "rise": 0.7,
+                  "fall": 1.0
+                }
+              },
+              {
+                "bone": "knight_head",
+                "angle": 3,
+                "from": 2,
+                "to": 8,
+                "spring": {
+                  "zeta": 0.8,
+                  "rise": 1.0,
+                  "fall": 1.2
+                }
+              },
+              {
+                "bone": "knight_jaw",
+                "from": 1.5,
+                "to": 8.5,
+                "talk": true
+              },
+              {
+                "bone": "gnome_head",
+                "angle": 4,
+                "from": 2.5,
+                "to": 8.5,
+                "spring": {
+                  "zeta": 0.8,
+                  "rise": 1.0,
+                  "fall": 1.2
+                }
+              },
+              {
+                "bone": "dwarf_head",
+                "angle": 3,
+                "from": 3,
+                "to": 9,
+                "spring": {
+                  "zeta": 0.8,
+                  "rise": 1.0,
+                  "fall": 1.2
+                }
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "hearth-cat",
+      "order": 45,
+      "area": [0.5834, 0.5741, 0.6171, 0.6176],
+      "who": "a fat orange tabby cat",
+      "doing": "sleeping curled up on the warm stone hearth in front of the fireplace",
+      "frames": [
+        {
+          "name": "a",
+          "hold": [3500, 7000]
+        },
+        {
+          "name": "b",
+          "change": "the cat's tail tip is lifted and curled and one ear twitches",
+          "hold": [600, 1000],
+          "tweens": [
+            "the cat's tail tip starts lifting slightly and one ear tilts a little",
+            "the cat's tail tip rises a bit higher and starts to curl; the ear twitches",
+            {
+              "auto": "b_2>b_3"
+            },
+            {
+              "auto": "b_2>b"
+            }
+          ]
+        },
+        {
+          "name": "c",
+          "change": "the cat lifts its head and yawns widely, eyes closed, still lying curled",
+          "hold": [700, 1100],
+          "tweens": [
+            "the cat lifts its head slightly and its mouth starts to open in a small yawn, eyes half closed",
+            "the cat lifts its head a bit more and opens its mouth wider in a yawn, eyes closed"
+          ]
+        }
+      ],
+      "light": {
+        "source": "hearth",
+        "gain": 0,
+        "_why": "o brilho da lareira (GuildVfxLayer part=\"hearth-glow\") passa por cima desta vinheta igual ao chão em volta; um pulso próprio fazia o retângulo piscar descasado"
+      },
+      "tooltip": "🐈 Brasa, o gato oficial da guilda",
+      "sequence": "gestures",
+      "foreground": {
+        "box": [0, 0, 1, 1],
+        "_why": "a marionete da mesa da lareira é desenhada na frente dos efeitos e cobre o canto do gato; ele vem para a mesma camada, por cima (order maior)"
+      }
+    },
+    {
+      "id": "receptionist",
+      "order": 50,
+      "area": [0.6324, 0.5215, 0.7059, 0.6313],
+      "who": "a plump middle-aged human woman, the guild receptionist, grey-streaked auburn hair in a bun, round spectacles, dark green dress with a leather apron",
+      "doing": "standing BEHIND the back wooden counter (the counter hides her from the waist down), writing in a big ledger with a quill",
+      "frames": [
+        {
+          "name": "a",
+          "hold": [2500, 5000]
+        },
+        {
+          "name": "b",
+          "change": "she lifts her head and the quill and smiles toward the hall entrance",
+          "hold": [1600, 2600],
+          "tweens": [
+            "she starts lifting her head and the quill: her head is raised halfway and the quill is lifted just above the page, a small smile appearing",
+            {
+              "auto": "b_1>b_2"
+            },
+            {
+              "auto": "b_1>b_2"
+            },
+            "she raises her head a bit more and lifts the quill higher, her smile widening as she looks toward the hall entrance",
+            {
+              "auto": "b_2>b"
+            }
+          ]
+        },
+        {
+          "name": "c",
+          "change": "she turns a page of the big ledger with her free hand, the quill raised in the other hand",
+          "hold": [1000, 1600],
+          "tweens": [
+            {
+              "auto": "a>c_1"
+            },
+            {
+              "auto": "a>c_1"
+            },
+            "her free hand moves to the edge of the ledger page and starts lifting the page corner; the quill starts rising in the other hand",
+            "her free hand lifts the page higher, the page now standing up halfway through being turned; the quill is raised in the other hand",
+            {
+              "auto": "c_3>c_4"
+            },
+            {
+              "auto": "c_2>c"
+            }
+          ]
+        },
+        {
+          "name": "d",
+          "change": "she pushes her round spectacles up her nose with one finger and looks down at the ledger",
+          "hold": [1000, 1600],
+          "tweens": [
+            {
+              "auto": "a>d_1"
+            },
+            {
+              "auto": "a>d_1"
+            },
+            "she starts raising one hand toward her face: her finger is at chin height, not yet touching the spectacles",
+            "her finger now reaches the bridge of her round spectacles, starting to push them up",
+            {
+              "auto": "d_3>d_4"
+            },
+            {
+              "auto": "d_2>d"
+            }
+          ]
+        }
+      ],
+      "light": {
+        "source": "torch",
+        "gain": 0.08
+      },
+      "tooltip": "📜 Mestra Agda, recepcionista da guilda",
+      "sequence": "gestures",
+      "loop_rig": {
+        "bpm": 60,
+        "idleMs": [200, 400],
+        "bones": {
+          "cabeca": {
+            "pivot": [880, 1100],
+            "tip": [880, 700],
+            "blur": 2.5,
+            "fill": "plate",
+            "region": [
+              [660, 470],
+              [860, 450],
+              [1000, 560],
+              [1130, 700],
+              [1150, 860],
+              [1100, 960],
+              [1020, 1040],
+              [960, 1085],
+              [880, 1100],
+              [800, 1085],
+              [740, 980],
+              [680, 900],
+              [640, 700]
+            ]
+          },
+          "antebraco": {
+            "pivot": [500, 1590],
+            "tip": [810, 1600],
+            "blur": 2,
+            "fill": "overlay_nowrite.png",
+            "region": [
+              [520, 1490],
+              [700, 1505],
+              [830, 1540],
+              [840, 1660],
+              [700, 1685],
+              [540, 1685],
+              [500, 1600]
+            ]
+          },
+          "mao": {
+            "parent": "antebraco",
+            "pivot": [810, 1600],
+            "tip": [995, 1735],
+            "blur": 1.5,
+            "fill": "overlay_nowrite.png",
+            "region": [
+              [695, 1300],
+              [745, 1280],
+              [790, 1360],
+              [900, 1500],
+              [960, 1560],
+              [1000, 1600],
+              [1015, 1745],
+              [960, 1750],
+              [880, 1710],
+              [820, 1680],
+              [790, 1610],
+              [800, 1560],
+              [760, 1460]
+            ]
+          },
+          "mao_livre": {
+            "pivot": [1170, 1520],
+            "tip": [1060, 1660],
+            "blur": 1.5,
+            "fill": "inpaint",
+            "region": [
+              [1000, 1520],
+              [1080, 1480],
+              [1200, 1460],
+              [1215, 1560],
+              [1150, 1700],
+              [1050, 1710],
+              [995, 1640]
+            ]
+          }
+        },
+        "motions": {
+          "mao": {
+            "kind": "scribble",
+            "amp": 2.2
+          },
+          "antebraco": {
+            "kind": "line",
+            "amp": 3,
+            "period": 6
+          },
+          "cabeca": {
+            "kind": "sway",
+            "amp": 1.0,
+            "period": 6
+          },
+          "mao_livre": {
+            "kind": "line",
+            "amp": -1.5,
+            "period": 6
+          }
+        },
+        "anims": [
+          {
+            "name": "escrever",
+            "beats": 12,
+            "weight": 3,
+            "blinks": [1.4, 5.1, 8.6, 10.3],
+            "effects": [
+              {
+                "var": "linhas",
+                "add": 1,
+                "from": 11,
+                "until": 12
+              }
+            ]
+          },
+          {
+            "name": "olhar",
+            "beats": 12,
+            "weight": 1,
+            "blinks": [0.8, 11.0],
+            "looks": [
+              {
+                "bone": "cabeca",
+                "angle": -4,
+                "from": 2,
+                "to": 10,
+                "quiet": ["mao", "antebraco", "mao_livre"],
+                "patch": "look"
+              }
+            ]
+          },
+          {
+            "name": "virar",
+            "beats": 12,
+            "weight": 1,
+            "weightBy": "linhas",
+            "blinks": [2.2, 9.4],
+            "looks": [
+              {
+                "bone": "cabeca",
+                "angle": 1.5,
+                "from": 2,
+                "to": 7,
+                "quiet": ["mao", "antebraco", "mao_livre"]
+              },
+              {
+                "bone": "antebraco",
+                "angle": -14,
+                "from": 2.9,
+                "to": 5.3
+              },
+              {
+                "bone": "mao",
+                "angle": -12,
+                "from": 2.9,
+                "to": 5.3
+              }
+            ],
+            "flip": {
+              "from": 3.45,
+              "to": 4.65
+            },
+            "effects": [
+              {
+                "var": "linhas",
+                "to": 0,
+                "from": 4,
+                "until": 5
+              }
+            ],
+            "pose": {
+              "name": "canto",
+              "in": [2.7, 3.3],
+              "out": [4.85, 5.45]
+            }
+          }
+        ],
+        "cell": 9,
+        "patches": {
+          "blink": {
+            "overlay": "overlay_blink.png",
+            "region": [780, 835, 1100, 960],
+            "bone": "cabeca",
+            "feather": 8
+          },
+          "look": {
+            "overlay": "overlay_look.png",
+            "region": [770, 800, 1110, 1045],
+            "bone": "cabeca",
+            "feather": 10
+          }
+        },
+        "page_flip": {
+          "spine": [
+            [1005, 1660],
+            [1185, 1835]
+          ],
+          "right": [
+            [1300, 1640],
+            [1555, 1775]
+          ],
+          "left": [
+            [575, 1685],
+            [800, 1830]
+          ],
+          "frames": 16,
+          "curl": 0.5,
+          "lift": 1.15,
+          "occluders": ["mao", "antebraco"],
+          "front": [
+            [
+              [505, 1490],
+              [580, 1458],
+              [680, 1465],
+              [702, 1485],
+              [740, 1515],
+              [790, 1552],
+              [840, 1530],
+              [793, 1460],
+              [710, 1310],
+              [705, 1298],
+              [735, 1296],
+              [830, 1370],
+              [905, 1500],
+              [925, 1555],
+              [950, 1575],
+              [978, 1635],
+              [995, 1675],
+              [1022, 1742],
+              [1005, 1748],
+              [960, 1710],
+              [880, 1714],
+              [800, 1690],
+              [760, 1674],
+              [680, 1662],
+              [580, 1642],
+              [515, 1622],
+              [500, 1560]
+            ]
+          ],
+          "front_cut": [
+            [
+              [880, 1700],
+              [992, 1700],
+              [1011, 1733],
+              [1011, 1770],
+              [880, 1770]
+            ],
+            [
+              [1004, 1700],
+              [1045, 1688],
+              [1055, 1770],
+              [1021, 1770],
+              [1020, 1733]
+            ]
+          ]
+        },
+        "vars": {
+          "linhas": {
+            "max": 6
+          }
+        },
+        "poses": {
+          "canto": {
+            "overlay": "overlay_turnflat.png",
+            "cover": "mao_livre",
+            "clean": "overlay_nohand.png",
+            "hand": [
+              [1200, 1430],
+              [1290, 1400],
+              [1360, 1440],
+              [1445, 1500],
+              [1530, 1550],
+              [1558, 1605],
+              [1568, 1665],
+              [1555, 1718],
+              [1495, 1728],
+              [1440, 1700],
+              [1400, 1675],
+              [1340, 1685],
+              [1300, 1600],
+              [1250, 1560],
+              [1205, 1500]
+            ],
+            "cover_extra": [
+              [
+                [1190, 1450],
+                [1290, 1420],
+                [1350, 1480],
+                [1320, 1560],
+                [1230, 1585],
+                [1190, 1540]
+              ]
+            ],
+            "reach": {
+              "cuff": [1310, 1460],
+              "wrist": [1450, 1565],
+              "to": [1480, 1600],
+              "from": [1110, 1600],
+              "turn": 25,
+              "lift": 35,
+              "fade": 0.3
+            },
+            "paper_rg": 0,
+            "hand_cut": [
+              [
+                [1330, 1650],
+                [1395, 1667],
+                [1440, 1673],
+                [1468, 1688],
+                [1478, 1715],
+                [1440, 1745],
+                [1330, 1745]
+              ],
+              [
+                [1300, 1600],
+                [1386, 1612],
+                [1392, 1640],
+                [1390, 1700],
+                [1300, 1700]
+              ],
+              [
+                [1470, 1724],
+                [1535, 1724],
+                [1535, 1770],
+                [1470, 1770]
+              ]
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": "library-reader",
+      "order": 55,
+      "area": [0.7396, 0.549, 0.7978, 0.6565],
+      "who": "an old elf scholar in deep blue robes with a long white braid",
+      "doing": "sitting in the red armchair inside the library room, reading a thick open book under the lantern light",
+      "frames": [
+        {
+          "name": "a",
+          "hold": [4000, 8000]
+        },
+        {
+          "name": "b",
+          "change": "the scholar turns a page of the book with one hand",
+          "hold": [700, 1100],
+          "tweens": [
+            "the scholar's hand moves to the edge of the right page and starts lifting the page corner",
+            {
+              "auto": "b_1>b_2"
+            },
+            "the scholar's hand lifts the page higher, the page standing up halfway through being turned",
+            {
+              "auto": "b_2>b"
+            }
+          ]
+        },
+        {
+          "name": "c",
+          "change": "the scholar lowers the open book onto his lap with both hands and raises his whole head to look straight ahead toward the viewer, eyebrows raised in curiosity, mouth slightly open",
+          "hold": [1500, 2500],
+          "tweens": [
+            {
+              "auto": "a>c"
+            }
+          ]
+        }
+      ],
+      "light": {
+        "source": "torch",
+        "gain": 0.07
+      },
+      "tooltip": "📚 O arquivista nunca sai da biblioteca",
+      "extract": {
+        "blur": 4.0,
+        "threshold": 13.0
+      },
+      "sequence": "gestures"
+    },
+    {
+      "id": "board-readers",
+      "order": 60,
+      "area": [0.271, 0.4804, 0.3507, 0.6702],
+      "who": "a tall green-skinned orc warrior with a big axe strapped to his back and a short halfling rogue in a brown hood",
+      "doing": "standing with their backs to the viewer in front of the contracts board inside the left arch, reading the posted contracts",
+      "frames": [
+        {
+          "name": "a",
+          "hold": [2600, 5000]
+        },
+        {
+          "name": "b",
+          "change": "the orc raises one arm and points at a contract high on the board while the halfling stands on tiptoe",
+          "hold": [1500, 2600],
+          "tweens": [
+            {
+              "auto": "a>b_1"
+            },
+            "the orc starts raising one arm toward the board, the arm at shoulder height, not pointing high yet; the halfling starts rising on his toes",
+            "the orc's arm rises higher, now above his head, almost pointing at the contract; the halfling is on tiptoe",
+            {
+              "auto": "b_3>b_4"
+            },
+            {
+              "auto": "b_2>b"
+            }
+          ]
+        },
+        {
+          "name": "c",
+          "change": "the halfling points at a lower contract on the board and the orc tilts his head down to look at it",
+          "hold": [1600, 2600],
+          "tweens": [
+            {
+              "auto": "a>c_1"
+            },
+            {
+              "auto": "a>c_1"
+            },
+            "the halfling starts raising his arm toward a lower contract, arm halfway up; the orc starts tilting his head down",
+            "the halfling's arm extends further toward the lower contract, almost pointing at it; the orc tilts his head down a bit more",
+            {
+              "auto": "c_2>c"
+            }
+          ]
+        },
+        {
+          "name": "d",
+          "change": "the orc crosses his big arms over his chest, thinking, while the halfling scratches his chin",
+          "hold": [2000, 3200],
+          "tweens": [
+            {
+              "auto": "a>d_1"
+            },
+            "the orc starts folding his arms, both forearms moving toward his chest but not crossed yet; the halfling's hand starts rising toward his chin",
+            "the orc's forearms now overlap in front of his chest, almost crossed; the halfling's hand reaches his chin"
+          ]
+        }
+      ],
+      "light": {
+        "source": "torch",
+        "gain": 0.1
+      },
+      "tooltip": "⚔️ Aventureiros escolhendo contratos",
+      "sequence": "gestures",
+      "loop_rig": {
+        "bpm": 60,
+        "idleMs": [200, 400],
+        "cell": 18,
+        "bones": {
+          "torso": {
+            "pivot": [650, 1390],
+            "tip": [650, 935],
+            "blur": 4,
+            "fill": "plate",
+            "region": [
+              [345, 1340],
+              [335, 1150],
+              [365, 1040],
+              [440, 960],
+              [560, 925],
+              [740, 925],
+              [842, 935],
+              [858, 770],
+              [912, 758],
+              [925, 935],
+              [965, 980],
+              [985, 1110],
+              [972, 1280],
+              [900, 1345],
+              [840, 1385],
+              [450, 1385]
+            ]
+          },
+          "cabeca": {
+            "parent": "torso",
+            "pivot": [650, 935],
+            "tip": [650, 690],
+            "blur": 2.5,
+            "fill": "plate",
+            "region": [
+              [560, 780],
+              [575, 700],
+              [640, 660],
+              [715, 675],
+              [770, 750],
+              [775, 830],
+              [745, 895],
+              [700, 935],
+              [625, 935],
+              [570, 900],
+              [545, 835]
+            ]
+          },
+          "corpo": {
+            "pivot": [1250, 1960],
+            "tip": [1250, 1475],
+            "blur": 4,
+            "fill": "plate",
+            "region": [
+              [1040, 1560],
+              [1110, 1500],
+              [1190, 1480],
+              [1340, 1480],
+              [1470, 1510],
+              [1520, 1640],
+              [1560, 1790],
+              [1565, 1930],
+              [1100, 1940],
+              [1045, 1880],
+              [1050, 1760],
+              [1045, 1640]
+            ]
+          },
+          "cabeza": {
+            "parent": "corpo",
+            "pivot": [1250, 1475],
+            "tip": [1250, 1270],
+            "blur": 2.5,
+            "fill": "plate",
+            "region": [
+              [1148, 1340],
+              [1165, 1275],
+              [1230, 1255],
+              [1330, 1275],
+              [1362, 1340],
+              [1365, 1420],
+              [1335, 1470],
+              [1250, 1490],
+              [1180, 1478],
+              [1150, 1420]
+            ]
+          }
+        },
+        "motions": {
+          "torso": {
+            "kind": "sway",
+            "amp": 0.7,
+            "period": 4,
+            "breathe": 0.016
+          },
+          "cabeca": {
+            "kind": "line",
+            "amp": 1.2,
+            "period": 6,
+            "ret": 0.5
+          },
+          "corpo": {
+            "kind": "sway",
+            "amp": 0.8,
+            "period": 3,
+            "breathe": 0.012
+          },
+          "cabeza": {
+            "kind": "line",
+            "amp": 1.8,
+            "period": 6,
+            "ret": 0.5
+          }
+        },
+        "patches": {
+          "pensar": {
+            "overlay": "d.png",
+            "region": [1110, 1230, 1420, 1500],
+            "bone": "cabeza",
+            "feather": 10
+          },
+          "orc_esq_q25": {
+            "overlay": "overlay_orc_esq_q25.png",
+            "region": [520, 640, 800, 960],
+            "bone": "cabeca",
+            "feather": 14,
+            "quality": 55,
+            "alpha_quality": 35
+          },
+          "orc_esq_m50": {
+            "overlay": "overlay_orc_esq_m50.png",
+            "region": [520, 640, 800, 960],
+            "bone": "cabeca",
+            "feather": 14,
+            "quality": 55,
+            "alpha_quality": 35
+          },
+          "orc_esq_q75": {
+            "overlay": "overlay_orc_esq_q75.png",
+            "region": [520, 640, 800, 960],
+            "bone": "cabeca",
+            "feather": 14,
+            "quality": 55,
+            "alpha_quality": 35
+          },
+          "orc_esq": {
+            "overlay": "overlay_orc_esq.png",
+            "region": [520, 640, 800, 960],
+            "bone": "cabeca",
+            "feather": 14
+          },
+          "orc_dir_q25": {
+            "overlay": "overlay_orc_dir_q25.png",
+            "region": [520, 640, 800, 960],
+            "bone": "cabeca",
+            "feather": 14,
+            "quality": 55,
+            "alpha_quality": 35
+          },
+          "orc_dir_m50": {
+            "overlay": "overlay_orc_dir_m50.png",
+            "region": [520, 640, 800, 960],
+            "bone": "cabeca",
+            "feather": 14,
+            "quality": 55,
+            "alpha_quality": 35
+          },
+          "orc_dir_q75": {
+            "overlay": "overlay_orc_dir_q75.png",
+            "region": [520, 640, 800, 960],
+            "bone": "cabeca",
+            "feather": 14,
+            "quality": 55,
+            "alpha_quality": 35
+          },
+          "orc_dir": {
+            "overlay": "overlay_orc_dir.png",
+            "region": [520, 640, 800, 960],
+            "bone": "cabeca",
+            "feather": 14
+          },
+          "orc_baixo_p1": {
+            "overlay": "overlay_orc_baixo_p1.png",
+            "region": [520, 640, 800, 960],
+            "bone": "cabeca",
+            "feather": 14,
+            "quality": 55,
+            "alpha_quality": 35,
+            "free": true
+          },
+          "orc_baixo_p2": {
+            "overlay": "overlay_orc_baixo_p2.png",
+            "region": [520, 640, 800, 960],
+            "bone": "cabeca",
+            "feather": 14,
+            "quality": 55,
+            "alpha_quality": 35,
+            "free": true
+          },
+          "orc_baixo_p3": {
+            "overlay": "overlay_orc_baixo_p3.png",
+            "region": [520, 640, 800, 960],
+            "bone": "cabeca",
+            "feather": 14,
+            "quality": 55,
+            "alpha_quality": 35,
+            "free": true
+          },
+          "orc_baixo_p4": {
+            "overlay": "overlay_orc_baixo_p4.png",
+            "region": [520, 640, 800, 960],
+            "bone": "cabeca",
+            "feather": 14,
+            "quality": 55,
+            "alpha_quality": 35,
+            "free": true
+          },
+          "orc_baixo_p5": {
+            "overlay": "overlay_orc_baixo_p5.png",
+            "region": [520, 640, 800, 960],
+            "bone": "cabeca",
+            "feather": 14,
+            "quality": 55,
+            "alpha_quality": 35,
+            "free": true
+          },
+          "orc_baixo_p6": {
+            "overlay": "overlay_orc_baixo_p6.png",
+            "region": [520, 640, 800, 960],
+            "bone": "cabeca",
+            "feather": 14,
+            "quality": 55,
+            "alpha_quality": 35,
+            "free": true
+          },
+          "orc_baixo_p7": {
+            "overlay": "overlay_orc_baixo_p7.png",
+            "region": [520, 640, 800, 960],
+            "bone": "cabeca",
+            "feather": 14,
+            "quality": 55,
+            "alpha_quality": 35,
+            "free": true
+          },
+          "orc_baixo": {
+            "overlay": "overlay_orc_baixo.png",
+            "region": [520, 640, 800, 960],
+            "bone": "cabeca",
+            "feather": 14,
+            "free": true
+          },
+          "hob_cima_p1": {
+            "overlay": "overlay_hob_cima_p1.png",
+            "region": [1110, 1230, 1420, 1500],
+            "bone": "cabeza",
+            "feather": 12,
+            "quality": 55,
+            "alpha_quality": 35,
+            "free": true
+          },
+          "hob_cima_p2": {
+            "overlay": "overlay_hob_cima_p2.png",
+            "region": [1110, 1230, 1420, 1500],
+            "bone": "cabeza",
+            "feather": 12,
+            "quality": 55,
+            "alpha_quality": 35,
+            "free": true
+          },
+          "hob_cima_p3": {
+            "overlay": "overlay_hob_cima_p3.png",
+            "region": [1110, 1230, 1420, 1500],
+            "bone": "cabeza",
+            "feather": 12,
+            "quality": 55,
+            "alpha_quality": 35,
+            "free": true
+          },
+          "hob_cima_p4": {
+            "overlay": "overlay_hob_cima_p4.png",
+            "region": [1110, 1230, 1420, 1500],
+            "bone": "cabeza",
+            "feather": 12,
+            "quality": 55,
+            "alpha_quality": 35,
+            "free": true
+          },
+          "hob_cima_p5": {
+            "overlay": "overlay_hob_cima_p5.png",
+            "region": [1110, 1230, 1420, 1500],
+            "bone": "cabeza",
+            "feather": 12,
+            "quality": 55,
+            "alpha_quality": 35,
+            "free": true
+          },
+          "hob_cima_p6": {
+            "overlay": "overlay_hob_cima_p6.png",
+            "region": [1110, 1230, 1420, 1500],
+            "bone": "cabeza",
+            "feather": 12,
+            "quality": 55,
+            "alpha_quality": 35,
+            "free": true
+          },
+          "hob_cima_p7": {
+            "overlay": "overlay_hob_cima_p7.png",
+            "region": [1110, 1230, 1420, 1500],
+            "bone": "cabeza",
+            "feather": 12,
+            "quality": 55,
+            "alpha_quality": 35,
+            "free": true
+          },
+          "hob_cima": {
+            "overlay": "overlay_hob_cima.png",
+            "region": [1110, 1230, 1420, 1500],
+            "bone": "cabeza",
+            "feather": 12,
+            "free": true
+          },
+          "hob_esq_q25": {
+            "overlay": "overlay_hob_esq_q25.png",
+            "region": [1110, 1230, 1420, 1500],
+            "bone": "cabeza",
+            "feather": 12,
+            "quality": 55,
+            "alpha_quality": 35
+          },
+          "hob_esq_m50": {
+            "overlay": "overlay_hob_esq_m50.png",
+            "region": [1110, 1230, 1420, 1500],
+            "bone": "cabeza",
+            "feather": 12,
+            "quality": 55,
+            "alpha_quality": 35
+          },
+          "hob_esq_q75": {
+            "overlay": "overlay_hob_esq_q75.png",
+            "region": [1110, 1230, 1420, 1500],
+            "bone": "cabeza",
+            "feather": 12,
+            "quality": 55,
+            "alpha_quality": 35
+          },
+          "hob_esq": {
+            "overlay": "overlay_hob_esq.png",
+            "region": [1110, 1230, 1420, 1500],
+            "bone": "cabeza",
+            "feather": 12
+          }
+        },
+        "poses": {
+          "apontar_orc": {
+            "overlay": "b.png",
+            "clean": "overlay_noorcarm.png",
+            "refine": "diff",
+            "band": 26,
+            "thr": 26,
+            "hand": [
+              [1150, 632],
+              [1175, 660],
+              [1190, 720],
+              [1185, 785],
+              [1140, 800],
+              [1120, 900],
+              [1100, 960],
+              [1050, 1000],
+              [960, 1040],
+              [880, 1065],
+              [840, 1060],
+              [800, 990],
+              [790, 920],
+              [830, 870],
+              [900, 845],
+              [980, 825],
+              [1035, 740],
+              [1060, 690],
+              [1110, 640]
+            ],
+            "cover_extra": [
+              [
+                [830, 930],
+                [930, 925],
+                [985, 990],
+                [985, 1130],
+                [975, 1290],
+                [900, 1310],
+                [860, 1200],
+                [830, 1050]
+              ]
+            ],
+            "free": true,
+            "cell": 12,
+            "chain": {
+              "anchor": "torso",
+              "pts": [
+                [890, 985],
+                [990, 915],
+                [1070, 800],
+                [1150, 645]
+              ],
+              "rest": [
+                [890, 985],
+                [925, 1150],
+                [912, 1198],
+                [905, 1222]
+              ],
+              "lag": 0.07,
+              "zeta": 0.72,
+              "zeta_out": 1.0,
+              "lead": 0.2,
+              "anticipation": 0.06,
+              "tremor": 0.7,
+              "blend": [70, 50, 40],
+              "emerge": true,
+              "morph": [0.25, 0.42],
+              "fh_in": 0.25,
+              "lag_out": 0.03,
+              "morph_out": [0.03, 0.1],
+              "fh_out": [0.04, 0.16],
+              "shrink_out": 1.4,
+              "swap_at": 0.12,
+              "swap_s": 0.05,
+              "fh_early": 0.04
+            },
+            "cover_bone": "torso",
+            "rest_mode": "refine",
+            "rest_poly": [
+              [
+                [878, 928],
+                [905, 925],
+                [935, 940],
+                [955, 975],
+                [968, 1030],
+                [962, 1090],
+                [950, 1130],
+                [925, 1170],
+                [900, 1215],
+                [875, 1250],
+                [855, 1240],
+                [838, 1200],
+                [835, 1150],
+                [845, 1090],
+                [852, 1030],
+                [860, 975]
+              ]
+            ]
+          },
+          "apontar_hob": {
+            "overlay": "c.png",
+            "clean": "overlay_nohobarm.png",
+            "refine": "diff",
+            "band": 26,
+            "thr": 26,
+            "hand": [
+              [935, 1326],
+              [960, 1335],
+              [1005, 1360],
+              [1010, 1405],
+              [1040, 1440],
+              [1075, 1475],
+              [1110, 1485],
+              [1150, 1500],
+              [1195, 1540],
+              [1198, 1600],
+              [1150, 1590],
+              [1105, 1570],
+              [1065, 1545],
+              [1030, 1520],
+              [990, 1490],
+              [960, 1450],
+              [930, 1420],
+              [920, 1380],
+              [925, 1345]
+            ],
+            "cover_extra": [
+              [
+                [1040, 1560],
+                [1100, 1500],
+                [1190, 1500],
+                [1195, 1620],
+                [1180, 1700],
+                [1150, 1760],
+                [1150, 1850],
+                [1050, 1860],
+                [1040, 1790],
+                [1070, 1700],
+                [1090, 1640]
+              ]
+            ],
+            "free": true,
+            "cell": 12,
+            "chain": {
+              "anchor": "corpo",
+              "pts": [
+                [1150, 1538],
+                [1060, 1500],
+                [1005, 1425],
+                [940, 1332]
+              ],
+              "rest": [
+                [1150, 1545],
+                [1120, 1700],
+                [1090, 1790],
+                [1065, 1845]
+              ],
+              "lag": 0.07,
+              "zeta": 0.72,
+              "zeta_out": 1.0,
+              "lead": 0.18,
+              "anticipation": 0.06,
+              "tremor": 0.6,
+              "blend": [40, 30, 25]
+            },
+            "cover_bone": "corpo"
+          },
+          "pensar": {
+            "overlay": "d.png",
+            "clean": "overlay_nohobarm.png",
+            "refine": "diff",
+            "band": 26,
+            "thr": 26,
+            "hand": [
+              [1095, 1425],
+              [1130, 1420],
+              [1150, 1450],
+              [1150, 1480],
+              [1170, 1520],
+              [1200, 1540],
+              [1210, 1600],
+              [1170, 1665],
+              [1100, 1670],
+              [1055, 1640],
+              [1050, 1570],
+              [1065, 1500],
+              [1085, 1460]
+            ],
+            "cover_extra": [
+              [
+                [1040, 1560],
+                [1100, 1500],
+                [1190, 1500],
+                [1195, 1620],
+                [1180, 1700],
+                [1150, 1760],
+                [1150, 1850],
+                [1050, 1860],
+                [1040, 1790],
+                [1070, 1700],
+                [1090, 1640]
+              ]
+            ],
+            "free": true,
+            "cell": 12,
+            "chain": {
+              "anchor": "corpo",
+              "pts": [
+                [1175, 1560],
+                [1095, 1650],
+                [1095, 1520],
+                [1125, 1440]
+              ],
+              "rest": [
+                [1150, 1545],
+                [1120, 1700],
+                [1090, 1790],
+                [1065, 1845]
+              ],
+              "lag": 0.09,
+              "zeta": 0.8,
+              "zeta_out": 1.0,
+              "lead": 0.15,
+              "anticipation": 0.04,
+              "tremor": 0.5,
+              "blend": [45, 35, 30]
+            },
+            "cover_bone": "corpo"
+          }
+        },
+        "anims": [
+          {
+            "name": "ler",
+            "beats": 12,
+            "weight": 2,
+            "looks": [
+              {
+                "bone": "cabeca",
+                "from": 0.5,
+                "to": 4.2,
+                "seq": ["orc_esq_q25", "orc_esq_m50", "orc_esq_q75", "orc_esq"],
+                "patch_ramp": [0.5, 1.7, 3.0, 4.2]
+              },
+              {
+                "bone": "cabeca",
+                "from": 5.2,
+                "to": 8.7,
+                "seq": [
+                  "orc_baixo_p1",
+                  "orc_baixo_p2",
+                  "orc_baixo_p3",
+                  "orc_baixo_p4",
+                  "orc_baixo_p5",
+                  "orc_baixo_p6",
+                  "orc_baixo_p7",
+                  "orc_baixo"
+                ],
+                "patch_ramp": [5.2, 6.4, 7.5, 8.7]
+              },
+              {
+                "bone": "cabeca",
+                "angle": -4.5,
+                "from": 0.4,
+                "to": 4.4,
+                "spring": {
+                  "zeta": 0.85,
+                  "rise": 1.3,
+                  "fall": 1.5
+                }
+              },
+              {
+                "bone": "cabeca",
+                "angle": -4.0,
+                "from": 5.1,
+                "to": 8.9,
+                "spring": {
+                  "zeta": 0.85,
+                  "rise": 1.3,
+                  "fall": 1.5
+                }
+              },
+              {
+                "bone": "cabeza",
+                "from": 1.4,
+                "to": 4.8,
+                "seq": ["hob_esq_q25", "hob_esq_m50", "hob_esq_q75", "hob_esq"],
+                "patch_ramp": [1.4, 2.6, 3.6, 4.8]
+              },
+              {
+                "bone": "cabeza",
+                "from": 6.0,
+                "to": 9.2,
+                "seq": [
+                  "hob_cima_p1",
+                  "hob_cima_p2",
+                  "hob_cima_p3",
+                  "hob_cima_p4",
+                  "hob_cima_p5",
+                  "hob_cima_p6",
+                  "hob_cima_p7",
+                  "hob_cima"
+                ],
+                "patch_ramp": [6.0, 7.2, 8.0, 9.2]
+              },
+              {
+                "bone": "cabeza",
+                "angle": -3.0,
+                "from": 1.3,
+                "to": 5.0,
+                "spring": {
+                  "zeta": 0.85,
+                  "rise": 1.3,
+                  "fall": 1.5
+                }
+              },
+              {
+                "bone": "cabeza",
+                "angle": 3.5,
+                "from": 5.9,
+                "to": 9.4,
+                "spring": {
+                  "zeta": 0.85,
+                  "rise": 1.3,
+                  "fall": 1.5
+                }
+              },
+              {
+                "bone": "corpo",
+                "scale": 1.02,
+                "from": 5.8,
+                "to": 9.6
+              }
+            ]
+          },
+          {
+            "name": "ler2",
+            "beats": 12,
+            "weight": 2,
+            "looks": [
+              {
+                "bone": "cabeca",
+                "from": 0.8,
+                "to": 4.4,
+                "seq": ["orc_dir_q25", "orc_dir_m50", "orc_dir_q75", "orc_dir"],
+                "patch_ramp": [0.8, 2.0, 3.2, 4.4]
+              },
+              {
+                "bone": "cabeca",
+                "from": 5.5,
+                "to": 8.8,
+                "seq": ["orc_esq_q25", "orc_esq_m50", "orc_esq_q75", "orc_esq"],
+                "patch_ramp": [5.5, 6.7, 7.6, 8.8]
+              },
+              {
+                "bone": "cabeca",
+                "angle": 4.5,
+                "from": 0.7,
+                "to": 4.6,
+                "spring": {
+                  "zeta": 0.85,
+                  "rise": 1.3,
+                  "fall": 1.5
+                }
+              },
+              {
+                "bone": "cabeca",
+                "angle": -4.5,
+                "from": 5.4,
+                "to": 9.0,
+                "spring": {
+                  "zeta": 0.85,
+                  "rise": 1.3,
+                  "fall": 1.5
+                }
+              },
+              {
+                "bone": "cabeza",
+                "from": 1.0,
+                "to": 4.6,
+                "seq": [
+                  "hob_cima_p1",
+                  "hob_cima_p2",
+                  "hob_cima_p3",
+                  "hob_cima_p4",
+                  "hob_cima_p5",
+                  "hob_cima_p6",
+                  "hob_cima_p7",
+                  "hob_cima"
+                ],
+                "patch_ramp": [1.0, 2.2, 3.4, 4.6]
+              },
+              {
+                "bone": "cabeza",
+                "from": 5.0,
+                "to": 8.2,
+                "seq": ["hob_esq_q25", "hob_esq_m50", "hob_esq_q75", "hob_esq"],
+                "patch_ramp": [5.0, 6.2, 7.0, 8.2]
+              },
+              {
+                "bone": "cabeza",
+                "angle": 3.5,
+                "from": 0.9,
+                "to": 4.8,
+                "spring": {
+                  "zeta": 0.85,
+                  "rise": 1.3,
+                  "fall": 1.5
+                }
+              },
+              {
+                "bone": "cabeza",
+                "angle": -3.0,
+                "from": 4.9,
+                "to": 8.4,
+                "spring": {
+                  "zeta": 0.85,
+                  "rise": 1.3,
+                  "fall": 1.5
+                }
+              },
+              {
+                "bone": "corpo",
+                "scale": 1.02,
+                "from": 0.8,
+                "to": 4.8
+              }
+            ]
+          },
+          {
+            "name": "orc_aponta",
+            "beats": 12,
+            "weight": 1,
+            "looks": [
+              {
+                "bone": "torso",
+                "angle": 1.4,
+                "from": 1.3,
+                "to": 8.9
+              },
+              {
+                "bone": "cabeca",
+                "from": 0.6,
+                "to": 9.4,
+                "seq": ["orc_dir_q25", "orc_dir_m50", "orc_dir_q75", "orc_dir"],
+                "patch_ramp": [0.6, 1.8, 8.2, 9.4]
+              },
+              {
+                "bone": "cabeca",
+                "angle": 3.0,
+                "from": 0.5,
+                "to": 9.6,
+                "spring": {
+                  "zeta": 0.85,
+                  "rise": 1.3,
+                  "fall": 1.5
+                }
+              },
+              {
+                "bone": "cabeza",
+                "from": 1.6,
+                "to": 8.8,
+                "seq": [
+                  "hob_cima_p1",
+                  "hob_cima_p2",
+                  "hob_cima_p3",
+                  "hob_cima_p4",
+                  "hob_cima_p5",
+                  "hob_cima_p6",
+                  "hob_cima_p7",
+                  "hob_cima"
+                ],
+                "patch_ramp": [1.6, 2.8, 7.6, 8.8]
+              },
+              {
+                "bone": "cabeza",
+                "angle": 3.0,
+                "from": 1.5,
+                "to": 9.0,
+                "spring": {
+                  "zeta": 0.85,
+                  "rise": 1.3,
+                  "fall": 1.5
+                }
+              }
+            ],
+            "pose": {
+              "name": "apontar_orc",
+              "in": [1.6, 2.9],
+              "out": [7.2, 8.8]
+            }
+          },
+          {
+            "name": "hob_aponta",
+            "beats": 12,
+            "weight": 1,
+            "looks": [
+              {
+                "bone": "corpo",
+                "angle": -1.1,
+                "from": 1.3,
+                "to": 8.7
+              },
+              {
+                "bone": "cabeca",
+                "from": 1.6,
+                "to": 8.8,
+                "seq": [
+                  "orc_baixo_p1",
+                  "orc_baixo_p2",
+                  "orc_baixo_p3",
+                  "orc_baixo_p4",
+                  "orc_baixo_p5",
+                  "orc_baixo_p6",
+                  "orc_baixo_p7",
+                  "orc_baixo"
+                ],
+                "patch_ramp": [1.6, 2.8, 7.6, 8.8]
+              },
+              {
+                "bone": "cabeca",
+                "angle": -2.0,
+                "from": 1.5,
+                "to": 9.0,
+                "spring": {
+                  "zeta": 0.85,
+                  "rise": 1.3,
+                  "fall": 1.5
+                }
+              },
+              {
+                "bone": "cabeza",
+                "from": 0.8,
+                "to": 9.4,
+                "seq": ["hob_esq_q25", "hob_esq_m50", "hob_esq_q75", "hob_esq"],
+                "patch_ramp": [0.8, 2.0, 8.2, 9.4]
+              },
+              {
+                "bone": "cabeza",
+                "angle": -3.0,
+                "from": 0.7,
+                "to": 9.6,
+                "spring": {
+                  "zeta": 0.85,
+                  "rise": 1.3,
+                  "fall": 1.5
+                }
+              }
+            ],
+            "pose": {
+              "name": "apontar_hob",
+              "in": [1.6, 2.8],
+              "out": [7.2, 8.6]
+            }
+          },
+          {
+            "name": "pensar",
+            "beats": 12,
+            "weight": 1,
+            "looks": [
+              {
+                "bone": "cabeca",
+                "from": 2.2,
+                "to": 8.8,
+                "seq": ["orc_dir_q25", "orc_dir_m50", "orc_dir_q75", "orc_dir"],
+                "patch_ramp": [2.2, 3.4, 7.6, 8.8]
+              },
+              {
+                "bone": "cabeca",
+                "angle": 3.0,
+                "from": 2.1,
+                "to": 9.0,
+                "spring": {
+                  "zeta": 0.85,
+                  "rise": 1.3,
+                  "fall": 1.5
+                }
+              },
+              {
+                "bone": "cabeza",
+                "angle": 0,
+                "from": 1.6,
+                "to": 9.4,
+                "patch": "pensar",
+                "patch_ramp": [2.4, 2.9, 8.2, 8.7]
+              }
+            ],
+            "pose": {
+              "name": "pensar",
+              "in": [1.7, 2.9],
+              "out": [8.4, 9.6]
+            }
+          }
+        ],
+        "quality": 84,
+        "alpha_quality": 60,
+        "precision": 1,
+        "weight_precision": 3,
+        "thin": 3
+      }
+    },
+    {
+      "id": "dwarf-crate",
+      "order": 70,
+      "area": [0.3583, 0.565, 0.4196, 0.6702],
+      "who": "Gloin, a stocky red-bearded dwarf warrior with a braided beard, iron pauldrons and brown leather armor",
+      "doing": "sitting on the small wooden crate next to the barrel, legs apart, holding a big wooden mug of mead resting on his knee",
+      "frames": [
+        {
+          "name": "a",
+          "hold": [3500, 7000]
+        },
+        {
+          "name": "b",
+          "change": "he raises the mug to his mouth and drinks",
+          "hold": [1500, 2500],
+          "tweens": 24,
+          "tweenMs": 40,
+          "rig": {
+            "remove": "his whole right arm below the shoulder armor (on the LEFT side of the image): the upper arm, the elbow, the forearm, the bracer, the hand and the wooden mug it holds. Paint what was hidden behind it: the side of his torso and brown leather tunic, his belt with its square metal buckle, his thigh and knee, and the stone wall behind him.",
+            "tweens": 24,
+            "poly_rest": [
+              [439, 1168],
+              [533, 1157],
+              [654, 1224],
+              [765, 1257],
+              [886, 1212],
+              [1118, 1201],
+              [1129, 1522],
+              [897, 1527],
+              [732, 1456],
+              [566, 1450],
+              [444, 1411]
+            ],
+            "poly_key": [
+              [466, 1157],
+              [588, 1091],
+              [743, 947],
+              [875, 914],
+              [886, 815],
+              [1019, 798],
+              [1168, 898],
+              [1168, 1113],
+              [1024, 1146],
+              [930, 1141],
+              [842, 1163],
+              [765, 1301],
+              [665, 1433],
+              [466, 1433]
+            ],
+            "pins_rest": {
+              "S2": [444, 1201],
+              "S": [522, 1190],
+              "E": [533, 1384],
+              "W": [809, 1367],
+              "T": [1002, 1229],
+              "B": [1002, 1494]
+            },
+            "pins_key": {
+              "S2": [444, 1201],
+              "S": [522, 1190],
+              "E": [541, 1369],
+              "W": [838, 1038],
+              "T": [930, 871],
+              "B": [1093, 1085]
+            },
+            "chain": [
+              ["S", "E"],
+              ["E", "W"],
+              ["W", "T"],
+              ["W", "B"]
+            ],
+            "fit": ["W", "T", "B"],
+            "keep": [[0, 0, 693, 1188]],
+            "key_regions": [[809, 677, 997, 770, 0.75]],
+            "roi": [312, 726, 1284, 1666],
+            "morph": [0.45, 1.0],
+            "morph_ramp": [0.55, 0.4],
+            "ik": ["S", "E", "W"],
+            "whole_poly": [
+              [440, 1188],
+              [640, 1188],
+              [690, 1260],
+              [690, 1360],
+              [620, 1440],
+              [470, 1440],
+              [440, 1390]
+            ],
+            "loop": {
+              "pivot": "T",
+              "angle": -14,
+              "frames": 16,
+              "cycles": 2,
+              "ms": 120,
+              "continuous": true
+            },
+            "gulp": {
+              "center": [752, 892],
+              "radius": 82,
+              "amount": 0.09,
+              "count": 2,
+              "width": 0.26
+            }
+          },
+          "loop": 16,
+          "loopMs": 70
+        },
+        {
+          "name": "c",
+          "change": "he wipes the beer foam from his moustache with the back of his free hand, eyes closed with satisfaction",
+          "hold": [1200, 1800],
+          "tweens": 24,
+          "tweenMs": 40,
+          "rig": {
+            "remove": "his whole left arm below the shoulder armor (on the RIGHT side of the image, near the barrel): the upper arm, the forearm and the hand resting on his knee. Paint what was hidden behind it: the side of his brown leather tunic and belt, his thigh and knee, and the wooden barrel behind him.",
+            "tweens": 24,
+            "roi": [800, 640, 1460, 1480],
+            "chain": [
+              ["S", "E"],
+              ["E", "W"],
+              ["W", "H"]
+            ],
+            "keys": [
+              {
+                "frame": "a",
+                "t": 0.0,
+                "pins": {
+                  "S2": [1110, 930],
+                  "S": [1140, 1040],
+                  "E": [1265, 1175],
+                  "W": [1245, 1280],
+                  "H": [1300, 1350]
+                },
+                "poly": [
+                  [1080, 1050],
+                  [1200, 1040],
+                  [1280, 1130],
+                  [1330, 1250],
+                  [1400, 1290],
+                  [1415, 1425],
+                  [1185, 1425],
+                  [1160, 1330],
+                  [1090, 1260]
+                ]
+              },
+              {
+                "frame": "c_1",
+                "t": 0.14,
+                "pins": {
+                  "S2": [1110, 930],
+                  "S": [1140, 1040],
+                  "E": [1265, 1165],
+                  "W": [1210, 1235],
+                  "H": [1278, 1270]
+                },
+                "poly": [
+                  [1080, 1050],
+                  [1200, 1040],
+                  [1280, 1130],
+                  [1330, 1210],
+                  [1335, 1345],
+                  [1150, 1345],
+                  [1090, 1260]
+                ],
+                "morph": [0.35, 0.65]
+              },
+              {
+                "frame": "c_2",
+                "pins": {
+                  "S2": [1110, 930],
+                  "S": [1140, 1040],
+                  "E": [1270, 1150],
+                  "W": [1210, 1220],
+                  "H": [1150, 1260]
+                },
+                "poly": [
+                  [1060, 1040],
+                  [1200, 1040],
+                  [1300, 1090],
+                  [1320, 1190],
+                  [1250, 1280],
+                  [1210, 1370],
+                  [1050, 1370],
+                  [1050, 1160]
+                ],
+                "t": 0.32,
+                "morph": [0.35, 0.65]
+              },
+              {
+                "frame": "c_3",
+                "t": 0.5,
+                "pins": {
+                  "S2": [1110, 930],
+                  "S": [1140, 1040],
+                  "E": [1270, 1150],
+                  "W": [1110, 1105],
+                  "H": [1035, 1120]
+                },
+                "poly": [
+                  [940, 1030],
+                  [1080, 1020],
+                  [1200, 1030],
+                  [1300, 1080],
+                  [1355, 1160],
+                  [1330, 1240],
+                  [1200, 1230],
+                  [1100, 1215],
+                  [940, 1215]
+                ],
+                "morph": [0.35, 0.65]
+              },
+              {
+                "frame": "c_5",
+                "t": 0.72,
+                "pins": {
+                  "S2": [1110, 930],
+                  "S": [1140, 1040],
+                  "E": [1260, 1200],
+                  "W": [1105, 1070],
+                  "H": [990, 1030]
+                },
+                "poly": [
+                  [860, 950],
+                  [1090, 940],
+                  [1180, 990],
+                  [1300, 1090],
+                  [1335, 1210],
+                  [1310, 1270],
+                  [1210, 1270],
+                  [1100, 1160],
+                  [860, 1120]
+                ],
+                "morph": [0.35, 0.65]
+              },
+              {
+                "frame": "c_7",
+                "pins": {
+                  "S2": [1110, 930],
+                  "S": [1140, 1040],
+                  "E": [1290, 1150],
+                  "W": [1090, 1000],
+                  "H": [990, 960]
+                },
+                "poly": [
+                  [900, 860],
+                  [1100, 850],
+                  [1200, 950],
+                  [1330, 1080],
+                  [1340, 1220],
+                  [1280, 1250],
+                  [1180, 1200],
+                  [1080, 1080],
+                  [900, 1050]
+                ],
+                "t": 0.88,
+                "morph": [0.35, 0.65]
+              },
+              {
+                "frame": "drawn",
+                "t": 1.0,
+                "pins": {
+                  "S2": [1110, 930],
+                  "S": [1140, 1040],
+                  "E": [1260, 1060],
+                  "W": [1075, 945],
+                  "H": [975, 915]
+                },
+                "poly": [
+                  [850, 830],
+                  [1100, 830],
+                  [1210, 910],
+                  [1310, 990],
+                  [1330, 1100],
+                  [1290, 1160],
+                  [1190, 1140],
+                  [1080, 1020],
+                  [850, 1010]
+                ],
+                "morph": [0.35, 0.65]
+              }
+            ],
+            "key_regions": [
+              [780, 670, 1000, 780, 0.8],
+              [830, 790, 990, 1010, 0.85]
+            ],
+            "loop_rive": {
+              "pivot": "E",
+              "angle": 6,
+              "rotate": ["W", "H"],
+              "cycles": 2,
+              "signed": true,
+              "frames": 20,
+              "ms": 60
+            }
+          }
+        }
+      ],
+      "light": {
+        "source": "torch",
+        "gain": 0.08
+      },
+      "tooltip": "🍺 Gloin descansando as pernas",
+      "sequence": "gestures",
+      "puppet_state": {
+        "vars": {
+          "dirt": {
+            "overlay": "overlay_dirt.png",
+            "region": [720, 790, 1060, 1120],
+            "origin": [900, 845],
+            "stages": 3,
+            "lift": 20
+          }
+        },
+        "effects": {
+          "b": [
+            {
+              "var": "dirt",
+              "add": 1,
+              "at": "return"
+            }
+          ],
+          "c": [
+            {
+              "var": "dirt",
+              "to": 0,
+              "at": "loop"
+            }
+          ]
+        },
+        "weightBy": {
+          "c": "dirt"
+        }
+      }
+    },
+    {
+      "id": "counter-ledger",
+      "order": 75,
+      "area": [0.5973, 0.6197, 0.7753, 0.8187],
+      "who": "one large sheet of blank aged parchment (the daily mission list) with a red wax seal, a brass inkwell and a quill",
+      "doing": "lying flat on the reception counter, following its perspective",
+      "frames": [
+        {
+          "name": "a",
+          "hold": [999999, 999999]
+        }
+      ],
+      "light": {
+        "source": "torch",
+        "gain": 0.06
+      },
+      "tooltip": null,
+      "_why": "folha de missões do dia pintada no balcão; o GuildCounterLedger escreve as tarefas em tinta por cima, na mesma perspectiva",
+      "extract": {
+        "threshold": 22,
+        "blur": 3.0,
+        "feather": 2.5,
+        "min_area": 0.004
+      }
+    }
+  ]
+}
