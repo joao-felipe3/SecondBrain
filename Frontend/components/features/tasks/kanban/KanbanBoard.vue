@@ -1,15 +1,31 @@
 <template>
-  <div class="kanban-root" :class="{ locked: isLocked }">
+  <div class="kanban-root" :class="[`layout-${layout}`, { locked: isLocked }]">
+    <!-- Mobile/compacto: diário com abas de madeira, uma coluna por vez -->
+    <FieldJournalMobile
+      v-if="layout === 'journal'"
+      v-show="!isLocked"
+      class="kanban-journal-tabs"
+      :active-tab="activeColumn"
+      :todo-count="tasksByStatus.todo.length"
+      :doing-count="tasksByStatus.doing.length"
+      :done-count="tasksByStatus.done.length"
+      @update:active-tab="selectColumn"
+      @drop-on-tab="({ event, tab }) => onDropOnColumn(event, tab)"
+    />
+
     <div class="kanban-columns" :class="{ 'kanban-columns-hidden': isLocked }">
       <section
-        v-for="col in columns"
+        v-for="col in renderedColumns"
         :key="col.status"
         class="kanban-column"
+        :class="{ 'is-drop-target': dragOverStatus === col.status }"
         :data-status="col.status"
         @dragenter.prevent="onDragOverColumn($event, col.status)"
         @dragover.prevent="onDragOverColumn($event, col.status)"
+        @dragleave="onDragLeaveColumn($event, col.status)"
         @drop.prevent="onDropOnColumn($event, col.status)"
       >
+        <!-- no layout em cena o cabeçalho é escrito sobre a placa rúnica pintada -->
         <header class="kanban-column-header">
           <span class="kanban-title">{{ col.label }}</span>
           <span class="kanban-count">{{ tasksByStatus[col.status].length }}</span>
@@ -18,10 +34,13 @@
         <div
           class="kanban-column-body"
           :ref="(el) => setColumnBodyRef(col.status, el)"
+          :style="columnBodyStyle(col.status)"
           @dragenter.prevent="onDragOverColumn($event, col.status)"
           @dragover.prevent="onDragOverColumn($event, col.status)"
           @drop.prevent="onDropOnColumn($event, col.status)"
         >
+          <p v-if="!tasksByStatus[col.status].length" class="kanban-empty">{{ col.empty }}</p>
+
           <div
             v-for="(task, idx) in visibleTasksByStatus[col.status]"
             :key="task._id"
@@ -29,7 +48,7 @@
             :class="{ dragging: draggingTaskId === task._id, moving: movingTaskId === task._id }"
             :data-task-id="task._id"
             :style="getCardJitterStyle(idx)"
-            @click="zoomIntoTask($event, task)"
+            @click="openTask($event, task)"
           >
             <button
               class="kanban-drag-handle"
@@ -59,6 +78,7 @@
                 @habit-complete="handleHabitComplete"
                 @habit-skip="handleHabitSkip"
               />
+              <KanbanCardAccents :task="task" :column="col.status" />
             </div>
           </div>
 
@@ -68,30 +88,34 @@
       </section>
     </div>
 
-    <!-- Zoom overlay reutiliza o mesmo Paper/ZoomedContent existente -->
-    <transition name="zoom-fade">
-      <div v-if="zoomedTask" class="zoom-container" ref="zoomTarget">
-        <TaskPaper
-          class="zoomed-task-paper"
-          :key="zoomed ? 'edit' : 'view'"
-          :task="zoomedTask"
-          :tasks="props.tasks"
-          :positionStyle="{}"
-          :projects="projects"
-          :zoomed="zoomed"
-          :create="create"
-          :colors="getProjectColors((zoomedTask as any)?.project || '', projects)"
-          @close="zoomOutTask"
-          @close-zoom="zoomOutTask"
-          @edit-task="handleEdit"
-          @delete-task="handleDelete"
-          @navigate-task="handleNavigateTask"
-          @navigate-context="(p) => handleNavigateContext(p)"
-          @habit-complete="handleHabitComplete"
-          @habit-skip="handleHabitSkip"
-        />
-      </div>
-    </transition>
+    <!-- Zoom overlay reutiliza o mesmo Paper/ZoomedContent existente.
+         Vai para o <body>: o mural é posicionado sobre a cena e um ancestral com transform
+         prenderia o `position: fixed` dentro dele. -->
+    <Teleport to="body">
+      <transition name="zoom-fade">
+        <div v-if="zoomedTask" class="zoom-container">
+          <TaskPaper
+            class="zoomed-task-paper"
+            :key="zoomed ? 'edit' : 'view'"
+            :task="zoomedTask"
+            :tasks="props.tasks"
+            :positionStyle="{}"
+            :projects="projects"
+            :zoomed="zoomed"
+            :create="create"
+            :colors="getProjectColors((zoomedTask as any)?.project || '', projects)"
+            @close="zoomOutTask"
+            @close-zoom="zoomOutTask"
+            @edit-task="handleEdit"
+            @delete-task="handleDelete"
+            @navigate-task="handleNavigateTask"
+            @navigate-context="(p) => handleNavigateContext(p)"
+            @habit-complete="handleHabitComplete"
+            @habit-skip="handleHabitSkip"
+          />
+        </div>
+      </transition>
+    </Teleport>
 
     <!-- Completion Feedback Modal -->
     <CompletionFeedbackModal
@@ -114,11 +138,22 @@ import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import type { Task } from '~/models/Task';
 import TaskPaper from '../board/Paper.vue';
 import CompletionFeedbackModal from '../modals/CompletionFeedbackModal.vue';
+import FieldJournalMobile from './FieldJournalMobile.vue';
+import KanbanCardAccents from './KanbanCardAccents.vue';
 import { getProjectColors } from '~/composables/utils/useColor';
 import { useZoomState } from '~/composables/ui/useZoomState';
 import { useZoomController } from '~/composables/ui/useZoomController';
 import { useTaskActions } from '~/composables/features/useTaskActions';
+import { matchesTaskFilters } from '~/composables/features/taskFilters';
+import { useGuildAudio } from '~/composables/ui/useGuildAudio';
+import {
+  paperLayoutForWidth,
+  PAPER_SIZE,
+  JOURNAL_PAPER_LAYOUT,
+  SCENE_PAPER_LAYOUT,
+} from '~/composables/ui/useTasksScene';
 import { useTaskStore } from '~/stores/task';
+import { useUiGuildStore } from '~/stores/uiGuild';
 
 type KanbanColumnStatus = 'todo' | 'doing' | 'done';
 type TaskStatus = 'todo' | 'doing' | 'review' | 'done';
@@ -132,6 +167,11 @@ interface Props {
   isRefreshing?: boolean;
   timeSinceRefresh?: number;
   initialZoomedTask?: Task | null;
+  /**
+   * `scene`: as 3 colunas ficam sobre os painéis pintados do mural (posições em variáveis CSS do
+   * palco, ver useTasksScene). `journal`: diário com abas, uma coluna por vez (mobile/compacto).
+   */
+  layout?: 'scene' | 'journal';
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -141,6 +181,7 @@ const props = withDefaults(defineProps<Props>(), {
   isRefreshing: false,
   timeSinceRefresh: 0,
   initialZoomedTask: null,
+  layout: 'scene',
 });
 
 const emit = defineEmits([
@@ -156,11 +197,24 @@ const emit = defineEmits([
 
 // Filter state removed - now using props from parent
 
-const columns: Array<{ status: KanbanColumnStatus; label: string }> = [
-  { status: 'todo', label: 'ToDo' },
-  { status: 'doing', label: 'Fazendo' },
-  { status: 'done', label: 'Concluído' },
+const columns: Array<{ status: KanbanColumnStatus; label: string; empty: string }> = [
+  { status: 'todo', label: 'Contratos Abertos', empty: 'Nenhum contrato no mural.' },
+  { status: 'doing', label: 'Em Andamento', empty: 'Nenhuma missão em andamento.' },
+  { status: 'done', label: 'Missões Cumpridas', empty: 'Nenhuma vitória nas últimas 24 h.' },
 ];
+
+// Diário mobile: a aba ativa vive na store para sobreviver ao remount do board (`:key` no Main).
+const uiGuild = useUiGuildStore();
+const activeColumn = computed<KanbanColumnStatus>(() => uiGuild.mobileTaskTab);
+function selectColumn(tab: KanbanColumnStatus) {
+  uiGuild.setMobileTaskTab(tab);
+}
+const renderedColumns = computed(() =>
+  props.layout === 'journal' ? columns.filter((c) => c.status === activeColumn.value) : columns,
+);
+
+const { playParchmentDragSound, playWaxStampSound, playQuillScratchSound, playPaperTearSound } =
+  useGuildAudio();
 
 const zoomState = useZoomState();
 const { zoomedTask, zoomed, create } = zoomState;
@@ -169,6 +223,13 @@ const { zoomIntoTask, zoomOutTask } = useZoomController({
   emit: (event: string, payload?: any) => emit(event as any, payload),
   state: zoomState,
 });
+
+// Abrir uma folha que já está no quadro nunca é criação. Sem isto, depois de criar um contrato o
+// `create` ficava ligado: a próxima folha aberta mostrava "Create" e salvar duplicava a tarefa.
+function openTask(event: MouseEvent, task: Task) {
+  zoomState.create.value = false;
+  return zoomIntoTask(event, task);
+}
 
 // Watch para abrir automaticamente tarefa recém-criada
 watch(
@@ -189,12 +250,23 @@ watch(
   { deep: true, immediate: true },
 );
 
-const { handleEdit, handleDelete } = useTaskActions({
+const taskActions = useTaskActions({
   emit: (event: string, payload?: any) => emit(event as any, payload),
   zoomOutTask,
   createRef: zoomState.createRef,
   create: zoomState.create,
 });
+
+// SFX do mural: pena ao salvar, folha rasgando ao excluir
+async function handleEdit(task: Task) {
+  playQuillScratchSound();
+  return taskActions.handleEdit(task);
+}
+
+async function handleDelete(taskId: string) {
+  playPaperTearSound();
+  return taskActions.handleDelete(taskId);
+}
 
 function handleNavigateTask(taskId: string) {
   const nextTask = (props.tasks || []).find((task: any) => task?._id === taskId);
@@ -298,35 +370,16 @@ function isDoneVisible(task: any): boolean {
   return Date.now() - updatedMs <= oneDayMs;
 }
 
-// Filter tasks based on props filters
-const filteredTasks = computed(() => {
-  let filtered = (props.tasks || []).filter((task: any) => {
-    // Project filter
-    if (props.projectFilter && task.project !== props.projectFilter) {
-      return false;
-    }
-
-    // Type filter (habit, subtask, etc)
-    if (props.typeFilter) {
-      const taskType = task.microTaskType || 'task';
-      if (taskType !== props.typeFilter) {
-        return false;
-      }
-    }
-
-    // Priority filter
-    if (props.priorityFilter) {
-      const taskPriority = task.priority || 'low';
-      if (String(taskPriority) !== props.priorityFilter) {
-        return false;
-      }
-    }
-
-    return true;
-  });
-
-  return filtered;
-});
+// Filter tasks based on props filters (projeto, tipo, prioridade 1..4 -> baixa/média/alta)
+const filteredTasks = computed(() =>
+  (props.tasks || []).filter((task: any) =>
+    matchesTaskFilters(task, {
+      projectFilter: props.projectFilter,
+      typeFilter: props.typeFilter,
+      priorityFilter: props.priorityFilter,
+    }),
+  ),
+);
 
 const tasksByStatus = computed<Record<KanbanColumnStatus, Task[]>>(() => {
   const grouped: Record<KanbanColumnStatus, Task[]> = {
@@ -444,14 +497,72 @@ async function setupObservers() {
   }
 }
 
+// --- Folhas por linha e escala, medidas pela largura real de cada painel ---
+type PaperLayout = { perRow: number; scale: number };
+const paperLayouts = ref<Partial<Record<KanbanColumnStatus, PaperLayout>>>({});
+let resizeObserver: ResizeObserver | null = null;
+
+function measureColumns() {
+  const next: Partial<Record<KanbanColumnStatus, PaperLayout>> = {};
+  const widths = new Map<KanbanColumnStatus, number>();
+  for (const col of renderedColumns.value) {
+    const el = columnBodyRefs.get(col.status);
+    if (el?.isConnected) widths.set(col.status, el.clientWidth);
+  }
+  if (!widths.size) return;
+  // na cena as 3 colunas usam a mesma escala (a do painel mais estreito): os painéis pintados têm
+  // larguras um pouco diferentes e, sem isso, uma coluna podia ficar com 2 folhas pequenas por linha
+  // e a vizinha com 1 folha grande
+  const sceneWidth = Math.min(...widths.values());
+  for (const [status, width] of widths) {
+    next[status] =
+      props.layout === 'journal'
+        ? paperLayoutForWidth(width, JOURNAL_PAPER_LAYOUT)
+        : paperLayoutForWidth(sceneWidth, SCENE_PAPER_LAYOUT);
+  }
+  paperLayouts.value = next;
+}
+
+async function observeColumnSizes() {
+  await nextTick();
+  if (typeof ResizeObserver === 'undefined') return;
+  resizeObserver?.disconnect();
+  resizeObserver = new ResizeObserver(() => measureColumns());
+  for (const col of renderedColumns.value) {
+    const el = columnBodyRefs.get(col.status);
+    if (el?.isConnected) resizeObserver.observe(el);
+  }
+  measureColumns();
+}
+
+function columnBodyStyle(status: KanbanColumnStatus) {
+  const layout = paperLayouts.value[status] ?? { perRow: 2, scale: 0.85 };
+  const cardW = Math.round(PAPER_SIZE.width * layout.scale);
+  return {
+    '--paper-scale': String(layout.scale),
+    '--card-w': `${cardW}px`,
+    '--card-h': `${Math.round(PAPER_SIZE.height * layout.scale)}px`,
+    gridTemplateColumns: `repeat(${layout.perRow}, ${cardW}px)`,
+  } as Record<string, string>;
+}
+
 onMounted(() => {
   clampVisibleCounts();
   setupObservers();
+  observeColumnSizes();
+});
+
+// trocar de aba no diário monta outra coluna: refaz observadores de rolagem e de tamanho
+watch(renderedColumns, () => {
+  setupObservers();
+  observeColumnSizes();
 });
 
 onBeforeUnmount(() => {
   for (const obs of observers.values()) obs.disconnect();
   observers.clear();
+  resizeObserver?.disconnect();
+  resizeObserver = null;
 });
 
 watch(
@@ -521,6 +632,7 @@ function onDragStart(e: DragEvent, task: any, fromStatus: KanbanColumnStatus) {
 
   draggingTaskId.value = task?._id ?? null;
   draggingFromStatus.value = fromStatus;
+  playParchmentDragSound();
 
   const handleEl = e.target instanceof HTMLElement ? e.target : null;
   const wrapper = handleEl?.closest?.('.kanban-card-wrapper') as HTMLElement | null;
@@ -566,10 +678,22 @@ function onDragStart(e: DragEvent, task: any, fromStatus: KanbanColumnStatus) {
 function onDragEnd() {
   draggingTaskId.value = null;
   draggingFromStatus.value = null;
+  dragOverStatus.value = null;
 }
 
-function onDragOverColumn(e: DragEvent, _status: KanbanColumnStatus) {
+// coluna sob o cursor durante o arrasto (realce do painel)
+const dragOverStatus = ref<KanbanColumnStatus | null>(null);
+
+function onDragLeaveColumn(e: DragEvent, status: KanbanColumnStatus) {
+  const section = e.currentTarget as HTMLElement | null;
+  const to = e.relatedTarget as Node | null;
+  if (section && to && section.contains(to)) return;
+  if (dragOverStatus.value === status) dragOverStatus.value = null;
+}
+
+function onDragOverColumn(e: DragEvent, status: KanbanColumnStatus) {
   if (isLocked.value) return;
+  if (draggingTaskId.value) dragOverStatus.value = status;
   if (e.dataTransfer) {
     try {
       e.dataTransfer.dropEffect = 'move';
@@ -606,6 +730,7 @@ async function onDropOnColumn(e: DragEvent, toStatus: KanbanColumnStatus) {
   if (success) {
     // If moving to 'done', trigger completion feedback modal
     if (toStatus === 'done') {
+      playWaxStampSound();
       completionModalTask.value = task;
       completionModalOpen.value = true;
     }
@@ -664,19 +789,10 @@ function handleFeedbackConfirmed(feedbackData: any) {
 .kanban-root {
   position: relative;
   width: 100%;
-  height: 65.5vh;
-  overflow: visible;
   z-index: 3;
 }
 
 .kanban-columns {
-  height: 100%;
-  display: flex;
-  gap: 0.45rem;
-  padding: 0.75rem;
-  overflow-x: auto;
-  overflow-y: hidden;
-  align-items: stretch;
   transition: opacity 0.2s ease;
 }
 
@@ -686,106 +802,30 @@ function handleFeedbackConfirmed(feedbackData: any) {
 }
 
 .kanban-column {
-  flex: 0 0 32%;
-  min-width: 292px;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  gap: 0rem;
+  position: relative;
   box-sizing: border-box;
-  padding: 0.15rem;
-  border-radius: 12px;
-  border: 1px solid rgba(var(--v-theme-on-surface), 0.34);
-  background: transparent;
-  position: relative;
-  overflow: hidden;
-  --kanban-tint: rgba(var(--v-theme-primary), 0.15);
-}
-
-.kanban-column[data-status='todo'] {
-  --kanban-tint: rgba(var(--v-theme-primary), 0.15);
-}
-
-.kanban-column[data-status='doing'] {
-  --kanban-tint: rgba(var(--v-theme-warning), 0.15);
-}
-
-.kanban-column[data-status='review'] {
-  --kanban-tint: rgba(var(--v-theme-info), 0.16);
-}
-
-.kanban-column[data-status='done'] {
-  --kanban-tint: rgba(var(--v-theme-success), 0.15);
-}
-
-.kanban-column::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  opacity: 0.55;
-  z-index: 0;
-  pointer-events: none;
-}
-
-.kanban-column::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: var(--kanban-tint);
-  z-index: 1;
-  pointer-events: none;
-}
-
-.kanban-column-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  font-family: 'Irish Grover', cursive;
-  padding: 0.15rem 0.5rem;
-  border-radius: 10px;
-  border: 1px solid rgba(var(--v-theme-on-surface), 0.28);
-  background: rgba(var(--v-theme-surface), 0.4);
-  position: relative;
-  z-index: 2;
-}
-
-.kanban-column-header::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 0;
-  bottom: 0;
-  width: 10px;
-  border-top-left-radius: 10px;
-  border-bottom-left-radius: 10px;
-  background: var(--kanban-accent-strong);
-  opacity: 0.95;
-}
-
-.kanban-title {
-  font-size: 20px;
-}
-
-.kanban-count {
-  font-size: 16px;
-  padding: 0.1rem 0.55rem;
-  border-radius: 999px;
-  border: 1px solid rgba(var(--v-theme-on-surface), 0.22);
-  background: rgba(var(--v-theme-surface), 0.42);
 }
 
 .kanban-column-body {
-  flex: 1 1 auto;
+  display: grid;
+  justify-content: center;
+  align-content: start;
+  column-gap: 8px;
+  row-gap: 4px;
   overflow-y: auto;
   overflow-x: hidden;
-  padding: 0.1rem;
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  column-gap: 0.35rem;
-  row-gap: 0rem;
-  align-content: start;
-  position: relative;
-  z-index: 2;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(240, 210, 160, 0.45) transparent;
+}
+
+.kanban-empty {
+  grid-column: 1 / -1;
+  margin: 1.2rem 0.5rem;
+  text-align: center;
+  font-family: var(--font-guild-title, 'Irish Grover', cursive);
+  font-size: 0.95rem;
+  color: rgba(245, 225, 190, 0.75);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.85);
 }
 
 .kanban-sentinel {
@@ -794,21 +834,222 @@ function handleFeedbackConfirmed(feedbackData: any) {
   grid-column: 1 / -1;
 }
 
+/* ===================== LAYOUT EM CENA (desktop/tablet deitado) =====================
+   As variáveis --col-*, --plaque-* vêm do palco (useTasksScene.boardCssVars) em cqw/cqh. */
+.layout-scene {
+  position: absolute;
+  inset: 0;
+}
+
+.layout-scene .kanban-columns {
+  position: absolute;
+  inset: 0;
+}
+
+.layout-scene .kanban-column {
+  position: absolute;
+  left: var(--cx);
+  top: var(--cy);
+  width: var(--cw);
+  height: var(--ch);
+  /* sombra interna leve: as folhas destacam das tábuas sem esconder a madeira pintada */
+  background: radial-gradient(ellipse at 50% 45%, rgba(0, 0, 0, 0) 55%, rgba(0, 0, 0, 0.22) 100%);
+  transition: box-shadow 0.15s ease;
+}
+
+.layout-scene .kanban-column[data-status='todo'] {
+  --cx: var(--col-todo-x);
+  --cy: var(--col-todo-y);
+  --cw: var(--col-todo-w);
+  --ch: var(--col-todo-h);
+  --px: var(--plaque-todo-x);
+  --py: var(--plaque-todo-y);
+  --pw: var(--plaque-todo-w);
+  --ph: var(--plaque-todo-h);
+}
+
+.layout-scene .kanban-column[data-status='doing'] {
+  --cx: var(--col-doing-x);
+  --cy: var(--col-doing-y);
+  --cw: var(--col-doing-w);
+  --ch: var(--col-doing-h);
+  --px: var(--plaque-doing-x);
+  --py: var(--plaque-doing-y);
+  --pw: var(--plaque-doing-w);
+  --ph: var(--plaque-doing-h);
+}
+
+.layout-scene .kanban-column[data-status='done'] {
+  --cx: var(--col-done-x);
+  --cy: var(--col-done-y);
+  --cw: var(--col-done-w);
+  --ch: var(--col-done-h);
+  --px: var(--plaque-done-x);
+  --py: var(--plaque-done-y);
+  --pw: var(--plaque-done-w);
+  --ph: var(--plaque-done-h);
+}
+
+.layout-scene .kanban-column.is-drop-target {
+  box-shadow:
+    inset 0 0 0 3px rgba(255, 205, 110, 0.7),
+    inset 0 0 48px rgba(255, 190, 80, 0.28);
+}
+
+/* rótulo de pergaminho pregado sobre a placa rúnica pintada (cobre as runas para ler bem) */
+.layout-scene .kanban-column-header {
+  position: absolute;
+  left: calc(var(--px) - var(--cx) + var(--pw) * 0.06);
+  top: calc(var(--py) - var(--cy) + var(--ph) * 0.2);
+  width: calc(var(--pw) * 0.88);
+  height: calc(var(--ph) * 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5em;
+  padding: 0 0.9em;
+  box-sizing: border-box;
+  font-size: clamp(10px, 0.98cqw, 21px);
+  border-radius: 3px;
+  background: radial-gradient(
+    ellipse at 50% 40%,
+    var(--guild-parchment-base, #f4e4bc) 0%,
+    var(--guild-parchment-dark, #d8bc82) 100%
+  );
+  box-shadow:
+    inset 0 0 10px rgba(110, 70, 35, 0.45),
+    0 2px 5px rgba(0, 0, 0, 0.55);
+  clip-path: polygon(1% 6%, 99% 0, 100% 92%, 0 100%);
+}
+
+/* cravos de ferro prendendo o rótulo */
+.layout-scene .kanban-column-header::before,
+.layout-scene .kanban-column-header::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  width: 0.42em;
+  height: 0.42em;
+  transform: translateY(-50%);
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #c9ccd1 0%, #4b5563 65%, #111827 100%);
+}
+
+.layout-scene .kanban-column-header::before {
+  left: 0.35em;
+}
+
+.layout-scene .kanban-column-header::after {
+  right: 0.35em;
+}
+
+.layout-scene .kanban-title {
+  font-family: var(--font-guild-title, 'Irish Grover', cursive);
+  color: var(--guild-wood-dark, #2b1810);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1;
+}
+
+.layout-scene .kanban-count {
+  flex-shrink: 0;
+  min-width: 1.6em;
+  padding: 0.15em 0.4em;
+  border-radius: 999px;
+  font-family: var(--font-guild-title, 'Irish Grover', cursive);
+  font-size: 0.8em;
+  text-align: center;
+  color: hsl(42, 90%, 88%);
+  background: radial-gradient(circle at 35% 30%, hsl(8, 55%, 42%) 0%, hsl(0, 60%, 26%) 100%);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.layout-scene .kanban-column[data-status='doing'] .kanban-count {
+  background: radial-gradient(circle at 35% 30%, hsl(205, 60%, 45%) 0%, hsl(210, 70%, 26%) 100%);
+}
+
+.layout-scene .kanban-column[data-status='done'] .kanban-count {
+  background: radial-gradient(circle at 35% 30%, hsl(145, 45%, 38%) 0%, hsl(150, 55%, 20%) 100%);
+}
+
+.layout-scene .kanban-column-body {
+  position: absolute;
+  inset: 0;
+  padding: 10px 6px 14px;
+}
+
+/* ===================== LAYOUT DIÁRIO (mobile/compacto) ===================== */
+.layout-journal {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+}
+
+.layout-journal .kanban-columns {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  padding-top: 8px;
+}
+
+.layout-journal .kanban-column {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  border-radius: 10px;
+  border: 3px solid hsl(22, 42%, 18%);
+  /* tábuas horizontais escuras, como os painéis do mural */
+  background:
+    radial-gradient(ellipse at 50% 30%, rgba(255, 200, 140, 0.08) 0%, rgba(0, 0, 0, 0.35) 100%),
+    repeating-linear-gradient(
+      180deg,
+      hsl(22, 40%, 24%) 0 70px,
+      hsl(20, 42%, 16%) 70px 73px,
+      hsl(23, 38%, 27%) 73px 140px,
+      hsl(20, 42%, 16%) 140px 143px
+    );
+  box-shadow:
+    inset 0 0 18px rgba(0, 0, 0, 0.55),
+    0 6px 16px rgba(0, 0, 0, 0.55);
+}
+
+.layout-journal .kanban-column.is-drop-target {
+  border-color: hsl(40, 80%, 60%);
+}
+
+/* no diário as abas já dizem a coluna e a contagem */
+.layout-journal .kanban-column-header {
+  display: none;
+}
+
+.layout-journal .kanban-column-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  padding: 12px 6px 16px;
+}
+
+/* ===================== FOLHAS ===================== */
 .kanban-card-wrapper {
   position: relative;
-  width: 100%;
+  width: var(--card-w, 136px);
+  height: calc(var(--card-h, 170px) + 6px);
   cursor: pointer;
-  margin-top: -2px;
   justify-self: center;
   transform: translate(var(--jx, 0px), var(--jy, 0px)) rotate(var(--jr, 0deg));
 }
 
 .kanban-card-scale {
-  display: inline-block;
-  --paper-scale: 0.85;
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 160px;
+  height: 200px;
   --paper-tilt: 0deg;
   --paper-lift: 0px;
-  transform: scale(var(--paper-scale)) rotate(var(--paper-tilt)) translateY(var(--paper-lift));
+  transform: scale(var(--paper-scale, 0.85)) rotate(var(--paper-tilt)) translateY(var(--paper-lift));
   transform-origin: top left;
   transition:
     transform 140ms ease,
@@ -831,18 +1072,26 @@ function handleFeedbackConfirmed(feedbackData: any) {
 
 .kanban-drag-handle {
   position: absolute;
-  z-index: 10;
-  width: 34px;
-  height: 34px;
+  z-index: 430;
+  width: 30px;
+  height: 30px;
   border-radius: 999px;
   border: none;
-  background: rgba(255, 255, 255, 0.65);
+  background: rgba(255, 245, 225, 0.75);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
   cursor: grab;
   font-family: 'Irish Grover', cursive;
-  font-size: 18px;
+  font-size: 16px;
   line-height: 1;
   display: grid;
   place-items: center;
+}
+
+/* em telas de toque o arrasto HTML5 não funciona: a alça só confundiria */
+@media (hover: none) {
+  .kanban-drag-handle {
+    display: none;
+  }
 }
 
 .kanban-root.locked .kanban-drag-handle {
@@ -869,67 +1118,7 @@ function handleFeedbackConfirmed(feedbackData: any) {
   opacity: 0;
 }
 
-/* Mobile Responsiveness */
-@media (max-width: 768px) {
-  .kanban-columns {
-    gap: 0.3rem;
-    padding: 0.5rem;
-  }
-
-  .kanban-column {
-    flex: 0 0 45%;
-    min-width: 200px;
-  }
-
-  .kanban-column-header {
-    padding: 0.1rem 0.4rem;
-    font-size: 13px;
-  }
-
-  .kanban-title {
-    font-size: 13px;
-  }
-
-  .kanban-count {
-    font-size: 11px;
-    min-width: 20px;
-    text-align: center;
-  }
-}
-
 @media (max-width: 480px) {
-  .kanban-columns {
-    gap: 0.2rem;
-    padding: 0.3rem;
-  }
-
-  .kanban-column {
-    flex: 0 0 90%;
-    min-width: 150px;
-  }
-
-  .kanban-card-wrapper {
-    margin-bottom: 8px !important;
-  }
-
-  .kanban-column-header {
-    padding: 0.08rem 0.3rem;
-    font-size: 12px;
-  }
-
-  .kanban-title {
-    font-size: 12px;
-  }
-
-  .kanban-count {
-    font-size: 10px;
-  }
-
-  .kanban-drag-handle {
-    font-size: 12px;
-    padding: 4px 6px;
-  }
-
   .zoom-container {
     max-width: 95vw;
     max-height: 95vh;

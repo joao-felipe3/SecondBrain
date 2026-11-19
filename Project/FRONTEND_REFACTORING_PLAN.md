@@ -16,13 +16,13 @@
 | 🏛️ 1. Infraestrutura & Atomic Design Diegético (`components/ui/diegetic/`) |     12     |   12/12    |   🟢 100%    |
 | 🎨 2. Tokens CSS, HSL & Responsividade Dinâmica (<960px)                   |     8      |    8/8     |   🟢 100%    |
 | 🏰 3. Saguão Central da Guilda (`/`)                                       |     40     |   40/40    |   🟢 100%    |
-| ⚔️ 4. Mural de Contratos / Kanban (`/tasks`)                               |     12     |    4/12    |   🟡 33.3%   |
+| ⚔️ 4. Mural de Contratos / Kanban (`/tasks`)                               |     12     |   10/12    |   🟡 83.3%   |
 | 📜 5. Sala de Arquivos & Grimórios (`/projects`)                           |     10     |    7/10    |   🟡 70.0%   |
 | 🗺️ 6. Sala do Astrolábio & Cartografia (`/calendar`)                       |     10     |    6/10    |   🟡 60.0%   |
 | 📋 7. Modais & Overlays Globais Diegéticos                                 |     10     |    7/10    |   🟡 70.0%   |
 | ⚙️ 8. Pinia Stores & Data Mapping RPG                                      |     6      |    5/6     |   🟡 83.3%   |
 | ⚡ 9. Otimização & Asset Pipeline                                          |     6      |    4/6     |   🟡 66.7%   |
-| **TOTAL**                                                                  |  **114**   | **93/114** | **🟡 81.6%** |
+| **TOTAL**                                                                  |  **114**   | **99/114** | **🟡 86.8%** |
 
 ---
 
@@ -121,19 +121,19 @@
 
 ---
 
-## ⚔️ 4. Mural de Contratos / Kanban (`/tasks`) 🟡 EM PROGRESSO (4/12)
+## ⚔️ 4. Mural de Contratos / Kanban (`/tasks`) 🟡 EM PROGRESSO (10/12)
 
-- [x] Refatorar `pages/Task/index.vue` e criar rota de compatibilidade `pages/tasks/index.vue`.
-- [x] Moldura de madeira maciça sobre parede de pedra rústica (`.diegetic-stone-wall`), dividida em 3 colunas rúnicas (`display: grid; grid-template-columns: repeat(3, 1fr)`).
-- [ ] **Coluna "Contratos Abertos" (To Do):** Migração das tarefas com `status === 'todo'` para os novos cartões `UiParchmentCard.vue` seladas com cera vermelha `UiWaxSeal.vue`.
-- [ ] **Coluna "Em Andamento" (In Progress):** Migração das tarefas com `status === 'doing'` para selos azuis e ampulheta mágica `UiHourglass.vue` caso haja Pomodoro ativo.
-- [ ] **Coluna "Missões Cumpridas" (Done):** Migração das tarefas com `status === 'done'` para selos verdes, medalhas `UiRibbonMedal.vue` e carimbo estilizado "CUMPRIDO".
-- [ ] **Accents de Adagas & Pregos:** Fixação de tarefas com `late === true` (atrasadas) com `UiIronDagger.vue` em vez de pregos comuns.
+- [x] Refatorar `pages/Task/index.vue` e criar rota de compatibilidade `pages/tasks/index.vue`. _(18/11/2026: as duas rotas viraram wrappers com `layout: false`; a tela mora em `components/features/tasks/page/TasksMural.vue`.)_
+- [x] Moldura de madeira maciça sobre parede de pedra rústica, dividida em 3 colunas rúnicas. _(18/11/2026: substituído pela cena pintada `public/imagens/Mural-expandido.webp` — quadro limpo + expansão generativa do Firefly, gradação de cor para a paleta quente do saguão e painéis alargados 1.45x; o quadro ocupa ~90% da largura e as 3 colunas ficam encaixadas nos painéis pintados via `composables/ui/useTasksScene.ts`, com folhas em escala ≥ 1. No mobile/compacto vira diário com abas.)_
+- [x] **Coluna "Contratos Abertos" (To Do):** tarefas `todo` seladas com cera vermelha `UiWaxSeal.vue` (`kanban/KanbanCardAccents.vue`). _(A folha continua sendo o `Paper.vue`, não o `UiParchmentCard.vue`: trocar o componente quebraria o zoom com abas.)_
+- [x] **Coluna "Em Andamento" (In Progress):** selos azuis e ampulheta `UiHourglass.vue` quando há pomodoros planejados (progresso = feitos/planejados; não existe estado de "Pomodoro rodando" no front, então "ativa" = ainda faltam pomodoros).
+- [x] **Coluna "Missões Cumpridas" (Done):** selos verdes, medalha `UiRibbonMedal.vue` e carimbo "CUMPRIDO".
+- [x] **Accents de Adagas & Pregos:** tarefas atrasadas (`late === true` ou prazo vencido, e não concluídas) presas por `UiIronDagger.vue`.
 - [ ] [STAND-BY: ARTÍSTICO] Spritesheet do Selo de Cera: Animação de carimbar/pressionar o selo vermelho ao mover para concluído.
 - [ ] [STAND-BY: ARTÍSTICO] Spritesheet de Papel Desenrolando: Transição fluida ao expandir modal de detalhes da tarefa.
-- [x] **Drag and Drop 3D Tilt:** Manter VueDraggable/HTML5 com inclinação sutil 3D (`transform: rotate(-3deg) scale(1.05)`) e SFX de textura de pergaminho/rascunho ao arrastar.
-- [ ] **Abas Superiores Mobile:** Integração de abas rústicas de madeira no `FieldJournalMobile.vue` para alternar entre "📜 Contratos", "⚔️ Em Combate" e "🏆 Vitórias".
-- [ ] SFX Dedicados: Som de escrita com pena de ganso (ao editar), martelo de cera (ao concluir) e folha rasgando (ao excluir).
+- [x] **Drag and Drop 3D Tilt:** Manter VueDraggable/HTML5 com inclinação sutil 3D (`transform: rotate(-3deg) scale(1.05)`) e SFX de textura de pergaminho/rascunho ao arrastar. _(18/11/2026: o SFX não existia de fato; agora toca `playParchmentDragSound` no início do arrasto, e o painel de destino ganha realce.)_
+- [x] **Abas Superiores Mobile:** abas de madeira no `FieldJournalMobile.vue` ("📜 Contratos", "⚔️ Em Combate", "🏆 Vitórias") ligadas a `uiGuild.mobileTaskTab`; aceitam soltar folhas (mover com mouse no modo compacto).
+- [x] SFX Dedicados: pena de ganso (ao salvar), martelo de cera (ao concluir) e folha rasgando (ao excluir), sintetizados em `useGuildAudio` (respeitam o mudo).
 - [x] Botão de "Retornar ao Saguão" integrado à UI ancorada com transição de volta ao saguão (`.diegetic-btn-back`).
 
 ---

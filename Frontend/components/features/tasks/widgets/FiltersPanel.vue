@@ -1,12 +1,7 @@
 <template>
-  <WoodPanel
-    title="Filtros"
-    :titleOffset="'-11.5%'"
-    :contentStyle="{ top: '-17%', left: '0%' }"
-    class="filters-woodpanel"
-    style="overflow: visible; margin-top: 1rem; height: 45vh; width: 64vh"
-  >
-    <div class="filters-container">
+  <!-- `wood`: painel de madeira da Sidebar antiga; `plain`: só os campos, para a prancha/gaveta do mural -->
+  <component :is="variant === 'plain' ? 'div' : WoodPanel" v-bind="wrapperAttrs">
+    <div class="filters-container" :class="{ 'is-plain': variant === 'plain' }">
       <div class="filter-group">
         <label class="filter-label">Projeto</label>
         <v-select
@@ -59,86 +54,110 @@
         <SvgButton
           label="Limpar"
           @click="clearFilters"
-          :width="200"
-          :labelSize="22"
+          :width="variant === 'plain' ? 150 : 200"
+          :height="variant === 'plain' ? 54 : undefined"
+          :labelSize="variant === 'plain' ? 18 : 22"
           class="clear-btn"
         />
       </div>
     </div>
-  </WoodPanel>
+  </component>
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
-import WoodPanel from '../../../ui/panels/WoodPanel.vue'
-import SvgButton from '../../../ui/svg/Button.vue'
+import { computed, ref, watch } from 'vue';
+import WoodPanel from '../../../ui/panels/WoodPanel.vue';
+import SvgButton from '../../../ui/svg/Button.vue';
 
 interface Props {
-  projects: any[]
-  projectFilter?: string
-  typeFilter?: string
-  priorityFilter?: string
+  projects: any[];
+  projectFilter?: string;
+  typeFilter?: string;
+  priorityFilter?: string;
+  variant?: 'wood' | 'plain';
 }
 
 interface Emits {
-  (e: 'update:projectFilter', value: string): void
-  (e: 'update:typeFilter', value: string): void
-  (e: 'update:priorityFilter', value: string): void
+  (e: 'update:projectFilter', value: string): void;
+  (e: 'update:typeFilter', value: string): void;
+  (e: 'update:priorityFilter', value: string): void;
 }
 
 const props = withDefaults(defineProps<Props>(), {
   projectFilter: '',
   typeFilter: '',
   priorityFilter: '',
-})
+  variant: 'wood',
+});
 
-const emit = defineEmits<Emits>()
+const wrapperAttrs = computed(() =>
+  props.variant === 'plain'
+    ? { class: 'filters-plain' }
+    : {
+        title: 'Filtros',
+        titleOffset: '-11.5%',
+        contentStyle: { top: '-17%', left: '0%' },
+        class: 'filters-woodpanel',
+        style: 'overflow: visible; margin-top: 1rem; height: 45vh; width: 64vh',
+      },
+);
 
-const localProjectFilter = ref(props.projectFilter)
-const localTypeFilter = ref(props.typeFilter)
-const localPriorityFilter = ref(props.priorityFilter)
+const emit = defineEmits<Emits>();
+
+const localProjectFilter = ref(props.projectFilter);
+const localTypeFilter = ref(props.typeFilter);
+const localPriorityFilter = ref(props.priorityFilter);
 
 const projectItems = computed(() => [
   { title: 'Todos', value: '' },
   ...props.projects.map((proj) => ({ title: proj.name, value: proj._id })),
-])
+]);
 
 const typeItems = [
   { title: 'Todos', value: '' },
   { title: 'Hábito', value: 'habit' },
   { title: 'Subtarefa', value: 'subtask' },
   { title: 'Tarefa', value: 'task' },
-]
+];
 
 const priorityItems = [
   { title: 'Todos', value: '' },
   { title: 'Alta', value: 'high' },
   { title: 'Média', value: 'medium' },
   { title: 'Baixa', value: 'low' },
-]
+];
 
 // Watch for external updates to props
-watch(() => props.projectFilter, (newVal) => {
-  localProjectFilter.value = newVal
-})
-watch(() => props.typeFilter, (newVal) => {
-  localTypeFilter.value = newVal
-})
-watch(() => props.priorityFilter, (newVal) => {
-  localPriorityFilter.value = newVal
-})
+watch(
+  () => props.projectFilter,
+  (newVal) => {
+    localProjectFilter.value = newVal;
+  },
+);
+watch(
+  () => props.typeFilter,
+  (newVal) => {
+    localTypeFilter.value = newVal;
+  },
+);
+watch(
+  () => props.priorityFilter,
+  (newVal) => {
+    localPriorityFilter.value = newVal;
+  },
+);
 
 function emitChanges() {
-  emit('update:projectFilter', localProjectFilter.value)
-  emit('update:typeFilter', localTypeFilter.value)
-  emit('update:priorityFilter', localPriorityFilter.value)
+  emit('update:projectFilter', localProjectFilter.value);
+  emit('update:typeFilter', localTypeFilter.value);
+  emit('update:priorityFilter', localPriorityFilter.value);
 }
 
 function clearFilters() {
-  localProjectFilter.value = ''
-  localTypeFilter.value = ''
-  localPriorityFilter.value = ''
-  emitChanges()
+  localProjectFilter.value = '';
+  localTypeFilter.value = '';
+  localPriorityFilter.value = '';
+  emitChanges();
 }
 </script>
 
@@ -155,6 +174,23 @@ function clearFilters() {
   box-sizing: border-box;
   overflow-y: auto;
   overflow-x: hidden;
+}
+
+.filters-container.is-plain {
+  width: 100%;
+  margin-left: 0;
+  padding: 0;
+  gap: 0.7rem;
+  overflow: visible;
+}
+
+.filters-container.is-plain .filter-label {
+  color: var(--guild-wood-dark, #2b1810);
+  font-size: 12px;
+}
+
+.filters-container.is-plain .buttons-row {
+  justify-content: center;
 }
 
 .filters-woodpanel {
@@ -227,5 +263,4 @@ function clearFilters() {
   font-family: 'Irish Grover', cursive;
   letter-spacing: 0.5px;
 }
-
 </style>

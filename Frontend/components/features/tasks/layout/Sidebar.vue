@@ -1,6 +1,7 @@
 <template>
-  <v-col cols="3" class="py-1 d-flex flex-column justify-center task-sidebar">
-    <div class="bells-row">
+  <!-- `docked`: coluna lateral antiga; `board`: conteúdo da prancha/gaveta do Mural de Contratos -->
+  <component :is="variant === 'board' ? 'div' : VCol" v-bind="rootAttrs">
+    <div class="bells-row" :class="{ 'is-board': variant === 'board' }">
       <SettingsDialog :user-id="userId">
         <template #activator="{ props, open }">
           <v-btn
@@ -10,18 +11,28 @@
             color="brown-darken-2"
             icon
             size="large"
-            :aria-label="dueTodayCount > 0 ? `${dueTodayCount} hábitos com lembrete hoje` : 'Lembretes de hábitos'"
-            :title="dueTodayCount > 0 ? `${dueTodayCount} hábitos com lembrete hoje` : 'Lembretes de hábitos'"
+            :aria-label="
+              dueTodayCount > 0 ? `${dueTodayCount} hábitos com lembrete hoje` : 'Lembretes de hábitos'
+            "
+            :title="
+              dueTodayCount > 0 ? `${dueTodayCount} hábitos com lembrete hoje` : 'Lembretes de hábitos'
+            "
             @click="open"
           >
-            <v-badge color="error" :content="dueTodayCount" :model-value="dueTodayCount > 0" offset-x="2" offset-y="2">
+            <v-badge
+              color="error"
+              :content="dueTodayCount"
+              :model-value="dueTodayCount > 0"
+              offset-x="2"
+              offset-y="2"
+            >
               <v-icon icon="mdi-bell-outline" size="28" />
             </v-badge>
           </v-btn>
         </template>
       </SettingsDialog>
 
-      <v-menu location="right" :close-on-content-click="false">
+      <v-menu :location="variant === 'board' ? 'bottom' : 'right'" :close-on-content-click="false">
         <template #activator="{ props }">
           <v-btn
             v-bind="props"
@@ -75,8 +86,8 @@
       </v-menu>
     </div>
 
-
     <TaskFiltersPanel
+      :variant="variant === 'board' ? 'plain' : 'wood'"
       :projects="projects"
       :project-filter="projectFilter"
       :type-filter="typeFilter"
@@ -85,62 +96,72 @@
       @update:type-filter="$emit('update:typeFilter', $event)"
       @update:priority-filter="$emit('update:priorityFilter', $event)"
     />
-
-  </v-col>
+  </component>
 </template>
 
 <script setup>
-  import TaskProjectList from '../widgets/ProjectList.vue'
-  import TaskFiltersPanel from '../widgets/FiltersPanel.vue'
-  import TaskCalendar from '../widgets/Calendar.vue'
-  import WoodPanel from '../../../ui/panels/WoodPanel.vue'
-  import { computed, onMounted } from 'vue'
-  import { useAlertsStore } from '~/stores/alerts'
-  import SettingsDialog from '../../../shared/dialogs/SettingsDialog.vue'
-  
-  const props = defineProps({
-    projects: Array,
-    projectFilter: String,
-    typeFilter: String,
-    priorityFilter: String,
-    dueTodayCount: {
-      type: Number,
-      default: 0,
-    },
-  })
+import TaskProjectList from '../widgets/ProjectList.vue';
+import TaskFiltersPanel from '../widgets/FiltersPanel.vue';
+import TaskCalendar from '../widgets/Calendar.vue';
+import WoodPanel from '../../../ui/panels/WoodPanel.vue';
+import { computed, onMounted } from 'vue';
+import { VCol } from 'vuetify/components';
+import { useAlertsStore } from '~/stores/alerts';
+import SettingsDialog from '../../../shared/dialogs/SettingsDialog.vue';
 
-  const alertsStore = useAlertsStore()
-  const alerts = computed(() => alertsStore.alerts)
-  const unreadCount = computed(() => alertsStore.unreadCount)
+const props = defineProps({
+  projects: Array,
+  projectFilter: String,
+  typeFilter: String,
+  priorityFilter: String,
+  dueTodayCount: {
+    type: Number,
+    default: 0,
+  },
+  variant: {
+    type: String,
+    default: 'docked',
+  },
+});
 
-  const userId = computed(() => {
-    if (typeof window !== 'undefined') {
-      return localStorage.getItem('userId') || 'default-user'
-    }
-    return 'default-user'
-  })
+const rootAttrs = computed(() =>
+  props.variant === 'board'
+    ? { class: 'task-sidebar-board' }
+    : { cols: 3, class: 'py-1 d-flex flex-column justify-center task-sidebar' },
+);
 
-  function formatDate(value) {
-    if (!value) return ''
-    const date = new Date(value)
-    if (Number.isNaN(date.getTime())) return ''
-    return date.toLocaleString()
+const alertsStore = useAlertsStore();
+const alerts = computed(() => alertsStore.alerts);
+const unreadCount = computed(() => alertsStore.unreadCount);
+
+const userId = computed(() => {
+  if (typeof window !== 'undefined') {
+    return localStorage.getItem('userId') || 'default-user';
   }
+  return 'default-user';
+});
 
-  async function handleRead(id) {
-    await alertsStore.markRead(id)
-  }
+function formatDate(value) {
+  if (!value) return '';
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return '';
+  return date.toLocaleString();
+}
 
-  onMounted(async () => {
-    await alertsStore.loadAlerts()
-  })
+async function handleRead(id) {
+  await alertsStore.markRead(id);
+}
 
-  defineEmits([
-    'update:projectFilter',
-    'update:typeFilter',
-    'update:priorityFilter',
-    'request-habit-notifications',
-  ])
+onMounted(async () => {
+  await alertsStore.loadAlerts();
+});
+
+defineEmits([
+  'update:projectFilter',
+  'update:typeFilter',
+  'update:priorityFilter',
+  'request-habit-notifications',
+]);
 </script>
 
 <style scoped>
@@ -193,6 +214,23 @@
   margin-left: -3rem;
 }
 
+.task-sidebar-board {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.bells-row.is-board {
+  margin-left: 0;
+  gap: 10px;
+}
+
+.bells-row.is-board .habit-reminder-bell,
+.bells-row.is-board .alerts-bell {
+  min-width: 48px;
+  min-height: 48px;
+  margin-bottom: 0;
+}
 
 .alerts-panel {
   min-width: 320px;

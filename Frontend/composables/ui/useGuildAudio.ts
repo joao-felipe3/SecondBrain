@@ -431,12 +431,170 @@ export function useGuildAudio() {
       case 'flutter':
         playPennantFlutterSound();
         break;
+      case 'parchment-drag':
+        playParchmentDragSound();
+        break;
+      case 'wax-stamp':
+        playWaxStampSound();
+        break;
+      case 'quill':
+        playQuillScratchSound();
+        break;
+      case 'paper-tear':
+        playPaperTearSound();
+        break;
       default:
         playFootstepsStoneSound();
     }
   }
 
   let ambientNode: AudioBufferSourceNode | null = null;
+
+  // 5b. SFX DO MURAL DE CONTRATOS (sintetizados, sem arquivos)
+
+  /** roda `render` com o contexto ativo; no primeiro gesto o contexto ainda pode estar suspenso */
+  function withRunningContext(render: (ctx: AudioContext) => void) {
+    if (isMuted.value) return;
+    const ctx = getAudioContext();
+    if (!ctx) return;
+    if (ctx.state !== 'running') {
+      ctx
+        .resume()
+        .then(() => render(ctx))
+        .catch(() => {});
+      return;
+    }
+    render(ctx);
+  }
+
+  /** buffer de ruído com envelope de "fibras" (estalos esparsos), base dos sons de papel e pena */
+  function noiseBuffer(ctx: AudioContext, dur: number, grain: number) {
+    const len = Math.floor(ctx.sampleRate * dur);
+    const buffer = ctx.createBuffer(1, len, ctx.sampleRate);
+    const data = buffer.getChannelData(0);
+    let crackle = 0;
+    for (let i = 0; i < len; i++) {
+      if (Math.random() < grain) crackle = 1;
+      crackle *= 0.993;
+      data[i] = (Math.random() * 2 - 1) * (0.35 + 0.65 * crackle);
+    }
+    return buffer;
+  }
+
+  /** pergaminho raspando na madeira ao ser arrancado do mural (início do arrasto) */
+  function playParchmentDragSound() {
+    withRunningContext((ctx) => {
+      const now = ctx.currentTime + 0.01;
+      const dur = 0.5;
+      const src = ctx.createBufferSource();
+      src.buffer = noiseBuffer(ctx, dur, 0.006);
+      src.playbackRate.value = 0.85 + Math.random() * 0.2;
+
+      const band = ctx.createBiquadFilter();
+      band.type = 'bandpass';
+      band.Q.value = 0.7;
+      band.frequency.setValueAtTime(1400, now);
+      band.frequency.exponentialRampToValueAtTime(2600, now + dur);
+
+      const gain = ctx.createGain();
+      gain.gain.setValueAtTime(0.0001, now);
+      gain.gain.exponentialRampToValueAtTime(0.22, now + 0.05);
+      gain.gain.linearRampToValueAtTime(0.14, now + 0.3);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + dur);
+
+      src.connect(band).connect(gain).connect(ctx.destination);
+      src.start(now);
+      src.stop(now + dur + 0.05);
+    });
+  }
+
+  /** martelo de cera: baque grave de madeira + "tch" da cera amassando (ao concluir) */
+  function playWaxStampSound() {
+    withRunningContext((ctx) => {
+      const now = ctx.currentTime + 0.01;
+
+      const thump = ctx.createOscillator();
+      const thumpGain = ctx.createGain();
+      thump.type = 'sine';
+      thump.frequency.setValueAtTime(150, now);
+      thump.frequency.exponentialRampToValueAtTime(55, now + 0.18);
+      thumpGain.gain.setValueAtTime(0.0001, now);
+      thumpGain.gain.exponentialRampToValueAtTime(0.55, now + 0.008);
+      thumpGain.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
+      thump.connect(thumpGain).connect(ctx.destination);
+      thump.start(now);
+      thump.stop(now + 0.3);
+
+      const squish = ctx.createBufferSource();
+      squish.buffer = noiseBuffer(ctx, 0.18, 0.02);
+      const low = ctx.createBiquadFilter();
+      low.type = 'lowpass';
+      low.frequency.setValueAtTime(1800, now);
+      low.frequency.exponentialRampToValueAtTime(400, now + 0.16);
+      const squishGain = ctx.createGain();
+      squishGain.gain.setValueAtTime(0.0001, now + 0.01);
+      squishGain.gain.exponentialRampToValueAtTime(0.3, now + 0.03);
+      squishGain.gain.exponentialRampToValueAtTime(0.001, now + 0.18);
+      squish.connect(low).connect(squishGain).connect(ctx.destination);
+      squish.start(now + 0.01);
+      squish.stop(now + 0.22);
+    });
+  }
+
+  /** pena de ganso riscando o pergaminho: três traços rápidos (ao salvar a edição) */
+  function playQuillScratchSound() {
+    withRunningContext((ctx) => {
+      const start = ctx.currentTime + 0.01;
+      const strokes = [
+        { at: 0, dur: 0.16 },
+        { at: 0.2, dur: 0.12 },
+        { at: 0.36, dur: 0.22 },
+      ];
+      for (const s of strokes) {
+        const t = start + s.at;
+        const src = ctx.createBufferSource();
+        src.buffer = noiseBuffer(ctx, s.dur, 0.03);
+        src.playbackRate.value = 1.1 + Math.random() * 0.3;
+        const high = ctx.createBiquadFilter();
+        high.type = 'highpass';
+        high.frequency.value = 2500;
+        const peak = ctx.createBiquadFilter();
+        peak.type = 'peaking';
+        peak.frequency.setValueAtTime(4200 + Math.random() * 800, t);
+        peak.gain.value = 9;
+        const gain = ctx.createGain();
+        gain.gain.setValueAtTime(0.0001, t);
+        gain.gain.exponentialRampToValueAtTime(0.16, t + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.001, t + s.dur);
+        src.connect(high).connect(peak).connect(gain).connect(ctx.destination);
+        src.start(t);
+        src.stop(t + s.dur + 0.03);
+      }
+    });
+  }
+
+  /** folha rasgando: chiado crescente e áspero que termina num estalo seco (ao excluir) */
+  function playPaperTearSound() {
+    withRunningContext((ctx) => {
+      const now = ctx.currentTime + 0.01;
+      const dur = 0.55;
+      const src = ctx.createBufferSource();
+      src.buffer = noiseBuffer(ctx, dur, 0.05);
+      const band = ctx.createBiquadFilter();
+      band.type = 'bandpass';
+      band.Q.value = 1.4;
+      band.frequency.setValueAtTime(700, now);
+      band.frequency.exponentialRampToValueAtTime(3800, now + dur * 0.85);
+      const gain = ctx.createGain();
+      gain.gain.setValueAtTime(0.0001, now);
+      gain.gain.exponentialRampToValueAtTime(0.18, now + 0.12);
+      gain.gain.linearRampToValueAtTime(0.42, now + dur * 0.85);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + dur);
+      src.connect(band).connect(gain).connect(ctx.destination);
+      src.start(now);
+      src.stop(now + dur + 0.05);
+    });
+  }
 
   // 6. ÁUDIO AMBIENTE SINTETIZADO (Estalar de lareira & fundo)
   function startAmbientSound() {
@@ -506,6 +664,10 @@ export function useGuildAudio() {
     playPortalHumSound,
     playPennantFlutterSound,
     playFootstepsStoneSound,
+    playParchmentDragSound,
+    playWaxStampSound,
+    playQuillScratchSound,
+    playPaperTearSound,
     toggleAmbientSound,
     startAmbientSound,
     stopAmbientSound,

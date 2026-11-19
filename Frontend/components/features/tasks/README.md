@@ -1,7 +1,34 @@
 # Tasks Components - Architecture & Structure
 
 ## Overview
+
 Este diretório contém a implementação da página de Tasks, incluindo Kanban Board, visualização detalhada (ZoomedContent), Hábitos, PERT, alertas e validação pré-conclusão.
+
+## Mural de Contratos (layout de 18/11/2026)
+
+A tela fica em `page/TasksMural.vue`; `pages/Task/index.vue` e `pages/tasks/index.vue` são wrappers com
+`definePageMeta({ layout: false })` (cena em tela cheia, como o saguão). Dois layouts, decididos no cliente
+por `isCompactMural()` (`composables/ui/useTasksScene.ts`):
+
+- **`scene`** (desktop e tablet deitado): palco 16:9 (`.mural-stage`, `container-type: size`) com a arte
+  `public/imagens/Mural-expandido.webp` (paleta quente do saguão, painéis alargados) em `cover` +
+  `scale(1.6)`: o quadro ocupa ~90% da largura. As 3 colunas do `KanbanBoard` ficam sobre os painéis
+  pintados; a posição vem de `boardCssVars()` em unidades `cqw/cqh`, e as folhas usam a mesma escala nas
+  3 colunas (`SCENE_PAPER_LAYOUT`: 2 por linha só com escala ≥ 1). O livro-caixa fica na placa do topo e
+  filtros/sinos na gaveta (botão "Filtros"). A UI **não** fica dentro de camada escalada (texto nítido,
+  `position: fixed` do zoom relativo à tela). Se mudar o CSS de `.mural-bg`, atualize `TASKS_STAGE_MODE`
+  (o spec `tests/unit/tasks-mural.spec.ts` confere).
+- **`journal`** (retrato, largura < 640 ou altura < 560): `FieldJournalMobile` com abas de madeira ligadas a
+  `uiGuild.mobileTaskTab`, uma coluna por vez, gaveta de filtros/lembretes e prancha inferior.
+
+Peças novas: `kanban/KanbanCardAccents.vue` + `kanban/cardAccents.ts` (selo por coluna, adaga em atrasadas,
+ampulheta de pomodoro, medalha e carimbo "CUMPRIDO"), `layout/MuralStatsLedger.vue` (livro-caixa com as
+contas do antigo `StatsCard`), `composables/features/taskFilters.ts` (filtro único; prioridade 1..4 →
+baixa/média/alta) e SFX sintetizados em `useGuildAudio` (pergaminho, cera, pena, papel rasgando).
+
+Cuidados: o overlay do zoom vai para o `<body>` (`<Teleport>`); a página sincroniza `allTasks` com a store
+quando a lista muda (adiado com `setTimeout(0)` para não desmontar quem ainda vai emitir, ex.: `HabitPreview`)
+e ao fechar o zoom. Os `*.spec.ts` desta pasta não rodam: o Vitest só inclui `tests/unit/**`.
 
 ## Directory Structure
 
@@ -37,9 +64,11 @@ tasks/
 ## Key Components
 
 ### ZoomedContent.vue
+
 **Propósito:** Modal overlay com abas empilhadas (pergaminhos) que abre ao clicar em um card.
 
 **Features:**
+
 - 7 abas para tasks regulares (Editar, Checklist, PERT, Valor, Lineage, Histórico, Feedback)
 - 5 abas para hábitos (Editar, Timeline, Estatísticas, Histórico, Feedback)
 - Navegação com teclado (Arrow Left/Right para mudar abas)
@@ -47,12 +76,14 @@ tasks/
 - Responsivo para mobile (≤480px oculta peek labels)
 
 **Props:**
+
 - `task`: Objeto de tarefa a editar
 - `tasks`: Array de tarefas relacionadas
 - `projects`: Array de projetos para seleção
 - `createOrEdit`: Label do botão principal ("Criar" ou "Salvar")
 
 **Emits:**
+
 - `delete`: Deletar tarefa
 - `close`: Fechar overlay
 - `edit`: Salvar/editar tarefa
@@ -60,9 +91,11 @@ tasks/
 - `navigate-context`: Navegar para contexto (projeto, WBS, etc)
 
 ### KanbanBoard.vue
+
 **Propósito:** Visualização Kanban com 3 colunas (ToDo, Fazendo, Concluído) e drag-and-drop.
 
 **Features:**
+
 - Drag-and-drop entre colunas
 - Auto-travamento do board quando um card está em zoom (impede move acidental)
 - Ocultação automática de tasks concluídas > 24 horas
@@ -70,48 +103,60 @@ tasks/
 - Responsivo (desktop: 3 colunas; tablet: 2 colunas; mobile: 1 coluna com scroll)
 
 **Props:**
+
 - `tasks`: Array de tarefas a renderizar
 - `projects`: Array de projetos
 
 **Handlers:**
+
 - `@dragstart`: Inicia drag de um card
 - `@drop`: Solta card em nova coluna, chama API para atualizar status
 - `@click`: Abre ZoomedContent para editar task
 
 ### ValidationErrorBanner.vue
+
 **Propósito:** Banner que exibe erros de validação pré-conclusão.
 
 **Features:**
+
 - Exibe lista de erros (checklist incompleto, PERT faltando, etc)
 - Clicáveis: cada erro pode navegar para o campo com problema
 - Auto-carregamento ao montar componente
 
 **Props:**
+
 - `taskId`: ID da tarefa para validar
 
 **API:**
+
 - `GET /tasks/:id/validation-errors`
 
 ### DeviationWarningAlert.vue
+
 **Propósito:** Alerta quando tempo gasto > TE estimado em 25%.
 
 **Features:**
+
 - Exibe comparação lado-a-lado (estimado vs. gasto)
 - Mensagem contextualizada via LLM (causa provável do desvio)
 - Botão "Ajustar estimativa" abre modal para reajustar PERT
 - Cálculo automático de novo TE ao ajustar valores
 
 **Props:**
+
 - `taskId`: ID da tarefa para verificar desvio
 
 **API:**
+
 - `POST /tasks/:id/check-deviation`
 - `PATCH /tasks/:id/pert` (ao salvar ajuste)
 
 ### CompletionFeedbackModal.vue
+
 **Propósito:** Modal que abre automaticamente ao mover tarefa para "done".
 
 **Features:**
+
 - Celebration message animada
 - Resumo de validação (% checklist, tempo vs TE)
 - Campo de pergunta aberta ("Houve impedimentos?")
@@ -119,18 +164,20 @@ tasks/
 - Botões: "Fechar", "Confirmar conclusão + feedback"
 
 **Props:**
+
 - `isOpen`: Visibilidade do modal
 - `task`: Tarefa sendo concluída
-
 
 ## Styling & Theming
 
 ### CSS Variables
+
 - `--kanban-tint`: Cor de fundo por status (primária, warning, info, success)
 - `--sheet-x`, `--sheet-y`, `--sheet-r`: Transformações dos pergaminhos
 - `--sheet-hover-x`, `--sheet-hover-y`: Estados ao hover
 
 ### Responsive Breakpoints
+
 - **Desktop (> 768px):** 3 colunas Kanban, todas as features visíveis
 - **Tablet (480px - 768px):** 2 colunas Kanban, ZoomedContent adaptado
 - **Mobile (< 480px):** 1 coluna com scroll, peek labels ocultos
@@ -138,12 +185,14 @@ tasks/
 ## Integration Points
 
 ### Backend Endpoints (Sprint 6)
+
 - `POST /tasks/:id/check-deviation` → DeviationWarningAlert
 - `GET /tasks/:id/validation-errors` → ValidationErrorBanner
 - `GET /alerts` → useAlertsStore
 - `PATCH /alerts/:id/read` → AlertsPanel
 
 ### Frontend Stores
+
 - `useTaskStore()`: `setTaskStatus`, `moveTaskToStatus`, `getValidationErrors`
 - `useAlertsStore()`: `loadAlerts`, `markRead`, `unreadCount`
 
@@ -158,10 +207,10 @@ tasks/
    - Silent fail em DeviationWarningAlert (não bloqueia UI)
    - Transições CSS aceleradas por GPU
 
-
 ## Testing Guidelines
 
 ### Unit Tests
+
 ```bash
 npm run test -- DeviationWarningAlert.spec.ts
 npm run test -- ValidationErrorBanner.spec.ts
@@ -169,6 +218,7 @@ npm run test -- tasks.service.sprint6.spec.ts
 ```
 
 ### E2E Tests
+
 ```bash
 npm run test:e2e -- sprint6-validation.e2e-spec.ts
 npm run test:e2e -- sprint6-deviation.e2e-spec.ts
