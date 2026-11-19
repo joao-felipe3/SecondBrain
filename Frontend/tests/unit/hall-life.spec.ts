@@ -7,6 +7,9 @@ import {
   stepMs,
   holdPlan,
   buildVignetteViews,
+  preloadHallAssetPlan,
+  getHallParticleLimits,
+  getHallPuppetDpr,
   type HallLifeData,
   type HallLifeFrame,
 } from '~/composables/features/useHallLife';
@@ -18,6 +21,13 @@ const frames: HallLifeFrame[] = [
 ];
 
 describe('useHallLife', () => {
+  it('aplica perfis menores no mobile e DPR limitado', () => {
+    expect(getHallParticleLimits(true)).toEqual({ embers: 25, dust: 45 });
+    expect(getHallParticleLimits(false)).toEqual({ embers: 45, dust: 85 });
+    expect(getHallPuppetDpr(3, true)).toBe(1.25);
+    expect(getHallPuppetDpr(3, false)).toBe(1.75);
+  });
+
   it('sorteia o tempo parado dentro do intervalo do frame', () => {
     expect(pickHold([1000, 2000], () => 0)).toBe(1000);
     expect(pickHold([1000, 2000], () => 1)).toBe(2000);
@@ -122,6 +132,32 @@ describe('useHallLife', () => {
     expect(
       buildVignetteViews({ ...data, gloin: { ...data.gloin!, puppet: undefined } })[0]!.puppet,
     ).toBeNull();
+  });
+
+  it('planeja o preload essencial e deixa intermediários para segundo plano', () => {
+    const data: HallLifeData = {
+      dwarf: {
+        order: 1,
+        rect: [0, 0, 10, 10],
+        frames: [
+          frames[0]!,
+          {
+            ...frames[1]!,
+            tweens: [{ name: 'b_1', src: '/b_1.webp' }],
+            loop: [{ name: 'b_loop', src: '/b_loop.webp' }],
+          },
+        ],
+        light: { source: 'torch', gain: 0.08 },
+        tooltip: null,
+        puppet: { src: '/dwarf/puppet.json' },
+      },
+    };
+    const plan = preloadHallAssetPlan(data);
+    expect(plan.essential).toContain('/imagens/Entrada-expandida.webp');
+    expect(plan.essential).toContain('/a.webp');
+    expect(plan.background).toContain('/b_1.webp');
+    expect(plan.background).toContain('/b_loop.webp');
+    expect(plan.background).toContain('/dwarf/puppet.json');
   });
 
   it('views trazem chaves primeiro e intermediários depois (frame A embaixo de tudo)', () => {

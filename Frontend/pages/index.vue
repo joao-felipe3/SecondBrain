@@ -90,6 +90,13 @@
       </div>
     </Transition>
 
+    <Transition name="fade-tooltip">
+      <div v-if="hallAssetLoading" class="hall-asset-loader" role="status" aria-live="polite">
+        <span>Preparando o Saguão</span>
+        <progress :value="hallAssetLoaded" :max="hallAssetTotal || 1"></progress>
+      </div>
+    </Transition>
+
     <!-- CAMADA 3: HUD ANCORADO NA TELA FÍSICA (SCREEN SPACE) -->
     <div class="guild-hud-layer">
       <!-- BANNER SUPERIOR DE BOAS-VINDAS À GUILDA + MUTE CONTROL -->
@@ -112,8 +119,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, onBeforeUnmount } from 'vue';
 import { mobileStageLayout } from '~/composables/ui/useSceneSpace';
+import { preloadHallAssets } from '~/composables/features/useHallLife';
 import { useHallPan } from '~/composables/ui/useHallPan';
 import { useRouter } from 'vue-router';
 import { useResponsive } from '~/composables/ui/useResponsive';
@@ -158,6 +166,10 @@ const isStairsHovered = ref(false);
 // Estado de Hover/Ativação do Portal da Direita (Biblioteca)
 const isRightDoorHovered = ref(false);
 const hoverTooltip = ref<string | null>(null);
+const hallAssetLoading = ref(true);
+const hallAssetLoaded = ref(0);
+const hallAssetTotal = ref(1);
+let stopHallPreload: (() => void) | null = null;
 
 // Mesma cena no desktop e no mobile: no mobile o palco 16:9 é o do desktop, só que maior e
 // dentro de um "mundo" arrastável (a imagem inteira, com abóbadas e lustres no topo)
@@ -328,9 +340,21 @@ onMounted(() => {
   } catch {
     showPanHint.value = true;
   }
+  stopHallPreload = preloadHallAssets(undefined, (loaded, total) => {
+    hallAssetLoaded.value = loaded;
+    hallAssetTotal.value = total;
+    if (loaded >= total) {
+      hallAssetLoading.value = false;
+    }
+  });
   uiGuildStore.setActiveRoom('hall');
   taskStore.loadTasks?.();
   projectStore.loadProjects?.();
+});
+
+onBeforeUnmount(() => {
+  stopHallPreload?.();
+  stopHallPreload = null;
 });
 </script>
 
@@ -516,6 +540,31 @@ onMounted(() => {
   line-height: 1;
   color: var(--guild-gold-glow, #ffc83d);
   animation: panHintNudge 1.2s ease-in-out infinite alternate;
+}
+
+.hall-asset-loader {
+  position: absolute;
+  left: 50%;
+  bottom: calc(48px + env(safe-area-inset-bottom, 0px));
+  z-index: 45;
+  transform: translateX(-50%);
+  display: grid;
+  gap: 0.35rem;
+  width: min(240px, calc(100vw - 48px));
+  padding: 0.55rem 0.8rem;
+  border-radius: 8px;
+  background: rgba(28, 20, 14, 0.88);
+  border: 1px solid rgba(212, 175, 55, 0.55);
+  color: var(--guild-parchment-base, #f4e4bc);
+  font-family: var(--font-guild-title, serif);
+  text-align: center;
+  pointer-events: none;
+}
+
+.hall-asset-loader progress {
+  width: 100%;
+  height: 4px;
+  accent-color: var(--guild-gold-glow, #ffc83d);
 }
 
 .pan-hint-arrow:first-child {

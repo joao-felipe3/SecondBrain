@@ -4,7 +4,7 @@
 > **Padrão de UI:** Viewport 16:9 (Desktop) / 9:16 (Mobile < 960px) — Arquitetura Diegética em 3 Camadas (_Depth Stacking_).  
 > **Assets de Referência Visual:** 8 mockups em `public/images/guild/` (`*-web.webp`, `*-mobile.webp`).  
 > **Documento Consolidado:** Incorpora o escopo de `FRONTEND_GUILD_REFACTORING_PLAN.md`.  
-> **Última Atualização:** 18/11/2026  
+> **Última Atualização:** 19/11/2026
 > **Status:** Abordagem A Concluída | Engenharia de Software & Componentes Diegéticos Prontos | Spritesheets em Stand-By Artístico
 
 ---

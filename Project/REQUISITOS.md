@@ -1,6 +1,6 @@
 # 📋 Acompanhamento de Requisitos - Second Brain
 
-> **Última atualização:** 06/09/2026  
+> **Última atualização:** 19/11/2026
 > **Status do Projeto:** Fase 0 (MVP) + Fase 1 + Fase 2 + Fase 3 100% Completas
 
 ---
@@ -13,7 +13,7 @@
 | Fase 1 - Eficiência                                 | 29    | 29/29 ✅    | 29/29 ✅ | 29/29 ✅ | 29/29 ✅ | 🟢 100%   |
 | Fase 2 - Micro-Tarefas                              | 22    | 22/22 ✅    | 22/22 ✅ | 22/22 ✅ | 22/22 ✅ | 🟢 100%   |
 | Fase 3 - DevOps & Refactoring                       | 38    | 38/38 ✅    | Docs ✅  | 38/38 ✅ | 38/38 ✅ | 🟢 100%   |
-| Fase 4 - Refatoração & Interface RPG (Frontend)     | 95    | 33/95       | 33/95 ✅ | UI/VFX   | 33/95    | 🟡 34.7%  |
+| Fase 4 - Refatoração & Interface RPG (Frontend)     | 95    | 39/95       | 39/95 ✅ | UI/VFX   | 39/95    | 🟡 41.1%  |
 | Fase 5 - Produtividade Avançada                     | 22    | 0/22        | 0/22     | 0/22     | 0/22     | ⬜ 0%     |
 | Fase 6 - Gamificação Essencial                      | 25    | 0/25        | 0/25     | 0/25     | 0/25     | ⬜ 0%     |
 | Fase 7 - Feature Freeze II (EDA, DDD & CQRS)        | 14    | 0/14        | 0/14     | 0/14     | 0/14     | ⬜ 0%     |
@@ -284,7 +284,7 @@
 
 ## 🛡️ Fase 4 - Refatoração & Interface RPG Diegética (Frontend)
 
-> **Status:** 🟡 34.7% Em Progresso (33/95 concluídos)  
+> **Status:** 🟡 41.1% Em Progresso (39/95 concluídos)
 > **Objetivo:** Refatorar a interface do SecondBrain para uma experiência diegética imersiva de RPG Medieval Fantástico ("Guilda de Aventureiros"), com suporte a 3 camadas de UI (_Depth Stacking_), responsividade fluida (<960px), componentes físicos atomic e efeitos visuais/sonoros em 60 FPS.  
 > **📄 Documentação Detalhada:** Ver `FRONTEND_REFACTORING_PLAN.md`
 
@@ -348,18 +348,18 @@
 
 | #   | Requisito                                                                                                       | Tipo     | Protótipo | Frontend | Backend | QA  |
 | --- | --------------------------------------------------------------------------------------------------------------- | -------- | :-------: | :------: | :-----: | :-: |
-| 42  | Refatorar `pages/Task/index.vue` e `KanbanBoard.vue` para moldura de madeira e pedra rústica (`tasks-web.webp`) | Frontend |    ⬜     |    ⬜    |   ⬜    | ⬜  |
-| 43  | Divisão em 3 colunas rúnicas (`display: grid; grid-template-columns: repeat(3, 1fr)`)                           | Frontend |    ⬜     |    ⬜    |   ⬜    | ⬜  |
-| 44  | Coluna "A Fazer" com pergaminhos `UiParchmentCard.vue` e selos de cera vermelhos                                | Frontend |    ⬜     |    ⬜    |   ⬜    | ⬜  |
-| 45  | Coluna "Em Andamento" com selos azuis e ampulheta animada `UiHourglass.vue` em tarefas ativas                   | Frontend |    ⬜     |    ⬜    |   ⬜    | ⬜  |
-| 46  | Coluna "Concluídas" com selos verdes, medalhas `UiRibbonMedal.vue` e carimbo "CUMPRIDO"                         | Frontend |    ⬜     |    ⬜    |   ⬜    | ⬜  |
-| 47  | Fixação de tarefas atrasadas com adagas `UiIronDagger.vue`                                                      | Frontend |    ⬜     |    ⬜    |   ⬜    | ⬜  |
+| 42  | Refatorar `pages/Task/index.vue` e `KanbanBoard.vue` para moldura pintada e cena responsiva (`Mural-expandido.webp`) | Frontend |    ✅     |    ✅    |   ✅    | ✅  |
+| 43  | Divisão em 3 colunas rúnicas (`todo`, `doing`, `done`) sobre os painéis da cena                              | Frontend |    ✅     |    ✅    |   ✅    | ✅  |
+| 44  | Coluna "A Fazer" com pergaminhos e selos de cera vermelhos                                                      | Frontend |    ✅     |    ✅    |   ✅    | ✅  |
+| 45  | Coluna "Em Andamento" com selos azuis e progresso de Pomodoro                                                   | Frontend |    ✅     |    ✅    |   ✅    | ✅  |
+| 46  | Coluna "Concluídas" com selos verdes, medalhas e carimbo "CUMPRIDO"                                            | Frontend |    ✅     |    ✅    |   ✅    | ✅  |
+| 47  | Fixação de tarefas atrasadas com adagas `UiIronDagger.vue`                                                      | Frontend |    ✅     |    ✅    |   ✅    | ✅  |
 | 48  | Spritesheet da animação do selo de cera pressionando ao concluir tarefa                                         | Frontend |    ⬜     |    ⬜    |   ⬜    | ⬜  |
 | 49  | Spritesheet de pergaminho desenrolando ao expandir modal de detalhes                                            | Frontend |    ⬜     |    ⬜    |   ⬜    | ⬜  |
-| 50  | Drag and Drop 3D Tilt com inclinação sutil e SFX de textura de papel/rascunho                                   | Frontend |    ⬜     |    ⬜    |   ⬜    | ⬜  |
-| 51  | Abas superiores rústicas no `FieldJournalMobile.vue` para navegação mobile                                      | Frontend |    ⬜     |    ⬜    |   ⬜    | ⬜  |
-| 52  | SFX dedicados: pena de ganso (edição), martelo de cera (conclusão) e papel rasgando (exclusão)                  | Frontend |    ⬜     |    ⬜    |   ⬜    | ⬜  |
-| 53  | Botão de retorno ao saguão integrado à UI ancorada                                                              | Frontend |    ⬜     |    ⬜    |   ⬜    | ⬜  |
+| 50  | Drag and Drop 3D Tilt com inclinação sutil e SFX de textura de papel/rascunho                                   | Frontend |    ✅     |    ✅    |   ✅    | ✅  |
+| 51  | Abas superiores rústicas no `FieldJournalMobile.vue` para navegação mobile                                      | Frontend |    ✅     |    ✅    |   ✅    | ✅  |
+| 52  | SFX dedicados: pena de ganso (edição), martelo de cera (conclusão) e papel rasgando (exclusão)                  | Frontend |    ✅     |    ✅    |   ✅    | ✅  |
+| 53  | Botão de retorno ao saguão integrado à UI ancorada                                                              | Frontend |    ✅     |    ✅    |   ✅    | ✅  |
 
 ### 📜 5. Sala de Arquivos & Grimórios (`/projects`)
 
@@ -1140,6 +1140,7 @@
 
 | Data       | Descrição                                                                                                                                                                                                                                |
 | ---------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 19/11/2026 | Atualização da Fase 4 com a implementação do Mural de Contratos em `feat/tasks-mural`: cena responsiva, três colunas, acentos diegéticos, abas mobile, drag-and-drop com SFX e livro-caixa; 29 testes unitários específicos foram validados. |
 | 06/09/2026 | Inversão da Fase 4 e Fase 5: Fase 4 agora é "Refatoração & Interface RPG (Frontend)" e Fase 5 agora é "Produtividade Avançada", atualizando tabela de resumo, ordem de seções e referências cruzadas.                                    |
 | 06/09/2026 | Reorganização da numeração de fases para números inteiros (Fase 0 a Fase 16), convertendo fases intermediárias decimais (2.5, 3.5 e 4.5) em fases inteiras sequenciais (Fases 3, 5 e 7) e sincronizando todas as referências cruzadas.   |
 | 06/07/2026 | Adicionada Fase 13 - Agentes Tutores e Aprendizado Acelerado (Estudos Sem Fricção) contendo 15 requisitos detalhados para tutoria inteligente baseada em IA e redução de fricção.                                                        |

@@ -235,6 +235,102 @@ export function buildVignetteViews(data: HallLifeData, layer: HallLifeLayer = 'b
 
 // ─── Agendador compartilhado entre as camadas (base e primeiro plano) ───
 const allData = hallLifeData as unknown as HallLifeData;
+export interface HallAssetPlan {
+  essential: string[];
+  background: string[];
+}
+
+export function getHallParticleLimits(compact: boolean): { embers: number; dust: number } {
+  return compact ? { embers: 25, dust: 45 } : { embers: 45, dust: 85 };
+}
+
+export function getHallPuppetDpr(devicePixelRatio: number, compact: boolean): number {
+  return Math.min(devicePixelRatio || 1, compact ? 1.25 : 1.75);
+}
+
+export function preloadHallAssetPlan(data: HallLifeData = allData): HallAssetPlan {
+  const essential = new Set<string>(['/imagens/Entrada-expandida.webp']);
+  const background = new Set<string>();
+
+  for (const vignette of Object.values(data)) {
+    vignette.frames[0]?.src && essential.add(vignette.frames[0].src);
+    vignette.foreground?.frames[0]?.src && essential.add(vignette.foreground.frames[0].src);
+
+    for (const frame of vignette.frames) {
+      for (const tween of frame.tweens ?? []) background.add(tween.src);
+      for (const loop of frame.loop ?? []) background.add(loop.src);
+      vignette.puppet?.src && background.add(vignette.puppet.src);
+    }
+  }
+
+  return { essential: [...essential], background: [...background] };
+}
+
+export function preloadImage(url: string): Promise<void> {
+  if (typeof window === 'undefined') return Promise.resolve();
+  return new Promise((resolve) => {
+    const image = new Image();
+    image.decoding = 'async';
+    image.onload = () => {
+      if ('decode' in image) void image.decode().catch(() => undefined).finally(() => resolve());
+      else resolve();
+    };
+    image.onerror = () => resolve();
+    image.src = url;
+  });
+}
+
+export function preloadHallAssets(
+  data: HallLifeData = allData,
+  onProgress?: (loaded: number, total: number) => void,
+): () => void {
+  if (typeof window === 'undefined') return () => undefined;
+
+  let cancelled = false;
+  const plan = preloadHallAssetPlan(data);
+
+  void (async () => {
+    let loaded = 0;
+    for (const url of plan.essential) {
+      if (cancelled) return;
+      await preloadImage(url);
+      loaded += 1;
+      onProgress?.(loaded, plan.essential.length);
+    }
+
+    const runBackground = async () => {
+      for (const url of plan.background) {
+        if (cancelled) return;
+        if (url.endsWith('.json')) {
+          try {
+            const response = await fetch(url);
+            const puppet = (await response.json()) as {
+              images?: Record<string, [string, number?, number?, number?, number?]>;
+            };
+            const base = url.slice(0, url.lastIndexOf('/') + 1);
+            await Promise.all(
+              Object.values(puppet.images ?? {}).map((entry) => preloadImage(base + entry[0]!)),
+            );
+          } catch {
+            // Puppets fall back to their resting frame without blocking the hall.
+          }
+        } else {
+          await preloadImage(url);
+        }
+      }
+    };
+
+    if ('requestIdleCallback' in window) {
+      window.requestIdleCallback(() => void runBackground(), { timeout: 3000 });
+    } else {
+      window.setTimeout(() => void runBackground(), 1000);
+    }
+  })();
+
+  return () => {
+    cancelled = true;
+  };
+}
 /** nome do frame exibido e do anterior (que fica opaco por baixo durante o crossfade) */
 /**
  * Marionetes prontas / que falharam, por vinheta. Compartilhado entre as camadas: a marionete pode estar no

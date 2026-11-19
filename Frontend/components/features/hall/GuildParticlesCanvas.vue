@@ -4,9 +4,16 @@
 
 <script setup lang="ts">
 import { ref, onMounted, onBeforeUnmount } from 'vue';
+import { getHallParticleLimits } from '~/composables/features/useHallLife';
 
 const canvasRef = ref<HTMLCanvasElement | null>(null);
 let animId: number | null = null;
+const PARTICLE_FPS = 30;
+const PARTICLE_FRAME_MS = 1000 / PARTICLE_FPS;
+let lastDrawMs = -Infinity;
+let running = false;
+let visibilityObserver: IntersectionObserver | null = null;
+let reducedMotion = false;
 
 interface Particle {
   x: number;
@@ -31,8 +38,10 @@ interface Particle {
 }
 
 const particles: Particle[] = [];
-const MAX_EMBERS = 45;
-const MAX_DUST = 85;
+const getParticleLimits = () => {
+  const compact = window.matchMedia('(max-width: 960px)').matches;
+  return getHallParticleLimits(compact);
+};
 
 // Estado do ponteiro / cursor do mouse e touch
 const pointer = {
@@ -135,10 +144,11 @@ function createDust(width: number, height: number, isInitial = false): Particle 
 
 function initParticles(width: number, height: number) {
   particles.length = 0;
-  for (let i = 0; i < MAX_EMBERS; i++) {
+  const limits = getParticleLimits();
+  for (let i = 0; i < limits.embers; i++) {
     particles.push(createEmber(width, height));
   }
-  for (let i = 0; i < MAX_DUST; i++) {
+  for (let i = 0; i < limits.dust; i++) {
     particles.push(createDust(width, height, true));
   }
 }
@@ -218,9 +228,15 @@ function drawGlintStar(
   ctx.restore();
 }
 
-function render() {
+function render(now = performance.now()) {
   const canvas = canvasRef.value;
   if (!canvas) return;
+  if (document.hidden || reducedMotion) return;
+  if (now - lastDrawMs < PARTICLE_FRAME_MS) {
+    animId = requestAnimationFrame(render);
+    return;
+  }
+  lastDrawMs = now;
   const ctx = canvas.getContext('2d');
   if (!ctx) return;
 
@@ -328,7 +344,26 @@ function render() {
   }
 
   ctx.restore();
+  animId = running ? requestAnimationFrame(render) : null;
+}
+
+function startLoop() {
+  if (running || document.hidden || reducedMotion) return;
+  running = true;
   animId = requestAnimationFrame(render);
+}
+
+function stopLoop() {
+  running = false;
+  if (animId !== null) {
+    cancelAnimationFrame(animId);
+    animId = null;
+  }
+}
+
+function handleVisibility() {
+  if (document.hidden) stopLoop();
+  else startLoop();
 }
 
 // Conversão precisa de coordenadas de tela para o espaço interno do Canvas
@@ -386,9 +421,18 @@ function handleResize() {
 }
 
 onMounted(() => {
+  reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   handleResize();
   initParticles(canvasRef.value?.width || 1920, canvasRef.value?.height || 1080);
-  render();
+  startLoop();
+
+  if ('IntersectionObserver' in window && canvasRef.value) {
+    visibilityObserver = new IntersectionObserver((entries) => {
+      if (entries.some((entry) => entry.isIntersecting)) startLoop();
+      else stopLoop();
+    });
+    visibilityObserver.observe(canvasRef.value);
+  }
 
   if (typeof ResizeObserver !== 'undefined' && canvasRef.value?.parentElement) {
     resizeObserver = new ResizeObserver(() => {
@@ -406,15 +450,18 @@ onMounted(() => {
   window.addEventListener('touchmove', handleTouchMove, { passive: true });
   window.addEventListener('touchend', handleTouchEnd, { passive: true });
   window.addEventListener('touchcancel', handleTouchEnd, { passive: true });
+  document.addEventListener('visibilitychange', handleVisibility);
 });
 
 onBeforeUnmount(() => {
-  if (animId !== null) {
-    cancelAnimationFrame(animId);
-  }
+  stopLoop();
   if (resizeObserver) {
     resizeObserver.disconnect();
     resizeObserver = null;
+  }
+  if (visibilityObserver) {
+    visibilityObserver.disconnect();
+    visibilityObserver = null;
   }
   if (typeof window !== 'undefined') {
     window.removeEventListener('resize', handleResize);
@@ -424,6 +471,7 @@ onBeforeUnmount(() => {
     window.removeEventListener('touchmove', handleTouchMove);
     window.removeEventListener('touchend', handleTouchEnd);
     window.removeEventListener('touchcancel', handleTouchEnd);
+    document.removeEventListener('visibilitychange', handleVisibility);
   }
 });
 </script>

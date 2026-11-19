@@ -19,6 +19,7 @@ import {
   type PuppetCue,
   type PuppetState,
 } from '~/composables/ui/puppet';
+import { getHallPuppetDpr } from '~/composables/features/useHallLife';
 
 const props = defineProps<{ src: string }>();
 const emit = defineEmits<{
@@ -38,6 +39,13 @@ let visObserver: IntersectionObserver | null = null;
 let onScreen = true;
 let stopFit: (() => void) | null = null;
 let gl: WebGLRenderingContext | WebGL2RenderingContext | null = null;
+const PUPPET_FPS = 30;
+const PUPPET_FRAME_MS = 1000 / PUPPET_FPS;
+let lastDrawMs = -Infinity;
+let running = false;
+let stopLoopGlobal: (() => void) | null = null;
+let startLoopGlobal: (() => void) | null = null;
+let puppetVisibilityHandler: (() => void) | null = null;
 
 // passo 1: peças desenhadas na resolução da arte (1:1, sem reamostrar a pintura)
 const VS = `attribute vec2 aPos; attribute vec2 aUv; uniform vec2 uSize; varying vec2 vUv;
@@ -197,7 +205,8 @@ onMounted(async () => {
     // tamanho REAL na tela: o saguão é ampliado por transform (scale), que clientWidth não vê;
     // medir antes da ampliação desenhava o Gloin pequeno e o navegador esticava (borrado)
     const fit = () => {
-      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      const mobile = window.matchMedia('(max-width: 960px)').matches;
+      const dpr = getHallPuppetDpr(window.devicePixelRatio || 1, mobile);
       const box = el.getBoundingClientRect();
       const w = Math.min(AW, Math.round(box.width * dpr)) || AW;
       const h = Math.min(AH, Math.round(box.height * dpr)) || AH;
@@ -210,6 +219,8 @@ onMounted(async () => {
     if ('IntersectionObserver' in window) {
       visObserver = new IntersectionObserver((entries) => {
         onScreen = entries.some((e) => e.isIntersecting);
+        if (onScreen) startLoop();
+        else stopLoop();
       });
       visObserver.observe(el);
     }
@@ -249,12 +260,13 @@ onMounted(async () => {
     const frozen = freeze ? puppet.anims.find((a) => a.name === `gesto_${freeze[0]}`) : undefined;
 
     const frame = (now: number) => {
-      raf = requestAnimationFrame(frame);
       // aba oculta ou marionete fora da tela: não desenha (depois do primeiro quadro, que avisa "ready")
       if (document.hidden || (!onScreen && ready.value)) {
         paused = true;
         return;
       }
+      if (now - lastDrawMs < PUPPET_FRAME_MS) return;
+      lastDrawMs = now;
       // a escala do saguão pode mudar sem redimensionar a janela (zoom do palco): confere de vez em quando
       if (++fitTick % 30 === 0) fit();
       if (!frozen && now >= until) next(now);
@@ -333,7 +345,29 @@ onMounted(async () => {
         ready.value = true;
         emit('ready');
       }
+      if (running) raf = requestAnimationFrame(frame);
     };
+    function stopLoop() {
+      running = false;
+      if (raf) {
+        cancelAnimationFrame(raf);
+        raf = 0;
+      }
+    }
+    function startLoop() {
+      if (running || stopped || document.hidden || (!onScreen && ready.value)) return;
+      running = true;
+      raf = requestAnimationFrame(frame);
+    }
+    function handleVisibility() {
+      if (document.hidden) stopLoop();
+      else startLoop();
+    }
+    stopLoopGlobal = stopLoop;
+    startLoopGlobal = startLoop;
+    puppetVisibilityHandler = handleVisibility;
+    document.addEventListener('visibilitychange', handleVisibility);
+    running = true;
     raf = requestAnimationFrame(frame);
   } catch {
     emit('failed');
@@ -342,6 +376,10 @@ onMounted(async () => {
 
 onBeforeUnmount(() => {
   stopped = true;
+  stopLoopGlobal?.();
+  if (puppetVisibilityHandler) {
+    document.removeEventListener('visibilitychange', puppetVisibilityHandler);
+  }
   cancelAnimationFrame(raf);
   observer?.disconnect();
   visObserver?.disconnect();

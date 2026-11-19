@@ -39,6 +39,7 @@
         :style="{ '--fade': `${fade[v.id] ?? 220}ms` }"
         alt=""
         decoding="async"
+        loading="eager"
         draggable="false"
       />
       <!-- hitbox só na metade central do patch (o patch inclui pixels de cenário em volta) -->
@@ -125,7 +126,16 @@ onMounted(() => {
   opacity: 1;
   z-index: 2;
   /* dissolve contínuo: dura o passo inteiro, então o próximo desenho começa quando este termina */
-  transition: opacity var(--fade, 220ms) cubic-bezier(0.4, 0, 0.2, 1);
+  animation: hall-frame-reveal var(--fade, 220ms) cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+
+@keyframes hall-frame-reveal {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 .hall-frame.hall-frame-base {
