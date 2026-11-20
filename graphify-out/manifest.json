@@ -1265,7 +1265,7 @@
     "semantic_hash": ""
   },
   "Backend/src/tasks/tasks.controller.ts": {
-    "mtime": 1795031808.1398077,
+    "mtime": 1795134832.3348746,
     "ast_hash": "1853b0aed8730f6459fd85d778cc3abc",
     "semantic_hash": ""
   },
@@ -1675,7 +1675,7 @@
     "semantic_hash": ""
   },
   "Backend/tests/unit/tasks/controllers/tasks.controller.spec.ts": {
-    "mtime": 1795031811.4143727,
+    "mtime": 1795134832.3388774,
     "ast_hash": "f95dfcbbf4e771250ebb98d979992f22",
     "semantic_hash": ""
   },
@@ -2715,8 +2715,8 @@
     "semantic_hash": ""
   },
   "Frontend/pages/index.vue": {
-    "mtime": 1795031285.2971938,
-    "ast_hash": "dc7d0b6f7c54d0ec92560992261878bb",
+    "mtime": 1795134840.0064452,
+    "ast_hash": "5ae85f589baec80acdcbffb69f9a55c8",
     "semantic_hash": ""
   },
   "Frontend/pages/projects/index.vue": {
@@ -2980,8 +2980,8 @@
     "semantic_hash": ""
   },
   "Project/REQUISITOS.md": {
-    "mtime": 1789094981.327381,
-    "ast_hash": "064d770087a21a8d2c83b25f7bd6dc20",
+    "mtime": 1795134840.016447,
+    "ast_hash": "c6563fe0d24ab6ae8bad3b0274d69f1e",
     "semantic_hash": ""
   },
   "Project/adr/001-why-nestjs-mongoose.md": {
@@ -3130,8 +3130,8 @@
     "semantic_hash": ""
   },
   "Frontend/components/features/hall/GuildParticlesCanvas.vue": {
-    "mtime": 1795031285.2640452,
-    "ast_hash": "17e334e1e0f3c9ff5401875d38e9ccaa",
+    "mtime": 1795134839.998897,
+    "ast_hash": "db922a956a3cd7edb1a4e7a62e32bc70",
     "semantic_hash": ""
   },
   "Frontend/components/features/hall/GuildReceptionDesk.vue": {
@@ -3350,8 +3350,8 @@
     "semantic_hash": ""
   },
   "Project/FRONTEND_REFACTORING_PLAN.md": {
-    "mtime": 1795058650.9726815,
-    "ast_hash": "4720020a88eda5fb2286ec5fee0bd840",
+    "mtime": 1795134840.012446,
+    "ast_hash": "331e3de8a6fda12510ec32555c99481f",
     "semantic_hash": ""
   },
   "Project/adr/004-validation-strategy.md": {
@@ -3645,13 +3645,13 @@
     "semantic_hash": ""
   },
   "Frontend/components/features/hall/GuildNpcLayer.vue": {
-    "mtime": 1795031285.2580466,
-    "ast_hash": "44a25a4c1f4df57c4afc706e11cf0d7f",
+    "mtime": 1795134839.9958968,
+    "ast_hash": "fdb7fd92fbf14c33ea4765bc94e3167a",
     "semantic_hash": ""
   },
   "Frontend/components/features/hall/GuildPuppetCanvas.vue": {
-    "mtime": 1795031285.266211,
-    "ast_hash": "7be011f09343306d02a9c0e82d7426f3",
+    "mtime": 1795137761.9490514,
+    "ast_hash": "042750cda64ec46335408129b1026b03",
     "semantic_hash": ""
   },
   "Frontend/components/features/hall/GuildSceneSpace.vue": {
@@ -3660,8 +3660,8 @@
     "semantic_hash": ""
   },
   "Frontend/composables/features/useHallLife.ts": {
-    "mtime": 1795031285.2802844,
-    "ast_hash": "21cd0b7ee4a210bb6f1dd96ea8fa6bc7",
+    "mtime": 1795134840.0044446,
+    "ast_hash": "429edd3c25bfbf25daebcf3251375f0d",
     "semantic_hash": ""
   },
   "Frontend/composables/ui/puppet.ts": {
@@ -3750,8 +3750,8 @@
     "semantic_hash": ""
   },
   "Frontend/tests/unit/hall-life.spec.ts": {
-    "mtime": 1795031285.7089095,
-    "ast_hash": "86cb96a185cfd3e433162319b9766a0f",
+    "mtime": 1795134840.0104475,
+    "ast_hash": "9224d1b61080f0e8dbeeb0987f902623",
     "semantic_hash": ""
   },
   "Frontend/tests/unit/puppet.spec.ts": {
@@ -4832,6 +4832,11 @@
   "Frontend/public/imagens/Mural-expandido.webp": {
     "mtime": 1795057575.7694652,
     "ast_hash": "c5bedbead92ba8b244a53ccd1072738c",
+    "semantic_hash": ""
+  },
+  "docs/hall-performance-analysis.md": {
+    "mtime": 1795134840.0184455,
+    "ast_hash": "f6c7b7c7ce319bf2246887e4fa4e276f",
     "semantic_hash": ""
   }
 }
