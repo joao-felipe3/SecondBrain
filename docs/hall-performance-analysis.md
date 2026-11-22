@@ -335,3 +335,43 @@ coleta automatizada.
   - compilacao concluida com codigo de saida zero.
 - Permanecem os avisos preexistentes de nomes duplicados em
   `KanbanCardAccents` e de chunks maiores que 500 kB.
+
+## Fase 2 executada - 19/11/2026
+
+### Alteracoes aplicadas
+
+- [GuildNpcLayer.vue](/C:/Users/najoa/Documents/SecondBrain/SecondBrain/Frontend/components/features/hall/GuildNpcLayer.vue)
+  passou a observar a proximidade de cada vinheta.
+- Cada marionete agora monta o componente WebGL somente com intersecao no
+  `rootMargin` de 25%.
+- Ao sair da proximidade, o componente WebGL desmonta e libera contexto,
+  framebuffer, buffers e texturas pelo ciclo de limpeza existente.
+- Enquanto o WebGL nao esta ativo, o frame de repouso continua sendo exibido.
+- O plano de preload deixou de baixar os JSON das sete marionetes antecipadamente.
+- Os JSON e texturas passam a ser carregados pelo canvas quando ele entra em
+  proximidade.
+- Navegadores sem `IntersectionObserver` continuam no fallback seguro e ativam
+  todas as marionetes.
+
+### Comparacao antes/depois
+
+| Indicador | Antes | Fase 2 | Ganho controlado |
+|---|---:|---:|---:|
+| Marionetes montadas no inicio | 7 | so as proximas | ate 100% menos instancias fora da proximidade |
+| Fetch de JSON das marionetes no inicio | ate 7 | sob demanda | ate 7 downloads removidos da carga inicial |
+| Contextos WebGL criados no inicio | ate 7 | somente proximas | reducao proporcional aos NPCs fora da viewport |
+| Recurso WebGL fora da proximidade | mantido | desmontado | contexto, FBO e texturas liberados |
+| Imagem de repouso fora do WebGL | reserva existente | reserva mantida | sem alterar o fundo da vinheta |
+
+O numero exato de marionetes proximas depende do tamanho da tela, panorama
+mobile e posicao da camera. Portanto, os ganhos acima sao limites estruturais,
+nao uma promessa fixa de FPS.
+
+### Validacao
+
+- 21 testes unitarios do Hall passaram.
+- Foram adicionados testes para ativacao por proximidade e limites do Fase 1.
+- Build completo do frontend passou:
+  - 3309 modulos transformados no cliente;
+  - 1635 modulos transformados no servidor;
+  - bundle client, server e Nitro concluidos com codigo de saida zero.

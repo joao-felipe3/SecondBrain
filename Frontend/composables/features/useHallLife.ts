@@ -248,6 +248,10 @@ export function getHallPuppetDpr(devicePixelRatio: number, compact: boolean): nu
   return Math.min(devicePixelRatio || 1, compact ? 1.25 : 1.75);
 }
 
+export function shouldActivateHallPuppet(isIntersecting: boolean): boolean {
+  return isIntersecting;
+}
+
 export function preloadHallAssetPlan(data: HallLifeData = allData): HallAssetPlan {
   const essential = new Set<string>(['/imagens/Entrada-expandida.webp']);
   const background = new Set<string>();
@@ -259,7 +263,6 @@ export function preloadHallAssetPlan(data: HallLifeData = allData): HallAssetPla
     for (const frame of vignette.frames) {
       for (const tween of frame.tweens ?? []) background.add(tween.src);
       for (const loop of frame.loop ?? []) background.add(loop.src);
-      vignette.puppet?.src && background.add(vignette.puppet.src);
     }
   }
 

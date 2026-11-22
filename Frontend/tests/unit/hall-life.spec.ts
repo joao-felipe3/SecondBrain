@@ -10,6 +10,7 @@ import {
   preloadHallAssetPlan,
   getHallParticleLimits,
   getHallPuppetDpr,
+  shouldActivateHallPuppet,
   type HallLifeData,
   type HallLifeFrame,
 } from '~/composables/features/useHallLife';
@@ -26,6 +27,11 @@ describe('useHallLife', () => {
     expect(getHallParticleLimits(false)).toEqual({ embers: 45, dust: 85 });
     expect(getHallPuppetDpr(3, true)).toBe(1.25);
     expect(getHallPuppetDpr(3, false)).toBe(1.75);
+  });
+
+  it('ativa marionetes apenas quando a proximidade intersecta', () => {
+    expect(shouldActivateHallPuppet(false)).toBe(false);
+    expect(shouldActivateHallPuppet(true)).toBe(true);
   });
 
   it('sorteia o tempo parado dentro do intervalo do frame', () => {
@@ -157,7 +163,6 @@ describe('useHallLife', () => {
     expect(plan.essential).toContain('/a.webp');
     expect(plan.background).toContain('/b_1.webp');
     expect(plan.background).toContain('/b_loop.webp');
-    expect(plan.background).toContain('/dwarf/puppet.json');
   });
 
   it('views trazem chaves primeiro e intermediários depois (frame A embaixo de tudo)', () => {

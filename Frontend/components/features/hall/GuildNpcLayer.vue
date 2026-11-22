@@ -4,6 +4,7 @@
     <div
       v-for="v in views"
       :key="v.id"
+      :ref="(el) => setVignetteRef(v.id, el)"
       class="hall-vignette"
       :class="[v.lightClass, { 'is-interactive': !!v.tooltip }]"
       :style="v.style"
@@ -20,7 +21,7 @@
       />
       <!-- NPC marionete: animado em tempo real; o repouso acima fica por baixo até carregar (e se falhar) -->
       <GuildPuppetCanvas
-        v-if="v.puppet && !puppetFailed[v.id]"
+        v-if="v.puppet && !puppetFailed[v.id] && activePuppets.has(v.id)"
         :src="v.puppet.src"
         class="hall-frame-puppet"
         @ready="puppetReady[v.id] = true"
@@ -59,7 +60,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted } from 'vue';
+import { onBeforeUnmount, onMounted, ref } from 'vue';
 import GuildPuppetCanvas from './GuildPuppetCanvas.vue';
 import {
   useHallLife,
@@ -77,11 +78,57 @@ const emit = defineEmits<{
 }>();
 
 const { views, active, previous, fade } = useHallLife({ layer: props.layer });
+const activePuppets = ref(new Set<string>());
+const vignetteElements = new Map<string, Element>();
+let proximityObserver: IntersectionObserver | null = null;
+
+function setVignetteRef(id: string, el: Element | null) {
+  if (!el) {
+    vignetteElements.delete(id);
+    return;
+  }
+  vignetteElements.set(id, el);
+  proximityObserver?.observe(el);
+}
+
+function setPuppetActive(id: string, active: boolean) {
+  const next = new Set(activePuppets.value);
+  if (active) {
+    puppetReady[id] = false;
+    next.add(id);
+  } else {
+    next.delete(id);
+  }
+  activePuppets.value = next;
+}
 
 // som do saguão: alaúde do bardo (sincronizado com a mão) + ambiente; liga no primeiro gesto
 const music = useHallMusic();
 onMounted(() => {
   if (props.layer === 'base') music.arm();
+  if ('IntersectionObserver' in window) {
+    proximityObserver = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          const vignette = entry.target as HTMLElement;
+          const id = vignette.dataset.vignette;
+          if (id) setPuppetActive(id, entry.isIntersecting);
+        }
+      },
+      { rootMargin: '25% 0px', threshold: 0.01 },
+    );
+    for (const el of vignetteElements.values()) proximityObserver.observe(el);
+  } else {
+    for (const view of views.value) {
+      if (view.puppet) setPuppetActive(view.id, true);
+    }
+  }
+});
+
+onBeforeUnmount(() => {
+  proximityObserver?.disconnect();
+  proximityObserver = null;
+  vignetteElements.clear();
 });
 </script>
 
