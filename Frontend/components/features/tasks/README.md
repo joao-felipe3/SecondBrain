@@ -11,10 +11,13 @@ A tela fica em `page/TasksMural.vue`; `pages/Task/index.vue` e `pages/tasks/inde
 por `isCompactMural()` (`composables/ui/useTasksScene.ts`):
 
 - **`scene`** (desktop e tablet deitado): palco 16:9 (`.mural-stage`, `container-type: size`) com a arte
-  `public/imagens/Mural-expandido.webp` (paleta quente do saguão, painéis alargados) em `cover` +
-  `scale(1.6)`: o quadro ocupa ~90% da largura. As 3 colunas do `KanbanBoard` ficam sobre os painéis
+  `public/imagens/Mural-expandido.webp` (arte 4:3 regerada em 20/11/2026) em `cover` + `scale(1.3)` com
+  origem em `27.5% 47%` (o quadro não está no centro da imagem): o quadro ocupa ~76% da largura e a sala
+  aparece dos lados. As 3 colunas do `KanbanBoard` ficam sobre os painéis
   pintados; a posição vem de `boardCssVars()` em unidades `cqw/cqh`, e as folhas usam a mesma escala nas
-  3 colunas (`SCENE_PAPER_LAYOUT`: 2 por linha só com escala ≥ 1). O livro-caixa fica na placa do topo e
+  3 colunas (`SCENE_PAPER_LAYOUT`: 2 por linha só com escala ≥ 1). Uma camada `multiply` por coluna
+  (`.kanban-column::after`) repete a luz da arte sobre as folhas (tochas nas laterais, centro na penumbra). `page/MuralFlames.vue` anima as tochas e velas pintadas com o
+  mesmo sprite do saguão (posições em `MURAL_FLAMES`, ancoradas na base da chama). O livro-caixa fica na placa do topo e
   filtros/sinos na gaveta (botão "Filtros"). A UI **não** fica dentro de camada escalada (texto nítido,
   `position: fixed` do zoom relativo à tela). Se mudar o CSS de `.mural-bg`, atualize `TASKS_STAGE_MODE`
   (o spec `tests/unit/tasks-mural.spec.ts` confere).

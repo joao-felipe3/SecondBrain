@@ -9,12 +9,16 @@ import {
   BOARD_COLUMNS,
   BOARD_FRAME,
   BOARD_BOTTOM_RAIL,
+  MURAL_FLAMES,
+  flameStageStyle,
   tasksStageRect,
   boardCssVars,
   isCompactMural,
   paperLayoutForWidth,
   JOURNAL_PAPER_LAYOUT,
   SCENE_PAPER_LAYOUT,
+  PAPER_SIZE,
+  SCENE_PAPER_BLEED,
 } from '~/composables/ui/useTasksScene';
 import { matchesTaskFilters, priorityBucket } from '~/composables/features/taskFilters';
 import { summarizeTasks, formatPomodoroTime } from '~/composables/features/taskStats';
@@ -50,28 +54,51 @@ describe('useTasksScene: geometria do quadro pintado', () => {
     });
   });
 
-  it('o quadro é o protagonista: ocupa quase toda a largura e sobra o topo para a placa', () => {
+  it('o quadro é o protagonista, com um pouco de sala em volta e o topo livre para a placa', () => {
     expect(Math.min(...plaques.map((p) => p.y))).toBeGreaterThan(0.07); // placa pendurada do título
     const frame = tasksStageRect(BOARD_FRAME);
-    expect(frame.x).toBeGreaterThan(0.02);
-    expect(frame.x + frame.w).toBeLessThan(0.98);
-    expect(frame.w).toBeGreaterThan(0.85);
+    expect(frame.x).toBeGreaterThan(0.05); // escudo/armas e arco ainda aparecem dos lados
+    expect(frame.x + frame.w).toBeLessThan(0.95);
+    expect(Math.abs(frame.x + frame.w / 2 - 0.5)).toBeLessThan(0.01); // quadro centralizado no palco
+    expect(frame.w).toBeGreaterThan(0.74);
     const rail = tasksStageRect(BOARD_BOTTOM_RAIL);
     expect(rail.y + rail.h).toBeLessThan(1.01); // botão "Novo Contrato" visível
   });
 
-  it('folhas legíveis (escala >= 1) em qualquer palco de desktop/tablet deitado', () => {
-    const px = (w: number) => panels.map((p) => p.w * w);
-    // 1920 e um monitor 1848x954 (palco de 1696): 2 por linha
-    for (const w of [...px(1920), ...px(1696)]) {
+  it('as folhas que avançam sobre os postes nunca encostam nas do painel vizinho', () => {
+    for (let i = 0; i < panels.length - 1; i++) {
+      const post = panels[i + 1].x - (panels[i].x + panels[i].w);
+      expect(post).toBeGreaterThan(2 * SCENE_PAPER_BLEED + 0.01);
+    }
+  });
+
+  it('cena: sempre 2 contratos por linha (um pouco sobrepostos), legíveis em 1920', () => {
+    // largura da área das folhas: painel + o que avança sobre os postes dos dois lados
+    const px = (w: number) => panels.map((p) => (p.w + 2 * SCENE_PAPER_BLEED) * w);
+    for (const w of [...px(1920), ...px(1696), ...px(1366), ...px(1180)]) {
       const l = paperLayoutForWidth(w, SCENE_PAPER_LAYOUT);
       expect(l.perRow).toBe(2);
-      expect(l.scale).toBeGreaterThanOrEqual(1);
+      expect(l.scale).toBeGreaterThanOrEqual(0.7);
+      // as 2 folhas sobrepostas cabem no painel
+      const o = SCENE_PAPER_LAYOUT.overlap ?? 0;
+      expect(PAPER_SIZE.width * l.scale * (2 - o)).toBeLessThanOrEqual(w);
     }
-    // 1366 e tablet deitado: 1 por linha, maior
-    for (const w of [...px(1366), ...px(1180)]) {
-      const l = paperLayoutForWidth(w, SCENE_PAPER_LAYOUT);
-      expect(l.scale).toBeGreaterThanOrEqual(1);
+    for (const w of px(1920)) {
+      expect(paperLayoutForWidth(w, SCENE_PAPER_LAYOUT).scale).toBeGreaterThanOrEqual(1.15);
+    }
+  });
+
+  it('chamas animadas: dentro da arte e com a base sobre a boca da tocha/pavio pintado', () => {
+    for (const f of MURAL_FLAMES) {
+      expect(f.top).toBeLessThan(f.base);
+      expect(f.x).toBeGreaterThan(0);
+      expect(f.x).toBeLessThan(TASKS_IMAGE.width);
+      const st = flameStageStyle(f);
+      const left = parseFloat(st.left) / 100;
+      const width = parseFloat(st.width) / 100;
+      // centro do sprite = eixo da chama pintada
+      const axis = tasksStageRect({ x: f.x, y: f.base, w: 0, h: 0 }).x;
+      expect(Math.abs(left + width / 2 - axis)).toBeLessThan(0.001);
     }
   });
 

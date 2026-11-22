@@ -1,10 +1,6 @@
 <template>
   <!-- camada sobre a folha (160x200 antes da escala do cartão); não captura cliques -->
   <div class="card-accents" :class="`accents-${column}`" aria-hidden="true">
-    <span v-if="accents.pin === 'dagger'" class="accent-dagger" title="Contrato atrasado">
-      <UiIronDagger size="md" :angle="32" />
-    </span>
-
     <span v-if="accents.hourglass" class="accent-hourglass">
       <UiHourglass
         size="md"
@@ -12,10 +8,6 @@
         :active="accents.hourglass.active"
         :label="`Pomodoros: ${task?.pomodorosDid || 0}/${task?.pomodorosPlanned || 0}`"
       />
-    </span>
-
-    <span class="accent-seal">
-      <UiWaxSeal :color="accents.seal" size="sm" />
     </span>
 
     <span v-if="accents.medal" class="accent-medal">
@@ -28,8 +20,6 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
-import UiWaxSeal from '~/components/ui/diegetic/UiWaxSeal.vue';
-import UiIronDagger from '~/components/ui/diegetic/UiIronDagger.vue';
 import UiHourglass from '~/components/ui/diegetic/UiHourglass.vue';
 import UiRibbonMedal from '~/components/ui/diegetic/UiRibbonMedal.vue';
 import { getCardAccents, type AccentColumn } from './cardAccents';
@@ -58,26 +48,11 @@ const accents = computed(() => getCardAccents(props.task, props.column));
   display: inline-flex;
 }
 
-/* adaga cravada no canto superior direito da própria folha: o esquerdo é da alça de arrasto e a
-   lâmina não pode invadir a folha vizinha */
-.accent-dagger {
-  right: 16px;
-  top: -10px;
-  filter: drop-shadow(2px 3px 2px rgba(0, 0, 0, 0.45));
-}
-
 /* canto inferior esquerdo: livre na coluna "Em Andamento" (a medalha só aparece em Cumpridas) */
 .accent-hourglass {
   left: 10px;
   bottom: 10px;
   filter: drop-shadow(1px 2px 2px rgba(0, 0, 0, 0.35));
-}
-
-/* selo de cera na base da folha, como o lacre de um contrato */
-.accent-seal {
-  right: 8px;
-  bottom: 14px;
-  transform: rotate(-8deg);
 }
 
 .accent-medal {

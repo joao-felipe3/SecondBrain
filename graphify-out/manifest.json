@@ -2150,7 +2150,7 @@
     "semantic_hash": ""
   },
   "Frontend/components/features/tasks/board/Paper.vue": {
-    "mtime": 1780519839.7945602,
+    "mtime": 1795388459.8528569,
     "ast_hash": "fbdb2fc5e0af4bce39b948bf7ecb86ff",
     "semantic_hash": ""
   },
@@ -2195,13 +2195,13 @@
     "semantic_hash": ""
   },
   "Frontend/components/features/tasks/kanban/KanbanBoard.vue": {
-    "mtime": 1795048991.2010527,
-    "ast_hash": "090076bac2ead01a6937fd44aafee8aa",
+    "mtime": 1795388587.8842094,
+    "ast_hash": "9dd961495f95673920b1342f6f55bc6b",
     "semantic_hash": ""
   },
   "Frontend/components/features/tasks/layout/Main.vue": {
-    "mtime": 1795058651.5771747,
-    "ast_hash": "4d55acca4c8baf94d61d312d0f0f2d83",
+    "mtime": 1795385742.3472772,
+    "ast_hash": "85a4803dca1c90e39712680aec776c6a",
     "semantic_hash": ""
   },
   "Frontend/components/features/tasks/layout/Sidebar.vue": {
@@ -2635,8 +2635,8 @@
     "semantic_hash": ""
   },
   "Frontend/composables/ui/useZoomController.ts": {
-    "mtime": 1795011856.3326244,
-    "ast_hash": "1f7c27d0af4e1d532174745553e2fe95",
+    "mtime": 1795389035.239725,
+    "ast_hash": "aca06dba1fe6423c8eef17a38b7d8621",
     "semantic_hash": ""
   },
   "Frontend/composables/ui/useZoomState.ts": {
@@ -2970,8 +2970,8 @@
     "semantic_hash": ""
   },
   "Frontend/components/features/tasks/README.md": {
-    "mtime": 1795058650.7010598,
-    "ast_hash": "fc591692c8228eb8fb065f2ba912af33",
+    "mtime": 1795212407.7029846,
+    "ast_hash": "4cd10e32e3f94e1f87d15899c5fd08be",
     "semantic_hash": ""
   },
   "Frontend/public/robots.txt": {
@@ -3350,8 +3350,8 @@
     "semantic_hash": ""
   },
   "Project/FRONTEND_REFACTORING_PLAN.md": {
-    "mtime": 1795134840.012446,
-    "ast_hash": "331e3de8a6fda12510ec32555c99481f",
+    "mtime": 1795386068.9219954,
+    "ast_hash": "17f013b6dfeaf7e13adb7a4b6ce2927c",
     "semantic_hash": ""
   },
   "Project/adr/004-validation-strategy.md": {
@@ -4790,8 +4790,8 @@
     "semantic_hash": ""
   },
   "Frontend/components/features/tasks/kanban/KanbanCardAccents.vue": {
-    "mtime": 1795048991.2720623,
-    "ast_hash": "f2e7d9042778628ee17417dca872b03f",
+    "mtime": 1795387980.0895681,
+    "ast_hash": "382b735c80bc500635163f6ed7866f59",
     "semantic_hash": ""
   },
   "Frontend/components/features/tasks/kanban/cardAccents.ts": {
@@ -4805,8 +4805,8 @@
     "semantic_hash": ""
   },
   "Frontend/components/features/tasks/page/TasksMural.vue": {
-    "mtime": 1795048991.5694625,
-    "ast_hash": "e64a3928a565443fa877cecd5ea25754",
+    "mtime": 1795385742.3542776,
+    "ast_hash": "39e83cf5458d4ab6c200143f0259f2ca",
     "semantic_hash": ""
   },
   "Frontend/composables/features/taskFilters.ts": {
@@ -4820,23 +4820,28 @@
     "semantic_hash": ""
   },
   "Frontend/composables/ui/useTasksScene.ts": {
-    "mtime": 1795057307.2363894,
-    "ast_hash": "1effbf725e6bc3ca92f9398a3c9f7e5d",
+    "mtime": 1795388963.6764758,
+    "ast_hash": "214da289cb5e153d6243fb23911c5ad1",
     "semantic_hash": ""
   },
   "Frontend/tests/unit/tasks-mural.spec.ts": {
-    "mtime": 1795048991.7563345,
-    "ast_hash": "57a92ce016b3e1f4c3082d4bb917ba94",
+    "mtime": 1795233520.4498775,
+    "ast_hash": "1d35b9a34fb916f53c501d9f460468ab",
     "semantic_hash": ""
   },
   "Frontend/public/imagens/Mural-expandido.webp": {
-    "mtime": 1795057575.7694652,
-    "ast_hash": "c5bedbead92ba8b244a53ccd1072738c",
+    "mtime": 1795198692.2307632,
+    "ast_hash": "c8594e416eecaf82aadff528fb4d68a1",
     "semantic_hash": ""
   },
   "docs/hall-performance-analysis.md": {
     "mtime": 1795134840.0184455,
     "ast_hash": "f6c7b7c7ce319bf2246887e4fa4e276f",
+    "semantic_hash": ""
+  },
+  "Frontend/components/features/tasks/page/MuralFlames.vue": {
+    "mtime": 1795212433.2594335,
+    "ast_hash": "4f3bb7201ec4fe43d70008906274b312",
     "semantic_hash": ""
   }
 }

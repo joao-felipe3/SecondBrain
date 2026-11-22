@@ -92,6 +92,10 @@
          Vai para o <body>: o mural é posicionado sobre a cena e um ancestral com transform
          prenderia o `position: fixed` dentro dele. -->
     <Teleport to="body">
+      <!-- véu escuro atrás da folha: entra junto com o zoom (zoomed) e sai junto com a volta (zoomed = false) -->
+      <transition name="zoom-backdrop-fade">
+        <div v-if="zoomed || zoomedTask" class="zoom-backdrop" aria-hidden="true" />
+      </transition>
       <transition name="zoom-fade">
         <div v-if="zoomedTask" class="zoom-container">
           <TaskPaper
@@ -538,12 +542,17 @@ async function observeColumnSizes() {
 function columnBodyStyle(status: KanbanColumnStatus) {
   const layout = paperLayouts.value[status] ?? { perRow: 2, scale: 0.85 };
   const cardW = Math.round(PAPER_SIZE.width * layout.scale);
-  return {
+  // na cena as folhas da mesma linha se sobrepõem: a coluna da grade é mais estreita que a folha e o vão
+  // some; a folha (centralizada na coluna) transborda metade da sobreposição para cada lado
+  const overlap = props.layout === 'scene' && layout.perRow > 1 ? (SCENE_PAPER_LAYOUT.overlap ?? 0) : 0;
+  const style: Record<string, string> = {
     '--paper-scale': String(layout.scale),
     '--card-w': `${cardW}px`,
     '--card-h': `${Math.round(PAPER_SIZE.height * layout.scale)}px`,
-    gridTemplateColumns: `repeat(${layout.perRow}, ${cardW}px)`,
-  } as Record<string, string>;
+    gridTemplateColumns: `repeat(${layout.perRow}, ${Math.round(cardW * (1 - overlap))}px)`,
+  };
+  if (overlap > 0) style.columnGap = '0px';
+  return style;
 }
 
 onMounted(() => {
@@ -890,6 +899,37 @@ function handleFeedbackConfirmed(feedbackData: any) {
   --ph: var(--plaque-done-h);
 }
 
+/* luz da cena sobre as folhas: o papel é HTML e ficaria igualmente claro em qualquer ponto do quadro.
+   Esta camada (multiply, sem cliques) acompanha a luz da arte, que é quente e ampla como no saguão:
+   só um leve sombreado para longe da tocha mais próxima e a sombra da viga das placas no topo. */
+.layout-scene .kanban-column::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 600;
+  pointer-events: none;
+  mix-blend-mode: multiply;
+  background:
+    linear-gradient(to bottom, rgba(70, 40, 20, 0.18) 0%, rgba(70, 40, 20, 0) 12%),
+    var(--scene-shade, none);
+}
+
+.layout-scene .kanban-column[data-status='todo'] {
+  --scene-shade: linear-gradient(to right, rgba(255, 245, 230, 0) 0%, rgba(90, 55, 30, 0.1) 100%);
+}
+
+.layout-scene .kanban-column[data-status='doing'] {
+  --scene-shade: radial-gradient(
+    ellipse at 50% 45%,
+    rgba(90, 55, 30, 0) 0%,
+    rgba(90, 55, 30, 0.08) 100%
+  );
+}
+
+.layout-scene .kanban-column[data-status='done'] {
+  --scene-shade: linear-gradient(to left, rgba(255, 245, 230, 0) 0%, rgba(90, 55, 30, 0.1) 100%);
+}
+
 .layout-scene .kanban-column.is-drop-target {
   box-shadow:
     inset 0 0 0 3px rgba(255, 205, 110, 0.7),
@@ -900,24 +940,23 @@ function handleFeedbackConfirmed(feedbackData: any) {
 .layout-scene .kanban-column-header {
   position: absolute;
   left: calc(var(--px) - var(--cx) + var(--pw) * 0.06);
-  top: calc(var(--py) - var(--cy) + var(--ph) * 0.2);
+  top: calc(var(--py) - var(--cy) + var(--ph) * 0.14);
   width: calc(var(--pw) * 0.88);
-  height: calc(var(--ph) * 0.6);
+  height: calc(var(--ph) * 0.72);
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.5em;
-  padding: 0 0.9em;
+  gap: 0.4em;
+  padding: 0 0.75em;
   box-sizing: border-box;
-  font-size: clamp(10px, 0.98cqw, 21px);
+  /* ~21 px em 1920 (era ~19): lido de longe sobre o quadro, sem cortar "Contratos Abertos" */
+  font-size: clamp(12px, 1.1cqw, 25px);
   border-radius: 3px;
-  background: radial-gradient(
-    ellipse at 50% 40%,
-    var(--guild-parchment-base, #f4e4bc) 0%,
-    var(--guild-parchment-dark, #d8bc82) 100%
-  );
+  /* pergaminho envelhecido, creme neutro (sem tom laranja): o creme claro (L ~230) virava uma faixa quase branca no
+     topo do quadro e dava a impressão de luz estourada; o saguão nunca passa de L ~200 */
+  background: radial-gradient(ellipse at 50% 40%, hsl(40, 36%, 79%) 0%, hsl(36, 28%, 66%) 100%);
   box-shadow:
-    inset 0 0 10px rgba(110, 70, 35, 0.45),
+    inset 0 0 14px rgba(95, 55, 25, 0.55),
     0 2px 5px rgba(0, 0, 0, 0.55);
   clip-path: polygon(1% 6%, 99% 0, 100% 92%, 0 100%);
 }
@@ -945,11 +984,13 @@ function handleFeedbackConfirmed(feedbackData: any) {
 
 .layout-scene .kanban-title {
   font-family: var(--font-guild-title, 'Irish Grover', cursive);
-  color: var(--guild-wood-dark, #2b1810);
+  /* tinta quase preta + leve realce claro embaixo: contraste alto sobre o pergaminho envelhecido */
+  color: hsl(20, 45%, 9%);
+  text-shadow: 0 1px 0 rgba(255, 240, 210, 0.45);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  line-height: 1;
+  line-height: 1.1;
 }
 
 .layout-scene .kanban-count {
@@ -973,10 +1014,13 @@ function handleFeedbackConfirmed(feedbackData: any) {
   background: radial-gradient(circle at 35% 30%, hsl(145, 45%, 38%) 0%, hsl(150, 55%, 20%) 100%);
 }
 
+/* a área das folhas avança ~1.4% do palco sobre os postes de cada lado (papéis pregados por cima da
+   moldura): os postes têm ~5.7% do palco, então as folhas de painéis vizinhos nunca se encostam */
 .layout-scene .kanban-column-body {
   position: absolute;
-  inset: 0;
-  padding: 10px 6px 14px;
+  inset: 0 -1.4cqw;
+  /* espaço no topo: a estampa do projeto sai um pouco acima do papel e a rolagem cortaria */
+  padding: 30px 2px 14px;
 }
 
 /* ===================== LAYOUT DIÁRIO (mobile/compacto) ===================== */
@@ -1056,6 +1100,50 @@ function handleFeedbackConfirmed(feedbackData: any) {
     filter 140ms ease;
 }
 
+/* preview do papel na cena: a folha tem 160 px de projeto (escalada depois), então o texto precisa ser maior
+   e a margem menor para caber. O `px-5` do preview é !important (utilitário do Vuetify), por isso também aqui. */
+.layout-scene .kanban-card-scale :deep(.card-content) {
+  padding-top: 12px !important;
+  padding-inline: 17px !important;
+  font-size: 14px;
+  line-height: 1.3;
+}
+
+.layout-scene .kanban-card-scale :deep(.title) {
+  font-size: 16px;
+  line-height: 1.2;
+  margin-top: 0;
+}
+
+.layout-scene .kanban-card-scale :deep(.description) {
+  -webkit-line-clamp: 1;
+  line-clamp: 1;
+  margin-bottom: 0;
+  font-size: 13px;
+}
+
+.layout-scene .kanban-card-scale :deep(.pert-summary),
+.layout-scene .kanban-card-scale :deep(.checklist) {
+  font-size: 12px;
+  margin-left: 0;
+}
+
+/* "Checklist: 0/0" numa linha só (com a margem maior ele quebrava em duas) */
+.layout-scene .kanban-card-scale :deep(.checklist) {
+  white-space: nowrap;
+}
+
+.layout-scene .kanban-card-scale :deep(.pert-summary) {
+  padding: 2px 0;
+  margin-bottom: 0;
+}
+
+/* folhas sobrepostas na cena: a que está sob o mouse/foco vem para a frente da vizinha */
+.layout-scene .kanban-card-wrapper:hover,
+.layout-scene .kanban-card-wrapper:focus-within {
+  z-index: 20;
+}
+
 .kanban-card-wrapper.dragging {
   opacity: 0.35;
 }
@@ -1116,6 +1204,31 @@ function handleFeedbackConfirmed(feedbackData: any) {
 .zoom-fade-enter-from,
 .zoom-fade-leave-to {
   opacity: 0;
+}
+
+/* véu escuro com vinheta: escurece a cena sem apagar tudo (as tochas e as bordas continuam visíveis) */
+.zoom-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1999;
+  background: radial-gradient(ellipse at center, rgba(20, 11, 5, 0.6) 0%, rgba(8, 4, 2, 0.9) 100%);
+  pointer-events: none;
+}
+
+.zoom-backdrop-fade-enter-active,
+.zoom-backdrop-fade-leave-active {
+  transition: opacity 0.75s ease;
+}
+
+.zoom-backdrop-fade-enter-from,
+.zoom-backdrop-fade-leave-to {
+  opacity: 0;
+}
+
+/* a folha ampliada fica acima do véu (o véu é só o fundo) */
+.zoom-container > .zoomed-task-paper {
+  position: relative;
+  z-index: 1;
 }
 
 @media (max-width: 480px) {

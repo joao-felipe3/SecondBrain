@@ -13,8 +13,14 @@
       <img class="mural-backdrop" :src="backgroundUrl" alt="" aria-hidden="true" />
 
       <!-- ======== DESKTOP / TABLET DEITADO: quadro pintado com o kanban encaixado ======== -->
-      <div v-if="layoutMode === 'scene'" class="mural-stage">
+      <div
+        v-if="layoutMode === 'scene'"
+        ref="stageRef"
+        class="mural-stage"
+        :class="{ 'is-zoomed': zoomed }"
+      >
         <img class="mural-bg" :src="backgroundUrl" alt="Mural de Contratos da Guilda" />
+        <MuralFlames />
 
         <TaskMain
           layout="scene"
@@ -202,6 +208,7 @@ import { useApiResource } from '~/composables/api';
 import TaskMain from '../layout/Main.vue';
 import TaskSidebar from '../layout/Sidebar.vue';
 import MuralStatsLedger from '../layout/MuralStatsLedger.vue';
+import MuralFlames from './MuralFlames.vue';
 import { summarizeTasks } from '~/composables/features/taskStats';
 import { useGuildAudio } from '~/composables/ui/useGuildAudio';
 import { TASKS_BG_URL, boardCssVars, isCompactMural } from '~/composables/ui/useTasksScene';
@@ -436,7 +443,29 @@ onBeforeUnmount(() => {
 });
 
 // Manipulação de zoom
-const onZoomStart = () => (zoomed.value = true);
+// Zoom da cena: o palco escala e desloca para que a folha aberta fique no centro da tela (sem mostrar a borda
+// do palco). O deslocamento é calculado antes de o Vue aplicar a classe, então o palco ainda está sem transform.
+const stageRef = ref<HTMLElement | null>(null);
+const ZOOM_SCALE = 1.75; // = transform: scale() de .mural-stage.is-zoomed
+function onZoomStart(paperRect?: DOMRect | null) {
+  zoomed.value = true;
+  const stage = stageRef.value;
+  if (!stage || !paperRect) return;
+  const frame = stage.parentElement?.getBoundingClientRect();
+  if (!frame) return;
+  const cx = frame.left + frame.width / 2;
+  const cy = frame.top + frame.height / 2;
+  const px = paperRect.left + paperRect.width / 2;
+  const py = paperRect.top + paperRect.height / 2;
+  // o ponto da folha, depois do scale em torno do centro, vai para o centro: t = -s * (P - C)
+  // limitado para não mostrar a borda do palco (com s, o palco cobre o quadro de -(s-1)/2 a +(s-1)/2)
+  const maxX = ((ZOOM_SCALE - 1) * stage.offsetWidth) / 2;
+  const maxY = ((ZOOM_SCALE - 1) * stage.offsetHeight) / 2;
+  const tx = Math.max(-maxX, Math.min(maxX, -ZOOM_SCALE * (px - cx)));
+  const ty = Math.max(-maxY, Math.min(maxY, -ZOOM_SCALE * (py - cy)));
+  stage.style.setProperty('--zoom-tx', `${tx.toFixed(1)}px`);
+  stage.style.setProperty('--zoom-ty', `${ty.toFixed(1)}px`);
+}
 const onZoomEnd = () => {
   zoomed.value = false;
   newlyCreatedTask.value = null;
@@ -562,12 +591,22 @@ watch(selectedProjectFilter, () => {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  object-position: 50% 43.2%;
-  transform: scale(1.6);
-  transform-origin: 50% 43.2%;
+  object-position: 27.5% 47%;
+  transform: scale(1.3);
+  transform-origin: 27.5% 47%;
   pointer-events: none;
   user-select: none;
   z-index: 0;
+}
+
+/* ao abrir uma folha, o palco inteiro (fundo, quadro e tochas) dá um leve zoom para o centro, junto com o véu
+   escuro (no KanbanBoard, por <Teleport>): a folha aberta fica como o foco da cena */
+.mural-stage {
+  transition: transform 0.75s ease;
+}
+
+.mural-stage.is-zoomed {
+  transform: translate(var(--zoom-tx, 0px), var(--zoom-ty, 0px)) scale(1.75);
 }
 
 .mural-stage > :deep(.task-main) {
@@ -592,7 +631,7 @@ watch(selectedProjectFilter, () => {
   z-index: 6;
   transform: translateX(-50%);
   padding-top: 2.2cqh;
-  font-size: clamp(11px, 0.95cqw, 20px);
+  font-size: clamp(12px, 1.05cqw, 22px);
 }
 
 .sign-rope {
@@ -641,6 +680,23 @@ watch(selectedProjectFilter, () => {
     0 6px 16px rgba(0, 0, 0, 0.65);
 }
 
+/* na cena, a placa usa o mesmo pergaminho envelhecido dos rótulos das colunas (sem faixa quase branca) */
+.mural-sign .sign-board {
+  background:
+    radial-gradient(ellipse at 50% 40%, hsl(40, 36%, 80%) 0%, hsl(36, 28%, 67%) 100%) padding-box,
+    repeating-linear-gradient(
+        90deg,
+        hsl(24, 38%, 30%) 0 7px,
+        hsl(22, 42%, 24%) 7px 11px,
+        hsl(25, 35%, 34%) 11px 16px
+      )
+      border-box;
+  box-shadow:
+    inset 0 0 16px rgba(95, 55, 25, 0.5),
+    0 0 0 1px rgba(20, 12, 6, 0.85),
+    0 6px 16px rgba(0, 0, 0, 0.65);
+}
+
 .sign-icon {
   font-size: 1.35em;
   line-height: 1;
@@ -669,6 +725,14 @@ watch(selectedProjectFilter, () => {
   font-size: 0.72em;
   white-space: nowrap;
   color: hsl(25, 38%, 32%);
+}
+
+/* livro-caixa da placa da cena: maior e mais escuro (era 0.72em em marrom médio, difícil de ler) */
+.mural-sign .sign-subtitle {
+  margin-top: 0.15em;
+  font-size: 0.86em;
+  font-weight: 600;
+  color: hsl(22, 45%, 14%);
 }
 
 .sign-sound,
