@@ -550,7 +550,6 @@ function onMouseEnter() {
   width: 100%;
   height: 100%;
   transform-origin: top center;
-  will-change: transform, filter;
   animation: pennantIdleSway 4.2s ease-in-out infinite alternate;
   transition:
     filter 0.35s ease,
@@ -580,7 +579,6 @@ function onMouseEnter() {
 /* ILUMINAÇÃO ORGÂNICA PULSANTE DA CHAMA DA LAREIRA */
 .hearth-pulsing-light {
   animation: hearthLightFlicker 2.4s ease-in-out infinite alternate;
-  will-change: opacity;
   pointer-events: none;
 }
 

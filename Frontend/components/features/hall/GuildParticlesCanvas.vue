@@ -509,6 +509,5 @@ onBeforeUnmount(() => {
   height: 100%;
   pointer-events: none;
   z-index: 15;
-  will-change: transform;
 }
 </style>

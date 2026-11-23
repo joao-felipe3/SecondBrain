@@ -19,7 +19,15 @@
         }"
       >
         <!-- IMAGEM DE FUNDO MASTER (DESKTOP 16:9 / MOBILE PORTRAIT) -->
-        <img :src="backgroundImageUrl" alt="Saguão da Guilda Master Background" class="master-bg" />
+        <img
+          :src="backgroundImageUrl"
+          alt="Saguão da Guilda Master Background"
+          class="master-bg"
+          width="5056"
+          height="3392"
+          fetchpriority="high"
+          decoding="async"
+        />
 
         <!-- CANVAS DE PARTÍCULAS & VFX (LAREIRA E POEIRA DOURADA 60 FPS) -->
         <GuildParticlesCanvas />
@@ -379,7 +387,6 @@ onBeforeUnmount(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  will-change: transform;
 }
 
 /* CONTAINER SAFE ZONE 16:9 (WORLD SPACE - PROPORÇÃO TRAVADA 16:9) */
@@ -397,11 +404,19 @@ onBeforeUnmount(() => {
   perspective: 1200px;
   perspective-origin: 50% 50%;
   transform-style: preserve-3d;
-  will-change: transform, filter;
   transition:
     transform 0.6s cubic-bezier(0.25, 1, 0.5, 1),
     filter 0.6s cubic-bezier(0.25, 1, 0.5, 1);
   overflow: visible;
+}
+
+.safe-zone.is-camera-hovering,
+.safe-zone.is-camera-zooming {
+  will-change: transform, filter;
+}
+
+.safe-zone.is-camera-zooming .master-bg {
+  will-change: transform;
 }
 
 /* IMAGEM MASTER (5056x3392) DE FUNDO PANORÂMICO COM ZOOM & BLEED OPEN-MATTE */
@@ -416,7 +431,6 @@ onBeforeUnmount(() => {
   object-position: 59.5% 66%;
   pointer-events: none;
   z-index: 1;
-  will-change: transform;
   transition: transform 0.3s ease;
 }
 

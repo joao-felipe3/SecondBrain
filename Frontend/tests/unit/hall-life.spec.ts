@@ -12,6 +12,7 @@ import {
   getHallPuppetDpr,
   shouldActivateHallPuppet,
   getHallFallbackProfile,
+  preloadWithConcurrency,
   type HallLifeData,
   type HallLifeFrame,
 } from '~/composables/features/useHallLife';
@@ -27,6 +28,21 @@ const frames: HallLifeFrame[] = [
 ];
 
 describe('useHallLife', () => {
+  it('limita o preload a duas cargas simultaneas por padrao', async () => {
+    let active = 0;
+    let peak = 0;
+    await preloadWithConcurrency(
+      ['/a.webp', '/b.webp', '/c.webp', '/d.webp'],
+      async () => {
+        active += 1;
+        peak = Math.max(peak, active);
+        await new Promise((resolve) => setTimeout(resolve, 5));
+        active -= 1;
+      },
+    );
+    expect(peak).toBe(2);
+  });
+
   it('define 30 fps no desktop e 24 fps no mobile', () => {
     expect(hallFrameInterval(false)).toBeCloseTo(1000 / 30);
     expect(hallFrameInterval(true)).toBeCloseTo(1000 / 24);

@@ -229,7 +229,6 @@ function ceilingStyle(l: CeilingLight, k: number): Record<string, string> {
   animation: playFire 1s steps(15) infinite;
   image-rendering: pixelated;
   image-rendering: crisp-edges;
-  will-change: background-position, transform;
 }
 
 /* GLOW INTERNO DE LUZ SUAVE DAS TOCHAS (ATMOSFÉRICO) */
@@ -247,7 +246,6 @@ function ceilingStyle(l: CeilingLight, k: number): Record<string, string> {
   filter: blur(14px);
   mix-blend-mode: screen;
   transform-origin: center;
-  will-change: opacity, transform;
   pointer-events: none;
 }
 
@@ -566,7 +564,6 @@ function ceilingStyle(l: CeilingLight, k: number): Record<string, string> {
   );
   filter: blur(24px);
   mix-blend-mode: screen;
-  will-change: opacity, transform;
   animation: hearthPulse 1.4s ease-in-out infinite alternate;
 }
 
@@ -619,7 +616,6 @@ function ceilingStyle(l: CeilingLight, k: number): Record<string, string> {
   box-shadow:
     0 0 3px #ffaa00,
     0 0 5px #ff4400;
-  will-change: opacity, transform;
   animation: sparkRise 1.6s ease-out infinite;
 }
 
@@ -655,6 +651,15 @@ function ceilingStyle(l: CeilingLight, k: number): Record<string, string> {
   100% {
     opacity: 0;
     transform: translateY(-35px) translateX(var(--drift, 6px)) scale(0.3);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fire-sprite,
+  .torch-light-glow,
+  .hearth-fire-glow,
+  .spark {
+    animation: none;
   }
 }
 </style>
