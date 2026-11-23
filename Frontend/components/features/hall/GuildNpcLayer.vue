@@ -66,6 +66,7 @@ import {
   useHallLife,
   puppetReady,
   puppetFailed,
+  getBrowserHallFallbackProfile,
   type HallLifeLayer,
 } from '~/composables/features/useHallLife';
 import { useHallMusic } from '~/composables/ui/useHallMusic';
@@ -93,7 +94,7 @@ function setVignetteRef(id: string, el: Element | null) {
 
 function setPuppetActive(id: string, active: boolean) {
   const next = new Set(activePuppets.value);
-  if (active) {
+  if (active && getBrowserHallFallbackProfile().allowPuppets) {
     puppetReady[id] = false;
     next.add(id);
   } else {

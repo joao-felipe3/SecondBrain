@@ -11,9 +11,14 @@ import {
   getHallParticleLimits,
   getHallPuppetDpr,
   shouldActivateHallPuppet,
+  getHallFallbackProfile,
   type HallLifeData,
   type HallLifeFrame,
 } from '~/composables/features/useHallLife';
+import {
+  createHallFrameScheduler,
+  hallFrameInterval,
+} from '~/composables/ui/useHallFrameScheduler';
 
 const frames: HallLifeFrame[] = [
   { name: 'a', src: '/a.webp', hold: [3000, 6000] },
@@ -22,6 +27,43 @@ const frames: HallLifeFrame[] = [
 ];
 
 describe('useHallLife', () => {
+  it('define 30 fps no desktop e 24 fps no mobile', () => {
+    expect(hallFrameInterval(false)).toBeCloseTo(1000 / 30);
+    expect(hallFrameInterval(true)).toBeCloseTo(1000 / 24);
+  });
+
+  it('distribui um unico raf compartilhado entre varias marionetes', () => {
+    let tick: FrameRequestCallback | null = null;
+    let rafCalls = 0;
+    let cancelled = 0;
+    const calls: number[] = [];
+    const scheduler = createHallFrameScheduler({
+      compact: () => false,
+      hidden: () => false,
+      raf: (callback) => {
+        rafCalls += 1;
+        tick = callback;
+        return rafCalls;
+      },
+      cancelRaf: () => {
+        cancelled += 1;
+      },
+    });
+    const unsubscribeA = scheduler.subscribe((now) => calls.push(now));
+    const unsubscribeB = scheduler.subscribe((now) => calls.push(now));
+
+    expect(rafCalls).toBe(1);
+    tick?.(34);
+    tick?.(35);
+
+    expect(calls).toEqual([34, 34]);
+
+    unsubscribeA();
+    unsubscribeB();
+    expect(cancelled).toBeGreaterThanOrEqual(1);
+    scheduler.dispose();
+  });
+
   it('aplica perfis menores no mobile e DPR limitado', () => {
     expect(getHallParticleLimits(true)).toEqual({ embers: 25, dust: 45 });
     expect(getHallParticleLimits(false)).toEqual({ embers: 45, dust: 85 });
@@ -32,6 +74,19 @@ describe('useHallLife', () => {
   it('ativa marionetes apenas quando a proximidade intersecta', () => {
     expect(shouldActivateHallPuppet(false)).toBe(false);
     expect(shouldActivateHallPuppet(true)).toBe(true);
+  });
+
+  it('usa perfil conservador em hardware limitado', () => {
+    const profile = getHallFallbackProfile({ hardwareConcurrency: 2, deviceMemory: 2 });
+    expect(profile.conservative).toBe(true);
+    expect(profile.allowPuppets).toBe(true);
+    expect(profile.allowParticles).toBe(false);
+  });
+
+  it('mantem apenas o repouso em saveData ou conexao 2G', () => {
+    expect(getHallFallbackProfile({ saveData: true }).allowPuppets).toBe(false);
+    expect(getHallFallbackProfile({ effectiveType: '2g' }).allowPuppets).toBe(false);
+    expect(getHallFallbackProfile({ effectiveType: 'slow-2g' }).allowParticles).toBe(false);
   });
 
   it('sorteia o tempo parado dentro do intervalo do frame', () => {

@@ -375,3 +375,67 @@ nao uma promessa fixa de FPS.
   - 3309 modulos transformados no cliente;
   - 1635 modulos transformados no servidor;
   - bundle client, server e Nitro concluidos com codigo de saida zero.
+
+## Fase 3 executada - 22/11/2026
+
+### Alteracoes aplicadas
+
+- Criado um scheduler compartilhado em
+  [useHallFrameScheduler.ts](/C:/Users/najoa/Documents/SecondBrain/SecondBrain/Frontend/composables/ui/useHallFrameScheduler.ts).
+- Cada marionete agora registra um callback no scheduler em vez de executar
+  `requestAnimationFrame` isoladamente.
+- Desktop usa 30 FPS e mobile usa 24 FPS.
+- A aba oculta cancela o loop compartilhado.
+- A ultima marionete removida cancela o loop compartilhado.
+
+### Comparacao antes/depois
+
+| Indicador | Antes | Fase 3 | Ganho |
+|---|---:|---:|---:|
+| Loops RAF das marionetes | ate 7 loops independentes | 1 loop compartilhado | ate 85,7% menos loops |
+| Marionetes no mobile | 30 FPS | 24 FPS | ate 20% menos callbacks visuais |
+| Callback quando nenhuma marionete ativa | loops possiveis por instancia | loop cancelado | zero callbacks de marionetes |
+
+Os valores sao ganhos estruturais; FPS real ainda depende de hardware e precisa
+ser medido no Chrome DevTools.
+
+### Validacao
+
+- 23 testes unitarios do Hall passaram.
+- Foram adicionados testes do intervalo desktop/mobile e do scheduler com varios callbacks.
+
+## Fase 4 executada - 22/11/2026
+
+### Alteracoes aplicadas
+
+- Criado perfil progressivo em
+  [useHallLife.ts](/C:/Users/najoa/Documents/SecondBrain\SecondBrain/Frontend/composables/features/useHallLife.ts).
+- Hardware com ate 4 CPUs ou ate 4 GB de memoria ativa o modo conservador.
+- `saveData`, `slow-2g` e `2g` mantem o frame de repouso e evitam marionetes ou
+  preload intermediario.
+- [GuildParticlesCanvas.vue](/C:/Users/najoa/Documents/SecondBrain/SecondBrain/Frontend/components/features/hall/GuildParticlesCanvas.vue)
+  desativa particulas com movimento reduzido, perfil conservador ou bateria baixa.
+- [GuildPuppetCanvas.vue](/C:/Users/najoa/Documents/SecondBrain/SecondBrain/Frontend/components/features/hall/GuildPuppetCanvas.vue)
+  mantem o fallback estatico quando a rede nao permite marionetes ou WebGL falha.
+- [GuildNpcLayer.vue](/C:/Users/najoa/Documents/SecondBrain/SecondBrain/Frontend/components/features/hall/GuildNpcLayer.vue)
+  nao monta marionetes em perfis em que elas estao desabilitadas.
+
+### Comparacao antes/depois
+
+| Perfil | Antes | Fase 4 |
+|---|---|---|
+| Hardware limitado | particulas e marionetes completas | particulas desativadas; repouso estatico mantido |
+| Save Data / 2G | download completo das vinhetas | sem preload intermediario e sem marionetes |
+| Bateria <=20% sem carga | particulas completas | particulas desativadas |
+| Movimento reduzido | CSS reduzido; canvas ainda podia iniciar | canvas de particulas desativado |
+| Sem WebGL | tentativa de contexto e fallback por falha | fallback estatico ja preservado pela vinheta |
+
+APIs como `navigator.deviceMemory`, `navigator.connection` e
+`navigator.getBattery()` dependem do navegador e podem nao estar disponiveis.
+O codigo trata esses casos como perfil normal, sem bloquear a cena.
+
+### Validacao
+
+- 25 testes unitarios do Hall passaram.
+- Foram adicionados testes para hardware limitado, Save Data, redes 2G e slow-2G.
+- Build completo do frontend passou com codigo de saida zero.
