@@ -20,6 +20,8 @@ import {
   type PuppetState,
 } from '~/composables/ui/puppet';
 import { getHallPuppetDpr } from '~/composables/features/useHallLife';
+import { getBrowserHallFallbackProfile } from '~/composables/features/useHallLife';
+import { hallFrameScheduler } from '~/composables/ui/useHallFrameScheduler';
 
 const props = defineProps<{ src: string }>();
 const emit = defineEmits<{
@@ -31,7 +33,6 @@ const emit = defineEmits<{
 
 const canvas = ref<HTMLCanvasElement | null>(null);
 const ready = ref(false);
-let raf = 0;
 let stopped = false;
 let observer: ResizeObserver | null = null;
 // fora da tela (câmera do mobile arrastada para o outro lado): não desenha
@@ -39,13 +40,11 @@ let visObserver: IntersectionObserver | null = null;
 let onScreen = true;
 let stopFit: (() => void) | null = null;
 let gl: WebGLRenderingContext | WebGL2RenderingContext | null = null;
-const PUPPET_FPS = 30;
-const PUPPET_FRAME_MS = 1000 / PUPPET_FPS;
-let lastDrawMs = -Infinity;
 let running = false;
 let stopLoopGlobal: (() => void) | null = null;
 let startLoopGlobal: (() => void) | null = null;
 let puppetVisibilityHandler: (() => void) | null = null;
+let unsubscribeFrame: (() => void) | null = null;
 
 // passo 1: peças desenhadas na resolução da arte (1:1, sem reamostrar a pintura)
 const VS = `attribute vec2 aPos; attribute vec2 aUv; uniform vec2 uSize; varying vec2 vUv;
@@ -121,6 +120,10 @@ function compile(
 onMounted(async () => {
   const el = canvas.value;
   if (!el) return;
+  if (!getBrowserHallFallbackProfile().allowPuppets) {
+    emit('failed');
+    return;
+  }
   try {
     const puppet = (await (await fetch(props.src)).json()) as Puppet;
     const base = props.src.slice(0, props.src.lastIndexOf('/') + 1);
@@ -260,7 +263,6 @@ onMounted(async () => {
     const frozen = freeze ? puppet.anims.find((a) => a.name === `gesto_${freeze[0]}`) : undefined;
 
     const frame = (now: number) => {
-      raf = 0;
       if (!running || stopped) return;
       // aba oculta ou marionete fora da tela: para o loop (depois do primeiro quadro, que avisa "ready").
       // `running` volta a false para o startLoop() da visibilidade / IntersectionObserver religar.
@@ -269,13 +271,6 @@ onMounted(async () => {
         running = false;
         return;
       }
-      // agenda o próximo ANTES de qualquer retorno: se o limite de fps abaixo sair sem reagendar,
-      // o loop morre logo depois do primeiro desenho (marionetes congeladas)
-      raf = requestAnimationFrame(frame);
-      // ~30 fps; a folga de 2 ms evita que a variação do rAF (33,2 ms em vez de 33,3) pule um
-      // quadro inteiro e derrube para 20 fps
-      if (now - lastDrawMs < PUPPET_FRAME_MS - 2) return;
-      lastDrawMs = now;
       // a escala do saguão pode mudar sem redimensionar a janela (zoom do palco): confere de vez em quando
       if (++fitTick % 30 === 0) fit();
       if (!frozen && now >= until) next(now);
@@ -357,15 +352,13 @@ onMounted(async () => {
     };
     function stopLoop() {
       running = false;
-      if (raf) {
-        cancelAnimationFrame(raf);
-        raf = 0;
-      }
+      unsubscribeFrame?.();
+      unsubscribeFrame = null;
     }
     function startLoop() {
       if (running || stopped || document.hidden || (!onScreen && ready.value)) return;
       running = true;
-      if (!raf) raf = requestAnimationFrame(frame);
+      unsubscribeFrame ??= hallFrameScheduler.subscribe(frame);
     }
     function handleVisibility() {
       if (document.hidden) stopLoop();
@@ -376,7 +369,7 @@ onMounted(async () => {
     puppetVisibilityHandler = handleVisibility;
     document.addEventListener('visibilitychange', handleVisibility);
     running = true;
-    raf = requestAnimationFrame(frame);
+    unsubscribeFrame = hallFrameScheduler.subscribe(frame);
   } catch {
     emit('failed');
   }
@@ -388,7 +381,6 @@ onBeforeUnmount(() => {
   if (puppetVisibilityHandler) {
     document.removeEventListener('visibilitychange', puppetVisibilityHandler);
   }
-  cancelAnimationFrame(raf);
   observer?.disconnect();
   visObserver?.disconnect();
   stopFit?.();

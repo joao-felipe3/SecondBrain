@@ -248,6 +248,69 @@ export function getHallPuppetDpr(devicePixelRatio: number, compact: boolean): nu
   return Math.min(devicePixelRatio || 1, compact ? 1.25 : 1.75);
 }
 
+export function shouldActivateHallPuppet(isIntersecting: boolean): boolean {
+  return isIntersecting;
+}
+
+export interface HallFallbackProfile {
+  conservative: boolean;
+  allowPuppets: boolean;
+  allowParticles: boolean;
+  mobile24fps: boolean;
+}
+
+export function getHallFallbackProfile(
+  navigatorLike?: {
+    userAgent?: string;
+    hardwareConcurrency?: number;
+    deviceMemory?: number;
+    saveData?: boolean;
+    effectiveType?: string;
+  },
+): HallFallbackProfile {
+  if (!navigatorLike) {
+    return {
+      conservative: false,
+      allowPuppets: true,
+      allowParticles: true,
+      mobile24fps: false,
+    };
+  }
+
+  const hardwareLimit =
+    (navigatorLike.hardwareConcurrency ?? 8) <= 4 ||
+    (navigatorLike.deviceMemory ?? 8) <= 4;
+  const networkLimit =
+    navigatorLike.saveData === true ||
+    navigatorLike.effectiveType === 'slow-2g' ||
+    navigatorLike.effectiveType === '2g';
+  const conservative = hardwareLimit || networkLimit;
+
+  return {
+    conservative,
+    allowPuppets: !networkLimit,
+    allowParticles: !conservative,
+    mobile24fps: conservative,
+  };
+}
+
+export function getBrowserHallFallbackProfile(): HallFallbackProfile {
+  if (typeof navigator === 'undefined') return getHallFallbackProfile();
+  const connection = (
+    navigator as Navigator & {
+      deviceMemory?: number;
+      saveData?: boolean;
+      connection?: { effectiveType?: string; saveData?: boolean };
+    }
+  ).connection;
+  return getHallFallbackProfile({
+    hardwareConcurrency: navigator.hardwareConcurrency,
+    deviceMemory: (navigator as Navigator & { deviceMemory?: number }).deviceMemory,
+    saveData: connection?.saveData,
+    effectiveType: connection?.effectiveType,
+  });
+}
+
 export function preloadHallAssetPlan(data: HallLifeData = allData): HallAssetPlan {
   const essential = new Set<string>(['/imagens/Entrada-expandida.webp']);
   const background = new Set<string>();
@@ -259,7 +322,6 @@ export function preloadHallAssetPlan(data: HallLifeData = allData): HallAssetPla
     for (const frame of vignette.frames) {
       for (const tween of frame.tweens ?? []) background.add(tween.src);
       for (const loop of frame.loop ?? []) background.add(loop.src);
-      vignette.puppet?.src && background.add(vignette.puppet.src);
     }
   }
 
@@ -299,6 +361,7 @@ export function preloadHallAssets(
     }
 
     const runBackground = async () => {
+      if (!getBrowserHallFallbackProfile().allowParticles || getBrowserHallFallbackProfile().conservative) return;
       for (const url of plan.background) {
         if (cancelled) return;
         if (url.endsWith('.json')) {

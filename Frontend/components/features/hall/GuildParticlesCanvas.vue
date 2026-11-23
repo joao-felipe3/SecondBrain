@@ -4,7 +4,10 @@
 
 <script setup lang="ts">
 import { ref, onMounted, onBeforeUnmount } from 'vue';
-import { getHallParticleLimits } from '~/composables/features/useHallLife';
+import {
+  getBrowserHallFallbackProfile,
+  getHallParticleLimits,
+} from '~/composables/features/useHallLife';
 
 const canvasRef = ref<HTMLCanvasElement | null>(null);
 let animId: number | null = null;
@@ -14,6 +17,7 @@ let lastDrawMs = -Infinity;
 let running = false;
 let visibilityObserver: IntersectionObserver | null = null;
 let reducedMotion = false;
+let lowBattery = false;
 
 interface Particle {
   x: number;
@@ -40,6 +44,9 @@ interface Particle {
 const particles: Particle[] = [];
 const getParticleLimits = () => {
   const compact = window.matchMedia('(max-width: 960px)').matches;
+  if (reducedMotion || lowBattery || getBrowserHallFallbackProfile().conservative) {
+    return { embers: 0, dust: 0 };
+  }
   return getHallParticleLimits(compact);
 };
 
@@ -348,7 +355,13 @@ function render(now = performance.now()) {
 }
 
 function startLoop() {
-  if (running || document.hidden || reducedMotion) return;
+  if (
+    running ||
+    document.hidden ||
+    reducedMotion ||
+    lowBattery ||
+    getBrowserHallFallbackProfile().conservative
+  ) return;
   running = true;
   animId = requestAnimationFrame(render);
 }
@@ -422,6 +435,17 @@ function handleResize() {
 
 onMounted(() => {
   reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const batteryNavigator = navigator as Navigator & {
+    getBattery?: () => Promise<{ level: number; charging: boolean }>;
+  };
+  void batteryNavigator
+    .getBattery?.()
+    .then((battery) => {
+      lowBattery = battery.level <= 0.2 && !battery.charging;
+      initParticles(canvasRef.value?.width || 1920, canvasRef.value?.height || 1080);
+      if (lowBattery) stopLoop();
+    })
+    .catch(() => undefined);
   handleResize();
   initParticles(canvasRef.value?.width || 1920, canvasRef.value?.height || 1080);
   startLoop();
