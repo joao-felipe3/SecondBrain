@@ -8,96 +8,95 @@
 
     <!-- Stack de folhas (pergaminhos empilhados) -->
     <div class="zoomed-content-wrapper">
-    <div class="pergaminho-stack">
-      <div
-        v-for="tab in tabs"
-        :key="tab.id"
-        class="pergaminho-folha"
-        :class="{ active: activeTab === tab.id }"
-        :style="getSheetVars(tab.id)"
-        @click="onSheetClick(tab.id)"
-        :title="activeTab === tab.id ? '' : `Abrir ${tab.label}`"
-      >
-        <div v-if="activeTab !== tab.id" class="peek-hint" aria-hidden="true">
-          <span class="peek-label">{{ tab.label }}</span>
-        </div>
-        <div class="sheet-content">
-          <component
-            :is="tab.component"
-            :task="props.task"
-            :tasks="props.tasks"
-            :projects="props.projects"
-            :key="`${tab.id}-${props.task?._id ?? props.task?.id ?? ''}`"
-            @navigate-task="$emit('navigate-task', $event)"
-            @navigate-context="$emit('navigate-context', $event)"
-            @form-valid="onFormValid"
-          />
+      <div class="pergaminho-stack">
+        <div
+          v-for="tab in tabs"
+          :key="tab.id"
+          class="pergaminho-folha"
+          :class="{ active: activeTab === tab.id }"
+          :style="getSheetVars(tab.id)"
+          @click="onSheetClick(tab.id)"
+          :title="activeTab === tab.id ? '' : `Abrir ${tab.label}`"
+        >
+          <div v-if="activeTab !== tab.id" class="peek-hint" aria-hidden="true">
+            <span class="peek-label">{{ tab.label }}</span>
+          </div>
+          <div class="sheet-content">
+            <component
+              :is="tab.component"
+              :task="props.task"
+              :tasks="props.tasks"
+              :projects="props.projects"
+              :key="`${tab.id}-${props.task?._id ?? props.task?.id ?? ''}`"
+              @navigate-task="$emit('navigate-task', $event)"
+              @navigate-context="$emit('navigate-context', $event)"
+              @form-valid="onFormValid"
+            />
+          </div>
         </div>
       </div>
-    </div>
-    
-    <div class="sticky-actions">
-      <v-row dense>
-        <v-col cols="6" class="py-0 px-2">
-          <Button label="Delete" @click="$emit('delete')" :disabled="false"/>
-        </v-col>
-        <v-col cols="6" class="py-0 px-2">
-          <Button :label="props.createOrEdit" @click="$emit('edit')" :disabled="!isFormValid" />
-        </v-col>
-      </v-row>
-    </div>
 
-    <!-- Close button no topo direito -->
-    <SvgCloseButton @close="$emit('close')" class="close-button-top" />
+      <div class="sticky-actions">
+        <v-row dense>
+          <v-col cols="6" class="py-0 px-2">
+            <Button label="Delete" @click="$emit('delete')" :disabled="false" />
+          </v-col>
+          <v-col cols="6" class="py-0 px-2">
+            <Button :label="props.createOrEdit" @click="$emit('edit')" :disabled="!isFormValid" />
+          </v-col>
+        </v-row>
+      </div>
+
+      <!-- Close button no topo direito -->
+      <SvgCloseButton @close="$emit('close')" class="close-button-top" />
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { onBeforeUnmount, onMounted, computed, watch, ref } from 'vue'
-import { useTabNavigation } from '~/composables/ui/useTabNavigation'
-import type { TabConfig } from '~/composables/ui/useTabNavigation'
-import SvgCloseButton from '../../../ui/svg/CloseButton.vue'
-import EditarTab from '../tabs/EditarTab.vue'
-import ChecklistTab from '../tabs/ChecklistTab.vue'
-import PertTab from '../tabs/PertTab.vue'
-import HistoryTab from '../tabs/HistoryTab.vue'
-import FeedbackTab from '../tabs/FeedbackTab.vue'
-import LineageTab from '../tabs/LineageTab.vue'
-import ValueTab from '../tabs/ValueTab.vue'
-import Button from '../../../ui/svg/Button.vue'
-import HabitTimelineTab from '../tabs/HabitTimelineTab.vue'
-import HabitStatsTab from '../tabs/HabitStatsTab.vue'
-import ValidationErrorBanner from '../ui/ValidationErrorBanner.vue'
-import DeviationWarningAlert from '../ui/DeviationWarningAlert.vue'
-
+import { onBeforeUnmount, onMounted, computed, watch, ref } from 'vue';
+import { useTabNavigation } from '~/composables/ui/useTabNavigation';
+import type { TabConfig } from '~/composables/ui/useTabNavigation';
+import SvgCloseButton from '../../../ui/svg/CloseButton.vue';
+import EditarTab from '../tabs/EditarTab.vue';
+import ChecklistTab from '../tabs/ChecklistTab.vue';
+import PertTab from '../tabs/PertTab.vue';
+import HistoryTab from '../tabs/HistoryTab.vue';
+import FeedbackTab from '../tabs/FeedbackTab.vue';
+import LineageTab from '../tabs/LineageTab.vue';
+import ValueTab from '../tabs/ValueTab.vue';
+import Button from '../../../ui/svg/Button.vue';
+import HabitTimelineTab from '../tabs/HabitTimelineTab.vue';
+import HabitStatsTab from '../tabs/HabitStatsTab.vue';
+import ValidationErrorBanner from '../ui/ValidationErrorBanner.vue';
+import DeviationWarningAlert from '../ui/DeviationWarningAlert.vue';
 
 interface Props {
-  task?: any
-  tasks?: any[]
-  projects?: any[]
-  createOrEdit?: string
+  task?: any;
+  tasks?: any[];
+  projects?: any[];
+  createOrEdit?: string;
 }
 
 const props = withDefaults(defineProps<Props>(), {
   task: () => ({}),
   tasks: () => [],
   projects: () => [],
-})
+});
 
-const emit = defineEmits(['delete', 'close', 'edit', 'navigate-task', 'navigate-context'])
+const emit = defineEmits(['delete', 'close', 'edit', 'navigate-task', 'navigate-context']);
 
-const isFormValid = ref(true)
+const isFormValid = ref(true);
 
 const onFormValid = (valid: boolean) => {
-  isFormValid.value = valid
-}
+  isFormValid.value = valid;
+};
 
 // Detectar se é um hábito
 const isHabit = computed(() => {
-  const t = props.task
-  return t?.microTaskType === 'habit' || t?.parentRecurringId || t?.recurringRule
-})
+  const t = props.task;
+  return t?.microTaskType === 'habit' || t?.parentRecurringId || t?.recurringRule;
+});
 
 // Configuração das abas para tasks
 const taskTabs: TabConfig[] = [
@@ -108,7 +107,7 @@ const taskTabs: TabConfig[] = [
   { id: 'lineage', label: 'Lineage', icon: '🧭', component: LineageTab },
   { id: 'historico', label: 'Histórico', icon: '🕐', component: HistoryTab },
   { id: 'feedback', label: 'Feedback', icon: '💬', component: FeedbackTab },
-]
+];
 
 // Configuração das abas para habits
 const habitTabs: TabConfig[] = [
@@ -117,59 +116,60 @@ const habitTabs: TabConfig[] = [
   { id: 'stats', label: 'Estatísticas', icon: '📊', component: HabitStatsTab },
   { id: 'historico', label: 'Histórico', icon: '🕐', component: HistoryTab },
   { id: 'feedback', label: 'Feedback', icon: '💬', component: FeedbackTab },
-]
+];
 
 // Tabs dinâmicas baseado no tipo
-const tabs = computed(() => isHabit.value ? habitTabs : taskTabs)
+const tabs = computed(() => (isHabit.value ? habitTabs : taskTabs));
 
-const getCurrentTabs = () => isHabit.value ? habitTabs : taskTabs
+const getCurrentTabs = () => (isHabit.value ? habitTabs : taskTabs);
 
 // Composable para navegação - inicializa com a lista atual (array)
-const nav = useTabNavigation(getCurrentTabs())
-const { activeTab, setActiveTab, nextTab, prevTab, initializeFromStorage, tabs: navTabs } = nav
+const nav = useTabNavigation(getCurrentTabs());
+const { activeTab, setActiveTab, nextTab, prevTab, initializeFromStorage, tabs: navTabs } = nav;
 
 // Watch para resetar tab se tipo mudar
-watch(() => isHabit.value, (newIsHabit) => {
-  const newTabs = newIsHabit ? habitTabs : taskTabs
-  // Se a aba atual não existe nas novas tabs, vai para a primeira
-  if (!newTabs.find(t => t.id === activeTab.value)) {
-    setActiveTab(newTabs[0].id)
-  }
-  // Atualiza a lista de tabs exposta pelo composable para manter UI em sincronia
-  navTabs.value = newTabs
-})
+watch(
+  () => isHabit.value,
+  (newIsHabit) => {
+    const newTabs = newIsHabit ? habitTabs : taskTabs;
+    // Se a aba atual não existe nas novas tabs, vai para a primeira
+    if (!newTabs.find((t) => t.id === activeTab.value)) {
+      setActiveTab(newTabs[0].id);
+    }
+    // Atualiza a lista de tabs exposta pelo composable para manter UI em sincronia
+    navTabs.value = newTabs;
+  },
+);
 
 defineExpose({
   nextTab,
   prevTab,
   setActiveTab,
-})
+});
 
-const PEEK_PX = 32
-const SHEET_GAP_Y = 6
-const SHEET_ROTATE_DEG = 0.4
-
-
+const PEEK_PX = 32;
+const SHEET_GAP_Y = 6;
+const SHEET_ROTATE_DEG = 0.4;
 
 const activeIndex = computed(() => {
-  const currentTabs = getCurrentTabs()
-  return currentTabs.findIndex(t => t.id === activeTab.value)
-})
+  const currentTabs = getCurrentTabs();
+  return currentTabs.findIndex((t) => t.id === activeTab.value);
+});
 
 const getPos = (tabId: string) => {
-  const currentTabs = getCurrentTabs()
-  const tabIndex = currentTabs.findIndex(t => t.id === tabId)
-  if (tabIndex < 0) return 0
-  const n = currentTabs.length
-  const ai = activeIndex.value < 0 ? 0 : activeIndex.value
-  return (tabIndex - ai + n) % n
-}
+  const currentTabs = getCurrentTabs();
+  const tabIndex = currentTabs.findIndex((t) => t.id === tabId);
+  if (tabIndex < 0) return 0;
+  const n = currentTabs.length;
+  const ai = activeIndex.value < 0 ? 0 : activeIndex.value;
+  return (tabIndex - ai + n) % n;
+};
 
 const getSheetVars = (tabId: string) => {
-  const pos = getPos(tabId)
-  const y = pos * SHEET_GAP_Y
-  const r = pos * SHEET_ROTATE_DEG
-  const x = pos === 0 ? 0 : PEEK_PX
+  const pos = getPos(tabId);
+  const y = pos * SHEET_GAP_Y;
+  const r = pos * SHEET_ROTATE_DEG;
+  const x = pos === 0 ? 0 : PEEK_PX;
 
   return {
     zIndex: String(200 - pos),
@@ -178,39 +178,39 @@ const getSheetVars = (tabId: string) => {
     '--sheet-x': `${x}px`,
     '--sheet-y': `${y}px`,
     '--sheet-r': `${r}deg`,
-  } as Record<string, string>
-}
+  } as Record<string, string>;
+};
 
 const onSheetClick = (tabId: string) => {
-  if (activeTab.value === tabId) return
-  setActiveTab(tabId)
-}
+  if (activeTab.value === tabId) return;
+  setActiveTab(tabId);
+};
 
 const isTypingTarget = (target: EventTarget | null) => {
-  const el = target as HTMLElement | null
-  if (!el) return false
-  return !!el.closest('input, textarea, select, [contenteditable="true"]')
-}
+  const el = target as HTMLElement | null;
+  if (!el) return false;
+  return !!el.closest('input, textarea, select, [contenteditable="true"]');
+};
 
 const handleKeydown = (e: KeyboardEvent) => {
-  if (isTypingTarget(e.target)) return
+  if (isTypingTarget(e.target)) return;
   if (e.key === 'ArrowRight') {
-    e.preventDefault()
-    nextTab()
+    e.preventDefault();
+    nextTab();
   } else if (e.key === 'ArrowLeft') {
-    e.preventDefault()
-    prevTab()
+    e.preventDefault();
+    prevTab();
   }
-}
+};
 
 onMounted(() => {
-  initializeFromStorage()
-  window.addEventListener('keydown', handleKeydown)
-})
+  initializeFromStorage();
+  window.addEventListener('keydown', handleKeydown);
+});
 
 onBeforeUnmount(() => {
-  window.removeEventListener('keydown', handleKeydown)
-})
+  window.removeEventListener('keydown', handleKeydown);
+});
 </script>
 
 <style scoped>
@@ -223,7 +223,6 @@ onBeforeUnmount(() => {
   pointer-events: none;
   padding: 2rem;
   width: 32%;
-
 }
 
 .alerts-container > * {
@@ -325,6 +324,27 @@ onBeforeUnmount(() => {
   padding: 1.25rem clamp(0.1rem, 4vw, 2.5rem) 5rem;
   overflow-y: auto;
   overflow-x: hidden;
+}
+
+/* desktop: o conteúdo das folhas é ampliado 1.2x (fontes e campos maiores) e cada aba ocupa a altura da folha */
+@media (min-width: 769px) {
+  .sheet-content {
+    /* ampliação visual 1.2x a partir do canto superior esquerdo; a caixa ocupa 1/1.2 para caber na folha */
+    transform: scale(1.2);
+    transform-origin: 0 0;
+    /* conteúdo com 80% da folha, centralizado: 66.667% de largura antes do scale 1.2 */
+    width: 66.667%;
+    margin-left: 10%;
+    height: 83.333%;
+    /* sem padding lateral: o zoom também amplia o padding, e as margens das abas já cuidam das bordas */
+    padding-left: 0;
+    padding-right: 0;
+  }
+
+  .sheet-content > * {
+    min-height: 100%;
+    box-sizing: border-box;
+  }
 }
 
 .pergaminho-folha:not(.active) .sheet-content {

@@ -1265,8 +1265,8 @@
     "semantic_hash": ""
   },
   "Backend/src/tasks/tasks.controller.ts": {
-    "mtime": 1795134832.3348746,
-    "ast_hash": "1853b0aed8730f6459fd85d778cc3abc",
+    "mtime": 1795389156.5398805,
+    "ast_hash": "8d9cece2db66e0a87f125ff44c304101",
     "semantic_hash": ""
   },
   "Backend/src/tasks/tasks.module.ts": {
@@ -1675,8 +1675,8 @@
     "semantic_hash": ""
   },
   "Backend/tests/unit/tasks/controllers/tasks.controller.spec.ts": {
-    "mtime": 1795134832.3388774,
-    "ast_hash": "f95dfcbbf4e771250ebb98d979992f22",
+    "mtime": 1795389156.5398805,
+    "ast_hash": "5149b180f91a7686a99c7c9398bbd317",
     "semantic_hash": ""
   },
   "Backend/tests/unit/tasks/helpers/tasks-service-test-providers.ts": {
@@ -2150,8 +2150,8 @@
     "semantic_hash": ""
   },
   "Frontend/components/features/tasks/board/Paper.vue": {
-    "mtime": 1795388459.8528569,
-    "ast_hash": "fbdb2fc5e0af4bce39b948bf7ecb86ff",
+    "mtime": 1795403684.5615978,
+    "ast_hash": "37b2fcd34d4055c21a617be1f8f133d7",
     "semantic_hash": ""
   },
   "Frontend/components/features/tasks/board/StatsCard.vue": {
@@ -2170,8 +2170,8 @@
     "semantic_hash": ""
   },
   "Frontend/components/features/tasks/board/ZoomedContent.vue": {
-    "mtime": 1780519839.798563,
-    "ast_hash": "82ed9fad34448658d7b5b32afecf274c",
+    "mtime": 1795403684.8094666,
+    "ast_hash": "967aa25dba16f8c0dd6d1d4ed773f019",
     "semantic_hash": ""
   },
   "Frontend/components/features/tasks/cards/ChecklistEmbedded.vue": {
@@ -2180,8 +2180,8 @@
     "semantic_hash": ""
   },
   "Frontend/components/features/tasks/forms/TaskForm.vue": {
-    "mtime": 1787622384.0964704,
-    "ast_hash": "8e7af3cff85a3e7a4497e63ba4b8ae6c",
+    "mtime": 1795403684.9535935,
+    "ast_hash": "d50381830ff173a6e57e3e071e786bc6",
     "semantic_hash": ""
   },
   "Frontend/components/features/tasks/index.ts": {
@@ -2195,13 +2195,13 @@
     "semantic_hash": ""
   },
   "Frontend/components/features/tasks/kanban/KanbanBoard.vue": {
-    "mtime": 1795388587.8842094,
-    "ast_hash": "9dd961495f95673920b1342f6f55bc6b",
+    "mtime": 1795394830.0137472,
+    "ast_hash": "ea88871ce240f73ee668fa9fc18d67b7",
     "semantic_hash": ""
   },
   "Frontend/components/features/tasks/layout/Main.vue": {
-    "mtime": 1795385742.3472772,
-    "ast_hash": "85a4803dca1c90e39712680aec776c6a",
+    "mtime": 1795403685.432855,
+    "ast_hash": "cab35f57f7e51cfc2d0e57ce56194b05",
     "semantic_hash": ""
   },
   "Frontend/components/features/tasks/layout/Sidebar.vue": {
@@ -2230,8 +2230,8 @@
     "semantic_hash": ""
   },
   "Frontend/components/features/tasks/tabs/EditarTab.vue": {
-    "mtime": 1780519839.8135593,
-    "ast_hash": "5f6b810308f652a89ca44f5a3fe6d015",
+    "mtime": 1795403685.9189565,
+    "ast_hash": "330b83476f88dbf36ecc7cdf7e139a6b",
     "semantic_hash": ""
   },
   "Frontend/components/features/tasks/tabs/FeedbackTab.vue": {
@@ -2630,8 +2630,8 @@
     "semantic_hash": ""
   },
   "Frontend/composables/ui/useZoomAnimation.ts": {
-    "mtime": 1795011856.329623,
-    "ast_hash": "354033d6b51ad3b4ca2264f743d9797b",
+    "mtime": 1795403685.9557445,
+    "ast_hash": "1414d0c455dce80fbd1b962396edfbff",
     "semantic_hash": ""
   },
   "Frontend/composables/ui/useZoomController.ts": {
@@ -2980,8 +2980,8 @@
     "semantic_hash": ""
   },
   "Project/REQUISITOS.md": {
-    "mtime": 1795134840.016447,
-    "ast_hash": "c6563fe0d24ab6ae8bad3b0274d69f1e",
+    "mtime": 1795403685.217146,
+    "ast_hash": "3b521205cd1afa29fcd261c64a0b8b0f",
     "semantic_hash": ""
   },
   "Project/adr/001-why-nestjs-mongoose.md": {
@@ -3350,8 +3350,8 @@
     "semantic_hash": ""
   },
   "Project/FRONTEND_REFACTORING_PLAN.md": {
-    "mtime": 1795386068.9219954,
-    "ast_hash": "17f013b6dfeaf7e13adb7a4b6ce2927c",
+    "mtime": 1795403684.3974793,
+    "ast_hash": "c0552fcb0c567469f4792f1ca6775271",
     "semantic_hash": ""
   },
   "Project/adr/004-validation-strategy.md": {
@@ -4805,8 +4805,8 @@
     "semantic_hash": ""
   },
   "Frontend/components/features/tasks/page/TasksMural.vue": {
-    "mtime": 1795385742.3542776,
-    "ast_hash": "39e83cf5458d4ab6c200143f0259f2ca",
+    "mtime": 1795390556.920655,
+    "ast_hash": "5a74f8bad24c197553f63ad2a15e24e5",
     "semantic_hash": ""
   },
   "Frontend/composables/features/taskFilters.ts": {

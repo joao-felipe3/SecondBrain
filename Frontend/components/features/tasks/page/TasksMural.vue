@@ -212,6 +212,7 @@ import MuralFlames from './MuralFlames.vue';
 import { summarizeTasks } from '~/composables/features/taskStats';
 import { useGuildAudio } from '~/composables/ui/useGuildAudio';
 import { TASKS_BG_URL, boardCssVars, isCompactMural } from '~/composables/ui/useTasksScene';
+import { zoomedPaperSize } from '~/composables/ui/useZoomAnimation';
 
 // Route
 const route = useRoute();
@@ -446,13 +447,18 @@ onBeforeUnmount(() => {
 // Zoom da cena: o palco escala e desloca para que a folha aberta fique no centro da tela (sem mostrar a borda
 // do palco). O deslocamento é calculado antes de o Vue aplicar a classe, então o palco ainda está sem transform.
 const stageRef = ref<HTMLElement | null>(null);
-const ZOOM_SCALE = 1.75; // = transform: scale() de .mural-stage.is-zoomed
+// o palco amplia na mesma proporção que o papel: 1.75 quando o papel era 3.25x o cartão (520 px de altura)
+const STAGE_PER_PAPER = 1.75 / 2;
 function onZoomStart(paperRect?: DOMRect | null) {
   zoomed.value = true;
   const stage = stageRef.value;
   if (!stage || !paperRect) return;
   const frame = stage.parentElement?.getBoundingClientRect();
   if (!frame) return;
+  // quanto o papel ampliado é maior que o cartão na tela (a altura é a referência)
+  const paperGain = zoomedPaperSize().h / paperRect.height;
+  const ZOOM_SCALE = Math.max(1.4, Math.min(3, paperGain * STAGE_PER_PAPER));
+  stage.style.setProperty('--zoom-s', ZOOM_SCALE.toFixed(3));
   const cx = frame.left + frame.width / 2;
   const cy = frame.top + frame.height / 2;
   const px = paperRect.left + paperRect.width / 2;
@@ -606,7 +612,7 @@ watch(selectedProjectFilter, () => {
 }
 
 .mural-stage.is-zoomed {
-  transform: translate(var(--zoom-tx, 0px), var(--zoom-ty, 0px)) scale(1.75);
+  transform: translate(var(--zoom-tx, 0px), var(--zoom-ty, 0px)) scale(var(--zoom-s, 1.75));
 }
 
 .mural-stage > :deep(.task-main) {

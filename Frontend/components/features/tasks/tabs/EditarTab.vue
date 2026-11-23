@@ -16,25 +16,25 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
-import TaskForm from '../forms/TaskForm.vue'
+import { computed } from 'vue';
+import TaskForm from '../forms/TaskForm.vue';
 
 interface Props {
-  task?: any
-  projects?: any[]
+  task?: any;
+  projects?: any[];
 }
 
 const props = withDefaults(defineProps<Props>(), {
   task: () => null,
   projects: () => [],
-})
+});
 
-const emit = defineEmits(['form-valid'])
+const emit = defineEmits(['form-valid']);
 
 const isHabit = computed(() => {
-  const t = props.task
-  return !!(t && (t.microTaskType === 'habit' || t.parentRecurringId || t.recurringRule))
-})
+  const t = props.task;
+  return !!(t && (t.microTaskType === 'habit' || t.parentRecurringId || t.recurringRule));
+});
 </script>
 
 <style scoped>
@@ -52,6 +52,28 @@ const isHabit = computed(() => {
 .editar-form {
   padding: 0;
   margin: 0;
+  /* o formulário ocupa o papel inteiro: a descrição cresce e pega o espaço que sobra */
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 100%;
+  box-sizing: border-box;
+  /* margem lateral em % para o conteúdo ficar dentro das bordas irregulares do papel */
+  padding: 0 4% 8px;
+}
+
+.editar-form :deep(.grow-field) {
+  flex: 1 0 auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.editar-form :deep(.grow-field .v-field) {
+  flex: 1 0 auto;
+}
+
+.editar-form :deep(.grow-field textarea) {
+  min-height: 140px;
 }
 
 .empty-state {

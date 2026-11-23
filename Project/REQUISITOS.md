@@ -1,6 +1,6 @@
 # 📋 Acompanhamento de Requisitos - Second Brain
 
-> **Última atualização:** 19/11/2026
+> **Última atualização:** 23/11/2026
 > **Status do Projeto:** Fase 0 (MVP) + Fase 1 + Fase 2 + Fase 3 100% Completas
 
 ---
@@ -13,7 +13,7 @@
 | Fase 1 - Eficiência                                 | 29    | 29/29 ✅    | 29/29 ✅ | 29/29 ✅ | 29/29 ✅ | 🟢 100%   |
 | Fase 2 - Micro-Tarefas                              | 22    | 22/22 ✅    | 22/22 ✅ | 22/22 ✅ | 22/22 ✅ | 🟢 100%   |
 | Fase 3 - DevOps & Refactoring                       | 38    | 38/38 ✅    | Docs ✅  | 38/38 ✅ | 38/38 ✅ | 🟢 100%   |
-| Fase 4 - Refatoração & Interface RPG (Frontend)     | 95    | 39/95       | 39/95 ✅ | UI/VFX   | 39/95    | 🟡 41.1%  |
+| Fase 4 - Refatoração & Interface RPG (Frontend)     | 98    | 50/98       | 50/98 ✅ | 45/98    | 45/98    | 🟡 45.9%  |
 | Fase 5 - Produtividade Avançada                     | 22    | 0/22        | 0/22     | 0/22     | 0/22     | ⬜ 0%     |
 | Fase 6 - Gamificação Essencial                      | 25    | 0/25        | 0/25     | 0/25     | 0/25     | ⬜ 0%     |
 | Fase 7 - Feature Freeze II (EDA, DDD & CQRS)        | 14    | 0/14        | 0/14     | 0/14     | 0/14     | ⬜ 0%     |
@@ -284,7 +284,7 @@
 
 ## 🛡️ Fase 4 - Refatoração & Interface RPG Diegética (Frontend)
 
-> **Status:** 🟡 41.1% Em Progresso (39/95 concluídos)
+> **Status:** 🟡 45.9% Em Progresso (45/98 concluídos)
 > **Objetivo:** Refatorar a interface do SecondBrain para uma experiência diegética imersiva de RPG Medieval Fantástico ("Guilda de Aventureiros"), com suporte a 3 camadas de UI (_Depth Stacking_), responsividade fluida (<960px), componentes físicos atomic e efeitos visuais/sonoros em 60 FPS.  
 > **📄 Documentação Detalhada:** Ver `FRONTEND_REFACTORING_PLAN.md`
 
@@ -346,20 +346,23 @@
 
 ### ⚔️ 4. Mural de Contratos / Kanban (`/tasks`)
 
-| #   | Requisito                                                                                                       | Tipo     | Protótipo | Frontend | Backend | QA  |
-| --- | --------------------------------------------------------------------------------------------------------------- | -------- | :-------: | :------: | :-----: | :-: |
+| #   | Requisito                                                                                                            | Tipo     | Protótipo | Frontend | Backend | QA  |
+| --- | -------------------------------------------------------------------------------------------------------------------- | -------- | :-------: | :------: | :-----: | :-: |
 | 42  | Refatorar `pages/Task/index.vue` e `KanbanBoard.vue` para moldura pintada e cena responsiva (`Mural-expandido.webp`) | Frontend |    ✅     |    ✅    |   ✅    | ✅  |
-| 43  | Divisão em 3 colunas rúnicas (`todo`, `doing`, `done`) sobre os painéis da cena                              | Frontend |    ✅     |    ✅    |   ✅    | ✅  |
-| 44  | Coluna "A Fazer" com pergaminhos e selos de cera vermelhos                                                      | Frontend |    ✅     |    ✅    |   ✅    | ✅  |
-| 45  | Coluna "Em Andamento" com selos azuis e progresso de Pomodoro                                                   | Frontend |    ✅     |    ✅    |   ✅    | ✅  |
-| 46  | Coluna "Concluídas" com selos verdes, medalhas e carimbo "CUMPRIDO"                                            | Frontend |    ✅     |    ✅    |   ✅    | ✅  |
-| 47  | Fixação de tarefas atrasadas com adagas `UiIronDagger.vue`                                                      | Frontend |    ✅     |    ✅    |   ✅    | ✅  |
-| 48  | Spritesheet da animação do selo de cera pressionando ao concluir tarefa                                         | Frontend |    ⬜     |    ⬜    |   ⬜    | ⬜  |
-| 49  | Spritesheet de pergaminho desenrolando ao expandir modal de detalhes                                            | Frontend |    ⬜     |    ⬜    |   ⬜    | ⬜  |
-| 50  | Drag and Drop 3D Tilt com inclinação sutil e SFX de textura de papel/rascunho                                   | Frontend |    ✅     |    ✅    |   ✅    | ✅  |
-| 51  | Abas superiores rústicas no `FieldJournalMobile.vue` para navegação mobile                                      | Frontend |    ✅     |    ✅    |   ✅    | ✅  |
-| 52  | SFX dedicados: pena de ganso (edição), martelo de cera (conclusão) e papel rasgando (exclusão)                  | Frontend |    ✅     |    ✅    |   ✅    | ✅  |
-| 53  | Botão de retorno ao saguão integrado à UI ancorada                                                              | Frontend |    ✅     |    ✅    |   ✅    | ✅  |
+| 43  | Divisão em 3 colunas rúnicas (`todo`, `doing`, `done`) sobre os painéis da cena                                      | Frontend |    ✅     |    ✅    |   ✅    | ✅  |
+| 44  | Coluna "A Fazer" com pergaminhos (selo de cera removido a pedido em 22/11/2026)                                      | Frontend |    ✅     |    ✅    |   ✅    | ✅  |
+| 45  | Coluna "Em Andamento" com ampulheta de progresso de Pomodoro (selo removido em 22/11/2026)                           | Frontend |    ✅     |    ✅    |   ✅    | ✅  |
+| 46  | Coluna "Concluídas" com medalhas e carimbo "CUMPRIDO" (selo verde removido em 22/11/2026)                            | Frontend |    ✅     |    ✅    |   ✅    | ✅  |
+| 47  | Sinalização de tarefas atrasadas pelo texto "LATE!" (adaga `UiIronDagger.vue` removida em 22/11/2026)                | Frontend |    ✅     |    ✅    |   ✅    | ✅  |
+| 50  | Drag and Drop 3D Tilt com inclinação sutil e SFX de textura de papel/rascunho                                        | Frontend |    ✅     |    ✅    |   ✅    | ✅  |
+| 51  | Abas superiores rústicas no `FieldJournalMobile.vue` para navegação mobile                                           | Frontend |    ✅     |    ✅    |   ✅    | ✅  |
+| 96  | Zoom da folha com véu escuro e palco ampliado até o cartão aberto (23/11/2026)                                       | Frontend |    ✅     |    ✅    |    —    | ⬜  |
+| 97  | Chamas animadas (sprite do saguão) sobre as tochas e velas do mural (23/11/2026)                                     | Frontend |    ✅     |    ✅    |    —    | ⬜  |
+| 98  | Folha ampliada proporcional à altura da tela, com abertura sem salto (23/11/2026)                                    | Frontend |    ✅     |    ✅    |    —    | ⬜  |
+| 99  | Abas de edição com fonte 1.2x e formulário ocupando a folha (23/11/2026)                                             | Frontend |    ✅     |    ✅    |    —    | ⬜  |
+| 100 | Botão "Novo Contrato" em tábua de madeira com aro de latão, no estilo do quadro (23/11/2026)                         | Frontend |    ✅     |    ✅    |    —    | ⬜  |
+| 52  | SFX dedicados: pena de ganso (edição), martelo de cera (conclusão) e papel rasgando (exclusão)                       | Frontend |    ✅     |    ✅    |   ✅    | ✅  |
+| 53  | Botão de retorno ao saguão integrado à UI ancorada                                                                   | Frontend |    ✅     |    ✅    |   ✅    | ✅  |
 
 ### 📜 5. Sala de Arquivos & Grimórios (`/projects`)
 
@@ -1138,20 +1141,21 @@
 
 ## 📅 Histórico de Atualizações
 
-| Data       | Descrição                                                                                                                                                                                                                                |
-| ---------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 19/11/2026 | Atualização da Fase 4 com a implementação do Mural de Contratos em `feat/tasks-mural`: cena responsiva, três colunas, acentos diegéticos, abas mobile, drag-and-drop com SFX e livro-caixa; 29 testes unitários específicos foram validados. |
-| 06/09/2026 | Inversão da Fase 4 e Fase 5: Fase 4 agora é "Refatoração & Interface RPG (Frontend)" e Fase 5 agora é "Produtividade Avançada", atualizando tabela de resumo, ordem de seções e referências cruzadas.                                    |
-| 06/09/2026 | Reorganização da numeração de fases para números inteiros (Fase 0 a Fase 16), convertendo fases intermediárias decimais (2.5, 3.5 e 4.5) em fases inteiras sequenciais (Fases 3, 5 e 7) e sincronizando todas as referências cruzadas.   |
-| 06/07/2026 | Adicionada Fase 13 - Agentes Tutores e Aprendizado Acelerado (Estudos Sem Fricção) contendo 15 requisitos detalhados para tutoria inteligente baseada em IA e redução de fricção.                                                        |
-| 18/05/2026 | Requisitos do relatório analítico convertidos e inseridos nas fases 4 (Octalysis/anti-gaming), 7 (skill trees/meta-progressão) e 10 (state-driven generation/knowledge graph/agendamento procedural) + atualização dos totais no resumo. |
-| 13/05/2026 | Adicionados requisitos de Periodização da Produtividade/Autorregulação (readiness, DAPRE, CTL/ATL/TSB) na Fase 11 e de RL/Nivelamento Dinâmico (Flow) na Fase 10.                                                                        |
-| 13/05/2026 | Fase 2 (Micro-Tarefas) sincronizada para 100% (requisitos + resumo). Ideias de Mestre/PTI, Rotina de Elite, Playbook/Zettelkasten e Arcos Narrativos foram encaixadas como novos requisitos nas fases 6, 7, 10 e 11.                     |
-| 07/05/2026 | Reordenar roadmap: mover “Rotina Invisível/Âncoras/Desligamento” para logo após a Fase 5 e renumerar fases subsequentes                                                                                                                  |
-| 06/03/2026 | Reposicionar Fase 9 "Narrativa e Motor RPG" para Fase 5 (logo após Gamificação Essencial) para consolidar gamificação; renumerar fases subsequentes                                                                                      |
-| 04/03/2026 | Adicionar nova Fase 9 (Rotina Invisível/Âncoras/Timeboxing/Taverna/Durabilidade) e renumerar “Polimento e Segurança” para Fase 10                                                                                                        |
-| 22/02/2026 | Reorganização das fases: dividir a antiga Fase 4 em Fase 4 (Gamificação Manual-First) + Fase 5 (Monitoramento/IA) e renumerar fases seguintes até Fase 9                                                                                 |
-| 28/01/2026 | Documento criado com status atual do MVP                                                                                                                                                                                                 |
+| Data       | Descrição                                                                                                                                                                                                                                                                                             |
+| ---------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 23/11/2026 | Mural de Contratos: zoom da folha com véu e palco centralizado, chamas animadas, folha ampliada, abas de edição com fonte 1.2x, botão de madeira; selo de cera e adaga removidos a pedido do usuário. Requisitos 96–100 adicionados e STAND-BY 48–49 removidos. Resumo da Fase 4 recalculado (45/98). |
+| 19/11/2026 | Atualização da Fase 4 com a implementação do Mural de Contratos em `feat/tasks-mural`: cena responsiva, três colunas, acentos diegéticos, abas mobile, drag-and-drop com SFX e livro-caixa; 29 testes unitários específicos foram validados.                                                          |
+| 06/09/2026 | Inversão da Fase 4 e Fase 5: Fase 4 agora é "Refatoração & Interface RPG (Frontend)" e Fase 5 agora é "Produtividade Avançada", atualizando tabela de resumo, ordem de seções e referências cruzadas.                                                                                                 |
+| 06/09/2026 | Reorganização da numeração de fases para números inteiros (Fase 0 a Fase 16), convertendo fases intermediárias decimais (2.5, 3.5 e 4.5) em fases inteiras sequenciais (Fases 3, 5 e 7) e sincronizando todas as referências cruzadas.                                                                |
+| 06/07/2026 | Adicionada Fase 13 - Agentes Tutores e Aprendizado Acelerado (Estudos Sem Fricção) contendo 15 requisitos detalhados para tutoria inteligente baseada em IA e redução de fricção.                                                                                                                     |
+| 18/05/2026 | Requisitos do relatório analítico convertidos e inseridos nas fases 4 (Octalysis/anti-gaming), 7 (skill trees/meta-progressão) e 10 (state-driven generation/knowledge graph/agendamento procedural) + atualização dos totais no resumo.                                                              |
+| 13/05/2026 | Adicionados requisitos de Periodização da Produtividade/Autorregulação (readiness, DAPRE, CTL/ATL/TSB) na Fase 11 e de RL/Nivelamento Dinâmico (Flow) na Fase 10.                                                                                                                                     |
+| 13/05/2026 | Fase 2 (Micro-Tarefas) sincronizada para 100% (requisitos + resumo). Ideias de Mestre/PTI, Rotina de Elite, Playbook/Zettelkasten e Arcos Narrativos foram encaixadas como novos requisitos nas fases 6, 7, 10 e 11.                                                                                  |
+| 07/05/2026 | Reordenar roadmap: mover “Rotina Invisível/Âncoras/Desligamento” para logo após a Fase 5 e renumerar fases subsequentes                                                                                                                                                                               |
+| 06/03/2026 | Reposicionar Fase 9 "Narrativa e Motor RPG" para Fase 5 (logo após Gamificação Essencial) para consolidar gamificação; renumerar fases subsequentes                                                                                                                                                   |
+| 04/03/2026 | Adicionar nova Fase 9 (Rotina Invisível/Âncoras/Timeboxing/Taverna/Durabilidade) e renumerar “Polimento e Segurança” para Fase 10                                                                                                                                                                     |
+| 22/02/2026 | Reorganização das fases: dividir a antiga Fase 4 em Fase 4 (Gamificação Manual-First) + Fase 5 (Monitoramento/IA) e renumerar fases seguintes até Fase 9                                                                                                                                              |
+| 28/01/2026 | Documento criado com status atual do MVP                                                                                                                                                                                                                                                              |
 
 ---
 

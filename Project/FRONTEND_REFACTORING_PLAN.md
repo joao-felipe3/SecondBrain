@@ -16,13 +16,13 @@
 | 🏛️ 1. Infraestrutura & Atomic Design Diegético (`components/ui/diegetic/`) |     12     |   12/12    |   🟢 100%    |
 | 🎨 2. Tokens CSS, HSL & Responsividade Dinâmica (<960px)                   |     8      |    8/8     |   🟢 100%    |
 | 🏰 3. Saguão Central da Guilda (`/`)                                       |     40     |   40/40    |   🟢 100%    |
-| ⚔️ 4. Mural de Contratos / Kanban (`/tasks`)                               |     12     |   10/12    |   🟡 83.3%   |
+| ⚔️ 4. Mural de Contratos / Kanban (`/tasks`)                               |     10     |   10/10    |   🟢 100%    |
 | 📜 5. Sala de Arquivos & Grimórios (`/projects`)                           |     10     |    7/10    |   🟡 70.0%   |
 | 🗺️ 6. Sala do Astrolábio & Cartografia (`/calendar`)                       |     10     |    6/10    |   🟡 60.0%   |
 | 📋 7. Modais & Overlays Globais Diegéticos                                 |     10     |    7/10    |   🟡 70.0%   |
 | ⚙️ 8. Pinia Stores & Data Mapping RPG                                      |     6      |    5/6     |   🟡 83.3%   |
 | ⚡ 9. Otimização & Asset Pipeline                                          |     6      |    4/6     |   🟡 66.7%   |
-| **TOTAL**                                                                  |  **114**   | **99/114** | **🟡 86.8%** |
+| **TOTAL**                                                                  |  **112**   | **99/112** | **🟡 88.4%** |
 
 ---
 
@@ -121,20 +121,25 @@
 
 ---
 
-## ⚔️ 4. Mural de Contratos / Kanban (`/tasks`) 🟡 EM PROGRESSO (10/12)
+## ⚔️ 4. Mural de Contratos / Kanban (`/tasks`) 🟢 CONCLUÍDO (10/10)
 
 - [x] Refatorar `pages/Task/index.vue` e criar rota de compatibilidade `pages/tasks/index.vue`. _(18/11/2026: as duas rotas viraram wrappers com `layout: false`; a tela mora em `components/features/tasks/page/TasksMural.vue`.)_
 - [x] Moldura de madeira maciça sobre parede de pedra rústica, dividida em 3 colunas rúnicas. _(18/11/2026: substituído pela cena pintada `public/imagens/Mural-expandido.webp` — quadro limpo + expansão generativa do Firefly, gradação de cor para a paleta quente do saguão e painéis alargados 1.45x; o quadro ocupa ~90% da largura e as 3 colunas ficam encaixadas nos painéis pintados via `composables/ui/useTasksScene.ts`, com folhas em escala ≥ 1. No mobile/compacto vira diário com abas.)_
-- [x] **Coluna "Contratos Abertos" (To Do):** tarefas `todo` seladas com cera vermelha `UiWaxSeal.vue` (`kanban/KanbanCardAccents.vue`). _(A folha continua sendo o `Paper.vue`, não o `UiParchmentCard.vue`: trocar o componente quebraria o zoom com abas.)_
-- [x] **Coluna "Em Andamento" (In Progress):** selos azuis e ampulheta `UiHourglass.vue` quando há pomodoros planejados (progresso = feitos/planejados; não existe estado de "Pomodoro rodando" no front, então "ativa" = ainda faltam pomodoros).
-- [x] **Coluna "Missões Cumpridas" (Done):** selos verdes, medalha `UiRibbonMedal.vue` e carimbo "CUMPRIDO".
-- [x] **Accents de Adagas & Pregos:** tarefas atrasadas (`late === true` ou prazo vencido, e não concluídas) presas por `UiIronDagger.vue`.
-- [ ] [STAND-BY: ARTÍSTICO] Spritesheet do Selo de Cera: Animação de carimbar/pressionar o selo vermelho ao mover para concluído.
-- [ ] [STAND-BY: ARTÍSTICO] Spritesheet de Papel Desenrolando: Transição fluida ao expandir modal de detalhes da tarefa.
+- [x] **Coluna "Contratos Abertos" (To Do):** tarefas `todo` com o pergaminho do `Paper.vue` (não o `UiParchmentCard.vue`: trocar o componente quebraria o zoom com abas). _(22/11/2026: o selo de cera de cada coluna foi removido a pedido do usuário; a estampa do projeto continua no cartão.)_
+- [x] **Coluna "Em Andamento" (In Progress):** ampulheta `UiHourglass.vue` quando há pomodoros planejados (progresso = feitos/planejados; não existe estado de "Pomodoro rodando" no front, então "ativa" = ainda faltam pomodoros). _(22/11/2026: selo azul removido, como os demais selos de cera.)_
+- [x] **Coluna "Missões Cumpridas" (Done):** medalha `UiRibbonMedal.vue` e carimbo "CUMPRIDO". _(22/11/2026: selo verde removido.)_
+- [x] **Accents de Adagas & Pregos:** tarefas atrasadas (`late === true` ou prazo vencido, e não concluídas) eram presas por `UiIronDagger.vue`. _(22/11/2026: adaga removida a pedido do usuário; o atraso segue visível pelo texto "LATE!" na folha.)_
 - [x] **Drag and Drop 3D Tilt:** Manter VueDraggable/HTML5 com inclinação sutil 3D (`transform: rotate(-3deg) scale(1.05)`) e SFX de textura de pergaminho/rascunho ao arrastar. _(18/11/2026: o SFX não existia de fato; agora toca `playParchmentDragSound` no início do arrasto, e o painel de destino ganha realce.)_
 - [x] **Abas Superiores Mobile:** abas de madeira no `FieldJournalMobile.vue` ("📜 Contratos", "⚔️ Em Combate", "🏆 Vitórias") ligadas a `uiGuild.mobileTaskTab`; aceitam soltar folhas (mover com mouse no modo compacto).
 - [x] SFX Dedicados: pena de ganso (ao salvar), martelo de cera (ao concluir) e folha rasgando (ao excluir), sintetizados em `useGuildAudio` (respeitam o mudo).
 - [x] Botão de "Retornar ao Saguão" integrado à UI ancorada com transição de volta ao saguão (`.diegetic-btn-back`).
+- **Zoom da folha (23/11/2026):** ao abrir, véu escuro com vinheta atrás da folha e palco amplia e se desloca até o cartão clicado (`TasksMural.vue`, `onZoomStart`). Limitado para não mostrar a borda do palco.
+- **Chamas animadas (23/11/2026):** tochas e velas pintadas na arte recebem o mesmo sprite de fogo do saguão (`page/MuralFlames.vue`, posições em `MURAL_FLAMES`).
+- **Folha ampliada proporcional à tela (23/11/2026):** altura até 92% da tela e no máximo 980 px (`zoomedPaperSize` em `useZoomAnimation.ts`); a animação de abertura usa a mesma conta.
+- **Abas de edição (23/11/2026):** conteúdo das folhas em 1.2x no desktop e ocupando a altura da folha; formulário de edição com descrição que cresce e campos alinhados ao papel.
+- **Botão "Novo Contrato" (23/11/2026):** tábua de madeira com cores amostradas do quadro e aro de latão, substituindo o SVG de metal (`layout/Main.vue`).
+- **Preview dos cartões (23/11/2026):** textos maiores na cena e uma linha de descrição; "Checklist" sem quebra de linha.
+- **Imagem do arrasto (23/11/2026):** o clone do cartão usado como imagem do arrasto sai só no `dragend`, não logo após o `dragstart` (hipótese para o problema de drop no Edge, ainda não confirmada).
 
 ---
 

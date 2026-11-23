@@ -627,6 +627,9 @@ function getMoveBlockReason(task: any, toStatus: KanbanColumnStatus) {
   return null;
 }
 
+/** clone do papel usado como imagem do arrasto; sai no dragend */
+let dragPreviewEl: HTMLElement | null = null;
+
 function onDragStart(e: DragEvent, task: any, fromStatus: KanbanColumnStatus) {
   if (isLocked.value) {
     e.preventDefault();
@@ -668,6 +671,9 @@ function onDragStart(e: DragEvent, task: any, fromStatus: KanbanColumnStatus) {
       preview.style.pointerEvents = 'none';
 
       document.body.appendChild(preview);
+      // o navegador pode capturar a imagem do arrasto depois do dragstart (Edge): o clone só sai no dragend
+      dragPreviewEl?.remove();
+      dragPreviewEl = preview;
 
       const r = scaleEl.getBoundingClientRect();
       const offsetX = Math.max(0, Math.min(r.width / 2, 140));
@@ -677,14 +683,13 @@ function onDragStart(e: DragEvent, task: any, fromStatus: KanbanColumnStatus) {
       } catch {
         // ignore if browser refuses custom drag image
       }
-
-      // Cleanup preview element after the drag image is captured.
-      setTimeout(() => preview.remove(), 0);
     }
   }
 }
 
 function onDragEnd() {
+  dragPreviewEl?.remove();
+  dragPreviewEl = null;
   draggingTaskId.value = null;
   draggingFromStatus.value = null;
   dragOverStatus.value = null;

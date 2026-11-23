@@ -1,17 +1,17 @@
 <template>
-  <div 
+  <div
     :class="['task-paper', { 'hover-enabled': !zoomed2 }]"
-    :style="[props.positionStyle, { cursor: zoomed2 ? 'default' : 'pointer' }]" 
-    @click="handleZoomClick" 
+    :style="[props.positionStyle, { cursor: zoomed2 ? 'default' : 'pointer' }]"
+    @click="handleZoomClick"
   >
-    <v-img 
-      src="/svg/old-paper-4.svg" 
-      alt="Old Paper" 
-      :width="props.zoomed ? 520 : 160" 
-      :height="props.zoomed ? 650 : 200" 
+    <v-img
+      src="/svg/old-paper-4.svg"
+      alt="Old Paper"
+      :width="props.zoomed ? zoomSize.w : 160"
+      :height="props.zoomed ? zoomSize.h : 200"
       :style="zoomed2 ? { opacity: 0, pointerEvents: 'none', zIndex: 3 } : { zIndex: 3 }"
     />
-    <SvgProjectStamp :zoomed="props.zoomed" :colors="props.colors" style="z-index: 400;"/>
+    <SvgProjectStamp :zoomed="props.zoomed" :colors="props.colors" style="z-index: 400" />
 
     <Transition name="fade-slide" mode="out-in">
       <template v-if="zoomed2">
@@ -32,8 +32,13 @@
       </template>
       <template v-else>
         <!-- Renderiza preview baseado no tipo de tarefa -->
-        <TaskPreview v-if="!isHabit" :task="props.task" @fall-complete="handleCompleteFall"/>
-        <HabitPreview v-else :habit="props.task" @complete-habit="handleHabitComplete" @skip-habit="handleHabitSkip"/>
+        <TaskPreview v-if="!isHabit" :task="props.task" @fall-complete="handleCompleteFall" />
+        <HabitPreview
+          v-else
+          :habit="props.task"
+          @complete-habit="handleHabitComplete"
+          @skip-habit="handleHabitSkip"
+        />
       </template>
     </Transition>
 
@@ -63,97 +68,112 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, onMounted, computed } from 'vue'
-import SvgProjectStamp from '../../../ui/svg/ProjectStamp.vue'
-import ZoomedContent from './ZoomedContent.vue'
-import TaskPreview from './TaskPreview.vue'
-import HabitPreview from './HabitPreview.vue'
+import { ref, watch, onMounted, computed } from 'vue';
+import SvgProjectStamp from '../../../ui/svg/ProjectStamp.vue';
+import ZoomedContent from './ZoomedContent.vue';
+import TaskPreview from './TaskPreview.vue';
+import HabitPreview from './HabitPreview.vue';
+import { zoomedPaperSize } from '~/composables/ui/useZoomAnimation';
 
 interface Props {
-  task: any
-  tasks?: any[]
-  positionStyle: any
-  colors: any
-  zoomed: boolean
-  create: boolean
-  projects: any[]
+  task: any;
+  tasks?: any[];
+  positionStyle: any;
+  colors: any;
+  zoomed: boolean;
+  create: boolean;
+  projects: any[];
 }
 
-const props = defineProps<Props>()
-const emit = defineEmits(['edit-task', 'delete-task', 'close-zoom', 'fall-complete', 'zoom', 'navigate-task', 'navigate-context', 'habit-complete', 'habit-skip'])
+const props = defineProps<Props>();
+const emit = defineEmits([
+  'edit-task',
+  'delete-task',
+  'close-zoom',
+  'fall-complete',
+  'zoom',
+  'navigate-task',
+  'navigate-context',
+  'habit-complete',
+  'habit-skip',
+]);
 
-const zoomedContentRef = ref<InstanceType<typeof ZoomedContent> | null>(null)
+const zoomedContentRef = ref<InstanceType<typeof ZoomedContent> | null>(null);
 
 const goPrevTab = () => {
-  zoomedContentRef.value?.prevTab?.()
-}
+  zoomedContentRef.value?.prevTab?.();
+};
 
 const goNextTab = () => {
-  zoomedContentRef.value?.nextTab?.()
-}
-
+  zoomedContentRef.value?.nextTab?.();
+};
 
 const editAndClose = () => {
-  emit('edit-task', props.task)
+  emit('edit-task', props.task);
 };
 
 const deleteAndClose = () => {
-  emit('delete-task', props.task?._id)
+  emit('delete-task', props.task?._id);
 };
 
 const handleCompleteFall = () => {
-  emit('fall-complete', props.task?._id)
+  emit('fall-complete', props.task?._id);
 };
 
 const handleHabitComplete = (habitId: string) => {
-  emit('habit-complete', habitId)
+  emit('habit-complete', habitId);
 };
 
 const handleHabitSkip = (habitId: string) => {
-  emit('habit-skip', habitId)
+  emit('habit-skip', habitId);
 };
 
 // Detecta se é um hábito baseado no campo `microTaskType` ou `parentRecurringId`
 const isHabit = computed(() => {
-  return props.task?.microTaskType === 'habit' || !!props.task?.parentRecurringId || !!props.task?.recurringRule
-})
+  return (
+    props.task?.microTaskType === 'habit' ||
+    !!props.task?.parentRecurringId ||
+    !!props.task?.recurringRule
+  );
+});
 
-const zoomed2 = ref(false)
-const createOrEdit = ref('')
+const zoomed2 = ref(false);
+// tamanho do papel ampliado: acompanha a altura da tela (o clone da animação usa a mesma conta)
+const zoomSize = ref({ w: 520, h: 650 });
+const createOrEdit = ref('');
 
 watch(
   () => props.zoomed,
   (val) => {
-    zoomed2.value = !!val
+    zoomed2.value = !!val;
+    if (val) zoomSize.value = zoomedPaperSize();
   },
-  { immediate: true }
-)
+  { immediate: true },
+);
 
 function handleZoomClick() {
-  if (zoomed2.value) return
-  emit('zoom', props.task)
+  if (zoomed2.value) return;
+  emit('zoom', props.task);
 }
 
-const deadline = ref(null)
-const notification = ref(null)
+const deadline = ref(null);
+const notification = ref(null);
 
 onMounted(() => {
-  if (props.task?.deadline) deadline.value = props.task.deadline
-  if (props.task?.notification) notification.value = props.task.notification
-})
+  if (props.task?.deadline) deadline.value = props.task.deadline;
+  if (props.task?.notification) notification.value = props.task.notification;
+});
 
 watch(
   () => props.create,
   (val) => {
-    createOrEdit.value = val ? 'Create' : 'Edit'
+    createOrEdit.value = val ? 'Create' : 'Edit';
   },
-  { immediate: true }
-)
-
+  { immediate: true },
+);
 </script>
 
 <style scoped>
-
 .card-content {
   position: absolute;
   top: 0;
@@ -239,5 +259,4 @@ watch(
 .peek-chevron-hint.right .chevron-glyph {
   transform: translateY(-10px) translateX(1px);
 }
-
 </style>
