@@ -17,6 +17,19 @@ interface ConversationContext {
   projectContext: string;
 }
 
+/** Máximo de perguntas aceitas da IA (o prompt pede 6, uma por dimensão do SMART) */
+const MAX_QUESTIONS = 8;
+
+/** Usadas só quando a resposta da IA não pode ser lida: uma por dimensão do SMART */
+const FALLBACK_QUESTIONS = [
+  'O que exatamente você quer entregar ou alcançar com este projeto?',
+  'Como você vai medir o progresso e saber que alcançou o resultado (números, indicadores ou marcos)?',
+  'Quais recursos, conhecimentos e limitações atuais podem facilitar ou dificultar o projeto?',
+  'Por que este projeto é importante agora e que benefício você espera?',
+  'Qual é o prazo final e quais marcos intermediários você consegue definir?',
+  'Quantas horas por semana você consegue dedicar a este projeto?',
+] as const;
+
 @Injectable()
 export class PlanningService {
   private readonly logger = new Logger(PlanningService.name);
@@ -54,23 +67,29 @@ export class PlanningService {
 
   async suggestAnswer(dto: SuggestAnswerDto): Promise<string> {
     const history = this.conversationHistory.get(dto.conversationId);
-    const projectContext = history?.projectContext || '';
+    // A conversa vive só na memória do servidor: se ele reiniciou, usa o contexto enviado pelo cliente
+    const projectContext = history?.projectContext || dto.projectContext || '';
 
     const prompt = buildSuggestAnswerPrompt({
       questionIndex: dto.questionIndex,
       question: dto.question,
       projectContext,
-      previousAnswers: dto.previousAnswers,
+      previousAnswers: (dto.previousAnswers ?? []).filter((answer) => answer && answer.trim()),
     });
 
     try {
       const response = await this.geminiService.generateContent(prompt);
       // Some models/providers may still wrap the answer in JSON.
       const parsed = this.tryParseJson<{ suggestedAnswer?: string }>(response);
-      if (parsed && typeof parsed.suggestedAnswer === 'string' && parsed.suggestedAnswer.trim()) {
-        return parsed.suggestedAnswer.trim();
+      const suggestion =
+        parsed && typeof parsed.suggestedAnswer === 'string' && parsed.suggestedAnswer.trim()
+          ? this.cleanSuggestion(parsed.suggestedAnswer)
+          : this.cleanSuggestion(response);
+
+      if (!suggestion) {
+        throw new Error('A IA não retornou uma sugestão');
       }
-      return String(response || '').trim();
+      return suggestion;
     } catch (error) {
       this.logger.error(
         'Erro ao gerar sugestão de resposta:',
@@ -131,20 +150,64 @@ export class PlanningService {
     }
   }
 
+  /**
+   * Extrai um JSON da resposta da IA: aceita blocos ```json e texto solto em volta
+   * (do primeiro `[` ou `{` ao último `]` ou `}`).
+   */
+  private extractJson(response: string): unknown {
+    const direct = this.tryParseJson<unknown>(response);
+    if (direct !== null) return direct;
+
+    const text = String(response || '');
+    for (const [open, close] of [
+      ['[', ']'],
+      ['{', '}'],
+    ] as const) {
+      const start = text.indexOf(open);
+      const end = text.lastIndexOf(close);
+      if (start !== -1 && end > start) {
+        try {
+          return JSON.parse(text.slice(start, end + 1)) as unknown;
+        } catch {
+          // tenta o próximo formato
+        }
+      }
+    }
+    return null;
+  }
+
+  /** Remove aspas, formatação e blocos de código que a IA às vezes coloca em volta da sugestão. */
+  private cleanSuggestion(text: string): string {
+    return String(text || '')
+      .trim()
+      .replace(/^```(?:\w+)?\s*/i, '')
+      .replace(/```\s*$/i, '')
+      .trim()
+      .replace(/^["“](.*)["”]$/s, '$1')
+      .trim();
+  }
+
   private parseQuestionsFromResponse(response: string): string[] {
     try {
-      let cleanResponse = response.trim();
+      const parsed = this.extractJson(response);
+      const rawQuestions: unknown = Array.isArray(parsed)
+        ? parsed
+        : (parsed as { questions?: unknown } | null)?.questions;
 
-      if (cleanResponse.startsWith('```')) {
-        cleanResponse = cleanResponse.replace(/^```(?:json)?\s*/, '').replace(/```\s*$/, '');
+      if (
+        !Array.isArray(rawQuestions) ||
+        !rawQuestions.every((question): question is string => typeof question === 'string')
+      ) {
+        throw new Error('Resposta não é um array de perguntas');
       }
 
-      cleanResponse = cleanResponse.trim();
+      // Remove vazias e repetidas; limita o total para não cansar o usuário
+      const questions = Array.from(
+        new Set(rawQuestions.map((question) => question.trim()).filter(Boolean)),
+      ).slice(0, MAX_QUESTIONS);
 
-      const questions = JSON.parse(cleanResponse) as unknown;
-
-      if (!Array.isArray(questions) || !questions.every((question) => typeof question === 'string')) {
-        throw new Error('Resposta não é um array');
+      if (questions.length === 0) {
+        throw new Error('Nenhuma pergunta válida na resposta');
       }
 
       return questions;
@@ -155,14 +218,8 @@ export class PlanningService {
       );
       this.logger.warn(`Resposta recebida que falhou no parse: ${response}`);
 
-      // Fallback: perguntas genéricas
-      return [
-        'Qual é o público-alvo principal deste projeto?',
-        'Quais são as principais funcionalidades que devem ser implementadas?',
-        'Qual é o prazo ideal para conclusão?',
-        'Existem integrações com sistemas existentes?',
-        'Quais são os critérios de sucesso mensuráveis?',
-      ];
+      // Fallback: uma pergunta por dimensão do SMART, sem jargão de nenhum tipo de projeto
+      return [...FALLBACK_QUESTIONS];
     }
   }
 

@@ -79,8 +79,81 @@ describe('PlanningService', () => {
 
       const result = await service.startCatchball(projectData);
 
-      expect(result.questions).toHaveLength(5);
-      expect(result.questions[0]).toContain('público-alvo');
+      // Uma pergunta por dimensão do SMART, sem jargão de nenhum tipo de projeto
+      expect(result.questions).toHaveLength(6);
+      expect(result.questions[0]).toContain('entregar');
+      expect(result.questions.join(' ')).not.toMatch(/stakeholder|integra/i);
+    });
+
+    it('should extract the JSON array when the AI adds text around it', async () => {
+      const questions = ['O que você quer aprender primeiro?', 'Como medir o avanço?'];
+      generateContentMock.mockResolvedValue(
+        `Claro! Aqui estão as perguntas:\n${JSON.stringify(questions)}\nEspero ter ajudado.`,
+      );
+
+      const result = await service.startCatchball({
+        projectName: 'Chinês',
+        projectDescription: 'Estudar',
+      });
+
+      expect(result.questions).toEqual(questions);
+    });
+
+    it('should accept an object with a questions array', async () => {
+      generateContentMock.mockResolvedValue(JSON.stringify({ questions: ['Pergunta A', 'Pergunta B'] }));
+
+      const result = await service.startCatchball({ projectName: 'Teste', projectDescription: 'Teste' });
+
+      expect(result.questions).toEqual(['Pergunta A', 'Pergunta B']);
+    });
+
+    it('should trim, drop empty and duplicated questions and cap the total', async () => {
+      const many = Array.from({ length: 12 }, (_, i) => `  Pergunta ${i + 1}  `);
+      generateContentMock.mockResolvedValue(
+        JSON.stringify(['', '   ', 'Repetida', 'Repetida', ...many]),
+      );
+
+      const result = await service.startCatchball({ projectName: 'Teste', projectDescription: 'Teste' });
+
+      expect(result.questions).toHaveLength(8);
+      expect(result.questions[0]).toBe('Repetida');
+      expect(result.questions[1]).toBe('Pergunta 1');
+      expect(new Set(result.questions).size).toBe(result.questions.length);
+    });
+
+    it('should use the fallback when the array has no valid question', async () => {
+      generateContentMock.mockResolvedValue(JSON.stringify(['', '  ']));
+
+      const result = await service.startCatchball({ projectName: 'Teste', projectDescription: 'Teste' });
+
+      expect(result.questions).toHaveLength(6);
+    });
+
+    it('should ask one question per SMART dimension and adapt to the project type', async () => {
+      generateContentMock.mockResolvedValue(JSON.stringify(['P1']));
+
+      await service.startCatchball({
+        projectName: 'Aprender Chinês',
+        projectDescription: 'Ter um aprendizado contínuo da língua chinesa',
+        longTermGoal: 'Nível B2',
+      });
+
+      const prompt = generateContentMock.mock.calls[0][0] as string;
+      expect(prompt).toContain('Aprender Chinês');
+      expect(prompt).toContain('Nível B2');
+      for (const dimension of [
+        'Específico',
+        'Mensurável',
+        'Atingível',
+        'Relevante',
+        'Temporal',
+        'Capacidade',
+      ]) {
+        expect(prompt).toContain(dimension);
+      }
+      // O prompt não pode forçar temas de software em qualquer projeto
+      expect(prompt).toMatch(/Adapte o conteúdo/);
+      expect(prompt).not.toContain('Integrações e dependências técnicas');
     });
   });
 
@@ -116,6 +189,83 @@ describe('PlanningService', () => {
 
       expect(result).toBe(mockSuggestion);
       expect(generateContentMock).toHaveBeenCalledWith(expect.stringContaining('Resposta 1'));
+    });
+
+    it('should use the project context sent by the client when the conversation is not in memory', async () => {
+      generateContentMock.mockResolvedValue('Quero aprender 500 ideogramas.');
+
+      await service.suggestAnswer({
+        conversationId: 'conversa_perdida_apos_reinicio',
+        questionIndex: 0,
+        question: 'O que você quer alcançar?',
+        previousAnswers: [],
+        projectContext: 'Nome: Aprender Chinês\nDescrição: estudar mandarim',
+      });
+
+      expect(generateContentMock).toHaveBeenCalledWith(expect.stringContaining('Aprender Chinês'));
+    });
+
+    it('should work without previous answers', async () => {
+      generateContentMock.mockResolvedValue('Resposta curta.');
+
+      const result = await service.suggestAnswer({
+        conversationId: 'conv_x',
+        questionIndex: 0,
+        question: 'Pergunta?',
+      });
+
+      expect(result).toBe('Resposta curta.');
+    });
+
+    it('should clean quotes and code fences around a plain-text suggestion', async () => {
+      generateContentMock.mockResolvedValue('"Quero estudar 5h por semana."');
+      const quoted = await service.suggestAnswer({
+        conversationId: 'c1',
+        questionIndex: 0,
+        question: 'Quanto tempo?',
+        previousAnswers: [],
+      });
+      expect(quoted).toBe('Quero estudar 5h por semana.');
+
+      generateContentMock.mockResolvedValue('```\nQuero estudar 5h por semana.\n```');
+      const fenced = await service.suggestAnswer({
+        conversationId: 'c1',
+        questionIndex: 0,
+        question: 'Quanto tempo?',
+        previousAnswers: [],
+      });
+      expect(fenced).toBe('Quero estudar 5h por semana.');
+    });
+
+    it('should fail with a clear error when the AI returns an empty suggestion', async () => {
+      generateContentMock.mockResolvedValue('   ');
+
+      await expect(
+        service.suggestAnswer({
+          conversationId: 'c1',
+          questionIndex: 0,
+          question: 'P?',
+          previousAnswers: [],
+        }),
+      ).rejects.toThrow('Não foi possível gerar sugestão de resposta');
+    });
+
+    it('should ask for a short first-person answer in the prompt', async () => {
+      generateContentMock.mockResolvedValue('ok');
+
+      await service.suggestAnswer({
+        conversationId: 'c1',
+        questionIndex: 2,
+        question: 'Quais recursos você tem?',
+        previousAnswers: ['Resposta A', ''],
+        projectContext: 'Nome: Projeto',
+      });
+
+      const prompt = generateContentMock.mock.calls[0][0] as string;
+      expect(prompt).toContain('primeira pessoa');
+      expect(prompt).toContain('Resposta A');
+      // Respostas vazias não entram no contexto
+      expect(prompt).not.toMatch(/Pergunta 2: \s*\n/);
     });
   });
 

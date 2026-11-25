@@ -3,6 +3,16 @@
  * No NestJS decorators, no side effects — only string construction.
  */
 
+/** Dimensões do SMART cobertas pelas perguntas, na ordem em que são feitas. */
+export const CATCHBALL_DIMENSIONS = [
+  'Específico: o que exatamente será entregue ou alcançado',
+  'Mensurável: como medir o progresso e o sucesso (números, indicadores, marcos)',
+  'Atingível: recursos, conhecimento e restrições atuais que afetam a viabilidade',
+  'Relevante: por que isso importa e qual resultado ou benefício se espera',
+  'Temporal: prazo final e marcos intermediários',
+  'Capacidade: quantas horas por semana é possível dedicar',
+] as const;
+
 export function buildCatchballQuestionsPrompt(projectData: {
   projectName: string;
   projectDescription: string;
@@ -15,24 +25,26 @@ export function buildCatchballQuestionsPrompt(projectData: {
   if (projectData.midTermGoal) goalsContext.push(`Médio prazo: ${projectData.midTermGoal}`);
   if (projectData.longTermGoal) goalsContext.push(`Longo prazo: ${projectData.longTermGoal}`);
 
-  return `Você é um consultor de gestão de projetos especializado em metodologias PMBOK e PRINCE2.
+  const dimensions = CATCHBALL_DIMENSIONS.map((dimension, i) => `${i + 1}. ${dimension}`).join('\n');
 
-Um usuário tem um projeto com as seguintes informações:
+  return `Você é um consultor de planejamento especializado em metas SMART e na técnica Catchball (Hoshin Kanri).
 
-Nome do Projeto: "${projectData.projectName}"
+Informações do projeto:
+Nome: "${projectData.projectName}"
 Descrição: "${projectData.projectDescription}"
-${goalsContext.length > 0 ? `\nObjetivos existentes:\n${goalsContext.join('\n')}` : ''}
+${goalsContext.length > 0 ? `Objetivos já definidos:\n${goalsContext.join('\n')}` : 'Objetivos já definidos: nenhum'}
 
-Sua tarefa é fazer perguntas estratégicas para refinar esse objetivo em um objetivo SMART, usando a técnica Catchball (Hoshin Kanri).
-Faça 4-5 perguntas que ajudem a esclarecer:
-1. Público-alvo e usuários específicos
-2. Escopo e funcionalidades principais
-3. Restrições de tempo e recursos
-4. Integrações e dependências técnicas
-5. Critérios de sucesso mensuráveis
+Sua tarefa é criar perguntas para refinar este projeto em um objetivo SMART. Faça UMA pergunta para cada dimensão abaixo, nesta ordem:
+${dimensions}
 
-Retorne APENAS um array JSON com as perguntas, sem texto adicional:
-["pergunta 1", "pergunta 2", "pergunta 3", "pergunta 4", "pergunta 5"]`;
+Regras:
+- Adapte o conteúdo e o vocabulário ao TIPO de projeto (software, estudo, saúde, finanças, trabalho, vida pessoal etc.). Não use jargão de software (stakeholders, integrações, funcionalidades) se o projeto não for desse tipo.
+- Cada pergunta deve se referir a elementos concretos deste projeto (nome, descrição ou objetivos) sempre que fizer sentido.
+- Não pergunte o que a descrição ou os objetivos já respondem; aprofunde o que ainda falta saber.
+- Cada pergunta deve poder ser respondida em 1 a 3 frases, em português do Brasil, em tom direto.
+
+Retorne APENAS um array JSON com as ${CATCHBALL_DIMENSIONS.length} perguntas, sem texto adicional:
+["pergunta 1", "pergunta 2", "pergunta 3", "pergunta 4", "pergunta 5", "pergunta 6"]`;
 }
 
 export function buildSuggestAnswerPrompt(params: {
@@ -43,20 +55,24 @@ export function buildSuggestAnswerPrompt(params: {
 }): string {
   const previousContext =
     params.previousAnswers.length > 0
-      ? `\n\nRespostas anteriores:\n${params.previousAnswers.map((ans, i) => `Pergunta ${i + 1}: ${ans}`).join('\n')}`
+      ? `\n\nRespostas anteriores do usuário:\n${params.previousAnswers.map((ans, i) => `Pergunta ${i + 1}: ${ans}`).join('\n')}`
       : '';
 
-  return `Você é um consultor de gestão de projetos especializado em metodologias PMBOK e PRINCE2.
+  return `Você é um consultor de planejamento especializado em metas SMART.
 
 Contexto do projeto:
-${params.projectContext}${previousContext}
+${params.projectContext || '(sem contexto adicional)'}${previousContext}
 
 Pergunta atual (${params.questionIndex + 1}):
 "${params.question}"
 
-Com base nas informações do projeto e nas respostas anteriores (se houver), sugira uma resposta objetiva e concreta para esta pergunta. A resposta deve ser prática e específica para este projeto.
+Escreva uma resposta SUGERIDA para esta pergunta, como se fosse o próprio usuário respondendo (primeira pessoa), com base no contexto e nas respostas anteriores.
+Regras:
+- Seja concreto e específico para este projeto, em 1 a 3 frases, em português do Brasil.
+- Se faltar informação, proponha uma suposição razoável e realista; o usuário vai revisar e editar.
+- Mantenha coerência com as respostas anteriores.
 
-Retorne APENAS a resposta sugerida, sem explicações adicionais ou formatação JSON.`;
+Retorne APENAS o texto da resposta sugerida, sem aspas, sem explicações, sem formatação JSON ou Markdown.`;
 }
 
 export function buildSmartObjectivePrompt(params: {
