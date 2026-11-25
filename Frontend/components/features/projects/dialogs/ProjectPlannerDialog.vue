@@ -37,52 +37,84 @@
               <p class="font-weight-medium text-body-1 mb-3">
                 {{ currentQuestionIndex + 1 }}. {{ questions[currentQuestionIndex] }}
               </p>
-              
-              <!-- Sugestão da IA (se disponível) -->
-              <v-alert
-                v-if="suggestedAnswer && !answerEdited"
-                type="info"
-                variant="tonal"
-                class="mb-3"
-              >
-                <div class="d-flex align-center justify-space-between">
-                  <div class="d-flex align-center flex-grow-1">
-                    <v-icon class="mr-2">mdi-lightbulb-on</v-icon>
-                    <div class="flex-grow-1">
-                      <strong>Sugestão da IA:</strong>
-                      <p class="mb-0 mt-1">{{ suggestedAnswer }}</p>
-                    </div>
-                  </div>
-                  <v-btn
-                    icon="mdi-refresh"
-                    variant="text"
-                    size="small"
-                    @click="regenerateSuggestion"
-                    :loading="loading"
-                    title="Gerar nova sugestão"
-                  />
-                </div>
-              </v-alert>
 
-              <!-- Campo de resposta -->
+              <!-- Campo de resposta: sempre editável, com ou sem sugestão da IA -->
               <v-textarea
                 v-model="currentAnswer"
                 label="Sua resposta"
-                placeholder="Digite sua resposta ou edite a sugestão acima..."
+                placeholder="Digite sua resposta ou peça uma sugestão à IA..."
                 variant="outlined"
                 rows="4"
                 auto-grow
-                @input="answerEdited = true"
+                hide-details
+                class="mb-3"
+                @input="onAnswerInput"
               />
+
+              <!-- Sugestão da IA: só quando o usuário pede -->
+              <div class="d-flex align-center flex-wrap mb-3" style="gap: 0.5rem">
+                <v-btn
+                  variant="tonal"
+                  color="primary"
+                  size="small"
+                  prepend-icon="mdi-creation"
+                  :loading="suggesting"
+                  :disabled="suggesting || loading"
+                  data-test="suggest-answer"
+                  @click="suggestWithAi"
+                >
+                  {{
+                    currentAnswer.trim() ? 'Sugerir outra resposta com IA' : 'Sugerir resposta com IA'
+                  }}
+                </v-btn>
+                <v-chip
+                  v-if="aiFilled && !answerEdited"
+                  size="small"
+                  color="info"
+                  variant="tonal"
+                  prepend-icon="mdi-lightbulb-on"
+                  data-test="ai-filled-hint"
+                >
+                  Sugerido pela IA — edite à vontade
+                </v-chip>
+              </div>
+
+              <!-- Já existe texto na resposta: a sugestão não sobrescreve, o usuário escolhe -->
+              <v-alert
+                v-if="pendingSuggestion"
+                type="info"
+                variant="tonal"
+                density="comfortable"
+                class="mb-3"
+                data-test="pending-suggestion"
+              >
+                <strong>Sugestão da IA:</strong>
+                <p class="mb-2 mt-1">{{ pendingSuggestion }}</p>
+                <div class="d-flex" style="gap: 0.5rem">
+                  <v-btn size="small" color="primary" @click="usePendingSuggestion">
+                    Substituir minha resposta
+                  </v-btn>
+                  <v-btn size="small" variant="text" @click="pendingSuggestion = ''">Descartar</v-btn>
+                </div>
+              </v-alert>
+
+              <v-alert
+                v-if="suggestionError"
+                type="warning"
+                variant="tonal"
+                density="comfortable"
+                closable
+                class="mb-3"
+                data-test="suggestion-error"
+                @click:close="clearSuggestionError"
+              >
+                {{ suggestionError }}
+              </v-alert>
             </div>
 
             <!-- Botões de navegação -->
             <div class="d-flex justify-space-between">
-              <v-btn
-                v-if="currentQuestionIndex > 0"
-                @click="previousQuestion"
-                variant="text"
-              >
+              <v-btn v-if="currentQuestionIndex > 0" @click="previousQuestion" variant="text">
                 <v-icon start>mdi-arrow-left</v-icon>
                 Anterior
               </v-btn>
@@ -96,12 +128,7 @@
                 Próxima
                 <v-icon end>mdi-arrow-right</v-icon>
               </v-btn>
-              <v-btn
-                v-else
-                @click="finishQuestions"
-                color="primary"
-                :disabled="!currentAnswer.trim()"
-              >
+              <v-btn v-else @click="finishQuestions" color="primary" :disabled="!currentAnswer.trim()">
                 Gerar Objetivo SMART
                 <v-icon end>mdi-check</v-icon>
               </v-btn>
@@ -173,7 +200,10 @@
         <div v-if="phase === 3">
           <v-alert type="info" variant="tonal" class="mb-4">
             📊 WBS gerada a partir do objetivo SMART.
-            <span class="text-caption d-block mt-1">Regra 8/80: cada pacote de trabalho deve ter entre 8h e 80h estimadas. Depois, convertemos em micro-tarefas (≤3h) para execução.</span>
+            <span class="text-caption d-block mt-1"
+              >Regra 8/80: cada pacote de trabalho deve ter entre 8h e 80h estimadas. Depois, convertemos
+              em micro-tarefas (≤3h) para execução.</span
+            >
           </v-alert>
 
           <v-alert
@@ -184,11 +214,14 @@
           >
             <div>
               <strong>Budget global:</strong>
-              {{ budgetValidation.totalLeafHours.toFixed(1) }}h / {{ budgetValidation.budgetHours.toFixed(1) }}h
-              ({{ budgetValidation.utilizationPct.toFixed(1) }}%).
+              {{ budgetValidation.totalLeafHours.toFixed(1) }}h /
+              {{ budgetValidation.budgetHours.toFixed(1) }}h ({{
+                budgetValidation.utilizationPct.toFixed(1)
+              }}%).
             </div>
             <div v-if="budgetValidation.overBudget" class="text-caption mt-1">
-              Excesso de {{ budgetValidation.deltaHours.toFixed(1) }}h. Escolha como deseja resolver antes de salvar/converter.
+              Excesso de {{ budgetValidation.deltaHours.toFixed(1) }}h. Escolha como deseja resolver
+              antes de salvar/converter.
             </div>
             <div v-if="budgetValidation.overBudget" class="d-flex flex-wrap gap-2 mt-3">
               <v-btn
@@ -220,33 +253,49 @@
               variant="tonal"
               class="mb-4"
             >
-              <span v-if="wbsValidation.valid">✅ Todos os pacotes de trabalho respeitam a regra 8/80!</span>
+              <span v-if="wbsValidation.valid"
+                >✅ Todos os pacotes de trabalho respeitam a regra 8/80!</span
+              >
               <span v-else>⚠️ {{ wbsValidation.violations.length }} pacote(s) fora da regra 8/80.</span>
             </v-alert>
 
             <!-- WBS Tree -->
-            <div class="wbs-tree-container" style="max-height: 400px; overflow-y: auto;">
+            <div class="wbs-tree-container" style="max-height: 400px; overflow-y: auto">
               <div v-for="node in wbsNodes" :key="node.name" class="wbs-node mb-2">
                 <div class="d-flex align-center">
                   <v-icon size="18" class="mr-2" color="primary">mdi-folder-outline</v-icon>
                   <strong>{{ node.name }}</strong>
-                  <v-chip v-if="node.estimatedHours" size="x-small" class="ml-2" :color="isValidHours(node.estimatedHours) ? 'success' : 'warning'">
+                  <v-chip
+                    v-if="node.estimatedHours"
+                    size="x-small"
+                    class="ml-2"
+                    :color="isValidHours(node.estimatedHours) ? 'success' : 'warning'"
+                  >
                     {{ node.estimatedHours }}h
                   </v-chip>
                 </div>
-                <p v-if="node.description" class="text-caption text-medium-emphasis ml-7 mb-1">{{ node.description }}</p>
-                
+                <p v-if="node.description" class="text-caption text-medium-emphasis ml-7 mb-1">
+                  {{ node.description }}
+                </p>
+
                 <!-- Children -->
                 <div v-if="node.children && node.children.length > 0" class="ml-6">
                   <div v-for="child in node.children" :key="child.name" class="wbs-child mb-1">
                     <div class="d-flex align-center">
                       <v-icon size="16" class="mr-2" color="secondary">mdi-file-document-outline</v-icon>
                       <span>{{ child.name }}</span>
-                      <v-chip v-if="child.estimatedHours" size="x-small" class="ml-2" :color="isValidHours(child.estimatedHours) ? 'success' : 'warning'">
+                      <v-chip
+                        v-if="child.estimatedHours"
+                        size="x-small"
+                        class="ml-2"
+                        :color="isValidHours(child.estimatedHours) ? 'success' : 'warning'"
+                      >
                         {{ child.estimatedHours }}h
                       </v-chip>
                     </div>
-                    <p v-if="child.description" class="text-caption text-medium-emphasis ml-7 mb-0">{{ child.description }}</p>
+                    <p v-if="child.description" class="text-caption text-medium-emphasis ml-7 mb-0">
+                      {{ child.description }}
+                    </p>
 
                     <!-- Level 3 children -->
                     <div v-if="child.children && child.children.length > 0" class="ml-6">
@@ -254,7 +303,12 @@
                         <div class="d-flex align-center">
                           <v-icon size="14" class="mr-2" color="grey">mdi-circle-small</v-icon>
                           <span class="text-body-2">{{ leaf.name }}</span>
-                          <v-chip v-if="leaf.estimatedHours" size="x-small" class="ml-2" :color="isValidHours(leaf.estimatedHours) ? 'success' : 'warning'">
+                          <v-chip
+                            v-if="leaf.estimatedHours"
+                            size="x-small"
+                            class="ml-2"
+                            :color="isValidHours(leaf.estimatedHours) ? 'success' : 'warning'"
+                          >
                             {{ leaf.estimatedHours }}h
                           </v-chip>
                         </div>
@@ -282,21 +336,12 @@
       </v-card-text>
 
       <v-card-actions class="pa-4">
-        <v-btn
-          v-if="phase === 3"
-          @click="phase = 2"
-          variant="text"
-        >
+        <v-btn v-if="phase === 3" @click="phase = 2" variant="text">
           <v-icon start>mdi-arrow-left</v-icon>
           Voltar ao SMART
         </v-btn>
         <v-spacer />
-        <v-btn
-          @click="handleClose"
-          variant="text"
-        >
-          Cancelar
-        </v-btn>
+        <v-btn @click="handleClose" variant="text"> Cancelar </v-btn>
         <v-btn
           v-if="phase === 2"
           @click="generateWBS"
@@ -306,12 +351,7 @@
           <v-icon start>mdi-file-tree</v-icon>
           Gerar WBS
         </v-btn>
-        <v-btn
-          v-if="phase === 2"
-          @click="saveAndClose"
-          color="success"
-          :disabled="loading"
-        >
+        <v-btn v-if="phase === 2" @click="saveAndClose" color="success" :disabled="loading">
           Salvar SMART
         </v-btn>
         <v-btn
@@ -337,333 +377,363 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
-import { useNuxtApp } from '#app'
+import { ref, computed, watch } from 'vue';
+import { useNuxtApp } from '#app';
+import { useAnswerSuggestion } from '~/composables/features/useAnswerSuggestion';
 
 interface SmartObjective {
-  specific: string
-  measurable: string
-  achievable: string
-  relevant: string
-  temporal: string
-  weeklyHours?: number
-  summary: string
-  risks: string[]
+  specific: string;
+  measurable: string;
+  achievable: string;
+  relevant: string;
+  temporal: string;
+  weeklyHours?: number;
+  summary: string;
+  risks: string[];
 }
 
 interface Props {
-  modelValue: boolean
-  projectId: string
-  projectName: string
-  projectDescription: string
-  shortTermGoal?: string
-  midTermGoal?: string
-  longTermGoal?: string
+  modelValue: boolean;
+  projectId: string;
+  projectName: string;
+  projectDescription: string;
+  shortTermGoal?: string;
+  midTermGoal?: string;
+  longTermGoal?: string;
 }
 
 interface Emits {
-  (e: 'update:modelValue', value: boolean): void
-  (e: 'objective-generated', objective: SmartObjective): void
-  (e: 'wbs-generated'): void
+  (e: 'update:modelValue', value: boolean): void;
+  (e: 'objective-generated', objective: SmartObjective): void;
+  (e: 'wbs-generated'): void;
 }
 
-const props = defineProps<Props>()
-const emit = defineEmits<Emits>()
+const props = defineProps<Props>();
+const emit = defineEmits<Emits>();
 
-const phase = ref(1)
-const loading = ref(false)
-const loadingMessage = ref('')
+const phase = ref(1);
+const loading = ref(false);
+const loadingMessage = ref('');
 
 // Fase 1: Perguntas
-const questions = ref<string[]>([])
-const answers = ref<string[]>([])
-const conversationId = ref('')
-const currentQuestionIndex = ref(0)
-const currentAnswer = ref('')
-const suggestedAnswer = ref('')
-const answerEdited = ref(false)
+const questions = ref<string[]>([]);
+const answers = ref<string[]>([]);
+const conversationId = ref('');
+const currentQuestionIndex = ref(0);
+const currentAnswer = ref('');
+const answerEdited = ref(false);
+// Sugestão da IA: só quando o usuário pede (não há chamada automática)
+const aiFilled = ref(false);
+const pendingSuggestion = ref('');
+const nuxtApp = useNuxtApp() as any;
+const {
+  suggesting,
+  errorMessage: suggestionError,
+  requestSuggestion,
+  clearError: clearSuggestionError,
+} = useAnswerSuggestion((url, body) => nuxtApp.$api.post(url, body));
 
 // Fase 2: Objetivo SMART (antes era Fase 3)
-const smartObjective = ref<SmartObjective | null>(null)
+const smartObjective = ref<SmartObjective | null>(null);
 
 // Fase 3: WBS
 interface WBSNodeUI {
-  name: string
-  description?: string
-  level: number
-  estimatedHours: number
-  children?: WBSNodeUI[]
+  name: string;
+  description?: string;
+  level: number;
+  estimatedHours: number;
+  children?: WBSNodeUI[];
 }
 interface WBSValidation {
-  valid: boolean
-  violations: { nodeName?: string; hours?: number; reason?: string }[]
+  valid: boolean;
+  violations: { nodeName?: string; hours?: number; reason?: string }[];
 }
 interface WBSBudgetValidation {
-  budgetHours: number
-  totalLeafHours: number
-  overBudget: boolean
-  deltaHours: number
-  utilizationPct: number
-  weeklyHours?: number
-  weeksAvailable?: number
+  budgetHours: number;
+  totalLeafHours: number;
+  overBudget: boolean;
+  deltaHours: number;
+  utilizationPct: number;
+  weeklyHours?: number;
+  weeksAvailable?: number;
 }
-const wbsNodes = ref<WBSNodeUI[]>([])
-const wbsValidation = ref<WBSValidation | null>(null)
-const budgetValidation = ref<WBSBudgetValidation | null>(null)
-const resolvingBudget = ref(false)
-const showError = ref(false)
-const errorMessage = ref('')
+const wbsNodes = ref<WBSNodeUI[]>([]);
+const wbsValidation = ref<WBSValidation | null>(null);
+const budgetValidation = ref<WBSBudgetValidation | null>(null);
+const resolvingBudget = ref(false);
+const showError = ref(false);
+const errorMessage = ref('');
 
 function setError(message: string) {
-  errorMessage.value = message
-  showError.value = true
+  errorMessage.value = message;
+  showError.value = true;
 }
 
 function clearError() {
-  errorMessage.value = ''
-  showError.value = false
+  errorMessage.value = '';
+  showError.value = false;
 }
 
 // Carrega perguntas automaticamente quando o dialog abre
-watch(() => props.modelValue, (newValue) => {
-  if (newValue && phase.value === 1 && questions.value.length === 0) {
-    generateQuestions()
-  }
-})
-
-// Carrega sugestão de resposta quando muda de pergunta
-watch(currentQuestionIndex, async (newIndex) => {
-  if (newIndex >= 0 && newIndex < questions.value.length) {
-    // Restaura resposta salva se existir
-    currentAnswer.value = answers.value[newIndex] || ''
-    answerEdited.value = !!answers.value[newIndex]
-    
-    // Gera sugestão se ainda não tem resposta
-    if (!answers.value[newIndex]) {
-      await loadSuggestedAnswer()
-    } else {
-      suggestedAnswer.value = ''
+watch(
+  () => props.modelValue,
+  (newValue) => {
+    if (newValue && phase.value === 1 && questions.value.length === 0) {
+      generateQuestions();
     }
+  },
+);
+
+// Ao mudar de pergunta, restaura a resposta salva e limpa o estado da sugestão
+watch(currentQuestionIndex, (newIndex) => {
+  if (newIndex >= 0 && newIndex < questions.value.length) {
+    currentAnswer.value = answers.value[newIndex] || '';
+    answerEdited.value = !!answers.value[newIndex];
+    aiFilled.value = false;
+    pendingSuggestion.value = '';
+    clearSuggestionError();
   }
-})
+});
 
 const isOpen = computed({
   get: () => props.modelValue,
-  set: (value) => emit('update:modelValue', value)
-})
+  set: (value) => emit('update:modelValue', value),
+});
 
 const phaseTitle = computed(() => {
   switch (phase.value) {
-    case 1: return 'Refinamento (Catchball)'
-    case 2: return 'Objetivo SMART'
-    case 3: return 'WBS (Work Breakdown Structure)'
-    default: return ''
+    case 1:
+      return 'Refinamento (Catchball)';
+    case 2:
+      return 'Objetivo SMART';
+    case 3:
+      return 'WBS (Work Breakdown Structure)';
+    default:
+      return '';
   }
-})
+});
 
 const canProceed = computed(() => {
-  if (phase.value === 1) return currentAnswer.value.trim().length > 0
-  return false
-})
+  if (phase.value === 1) return currentAnswer.value.trim().length > 0;
+  return false;
+});
 
 async function nextQuestion() {
   // Salva resposta atual
-  answers.value[currentQuestionIndex.value] = currentAnswer.value
-  
+  answers.value[currentQuestionIndex.value] = currentAnswer.value;
+
   // Avança para próxima pergunta
   if (currentQuestionIndex.value < questions.value.length - 1) {
-    currentQuestionIndex.value++
+    currentQuestionIndex.value++;
   }
 }
 
 async function previousQuestion() {
   // Salva resposta atual
-  answers.value[currentQuestionIndex.value] = currentAnswer.value
-  
+  answers.value[currentQuestionIndex.value] = currentAnswer.value;
+
   // Volta para pergunta anterior
   if (currentQuestionIndex.value > 0) {
-    currentQuestionIndex.value--
+    currentQuestionIndex.value--;
   }
 }
 
 async function finishQuestions() {
   // Salva última resposta
-  answers.value[currentQuestionIndex.value] = currentAnswer.value
-  
+  answers.value[currentQuestionIndex.value] = currentAnswer.value;
+
   // Gera objetivo SMART
-  await generateSmartObjective()
+  await generateSmartObjective();
 }
 
-async function loadSuggestedAnswer() {
-  // Validate projectId before making any API calls
-  if (!props.projectId || String(props.projectId).trim() === 'undefined' || String(props.projectId).trim() === '') {
-    console.warn('Project ID not available, skipping suggested answer')
-    suggestedAnswer.value = ''
-    return
-  }
+function onAnswerInput() {
+  answerEdited.value = true;
+}
 
-  loading.value = true
-  loadingMessage.value = 'Gerando sugestão de resposta...'
-  
-  try {
-    const { $api } = useNuxtApp() as any
-    const response = await $api.post(`/projects/${props.projectId}/suggest-answer`, {
-      conversationId: conversationId.value,
-      questionIndex: currentQuestionIndex.value,
-      question: questions.value[currentQuestionIndex.value],
-      previousAnswers: answers.value.filter((a, i) => i < currentQuestionIndex.value && a)
-    })
-    
-    suggestedAnswer.value = response.data.suggestedAnswer
-    currentAnswer.value = response.data.suggestedAnswer
-    answerEdited.value = false
-  } catch (error) {
-    console.error('Erro ao gerar sugestão:', error)
-    suggestedAnswer.value = ''
-  } finally {
-    loading.value = false
+// Nome, descrição e objetivos: a IA usa isso mesmo se o servidor perdeu a conversa
+function projectContextText(): string {
+  const lines = [`Nome: ${props.projectName}`, `Descrição: ${props.projectDescription}`];
+  if (props.shortTermGoal) lines.push(`Curto prazo: ${props.shortTermGoal}`);
+  if (props.midTermGoal) lines.push(`Médio prazo: ${props.midTermGoal}`);
+  if (props.longTermGoal) lines.push(`Longo prazo: ${props.longTermGoal}`);
+  return lines.join('\n');
+}
+
+/**
+ * Pede uma sugestão de resposta à IA para a pergunta atual.
+ * Resposta vazia: a sugestão entra direto no campo (editável).
+ * Já há texto: a sugestão aparece à parte e o usuário escolhe se substitui.
+ */
+async function suggestWithAi() {
+  const index = currentQuestionIndex.value;
+  pendingSuggestion.value = '';
+
+  const text = await requestSuggestion({
+    projectId: props.projectId,
+    conversationId: conversationId.value,
+    questionIndex: index,
+    question: questions.value[index],
+    previousAnswers: answers.value.filter((_, i) => i < index),
+    projectContext: projectContextText(),
+  });
+
+  // O usuário pode ter trocado de pergunta enquanto a IA respondia
+  if (!text || index !== currentQuestionIndex.value) return;
+
+  if (!currentAnswer.value.trim()) {
+    currentAnswer.value = text;
+    aiFilled.value = true;
+    answerEdited.value = false;
+  } else {
+    pendingSuggestion.value = text;
   }
 }
 
-async function regenerateSuggestion() {
-  // Re-gera a sugestão para a pergunta atual
-  answerEdited.value = false
-  await loadSuggestedAnswer()
+function usePendingSuggestion() {
+  currentAnswer.value = pendingSuggestion.value;
+  pendingSuggestion.value = '';
+  aiFilled.value = true;
+  answerEdited.value = false;
 }
 
 async function nextPhase() {
   if (phase.value === 1) {
-    await generateSmartObjective()
+    await generateSmartObjective();
   }
 }
 
 function previousPhase() {
   if (phase.value > 1) {
-    phase.value--
+    phase.value--;
   }
 }
 
 async function generateQuestions() {
   // Validate projectId before making any API calls
-  if (!props.projectId || String(props.projectId).trim() === 'undefined' || String(props.projectId).trim() === '') {
-    setError('❌ Erro: Project ID não definido. Salve o projeto antes de usar o planejador com IA.')
-    return
+  if (
+    !props.projectId ||
+    String(props.projectId).trim() === 'undefined' ||
+    String(props.projectId).trim() === ''
+  ) {
+    setError('❌ Erro: Project ID não definido. Salve o projeto antes de usar o planejador com IA.');
+    return;
   }
 
-  clearError()
+  clearError();
 
-  loading.value = true
-  loadingMessage.value = 'Gerando perguntas estratégicas...'
+  loading.value = true;
+  loadingMessage.value = 'Gerando perguntas estratégicas...';
 
   try {
-    const { $api } = useNuxtApp() as any
+    const { $api } = useNuxtApp() as any;
     const response = await $api.post(`/projects/${props.projectId}/plan-with-ai`, {
       projectName: props.projectName,
       projectDescription: props.projectDescription,
       shortTermGoal: props.shortTermGoal,
       midTermGoal: props.midTermGoal,
-      longTermGoal: props.longTermGoal
-    })
+      longTermGoal: props.longTermGoal,
+    });
 
-    questions.value = response.data.questions
-    conversationId.value = response.data.conversationId
-    answers.value = new Array(questions.value.length).fill('')
-    currentQuestionIndex.value = 0
-    
-    // Carrega sugestão para primeira pergunta
-    await loadSuggestedAnswer()
+    questions.value = response.data.questions;
+    conversationId.value = response.data.conversationId;
+    answers.value = new Array(questions.value.length).fill('');
+    currentQuestionIndex.value = 0;
   } catch (error) {
-    console.error('Erro ao gerar perguntas:', error)
-    alert('Erro ao gerar perguntas. Tente novamente.')
+    console.error('Erro ao gerar perguntas:', error);
+    alert('Erro ao gerar perguntas. Tente novamente.');
   } finally {
-    loading.value = false
+    loading.value = false;
   }
 }
 
 async function generateSmartObjective() {
   // Validate projectId before making any API calls
-  if (!props.projectId || String(props.projectId).trim() === 'undefined' || String(props.projectId).trim() === '') {
-    setError('❌ Erro: Project ID não definido. Salve o projeto antes de continuar.')
-    return
+  if (
+    !props.projectId ||
+    String(props.projectId).trim() === 'undefined' ||
+    String(props.projectId).trim() === ''
+  ) {
+    setError('❌ Erro: Project ID não definido. Salve o projeto antes de continuar.');
+    return;
   }
 
-  clearError()
+  clearError();
 
-  loading.value = true
-  loadingMessage.value = 'Gerando objetivo SMART...'
+  loading.value = true;
+  loadingMessage.value = 'Gerando objetivo SMART...';
 
   try {
-    const { $api } = useNuxtApp() as any
+    const { $api } = useNuxtApp() as any;
     const response = await $api.post(`/projects/${props.projectId}/refine-objective`, {
       conversationId: conversationId.value,
-      answers: answers.value
-    })
+      answers: answers.value,
+    });
 
-    smartObjective.value = response.data.smart
+    smartObjective.value = response.data.smart;
     if (!smartObjective.value?.weeklyHours || smartObjective.value.weeklyHours <= 0) {
-      setError('Informe horas semanais no SMART antes de gerar WBS. Replaneje se necessário.')
+      setError('Informe horas semanais no SMART antes de gerar WBS. Replaneje se necessário.');
     }
-    phase.value = 2
+    phase.value = 2;
   } catch (error) {
-    console.error('Erro ao gerar objetivo SMART:', error)
-    alert('Erro ao gerar objetivo SMART. Tente novamente.')
+    console.error('Erro ao gerar objetivo SMART:', error);
+    alert('Erro ao gerar objetivo SMART. Tente novamente.');
   } finally {
-    loading.value = false
+    loading.value = false;
   }
 }
 
 function isValidHours(hours: number): boolean {
-  return hours >= 8 && hours <= 80
+  return hours >= 8 && hours <= 80;
 }
 
 function countLeaves(nodes: WBSNodeUI[]): number {
-  let count = 0
+  let count = 0;
   for (const node of nodes) {
     if (!node.children || node.children.length === 0) {
-      count++
+      count++;
     } else {
-      count += countLeaves(node.children)
+      count += countLeaves(node.children);
     }
   }
-  return count
+  return count;
 }
 
 function sumHours(nodes: WBSNodeUI[]): number {
-  let total = 0
+  let total = 0;
   for (const node of nodes) {
     if (!node.children || node.children.length === 0) {
-      total += node.estimatedHours || 0
+      total += node.estimatedHours || 0;
     } else {
-      total += sumHours(node.children)
+      total += sumHours(node.children);
     }
   }
-  return total
+  return total;
 }
 
-const totalLeafCount = computed(() => countLeaves(wbsNodes.value))
-const totalEstimatedHours = computed(() => sumHours(wbsNodes.value))
+const totalLeafCount = computed(() => countLeaves(wbsNodes.value));
+const totalEstimatedHours = computed(() => sumHours(wbsNodes.value));
 
 async function generateWBS() {
-  if (!smartObjective.value) return
-  
+  if (!smartObjective.value) return;
+
   if (!props.projectId || String(props.projectId).trim() === 'undefined') {
-    setError('❌ Erro: Project ID não definido. Salve o projeto antes de gerar WBS.')
-    return
+    setError('❌ Erro: Project ID não definido. Salve o projeto antes de gerar WBS.');
+    return;
   }
 
-  const weeklyHours = Number(smartObjective.value.weeklyHours)
+  const weeklyHours = Number(smartObjective.value.weeklyHours);
   if (!Number.isFinite(weeklyHours) || weeklyHours <= 0) {
-    setError('Defina horas semanais no SMART antes de gerar WBS.')
-    return
+    setError('Defina horas semanais no SMART antes de gerar WBS.');
+    return;
   }
 
-  clearError()
-  
-  loading.value = true
-  loadingMessage.value = 'Gerando WBS a partir do objetivo SMART...'
+  clearError();
+
+  loading.value = true;
+  loadingMessage.value = 'Gerando WBS a partir do objetivo SMART...';
 
   try {
-    const { $api } = useNuxtApp() as any
+    const { $api } = useNuxtApp() as any;
     const response = await $api.post(`/projects/${props.projectId}/generate-wbs`, {
       specific: smartObjective.value.specific,
       measurable: smartObjective.value.measurable,
@@ -671,178 +741,181 @@ async function generateWBS() {
       relevant: smartObjective.value.relevant,
       temporal: smartObjective.value.temporal,
       weeklyHours,
-    })
+    });
 
-    const responseData = response.data || {}
-    const nodes = responseData.nodes || responseData.wbs || (Array.isArray(responseData) ? responseData : [])
+    const responseData = response.data || {};
+    const nodes =
+      responseData.nodes || responseData.wbs || (Array.isArray(responseData) ? responseData : []);
 
     if (!Array.isArray(nodes)) {
-      throw new Error('Resposta inválida da geração WBS')
+      throw new Error('Resposta inválida da geração WBS');
     }
 
-    wbsNodes.value = nodes
-    wbsValidation.value = responseData.validation || null
-    budgetValidation.value = responseData.budgetValidation || null
-    phase.value = 3
+    wbsNodes.value = nodes;
+    wbsValidation.value = responseData.validation || null;
+    budgetValidation.value = responseData.budgetValidation || null;
+    phase.value = 3;
 
     // Validate
     if (!wbsValidation.value) {
       try {
         const valResponse = await $api.post(`/projects/${props.projectId}/wbs/validate`, {
-          nodes: wbsNodes.value
-        })
-        wbsValidation.value = valResponse.data
+          nodes: wbsNodes.value,
+        });
+        wbsValidation.value = valResponse.data;
       } catch {
-        wbsValidation.value = null
+        wbsValidation.value = null;
       }
     }
   } catch (error) {
-    console.error('Erro ao gerar WBS:', error)
-    alert('Erro ao gerar WBS. Tente novamente.')
+    console.error('Erro ao gerar WBS:', error);
+    alert('Erro ao gerar WBS. Tente novamente.');
   } finally {
-    loading.value = false
+    loading.value = false;
   }
 }
 
 async function convertAndClose() {
   if (!props.projectId || String(props.projectId).trim() === 'undefined') {
-    setError('❌ Erro: Project ID não definido. Salve o projeto antes de converter para tarefas.')
-    return
+    setError('❌ Erro: Project ID não definido. Salve o projeto antes de converter para tarefas.');
+    return;
   }
 
   if (budgetValidation.value?.overBudget) {
-    setError('Resolva o estouro de budget da WBS antes de converter para micro-tarefas.')
-    return
+    setError('Resolva o estouro de budget da WBS antes de converter para micro-tarefas.');
+    return;
   }
 
-  clearError()
-  
-  loading.value = true
-  loadingMessage.value = 'Convertendo WBS em tarefas...'
+  clearError();
+
+  loading.value = true;
+  loadingMessage.value = 'Convertendo WBS em tarefas...';
 
   try {
-    const { $api } = useNuxtApp() as any
+    const { $api } = useNuxtApp() as any;
     // Save WBS first
     await $api.post(`/projects/${props.projectId}/save-wbs`, {
-      nodes: wbsNodes.value
-    })
+      nodes: wbsNodes.value,
+    });
     // Convert to tasks
     await $api.post(`/projects/${props.projectId}/wbs/convert-to-tasks`, {
-      nodes: wbsNodes.value
-    })
+      nodes: wbsNodes.value,
+    });
 
     // Emit SMART objective if generated
     if (smartObjective.value) {
-      emit('objective-generated', smartObjective.value)
+      emit('objective-generated', smartObjective.value);
     }
-    emit('wbs-generated')
-    handleClose()
+    emit('wbs-generated');
+    handleClose();
   } catch (error) {
-    console.error('Erro ao converter WBS em tarefas:', error)
-    alert('Erro ao converter WBS em tarefas. Tente novamente.')
+    console.error('Erro ao converter WBS em tarefas:', error);
+    alert('Erro ao converter WBS em tarefas. Tente novamente.');
   } finally {
-    loading.value = false
+    loading.value = false;
   }
 }
 
 async function saveWBSAndClose() {
   if (!props.projectId || String(props.projectId).trim() === 'undefined') {
-    setError('❌ Erro: Project ID não definido. Salve o projeto antes de salvar WBS.')
-    return
+    setError('❌ Erro: Project ID não definido. Salve o projeto antes de salvar WBS.');
+    return;
   }
 
   if (budgetValidation.value?.overBudget) {
-    setError('Resolva o estouro de budget da WBS antes de salvar.')
-    return
+    setError('Resolva o estouro de budget da WBS antes de salvar.');
+    return;
   }
 
-  clearError()
-  
-  loading.value = true
-  loadingMessage.value = 'Salvando WBS...'
+  clearError();
+
+  loading.value = true;
+  loadingMessage.value = 'Salvando WBS...';
 
   try {
-    const { $api } = useNuxtApp() as any
+    const { $api } = useNuxtApp() as any;
     await $api.post(`/projects/${props.projectId}/save-wbs`, {
-      nodes: wbsNodes.value
-    })
+      nodes: wbsNodes.value,
+    });
 
     if (smartObjective.value) {
-      emit('objective-generated', smartObjective.value)
+      emit('objective-generated', smartObjective.value);
     }
-    emit('wbs-generated')
-    handleClose()
+    emit('wbs-generated');
+    handleClose();
   } catch (error) {
-    console.error('Erro ao salvar WBS:', error)
-    alert('Erro ao salvar WBS. Tente novamente.')
+    console.error('Erro ao salvar WBS:', error);
+    alert('Erro ao salvar WBS. Tente novamente.');
   } finally {
-    loading.value = false
+    loading.value = false;
   }
 }
 
 function saveAndClose() {
   if (smartObjective.value) {
-    emit('objective-generated', smartObjective.value)
+    emit('objective-generated', smartObjective.value);
   }
-  handleClose()
+  handleClose();
 }
 
 async function resolveBudget(strategy: 'normalize' | 'reject') {
-  if (!props.projectId || !budgetValidation.value) return
+  if (!props.projectId || !budgetValidation.value) return;
 
-  resolvingBudget.value = true
+  resolvingBudget.value = true;
   try {
-    const { $api } = useNuxtApp() as any
+    const { $api } = useNuxtApp() as any;
     const response = await $api.post(`/projects/${props.projectId}/wbs/resolve-budget`, {
       nodes: wbsNodes.value,
       budgetHours: budgetValidation.value.budgetHours,
       strategy,
-    })
+    });
 
-    const data = response.data || {}
+    const data = response.data || {};
     if (strategy === 'reject') {
-      wbsNodes.value = []
-      wbsValidation.value = null
-      budgetValidation.value = null
-      phase.value = 2
-      setError('WBS rejeitada por excesso de budget. Ajuste/replaneje o SMART e gere novamente.')
-      return
+      wbsNodes.value = [];
+      wbsValidation.value = null;
+      budgetValidation.value = null;
+      phase.value = 2;
+      setError('WBS rejeitada por excesso de budget. Ajuste/replaneje o SMART e gere novamente.');
+      return;
     }
 
     if (Array.isArray(data.nodes)) {
-      wbsNodes.value = data.nodes
+      wbsNodes.value = data.nodes;
     }
-    wbsValidation.value = data.validation || wbsValidation.value
-    budgetValidation.value = data.budgetValidation || budgetValidation.value
+    wbsValidation.value = data.validation || wbsValidation.value;
+    budgetValidation.value = data.budgetValidation || budgetValidation.value;
 
     if (!budgetValidation.value?.overBudget) {
-      clearError()
+      clearError();
     }
   } catch (error) {
-    console.error('Erro ao resolver budget da WBS:', error)
-    setError('Não foi possível resolver o budget da WBS. Tente novamente.')
+    console.error('Erro ao resolver budget da WBS:', error);
+    setError('Não foi possível resolver o budget da WBS. Tente novamente.');
   } finally {
-    resolvingBudget.value = false
+    resolvingBudget.value = false;
   }
 }
 
 function handleClose() {
   // Reset
-  phase.value = 1
-  questions.value = []
-  answers.value = []
-  conversationId.value = ''
-  smartObjective.value = null
-  wbsNodes.value = []
-  wbsValidation.value = null
-  currentQuestionIndex.value = 0
-  currentAnswer.value = ''
-  suggestedAnswer.value = ''
-  answerEdited.value = false
-  budgetValidation.value = null
-  resolvingBudget.value = false
-  clearError()
-  isOpen.value = false
+  phase.value = 1;
+  questions.value = [];
+  answers.value = [];
+  conversationId.value = '';
+  smartObjective.value = null;
+  wbsNodes.value = [];
+  wbsValidation.value = null;
+  currentQuestionIndex.value = 0;
+  currentAnswer.value = '';
+  answerEdited.value = false;
+  aiFilled.value = false;
+  pendingSuggestion.value = '';
+  clearSuggestionError();
+  budgetValidation.value = null;
+  resolvingBudget.value = false;
+  clearError();
+  isOpen.value = false;
 }
 </script>
 
