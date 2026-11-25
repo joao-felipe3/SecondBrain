@@ -3350,8 +3350,8 @@
     "semantic_hash": ""
   },
   "Project/FRONTEND_REFACTORING_PLAN.md": {
-    "mtime": 1795407759.9456556,
-    "ast_hash": "4bc7a5d5ba244a1b4703a271c0c5f70a",
+    "mtime": 1795620815.1501594,
+    "ast_hash": "dd61d486dd3fc30750546445408a6f2c",
     "semantic_hash": ""
   },
   "Project/adr/004-validation-strategy.md": {
@@ -4870,8 +4870,8 @@
     "semantic_hash": ""
   },
   "Frontend/composables/features/useGrimoireBook.ts": {
-    "mtime": 1795407164.7654777,
-    "ast_hash": "9fcda57404e1dccfb4088ef78dae3f71",
+    "mtime": 1795620815.5645826,
+    "ast_hash": "96fc1aec866f9654c1de2ea86758b320",
     "semantic_hash": ""
   },
   "Frontend/composables/features/useProjectCreationGate.ts": {
@@ -4895,8 +4895,8 @@
     "semantic_hash": ""
   },
   "Frontend/tests/unit/grimoire-book.spec.ts": {
-    "mtime": 1795534029.136065,
-    "ast_hash": "17f647b5573ba9a97b26649ea922a32a",
+    "mtime": 1795620815.77486,
+    "ast_hash": "6126550563ea8df74121fd6df818b3e4",
     "semantic_hash": ""
   },
   "Frontend/tests/unit/project-creation-gate.spec.ts": {

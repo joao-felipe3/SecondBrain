@@ -6,7 +6,12 @@
       'is-locked': isLocked,
     }"
     :style="bookStyle"
+    :role="interactive ? 'button' : undefined"
+    :tabindex="interactive ? 0 : undefined"
+    :aria-label="ariaLabel"
     @click="handleClick"
+    @keydown.enter.prevent="handleKey"
+    @keydown.space.prevent="handleKey"
   >
     <!-- Lombada / Spine com vincos dourados -->
     <div class="book-spine">
@@ -66,7 +71,7 @@ const props = withDefaults(
 );
 
 const emit = defineEmits<{
-  (e: 'click', event: MouseEvent): void;
+  (e: 'click', event: Event): void;
 }>();
 
 function handleClick(event: MouseEvent) {
@@ -74,6 +79,21 @@ function handleClick(event: MouseEvent) {
     emit('click', event);
   }
 }
+
+// Enter/Espaço abrem o livro como um botão (teclado)
+function handleKey(event: KeyboardEvent) {
+  if (props.interactive) {
+    emit('click', event);
+  }
+}
+
+const ariaLabel = computed(() => {
+  const missions =
+    props.taskCount !== undefined
+      ? `, ${props.taskCount} ${props.taskCount === 1 ? 'missão' : 'missões'}`
+      : '';
+  return `Abrir livro ${props.title}${missions}`;
+});
 
 const bookStyle = computed(() => {
   return {
@@ -86,8 +106,9 @@ const bookStyle = computed(() => {
 .ui-grimoire-book {
   display: flex;
   position: relative;
-  width: 140px;
-  height: 200px;
+  /* Tamanho pode ser sobrescrito pelo pai (ex.: capas nas prateleiras da estante) */
+  width: var(--book-w, 140px);
+  height: var(--book-h, 200px);
   border-radius: 4px 8px 8px 4px;
   box-shadow:
     -3px 0 6px rgba(0, 0, 0, 0.4),
@@ -103,12 +124,29 @@ const bookStyle = computed(() => {
   cursor: pointer;
 }
 
-.ui-grimoire-book.is-interactive:hover {
+.ui-grimoire-book.is-interactive:hover,
+.ui-grimoire-book.is-interactive:focus-visible {
   transform: translateY(-8px) scale(1.03) rotate(-1deg);
   box-shadow:
     -4px 0 10px rgba(0, 0, 0, 0.5),
     8px 16px 28px rgba(0, 0, 0, 0.65),
     0 0 15px rgba(234, 179, 8, 0.3);
+}
+
+.ui-grimoire-book.is-interactive:focus-visible {
+  outline: 2px solid #fde047;
+  outline-offset: 4px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ui-grimoire-book {
+    transition: none;
+  }
+
+  .ui-grimoire-book.is-interactive:hover,
+  .ui-grimoire-book.is-interactive:focus-visible {
+    transform: none;
+  }
 }
 
 /* Lombada */

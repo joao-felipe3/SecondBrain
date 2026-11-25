@@ -11,18 +11,18 @@
 
 ## 📊 Resumo de Progresso do Frontend
 
-| Fase / Seção                                                               | Requisitos | Concluído  |    Status    |
-| -------------------------------------------------------------------------- | :--------: | :--------: | :----------: |
-| 🏛️ 1. Infraestrutura & Atomic Design Diegético (`components/ui/diegetic/`) |     12     |   12/12    |   🟢 100%    |
-| 🎨 2. Tokens CSS, HSL & Responsividade Dinâmica (<960px)                   |     8      |    8/8     |   🟢 100%    |
-| 🏰 3. Saguão Central da Guilda (`/`)                                       |     40     |   40/40    |   🟢 100%    |
-| ⚔️ 4. Mural de Contratos / Kanban (`/tasks`)                               |     10     |   10/10    |   🟢 100%    |
-| 📜 5. Sala de Arquivos & Grimórios (`/projects`)                           |     10     |    7/10    |   🟡 70.0%   |
-| 🗺️ 6. Sala do Astrolábio & Cartografia (`/calendar`)                       |     10     |    6/10    |   🟡 60.0%   |
-| 📋 7. Modais & Overlays Globais Diegéticos                                 |     10     |    7/10    |   🟡 70.0%   |
-| ⚙️ 8. Pinia Stores & Data Mapping RPG                                      |     6      |    5/6     |   🟡 83.3%   |
-| ⚡ 9. Otimização & Asset Pipeline                                          |     6      |    4/6     |   🟡 66.7%   |
-| **TOTAL**                                                                  |  **112**   | **99/112** | **🟡 88.4%** |
+| Fase / Seção                                                               | Requisitos |  Concluído  |    Status    |
+| -------------------------------------------------------------------------- | :--------: | :---------: | :----------: |
+| 🏛️ 1. Infraestrutura & Atomic Design Diegético (`components/ui/diegetic/`) |     12     |    12/12    |   🟢 100%    |
+| 🎨 2. Tokens CSS, HSL & Responsividade Dinâmica (<960px)                   |     8      |     8/8     |   🟢 100%    |
+| 🏰 3. Saguão Central da Guilda (`/`)                                       |     40     |    40/40    |   🟢 100%    |
+| ⚔️ 4. Mural de Contratos / Kanban (`/tasks`)                               |     10     |    10/10    |   🟢 100%    |
+| 📜 5. Sala de Arquivos & Grimórios (`/projects`)                           |     11     |    8/11     |   🟡 72.7%   |
+| 🗺️ 6. Sala do Astrolábio & Cartografia (`/calendar`)                       |     10     |    6/10     |   🟡 60.0%   |
+| 📋 7. Modais & Overlays Globais Diegéticos                                 |     10     |    7/10     |   🟡 70.0%   |
+| ⚙️ 8. Pinia Stores & Data Mapping RPG                                      |     6      |     5/6     |   🟡 83.3%   |
+| ⚡ 9. Otimização & Asset Pipeline                                          |     6      |     4/6     |   🟡 66.7%   |
+| **TOTAL**                                                                  |  **113**   | **100/113** | **🟡 88.5%** |
 
 ---
 
@@ -143,7 +143,7 @@
 
 ---
 
-## 📜 5. Sala de Arquivos & Grimórios (`/projects`) 🟡 EM PROGRESSO (7/10)
+## 📜 5. Sala de Arquivos & Grimórios (`/projects`) 🟡 EM PROGRESSO (8/11)
 
 - [x] Refatorar `pages/projects/index.vue` eliminando os componentes SVG pesados legados `BookShelf.vue` (24KB) e `WoodenTable.vue` (46KB).
 - [x] Criar container fluido `GrimoireShelf.vue` baseado em CSS Grid responsivo com textura de carvalho e entalhes rúnicos dourados (`projects-web.webp`).
@@ -157,6 +157,7 @@
 - [ ] Renderizar frascos de poções e ampulhetas na prateleira como indicadores visuais de saúde do projeto (EVM).
 - [x] Implementar visualização vertical de estante 3x5 scrollável para mobile (`GrimoireGridMobile.vue`).
 - [x] Validar a abertura direta de projetos via query params na URL (`/projects?projectId=...`).
+- [x] Livro em tela cheia ao selecionar um projeto (`GrimoireBookViewer.vue`): cada página é uma etapa do planejamento (reaproveita as páginas do `BookModal`), fitas por etapa, setas e ←/→, Esc devolve o foco, estado vazio sem planejamento, e "Editar projeto" abre o `BookModal` na mesma etapa.
 
 ---
 

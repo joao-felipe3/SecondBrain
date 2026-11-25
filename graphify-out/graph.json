@@ -1063,8 +1063,8 @@
       "source_location": "L70",
       "_origin": "ast",
       "id": "backend_package_devdependencies_eslint_js",
-      "community": 149,
-      "community_name": "devDependencies",
+      "community": 297,
+      "community_name": "@eslint/js",
       "norm_label": "@eslint/js"
     },
     {
@@ -1074,8 +1074,8 @@
       "source_location": "L70",
       "_origin": "ast",
       "id": "eslint_js",
-      "community": 149,
-      "community_name": "devDependencies",
+      "community": 297,
+      "community_name": "@eslint/js",
       "norm_label": "@eslint/js"
     },
     {
@@ -1085,8 +1085,8 @@
       "source_location": "L71",
       "_origin": "ast",
       "id": "backend_package_devdependencies_nestjs_cli",
-      "community": 149,
-      "community_name": "devDependencies",
+      "community": 299,
+      "community_name": "@nestjs/cli",
       "norm_label": "@nestjs/cli"
     },
     {
@@ -1096,8 +1096,8 @@
       "source_location": "L71",
       "_origin": "ast",
       "id": "nestjs_cli",
-      "community": 149,
-      "community_name": "devDependencies",
+      "community": 299,
+      "community_name": "@nestjs/cli",
       "norm_label": "@nestjs/cli"
     },
     {
@@ -1151,8 +1151,8 @@
       "source_location": "L74",
       "_origin": "ast",
       "id": "backend_package_devdependencies_swc_cli",
-      "community": 297,
-      "community_name": "@swc/cli",
+      "community": 149,
+      "community_name": "devDependencies",
       "norm_label": "@swc/cli"
     },
     {
@@ -1162,8 +1162,8 @@
       "source_location": "L74",
       "_origin": "ast",
       "id": "swc_cli",
-      "community": 297,
-      "community_name": "@swc/cli",
+      "community": 149,
+      "community_name": "devDependencies",
       "norm_label": "@swc/cli"
     },
     {
@@ -1437,8 +1437,8 @@
       "source_location": "L87",
       "_origin": "ast",
       "id": "backend_package_devdependencies_mongodb_memory_server",
-      "community": 295,
-      "community_name": "mongodb-memory-server",
+      "community": 149,
+      "community_name": "devDependencies",
       "norm_label": "mongodb-memory-server"
     },
     {
@@ -1448,8 +1448,8 @@
       "source_location": "L87",
       "_origin": "ast",
       "id": "mongodb_memory_server",
-      "community": 295,
-      "community_name": "mongodb-memory-server",
+      "community": 149,
+      "community_name": "devDependencies",
       "norm_label": "mongodb-memory-server"
     },
     {
@@ -5265,8 +5265,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_src_projects_controllers_projects_visualization_controller",
-      "community": 42,
-      "community_name": "projects.module.ts",
+      "community": 43,
+      "community_name": "projects-x-matrix.service.ts",
       "norm_label": "projects-visualization.controller.ts"
     },
     {
@@ -5277,7 +5277,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_controllers_projects_visualization_controller_projectsvisualizationcontroller",
       "community": 43,
-      "community_name": "ProjectsVisualizationController",
+      "community_name": "projects-x-matrix.service.ts",
       "norm_label": "projectsvisualizationcontroller"
     },
     {
@@ -5288,7 +5288,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_controllers_projects_visualization_controller_ts_apitags",
       "community": 43,
-      "community_name": "ProjectsVisualizationController",
+      "community_name": "projects-x-matrix.service.ts",
       "norm_label": "apitags"
     },
     {
@@ -5299,7 +5299,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_controllers_projects_visualization_controller_ts_controller",
       "community": 43,
-      "community_name": "ProjectsVisualizationController",
+      "community_name": "projects-x-matrix.service.ts",
       "norm_label": "controller"
     },
     {
@@ -5310,7 +5310,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_controllers_projects_visualization_controller_ts_get",
       "community": 43,
-      "community_name": "ProjectsVisualizationController",
+      "community_name": "projects-x-matrix.service.ts",
       "norm_label": "get"
     },
     {
@@ -5321,7 +5321,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_controllers_projects_visualization_controller_ts_apioperation",
       "community": 43,
-      "community_name": "ProjectsVisualizationController",
+      "community_name": "projects-x-matrix.service.ts",
       "norm_label": "apioperation"
     },
     {
@@ -5332,7 +5332,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_controllers_projects_visualization_controller_ts_apiresponse",
       "community": 43,
-      "community_name": "ProjectsVisualizationController",
+      "community_name": "projects-x-matrix.service.ts",
       "norm_label": "apiresponse"
     },
     {
@@ -5343,7 +5343,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_controllers_projects_visualization_controller_ts_param",
       "community": 43,
-      "community_name": "ProjectsVisualizationController",
+      "community_name": "projects-x-matrix.service.ts",
       "norm_label": "param"
     },
     {
@@ -5354,7 +5354,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_controllers_projects_visualization_controller_ts_query",
       "community": 43,
-      "community_name": "ProjectsVisualizationController",
+      "community_name": "projects-x-matrix.service.ts",
       "norm_label": "query"
     },
     {
@@ -5365,7 +5365,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_controllers_projects_visualization_controller_ts_post",
       "community": 43,
-      "community_name": "ProjectsVisualizationController",
+      "community_name": "projects-x-matrix.service.ts",
       "norm_label": "post"
     },
     {
@@ -5376,7 +5376,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_controllers_projects_visualization_controller_ts_body",
       "community": 43,
-      "community_name": "ProjectsVisualizationController",
+      "community_name": "projects-x-matrix.service.ts",
       "norm_label": "body"
     },
     {
@@ -5386,8 +5386,8 @@
       "source_location": "L9",
       "_origin": "ast",
       "id": "backend_src_projects_controllers_projects_visualization_controller_projectsvisualizationcontroller_constructor",
-      "community": 42,
-      "community_name": "projects.module.ts",
+      "community": 43,
+      "community_name": "projects-x-matrix.service.ts",
       "norm_label": ".constructor()"
     },
     {
@@ -5398,7 +5398,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_controllers_projects_visualization_controller_projectsvisualizationcontroller_getganttdata",
       "community": 43,
-      "community_name": "ProjectsVisualizationController",
+      "community_name": "projects-x-matrix.service.ts",
       "norm_label": ".getganttdata()"
     },
     {
@@ -5409,7 +5409,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_controllers_projects_visualization_controller_projectsvisualizationcontroller_getpertdiagramdata",
       "community": 43,
-      "community_name": "ProjectsVisualizationController",
+      "community_name": "projects-x-matrix.service.ts",
       "norm_label": ".getpertdiagramdata()"
     },
     {
@@ -5420,7 +5420,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_controllers_projects_visualization_controller_projectsvisualizationcontroller_createxmatrix",
       "community": 43,
-      "community_name": "ProjectsVisualizationController",
+      "community_name": "projects-x-matrix.service.ts",
       "norm_label": ".createxmatrix()"
     },
     {
@@ -5431,7 +5431,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_controllers_projects_visualization_controller_projectsvisualizationcontroller_getsavedxmatrix",
       "community": 43,
-      "community_name": "ProjectsVisualizationController",
+      "community_name": "projects-x-matrix.service.ts",
       "norm_label": ".getsavedxmatrix()"
     },
     {
@@ -5551,8 +5551,8 @@
       "source_location": "L32",
       "_origin": "ast",
       "id": "backend_src_projects_controllers_projects_wbs_controller_projectswbscontroller_constructor",
-      "community": 271,
-      "community_name": "AuditService",
+      "community": 279,
+      "community_name": "wbs/index.ts",
       "norm_label": ".constructor()"
     },
     {
@@ -5782,8 +5782,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "backend_src_projects_controllers_wave_and_risk_controller_ts_injectmodel",
-      "community": 168,
-      "community_name": "cpm.service.ts",
+      "community": 295,
+      "community_name": "CPMService",
       "norm_label": "injectmodel"
     },
     {
@@ -5859,8 +5859,8 @@
       "source_location": "L47",
       "_origin": "ast",
       "id": "backend_src_projects_controllers_wave_and_risk_controller_waveandriskcontroller_constructor",
-      "community": 168,
-      "community_name": "cpm.service.ts",
+      "community": 295,
+      "community_name": "CPMService",
       "norm_label": ".constructor()"
     },
     {
@@ -6508,8 +6508,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_src_projects_dto_gantt_dto",
-      "community": 80,
-      "community_name": "ProjectDocument",
+      "community": 295,
+      "community_name": "CPMService",
       "norm_label": "gantt.dto.ts"
     },
     {
@@ -6519,8 +6519,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_src_projects_dto_gantt_dto_gantttaskitem",
-      "community": 80,
-      "community_name": "ProjectDocument",
+      "community": 295,
+      "community_name": "CPMService",
       "norm_label": "gantttaskitem"
     },
     {
@@ -6530,8 +6530,8 @@
       "source_location": "L20",
       "_origin": "ast",
       "id": "backend_src_projects_dto_gantt_dto_ganttdependencyitem",
-      "community": 80,
-      "community_name": "ProjectDocument",
+      "community": 295,
+      "community_name": "CPMService",
       "norm_label": "ganttdependencyitem"
     },
     {
@@ -6541,8 +6541,8 @@
       "source_location": "L29",
       "_origin": "ast",
       "id": "backend_src_projects_dto_gantt_dto_ganttdataresponse",
-      "community": 42,
-      "community_name": "projects.module.ts",
+      "community": 295,
+      "community_name": "CPMService",
       "norm_label": "ganttdataresponse"
     },
     {
@@ -6552,8 +6552,8 @@
       "source_location": "L53",
       "_origin": "ast",
       "id": "backend_src_projects_dto_gantt_dto_ganttqueryoptions",
-      "community": 80,
-      "community_name": "ProjectDocument",
+      "community": 295,
+      "community_name": "CPMService",
       "norm_label": "ganttqueryoptions"
     },
     {
@@ -6563,8 +6563,8 @@
       "source_location": "L57",
       "_origin": "ast",
       "id": "backend_src_projects_dto_gantt_dto_gantttimewindow",
-      "community": 80,
-      "community_name": "ProjectDocument",
+      "community": 295,
+      "community_name": "CPMService",
       "norm_label": "gantttimewindow"
     },
     {
@@ -7290,7 +7290,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_dto_x_matrix_dto_xmatrixresponsedto",
       "community": 43,
-      "community_name": "ProjectsVisualizationController",
+      "community_name": "projects-x-matrix.service.ts",
       "norm_label": "xmatrixresponsedto"
     },
     {
@@ -7333,8 +7333,8 @@
       "source_location": "L3",
       "_origin": "ast",
       "id": "backend_src_projects_interfaces_drafts_interface_microtaskoutline",
-      "community": 49,
-      "community_name": "draft-processing.service.ts",
+      "community": 106,
+      "community_name": "MicroTaskDraft",
       "norm_label": "microtaskoutline"
     },
     {
@@ -7487,8 +7487,8 @@
       "source_location": "L109",
       "_origin": "ast",
       "id": "backend_src_projects_interfaces_drafts_interface_assignmilestonesparamsdto",
-      "community": 49,
-      "community_name": "draft-processing.service.ts",
+      "community": 106,
+      "community_name": "MicroTaskDraft",
       "norm_label": "assignmilestonesparamsdto"
     },
     {
@@ -8983,8 +8983,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_src_projects_projects_service",
-      "community": 42,
-      "community_name": "projects.module.ts",
+      "community": 73,
+      "community_name": "ProjectsService",
       "norm_label": "projects.service.ts"
     },
     {
@@ -9016,8 +9016,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "backend_src_projects_projects_service_ts_injectmodel",
-      "community": 42,
-      "community_name": "projects.module.ts",
+      "community": 295,
+      "community_name": "CPMService",
       "norm_label": "injectmodel"
     },
     {
@@ -9027,8 +9027,8 @@
       "source_location": "L16",
       "_origin": "ast",
       "id": "backend_src_projects_projects_service_projectsservice_constructor",
-      "community": 42,
-      "community_name": "projects.module.ts",
+      "community": 295,
+      "community_name": "CPMService",
       "norm_label": ".constructor()"
     },
     {
@@ -9039,7 +9039,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_projects_service_projectsservice_createxmatrix",
       "community": 43,
-      "community_name": "ProjectsVisualizationController",
+      "community_name": "projects-x-matrix.service.ts",
       "norm_label": ".createxmatrix()"
     },
     {
@@ -9050,7 +9050,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_projects_service_projectsservice_getsavedxmatrix",
       "community": 43,
-      "community_name": "ProjectsVisualizationController",
+      "community_name": "projects-x-matrix.service.ts",
       "norm_label": ".getsavedxmatrix()"
     },
     {
@@ -9060,8 +9060,8 @@
       "source_location": "L34",
       "_origin": "ast",
       "id": "backend_src_projects_projects_service_projectsservice_getganttdata",
-      "community": 42,
-      "community_name": "projects.module.ts",
+      "community": 295,
+      "community_name": "CPMService",
       "norm_label": ".getganttdata()"
     },
     {
@@ -9434,8 +9434,8 @@
       "source_location": "L34",
       "_origin": "ast",
       "id": "backend_src_projects_schemas_project_wave_schema_projectwaveschema",
-      "community": 148,
-      "community_name": "ProjectWaveDocument",
+      "community": 42,
+      "community_name": "projects.module.ts",
       "norm_label": "projectwaveschema"
     },
     {
@@ -9599,8 +9599,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_src_projects_schemas_x_matrix_snapshot_schema",
-      "community": 42,
-      "community_name": "projects.module.ts",
+      "community": 43,
+      "community_name": "projects-x-matrix.service.ts",
       "norm_label": "x-matrix-snapshot.schema.ts"
     },
     {
@@ -9610,8 +9610,8 @@
       "source_location": "L4",
       "_origin": "ast",
       "id": "backend_src_projects_schemas_x_matrix_snapshot_schema_xmatrixsnapshotdocument",
-      "community": 42,
-      "community_name": "projects.module.ts",
+      "community": 43,
+      "community_name": "projects-x-matrix.service.ts",
       "norm_label": "xmatrixsnapshotdocument"
     },
     {
@@ -9621,8 +9621,8 @@
       "source_location": "L7",
       "_origin": "ast",
       "id": "backend_src_projects_schemas_x_matrix_snapshot_schema_xmatrixsnapshot",
-      "community": 42,
-      "community_name": "projects.module.ts",
+      "community": 43,
+      "community_name": "projects-x-matrix.service.ts",
       "norm_label": "xmatrixsnapshot"
     },
     {
@@ -9632,8 +9632,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "backend_src_projects_schemas_x_matrix_snapshot_schema_ts_schema",
-      "community": 42,
-      "community_name": "projects.module.ts",
+      "community": 43,
+      "community_name": "projects-x-matrix.service.ts",
       "norm_label": "schema"
     },
     {
@@ -9643,8 +9643,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "backend_src_projects_schemas_x_matrix_snapshot_schema_ts_prop",
-      "community": 42,
-      "community_name": "projects.module.ts",
+      "community": 43,
+      "community_name": "projects-x-matrix.service.ts",
       "norm_label": "prop"
     },
     {
@@ -9797,8 +9797,8 @@
       "source_location": "L14",
       "_origin": "ast",
       "id": "backend_src_projects_services_drafts_draft_generation_service_draftgenerationservice",
-      "community": 106,
-      "community_name": "MicroTaskDraft",
+      "community": 279,
+      "community_name": "wbs/index.ts",
       "norm_label": "draftgenerationservice"
     },
     {
@@ -9808,8 +9808,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "backend_src_projects_services_drafts_draft_generation_service_ts_injectable",
-      "community": 106,
-      "community_name": "MicroTaskDraft",
+      "community": 279,
+      "community_name": "wbs/index.ts",
       "norm_label": "injectable"
     },
     {
@@ -9896,8 +9896,8 @@
       "source_location": "L15",
       "_origin": "ast",
       "id": "backend_src_projects_services_drafts_draft_plan_generation_service_draftplangenerationservice_constructor",
-      "community": 106,
-      "community_name": "MicroTaskDraft",
+      "community": 141,
+      "community_name": "metrics-calculator.util.ts",
       "norm_label": ".constructor()"
     },
     {
@@ -9951,8 +9951,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_src_projects_services_drafts_draft_processing_service",
-      "community": 49,
-      "community_name": "draft-processing.service.ts",
+      "community": 106,
+      "community_name": "MicroTaskDraft",
       "norm_label": "draft-processing.service.ts"
     },
     {
@@ -9963,7 +9963,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_services_drafts_draft_processing_service_draftprocessingservice",
       "community": 49,
-      "community_name": "draft-processing.service.ts",
+      "community_name": "DraftProcessingService",
       "norm_label": "draftprocessingservice"
     },
     {
@@ -9974,7 +9974,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_services_drafts_draft_processing_service_ts_injectable",
       "community": 49,
-      "community_name": "draft-processing.service.ts",
+      "community_name": "DraftProcessingService",
       "norm_label": "injectable"
     },
     {
@@ -9985,7 +9985,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_services_drafts_draft_processing_service_draftprocessingservice_constructor",
       "community": 49,
-      "community_name": "draft-processing.service.ts",
+      "community_name": "DraftProcessingService",
       "norm_label": ".constructor()"
     },
     {
@@ -9996,7 +9996,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_services_drafts_draft_processing_service_draftprocessingservice_validateplannerplan",
       "community": 49,
-      "community_name": "draft-processing.service.ts",
+      "community_name": "DraftProcessingService",
       "norm_label": ".validateplannerplan()"
     },
     {
@@ -10007,7 +10007,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_services_drafts_draft_processing_service_draftprocessingservice_validatedrafts",
       "community": 49,
-      "community_name": "draft-processing.service.ts",
+      "community_name": "DraftProcessingService",
       "norm_label": ".validatedrafts()"
     },
     {
@@ -10018,7 +10018,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_services_drafts_draft_processing_service_draftprocessingservice_applythemeworkflowandprogression",
       "community": 49,
-      "community_name": "draft-processing.service.ts",
+      "community_name": "DraftProcessingService",
       "norm_label": ".applythemeworkflowandprogression()"
     },
     {
@@ -10029,7 +10029,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_services_drafts_draft_processing_service_draftprocessingservice_groupdraftindicesbytheme",
       "community": 49,
-      "community_name": "draft-processing.service.ts",
+      "community_name": "DraftProcessingService",
       "norm_label": ".groupdraftindicesbytheme()"
     },
     {
@@ -10040,7 +10040,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_services_drafts_draft_processing_service_draftprocessingservice_buildthemeworkflow",
       "community": 49,
-      "community_name": "draft-processing.service.ts",
+      "community_name": "DraftProcessingService",
       "norm_label": ".buildthemeworkflow()"
     },
     {
@@ -10051,7 +10051,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_services_drafts_draft_processing_service_draftprocessingservice_getprogressivecognitivemode",
       "community": 49,
-      "community_name": "draft-processing.service.ts",
+      "community_name": "DraftProcessingService",
       "norm_label": ".getprogressivecognitivemode()"
     },
     {
@@ -10062,7 +10062,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_services_drafts_draft_processing_service_draftprocessingservice_applyworkflowtotheme",
       "community": 49,
-      "community_name": "draft-processing.service.ts",
+      "community_name": "DraftProcessingService",
       "norm_label": ".applyworkflowtotheme()"
     },
     {
@@ -10073,7 +10073,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_services_drafts_draft_processing_service_draftprocessingservice_applygoldilocksandmilestones",
       "community": 49,
-      "community_name": "draft-processing.service.ts",
+      "community_name": "DraftProcessingService",
       "norm_label": ".applygoldilocksandmilestones()"
     },
     {
@@ -10084,7 +10084,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_services_drafts_draft_processing_service_draftprocessingservice_getcheckpointindices",
       "community": 49,
-      "community_name": "draft-processing.service.ts",
+      "community_name": "DraftProcessingService",
       "norm_label": ".getcheckpointindices()"
     },
     {
@@ -10095,7 +10095,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_services_drafts_draft_processing_service_draftprocessingservice_assignmilestonesandcheckpoints",
       "community": 49,
-      "community_name": "draft-processing.service.ts",
+      "community_name": "DraftProcessingService",
       "norm_label": ".assignmilestonesandcheckpoints()"
     },
     {
@@ -10106,7 +10106,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_services_drafts_draft_processing_service_draftprocessingservice_normalizedraft",
       "community": 49,
-      "community_name": "draft-processing.service.ts",
+      "community_name": "DraftProcessingService",
       "norm_label": ".normalizedraft()"
     },
     {
@@ -12525,8 +12525,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_src_projects_services_visualization_gantt_service",
-      "community": 148,
-      "community_name": "ProjectWaveDocument",
+      "community": 295,
+      "community_name": "CPMService",
       "norm_label": "gantt.service.ts"
     },
     {
@@ -12536,8 +12536,8 @@
       "source_location": "L13",
       "_origin": "ast",
       "id": "backend_src_projects_services_visualization_gantt_service_ganttservice",
-      "community": 42,
-      "community_name": "projects.module.ts",
+      "community": 295,
+      "community_name": "CPMService",
       "norm_label": "ganttservice"
     },
     {
@@ -12547,8 +12547,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "backend_src_projects_services_visualization_gantt_service_ts_injectable",
-      "community": 42,
-      "community_name": "projects.module.ts",
+      "community": 295,
+      "community_name": "CPMService",
       "norm_label": "injectable"
     },
     {
@@ -12558,8 +12558,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "backend_src_projects_services_visualization_gantt_service_ts_injectmodel",
-      "community": 168,
-      "community_name": "cpm.service.ts",
+      "community": 295,
+      "community_name": "CPMService",
       "norm_label": "injectmodel"
     },
     {
@@ -12569,8 +12569,8 @@
       "source_location": "L14",
       "_origin": "ast",
       "id": "backend_src_projects_services_visualization_gantt_service_ganttservice_constructor",
-      "community": 168,
-      "community_name": "cpm.service.ts",
+      "community": 295,
+      "community_name": "CPMService",
       "norm_label": ".constructor()"
     },
     {
@@ -12580,8 +12580,8 @@
       "source_location": "L24",
       "_origin": "ast",
       "id": "backend_src_projects_services_visualization_gantt_service_ganttservice_getganttdata",
-      "community": 42,
-      "community_name": "projects.module.ts",
+      "community": 295,
+      "community_name": "CPMService",
       "norm_label": ".getganttdata()"
     },
     {
@@ -12591,8 +12591,8 @@
       "source_location": "L65",
       "_origin": "ast",
       "id": "backend_src_projects_services_visualization_gantt_service_ganttservice_validateandgetproject",
-      "community": 42,
-      "community_name": "projects.module.ts",
+      "community": 295,
+      "community_name": "CPMService",
       "norm_label": ".validateandgetproject()"
     },
     {
@@ -12602,8 +12602,8 @@
       "source_location": "L82",
       "_origin": "ast",
       "id": "backend_src_projects_services_visualization_gantt_service_ganttservice_fetchganttrawdata",
-      "community": 42,
-      "community_name": "projects.module.ts",
+      "community": 295,
+      "community_name": "CPMService",
       "norm_label": ".fetchganttrawdata()"
     },
     {
@@ -12613,8 +12613,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_src_projects_services_visualization_index",
-      "community": 42,
-      "community_name": "projects.module.ts",
+      "community": 43,
+      "community_name": "projects-x-matrix.service.ts",
       "norm_label": "visualization/index.ts"
     },
     {
@@ -12624,8 +12624,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_src_projects_services_visualization_pert_diagram_service",
-      "community": 168,
-      "community_name": "cpm.service.ts",
+      "community": 295,
+      "community_name": "CPMService",
       "norm_label": "pert-diagram.service.ts"
     },
     {
@@ -12635,8 +12635,8 @@
       "source_location": "L11",
       "_origin": "ast",
       "id": "backend_src_projects_services_visualization_pert_diagram_service_pertdiagramservice",
-      "community": 42,
-      "community_name": "projects.module.ts",
+      "community": 295,
+      "community_name": "CPMService",
       "norm_label": "pertdiagramservice"
     },
     {
@@ -12646,8 +12646,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "backend_src_projects_services_visualization_pert_diagram_service_ts_injectable",
-      "community": 42,
-      "community_name": "projects.module.ts",
+      "community": 295,
+      "community_name": "CPMService",
       "norm_label": "injectable"
     },
     {
@@ -12657,8 +12657,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "backend_src_projects_services_visualization_pert_diagram_service_ts_injectmodel",
-      "community": 168,
-      "community_name": "cpm.service.ts",
+      "community": 295,
+      "community_name": "CPMService",
       "norm_label": "injectmodel"
     },
     {
@@ -12668,8 +12668,8 @@
       "source_location": "L12",
       "_origin": "ast",
       "id": "backend_src_projects_services_visualization_pert_diagram_service_pertdiagramservice_constructor",
-      "community": 168,
-      "community_name": "cpm.service.ts",
+      "community": 295,
+      "community_name": "CPMService",
       "norm_label": ".constructor()"
     },
     {
@@ -12690,8 +12690,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_src_projects_services_visualization_projects_x_matrix_service",
-      "community": 42,
-      "community_name": "projects.module.ts",
+      "community": 43,
+      "community_name": "projects-x-matrix.service.ts",
       "norm_label": "projects-x-matrix.service.ts"
     },
     {
@@ -12701,8 +12701,8 @@
       "source_location": "L12",
       "_origin": "ast",
       "id": "backend_src_projects_services_visualization_projects_x_matrix_service_projectsxmatrixservice",
-      "community": 42,
-      "community_name": "projects.module.ts",
+      "community": 43,
+      "community_name": "projects-x-matrix.service.ts",
       "norm_label": "projectsxmatrixservice"
     },
     {
@@ -12712,8 +12712,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "backend_src_projects_services_visualization_projects_x_matrix_service_ts_injectable",
-      "community": 42,
-      "community_name": "projects.module.ts",
+      "community": 43,
+      "community_name": "projects-x-matrix.service.ts",
       "norm_label": "injectable"
     },
     {
@@ -12723,8 +12723,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "backend_src_projects_services_visualization_projects_x_matrix_service_ts_injectmodel",
-      "community": 42,
-      "community_name": "projects.module.ts",
+      "community": 43,
+      "community_name": "projects-x-matrix.service.ts",
       "norm_label": "injectmodel"
     },
     {
@@ -12734,8 +12734,8 @@
       "source_location": "L13",
       "_origin": "ast",
       "id": "backend_src_projects_services_visualization_projects_x_matrix_service_projectsxmatrixservice_constructor",
-      "community": 42,
-      "community_name": "projects.module.ts",
+      "community": 43,
+      "community_name": "projects-x-matrix.service.ts",
       "norm_label": ".constructor()"
     },
     {
@@ -12746,7 +12746,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_services_visualization_projects_x_matrix_service_projectsxmatrixservice_createxmatrix",
       "community": 43,
-      "community_name": "ProjectsVisualizationController",
+      "community_name": "projects-x-matrix.service.ts",
       "norm_label": ".createxmatrix()"
     },
     {
@@ -12757,7 +12757,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_services_visualization_projects_x_matrix_service_projectsxmatrixservice_validateandgetproject",
       "community": 43,
-      "community_name": "ProjectsVisualizationController",
+      "community_name": "projects-x-matrix.service.ts",
       "norm_label": ".validateandgetproject()"
     },
     {
@@ -12768,7 +12768,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_services_visualization_projects_x_matrix_service_projectsxmatrixservice_fetchtasksandwaves",
       "community": 43,
-      "community_name": "ProjectsVisualizationController",
+      "community_name": "projects-x-matrix.service.ts",
       "norm_label": ".fetchtasksandwaves()"
     },
     {
@@ -12779,7 +12779,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_services_visualization_projects_x_matrix_service_projectsxmatrixservice_getsavedxmatrix",
       "community": 43,
-      "community_name": "ProjectsVisualizationController",
+      "community_name": "projects-x-matrix.service.ts",
       "norm_label": ".getsavedxmatrix()"
     },
     {
@@ -13372,8 +13372,8 @@
       "source_location": "L26",
       "_origin": "ast",
       "id": "backend_src_projects_services_wbs_conversion_task_conversion_helper_service_taskconversionhelperservice_constructor",
-      "community": 1,
-      "community_name": "WBSNodeDto",
+      "community": 279,
+      "community_name": "wbs/index.ts",
       "norm_label": ".constructor()"
     },
     {
@@ -13603,8 +13603,8 @@
       "source_location": "L24",
       "_origin": "ast",
       "id": "backend_src_projects_services_wbs_conversion_wbs_conversion_orchestrator_service_wbsconversionorchestrationservice_constructor",
-      "community": 1,
-      "community_name": "WBSNodeDto",
+      "community": 279,
+      "community_name": "wbs/index.ts",
       "norm_label": ".constructor()"
     },
     {
@@ -13669,8 +13669,8 @@
       "source_location": "L254",
       "_origin": "ast",
       "id": "backend_src_projects_services_wbs_conversion_wbs_conversion_orchestrator_service_wbsconversionorchestrationservice_processdrafts",
-      "community": 49,
-      "community_name": "draft-processing.service.ts",
+      "community": 70,
+      "community_name": "WbsConversionOrchestrationService",
       "norm_label": ".processdrafts()"
     },
     {
@@ -14120,8 +14120,8 @@
       "source_location": "L70",
       "_origin": "ast",
       "id": "backend_src_projects_services_wbs_core_wbs_persistence_service_wbspersistenceservice_get",
-      "community": 271,
-      "community_name": "AuditService",
+      "community": 279,
+      "community_name": "wbs/index.ts",
       "norm_label": ".get()"
     },
     {
@@ -14340,8 +14340,8 @@
       "source_location": "L16",
       "_origin": "ast",
       "id": "backend_src_projects_services_wbs_core_wbs_service_wbsservice",
-      "community": 271,
-      "community_name": "AuditService",
+      "community": 279,
+      "community_name": "wbs/index.ts",
       "norm_label": "wbsservice"
     },
     {
@@ -14351,8 +14351,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "backend_src_projects_services_wbs_core_wbs_service_ts_injectable",
-      "community": 271,
-      "community_name": "AuditService",
+      "community": 279,
+      "community_name": "wbs/index.ts",
       "norm_label": "injectable"
     },
     {
@@ -14373,8 +14373,8 @@
       "source_location": "L24",
       "_origin": "ast",
       "id": "backend_src_projects_services_wbs_core_wbs_service_wbsservice_validatewbsnode",
-      "community": 271,
-      "community_name": "AuditService",
+      "community": 279,
+      "community_name": "wbs/index.ts",
       "norm_label": ".validatewbsnode()"
     },
     {
@@ -14384,8 +14384,8 @@
       "source_location": "L47",
       "_origin": "ast",
       "id": "backend_src_projects_services_wbs_core_wbs_service_wbsservice_validatewbs",
-      "community": 271,
-      "community_name": "AuditService",
+      "community": 279,
+      "community_name": "wbs/index.ts",
       "norm_label": ".validatewbs()"
     },
     {
@@ -14406,8 +14406,8 @@
       "source_location": "L78",
       "_origin": "ast",
       "id": "backend_src_projects_services_wbs_core_wbs_service_wbsservice_getleafnodeswithpaths",
-      "community": 271,
-      "community_name": "AuditService",
+      "community": 279,
+      "community_name": "wbs/index.ts",
       "norm_label": ".getleafnodeswithpaths()"
     },
     {
@@ -14450,8 +14450,8 @@
       "source_location": "L103",
       "_origin": "ast",
       "id": "backend_src_projects_services_wbs_core_wbs_service_wbsservice_getwbs",
-      "community": 271,
-      "community_name": "AuditService",
+      "community": 279,
+      "community_name": "wbs/index.ts",
       "norm_label": ".getwbs()"
     },
     {
@@ -15067,7 +15067,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_services_wbs_utils_index",
       "community": 49,
-      "community_name": "draft-processing.service.ts",
+      "community_name": "DraftProcessingService",
       "norm_label": "wbs/utils/index.ts"
     },
     {
@@ -15374,8 +15374,8 @@
       "source_location": "L75",
       "_origin": "ast",
       "id": "backend_src_projects_services_wbs_utils_normalizers_util_normalizemicrotasktype",
-      "community": 49,
-      "community_name": "draft-processing.service.ts",
+      "community": 141,
+      "community_name": "metrics-calculator.util.ts",
       "norm_label": "normalizemicrotasktype()"
     },
     {
@@ -15386,7 +15386,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_services_wbs_utils_normalizers_util_normalizecognitivemode",
       "community": 49,
-      "community_name": "draft-processing.service.ts",
+      "community_name": "DraftProcessingService",
       "norm_label": "normalizecognitivemode()"
     },
     {
@@ -15408,7 +15408,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_services_wbs_utils_normalizers_util_mapmicrotasktypetocognitivemode",
       "community": 49,
-      "community_name": "draft-processing.service.ts",
+      "community_name": "DraftProcessingService",
       "norm_label": "mapmicrotasktypetocognitivemode()"
     },
     {
@@ -15419,7 +15419,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_services_wbs_utils_normalizers_util_mapcognitivemodetocontexttag",
       "community": 49,
-      "community_name": "draft-processing.service.ts",
+      "community_name": "DraftProcessingService",
       "norm_label": "mapcognitivemodetocontexttag()"
     },
     {
@@ -15551,7 +15551,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_services_wbs_utils_wbs_helpers_util",
       "community": 49,
-      "community_name": "draft-processing.service.ts",
+      "community_name": "DraftProcessingService",
       "norm_label": "wbs-helpers.util.ts"
     },
     {
@@ -15562,7 +15562,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_services_wbs_utils_wbs_helpers_util_infercognitivetype",
       "community": 49,
-      "community_name": "draft-processing.service.ts",
+      "community_name": "DraftProcessingService",
       "norm_label": "infercognitivetype()"
     },
     {
@@ -15573,7 +15573,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_services_wbs_utils_wbs_helpers_util_extractdefinitionofdone",
       "community": 49,
-      "community_name": "draft-processing.service.ts",
+      "community_name": "DraftProcessingService",
       "norm_label": "extractdefinitionofdone()"
     },
     {
@@ -15584,7 +15584,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_services_wbs_utils_wbs_helpers_util_extractcheckliststeps",
       "community": 49,
-      "community_name": "draft-processing.service.ts",
+      "community_name": "DraftProcessingService",
       "norm_label": "extractcheckliststeps()"
     },
     {
@@ -15595,7 +15595,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_services_wbs_utils_wbs_helpers_util_getleafnodeswithpaths",
       "community": 49,
-      "community_name": "draft-processing.service.ts",
+      "community_name": "DraftProcessingService",
       "norm_label": "getleafnodeswithpaths()"
     },
     {
@@ -15606,7 +15606,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_services_wbs_utils_wbs_helpers_util_computeleafhours",
       "community": 49,
-      "community_name": "draft-processing.service.ts",
+      "community_name": "DraftProcessingService",
       "norm_label": "computeleafhours()"
     },
     {
@@ -15617,7 +15617,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_services_wbs_utils_wbs_helpers_util_shrinkleaftaskstotargethours",
       "community": 49,
-      "community_name": "draft-processing.service.ts",
+      "community_name": "DraftProcessingService",
       "norm_label": "shrinkleaftaskstotargethours()"
     },
     {
@@ -18267,8 +18267,8 @@
       "source_location": "L5",
       "_origin": "ast",
       "id": "backend_src_tasks_dto_dependencies_upsert_dependency_dto_upsertdependencydto",
-      "community": 168,
-      "community_name": "cpm.service.ts",
+      "community": 295,
+      "community_name": "CPMService",
       "norm_label": "upsertdependencydto"
     },
     {
@@ -18278,8 +18278,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "backend_src_tasks_dto_dependencies_upsert_dependency_dto_ts_apiproperty",
-      "community": 168,
-      "community_name": "cpm.service.ts",
+      "community": 295,
+      "community_name": "CPMService",
       "norm_label": "apiproperty"
     },
     {
@@ -18289,8 +18289,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "backend_src_tasks_dto_dependencies_upsert_dependency_dto_ts_isstring",
-      "community": 168,
-      "community_name": "cpm.service.ts",
+      "community": 295,
+      "community_name": "CPMService",
       "norm_label": "isstring"
     },
     {
@@ -18300,8 +18300,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "backend_src_tasks_dto_dependencies_upsert_dependency_dto_ts_isnotempty",
-      "community": 168,
-      "community_name": "cpm.service.ts",
+      "community": 295,
+      "community_name": "CPMService",
       "norm_label": "isnotempty"
     },
     {
@@ -18311,8 +18311,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "backend_src_tasks_dto_dependencies_upsert_dependency_dto_ts_isoptional",
-      "community": 168,
-      "community_name": "cpm.service.ts",
+      "community": 295,
+      "community_name": "CPMService",
       "norm_label": "isoptional"
     },
     {
@@ -18322,8 +18322,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "backend_src_tasks_dto_dependencies_upsert_dependency_dto_ts_isboolean",
-      "community": 168,
-      "community_name": "cpm.service.ts",
+      "community": 295,
+      "community_name": "CPMService",
       "norm_label": "isboolean"
     },
     {
@@ -21974,8 +21974,8 @@
       "source_location": "L34",
       "_origin": "ast",
       "id": "backend_src_tasks_services_dependencies_cpm_service_cpmservice",
-      "community": 168,
-      "community_name": "cpm.service.ts",
+      "community": 295,
+      "community_name": "CPMService",
       "norm_label": "cpmservice"
     },
     {
@@ -21985,8 +21985,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "backend_src_tasks_services_dependencies_cpm_service_ts_injectable",
-      "community": 168,
-      "community_name": "cpm.service.ts",
+      "community": 295,
+      "community_name": "CPMService",
       "norm_label": "injectable"
     },
     {
@@ -21996,8 +21996,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "backend_src_tasks_services_dependencies_cpm_service_ts_injectmodel",
-      "community": 168,
-      "community_name": "cpm.service.ts",
+      "community": 295,
+      "community_name": "CPMService",
       "norm_label": "injectmodel"
     },
     {
@@ -22007,8 +22007,8 @@
       "source_location": "L37",
       "_origin": "ast",
       "id": "backend_src_tasks_services_dependencies_cpm_service_cpmservice_constructor",
-      "community": 168,
-      "community_name": "cpm.service.ts",
+      "community": 295,
+      "community_name": "CPMService",
       "norm_label": ".constructor()"
     },
     {
@@ -22018,8 +22018,8 @@
       "source_location": "L44",
       "_origin": "ast",
       "id": "backend_src_tasks_services_dependencies_cpm_service_cpmservice_adddependency",
-      "community": 168,
-      "community_name": "cpm.service.ts",
+      "community": 295,
+      "community_name": "CPMService",
       "norm_label": ".adddependency()"
     },
     {
@@ -22029,8 +22029,8 @@
       "source_location": "L65",
       "_origin": "ast",
       "id": "backend_src_tasks_services_dependencies_cpm_service_cpmservice_upsertdependencies",
-      "community": 168,
-      "community_name": "cpm.service.ts",
+      "community": 295,
+      "community_name": "CPMService",
       "norm_label": ".upsertdependencies()"
     },
     {
@@ -22073,8 +22073,8 @@
       "source_location": "L127",
       "_origin": "ast",
       "id": "backend_src_tasks_services_dependencies_cpm_service_cpmservice_normalizerelationship",
-      "community": 168,
-      "community_name": "cpm.service.ts",
+      "community": 295,
+      "community_name": "CPMService",
       "norm_label": ".normalizerelationship()"
     },
     {
@@ -22106,8 +22106,8 @@
       "source_location": "L139",
       "_origin": "ast",
       "id": "backend_src_tasks_services_dependencies_cpm_service_cpmservice_createbulkwriteoperations",
-      "community": 168,
-      "community_name": "cpm.service.ts",
+      "community": 295,
+      "community_name": "CPMService",
       "norm_label": "._createbulkwriteoperations()"
     },
     {
@@ -22513,8 +22513,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_src_tasks_services_dependencies_index",
-      "community": 168,
-      "community_name": "cpm.service.ts",
+      "community": 295,
+      "community_name": "CPMService",
       "norm_label": "services/dependencies/index.ts"
     },
     {
@@ -28421,7 +28421,7 @@
       "_origin": "ast",
       "id": "backend_tests_unit_projects_controllers_projects_visualization_controller_spec",
       "community": 43,
-      "community_name": "ProjectsVisualizationController",
+      "community_name": "projects-x-matrix.service.ts",
       "norm_label": "projects-visualization.controller.spec.ts"
     },
     {
@@ -28553,7 +28553,7 @@
       "_origin": "ast",
       "id": "backend_tests_unit_projects_services_drafts_draft_processing_service_spec",
       "community": 49,
-      "community_name": "draft-processing.service.ts",
+      "community_name": "DraftProcessingService",
       "norm_label": "draft-processing.service.spec.ts"
     },
     {
@@ -28739,8 +28739,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_tests_unit_projects_services_visualization_gantt_service_spec",
-      "community": 168,
-      "community_name": "cpm.service.ts",
+      "community": 295,
+      "community_name": "CPMService",
       "norm_label": "services/visualization/gantt.service.spec.ts"
     },
     {
@@ -28750,8 +28750,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_tests_unit_projects_services_visualization_pert_diagram_service_spec",
-      "community": 168,
-      "community_name": "cpm.service.ts",
+      "community": 295,
+      "community_name": "CPMService",
       "norm_label": "services/visualization/pert-diagram.service.spec.ts"
     },
     {
@@ -28949,7 +28949,7 @@
       "_origin": "ast",
       "id": "backend_tests_unit_projects_services_wbs_utils_wbs_helpers_util_spec",
       "community": 49,
-      "community_name": "draft-processing.service.ts",
+      "community_name": "DraftProcessingService",
       "norm_label": "wbs-helpers.util.spec.ts"
     },
     {
@@ -29025,8 +29025,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_tests_unit_projects_visualization_pert_diagram_service_spec",
-      "community": 168,
-      "community_name": "cpm.service.ts",
+      "community": 295,
+      "community_name": "CPMService",
       "norm_label": "projects/visualization/pert-diagram.service.spec.ts"
     },
     {
@@ -29036,8 +29036,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_tests_unit_projects_visualization_projects_x_matrix_service_spec",
-      "community": 42,
-      "community_name": "projects.module.ts",
+      "community": 43,
+      "community_name": "projects-x-matrix.service.ts",
       "norm_label": "projects-x-matrix.service.spec.ts"
     },
     {
@@ -29124,8 +29124,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_tests_unit_tasks_controllers_tasks_controller_spec",
-      "community": 168,
-      "community_name": "cpm.service.ts",
+      "community": 295,
+      "community_name": "CPMService",
       "norm_label": "controllers/tasks.controller.spec.ts"
     },
     {
@@ -55895,7 +55895,7 @@
       "label": "plannedProject",
       "file_type": "code",
       "source_file": "Frontend/tests/unit/grimoire-book.spec.ts",
-      "source_location": "L42",
+      "source_location": "L41",
       "_origin": "ast",
       "id": "frontend_tests_unit_grimoire_book_spec_plannedproject",
       "community": 25,
@@ -55906,7 +55906,7 @@
       "label": "emptyProject",
       "file_type": "code",
       "source_file": "Frontend/tests/unit/grimoire-book.spec.ts",
-      "source_location": "L49",
+      "source_location": "L48",
       "_origin": "ast",
       "id": "frontend_tests_unit_grimoire_book_spec_emptyproject",
       "community": 25,
@@ -55917,7 +55917,7 @@
       "label": "mountViewer()",
       "file_type": "code",
       "source_file": "Frontend/tests/unit/grimoire-book.spec.ts",
-      "source_location": "L60",
+      "source_location": "L59",
       "_origin": "ast",
       "id": "frontend_tests_unit_grimoire_book_spec_mountviewer",
       "community": 25,
@@ -55928,7 +55928,7 @@
       "label": "pressKey()",
       "file_type": "code",
       "source_file": "Frontend/tests/unit/grimoire-book.spec.ts",
-      "source_location": "L69",
+      "source_location": "L68",
       "_origin": "ast",
       "id": "frontend_tests_unit_grimoire_book_spec_presskey",
       "community": 25,
@@ -195482,7 +195482,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "Frontend/tests/unit/grimoire-book.spec.ts",
-      "source_location": "L49",
+      "source_location": "L48",
       "weight": 1.0,
       "_origin": "ast",
       "source": "frontend_tests_unit_grimoire_book_spec",
@@ -195493,7 +195493,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "Frontend/tests/unit/grimoire-book.spec.ts",
-      "source_location": "L60",
+      "source_location": "L59",
       "weight": 1.0,
       "_origin": "ast",
       "source": "frontend_tests_unit_grimoire_book_spec",
@@ -195504,7 +195504,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "Frontend/tests/unit/grimoire-book.spec.ts",
-      "source_location": "L42",
+      "source_location": "L41",
       "weight": 1.0,
       "_origin": "ast",
       "source": "frontend_tests_unit_grimoire_book_spec",
@@ -195515,7 +195515,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "Frontend/tests/unit/grimoire-book.spec.ts",
-      "source_location": "L69",
+      "source_location": "L68",
       "weight": 1.0,
       "_origin": "ast",
       "source": "frontend_tests_unit_grimoire_book_spec",
@@ -201764,5 +201764,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "1540db42810442ddd9bd0ea0fe5f3cb1c4dd5d71"
+  "built_at_commit": "d14addfee425abd443d1459b69f577674415f6eb"
 }

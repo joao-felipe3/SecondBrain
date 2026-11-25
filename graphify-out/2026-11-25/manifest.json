@@ -105,8 +105,8 @@
     "semantic_hash": ""
   },
   "Backend/src/ai/prompts/projects/planning.prompts.ts": {
-    "mtime": 1782581456.1130238,
-    "ast_hash": "d9b6d437ab5005de816c46b55d4a81a9",
+    "mtime": 1795579324.854398,
+    "ast_hash": "847ca86106097abae1e0b280f97e6649",
     "semantic_hash": ""
   },
   "Backend/src/ai/prompts/projects/rolling-wave.prompts.ts": {
@@ -265,8 +265,8 @@
     "semantic_hash": ""
   },
   "Backend/src/projects/dto/smart-objective.dto.ts": {
-    "mtime": 1784429438.2632627,
-    "ast_hash": "9482c039b0028b6b77af01a4275ddf61",
+    "mtime": 1795580003.140512,
+    "ast_hash": "ed34a4adf3d06e6788d452bbb44ca452",
     "semantic_hash": ""
   },
   "Backend/src/projects/dto/update-project.dto.ts": {
@@ -485,8 +485,8 @@
     "semantic_hash": ""
   },
   "Backend/src/projects/services/strategy/planning.service.ts": {
-    "mtime": 1787022803.5193741,
-    "ast_hash": "ec0f4bd9541df469062659f1848f0a15",
+    "mtime": 1795579460.2871737,
+    "ast_hash": "1c1fcf3f16cc80640e48e109c7cda792",
     "semantic_hash": ""
   },
   "Backend/src/projects/services/strategy/rolling-wave-planning.service.ts": {
@@ -1265,7 +1265,7 @@
     "semantic_hash": ""
   },
   "Backend/src/tasks/tasks.controller.ts": {
-    "mtime": 1795389156.5398805,
+    "mtime": 1795406152.433552,
     "ast_hash": "8d9cece2db66e0a87f125ff44c304101",
     "semantic_hash": ""
   },
@@ -1480,8 +1480,8 @@
     "semantic_hash": ""
   },
   "Backend/tests/unit/projects/services/strategy/planning.service.spec.ts": {
-    "mtime": 1784936056.3140123,
-    "ast_hash": "9221890fd220573b1c0fa83e3d68b767",
+    "mtime": 1795579417.4923701,
+    "ast_hash": "8ecc0d219af74a366c95fad14bca7415",
     "semantic_hash": ""
   },
   "Backend/tests/unit/projects/services/strategy/rolling-wave-planning.service.spec.ts": {
@@ -1675,7 +1675,7 @@
     "semantic_hash": ""
   },
   "Backend/tests/unit/tasks/controllers/tasks.controller.spec.ts": {
-    "mtime": 1795389156.5398805,
+    "mtime": 1795406152.433552,
     "ast_hash": "5149b180f91a7686a99c7c9398bbd317",
     "semantic_hash": ""
   },
@@ -1875,8 +1875,8 @@
     "semantic_hash": ""
   },
   "Frontend/components/features/projects/BookModal.vue": {
-    "mtime": 1787539172.8013842,
-    "ast_hash": "f8633b407f182fa8ced6f4398ae12330",
+    "mtime": 1795620729.7486672,
+    "ast_hash": "48b54390fed001ed216a9fc96b7df2d2",
     "semantic_hash": ""
   },
   "Frontend/components/features/projects/ProjectPanel.vue": {
@@ -1890,8 +1890,8 @@
     "semantic_hash": ""
   },
   "Frontend/components/features/projects/dialogs/ProjectPlannerDialog.vue": {
-    "mtime": 1776094583.1929965,
-    "ast_hash": "367eef17e254dbc642726b75435ec6ad",
+    "mtime": 1795579620.2678506,
+    "ast_hash": "8ba2bc867b8f5e8b5e346321806208a5",
     "semantic_hash": ""
   },
   "Frontend/components/features/projects/dialogs/conversion/ConversionActions.vue": {
@@ -2575,8 +2575,8 @@
     "semantic_hash": ""
   },
   "Frontend/composables/features/useProjectModal.ts": {
-    "mtime": 1780519839.8369792,
-    "ast_hash": "12c9e37c892170ecc586436614e4700f",
+    "mtime": 1795578144.8097882,
+    "ast_hash": "a2882f9e93a6d3376e0886c8bfc77727",
     "semantic_hash": ""
   },
   "Frontend/composables/features/useProjects.ts": {
@@ -2610,8 +2610,8 @@
     "semantic_hash": ""
   },
   "Frontend/composables/ui/useCarousel.ts": {
-    "mtime": 1795011856.3216212,
-    "ast_hash": "069560f62776eebebf0b42aa7d16c0f8",
+    "mtime": 1795578144.7762213,
+    "ast_hash": "f4d3fb7851254a8017a38b7ab96674a6",
     "semantic_hash": ""
   },
   "Frontend/composables/ui/useSparkles.ts": {
@@ -2720,8 +2720,8 @@
     "semantic_hash": ""
   },
   "Frontend/pages/projects/index.vue": {
-    "mtime": 1794272759.7371268,
-    "ast_hash": "c8b4efcd8a51f541b8bc6f636bf21974",
+    "mtime": 1795578113.5270448,
+    "ast_hash": "46c20cb3a5121268f5278962b44c411e",
     "semantic_hash": ""
   },
   "Frontend/plugins/axios.ts": {
@@ -3130,8 +3130,8 @@
     "semantic_hash": ""
   },
   "Frontend/components/features/hall/GuildParticlesCanvas.vue": {
-    "mtime": 1795134839.998897,
-    "ast_hash": "db922a956a3cd7edb1a4e7a62e32bc70",
+    "mtime": 1795406101.6691117,
+    "ast_hash": "31ff692d14012e47b26bf2f95c9726af",
     "semantic_hash": ""
   },
   "Frontend/components/features/hall/GuildReceptionDesk.vue": {
@@ -3350,8 +3350,8 @@
     "semantic_hash": ""
   },
   "Project/FRONTEND_REFACTORING_PLAN.md": {
-    "mtime": 1795403684.3974793,
-    "ast_hash": "c0552fcb0c567469f4792f1ca6775271",
+    "mtime": 1795407759.9456556,
+    "ast_hash": "4bc7a5d5ba244a1b4703a271c0c5f70a",
     "semantic_hash": ""
   },
   "Project/adr/004-validation-strategy.md": {
@@ -3595,8 +3595,8 @@
     "semantic_hash": ""
   },
   "Frontend/components/ui/diegetic/UiGrimoireBook.vue": {
-    "mtime": 1793316698.6558208,
-    "ast_hash": "e49caf3706ef1598f99f2809d0d636d6",
+    "mtime": 1795480675.932061,
+    "ast_hash": "37ad168cdd6ec040cdffc23e188e3afa",
     "semantic_hash": ""
   },
   "Frontend/components/ui/diegetic/UiHourglass.vue": {
@@ -3645,13 +3645,13 @@
     "semantic_hash": ""
   },
   "Frontend/components/features/hall/GuildNpcLayer.vue": {
-    "mtime": 1795134839.9958968,
-    "ast_hash": "fdb7fd92fbf14c33ea4765bc94e3167a",
+    "mtime": 1795406101.66759,
+    "ast_hash": "fa1e1d91961d3d47851f678b38603584",
     "semantic_hash": ""
   },
   "Frontend/components/features/hall/GuildPuppetCanvas.vue": {
-    "mtime": 1795137761.9490514,
-    "ast_hash": "042750cda64ec46335408129b1026b03",
+    "mtime": 1795406101.6691117,
+    "ast_hash": "943fa7b3b3dbe754f949d5586b684420",
     "semantic_hash": ""
   },
   "Frontend/components/features/hall/GuildSceneSpace.vue": {
@@ -3660,8 +3660,8 @@
     "semantic_hash": ""
   },
   "Frontend/composables/features/useHallLife.ts": {
-    "mtime": 1795134840.0044446,
-    "ast_hash": "429edd3c25bfbf25daebcf3251375f0d",
+    "mtime": 1795406101.6731746,
+    "ast_hash": "7ed5e09274847814a3c358d1885719fe",
     "semantic_hash": ""
   },
   "Frontend/composables/ui/puppet.ts": {
@@ -3750,8 +3750,8 @@
     "semantic_hash": ""
   },
   "Frontend/tests/unit/hall-life.spec.ts": {
-    "mtime": 1795134840.0104475,
-    "ast_hash": "9224d1b61080f0e8dbeeb0987f902623",
+    "mtime": 1795406101.6776702,
+    "ast_hash": "34ff78f0e15fa14e9bda3750e43993c9",
     "semantic_hash": ""
   },
   "Frontend/tests/unit/puppet.spec.ts": {
@@ -4835,13 +4835,83 @@
     "semantic_hash": ""
   },
   "docs/hall-performance-analysis.md": {
-    "mtime": 1795134840.0184455,
-    "ast_hash": "f6c7b7c7ce319bf2246887e4fa4e276f",
+    "mtime": 1795406101.6776702,
+    "ast_hash": "8cdf0ac0f66a090ee3baa89e4a1dedbb",
     "semantic_hash": ""
   },
   "Frontend/components/features/tasks/page/MuralFlames.vue": {
     "mtime": 1795212433.2594335,
     "ast_hash": "4f3bb7201ec4fe43d70008906274b312",
+    "semantic_hash": ""
+  },
+  "Backend/tests/unit/projects/controllers/projects-planning.http.spec.ts": {
+    "mtime": 1795580159.8621955,
+    "ast_hash": "14ad31114f0d1dc391fc03fb9f80863e",
+    "semantic_hash": ""
+  },
+  "Backend/tests/unit/projects/dto/smart-objective.dto.spec.ts": {
+    "mtime": 1795579975.9656804,
+    "ast_hash": "8a9741dc1f15f1a6cb98a3a9e331ec9c",
+    "semantic_hash": ""
+  },
+  "Frontend/components/features/projects/GrimoireBayShelf.vue": {
+    "mtime": 1795486000.00642,
+    "ast_hash": "94653d56689e7bc3d3aefc20a840b38e",
+    "semantic_hash": ""
+  },
+  "Frontend/components/features/projects/GrimoireBookViewer.vue": {
+    "mtime": 1795540751.928419,
+    "ast_hash": "917b574a1ffa7fdbd2becc565ec09f2a",
+    "semantic_hash": ""
+  },
+  "Frontend/composables/features/useAnswerSuggestion.ts": {
+    "mtime": 1795579563.5674632,
+    "ast_hash": "e1651d1657f82e60c22dccaa4044206c",
+    "semantic_hash": ""
+  },
+  "Frontend/composables/features/useGrimoireBook.ts": {
+    "mtime": 1795407164.7654777,
+    "ast_hash": "9fcda57404e1dccfb4088ef78dae3f71",
+    "semantic_hash": ""
+  },
+  "Frontend/composables/features/useProjectCreationGate.ts": {
+    "mtime": 1795490056.80063,
+    "ast_hash": "6bed5dc8d7a6804f3351c0b00934685a",
+    "semantic_hash": ""
+  },
+  "Frontend/composables/ui/useHallFrameScheduler.ts": {
+    "mtime": 1795406101.6756384,
+    "ast_hash": "59ef5784c9756e7269665b6260db7e9f",
+    "semantic_hash": ""
+  },
+  "Frontend/tests/unit/answer-suggestion.spec.ts": {
+    "mtime": 1795579619.8216531,
+    "ast_hash": "34e14129c5e4ba92fe0d8af76d8a4c10",
+    "semantic_hash": ""
+  },
+  "Frontend/tests/unit/grimoire-bay-shelf.spec.ts": {
+    "mtime": 1795486194.3314188,
+    "ast_hash": "b7000b3853ef0426392f761c447bdb54",
+    "semantic_hash": ""
+  },
+  "Frontend/tests/unit/grimoire-book.spec.ts": {
+    "mtime": 1795534029.136065,
+    "ast_hash": "17f647b5573ba9a97b26649ea922a32a",
+    "semantic_hash": ""
+  },
+  "Frontend/tests/unit/project-creation-gate.spec.ts": {
+    "mtime": 1795490134.3931308,
+    "ast_hash": "9daacb0f869dbf92af3f1dff393dac9f",
+    "semantic_hash": ""
+  },
+  "Frontend/public/imagens/Projects-expandido.png": {
+    "mtime": 1795448766.261422,
+    "ast_hash": "c4adcd1dc2c13dabe5c8346bacdf6106",
+    "semantic_hash": ""
+  },
+  "Frontend/public/imagens/Projects-expandido.webp": {
+    "mtime": 1795480642.0535848,
+    "ast_hash": "2a5fff0b8f237f8cc94e759ba9c141e0",
     "semantic_hash": ""
   }
 }
