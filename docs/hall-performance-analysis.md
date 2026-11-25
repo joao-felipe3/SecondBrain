@@ -439,3 +439,271 @@ O codigo trata esses casos como perfil normal, sem bloquear a cena.
 - 25 testes unitarios do Hall passaram.
 - Foram adicionados testes para hardware limitado, Save Data, redes 2G e slow-2G.
 - Build completo do frontend passou com codigo de saida zero.
+
+## Nova analise pos otimizacao - 22/11/2026
+
+### Estado atual confirmado
+
+Os gargalos principais dos ciclos independentes ja foram tratados:
+
+- marionetes visiveis usam um scheduler compartilhado;
+- desktop usa 24-30 FPS controlados pelo scheduler;
+- mobile usa 24 FPS;
+- marionetes fora da proximidade nao montam o canvas WebGL;
+- particulas possuem perfil mobile/desktop e fallback conservador;
+- loops sao cancelados em aba oculta, viewport fora da tela e movimento reduzido;
+- hardware limitado, Save Data e redes lentas recebem fallback estatico.
+
+Mesmo assim, restam melhorias importantes fora dos loops principais.
+
+### P0 - Preload e tamanho da carga inicial
+
+#### 1. Remover o PNG de 27,59 MB
+
+O projeto publica duas versoes da imagem principal:
+
+- `Entrada-expandida.webp`: 1,73 MB;
+- `Entrada-expandida.png`: 27,59 MB.
+
+Como o componente referencia somente o WebP, o PNG nao participa da cena atual.
+Manter o arquivo no deploy ocupa espaco e pode entrar em backups, sincronizacao,
+cache ou sistemas de analise de asset.
+
+Acao recomendada:
+
+- remover o PNG apos confirmar que nenhum outro caminho o referencia;
+- manter o WebP como formato principal;
+- converter somente uma versao AVIF adicional se houver suporte e beneficio medido.
+
+#### 2. Limitar a fila de preload a poucos assets por vez
+
+Os planos essenciais sao precarregados de forma sequencial e os frames em segundo
+plano usam idle callback quando disponivel. Essa estrategia evita bloquear a
+primeira carga, mas ainda pode baixar uma grande quantidade de vinhetas sem
+cancelamento por prioridade.
+
+Acao recomendada:
+
+- limitar a fila a 2 downloads simultaneos;
+- cancelar downloads ao sair do Hall;
+- separar frames principais, intermediarios e texturas em niveis de prioridade;
+- usar `fetchpriority="low"` para preload em segundo plano;
+- nao decodificar todos os intermediarios em memoria ao mesmo tempo.
+
+#### 3. Configurar atributos de imagem no fundo
+
+A imagem principal em [index.vue](/C:/Users/najoa/Documents/SecondBrain/SecondBrain/Frontend/pages/index.vue)
+atua como LCP potencial da tela, mas nao declara ainda:
+
+- `fetchpriority="high"`;
+- `width`;
+- `height`;
+- dimensoes CSS reservadas;
+- uma versao mobile menor.
+
+Acao recomendada:
+
+- adicionar atributos de dimensao;
+- usar `fetchpriority="high"` e `decoding="async"`;
+- criar uma versao mobile menor da cena principal;
+- preloadar somente a versao correspondente ao viewport.
+
+### P1 - Composicao e repaint
+
+#### 4. Remover `will-change` permanente
+
+Foram encontrados varios usos permanentes de `will-change` no Saguao:
+
+- palco;
+- imagem master;
+- vinhetas;
+- particulas;
+- flâmula;
+- tochas;
+- brilho da lareira.
+
+`will-change` cria ou mantem compositing layers. Em excesso, ele pode consumir
+memoria de GPU sem reduzir trabalho real.
+
+Acao recomendada:
+
+- manter `will-change` no elemento arrastado durante o pan;
+- aplicar durante zoom/transicao;
+- remover apos 300-500 ms da animacao;
+- nao declarar `will-change: filter` em todas as vinhetas.
+
+#### 5. Consolidar a iluminacao em menos layers
+
+[GuildVfxLayer.vue](/C:/Users/najoa/Documents/SecondBrain/SecondBrain/Frontend/components/features/hall/GuildVfxLayer.vue)
+possui 13 tochas, 2 velas, 13 luzes do teto, lareira, brancos radiais e
+varios filtros:
+
+- `radial-gradient`;
+- `filter: blur(...)`;
+- `mix-blend-mode: screen`;
+- transformacoes de brilho;
+- 16 frames da labareda.
+
+Acao recomendada:
+
+- criar uma unica textura WebP/PNG de brilho ambiente;
+- usar menos elementos com blur no DOM;
+- agrupar o pulso de luz em overlays menores;
+- separar labaredas visiveis em desktop/mobile.
+
+#### 6. Reduzir a quantidade de animações CSS simultâneas
+
+[GuildNpcLayer.vue](/C:/Users/najoa/Documents/SecondBrain/SecondBrain/Frontend/components/features/hall/GuildNpcLayer.vue)
+aplica pulso de `filter` em todas as vinhetas. Cada vinheta pode manter:
+
+- animacao de luz;
+- crossfade;
+- frame anterior;
+- frame ativo;
+- hitbox;
+- timer proprio.
+
+Acao recomendada:
+
+- pausar a vinheta fora da viewport;
+- remover o pulso CSS em modo conservador;
+- usar apenas opacidade/transform em vez de `filter: brightness`;
+- limitar vinhetas com gesto simultaneo.
+
+### P1 - Vinhetas e timers
+
+#### 7. Substituir timers independentes por scheduler de vinhetas
+
+[useHallLife.ts](/C:/Users/najoa/Documents/SecondBrain/SecondBrain/Frontend/composables/features/useHallLife.ts)
+mantem uma cadeia de `setTimeout` por vinheta.
+
+Ainda nao existe um gargalo principal confirmado, mas uma vinheta com varios
+ciclos pode acumular varios callbacks encadeados e ficar dificil de pausar.
+
+Acao recomendada:
+
+- criar um scheduler unico para vinhetas;
+- controlar cada vinheta por tempo absoluto desde o ultimo gesto;
+- cancelar todos os timers em aba oculta;
+- evitar reinicializar todo o sistema quando uma unica vinheta troca.
+
+#### 8. Reduzir imagens ocultas no DOM
+
+Vinhetas nao-marionetes mantêm frames e intermediarios no DOM. Isso estabiliza
+o crossfade, mas:
+
+- aumenta o numero de elementos;
+- pode manter texturas decodificadas;
+- aumenta o custo de composicao.
+
+Acao recomendada:
+
+- manter no DOM somente repositorio + frame ativo + frame anterior;
+- carregar intermediarios sob demanda;
+- mostrar o frame ativo assim que estiver decodificado;
+- manter o repositorio como fallback.
+
+### P2 - Code splitting e inicializacao
+
+#### 9. Avaliar split dos componentes pesados
+
+O modulo do Hall ainda importa imediatamente componentes como:
+
+- Canvas de particulas;
+- Canvas WebGL;
+- Grimório;
+- porta da biblioteca;
+- HUD;
+- portal.
+
+Acao recomendada:
+
+- lazy-load do Grimório e overlays;
+- lazy-load de componentes usados somente em hover;
+- evitar lazy-load em plena transicao de rota;
+- medir o impacto real antes de alterar o bundle.
+
+#### 10. Instrumentar FPS e memoria no navegador
+
+As metricas atuais sao estruturais ou estaticas. Falta medir:
+
+- FPS real em desktop;
+- FPS real em mobile;
+- tempo de pintura;
+- DOM nodes;
+- JS heap;
+- contextos WebGL;
+- texturas WebGL;
+- frames dropped;
+- long tasks.
+
+Acao recomendada:
+
+- executar 60 segundos em idle;
+- executar 60 segundos durante arraste;
+- medir a abertura das tres rotas;
+- gravar separado em hardware rapido e limitado;
+- comparar antes e depois de cada mudanca.
+
+## Ordem recomendada para a proxima etapa
+
+1. Remover o PNG de 27,59 MB.
+2. Corrigir atributos e preload da imagem principal.
+3. Consolidar/pausar `will-change` e filtros permanentes.
+4. Adicionar limite de concorrencia ao preload.
+5. Unificar timers das vinhetas.
+6. Reduzir o DOM das vinhetas.
+7. Medir FPS, memoria e paints no Chrome.
+
+## Proximo bloco concluido - 22/11/2026
+
+### Alteracoes aplicadas
+
+- A imagem principal recebeu dimensoes intrinsecas, prioridade alta de fetch e
+  decodificacao assíncrona em [index.vue](/C:/Users/najoa/Documents/SecondBrain/SecondBrain/Frontend/pages/index.vue).
+- O preload passou a limitar concorrencia para dois assets simultaneos em
+  [useHallLife.ts](/C:/Users/najoa/Documents/SecondBrain/SecondBrain/Frontend/composables/features/useHallLife.ts).
+- O PNG nao foi removido porque scripts ativos em
+  [Frontend/scripts/hall-life/common.py](/C:/Users/najoa/Documents/SecondBrain/SecondBrain/Frontend/scripts/hall-life/common.py)
+  usam `Entrada-expandida.png` como fonte de composição. Ele pode ser movido para
+  uma pasta fora de `public` futuramente, mas nao deve ser apagado agora.
+
+### Validacao
+
+- 26 testes unitarios do Hall passaram.
+- O helper de concorrencia foi testado com pico de 2 cargas simultaneas.
+- Build completo do frontend passou com codigo de saida zero.
+
+## Limpeza de compositing concluida - 23/11/2026
+
+### Alteracoes aplicadas
+
+- Removido `will-change` permanente de palco, imagem principal, vinhetas,
+  particulas, VFX, flâmula e portal.
+- Mantido `will-change` somente enquanto o palco esta em hover ou zoom.
+- O fundo recebe `will-change: transform` apenas no estado de zoom da camera.
+- Removidos os `will-change` permanentes da porta da biblioteca.
+- As labaredas, brilhos e fagulhas do VFX passam a ficar sem animacao em
+  `prefers-reduced-motion`.
+
+### Arquivos ajustados
+
+- [index.vue](/C:/Users/najoa/Documents/SecondBrain/SecondBrain/Frontend/pages/index.vue)
+- [GuildSceneSpace.vue](/C:/Users/najoa/Documents/SecondBrain/SecondBrain/Frontend/components/features/hall/GuildSceneSpace.vue)
+- [GuildNpcLayer.vue](/C:/Users/najoa/Documents/SecondBrain/SecondBrain/Frontend/components/features/hall/GuildNpcLayer.vue)
+- [GuildParticlesCanvas.vue](/C:/Users/najoa/Documents/SecondBrain/SecondBrain/Frontend/components/features/hall/GuildParticlesCanvas.vue)
+- [GuildVfxLayer.vue](/C:/Users/najoa/Documents/SecondBrain/SecondBrain/Frontend/components/features/hall/GuildVfxLayer.vue)
+- [GuildStaircasePennant.vue](/C:/Users/najoa/Documents/SecondBrain/SecondBrain/Frontend/components/features/hall/GuildStaircasePennant.vue)
+- [GuildLibraryPortal.vue](/C:/Users/najoa/Documents/SecondBrain/SecondBrain/Frontend/components/features/hall/GuildLibraryPortal.vue)
+
+### Ganho esperado
+
+- Menos compositing layers permanecendo alocadas durante idle.
+- Menor uso de memoria de GPU no Saguão.
+- Menor custo de animacao para filtro, transform e opacidade em vinhetas.
+- Menos trabalho em hardware com movimento reduzido.
+
+### Validacao
+
+- 26 testes unitarios do Hall passaram.
+- Build completo passou com codigo de saida zero.

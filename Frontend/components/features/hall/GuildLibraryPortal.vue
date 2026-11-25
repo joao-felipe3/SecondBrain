@@ -247,7 +247,6 @@ onUnmounted(() => {
   z-index: 1;
   mix-blend-mode: screen;
   overflow: visible;
-  will-change: left, width, opacity, transform;
 }
 
 /* BRILHO OMNIDIRECIONAL VOLUMÉTRICO COM FALLOFF DE DISTÂNCIA SUAVE (SEM CORTE DURO) */
@@ -412,7 +411,6 @@ onUnmounted(() => {
   display: block;
   pointer-events: none;
   z-index: 2;
-  will-change: transform;
 }
 
 /* CAMADA 3: OVERLAY DA CADEIRA */

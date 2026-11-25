@@ -342,6 +342,24 @@ export function preloadImage(url: string): Promise<void> {
   });
 }
 
+export async function preloadWithConcurrency(
+  urls: string[],
+  loader: (url: string) => Promise<void>,
+  concurrency = 2,
+): Promise<void> {
+  const limit = Math.max(1, concurrency);
+  let next = 0;
+
+  await Promise.all(
+    Array.from({ length: Math.min(limit, urls.length) }, async () => {
+      while (next < urls.length) {
+        const index = next++;
+        await loader(urls[index]!);
+      }
+    }),
+  );
+}
+
 export function preloadHallAssets(
   data: HallLifeData = allData,
   onProgress?: (loaded: number, total: number) => void,
@@ -353,16 +371,16 @@ export function preloadHallAssets(
 
   void (async () => {
     let loaded = 0;
-    for (const url of plan.essential) {
+    await preloadWithConcurrency(plan.essential, async (url) => {
       if (cancelled) return;
       await preloadImage(url);
       loaded += 1;
       onProgress?.(loaded, plan.essential.length);
-    }
+    });
 
     const runBackground = async () => {
       if (!getBrowserHallFallbackProfile().allowParticles || getBrowserHallFallbackProfile().conservative) return;
-      for (const url of plan.background) {
+      await preloadWithConcurrency(plan.background, async (url) => {
         if (cancelled) return;
         if (url.endsWith('.json')) {
           try {
@@ -380,7 +398,7 @@ export function preloadHallAssets(
         } else {
           await preloadImage(url);
         }
-      }
+      });
     };
 
     if ('requestIdleCallback' in window) {

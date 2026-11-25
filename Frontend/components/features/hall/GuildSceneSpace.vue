@@ -58,7 +58,6 @@ const vars = computed(() => ({
   transform: var(--d-transform);
   transform-origin: var(--d-transformOrigin);
   pointer-events: none;
-  will-change: transform;
   transition: transform 0.3s ease; /* mesma transição do .master-bg */
 }
 

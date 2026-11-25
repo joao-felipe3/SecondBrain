@@ -146,7 +146,6 @@ onBeforeUnmount(() => {
   /* a luz da tocha/lareira mais próxima pulsa sobre o personagem no mesmo ritmo do GuildVfxLayer */
   animation: hallTorchFlicker 1.6s ease-in-out infinite alternate;
   animation-delay: var(--light-delay, 0s);
-  will-change: filter;
 }
 
 .hall-vignette.light-hearth {
