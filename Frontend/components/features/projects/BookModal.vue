@@ -2,16 +2,11 @@
   <v-row
     no-gutters
     v-if="isOpen || isClosing"
-    :class="['book-modal-overlay', { 'is-closing': isClosing }]"
+    :class="['book-modal-overlay', { 'is-closing': isClosing, 'is-instant': instant }]"
     @click="onBackdrop"
   >
     <v-container class="container" @click.stop>
-      <button
-        class="icon-floating-close"
-        @click="closeModal"
-        aria-label="Fechar modal"
-        tabindex="0"
-      >
+      <button class="icon-floating-close" @click="closeModal" aria-label="Fechar modal" tabindex="0">
         <X :size="22" />
       </button>
       <button
@@ -39,20 +34,11 @@
         ></v-sheet>
       </v-row>
 
-      <v-row
-        class="sprite-wrapper"
-        no-gutters
-        align="center"
-        style="min-height: 60vh"
-      >
+      <v-row class="sprite-wrapper" no-gutters align="center" style="min-height: 60vh">
         <v-col class="d-flex justify-center">
           <v-sheet class="book" elevation="2" color="transparent">
             <v-sheet class="sprite" elevation="0" color="transparent"></v-sheet>
-            <div
-              ref="carouselEl"
-              class="carousel"
-              :style="{ '--slides': `${TOTAL_SLIDES}` }"
-            >
+            <div ref="carouselEl" class="carousel" :style="{ '--slides': `${TOTAL_SLIDES}` }">
               <v-sheet
                 :class="['carousel-item', { active: currentIndex === 0 }]"
                 elevation="0"
@@ -76,10 +62,7 @@
                 :class="['carousel-item', { active: currentIndex === 2 }]"
                 elevation="0"
                 color="transparent"
-                ><WBSPage
-                  :project="renderProject || {}"
-                  :editing="editing"
-                  @wbs-updated="reloadProject"
+                ><WBSPage :project="renderProject || {}" :editing="editing" @wbs-updated="reloadProject"
               /></v-sheet>
               <v-sheet
                 :class="['carousel-item', { active: currentIndex === 3 }]"
@@ -94,41 +77,31 @@
                 :class="['carousel-item', { active: currentIndex === 4 }]"
                 elevation="0"
                 color="transparent"
-                ><RTMPage
-                  :project="renderProject as Project"
-                  :editing="editing"
+                ><RTMPage :project="renderProject as Project" :editing="editing"
               /></v-sheet>
               <v-sheet
                 :class="['carousel-item', { active: currentIndex === 5 }]"
                 elevation="0"
                 color="transparent"
-                ><RiskPage
-                  :project="renderProject as Project"
-                  :editing="editing"
+                ><RiskPage :project="renderProject as Project" :editing="editing"
               /></v-sheet>
               <v-sheet
                 :class="['carousel-item', { active: currentIndex === 6 }]"
                 elevation="0"
                 color="transparent"
-                ><GanttPage
-                  :project="renderProject as Project"
-                  :editing="editing"
+                ><GanttPage :project="renderProject as Project" :editing="editing"
               /></v-sheet>
               <v-sheet
                 :class="['carousel-item', { active: currentIndex === 7 }]"
                 elevation="0"
                 color="transparent"
-                ><PertDiagramPage
-                  :project="renderProject as Project"
-                  :editing="editing"
+                ><PertDiagramPage :project="renderProject as Project" :editing="editing"
               /></v-sheet>
               <v-sheet
                 :class="['carousel-item', { active: currentIndex === 8 }]"
                 elevation="0"
                 color="transparent"
-                ><XMatrixPage
-                  :project="renderProject as Project"
-                  :editing="editing"
+                ><XMatrixPage :project="renderProject as Project" :editing="editing"
               /></v-sheet>
               <v-sheet
                 :class="['carousel-item', { active: currentIndex === 9 }]"
@@ -146,21 +119,21 @@
 
       <button
         class="nav-arrow nav-next"
-        :disabled="atEnd"
+        :disabled="atEnd || lockReason !== null"
+        :title="lockMessage ?? undefined"
         @click="go(1)"
         aria-label="Próxima página"
       >
         ▶
       </button>
 
+      <p v-if="lockMessage" class="creation-lock-hint" role="status" aria-live="polite">
+        {{ lockMessage }}
+      </p>
+
       <div class="actions-bar" v-if="project">
         <template v-if="!editing">
-          <button
-            class="action-btn"
-            @click="startEdit"
-            aria-label="Edit project"
-            tabindex="0"
-          >
+          <button class="action-btn" @click="startEdit" aria-label="Edit project" tabindex="0">
             Edit
           </button>
           <button
@@ -173,12 +146,7 @@
           </button>
         </template>
         <template v-else>
-          <button
-            class="action-btn"
-            @click="cancelEdit"
-            aria-label="Cancel edit"
-            tabindex="0"
-          >
+          <button class="action-btn" @click="cancelEdit" aria-label="Cancel edit" tabindex="0">
             Cancel
           </button>
           <button
@@ -206,36 +174,30 @@
 </template>
 
 <script setup lang="ts">
-import { X } from "lucide-vue-next";
+import { X } from 'lucide-vue-next';
+import { ref, computed, onMounted, onBeforeUnmount, watch, nextTick, toRef } from 'vue';
+import GeneralInfoPage from './pages/GeneralInfoPage.vue';
+import SmartObjectivesPage from './pages/SmartObjectivesPage.vue';
+import WBSPage from './pages/WBSPage.vue';
+import BacklogAndProgress from './pages/BacklogAndProgress.vue';
+import CriticalPathPage from './pages/CriticalPathPage.vue';
+import RTMPage from './pages/RTMPage.vue';
+import RiskPage from './pages/RiskPage.vue';
+import GanttPage from './pages/GanttPage.vue';
+import PertDiagramPage from './pages/PertDiagramPage.vue';
+import XMatrixPage from './pages/XMatrixPage.vue';
+import DeleteProjectDialog from '../../shared/dialogs/DeleteProjectDialog.vue';
+import { useApiResource, useApi } from '~/composables/api';
+import type { PropType } from 'vue';
+import { useCarousel } from '~/composables/ui/useCarousel';
 import {
-  ref,
-  computed,
-  onMounted,
-  onBeforeUnmount,
-  watch,
-  nextTick,
-  toRef,
-} from "vue";
-import GeneralInfoPage from "./pages/GeneralInfoPage.vue";
-import SmartObjectivesPage from "./pages/SmartObjectivesPage.vue";
-import WBSPage from "./pages/WBSPage.vue";
-import BacklogAndProgress from "./pages/BacklogAndProgress.vue";
-import CriticalPathPage from "./pages/CriticalPathPage.vue";
-import RTMPage from "./pages/RTMPage.vue";
-import RiskPage from "./pages/RiskPage.vue";
-import GanttPage from "./pages/GanttPage.vue";
-import PertDiagramPage from "./pages/PertDiagramPage.vue";
-import XMatrixPage from "./pages/XMatrixPage.vue";
-import DeleteProjectDialog from "../../shared/dialogs/DeleteProjectDialog.vue";
-import { useApiResource, useApi } from "~/composables/api";
-import type { PropType } from "vue";
-import { useCarousel } from "~/composables/ui/useCarousel";
-import { useSparkles } from "~/composables/ui/useSparkles";
-import {
-  useProjectEditing,
-  getProjectId,
-} from "~/composables/features/useProjectEditing";
-import type { Project } from "~/models/Project";
+  unlockedPageIndex,
+  creationLockReason,
+  CREATION_LOCK_MESSAGES,
+} from '~/composables/features/useProjectCreationGate';
+import { useSparkles } from '~/composables/ui/useSparkles';
+import { useProjectEditing, getProjectId } from '~/composables/features/useProjectEditing';
+import type { Project } from '~/models/Project';
 
 const CLOSE_ANIM_MS = 800;
 const TOTAL_SLIDES = 10;
@@ -245,28 +207,21 @@ const props = defineProps({
   project: { type: Object as PropType<Project | null>, default: null },
   startInEdit: { type: Boolean, default: false },
   focusedSlide: { type: Number, default: 0 },
+  /** Abre direto, sem a animação de entrada (ex.: vindo da visualização, onde o livro já estava aberto) */
+  instant: { type: Boolean, default: false },
 });
-const emit = defineEmits(["close", "updated", "deleted"]);
+const emit = defineEmits(['close', 'updated', 'deleted']);
 
 // State
 const isClosing = ref(false);
 let closeTimeout: number | null = null;
 
-const api = useApiResource("/projects");
+const api = useApiResource('/projects');
 
-const {
-  carouselEl,
-  currentIndex,
-  atStart,
-  atEnd,
-  go,
-  updateIndex,
-  attach,
-  detach,
-  reset,
-} = useCarousel(TOTAL_SLIDES);
+const { carouselEl, currentIndex, atStart, atEnd, go, jumpTo, updateIndex, attach, detach, reset } =
+  useCarousel(TOTAL_SLIDES);
 const { sparkles, createSparkles, clearSparkles } = useSparkles();
-const projectRef = toRef(props, "project");
+const projectRef = toRef(props, 'project');
 const {
   editing,
   saving,
@@ -292,8 +247,7 @@ const renderProject = computed(() => {
       smartObjective.achievable?.trim() ||
       smartObjective.relevant?.trim() ||
       smartObjective.temporal?.trim() ||
-      (Array.isArray(smartObjective.risks) &&
-        smartObjective.risks.length > 0) ||
+      (Array.isArray(smartObjective.risks) && smartObjective.risks.length > 0) ||
       Number.isFinite(Number(smartObjective.weeklyHours))),
   );
 
@@ -301,6 +255,24 @@ const renderProject = computed(() => {
     ...project,
     smartObjective: hasSmartObjective ? smartObjective : null,
   };
+});
+
+// Criação: cada página só libera a próxima depois de preenchida (ver useProjectCreationGate)
+const gateInput = computed(() => ({
+  isCreating: editing.value && !getProjectId(props.project as any),
+  name: draft.value?.name,
+  smartSummary: (draft.value as any)?.smartObjective?.summary,
+  lastIndex: TOTAL_SLIDES - 1,
+}));
+const unlockedIndex = computed(() => unlockedPageIndex(gateInput.value));
+const lockReason = computed(() => creationLockReason(currentIndex.value, gateInput.value));
+const lockMessage = computed(() => (lockReason.value ? CREATION_LOCK_MESSAGES[lockReason.value] : null));
+
+// Bloqueia também gestos e rolagem: se a página passar do limite, volta para o último liberado
+watch(currentIndex, (index) => {
+  const allowed = unlockedIndex.value;
+  // jumpTo é absoluto; go() soma ao índice atual e empurraria o livro ainda mais para frente
+  if (gateInput.value.isCreating && index > allowed) jumpTo(allowed);
 });
 
 // Editing wrappers glue to props
@@ -315,10 +287,10 @@ const saveEdit = async () => {
     const id = getProjectId(props.project as any);
     if (id) {
       const { data } = await api.update(id, draft.value);
-      emit("updated", data);
+      emit('updated', data);
     } else {
       const { data } = await api.create(draft.value);
-      emit("updated", data);
+      emit('updated', data);
     }
     cancelEdit();
   } finally {
@@ -340,9 +312,9 @@ async function reloadProject() {
     if (error) {
       throw error;
     }
-    emit("updated", data);
+    emit('updated', data);
   } catch (error) {
-    console.error("Failed to reload project:", error);
+    console.error('Failed to reload project:', error);
   }
 }
 
@@ -352,13 +324,11 @@ watch(
   async (newProject) => {
     if (newProject?._id) {
       try {
-        const response = await fetch(
-          `http://localhost:3000/projects/${newProject._id}/tasks`,
-        );
+        const response = await fetch(`http://localhost:3000/projects/${newProject._id}/tasks`);
         const tasks = await response.json();
         taskCount.value = tasks.length;
       } catch (error) {
-        console.error("Failed to load task count", error);
+        console.error('Failed to load task count', error);
         taskCount.value = 0;
       }
     } else {
@@ -373,22 +343,21 @@ const confirmDelete = async (deleteTasks: boolean) => {
   const id = getProjectId(props.project);
 
   try {
-    const response = await fetch(
-      `http://localhost:3000/projects/${id}?deleteTasks=${deleteTasks}`,
-      { method: "DELETE" },
-    );
+    const response = await fetch(`http://localhost:3000/projects/${id}?deleteTasks=${deleteTasks}`, {
+      method: 'DELETE',
+    });
 
     if (!response.ok) {
-      throw new Error("Failed to delete project");
+      throw new Error('Failed to delete project');
     }
 
     const result = await response.json();
     console.log(result.message);
 
-    emit("deleted", props.project);
+    emit('deleted', props.project);
     closeModal();
   } catch (error) {
-    console.error("Error deleting project:", error);
+    console.error('Error deleting project:', error);
   }
 
   showDeleteDialog.value = false;
@@ -412,7 +381,7 @@ function finishClose() {
   }
   isClosing.value = false;
   resetEditing();
-  emit("close");
+  emit('close');
 }
 
 onMounted(() => {
@@ -428,17 +397,22 @@ watch(
   () => props.isOpen,
   async (open) => {
     if (open) {
-      console.log("BookModal: props.project on open ->", props.project);
-      console.log("BookModal: focusedSlide ->", props.focusedSlide);
+      console.log('BookModal: props.project on open ->', props.project);
+      console.log('BookModal: focusedSlide ->', props.focusedSlide);
       await nextTick();
       reset();
       createSparkles();
       attach();
       // Navigate to focused slide if not 0
       if (props.focusedSlide > 0) {
-        setTimeout(() => {
-          go(props.focusedSlide);
-        }, 50);
+        if (props.instant) {
+          // Já veio de um livro aberto: vai direto à etapa, sem rolar pelas anteriores
+          jumpTo(props.focusedSlide);
+        } else {
+          setTimeout(() => {
+            go(props.focusedSlide);
+          }, 50);
+        }
       }
       if (props.startInEdit) {
         // Start editing for create flow or quick edit
@@ -454,7 +428,7 @@ watch(
 watch(
   () => renderProject.value,
   (val) => {
-    console.log("BookModal: displayProject changed ->", val);
+    console.log('BookModal: displayProject changed ->', val);
   },
 );
 </script>
@@ -482,6 +456,18 @@ watch(
 .icon-floating-close:hover {
   background: rgba(0, 0, 0, 0.65);
 }
+.creation-lock-hint {
+  margin: 0.75rem 0 0;
+  padding: 0.4rem 0.9rem;
+  border-radius: 6px;
+  background: rgba(20, 12, 6, 0.85);
+  border: 1px solid #d4af37;
+  color: #fef08a;
+  font-family: 'Irish Grover', cursive;
+  font-size: 0.95rem;
+  text-align: center;
+}
+
 .actions-bar {
   margin-top: 1.25rem;
   display: flex;

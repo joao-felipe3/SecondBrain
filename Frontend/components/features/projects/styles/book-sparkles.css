@@ -4,9 +4,15 @@
  */
 
 /* Magic layer container */
-.magic-layer { 
-  position: absolute; 
-  inset: 0; 
+.magic-layer {
+  /* Cobre a tela inteira: fica presa à janela e não ao contêiner do livro, que tem largura
+     máxima, padding e a margem negativa do v-row */
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  margin: 0;
+  max-width: none;
   pointer-events: none; 
   overflow: hidden; 
   z-index: 5; 

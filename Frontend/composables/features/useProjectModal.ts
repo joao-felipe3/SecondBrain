@@ -1,23 +1,27 @@
-import { ref } from 'vue'
-import type { Project } from '~/models/Project'
+import { ref } from 'vue';
+import type { Project } from '~/models/Project';
 
 export function useProjectModal() {
-  const isModalOpen = ref(false)
-  const selectedProject = ref<Project | null>(null)
-  const startInEdit = ref(false)
-  const focusedSlide = ref(0)
+  const isModalOpen = ref(false);
+  const selectedProject = ref<Project | null>(null);
+  const startInEdit = ref(false);
+  const focusedSlide = ref(0);
+  // Abre sem a animação de entrada (usado quando o livro já estava aberto na visualização)
+  const instantOpen = ref(false);
 
-  function openModal(project: Project, editMode = false, slideIndex = 0) {
-    selectedProject.value = project
-    startInEdit.value = editMode
-    focusedSlide.value = slideIndex
-    isModalOpen.value = true
+  function openModal(project: Project, editMode = false, slideIndex = 0, instant = false) {
+    selectedProject.value = project;
+    startInEdit.value = editMode;
+    focusedSlide.value = slideIndex;
+    instantOpen.value = instant;
+    isModalOpen.value = true;
   }
 
   function closeModal() {
-    isModalOpen.value = false
-    selectedProject.value = null
-    startInEdit.value = false
+    isModalOpen.value = false;
+    selectedProject.value = null;
+    startInEdit.value = false;
+    instantOpen.value = false;
   }
 
   function createNewProject() {
@@ -36,9 +40,9 @@ export function useProjectModal() {
       status: 'pending',
       progressPercentage: 0,
       experience: 0,
-      reward: 0
-    }
-    openModal(newProject, true)
+      reward: 0,
+    };
+    openModal(newProject, true);
   }
 
   return {
@@ -46,8 +50,9 @@ export function useProjectModal() {
     selectedProject,
     startInEdit,
     focusedSlide,
+    instantOpen,
     openModal,
     closeModal,
-    createNewProject
-  }
+    createNewProject,
+  };
 }
