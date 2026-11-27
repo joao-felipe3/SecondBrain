@@ -234,7 +234,11 @@ export function isJsonishError(err: unknown): boolean {
     msg.includes('incomplet') ||
     msg.includes('parse') ||
     msg.includes('array') ||
-    msg.includes('object')
+    msg.includes('object') ||
+    // Resposta parcial (ex.: "IA retornou 1 details; esperado 2") ou item fora do schema:
+    // também se resolve dividindo o lote ou repetindo a chamada.
+    msg.includes('ia retornou') ||
+    msg.includes('inválid')
   );
 }
 
@@ -256,4 +260,21 @@ export function getConcurrencyParams(): ConcurrencyParams {
   }
 
   return { detailsConcurrency, detailsBatchSize, detailsBatchConcurrency };
+}
+
+/** Minutos que o sistema contabiliza por pomodoro ao somar horas geradas (1 pomodoro = 0,5h). */
+const MINUTES_PER_POMODORO_FOR_HOURS = 30;
+
+/**
+ * Pomodoros de uma micro-tarefa a partir da duração-alvo do seu chunk.
+ * O modelo costuma escolher ~2 pomodoros por tarefa independentemente da duração pedida,
+ * o que fazia pacotes grandes (ex.: 80h, chunks de 2h) fecharem com a metade das horas.
+ * Sem duração-alvo, usa o valor do modelo (limitado a 1-6).
+ */
+export function resolvePomodoros(modelValue: unknown, targetMinutes?: number): number {
+  const target = Number(targetMinutes);
+  if (Number.isFinite(target) && target > 0) {
+    return Math.max(1, Math.min(6, Math.round(target / MINUTES_PER_POMODORO_FOR_HOURS)));
+  }
+  return Math.max(1, Math.min(6, Number(modelValue) || 1));
 }

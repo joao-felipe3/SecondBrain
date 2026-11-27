@@ -1,6 +1,5 @@
 import {
   computePertFromMinutes,
-  estimateMicroTaskCount,
   computeChunkMinutes,
   computeBatchMetrics,
   cosineSimilarity,
@@ -17,23 +16,6 @@ describe('MetricsCalculatorUtil', () => {
       expect(res.pessimistic).toBe(90);
       expect(res.expected).toBe(63);
       expect(res.variance).toBeGreaterThan(0);
-    });
-  });
-
-  describe('estimateMicroTaskCount', () => {
-    it('should calculate estimated microtask count for leaf and nested nodes', () => {
-      const nodes: any[] = [
-        {
-          name: 'Parent',
-          children: [
-            { name: 'Leaf 1', estimatedHours: 2, children: [] },
-            { name: 'Leaf 2', estimatedHours: 4, children: [] },
-          ],
-        },
-      ];
-
-      const count = estimateMicroTaskCount(nodes);
-      expect(count).toBeGreaterThan(0);
     });
   });
 

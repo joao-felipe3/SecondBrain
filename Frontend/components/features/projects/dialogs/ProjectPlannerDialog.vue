@@ -201,8 +201,8 @@
           <v-alert type="info" variant="tonal" class="mb-4">
             📊 WBS gerada a partir do objetivo SMART.
             <span class="text-caption d-block mt-1"
-              >Regra 8/80: cada pacote de trabalho deve ter entre 8h e 80h estimadas. Depois, convertemos
-              em micro-tarefas (≤3h) para execução.</span
+              >Regra 8/80: cada pacote de trabalho deve ter entre 8h e 80h estimadas. Depois, os pacotes
+              são distribuídos em ondas e cada onda é detalhada em micro-tarefas.</span
             >
           </v-alert>
 
@@ -221,7 +221,7 @@
             </div>
             <div v-if="budgetValidation.overBudget" class="text-caption mt-1">
               Excesso de {{ budgetValidation.deltaHours.toFixed(1) }}h. Escolha como deseja resolver
-              antes de salvar/converter.
+              antes de salvar/planejar.
             </div>
             <div v-if="budgetValidation.overBudget" class="d-flex flex-wrap gap-2 mt-3">
               <v-btn
@@ -361,7 +361,7 @@
           :disabled="loading || wbsNodes.length === 0 || !!budgetValidation?.overBudget"
         >
           <v-icon start>mdi-check-all</v-icon>
-          Converter em Micro-tarefas (≤3h) e Concluir
+          Planejar Ondas e Concluir
         </v-btn>
         <v-btn
           v-if="phase === 3"
@@ -777,19 +777,19 @@ async function generateWBS() {
 
 async function convertAndClose() {
   if (!props.projectId || String(props.projectId).trim() === 'undefined') {
-    setError('❌ Erro: Project ID não definido. Salve o projeto antes de converter para tarefas.');
+    setError('❌ Erro: Project ID não definido. Salve o projeto antes de planejar as ondas.');
     return;
   }
 
   if (budgetValidation.value?.overBudget) {
-    setError('Resolva o estouro de budget da WBS antes de converter para micro-tarefas.');
+    setError('Resolva o estouro de budget da WBS antes de planejar as ondas.');
     return;
   }
 
   clearError();
 
   loading.value = true;
-  loadingMessage.value = 'Convertendo WBS em tarefas...';
+  loadingMessage.value = 'Planejando ondas a partir da WBS...';
 
   try {
     const { $api } = useNuxtApp() as any;
@@ -797,10 +797,8 @@ async function convertAndClose() {
     await $api.post(`/projects/${props.projectId}/save-wbs`, {
       nodes: wbsNodes.value,
     });
-    // Convert to tasks
-    await $api.post(`/projects/${props.projectId}/wbs/convert-to-tasks`, {
-      nodes: wbsNodes.value,
-    });
+    // Rolling Wave: distribui os pacotes em ondas; as micro-tarefas são detalhadas onda a onda.
+    await $api.post(`/projects/${props.projectId}/generate-waves`, { waveLengthDays: 28 });
 
     // Emit SMART objective if generated
     if (smartObjective.value) {
@@ -809,8 +807,8 @@ async function convertAndClose() {
     emit('wbs-generated');
     handleClose();
   } catch (error) {
-    console.error('Erro ao converter WBS em tarefas:', error);
-    alert('Erro ao converter WBS em tarefas. Tente novamente.');
+    console.error('Erro ao planejar ondas:', error);
+    alert('Erro ao planejar as ondas. Tente novamente.');
   } finally {
     loading.value = false;
   }

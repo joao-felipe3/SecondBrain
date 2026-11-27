@@ -15,7 +15,14 @@ describe('WbsPersistenceService', () => {
       save: jest.fn().mockResolvedValue({ ...dto, _id: 'node-1' }),
     }));
 
+    wbsNodeModelMock.deleteMany = jest.fn().mockResolvedValue({ deletedCount: 0 });
+
+    wbsNodeModelMock.findOneAndUpdate = jest.fn().mockImplementation((filter, fields) => ({
+      exec: jest.fn().mockResolvedValue({ ...fields, _id: filter._id }),
+    }));
+
     wbsNodeModelMock.find = jest.fn().mockReturnValue({
+      lean: jest.fn().mockReturnValue({ exec: jest.fn().mockResolvedValue([{ _id: 'existing-1' }]) }),
       sort: jest.fn().mockReturnValue({
         exec: jest.fn().mockResolvedValue([
           { _id: 'node-1', name: 'Root Node', level: 1, estimatedHours: 40, parentId: null, order: 1 },
@@ -84,6 +91,49 @@ describe('WbsPersistenceService', () => {
 
       expect(result).toBeDefined();
       expect(cacheServiceMock.clearForProject).toHaveBeenCalledWith('p-1');
+    });
+
+    it('substitui a WBS anterior: remove só os nós do projeto que não foram recém-salvos', async () => {
+      const nodes: any[] = [{ name: 'Fase 1', estimatedHours: 40 }];
+
+      await service.save('p-1', nodes);
+
+      // Os nós novos têm _id 'node-1' no mock; qualquer outro nó do projeto é removido
+      expect(wbsNodeModelMock.deleteMany).toHaveBeenCalledWith({
+        projectId: 'p-1',
+        _id: { $nin: ['node-1'] },
+      });
+    });
+
+    it('mantém o _id dos nós que já existem no projeto (ondas e tarefas referenciam esse id)', async () => {
+      const result = await service.save('p-1', [
+        { _id: 'existing-1', name: 'Pacote mantido', estimatedHours: 20 },
+        { _id: 'de-outro-projeto', name: 'Pacote novo', estimatedHours: 10 },
+      ] as any);
+
+      expect(wbsNodeModelMock.findOneAndUpdate).toHaveBeenCalledTimes(1);
+      expect(wbsNodeModelMock.findOneAndUpdate.mock.calls[0][0]).toEqual({
+        _id: 'existing-1',
+        projectId: 'p-1',
+      });
+      expect(String(result[0]._id)).toBe('existing-1');
+      // id desconhecido vira um nó novo
+      expect(String(result[1]._id)).toBe('node-1');
+      expect(wbsNodeModelMock.deleteMany).toHaveBeenCalledWith({
+        projectId: 'p-1',
+        _id: { $nin: ['existing-1', 'node-1'] },
+      });
+    });
+
+    it('não remove nada antes da inserção: falha no meio mantém a WBS anterior', async () => {
+      wbsNodeModelMock.mockImplementationOnce(() => ({
+        save: jest.fn().mockRejectedValue(new Error('falha de gravação')),
+      }));
+
+      await expect(
+        service.save('p-1', [{ name: 'Fase 1', level: 1, estimatedHours: 40 }]),
+      ).rejects.toThrow('falha de gravação');
+      expect(wbsNodeModelMock.deleteMany).not.toHaveBeenCalled();
     });
   });
 

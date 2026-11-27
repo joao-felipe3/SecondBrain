@@ -36,6 +36,41 @@ describe('WbsConversionOrchestrationService', () => {
     );
   });
 
+  describe('completeLeafTasks', () => {
+    const node: any = { _id: 'n1', name: 'Memorização Anki', estimatedHours: 80 };
+    const project: any = { id: 'p1', name: 'Proj 1' };
+
+    it('gera só as horas que faltam e passa os títulos existentes para evitar repetição', async () => {
+      const result = await service.completeLeafTasks({
+        leafNode: node,
+        nodePath: 'root > Anki',
+        project,
+        existingTaskNames: ['Criar deck básico', 'Revisar cartões'],
+        missingHours: 40,
+      });
+
+      expect(result.tasks).toHaveLength(1);
+      const call = mockDraftGenerationService.generateMicroTasksDraftsForLeafWithPlan.mock.calls[0][0];
+      expect(call.avoidTaskTitles).toEqual(['Criar deck básico', 'Revisar cartões']);
+      // 40h faltando = 2400min distribuídos em chunks
+      const total = call.chunkMinutes.reduce((a: number, b: number) => a + b, 0);
+      expect(total).toBe(2400);
+      expect(call.context.node.estimatedHours).toBe(40);
+    });
+
+    it('não chama a IA quando falta menos que uma micro-tarefa', async () => {
+      const result = await service.completeLeafTasks({
+        leafNode: node,
+        nodePath: 'p',
+        project,
+        existingTaskNames: [],
+        missingHours: 0.1,
+      });
+      expect(result.tasks).toEqual([]);
+      expect(mockDraftGenerationService.generateMicroTasksDraftsForLeafWithPlan).not.toHaveBeenCalled();
+    });
+  });
+
   describe('convertWbsToTasks', () => {
     it('should successfully convert WBS node to tasks using two-phase strategy', async () => {
       const node: any = { _id: 'n1', name: 'Node 1', estimatedHours: 2 };
@@ -148,6 +183,20 @@ describe('WbsConversionOrchestrationService', () => {
   });
 
   describe('generateTasksForSingleLeaf', () => {
+    it('repassa os títulos proibidos (fatias anteriores) para a geração e não salva sem tasksService', async () => {
+      await service.generateTasksForSingleLeaf({
+        leafNode: { _id: 'anki', name: 'Anki', estimatedHours: 20 } as any,
+        nodePath: 'Chinês > Anki',
+        projectId: 'proj123',
+        project: {},
+        saveTasks: true,
+        avoidTaskTitles: ['Criar deck do cap. 1'],
+      });
+
+      const dto = mockDraftGenerationService.generateMicroTasksDraftsForLeafWithPlan.mock.calls[0][0];
+      expect(dto.avoidTaskTitles).toEqual(['Criar deck do cap. 1']);
+    });
+
     it('should orchestrate single leaf conversion and save tasks when requested via createMany', async () => {
       const mockTasksService: any = {
         createMany: jest.fn().mockResolvedValue([{ title: 'Persisted Task', pomodorosPlanned: 4 }]),

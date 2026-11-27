@@ -3,8 +3,6 @@ import {
   extractDefinitionOfDone,
   extractChecklistSteps,
   getLeafNodesWithPaths,
-  computeLeafHours,
-  shrinkLeafTasksToTargetHours,
 } from '@src/projects/services/wbs/utils/wbs-helpers.util';
 
 describe('wbs-helpers.util', () => {
@@ -40,7 +38,7 @@ describe('wbs-helpers.util', () => {
     });
   });
 
-  describe('getLeafNodesWithPaths, computeLeafHours & shrinkLeafTasksToTargetHours', () => {
+  describe('getLeafNodesWithPaths', () => {
     it('should extract leaf nodes with computed path strings', () => {
       const tree: any[] = [
         {
@@ -56,14 +54,6 @@ describe('wbs-helpers.util', () => {
       expect(leaves.length).toBe(2);
       expect(leaves[0].path).toBe('Fase 1 > Subfase 1.1');
       expect(leaves[1].path).toBe('Fase 1 > Subfase 1.2 > Pacote 1.2.1');
-    });
-
-    it('should compute leaf hours and shrink tasks to target hours', () => {
-      const tasks = [{ pomodorosPlanned: 4 }, { pomodorosPlanned: 6 }];
-      expect(computeLeafHours(tasks)).toBe(5); // 10 poms * 0.5 = 5h
-
-      shrinkLeafTasksToTargetHours(tasks, 2.5); // reduce to 5 poms total
-      expect(computeLeafHours(tasks)).toBe(2.5);
     });
   });
 });

@@ -1,4 +1,4 @@
-import { IsString, IsNumber, IsOptional, IsArray, IsBoolean, IsIn } from 'class-validator';
+import { IsString, IsNumber, IsOptional, IsArray, IsIn, IsObject, IsDefined } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
@@ -116,59 +116,10 @@ export class ValidateWBSResponseDto {
   suggestion?: string;
 }
 
-export class ConvertWBSToTasksDto {
-  @ApiProperty({
-    description: 'WBS nodes to convert to tasks',
-    type: [WBSNodeDto],
-  })
-  @IsArray()
-  @Type(() => WBSNodeDto)
-  nodes!: WBSNodeDto[];
-
-  @ApiPropertyOptional({
-    description:
-      'If true, automatically audits large estimate vs generated-hours discrepancies per leaf and applies the suggested resolution (rebaseline/simplify) before saving tasks.',
-    example: true,
-  })
-  @IsOptional()
-  @IsBoolean()
-  autoResolveDiscrepancies?: boolean;
-
-  @ApiPropertyOptional({
-    description:
-      'Discrepancy threshold percentage (generated vs estimated) that triggers auto-audit. Default is 60.',
-    example: 60,
-  })
-  @IsOptional()
-  @IsNumber()
-  autoAuditThresholdPct?: number;
-
-  @ApiPropertyOptional({
-    description: 'Conversion preferences for micro-task granularity and workflow mix',
-    example: {
-      targetPomodoros: 2,
-      workflowMix: { prepare: 0.2, practice: 0.4, produce: 0.3, test: 0.1 },
-    },
-  })
-  @IsOptional()
-  preferences?: {
-    targetPomodoros?: number;
-    workflowMix?: Record<string, number>;
-  };
-}
-
-export class GetLeafNodesDto {
-  @ApiProperty({
-    description: 'WBS nodes to extract leaf nodes from',
-    type: [WBSNodeDto],
-  })
-  @IsArray()
-  @Type(() => WBSNodeDto)
-  nodes!: WBSNodeDto[];
-}
-
-export class GenerateTasksForLeafDto {
-  @ApiProperty({ description: 'The leaf node to generate tasks for' })
+export class CompleteLeafTasksDto {
+  @ApiProperty({ description: 'The leaf node that needs more micro-tasks' })
+  @IsDefined()
+  @IsObject()
   @Type(() => WBSNodeDto)
   leafNode!: WBSNodeDto;
 
@@ -176,41 +127,31 @@ export class GenerateTasksForLeafDto {
   @IsString()
   nodePath!: string;
 
-  @ApiPropertyOptional({
-    description: 'Conversion preferences for micro-task granularity and workflow mix',
-    example: {
-      targetPomodoros: 2,
-      workflowMix: { prepare: 0.2, practice: 0.4, produce: 0.3, test: 0.1 },
-    },
+  @ApiProperty({
+    description: 'Names of the micro-tasks the leaf already has (to avoid repeating them)',
   })
+  @IsArray()
+  @IsString({ each: true })
+  existingTaskNames!: string[];
+
+  @ApiProperty({ description: 'Hours still missing to reach the leaf estimate' })
+  @IsNumber()
+  missingHours!: number;
+
+  @ApiPropertyOptional({ description: 'Conversion preferences (model override etc.)' })
   @IsOptional()
   preferences?: {
     targetPomodoros?: number;
     workflowMix?: Record<string, number>;
     modelOverride?: string;
   };
-
-  @ApiPropertyOptional({
-    description:
-      'Optional list of upcoming leaf nodes to prefetch in background (buffer). Used to make interactive conversion feel instant.',
-    type: [Object],
-  })
-  @IsOptional()
-  @IsArray()
-  prefetchLeafs?: Array<{
-    leafNode: WBSNodeDto;
-    nodePath: string;
-  }>;
-
-  @ApiPropertyOptional({
-    description: 'Whether to save tasks to database or return them only',
-  })
-  @IsOptional()
-  saveTasks?: boolean;
 }
 
 export class AuditLeafDiscrepancyDto {
+  // Mesmo caso de GenerateTasksForLeafDto: sem decorador o whitelist remove o campo.
   @ApiProperty({ description: 'The leaf node being audited' })
+  @IsDefined()
+  @IsObject()
   @Type(() => WBSNodeDto)
   leafNode!: WBSNodeDto;
 

@@ -3,42 +3,6 @@ import { Logger } from '@nestjs/common';
 import { Collection } from 'mongodb';
 import { TaskDomainEntity } from '../../tasks/interfaces/task-contexts.interface';
 
-export interface WaveTask {
-  id: string;
-  hours: number;
-  deadlineTime: number | null;
-  groupKey: string;
-}
-
-export interface WbsNodeFlat {
-  id: string;
-  parentId?: string;
-  level: number;
-  name: string;
-}
-
-export interface AIPlanWave {
-  waveNumber: number;
-  name: string;
-  description: string;
-  durationDays: number;
-  focus: string;
-  wbsAllocation: Record<string, number>;
-  taskIds: string[];
-}
-
-export interface AIPlan {
-  waves: AIPlanWave[];
-  rationale: string;
-}
-
-export interface AIWaveStructure {
-  recommendedWaveCount: number;
-  totalDurationDays: number;
-  description: string;
-  reasoning: string;
-}
-
 export interface WaveReplanSummary {
   waveNumber: number;
   updatedTasks: number;
@@ -52,32 +16,6 @@ export interface ReplanTaskDeadlinesResult {
   skippedConcludedCount: number;
   waveCount: number;
   summaries: WaveReplanSummary[];
-}
-
-export interface DeterministicWaveResult {
-  waveNumber: number;
-  startDate: Date;
-  endDate: Date;
-  status: 'planned';
-  taskIds: Types.ObjectId[];
-  description: string;
-}
-
-export interface DeterministicPartitionResult {
-  adjustedDeadline: Date | null;
-  waves: DeterministicWaveResult[];
-}
-
-export interface TimelineMetrics {
-  safeWaveLengthDays: number;
-  dayMs: number;
-  deadline: Date;
-  plannedDurationDays: number;
-  effectiveDurationDays: number;
-  adjustedDeadline: Date | null;
-  waveLengthMs: number;
-  waveCount: number;
-  waveCapacityHours: number;
 }
 
 export interface ReplanCalculationResult {
@@ -123,7 +61,10 @@ export interface PersistWaveChunkedDto {
 }
 
 export interface DeterministicProjectInput {
-  deadline: Date | string;
+  deadline?: Date | string | null;
+  name?: string;
+  description?: string;
+  smartObjective?: { summary?: string } | null;
 }
 
 export interface DeterministicTaskInput {
@@ -133,64 +74,6 @@ export interface DeterministicTaskInput {
   pertExpectedMinutes?: number | null;
   pomodorosPlanned?: number | null;
   parentWbsNodeId?: string | Types.ObjectId | null;
-}
-
-export interface DeterministicWbsNodeInput {
-  _id?: string | Types.ObjectId;
-  id?: string;
-  parentId?: string | Types.ObjectId;
-  level?: number;
-  name?: string;
-  children?: DeterministicWbsNodeInput[];
-}
-
-export interface PartitionTasksDeterministicDto {
-  project: DeterministicProjectInput;
-  tasks: DeterministicTaskInput[];
-  wbsTree: DeterministicWbsNodeInput[];
-  dailyCapacityHours: number;
-  waveLengthDays: number;
-  today: Date;
-}
-
-export interface TimelineMetricsOptions {
-  project: DeterministicProjectInput;
-  tasks: DeterministicTaskInput[];
-  dailyCapacityHours: number;
-  waveLengthDays: number;
-  today: Date;
-}
-
-export interface NormalizeTasksOptions {
-  tasks: DeterministicTaskInput[];
-  wbsTree: DeterministicWbsNodeInput[];
-  today: Date;
-  effectiveDurationDays: number;
-  dayMs: number;
-}
-
-export interface WaveAssignerInterface {
-  getTaskIdsForWave(waveIndex: number): Types.ObjectId[];
-  getUsedHours(): number[];
-  pushToWave(waveIndex: number, task: WaveTask): void;
-  findWaveIndexWithCapacity(preferredIndex: number, taskHours: number): number;
-  findLeastLoadedWave(): number;
-}
-
-export interface AllocateTasksWithDeadlineOptions {
-  assigner: WaveAssignerInterface;
-  normalizedTasks: WaveTask[];
-  today: Date;
-  waveLengthMs: number;
-  waveCount: number;
-}
-
-export interface BuildWavesOptions {
-  assigner: WaveAssignerInterface;
-  waveCount: number;
-  waveLengthMs: number;
-  today: Date;
-  currentDeadline: Date;
 }
 
 export interface ReplanWaveInput {
@@ -263,25 +146,4 @@ export interface BuildWaveSummaryOptions {
   skippedConcludedTasks: number;
   startDate: Date | null;
   endDate: Date | null;
-}
-
-export interface PlanWaveStructureParams {
-  project: { name?: string; deadline: Date | string };
-  tasks: Array<{ pertExpectedMinutes?: number | null; pomodorosPlanned?: number | null }>;
-  dailyCapacityHours: number;
-}
-
-export interface PlanWaveGroupingParams {
-  project: { name?: string; deadline: Date | string };
-  tasks: Array<{
-    _id?: string | Types.ObjectId | null;
-    id?: string | null;
-    name?: string;
-    wbsPath?: string;
-    pertExpectedMinutes?: number | null;
-    pomodorosPlanned?: number | null;
-  }>;
-  waveCount: number;
-  wbsTree: unknown[];
-  dailyCapacityHours: number;
 }

@@ -97,6 +97,21 @@ describe('navegação de páginas', () => {
     expect(new Set(ids).size).toBe(ids.length);
   });
 
+  it('segue o fluxo WBS → ondas → micro-tarefas', () => {
+    expect(GRIMOIRE_CHAPTERS.map((c) => c.id)).toEqual([
+      'geral',
+      'smart',
+      'eap',
+      'rtm',
+      'caminho-critico',
+      'pert',
+      'gantt',
+      'riscos',
+      'x-matrix',
+      'backlog',
+    ]);
+  });
+
   it('limita o índice aos limites do livro', () => {
     expect(clampChapter(-3, 10)).toBe(0);
     expect(clampChapter(4, 10)).toBe(4);

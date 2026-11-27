@@ -192,6 +192,16 @@ export class CreateTaskDto {
   @IsOptional()
   wbsPath?: string;
 
+  @ApiPropertyOptional({ description: 'Onda (Rolling Wave) que originou a tarefa' })
+  @IsOptional()
+  @IsString()
+  waveId?: string;
+
+  @ApiPropertyOptional({ description: 'Fatia do pacote WBS dentro da onda' })
+  @IsOptional()
+  @IsString()
+  waveSliceId?: string;
+
   @ApiPropertyOptional()
   @IsOptional()
   generationBatchId?: string;

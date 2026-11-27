@@ -4,6 +4,13 @@
       <div class="leaf-header">
         <h3 class="text-subtitle-1 mb-1">{{ currentLeaf.node.name }}</h3>
         <p class="text-caption text-medium-emphasis">{{ currentLeaf.path }}</p>
+        <p v-if="currentLeaf.goal" class="text-body-2 mt-1 mb-0">
+          <strong v-if="(currentLeaf.sliceCount || 1) > 1"
+            >Fatia {{ currentLeaf.sliceIndex }}/{{ currentLeaf.sliceCount }}:</strong
+          >
+          <strong v-else>Escopo:</strong>
+          {{ currentLeaf.goal }}
+        </p>
       </div>
 
       <v-alert
@@ -15,12 +22,14 @@
       >
         <div class="text-caption">
           <strong>Orçamento:</strong> {{ currentLeaf.node.estimatedHours }}h &nbsp;
-          <strong>Gerado:</strong> {{ currentGeneratedResult.generatedHours.toFixed(1) }}h
-          ({{ currentGeneratedResult.pomodorosGenerated }} 🍅)
+          <strong>Gerado:</strong> {{ currentGeneratedResult.generatedHours.toFixed(1) }}h ({{
+            currentGeneratedResult.pomodorosGenerated
+          }}
+          🍅)
           <br />
           <strong>Diferença:</strong>
           <span :class="differenceClass">
-            {{ (currentGeneratedResult.generatedHours - currentLeaf.node.estimatedHours) >= 0 ? '+' : '' }}
+            {{ currentGeneratedResult.generatedHours - currentLeaf.node.estimatedHours >= 0 ? '+' : '' }}
             {{ (currentGeneratedResult.generatedHours - currentLeaf.node.estimatedHours).toFixed(1) }}h
             ({{ differencePercentage.toFixed(0) }}%)
           </span>
@@ -73,23 +82,23 @@
 </template>
 
 <script setup lang="ts">
-import type { PropType } from 'vue'
-import type { LeafNode } from '~/composables/features/useConversionHelpers'
-import { useConversionHelpers } from '~/composables/features/useConversionHelpers'
+import type { PropType } from 'vue';
+import type { LeafNode } from '~/composables/features/useConversionHelpers';
+import { useConversionHelpers } from '~/composables/features/useConversionHelpers';
 
 defineProps({
-  currentLeaf:           { type: Object as PropType<LeafNode | null>, default: null },
-  currentGeneratedResult:{ type: Object as PropType<any | null>, default: null },
-  differencePercentage:  { type: Number, required: true },
-  differenceClass:       { type: String, required: true },
-  budgetAlertType:       { type: String, required: true },
-})
+  currentLeaf: { type: Object as PropType<LeafNode | null>, default: null },
+  currentGeneratedResult: { type: Object as PropType<any | null>, default: null },
+  differencePercentage: { type: Number, required: true },
+  differenceClass: { type: String, required: true },
+  budgetAlertType: { type: String, required: true },
+});
 
 const emit = defineEmits<{
-  'task-clicked': [task: any]
-}>()
+  'task-clicked': [task: any];
+}>();
 
-const { getPriorityColor, getTaskTypeIcon } = useConversionHelpers()
+const { getPriorityColor, getTaskTypeIcon } = useConversionHelpers();
 </script>
 
 <style scoped>

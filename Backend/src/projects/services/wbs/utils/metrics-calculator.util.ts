@@ -9,7 +9,6 @@ import {
   extractVerb,
   normalizePreferredPomodoros,
 } from './normalizers.util';
-import { WBSNodeDto } from '../../../dto/wbs.dto';
 import {
   PertCalculationResult,
   BatchMetricInputTask,
@@ -29,23 +28,6 @@ export function computePertFromMinutes(minutes: number): PertCalculationResult {
   const variance = Number(Math.pow((pessimistic - optimistic) / 6, 2).toFixed(2));
 
   return { optimistic, mostLikely, pessimistic, expected, variance };
-}
-
-// Estimate total micro-task count from WBS nodes
-export function estimateMicroTaskCount(nodes: WBSNodeDto[]): number {
-  let count = 0;
-  const traverse = (list: WBSNodeDto[]) => {
-    for (const node of list) {
-      if (!node.children || node.children.length === 0) {
-        const totalMinutes = Math.max(0, Math.round((node.estimatedHours || 0) * 60));
-        count += computeChunkMinutes(totalMinutes).length;
-      } else {
-        traverse(node.children);
-      }
-    }
-  };
-  traverse(nodes);
-  return count;
 }
 
 function calculateTargetChunks(params: ChunkMinutesParams): number {

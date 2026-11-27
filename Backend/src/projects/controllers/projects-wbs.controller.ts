@@ -6,25 +6,18 @@ import {
   Param,
   NotFoundException,
   BadRequestException,
-  HttpException,
-  HttpStatus,
 } from '@nestjs/common';
 import { ProjectsService } from '../projects.service';
-import { WBSService, WbsValidationService, TaskConversionService, AuditService } from '../services/wbs';
+import { WBSService, WbsValidationService, AuditService } from '../services/wbs';
 import {
   GenerateWBSDto,
   SaveWBSDto,
   SuggestDecompositionDto,
-  ConvertWBSToTasksDto,
-  GetLeafNodesDto,
-  GenerateTasksForLeafDto,
+  CompleteLeafTasksDto,
   AuditLeafDiscrepancyDto,
   ResolveWBSBudgetDto,
 } from '../dto/wbs.dto';
-import { TasksService } from '../../tasks/tasks.service';
-import { LeafTasksBufferService } from '../services/execution';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
-import { createHash } from 'crypto';
 
 @ApiTags('projects')
 @Controller('projects')
@@ -33,53 +26,8 @@ export class ProjectsWbsController {
     private readonly projectsService: ProjectsService,
     private readonly wbsService: WBSService,
     private readonly validation: WbsValidationService,
-    private readonly taskConversionService: TaskConversionService,
     private readonly auditService: AuditService,
-    private readonly tasksService: TasksService,
-    private readonly leafBuffer: LeafTasksBufferService,
   ) {}
-
-  private hashKey(input: any): string {
-    const raw = typeof input === 'string' ? input : JSON.stringify(input);
-    return createHash('sha1').update(raw).digest('hex').slice(0, 16);
-  }
-
-  private buildLeafBufferKey(
-    projectId: string,
-    leafNode: Record<string, unknown> | null | undefined,
-    nodePath: string,
-    preferences: Record<string, unknown> | null | undefined,
-  ): string {
-    const fingerprint = {
-      v: 1,
-      nodeId: (() => {
-        if (!leafNode || typeof leafNode !== 'object' || !('_id' in leafNode)) return undefined;
-        const rawId = (leafNode as { _id?: unknown })._id;
-        if (typeof rawId === 'string') return rawId;
-        if (typeof rawId === 'number') return String(rawId);
-        if (
-          rawId &&
-          typeof rawId === 'object' &&
-          'toString' in rawId &&
-          typeof rawId.toString === 'function'
-        ) {
-          return (rawId as { toString(): string }).toString();
-        }
-        return undefined;
-      })(),
-      nodeName: leafNode?.name,
-      nodeDesc: leafNode?.description,
-      estimatedHours: leafNode?.estimatedHours,
-      nodePath,
-      preferences: preferences || {},
-      model:
-        preferences?.modelOverride ||
-        process.env.GEMINI_MODEL ||
-        process.env.WBS_GEMINI_MODEL ||
-        undefined,
-    };
-    return `leafbuf:${projectId}:${this.hashKey(fingerprint)}`;
-  }
 
   private extractTargetDate(temporal: string | undefined, fallbackDeadline?: Date): Date {
     const text = String(temporal || '');
@@ -238,166 +186,26 @@ export class ProjectsWbsController {
     return { suggestion };
   }
 
-  @Post(':id/wbs/convert-to-tasks')
+  @Post(':id/wbs/complete-leaf-tasks')
   @ApiOperation({
-    summary: 'Convert WBS leaf nodes into project tasks with AI enrichment',
+    summary: 'Generate only the missing micro-tasks of a leaf (after an audit)',
   })
-  @ApiResponse({ status: 200, description: 'Tasks created from WBS.' })
-  async convertWBSToTasks(@Param('id') id: string, @Body() dto: ConvertWBSToTasksDto) {
+  @ApiResponse({ status: 200, description: 'Additional micro-tasks for the leaf.' })
+  async completeLeafTasks(@Param('id') id: string, @Body() dto: CompleteLeafTasksDto) {
     const project = await this.projectsService.findOne(id);
     if (!project) throw new NotFoundException('Project not found');
 
-    const result = await this.taskConversionService.convertWBSToTasksWithAI({
-      nodes: dto.nodes,
-      projectId: id,
+    const result = await this.wbsService.completeLeafTasks({
+      leafNode: dto.leafNode,
+      nodePath: dto.nodePath,
       project,
-      tasksService: this.tasksService,
+      existingTaskNames: dto.existingTaskNames,
+      missingHours: dto.missingHours,
       preferences: dto.preferences,
-      options: {
-        autoResolveDiscrepancies: !!dto.autoResolveDiscrepancies,
-        autoAuditThresholdPct: dto.autoAuditThresholdPct,
-      },
     });
-
-    return {
-      message:
-        `✅ Conversão bem-sucedida: ${result.createdTasks.length} micro-tarefas (≤3h) criadas a partir da WBS (pacotes 8/80)` +
-        (dto.autoResolveDiscrepancies && result.auditsApplied.length
-          ? ` • Auditoria aplicada em ${result.auditsApplied.length} pacote(s)`
-          : ''),
-      tasks: result.createdTasks,
-      wbsUpdates: result.wbsUpdates,
-      auditsApplied: result.auditsApplied,
-      summary: {
-        totalTasks: result.createdTasks.length,
-        totalPomodoros: (result.createdTasks as Record<string, unknown>[]).reduce(
-          (sum: number, t: Record<string, unknown>) =>
-            sum + (typeof t.pomodorosPlanned === 'number' ? t.pomodorosPlanned : 0),
-          0,
-        ),
-        estimatedHours: (
-          (result.createdTasks as Record<string, unknown>[]).reduce(
-            (sum: number, t: Record<string, unknown>) =>
-              sum + (typeof t.pomodorosPlanned === 'number' ? t.pomodorosPlanned : 0),
-            0,
-          ) * 0.5
-        ).toFixed(1),
-      },
-    };
-  }
-
-  @Post(':id/wbs/leaf-nodes')
-  @ApiOperation({
-    summary: 'Get all leaf nodes from WBS tree with their paths (for interactive generation)',
-  })
-  @ApiResponse({ status: 200, description: 'List of leaf nodes with paths' })
-  getLeafNodes(@Param('id') _id: string, @Body() dto: GetLeafNodesDto) {
-    const leafNodes = this.wbsService.getLeafNodesWithPaths(dto.nodes);
-
-    return {
-      leafNodes,
-      total: leafNodes.length,
-      totalHours: leafNodes.reduce((sum, leaf) => sum + (leaf.node.estimatedHours || 0), 0),
-    };
-  }
-
-  @Post(':id/wbs/generate-tasks-for-leaf')
-  @ApiOperation({
-    summary: 'Generate tasks for a single leaf node (interactive mode)',
-  })
-  @ApiResponse({
-    status: 200,
-    description: 'Tasks generated for the leaf node',
-  })
-  async generateTasksForLeaf(@Param('id') id: string, @Body() dto: GenerateTasksForLeafDto) {
-    const project = await this.projectsService.findOne(id);
-    if (!project) throw new NotFoundException('Project not found');
-
-    const preferences = dto.preferences || {};
-    const currentKey = this.buildLeafBufferKey(
-      id,
-      dto.leafNode as unknown as Record<string, unknown>,
-      dto.nodePath,
-      preferences,
-    );
-
-    const prefetchLeafs = Array.isArray(dto.prefetchLeafs) ? dto.prefetchLeafs : [];
-    for (const p of prefetchLeafs) {
-      if (!p?.leafNode || !p?.nodePath) continue;
-      if (String(p.nodePath) === String(dto.nodePath)) continue;
-      const key = this.buildLeafBufferKey(
-        id,
-        p.leafNode as unknown as Record<string, unknown>,
-        p.nodePath,
-        preferences,
-      );
-      this.leafBuffer.prefetch(key, id, async () => {
-        return this.wbsService.generateTasksForSingleLeaf({
-          leafNode: p.leafNode,
-          nodePath: p.nodePath,
-          projectId: id,
-          project,
-          tasksService: this.tasksService,
-          preferences,
-          saveTasks: false,
-        });
-      });
-    }
-
-    const shouldUseBuffer = !(dto.saveTasks || false);
-    const buffered = shouldUseBuffer
-      ? await this.leafBuffer.consume<{ tasks?: unknown[] }>(currentKey)
-      : null;
-    if (buffered) {
-      return {
-        ...buffered,
-        message: dto.saveTasks
-          ? `✅ ${buffered.tasks?.length || 0} micro-tarefas criadas com sucesso`
-          : `📝 ${buffered.tasks?.length || 0} micro-tarefas preparadas para revisão`,
-      };
-    }
-
-    let result: { tasks: unknown[] };
-    try {
-      result = await this.wbsService.generateTasksForSingleLeaf({
-        leafNode: dto.leafNode,
-        nodePath: dto.nodePath,
-        projectId: id,
-        project,
-        tasksService: this.tasksService,
-        preferences,
-        saveTasks: dto.saveTasks || false,
-      });
-    } catch (err: unknown) {
-      const errorObj = err as {
-        code?: string;
-        retryAfterMs?: number;
-        isQuotaExceeded?: boolean;
-        model?: string;
-      };
-      if (errorObj?.code === 'RATE_LIMIT') {
-        const retryAfterMs = Number(errorObj?.retryAfterMs);
-        throw new HttpException(
-          {
-            message: errorObj?.isQuotaExceeded
-              ? 'Limite/Quota do Gemini atingido. Tente novamente mais tarde ou aumente a quota/billing.'
-              : 'Rate limit do Gemini. Aguarde e tente novamente.',
-            code: 'RATE_LIMIT',
-            isQuotaExceeded: !!errorObj?.isQuotaExceeded,
-            retryAfterMs: Number.isFinite(retryAfterMs) ? retryAfterMs : undefined,
-            model: errorObj?.model,
-          },
-          HttpStatus.TOO_MANY_REQUESTS,
-        );
-      }
-      throw err;
-    }
-
     return {
       ...result,
-      message: dto.saveTasks
-        ? `✅ ${result.tasks.length} micro-tarefas criadas com sucesso`
-        : `📝 ${result.tasks.length} micro-tarefas preparadas para revisão`,
+      message: `📝 ${result.tasks.length} micro-tarefas adicionais geradas`,
     };
   }
 

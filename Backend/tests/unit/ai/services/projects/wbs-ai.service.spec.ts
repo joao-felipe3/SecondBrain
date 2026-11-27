@@ -38,6 +38,35 @@ describe('WbsAiService', () => {
       expect(nodes).toHaveLength(1);
     });
 
+    it('aceita o array mesmo com texto antes e depois do JSON', async () => {
+      mockGeminiExecutor.generateContent.mockResolvedValue(
+        'Aqui está a WBS:\n[{"name": "Fase 1", "estimatedHours": 20}]\nEspero que ajude.',
+      );
+
+      const nodes = await service.generateWbs({ title: 'Novo Sistema' } as any);
+      expect(nodes).toHaveLength(1);
+      expect(nodes[0].name).toBe('Fase 1');
+    });
+
+    it('pede uma nova resposta quando a primeira vem só como texto', async () => {
+      mockGeminiExecutor.generateContent
+        .mockResolvedValueOnce('Project Management Plan: sem estrutura JSON nenhuma')
+        .mockResolvedValueOnce('[{"name": "Fase 1", "estimatedHours": 20}]');
+
+      const nodes = await service.generateWbs({ title: 'Novo Sistema' } as any);
+      expect(nodes[0].name).toBe('Fase 1');
+      expect(mockGeminiExecutor.generateContent).toHaveBeenCalledTimes(2);
+    });
+
+    it('não repete a chamada quando a própria IA falha', async () => {
+      mockGeminiExecutor.generateContent.mockRejectedValue(new Error('quota'));
+
+      await expect(service.generateWbs({ title: 'Novo Sistema' } as any)).rejects.toThrow(
+        'Não foi possível gerar a WBS com IA',
+      );
+      expect(mockGeminiExecutor.generateContent).toHaveBeenCalledTimes(1);
+    });
+
     it('deve lancar erro se o retorno nao for um array JSON', async () => {
       mockGeminiExecutor.generateContent.mockResolvedValue('{"not": "an array"}');
       await expect(service.generateWbs({ title: 'Novo Sistema' } as any)).rejects.toThrow(

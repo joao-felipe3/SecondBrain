@@ -5,6 +5,8 @@ import { WaveAndRiskController } from '@src/projects/controllers/wave-and-risk.c
 describe('WaveAndRiskController', () => {
   let controller: WaveAndRiskController;
   let mockWaveService: any;
+  let mockWaveDetailing: any;
+  let mockLeafBuffer: any;
   let mockRiskService: any;
   let mockEvmService: any;
   let mockEvmProgressService: any;
@@ -76,8 +78,20 @@ describe('WaveAndRiskController', () => {
       }),
     };
 
+    mockWaveDetailing = {
+      getDetailItems: jest.fn().mockResolvedValue([
+        { sliceId: 's1', node: { name: 'Anki', estimatedHours: 20 }, path: 'A > Anki', level: 2 },
+        { sliceId: 's2', node: { name: 'Leitura', estimatedHours: 8 }, path: 'A > Leitura', level: 2 },
+      ]),
+      generateSliceTasks: jest.fn().mockResolvedValue({ tasks: [{ name: 'T1' }], sliceId: 's1' }),
+      commitTasks: jest.fn().mockResolvedValue({ _id: 'w1', slices: [] }),
+    };
+    mockLeafBuffer = { prefetch: jest.fn(), consume: jest.fn().mockResolvedValue(null) };
+
     controller = new WaveAndRiskController(
       mockWaveService,
+      mockWaveDetailing,
+      mockLeafBuffer,
       mockRiskService,
       mockEvmService,
       mockEvmProgressService,
@@ -85,6 +99,54 @@ describe('WaveAndRiskController', () => {
       mockCpmService,
       mockProjectModel,
     );
+  });
+
+  describe('detalhamento de onda', () => {
+    it('lista as fatias da onda com o total de horas', async () => {
+      const res = await controller.getWaveDetailItems(validProjId, 'w1');
+      expect(res.total).toBe(2);
+      expect(res.totalHours).toBe(28);
+    });
+
+    it('gera a fatia pedida e pré-carrega as próximas', async () => {
+      const res = await controller.generateWaveSliceTasks(validProjId, 'w1', 's1', {
+        prefetchSliceIds: ['s1', 's2'],
+      });
+      expect(res.tasks).toHaveLength(1);
+      expect(mockWaveDetailing.generateSliceTasks).toHaveBeenCalledWith(validProjId, 'w1', 's1', {});
+      // não pré-carrega a própria fatia
+      expect(mockLeafBuffer.prefetch).toHaveBeenCalledTimes(1);
+      expect(mockLeafBuffer.prefetch.mock.calls[0][0]).toContain(':s2:');
+    });
+
+    it('usa o resultado pré-carregado quando existe', async () => {
+      mockLeafBuffer.consume.mockResolvedValueOnce({ tasks: [{ name: 'do buffer' }] });
+      const res = await controller.generateWaveSliceTasks(validProjId, 'w1', 's2', {});
+      expect(res.tasks).toEqual([{ name: 'do buffer' }]);
+      expect(mockWaveDetailing.generateSliceTasks).not.toHaveBeenCalled();
+    });
+
+    it('limite do Gemini vira 429', async () => {
+      mockWaveDetailing.generateSliceTasks.mockRejectedValueOnce({
+        code: 'RATE_LIMIT',
+        retryAfterMs: 5000,
+        isQuotaExceeded: true,
+      });
+      await expect(controller.generateWaveSliceTasks(validProjId, 'w1', 's1', {})).rejects.toMatchObject(
+        {
+          status: 429,
+        },
+      );
+    });
+
+    it('commit repassa os re-baselines', async () => {
+      await controller.commitWaveTasks(validProjId, 'w1', {
+        sliceHours: [{ sliceId: 's1', hours: 24 }],
+      });
+      expect(mockWaveDetailing.commitTasks).toHaveBeenCalledWith(validProjId, 'w1', [
+        { sliceId: 's1', hours: 24 },
+      ]);
+    });
   });
 
   describe('Rolling wave & risk endpoints', () => {

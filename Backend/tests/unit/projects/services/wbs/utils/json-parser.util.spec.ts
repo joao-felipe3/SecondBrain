@@ -124,4 +124,21 @@ describe('json-parser.util', () => {
       expect(() => extractJsonObject(input)).toThrow('Não foi possível extrair objeto JSON');
     });
   });
+
+  describe('resposta com rascunho antes do JSON final (Gemma)', () => {
+    const draft =
+      '*   Output: JSON array.\n    *   Object structure: `{"name": "x"}`.\n    *   Constraint: [only JSON].\n';
+
+    it('extractJsonArray usa o último bloco cercado e ignora o rascunho', () => {
+      const response = `${draft}\n\`\`\`json\n[{"name": "Tarefa 1"}, {"name": "Tarefa 2"}]\n\`\`\``;
+      const arr = extractJsonArray<{ name: string }>(response);
+      expect(arr.map((t) => t.name)).toEqual(['Tarefa 1', 'Tarefa 2']);
+    });
+
+    it('extractJsonObject usa o último bloco cercado e ignora o rascunho', () => {
+      const response = `${draft}\n\`\`\`json\n{"themes": [{"name": "Lar"}]}\n\`\`\``;
+      const obj = extractJsonObject<{ themes: { name: string }[] }>(response);
+      expect(obj.themes[0].name).toBe('Lar');
+    });
+  });
 });

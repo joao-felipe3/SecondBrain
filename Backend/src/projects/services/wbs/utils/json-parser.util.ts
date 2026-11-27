@@ -5,6 +5,12 @@
 /** Strip markdown fences and isolate JSON content. */
 function cleanMarkdown(response: string): string {
   let s = response.trim();
+  // Modelos com raciocínio (ex.: Gemma) escrevem um rascunho antes da resposta final, com
+  // trechos em crase que parecem JSON. A resposta final é o último bloco cercado por ```.
+  const fencedBlocks = [...s.matchAll(/```(?:json)?\s*([\s\S]*?)```/gi)];
+  if (fencedBlocks.length > 0) {
+    s = fencedBlocks[fencedBlocks.length - 1][1];
+  }
   // Remove markdown code fences
   s = s.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/i, '');
   return s.trim();

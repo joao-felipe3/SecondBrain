@@ -20,6 +20,7 @@ import {
   createBatches,
   assembleEnrichedBatches,
   isJsonishError,
+  resolvePomodoros,
   getConcurrencyParams,
 } from '@src/projects/services/drafts/utils/draft-generation-helpers.util';
 
@@ -141,10 +142,24 @@ describe('draft-generation-helpers.util', () => {
     expect(enriched[0].description).toBe('d1');
   });
 
+  it('resolvePomodoros deriva os pomodoros da duração-alvo do chunk', () => {
+    // 120min (pacote de 80h dividido em 40 chunks) -> 4 pomodoros (2h), não os 2 que o modelo costuma dar
+    expect(resolvePomodoros(2, 120)).toBe(4);
+    expect(resolvePomodoros(2, 50)).toBe(2);
+    expect(resolvePomodoros(5, 25)).toBe(1);
+    expect(resolvePomodoros(1, 400)).toBe(6);
+    // sem duração-alvo, usa o valor do modelo (limitado a 1-6)
+    expect(resolvePomodoros(3, undefined)).toBe(3);
+    expect(resolvePomodoros(99, 0)).toBe(6);
+    expect(resolvePomodoros('x', undefined)).toBe(1);
+  });
+
   it('isJsonishError', () => {
     expect(isJsonishError(new Error('JSON parse error'))).toBe(true);
     expect(isJsonishError('Incomplete array response')).toBe(true);
     expect(isJsonishError({ message: 'JSON invalid format' })).toBe(true);
+    expect(isJsonishError(new Error('IA retornou 1 details; esperado 2'))).toBe(true);
+    expect(isJsonishError(new Error('Details inválidos no lote: root: Required'))).toBe(true);
     expect(isJsonishError(new Error('Database disconnected'))).toBe(false);
   });
 

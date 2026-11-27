@@ -221,6 +221,8 @@ export class TasksWriteService {
     'parentTaskId',
     'parentWbsNodeId',
     'wbsPath',
+    'waveId',
+    'waveSliceId',
     'generationBatchId',
     'milestoneId',
     'experience',

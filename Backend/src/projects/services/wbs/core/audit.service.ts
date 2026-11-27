@@ -1,12 +1,22 @@
 import { Injectable } from '@nestjs/common';
 import { computeBatchMetrics } from '../utils/metrics-calculator.util';
+import { taskTitleKey } from '../utils/normalizers.util';
 import {
   LeafAuditResult,
   AuditLeafDiscrepancyInput,
   ApplyGuardrailsParams,
+  AuditAction,
+  AuditDiagnosis,
   BatchMetricsResult,
 } from '../../../interfaces';
 import { WbsAiService } from '../../../../ai/services/projects/wbs-ai.service';
+
+// Diferença (em %) a partir da qual a discrepância é enviada à IA.
+const DISCREPANCY_AI_THRESHOLD_PCT = 20;
+// Auditoria automática dentro do limiar: só avisa com pelo menos 15% de títulos repetidos
+// e no mínimo 3 tarefas repetidas (1-2 repetições soltas não justificam o aviso).
+const REPETITION_FLAG_RATIO = 0.15;
+const REPETITION_FLAG_MIN_COUNT = 3;
 
 // Audits discrepancies between WBS estimates and generated micro-tasks
 @Injectable()
@@ -33,6 +43,16 @@ export class AuditService {
     const discrepancyMetrics = this.computeDiscrepancyMetrics(dto);
     const duplicateMetrics = this.computeDuplicateMetrics(Array.isArray(dto?.tasks) ? dto.tasks : []);
     const tasksPreview = this.formatTasksPreview(Array.isArray(dto?.tasks) ? dto.tasks : []);
+
+    // Dentro do limiar a discrepância não justifica uma chamada à IA, mas a repetição ainda
+    // pode: a auditoria automática do fim de cada pacote cai aqui (sem custo de IA).
+    if (Math.abs(discrepancyMetrics.diffPct) < DISCREPANCY_AI_THRESHOLD_PCT) {
+      return this.auditWithinThreshold(
+        discrepancyMetrics,
+        Array.isArray(dto?.tasks) ? dto.tasks.length : 0,
+        duplicateMetrics,
+      );
+    }
 
     const modelOverride = this.getModelOverride();
 
@@ -72,7 +92,44 @@ export class AuditService {
       diagnosis: finalResult.diagnosis,
       rationale,
       suggestedAction: finalResult.suggestedAction,
-      suggestedEstimatedHours: parsedResponse.suggestedEstimatedHours,
+      // Regenerar não altera a estimativa: as horas sugeridas só valem para re-baseline/simplify.
+      suggestedEstimatedHours:
+        finalResult.suggestedAction === 'regenerate'
+          ? undefined
+          : parsedResponse.suggestedEstimatedHours,
+    };
+  }
+
+  // Diferença pequena: só aponta repetição (determinístico) ou confirma que está tudo certo.
+  private auditWithinThreshold(
+    discrepancy: { budgetHours: number; generatedHours: number; diffPct: number },
+    taskCount: number,
+    duplicates: {
+      duplicateRatio: number;
+      topDuplicateKeys: string;
+      repetitionMetrics: BatchMetricsResult;
+    },
+  ): LeafAuditResult {
+    // Só títulos realmente repetidos contam. O dupScore das métricas ignora números e
+    // parênteses ("capítulo 1" = "capítulo 2"), por isso superestima e não é usado aqui.
+    const repeatedCount = Math.round(duplicates.duplicateRatio * taskCount);
+    const repetitive =
+      duplicates.duplicateRatio >= REPETITION_FLAG_RATIO && repeatedCount >= REPETITION_FLAG_MIN_COUNT;
+    if (!repetitive) {
+      return {
+        diagnosis: 'ok',
+        suggestedAction: 'none',
+        rationale: `Gerado ${discrepancy.generatedHours.toFixed(1)}h para ${discrepancy.budgetHours.toFixed(1)}h orçadas, sem repetição relevante.`,
+      };
+    }
+    const topRepeated = duplicates.topDuplicateKeys.split(', ').slice(0, 3).join(', ');
+    return {
+      diagnosis: 'repetitive',
+      suggestedAction: 'regenerate',
+      rationale:
+        `${repeatedCount} de ${taskCount} micro-tarefas repetem títulos (${(duplicates.duplicateRatio * 100).toFixed(0)}%). ` +
+        (topRepeated ? `Ex.: ${topRepeated}. ` : '') +
+        `A sugestão remove as repetidas e gera só o que falta.`,
     };
   }
 
@@ -129,17 +186,7 @@ export class AuditService {
   }
 
   private normalizeTaskKey(name: string): string {
-    const raw = String(name || '')
-      .trim()
-      .toLowerCase();
-    const withoutCounters = raw.replace(/\(\s*\d+\s*\/\s*\d+\s*\)\s*$/g, '').trim();
-    const normalized = withoutCounters
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
-      .replace(/[^a-z0-9\s]/g, ' ')
-      .replace(/\s+/g, ' ')
-      .trim();
-    return normalized;
+    return taskTitleKey(name);
   }
 
   private formatTasksPreview(taskList: AuditLeafDiscrepancyInput['tasks']): string {
@@ -171,11 +218,28 @@ export class AuditService {
   }
 
   private applyGuardrails(params: ApplyGuardrailsParams): {
-    diagnosis: 'underestimated' | 'gold_plating' | 'mixed';
-    suggestedAction: 'rebaseline' | 'simplify';
+    diagnosis: AuditDiagnosis;
+    suggestedAction: AuditAction;
   } {
     const { diagnosis, suggestedAction, duplicateRatio, repetitionMetrics, diffPct, taskLength } =
       params;
+
+    // Discrepância negativa: só fazem sentido "overestimated" (rebaseline para baixo)
+    // e "incomplete" (regenerar). Mantém diagnóstico e ação coerentes entre si.
+    if (diffPct < 0) {
+      if (diagnosis === 'incomplete' || suggestedAction === 'regenerate') {
+        return { diagnosis: 'incomplete', suggestedAction: 'regenerate' };
+      }
+      return { diagnosis: 'overestimated', suggestedAction: 'rebaseline' };
+    }
+    // Discrepância positiva: os diagnósticos de "faltou detalhe" não se aplicam.
+    if (
+      diagnosis === 'overestimated' ||
+      diagnosis === 'incomplete' ||
+      suggestedAction === 'regenerate'
+    ) {
+      return { diagnosis: 'underestimated', suggestedAction: 'rebaseline' };
+    }
     let finalDiagnosis = diagnosis;
     let finalSuggestedAction = suggestedAction;
 

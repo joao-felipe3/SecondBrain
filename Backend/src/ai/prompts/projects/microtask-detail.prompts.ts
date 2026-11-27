@@ -1,3 +1,4 @@
+import { buildAntiRepetitionBlock } from './anti-repetition.prompts';
 import { WBSNodeDto } from '../../../projects/dto/wbs.dto';
 import { normalizeWorkflowTypes } from '../../../projects/services/wbs/utils/normalizers.util';
 import { WBSLeafProjectContext } from '../../../projects/interfaces/drafts.interface';
@@ -178,15 +179,7 @@ test: testar, avaliar, simular, verificar, validar
 consolidate: resumir, conectar, padronizar, registrar, documentar
 `;
 
-  const avoidTitles = (params.avoidTaskTitles || [])
-    .map((t) => String(t || '').trim())
-    .filter(Boolean)
-    .slice(-20);
-  const avoidTitlesBlock = avoidTitles.length
-    ? `\n\nANTI-REPETIÇÃO (títulos já usados; NÃO repita nem gere muito similar):\n${avoidTitles
-        .map((t, i) => `${i + 1}. ${t}`)
-        .join('\n')}\n`
-    : '';
+  const avoidTitlesBlock = buildAntiRepetitionBlock(params.avoidTaskTitles);
 
   return `Você é um especialista em criar micro-tarefas de execução (25 a 150 minutos) a partir de um PLANO.
 

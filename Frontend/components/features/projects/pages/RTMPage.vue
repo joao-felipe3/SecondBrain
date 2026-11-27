@@ -1,37 +1,30 @@
 <template>
   <v-sheet class="page-container" elevation="0" color="transparent" @click.stop>
-    <!-- LEFT PAGE: Matriz da Jornada -->
+    <!-- LEFT PAGE: Planejamento em Ondas (passo seguinte à WBS) -->
     <v-sheet class="page left-page" elevation="0" color="transparent" @click.stop>
-      <h3 class="page-title mb-4">🔗 Jornada Pessoal Rastreável</h3>
-
-      <RTMMatrix
-        v-if="project._id"
-        :projectId="project._id"
-        :smartObjective="project.smartObjective"
-      />
-    </v-sheet>
-
-    <!-- RIGHT PAGE: Planejamento em Ondas -->
-    <v-sheet class="page right-page" elevation="0" color="transparent" @click.stop>
       <h3 class="page-title mb-4">🌊 Planejamento em Ondas</h3>
 
-      <ProjectWavesTimeline
-        v-if="project._id"
-        :projectId="project._id"
-      />
+      <ProjectWavesTimeline v-if="project._id" :projectId="project._id" />
+    </v-sheet>
+
+    <!-- RIGHT PAGE: Matriz da Jornada (rastreabilidade das micro-tarefas) -->
+    <v-sheet class="page right-page" elevation="0" color="transparent" @click.stop>
+      <h3 class="page-title mb-4">🔗 Jornada Pessoal Rastreável</h3>
+
+      <RTMMatrix v-if="project._id" :projectId="project._id" :smartObjective="project.smartObjective" />
     </v-sheet>
   </v-sheet>
 </template>
 
 <script setup lang="ts">
-import RTMMatrix from '../sections/RTMMatrix.vue'
-import ProjectWavesTimeline from '../sections/ProjectWavesTimeline.vue'
-import type { Project } from '~/models/Project'
+import RTMMatrix from '../sections/RTMMatrix.vue';
+import ProjectWavesTimeline from '../sections/ProjectWavesTimeline.vue';
+import type { Project } from '~/models/Project';
 
 defineProps<{
-  project: Project
-  editing: boolean
-}>()
+  project: Project;
+  editing: boolean;
+}>();
 </script>
 
 <style scoped>

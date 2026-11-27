@@ -1,5 +1,5 @@
 // composables/api/useWbsApi.ts
-import { useApi } from "./useApi";
+import { useApi } from './useApi';
 
 export const useWbsApi = () => {
   const generateWbs = async (projectId: string, prompt?: string) => {
@@ -32,24 +32,10 @@ export const useWbsApi = () => {
     return post({ nodeId });
   };
 
-  const convertWbsToTasks = async (projectId: string, options?: any) => {
-    const { post } = useApi(`/projects/${projectId}/wbs/convert-to-tasks`);
-    return post(options || {});
-  };
-
-  const fetchLeafNodes = async (projectId: string) => {
-    const { post } = useApi(`/projects/${projectId}/wbs/leaf-nodes`);
-    return post({});
-  };
-
-  const generateTasksForLeaf = async (
-    projectId: string,
-    leafNodeId: string,
-  ) => {
-    const { post } = useApi(
-      `/projects/${projectId}/wbs/generate-tasks-for-leaf`,
-    );
-    return post({ leafNodeId });
+  // Rolling Wave: os pacotes viram ondas; as micro-tarefas são detalhadas por onda.
+  const planWaves = async (projectId: string, waveLengthDays = 28) => {
+    const { post } = useApi(`/projects/${projectId}/generate-waves`);
+    return post({ waveLengthDays });
   };
 
   return {
@@ -59,8 +45,6 @@ export const useWbsApi = () => {
     validateWbs,
     resolveBudget,
     suggestDecomposition,
-    convertWbsToTasks,
-    fetchLeafNodes,
-    generateTasksForLeaf,
+    planWaves,
   };
 };

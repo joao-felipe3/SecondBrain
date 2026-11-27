@@ -17,22 +17,17 @@ export class WbsPersistenceService {
   async save(projectId: string, nodes: WBSNodeDto[]): Promise<WBSNodeDocument[]> {
     const savedNodes: WBSNodeDocument[] = [];
 
-    // Clean _id from all nodes recursively before saving
-    const cleanNodeIds = (nodeList: WBSNodeDto[]): WBSNodeDto[] => {
-      return nodeList.map((node) => {
-        const cleanNode = { ...node };
-        delete cleanNode._id;
-        return {
-          ...cleanNode,
-          children: node.children && node.children.length > 0 ? cleanNodeIds(node.children) : [],
-        };
-      });
-    };
+    // Nós que já existem no projeto mantêm o _id: ondas, fatias e micro-tarefas referenciam
+    // os pacotes pelo id (wbsNodeId/parentWbsNodeId) e não podem perder o vínculo a cada salvamento.
+    const existingIds = new Set(
+      (await this.wbsNodeModel.find({ projectId }, { _id: 1 }).lean().exec()).map((d) =>
+        String((d as { _id: unknown })._id),
+      ),
+    );
 
-    const cleanedNodes = cleanNodeIds(nodes);
     const saveRecursive = async (nodeList: WBSNodeDto[], parentId: string | null = null, level = 1) => {
       for (const node of nodeList) {
-        const doc = new this.wbsNodeModel({
+        const fields = {
           projectId,
           name: node.name,
           description: node.description || '',
@@ -40,10 +35,18 @@ export class WbsPersistenceService {
           parentId,
           estimatedHours: node.estimatedHours,
           order: node.order || 0,
-          status: 'planned',
-        });
+        };
+        const currentId = node._id ? String(node._id) : '';
 
-        const saved = await doc.save();
+        let saved: WBSNodeDocument | null = null;
+        if (currentId && existingIds.has(currentId)) {
+          saved = await this.wbsNodeModel
+            .findOneAndUpdate({ _id: currentId, projectId }, fields, { new: true })
+            .exec();
+        }
+        if (!saved) {
+          saved = await new this.wbsNodeModel({ ...fields, status: 'planned' }).save();
+        }
         savedNodes.push(saved);
         const savedId = String(saved._id);
 
@@ -53,7 +56,13 @@ export class WbsPersistenceService {
       }
     };
 
-    await saveRecursive(cleanedNodes);
+    await saveRecursive(nodes);
+
+    // Substitui a WBS anterior: remove apenas os nós do projeto que não fazem parte da árvore
+    // recém-salva. Sem isso, cada salvamento acumulava uma cópia completa da árvore.
+    // Feito depois da inserção: se ela falhar, a WBS anterior continua no banco.
+    const keepIds = savedNodes.map((saved) => saved._id);
+    await this.wbsNodeModel.deleteMany({ projectId, _id: { $nin: keepIds } });
 
     // Invalidate cached drafts for this project
     try {

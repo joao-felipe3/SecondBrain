@@ -37,6 +37,8 @@ export class TaskMapper {
     entity.parentTaskId = document.parentTaskId ? document.parentTaskId.toString() : undefined;
     entity.parentWbsNodeId = document.parentWbsNodeId;
     entity.wbsPath = document.wbsPath;
+    entity.waveId = document.waveId;
+    entity.waveSliceId = document.waveSliceId;
     entity.generationBatchId = document.generationBatchId;
     entity.milestoneId = document.milestoneId;
     entity.experience = document.experience;
@@ -101,6 +103,8 @@ export class TaskMapper {
     if (entity.parentTaskId !== undefined) document.parentTaskId = entity.parentTaskId;
     if (entity.parentWbsNodeId !== undefined) document.parentWbsNodeId = entity.parentWbsNodeId;
     if (entity.wbsPath !== undefined) document.wbsPath = entity.wbsPath;
+    if (entity.waveId !== undefined) document.waveId = entity.waveId;
+    if (entity.waveSliceId !== undefined) document.waveSliceId = entity.waveSliceId;
     if (entity.generationBatchId !== undefined) document.generationBatchId = entity.generationBatchId;
     if (entity.milestoneId !== undefined) document.milestoneId = entity.milestoneId;
     if (entity.experience !== undefined) document.experience = entity.experience;

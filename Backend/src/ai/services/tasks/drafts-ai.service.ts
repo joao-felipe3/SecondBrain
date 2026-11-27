@@ -27,6 +27,17 @@ import {
   isJsonishError,
 } from '../../../projects/services/drafts/utils/draft-generation-helpers.util';
 
+/**
+ * Resposta cortada ou incompleta: JSON quebrado, menos outlines que o pedido (o parser salva
+ * só os objetos completos) ou objetos sem os campos obrigatórios. Todos pedem divisão do lote
+ * ou nova tentativa, como o JSON truncado já pedia.
+ */
+function isPartialOutlineError(err: unknown): boolean {
+  if (isJsonishError(err)) return true;
+  const msg = err instanceof Error ? err.message : typeof err === 'string' ? err : '';
+  return /IA retornou \d+ outlines|Outlines inválidos/.test(msg);
+}
+
 @Injectable()
 export class DraftsAiService {
   constructor(
@@ -241,7 +252,7 @@ export class DraftsAiService {
     };
 
     try {
-      return await attempt(Math.min(baseMaxTokens, 1400), temperature ?? 0.2);
+      return await attempt(baseMaxTokens, temperature ?? 0.2);
     } catch (err: any) {
       if (chunkMinutes.length > 1 && isJsonishError(err)) {
         const mid = Math.ceil(chunkMinutes.length / 2);
@@ -311,9 +322,9 @@ export class DraftsAiService {
     };
 
     try {
-      return await attempt(Math.min(baseMaxTokens, 1400), temperature ?? 0.2);
+      return await attempt(baseMaxTokens, temperature ?? 0.2);
     } catch (err: any) {
-      if (chunkMinutes.length > 1 && isJsonishError(err)) {
+      if (chunkMinutes.length > 1 && isPartialOutlineError(err)) {
         const mid = Math.ceil(chunkMinutes.length / 2);
         const left = await this.generateOutlineWithPlan(
           params,
@@ -334,7 +345,7 @@ export class DraftsAiService {
         return [...left, ...right];
       }
 
-      if (isJsonishError(err)) {
+      if (isPartialOutlineError(err)) {
         return await attempt(Math.min(retryMaxTokens, 2000), 0.15);
       }
       throw err;

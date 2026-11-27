@@ -12,7 +12,7 @@
 
     <div class="d-flex gap-2">
       <v-btn
-        v-if="currentGeneratedResult && !isLastLeaf"
+        v-if="currentGeneratedResult"
         variant="outlined"
         color="warning"
         prepend-icon="mdi-refresh"
@@ -23,7 +23,7 @@
       </v-btn>
 
       <v-btn
-        v-if="currentGeneratedResult && !isLastLeaf"
+        v-if="currentGeneratedResult"
         variant="outlined"
         color="secondary"
         prepend-icon="mdi-lightning-bolt"
@@ -34,7 +34,7 @@
       </v-btn>
 
       <v-btn
-        v-if="currentGeneratedResult && differencePercentage > 20 && !isLastLeaf"
+        v-if="currentGeneratedResult && Math.abs(differencePercentage) > 20"
         variant="flat"
         color="info"
         prepend-icon="mdi-scale-balance"
@@ -72,18 +72,18 @@
 <script setup lang="ts">
 defineProps({
   currentGeneratedResult: { type: Object, default: null },
-  isLastLeaf:             { type: Boolean, required: true },
-  processing:             { type: Boolean, required: true },
-  differencePercentage:   { type: Number, required: true },
-  approvedTasksCount:     { type: Number, required: true },
-})
+  isLastLeaf: { type: Boolean, required: true },
+  processing: { type: Boolean, required: true },
+  differencePercentage: { type: Number, required: true },
+  approvedTasksCount: { type: Number, required: true },
+});
 
 const emit = defineEmits<{
-  'cancel': []
-  'regenerate': []
-  'open-model-selection': []
-  'open-resolution': []
-  'approve-and-continue': []
-  'save-all': []
-}>()
+  cancel: [];
+  regenerate: [];
+  'open-model-selection': [];
+  'open-resolution': [];
+  'approve-and-continue': [];
+  'save-all': [];
+}>();
 </script>

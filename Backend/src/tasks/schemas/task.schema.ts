@@ -43,6 +43,9 @@ export const TaskSchema = new Schema<TaskDocument>({
   parentTaskId: { type: Schema.Types.ObjectId, ref: 'Task' },
   parentWbsNodeId: { type: String },
   wbsPath: { type: String },
+  // Rolling Wave: onda e fatia de pacote WBS que originaram a tarefa
+  waveId: { type: String },
+  waveSliceId: { type: String },
   generationBatchId: { type: String },
   milestoneId: { type: String },
   experience: { type: Number, default: 0 }, // Calculado automaticamente
@@ -101,6 +104,7 @@ export const TaskSchema = new Schema<TaskDocument>({
 // Indexes
 TaskSchema.index({ project: 1, generationBatchId: 1 });
 TaskSchema.index({ project: 1, parentWbsNodeId: 1 });
+TaskSchema.index({ waveId: 1, waveSliceId: 1 });
 TaskSchema.index({ project: 1, themeTag: 1 });
 TaskSchema.index({ project: 1, microTaskType: 1 });
 TaskSchema.index({ parentTaskId: 1 });

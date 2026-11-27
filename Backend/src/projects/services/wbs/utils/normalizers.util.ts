@@ -27,6 +27,23 @@ export function normalizeTitle(title?: string): string {
 }
 
 /**
+ * Chave de comparação de títulos de micro-tarefas para detectar repetição: ignora caixa, acentos,
+ * pontuação e contador final "(1/3)", mas mantém números ("capítulo 1" ≠ "capítulo 2").
+ * Mesma regra da auditoria e do "remover repetidas" do Frontend.
+ */
+export function taskTitleKey(title?: string): string {
+  return String(title || '')
+    .trim()
+    .toLowerCase()
+    .replace(/\(\s*\d+\s*\/\s*\d+\s*\)\s*$/g, '')
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '')
+    .replace(/[^a-z0-9\s]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+/**
  * Remove parenthetical contents without regex (ReDoS safe)
  */
 function stripParentheses(str: string): string {

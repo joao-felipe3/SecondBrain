@@ -18,6 +18,7 @@ export function buildAuditPrompt(params: {
   similarScore: number;
   tasksPreview: string;
 }): string {
+  if (params.diffPct < 0) return buildUnderGeneratedAuditPrompt(params);
   return (
     `Você é um auditor de escopo e estimativas (WBS/PERT/EVM).\n\n` +
     `Contexto do projeto: ${params.projectName}\n` +
@@ -54,6 +55,41 @@ export function buildAuditPrompt(params: {
     `  "suggestedAction": "rebaseline" | "simplify",\n` +
     `  "suggestedEstimatedHours": 32,\n` +
     `  "simplifyNotes": ["...", "..."]\n` +
+    `}`
+  );
+}
+
+/** Discrepância negativa: as micro-tarefas somam MENOS horas que a estimativa do pacote. */
+function buildUnderGeneratedAuditPrompt(params: Parameters<typeof buildAuditPrompt>[0]): string {
+  return (
+    `Você é um auditor de escopo e estimativas (WBS/PERT/EVM).\n\n` +
+    `Contexto do projeto: ${params.projectName}\n` +
+    `Pacote (WBS leaf): "${params.leafNodeName}"\n` +
+    `Caminho: ${params.nodePath}\n` +
+    `Estimativa top-down do pacote: ${params.budgetHours.toFixed(1)}h\n` +
+    `Estimativa bottom-up (micro-tarefas): ${params.generatedHours.toFixed(1)}h\n` +
+    `Diferença: ${params.diffPct.toFixed(0)}% (as micro-tarefas cobrem MENOS horas que o pacote)\n\n` +
+    `Sinais automáticos:\n` +
+    `- totalTasks: ${params.taskCount}\n` +
+    `- duplicateRatio(aprox): ${(params.duplicateRatio * 100).toFixed(0)}%\n` +
+    `- dupScore: ${params.dupScore.toFixed(2)}\n` +
+    `- similarScore: ${params.similarScore.toFixed(2)}\n` +
+    `${params.topDuplicateKeys ? `- topRepeated: ${params.topDuplicateKeys}\n` : ''}` +
+    `\n` +
+    `Micro-tarefas (amostra):\n${params.tasksPreview || '(sem tarefas)'}\n\n` +
+    `Tarefa: classifique a discrepância como UMA destas opções:\n` +
+    `- overestimated = o pacote foi superestimado: as micro-tarefas já cobrem todo o escopo do pacote e a estimativa top-down está alta demais\n` +
+    `- incomplete = o detalhamento está incompleto: o escopo do pacote exige mais trabalho do que as micro-tarefas cobrem (faltam etapas, temas ou entregas)\n\n` +
+    `Regras:\n` +
+    `- Se o nome do pacote sugere escopo que não aparece nas micro-tarefas, ou há poucos temas/tipos de tarefa, prefira incomplete.\n` +
+    `- Se as tarefas cobrem o escopo de forma variada e completa, prefira overestimated.\n` +
+    `- Com incomplete, a ação é "regenerate" (o sistema remove as tarefas repetidas e gera só as que faltam, sem refazer as boas). Com overestimated, a ação é "rebaseline" e suggestedEstimatedHours deve ficar próximo das horas bottom-up.\n\n` +
+    `Retorne APENAS JSON válido no formato:\n` +
+    `{\n` +
+    `  "diagnosis": "overestimated" | "incomplete",\n` +
+    `  "rationale": "...",\n` +
+    `  "suggestedAction": "rebaseline" | "regenerate",\n` +
+    `  "suggestedEstimatedHours": 40\n` +
     `}`
   );
 }

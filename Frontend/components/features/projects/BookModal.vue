@@ -68,22 +68,22 @@
                 :class="['carousel-item', { active: currentIndex === 3 }]"
                 elevation="0"
                 color="transparent"
+                ><RTMPage :project="renderProject as Project" :editing="editing"
+              /></v-sheet>
+              <v-sheet
+                :class="['carousel-item', { active: currentIndex === 4 }]"
+                elevation="0"
+                color="transparent"
                 ><CriticalPathPage
                   :project="renderProject || {}"
                   :editing="editing"
                   @update-field="updateField"
               /></v-sheet>
               <v-sheet
-                :class="['carousel-item', { active: currentIndex === 4 }]"
-                elevation="0"
-                color="transparent"
-                ><RTMPage :project="renderProject as Project" :editing="editing"
-              /></v-sheet>
-              <v-sheet
                 :class="['carousel-item', { active: currentIndex === 5 }]"
                 elevation="0"
                 color="transparent"
-                ><RiskPage :project="renderProject as Project" :editing="editing"
+                ><PertDiagramPage :project="renderProject as Project" :editing="editing"
               /></v-sheet>
               <v-sheet
                 :class="['carousel-item', { active: currentIndex === 6 }]"
@@ -95,7 +95,7 @@
                 :class="['carousel-item', { active: currentIndex === 7 }]"
                 elevation="0"
                 color="transparent"
-                ><PertDiagramPage :project="renderProject as Project" :editing="editing"
+                ><RiskPage :project="renderProject as Project" :editing="editing"
               /></v-sheet>
               <v-sheet
                 :class="['carousel-item', { active: currentIndex === 8 }]"
@@ -210,7 +210,8 @@ const props = defineProps({
   /** Abre direto, sem a animação de entrada (ex.: vindo da visualização, onde o livro já estava aberto) */
   instant: { type: Boolean, default: false },
 });
-const emit = defineEmits(['close', 'updated', 'deleted']);
+// 'updated' = edição salva (a página fecha o livro); 'refreshed' = dados recarregados com o livro aberto.
+const emit = defineEmits(['close', 'updated', 'refreshed', 'deleted']);
 
 // State
 const isClosing = ref(false);
@@ -312,7 +313,7 @@ async function reloadProject() {
     if (error) {
       throw error;
     }
-    emit('updated', data);
+    emit('refreshed', data);
   } catch (error) {
     console.error('Failed to reload project:', error);
   }

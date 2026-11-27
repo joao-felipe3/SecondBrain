@@ -1,77 +1,66 @@
 import { RollingWaveAIService } from '@src/ai/services/projects/rolling-wave-ai.service';
 
-describe('RollingWaveAIService', () => {
+describe('RollingWaveAIService.describeSlices', () => {
   let service: RollingWaveAIService;
-  let mockGeminiService: any;
+  let gemini: { generateContent: jest.Mock };
+
+  const pkg = (id: string, branchKey = 'A', slices = 2) => ({
+    id,
+    path: `${branchKey} > ${id}`,
+    name: `Pacote ${id}`,
+    branchKey,
+    sliceHours: Array.from({ length: slices }, () => 20),
+  });
 
   beforeEach(() => {
-    mockGeminiService = {
-      generateContent: jest.fn(),
-    };
-    service = new RollingWaveAIService(mockGeminiService);
+    gemini = { generateContent: jest.fn() };
+    service = new RollingWaveAIService(gemini as any);
+    jest.spyOn((service as any).logger, 'warn').mockImplementation(() => undefined);
   });
 
-  describe('planWaveStructure', () => {
-    it('should parse valid AI wave structure response', async () => {
-      mockGeminiService.generateContent.mockResolvedValueOnce(
-        JSON.stringify({
-          recommendedWaveCount: 3,
-          totalDurationDays: 30,
-          description: '3-wave structure',
-          reasoning: 'Balanced load',
-        }),
-      );
+  it('devolve os objetivos por pacote quando a quantidade bate', async () => {
+    gemini.generateContent.mockResolvedValue(
+      JSON.stringify({
+        packages: [{ id: 'p1', goals: ['Decks dos capítulos 1 a 3', 'Decks dos capítulos 4 a 6'] }],
+      }),
+    );
 
-      const res = await service.planWaveStructure({
-        project: { name: 'Proj', deadline: new Date('2026-02-01') },
-        tasks: [{ estimatedHours: 10 }] as any,
-        dailyCapacityHours: 8,
-      });
+    const goals = await service.describeSlices({ projectName: 'Chinês', packages: [pkg('p1')] });
 
-      expect(res).not.toBeNull();
-      expect(res?.recommendedWaveCount).toBe(3);
-    });
-
-    it('should return null when Gemini returns malformed response', async () => {
-      mockGeminiService.generateContent.mockResolvedValueOnce('Invalid non-json text');
-
-      const res = await service.planWaveStructure({
-        project: { name: 'Proj', deadline: new Date('2026-02-01') },
-        tasks: [],
-        dailyCapacityHours: 8,
-      });
-
-      expect(res).toBeNull();
-    });
+    expect(goals.get('p1')).toEqual(['Decks dos capítulos 1 a 3', 'Decks dos capítulos 4 a 6']);
+    const prompt: string = gemini.generateContent.mock.calls[0][0];
+    expect(prompt).toContain('id: "p1"');
+    expect(prompt).toContain('fatias: 2');
   });
 
-  describe('planWaveGrouping', () => {
-    it('should parse and normalize wave grouping AI response', async () => {
-      mockGeminiService.generateContent.mockResolvedValueOnce(
-        JSON.stringify({
-          waves: [
-            { waveNumber: 1, wbsAllocation: { 'WBS-1': 1 } },
-            { waveNumber: 2, wbsAllocation: { 'WBS-2': 1 } },
-          ],
-          rationale: 'Reasonable distribution',
-        }),
-      );
+  it('ignora pacote com quantidade de objetivos diferente das fatias', async () => {
+    gemini.generateContent.mockResolvedValue(
+      JSON.stringify({ packages: [{ id: 'p1', goals: ['só um'] }] }),
+    );
+    const goals = await service.describeSlices({ projectName: 'X', packages: [pkg('p1')] });
+    expect(goals.has('p1')).toBe(false);
+  });
 
-      const tasks: any[] = [
-        { _id: 't1', wbsPath: 'WBS-1' },
-        { _id: 't2', wbsPath: 'WBS-2' },
-      ];
+  it('falha de um lote não derruba os outros', async () => {
+    gemini.generateContent
+      .mockRejectedValueOnce(new Error('quota'))
+      .mockResolvedValueOnce(JSON.stringify({ packages: [{ id: 'b1', goals: ['x', 'y'] }] }));
 
-      const plan = await service.planWaveGrouping({
-        project: { name: 'Proj', deadline: new Date('2026-01-20') },
-        tasks,
-        wbsTree: [],
-        dailyCapacityHours: 8,
-        waveCount: 2,
-      });
-
-      expect(plan).not.toBeNull();
-      expect(plan?.waves.length).toBe(2);
+    const goals = await service.describeSlices({
+      projectName: 'X',
+      packages: [pkg('a1', 'A'), pkg('b1', 'B')],
     });
+
+    expect(gemini.generateContent).toHaveBeenCalledTimes(2);
+    expect(goals.has('a1')).toBe(false);
+    expect(goals.get('b1')).toEqual(['x', 'y']);
+  });
+
+  it('agrupa por frente e limita o tamanho do lote', async () => {
+    gemini.generateContent.mockResolvedValue('{"packages":[]}');
+    const many = Array.from({ length: 13 }, (_, i) => pkg(`a${i}`, 'A'));
+    await service.describeSlices({ projectName: 'X', packages: [...many, pkg('b0', 'B')] });
+    // 13 da frente A → 2 lotes (12 + 1); frente B → 1 lote
+    expect(gemini.generateContent).toHaveBeenCalledTimes(3);
   });
 });

@@ -11,7 +11,6 @@ export { AuditService } from './core/audit.service';
 
 // Conversion Services
 export { TaskConversionService } from './conversion/task-conversion.service';
-export { TaskConversionHelperService } from './conversion/task-conversion-helper.service';
 export { WbsConversionOrchestrationService } from './conversion/wbs-conversion-orchestrator.service';
 
 // Monotony Services

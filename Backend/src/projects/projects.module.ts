@@ -19,7 +19,12 @@ import { WBSNodeSchema } from './schemas/wbs-node.schema';
 
 // Category Services
 import { EVMService, EVMProgressService } from './services/evm';
-import { PlanningService, RollingWaveService, RollingWavePlanningService } from './services/strategy';
+import {
+  PlanningService,
+  RollingWaveService,
+  RollingWavePlanningService,
+  WaveDetailingService,
+} from './services/strategy';
 import { RiskService, LeafTasksBufferService, ProjectStatsService } from './services/execution';
 import { GanttService, PertDiagramService, ProjectsXMatrixService } from './services/visualization';
 import {
@@ -32,7 +37,6 @@ import {
   WbsGenerationService,
   AuditService,
   TaskConversionService,
-  TaskConversionHelperService,
   ConfigService,
   WbsConversionOrchestrationService,
 } from './services/wbs';
@@ -74,6 +78,7 @@ import { TaskEventsListener } from './listeners/task-events.listener';
     ProjectsXMatrixService,
     RollingWaveService,
     RollingWavePlanningService,
+    WaveDetailingService,
     RiskService,
     LeafTasksBufferService,
     ProjectStatsService,
@@ -86,7 +91,6 @@ import { TaskEventsListener } from './listeners/task-events.listener';
     WbsGenerationService,
     AuditService,
     TaskConversionService,
-    TaskConversionHelperService,
     DraftGenerationService,
     DraftPlanGenerationService,
     DraftSinglePassGenerationService,
@@ -106,7 +110,6 @@ import { TaskEventsListener } from './listeners/task-events.listener';
     WBSService,
     WbsValidationService,
     TaskConversionService,
-    TaskConversionHelperService,
     AuditService,
     RollingWaveService,
     RollingWavePlanningService,

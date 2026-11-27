@@ -56,6 +56,123 @@ describe('AuditService', () => {
       expect(mockWbsAiService.auditLeafDiscrepancy).toHaveBeenCalled();
     });
 
+    describe('discrepância dentro do limiar (auditoria automática)', () => {
+      const project = { name: 'Projeto Alfa' };
+      const mk = (names: string[]): any => ({
+        leafNode: { name: 'Estudos', estimatedHours: 10 },
+        nodePath: '1.1',
+        generatedHours: 10,
+        tasks: names.map((name) => ({ name, pomodorosPlanned: 2 })),
+      });
+
+      it('aponta repetição sem chamar a IA e sugere remover + completar', async () => {
+        const result = await service.auditLeafDiscrepancy(
+          project,
+          mk([
+            'Revisar deck',
+            'Revisar deck',
+            'Revisar deck',
+            'Revisar deck',
+            'Criar cartões',
+            'Praticar áudio',
+          ]),
+        );
+        expect(result.diagnosis).toBe('repetitive');
+        expect(result.suggestedAction).toBe('regenerate');
+        expect(mockWbsAiService.auditLeafDiscrepancy).not.toHaveBeenCalled();
+      });
+
+      it('não avisa por poucas repetições soltas (2 de 60 ≈ 3%)', async () => {
+        const names = Array.from(
+          { length: 58 },
+          (_, i) => `Tarefa única ${String.fromCharCode(97 + (i % 26))}${'xyz'[i % 3]}${i}`,
+        );
+        const result = await service.auditLeafDiscrepancy(
+          project,
+          mk([...names, 'Tarefa única repetida', 'Tarefa única repetida']),
+        );
+        expect(result.diagnosis).toBe('ok');
+      });
+
+      it('não confunde "capítulo 1" com "capítulo 2" como repetição', async () => {
+        const names = Array.from({ length: 12 }, (_, i) => `Ler capítulo ${i + 1} do livro`);
+        const result = await service.auditLeafDiscrepancy(project, mk(names));
+        expect(result.diagnosis).toBe('ok');
+      });
+
+      it('retorna "ok" quando não há repetição relevante', async () => {
+        const result = await service.auditLeafDiscrepancy(
+          project,
+          mk(['Revisar deck', 'Criar cartões', 'Praticar áudio', 'Escrever resumo']),
+        );
+        expect(result.diagnosis).toBe('ok');
+        expect(result.suggestedAction).toBe('none');
+        expect(mockWbsAiService.auditLeafDiscrepancy).not.toHaveBeenCalled();
+      });
+    });
+
+    describe('discrepância negativa (gerado < orçado)', () => {
+      const project = { name: 'Projeto Alfa' };
+      const dto: any = {
+        leafNode: { name: 'Estudos', estimatedHours: 80 },
+        nodePath: '1.1',
+        generatedHours: 40,
+        tasks: [{ name: 'Ler capítulo 1', pomodorosPlanned: 2 }],
+      };
+
+      it('mantém "incomplete" com ação regenerate', async () => {
+        mockWbsAiService.auditLeafDiscrepancy.mockResolvedValueOnce({
+          diagnosis: 'incomplete',
+          rationale: 'Faltam temas.',
+          suggestedAction: 'regenerate',
+          suggestedEstimatedHours: 40,
+        });
+        const result = await service.auditLeafDiscrepancy(project, dto);
+        expect(result.diagnosis).toBe('incomplete');
+        expect(result.suggestedAction).toBe('regenerate');
+        expect(result.suggestedEstimatedHours).toBeUndefined();
+      });
+
+      it('mantém "overestimated" com rebaseline para baixo', async () => {
+        mockWbsAiService.auditLeafDiscrepancy.mockResolvedValueOnce({
+          diagnosis: 'overestimated',
+          rationale: 'Escopo coberto.',
+          suggestedAction: 'rebaseline',
+          suggestedEstimatedHours: 40,
+        });
+        const result = await service.auditLeafDiscrepancy(project, dto);
+        expect(result.diagnosis).toBe('overestimated');
+        expect(result.suggestedAction).toBe('rebaseline');
+        expect(result.suggestedEstimatedHours).toBe(40);
+      });
+
+      it('corrige diagnóstico de excesso devolvido pela IA para uma discrepância negativa', async () => {
+        mockWbsAiService.auditLeafDiscrepancy.mockResolvedValueOnce({
+          diagnosis: 'gold_plating',
+          rationale: 'x',
+          suggestedAction: 'simplify',
+        });
+        const result = await service.auditLeafDiscrepancy(project, dto);
+        expect(result.diagnosis).toBe('overestimated');
+        expect(result.suggestedAction).toBe('rebaseline');
+      });
+
+      it('não aceita "incomplete" quando a discrepância é positiva', async () => {
+        mockWbsAiService.auditLeafDiscrepancy.mockResolvedValueOnce({
+          diagnosis: 'incomplete',
+          rationale: 'x',
+          suggestedAction: 'regenerate',
+        });
+        const result = await service.auditLeafDiscrepancy(project, {
+          ...dto,
+          leafNode: { name: 'Estudos', estimatedHours: 20 },
+          generatedHours: 40,
+        });
+        expect(result.diagnosis).toBe('underestimated');
+        expect(result.suggestedAction).toBe('rebaseline');
+      });
+    });
+
     it('deve aplicar guardrails e alterar recomendação em caso de gold_plating com forte redundância e diffPct >= 90', async () => {
       mockWbsAiService.auditLeafDiscrepancy.mockResolvedValueOnce({
         diagnosis: 'underestimated',

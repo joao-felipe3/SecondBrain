@@ -5,7 +5,10 @@ import { DraftProcessingService } from '../../drafts/draft-processing.service';
 import { TaskConversionService } from './task-conversion.service';
 import { WBSNodeDto } from '../../../dto/wbs.dto';
 import { computeChunkMinutes } from '../utils/metrics-calculator.util';
+import { MICRO_TASK_MIN_MINUTES } from '../constants/wbs.constants';
 import {
+  CompleteLeafTasksParams,
+  CompleteLeafTasksResult,
   ConversionOptions,
   ConversionResult,
   ConvertWbsToTasksParams,
@@ -237,10 +240,20 @@ export class WbsConversionOrchestrationService {
         level: 0,
         chunkMinutes,
         modelOverride: opts.modelOverride,
+        regenerateNonce: opts.regenerateNonce || undefined,
       });
       return this.draftGeneration.generateMicroTasksDraftsForLeafWithPlan({
-        context: { project, node, currentPath: path, level: 0, plan, modelOverride: opts.modelOverride },
+        context: {
+          project,
+          node,
+          currentPath: path,
+          level: 0,
+          plan,
+          modelOverride: opts.modelOverride,
+          regenerateNonce: opts.regenerateNonce || undefined,
+        },
         chunkMinutes,
+        avoidTaskTitles: opts.avoidTaskTitles.length ? opts.avoidTaskTitles : undefined,
       });
     } else {
       return this.draftGeneration.generateMicroTasksDraftsForLeaf({
@@ -270,6 +283,8 @@ export class WbsConversionOrchestrationService {
       options: {
         strategy: 'two-phase',
         modelOverride: preferences?.modelOverride,
+        regenerateNonce: preferences?.regenerateNonce,
+        avoidTaskTitles: params.avoidTaskTitles,
         logVerbose: true,
         throwOnError: false,
       },
@@ -280,7 +295,7 @@ export class WbsConversionOrchestrationService {
     }
 
     let generatedTasks = result.tasks;
-    if (saveTasks && generatedTasks.length > 0) {
+    if (saveTasks && tasksService && generatedTasks.length > 0) {
       generatedTasks = await this.persistGeneratedTasks(generatedTasks, projectId, tasksService);
     }
 
@@ -296,6 +311,47 @@ export class WbsConversionOrchestrationService {
       generatedHours: pomodorosGenerated * 0.5,
       pomodorosGenerated,
     };
+  }
+
+  /**
+   * Gera só o que falta num pacote: micro-tarefas para as horas ainda não cobertas,
+   * evitando repetir as que já existem (usado pela auditoria quando o detalhamento está incompleto).
+   */
+  async completeLeafTasks(params: CompleteLeafTasksParams): Promise<CompleteLeafTasksResult> {
+    const { leafNode, nodePath, existingTaskNames, preferences } = params;
+    const project = params.project as { name?: string; _id?: any; id?: any };
+    const missingMinutes = Math.round(Math.max(0, params.missingHours) * 60);
+    if (missingMinutes < MICRO_TASK_MIN_MINUTES) {
+      return { tasks: [], generatedHours: 0, pomodorosGenerated: 0 };
+    }
+
+    const chunkMinutes = computeChunkMinutes(missingMinutes);
+    // O prompt enxerga só as horas que faltam; o nome/descrição do pacote mantêm o escopo.
+    const node = { ...leafNode, estimatedHours: Math.round((missingMinutes / 60) * 2) / 2 };
+    const modelOverride = preferences?.modelOverride;
+
+    const plan = await this.draftGeneration.generateMicroTasksPlanForLeaf({
+      project,
+      node,
+      currentPath: nodePath,
+      level: 0,
+      chunkMinutes,
+      modelOverride,
+    });
+    const drafts = await this.draftGeneration.generateMicroTasksDraftsForLeafWithPlan({
+      context: { project, node, currentPath: nodePath, level: 0, plan, modelOverride },
+      chunkMinutes,
+      avoidTaskTitles: existingTaskNames,
+    });
+    const processed = this.processDrafts(drafts, chunkMinutes);
+    const tasks = await this.taskConversion.convertDraftsToTasks(processed, {
+      wbsNode: leafNode,
+      project,
+      path: nodePath,
+    });
+
+    const pomodorosGenerated = tasks.reduce((sum, t) => sum + (t.pomodorosPlanned || 0), 0);
+    return { tasks, generatedHours: pomodorosGenerated * 0.5, pomodorosGenerated };
   }
 
   private handleSingleLeafConversionError(result: ConversionResult): void {
@@ -343,6 +399,8 @@ export class WbsConversionOrchestrationService {
     return {
       strategy: opts.strategy || 'two-phase',
       modelOverride: opts.modelOverride || '',
+      regenerateNonce: opts.regenerateNonce || '',
+      avoidTaskTitles: Array.isArray(opts.avoidTaskTitles) ? opts.avoidTaskTitles : [],
       autoAudit: opts.autoAudit !== false,
       autoApplyFixes: opts.autoApplyFixes === true,
       logVerbose: opts.logVerbose === true,

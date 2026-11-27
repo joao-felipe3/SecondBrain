@@ -1,5 +1,9 @@
 <template>
-  <v-dialog :model-value="modelValue" max-width="500" @update:model-value="emit('update:modelValue', $event)">
+  <v-dialog
+    :model-value="modelValue"
+    max-width="500"
+    @update:model-value="emit('update:modelValue', $event)"
+  >
     <v-card>
       <v-card-title class="d-flex align-center justify-space-between">
         <span>⚡ Regenerar com Modelo Forte</span>
@@ -14,19 +18,19 @@
         </p>
 
         <v-radio-group v-model="selectedModel" density="compact">
-          <v-radio value="gemini-2.5-flash" label="Gemini 2.5 Flash (⚡ Recomendado)" />
+          <v-radio value="gemini-3.8-flash" label="Gemini 3.8 Flash (⚡ Recomendado)" />
           <div class="text-caption text-medium-emphasis ml-7 mb-3">
-            Modelo balanceado com boa qualidade e velocidade.
+            Flash mais recente: boa qualidade e velocidade.
           </div>
 
-          <v-radio value="gemini-3-flash-preview" label="Gemini 3 Flash Preview (🚀 Mais Avançado)" />
+          <v-radio value="gemini-3.1-pro-preview" label="Gemini 3.1 Pro Preview (🚀 Mais Avançado)" />
           <div class="text-caption text-medium-emphasis ml-7 mb-3">
-            Novo modelo experimental com melhor compreensão.
+            Modelo Pro, o de melhor raciocínio. Mais lento e mais caro.
           </div>
 
-          <v-radio value="gemini-2.5-flash-lite" label="Gemini 2.5 Flash Lite (⚡ Rápido)" />
+          <v-radio value="gemini-3.5-flash" label="Gemini 3.5 Flash (⚖️ Econômico)" />
           <div class="text-caption text-medium-emphasis ml-7">
-            Versão leve, mais rápida mas com menos capacidade.
+            Geração anterior do Flash, mais barata.
           </div>
         </v-radio-group>
       </v-card-text>
@@ -37,30 +41,28 @@
         <v-btn variant="text" :disabled="processing" @click="emit('update:modelValue', false)">
           Cancelar
         </v-btn>
-        <v-btn color="primary" variant="flat" :loading="processing" @click="confirm">
-          Regenerar
-        </v-btn>
+        <v-btn color="primary" variant="flat" :loading="processing" @click="confirm"> Regenerar </v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref } from 'vue';
 
 defineProps({
   modelValue: { type: Boolean, required: true },
-  processing:  { type: Boolean, default: false },
-})
+  processing: { type: Boolean, default: false },
+});
 
 const emit = defineEmits<{
-  'update:modelValue': [val: boolean]
-  'regenerate': [model: string]
-}>()
+  'update:modelValue': [val: boolean];
+  regenerate: [model: string];
+}>();
 
-const selectedModel = ref('gemini-2.5-flash')
+const selectedModel = ref('gemini-3.8-flash');
 
 function confirm() {
-  emit('regenerate', selectedModel.value)
+  emit('regenerate', selectedModel.value);
 }
 </script>

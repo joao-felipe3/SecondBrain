@@ -1,5 +1,5 @@
 import { Types } from 'mongoose';
-import { NotFoundException, BadRequestException, HttpException } from '@nestjs/common';
+import { NotFoundException, BadRequestException } from '@nestjs/common';
 import { ProjectsWbsController } from '@src/projects/controllers/projects-wbs.controller';
 
 describe('ProjectsWbsController', () => {
@@ -7,10 +7,7 @@ describe('ProjectsWbsController', () => {
   let mockProjectsService: any;
   let mockWbsService: any;
   let mockValidation: any;
-  let mockTaskConversionService: any;
   let mockAuditService: any;
-  let mockTasksService: any;
-  let mockLeafBuffer: any;
 
   const validProjId = new Types.ObjectId().toHexString();
 
@@ -43,33 +40,15 @@ describe('ProjectsWbsController', () => {
       suggestDecomposition: jest.fn().mockResolvedValue(['Subnode 1']),
     };
 
-    mockTaskConversionService = {
-      convertWBSToTasksWithAI: jest.fn().mockResolvedValue({
-        createdTasks: [{ name: 'T1', pomodorosPlanned: 2 }],
-        wbsUpdates: [],
-        auditsApplied: ['wbs-1'],
-      }),
-    };
-
     mockAuditService = {
       auditLeafDiscrepancy: jest.fn().mockResolvedValue({ diagnosis: 'ok' }),
-    };
-
-    mockTasksService = {};
-
-    mockLeafBuffer = {
-      prefetch: jest.fn((key: string, projectId: string, fn: any) => fn()),
-      consume: jest.fn().mockResolvedValue(null),
     };
 
     controller = new ProjectsWbsController(
       mockProjectsService,
       mockWbsService,
       mockValidation,
-      mockTaskConversionService,
       mockAuditService,
-      mockTasksService,
-      mockLeafBuffer,
     );
   });
 
@@ -162,72 +141,6 @@ describe('ProjectsWbsController', () => {
     it('should suggest decomposition', async () => {
       const res = await controller.suggestDecomposition(validProjId, {} as any);
       expect(res.suggestion).toBeDefined();
-    });
-  });
-
-  describe('convertWBSToTasks', () => {
-    it('should throw NotFoundException if project not found', async () => {
-      mockProjectsService.findOne.mockResolvedValueOnce(null);
-      await expect(controller.convertWBSToTasks('inv', { nodes: [] })).rejects.toThrow(
-        NotFoundException,
-      );
-    });
-
-    it('should convert WBS to tasks with and without autoResolveDiscrepancies', async () => {
-      const res = await controller.convertWBSToTasks(validProjId, {
-        nodes: [],
-        autoResolveDiscrepancies: true,
-      });
-      expect(res.tasks.length).toBe(1);
-      expect(res.summary.totalTasks).toBe(1);
-    });
-  });
-
-  describe('leaf nodes and generation', () => {
-    it('should get leaf nodes', () => {
-      const leaves = controller.getLeafNodes(validProjId, { nodes: [] });
-      expect(leaves.total).toBe(1);
-      expect(leaves.totalHours).toBe(2);
-    });
-
-    it('should generate tasks for leaf with buffer, prefetch and fresh generation', async () => {
-      mockProjectsService.findOne.mockResolvedValueOnce(null);
-      await expect(controller.generateTasksForLeaf('inv', {} as any)).rejects.toThrow(NotFoundException);
-
-      // Buffer hit with saveTasks=false
-      mockLeafBuffer.consume.mockResolvedValueOnce({ tasks: [{ name: 'Buf' }] });
-      const resBuf = await controller.generateTasksForLeaf(validProjId, {
-        leafNode: { _id: new Types.ObjectId(), name: 'Leaf 1' },
-        nodePath: 'P1 > Leaf 1',
-        saveTasks: false,
-        prefetchLeafs: [{ leafNode: { name: 'Leaf 2' }, nodePath: 'P1 > Leaf 2' }],
-      } as any);
-      expect(resBuf.message).toContain('preparadas');
-
-      // Fresh generation with saveTasks=true
-      const resFresh = await controller.generateTasksForLeaf(validProjId, {
-        leafNode: { _id: '123', name: 'Leaf 1' },
-        nodePath: 'P1 > Leaf 1',
-        saveTasks: true,
-      } as any);
-      expect(resFresh.message).toContain('criadas');
-    });
-
-    it('should handle RATE_LIMIT error in generateTasksForLeaf', async () => {
-      mockWbsService.generateTasksForSingleLeaf.mockRejectedValueOnce({
-        code: 'RATE_LIMIT',
-        retryAfterMs: 5000,
-        isQuotaExceeded: true,
-        model: 'gemini-1.5-pro',
-      });
-
-      await expect(
-        controller.generateTasksForLeaf(validProjId, {
-          leafNode: { name: 'Leaf 1' },
-          nodePath: 'P1 > Leaf 1',
-          saveTasks: true,
-        } as any),
-      ).rejects.toThrow(HttpException);
     });
   });
 

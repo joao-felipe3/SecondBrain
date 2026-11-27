@@ -7,6 +7,8 @@ import { WbsConversionOrchestrationService } from '../conversion/wbs-conversion-
 import { getLeafNodesWithPaths } from '../utils/wbs-helpers.util';
 import { WbsAiService } from '../../../../ai/services/projects/wbs-ai.service';
 import {
+  CompleteLeafTasksParams,
+  CompleteLeafTasksResult,
   GenerateTasksForSingleLeafParams,
   GenerateWbsInput,
   GenerateTasksForSingleLeafResult,
@@ -94,6 +96,11 @@ export class WBSService {
     params: GenerateTasksForSingleLeafParams,
   ): Promise<GenerateTasksForSingleLeafResult> {
     return this.orchestrator.generateTasksForSingleLeaf(params);
+  }
+
+  // Gera só o que falta de um pacote (complemento pós-auditoria)
+  async completeLeafTasks(params: CompleteLeafTasksParams): Promise<CompleteLeafTasksResult> {
+    return this.orchestrator.completeLeafTasks(params);
   }
 
   async saveWBS(projectId: string, nodes: WBSNodeDto[]): Promise<WBSNodeDocument[]> {

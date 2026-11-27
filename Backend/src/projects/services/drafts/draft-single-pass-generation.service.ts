@@ -8,6 +8,7 @@ import {
 import { DraftDetailsEnrichmentService } from './draft-details-enrichment.service';
 import {
   buildDraftsCacheKey,
+  resolvePomodoros,
   getNumericEnv,
   safeEnv,
   logWithTimestamp,
@@ -90,7 +91,7 @@ export class DraftSinglePassGenerationService {
     );
 
     // 3. Normalize drafts, cache them, and return
-    const normalized = this.normalizeGeneratedDrafts(allDrafts, chunkMinutes.length);
+    const normalized = this.normalizeGeneratedDrafts(allDrafts, chunkMinutes);
     if (projectId && cacheKey) {
       await this.cacheService.set(cacheKey, normalized);
     }
@@ -157,8 +158,9 @@ export class DraftSinglePassGenerationService {
 
   private normalizeGeneratedDrafts(
     allDrafts: Partial<MicroTaskDraft>[],
-    expectedCount: number,
+    chunkMinutes: number[],
   ): MicroTaskDraft[] {
+    const expectedCount = chunkMinutes.length;
     return allDrafts.map((d, idx) => {
       const name = safeString(d.name).trim() || `Micro-tarefa (${idx + 1}/${expectedCount})`;
       const description = safeStringOrUndefined(d.description);
@@ -166,7 +168,7 @@ export class DraftSinglePassGenerationService {
         ? d.checklist.map((s) => safeString(s).trim()).filter(Boolean)
         : [];
       const definitionOfDone = safeString(d.definitionOfDone).trim();
-      const pomodorosPlanned = Math.max(1, Math.min(6, Number(d.pomodorosPlanned) || 1));
+      const pomodorosPlanned = resolvePomodoros(d.pomodorosPlanned, chunkMinutes[idx]);
       const priority = Math.max(1, Math.min(4, Number(d.priority) || 2));
       const difficult = Math.max(1, Math.min(4, Number(d.difficult) || 2));
       const microTaskType = safeString(d.microTaskType);

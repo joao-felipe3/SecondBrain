@@ -100,6 +100,7 @@
       :instant="instantOpen"
       @close="closeModal"
       @updated="onUpdated"
+      @refreshed="onRefreshed"
       @deleted="onDeleted"
     />
 
@@ -256,6 +257,14 @@ const onCreateProject = () => {
 const onUpdated = (updated: Project) => {
   updateProject(updated);
   closeModal();
+};
+
+// Recarga com o livro aberto (WBS salva, ondas planejadas, objetivo SMART): só atualiza a lista.
+const onRefreshed = (updated: Project) => {
+  updateProject(updated);
+  // Mantém o livro aberto com os dados novos (ex.: prazo ajustado pelo planejamento em ondas).
+  const openId = (selectedProject.value as any)?._id;
+  if (openId && openId === (updated as any)?._id) selectedProject.value = updated;
 };
 
 const onDeleted = (removed: Project) => {

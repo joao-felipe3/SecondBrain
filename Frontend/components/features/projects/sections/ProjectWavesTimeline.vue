@@ -10,7 +10,7 @@
           @click="generateWaves"
           :loading="loading"
         >
-          Gerar Ondas
+          {{ waves.length > 0 ? 'Replanejar Ondas' : 'Planejar Ondas' }}
         </v-btn>
         <v-btn
           v-if="waves.length > 0"
@@ -32,6 +32,16 @@
       </div>
     </div>
   </div>
+
+  <v-alert v-if="nextWaveToDetail" type="info" variant="tonal" density="compact" class="mb-3">
+    A onda atual está {{ Math.round(currentWaveProgress * 100) }}% concluída. Hora de detalhar a Onda
+    {{ nextWaveToDetail.waveNumber }} em micro-tarefas.
+    <template #append>
+      <v-btn size="small" variant="flat" color="primary" @click="openDetailDialog(nextWaveToDetail)">
+        Detalhar
+      </v-btn>
+    </template>
+  </v-alert>
 
   <div v-if="waves.length > 0" class="timeline-shell">
     <div class="timeline">
@@ -68,17 +78,12 @@
               </div>
 
               <div class="wave-footer">
-                <v-chip
-                  size="x-small"
-                  label
-                  class="wave-status-chip"
-                  :class="`status-${wave.status}`"
-                >
+                <v-chip size="x-small" label class="wave-status-chip" :class="`status-${wave.status}`">
                   {{ getWaveStatusLabel(wave.status) }}
                 </v-chip>
 
                 <div class="wave-tasks-count">
-                  {{ wave.taskIds.length }}
+                  {{ waveCountLabel(wave) }}
                 </div>
               </div>
             </div>
@@ -89,6 +94,10 @@
             <div class="tooltip-line">Status: {{ getWaveStatusLabel(wave.status) }}</div>
             <div class="tooltip-line">
               Período: {{ formatDate(wave.startDate) }} - {{ formatDate(wave.endDate) }}
+            </div>
+            <div v-if="wave.slices?.length" class="tooltip-line">
+              Fatias: {{ wave.slices.length }} ({{ detailedSlicesCount(wave) }} detalhadas) ·
+              {{ waveSliceHours(wave) }}h
             </div>
             <div class="tooltip-line">Tarefas: {{ wave.taskIds.length }}</div>
             <div v-if="wave.description" class="tooltip-description">{{ wave.description }}</div>
@@ -118,12 +127,7 @@
     <v-card v-if="selectedWave" class="wave-dialog-card">
       <v-card-title>
         Onda {{ selectedWave.waveNumber }}
-        <v-chip
-          :class="`status-${selectedWave.status}`"
-          size="small"
-          label
-          class="ml-2"
-        >
+        <v-chip :class="`status-${selectedWave.status}`" size="small" label class="ml-2">
           {{ getWaveStatusLabel(selectedWave.status) }}
         </v-chip>
       </v-card-title>
@@ -149,6 +153,42 @@
           </v-card-text>
         </v-card>
 
+        <div v-if="selectedWave.slices?.length" class="wave-slices mb-3">
+          <p class="text-caption text-grey mb-2">Pacotes desta onda</p>
+          <v-list density="compact" class="task-list" lines="two">
+            <v-list-item
+              v-for="slice in selectedWave.slices"
+              :key="slice._id"
+              :title="
+                slice.sliceCount > 1
+                  ? `${slice.packageName} (${slice.sliceIndex}/${slice.sliceCount})`
+                  : slice.packageName
+              "
+              :subtitle="slice.goal"
+            >
+              <template #append>
+                <div class="d-flex align-center ga-1">
+                  <v-chip size="x-small" variant="outlined">{{ slice.hours }}h</v-chip>
+                  <v-chip
+                    size="x-small"
+                    :color="slice.status === 'detailed' ? 'success' : undefined"
+                    variant="tonal"
+                  >
+                    {{ slice.status === 'detailed' ? `${slice.taskIds.length} tarefas` : 'A detalhar' }}
+                  </v-chip>
+                </div>
+              </template>
+            </v-list-item>
+          </v-list>
+          <p
+            v-if="!canDetailWave(selectedWave) && pendingSlicesCount(selectedWave) > 0"
+            class="text-caption text-grey mt-2 mb-0"
+          >
+            Esta onda será detalhada em micro-tarefas quando estiver no horizonte (onda atual ou a
+            próxima).
+          </p>
+        </div>
+
         <div v-if="!isSelectedWaveFuture" class="current-wave-tasks">
           <p class="text-caption text-grey mb-2">Tarefas Detalhadas</p>
           <v-list v-if="selectedWaveTasks.length > 0" density="compact" class="task-list" lines="two">
@@ -165,14 +205,24 @@
               </template>
             </v-list-item>
           </v-list>
-          <p v-else class="text-caption text-grey mb-0">Não há tarefas detalhadas vinculadas a esta onda.</p>
+          <p v-else class="text-caption text-grey mb-0">
+            Não há tarefas detalhadas vinculadas a esta onda.
+          </p>
         </div>
       </v-card-text>
 
       <v-card-actions>
         <v-spacer />
-        <v-btn variant="text" @click="showWaveDialog = false">
-          Fechar
+        <v-btn variant="text" @click="showWaveDialog = false"> Fechar </v-btn>
+        <v-btn
+          v-if="canDetailWave(selectedWave)"
+          size="small"
+          color="primary"
+          variant="flat"
+          prepend-icon="mdi-format-list-checks"
+          @click="openDetailDialog(selectedWave)"
+        >
+          Detalhar Onda ({{ pendingSlicesCount(selectedWave) }})
         </v-btn>
         <v-btn
           v-if="selectedWave.status === 'planned'"
@@ -201,249 +251,322 @@
     v-if="waves.length === 0"
     icon="mdi-wave"
     title="Nenhuma onda planejada"
-    text="Clique em 'Gerar Ondas' para criar o planejamento em waves"
+    text="Clique em 'Planejar Ondas' para dividir os pacotes da WBS em ondas. As micro-tarefas são geradas onda a onda."
     class="mt-4"
+  />
+
+  <InteractiveConversionDialog
+    v-model="showDetailDialog"
+    :project="{ _id: projectId }"
+    :wave="detailWave"
+    @complete="onDetailComplete"
   />
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
-import type { Ref } from 'vue'
+import { ref, computed, onMounted } from 'vue';
+import type { Ref } from 'vue';
+import InteractiveConversionDialog from '../dialogs/InteractiveConversionDialog.vue';
+import {
+  canDetailWave as canDetailWaveIn,
+  horizonWaveIds as computeHorizonWaveIds,
+  nextWaveToDetail as computeNextWaveToDetail,
+  pendingSlicesCount,
+  waveProgress,
+} from '~/composables/features/useWaveHorizon';
+
+interface WaveSlice {
+  _id: string;
+  wbsNodeId: string;
+  wbsPath: string;
+  packageName: string;
+  sliceIndex: number;
+  sliceCount: number;
+  goal: string;
+  hours: number;
+  status: 'planned' | 'detailed';
+  taskIds: string[];
+}
 
 interface ProjectWave {
-  _id: string
-  projectId: string
-  waveNumber: number
-  startDate: string
-  endDate: string
-  status: 'planned' | 'active' | 'completed'
-  taskIds: string[]
-  description?: string
-  createdAt: string
+  _id: string;
+  projectId: string;
+  waveNumber: number;
+  startDate: string;
+  endDate: string;
+  status: 'planned' | 'active' | 'completed';
+  taskIds: string[];
+  description?: string;
+  createdAt: string;
+  /** Fatias de pacotes WBS (vazio em ondas antigas, criadas a partir de tarefas). */
+  slices?: WaveSlice[];
 }
 
 interface ProjectTask {
-  _id: string
-  name: string
-  deadline?: string
-  isConcluded?: boolean
-  pomodorosPlanned?: number
-  pomodorosDid?: number
-  pertExpectedMinutes?: number
-  createdAt?: string
+  _id: string;
+  name: string;
+  deadline?: string;
+  isConcluded?: boolean;
+  pomodorosPlanned?: number;
+  pomodorosDid?: number;
+  pertExpectedMinutes?: number;
+  createdAt?: string;
 }
 
 interface ReplanTaskDeadlinesResponse {
-  updatedCount: number
-  skippedConcludedCount: number
-  waveCount: number
+  updatedCount: number;
+  skippedConcludedCount: number;
+  waveCount: number;
   summaries: Array<{
-    waveNumber: number
-    updatedTasks: number
-    skippedConcludedTasks: number
-    effectiveStartDate: string | null
-    effectiveEndDate: string | null
-  }>
+    waveNumber: number;
+    updatedTasks: number;
+    skippedConcludedTasks: number;
+    effectiveStartDate: string | null;
+    effectiveEndDate: string | null;
+  }>;
 }
 
 const props = defineProps<{
-  projectId: string
-}>()
+  projectId: string;
+}>();
 
-const waves: Ref<ProjectWave[]> = ref([])
-const selectedWave: Ref<ProjectWave | null> = ref(null)
-const projectTasks: Ref<ProjectTask[]> = ref([])
-const loading = ref(false)
-const showWaveDialog = ref(false)
-const replanningDeadlines = ref(false)
+const waves: Ref<ProjectWave[]> = ref([]);
+const selectedWave: Ref<ProjectWave | null> = ref(null);
+const projectTasks: Ref<ProjectTask[]> = ref([]);
+const loading = ref(false);
+const showWaveDialog = ref(false);
+const replanningDeadlines = ref(false);
+const showDetailDialog = ref(false);
+const detailWave: Ref<ProjectWave | null> = ref(null);
+
+/** Horizonte de detalhamento: a onda atual (ativa ou primeira não concluída) e a seguinte. */
+const horizonWaveIds = computed(() => computeHorizonWaveIds(waves.value));
+
+const detailedSlicesCount = (wave: ProjectWave) =>
+  (wave.slices || []).filter((slice) => slice.status === 'detailed').length;
+const waveSliceHours = (wave: ProjectWave) =>
+  Math.round((wave.slices || []).reduce((sum, slice) => sum + slice.hours, 0) * 10) / 10;
+const canDetailWave = (wave: ProjectWave | null) => canDetailWaveIn(wave, waves.value);
+const waveCountLabel = (wave: ProjectWave) =>
+  wave.slices?.length ? `${waveSliceHours(wave)}h` : String(wave.taskIds.length);
+
+const currentWaveProgress = computed(() =>
+  waveProgress(
+    waves.value.find((w) => w._id === horizonWaveIds.value[0]),
+    projectTasks.value,
+  ),
+);
+
+/** Sugere detalhar a próxima onda quando a atual passou de 70%. */
+const nextWaveToDetail = computed(() => computeNextWaveToDetail(waves.value, projectTasks.value));
+
+const openDetailDialog = (wave: ProjectWave) => {
+  detailWave.value = wave;
+  showWaveDialog.value = false;
+  showDetailDialog.value = true;
+};
+
+const onDetailComplete = async () => {
+  await refreshProjectData();
+};
 
 const currentWaveIndex = computed(() => {
-  return waves.value.findIndex(w => w.status === 'active')
-})
+  return waves.value.findIndex((w) => w.status === 'active');
+});
 
 const activeWaveLabel = computed(() => {
-  const activeWave = waves.value.find(w => w.status === 'active')
-  return activeWave ? `Onda ${activeWave.waveNumber}` : 'Nenhuma'
-})
+  const activeWave = waves.value.find((w) => w.status === 'active');
+  return activeWave ? `Onda ${activeWave.waveNumber}` : 'Nenhuma';
+});
 
 const nextPlannedWaveLabel = computed(() => {
-  const nextWave = waves.value.find(w => w.status === 'planned')
-  return nextWave ? `Onda ${nextWave.waveNumber}` : 'Sem próxima'
-})
+  const nextWave = waves.value.find((w) => w.status === 'planned');
+  return nextWave ? `Onda ${nextWave.waveNumber}` : 'Sem próxima';
+});
 
 const progressiveWaveIndex = computed(() => {
-  return currentWaveIndex.value >= 0 ? currentWaveIndex.value : 0
-})
+  return currentWaveIndex.value >= 0 ? currentWaveIndex.value : 0;
+});
 
 const isFutureWave = (index: number, status: ProjectWave['status']) => {
-  return status === 'planned' && index > progressiveWaveIndex.value
-}
+  return status === 'planned' && index > progressiveWaveIndex.value;
+};
 
 const isSelectedWaveFuture = computed(() => {
-  if (!selectedWave.value) return false
-  const index = waves.value.findIndex(w => w._id === selectedWave.value?._id)
-  if (index < 0) return false
-  return isFutureWave(index, selectedWave.value.status)
-})
+  if (!selectedWave.value) return false;
+  const index = waves.value.findIndex((w) => w._id === selectedWave.value?._id);
+  if (index < 0) return false;
+  return isFutureWave(index, selectedWave.value.status);
+});
 
 const selectedWaveTasks = computed(() => {
-  if (!selectedWave.value) return []
-  const ids = new Set((selectedWave.value.taskIds || []).map(id => String(id)))
-  return projectTasks.value.filter(task => ids.has(String(task._id)))
-})
+  if (!selectedWave.value) return [];
+  const ids = new Set((selectedWave.value.taskIds || []).map((id) => String(id)));
+  return projectTasks.value.filter((task) => ids.has(String(task._id)));
+});
 
 const estimateTaskHours = (task: ProjectTask) => {
   if (typeof task.pertExpectedMinutes === 'number' && task.pertExpectedMinutes > 0) {
-    return task.pertExpectedMinutes / 60
+    return task.pertExpectedMinutes / 60;
   }
   if (typeof task.pomodorosPlanned === 'number' && task.pomodorosPlanned > 0) {
-    return task.pomodorosPlanned * 0.5
+    return task.pomodorosPlanned * 0.5;
   }
-  return 1
-}
+  return 1;
+};
 
 const getWaveIcon = (status: string) => {
   const map: Record<string, string> = {
     planned: 'mdi-clock-outline',
     active: 'mdi-play-circle',
     completed: 'mdi-check-circle',
-  }
-  return map[status] || 'mdi-wave'
-}
+  };
+  return map[status] || 'mdi-wave';
+};
 
 const getWaveStatusLabel = (status: ProjectWave['status']) => {
   const map: Record<ProjectWave['status'], string> = {
     planned: 'Planejada',
     active: 'Ativa',
     completed: 'Concluída',
-  }
-  return map[status]
-}
+  };
+  return map[status];
+};
 
 const getWaveCompactLabel = (wave: ProjectWave, index: number) => {
   if (wave.status === 'active') {
-    return 'Em execução'
+    return 'Em execução';
   }
   if (wave.status === 'completed') {
-    return 'Já concluída'
+    return 'Já concluída';
   }
   if (isFutureWave(index, wave.status)) {
-    return 'Próxima etapa'
+    return 'Próxima etapa';
   }
-  return 'Planejamento'
-}
+  return 'Planejamento';
+};
 
 const getGranularityDescription = (waveNumber: number) => {
   if (waveNumber <= 2) {
-    return 'Todas as sub-tarefas e passos detalhados'
+    return 'Todas as sub-tarefas e passos detalhados';
   } else if (waveNumber <= 4) {
-    return 'Marcos principais e tarefas críticas'
+    return 'Marcos principais e tarefas críticas';
   } else {
-    return 'Apenas milestones de alto nível'
+    return 'Apenas milestones de alto nível';
   }
-}
+};
 
 const formatDate = (date: string) => {
   return new Date(date).toLocaleDateString('pt-BR', {
     month: 'short',
     day: 'numeric',
-  })
-}
+  });
+};
 
 const selectWave = (wave: ProjectWave) => {
-  selectedWave.value = wave
-  showWaveDialog.value = true
-}
+  selectedWave.value = wave;
+  showWaveDialog.value = true;
+};
 
 const refreshProjectData = async (providedWaves?: ProjectWave[]) => {
-  const selectedWaveId = selectedWave.value?._id ?? null
-  const nextWaves = providedWaves ?? await $fetch<ProjectWave[]>(`/api/projects/${props.projectId}/waves`)
+  const selectedWaveId = selectedWave.value?._id ?? null;
+  const nextWaves =
+    providedWaves ?? (await $fetch<ProjectWave[]>(`/api/projects/${props.projectId}/waves`));
 
-  waves.value = nextWaves || []
-  projectTasks.value = await $fetch<ProjectTask[]>(`/api/projects/${props.projectId}/tasks`)
+  waves.value = nextWaves || [];
+  projectTasks.value = await $fetch<ProjectTask[]>(`/api/projects/${props.projectId}/tasks`);
 
   if (waves.value.length === 0) {
-    selectedWave.value = null
-    showWaveDialog.value = false
-    return
+    selectedWave.value = null;
+    showWaveDialog.value = false;
+    return;
   }
 
   selectedWave.value =
-    (selectedWaveId ? waves.value.find(wave => wave._id === selectedWaveId) ?? null : null) ||
+    (selectedWaveId ? (waves.value.find((wave) => wave._id === selectedWaveId) ?? null) : null) ||
     waves.value[progressiveWaveIndex.value] ||
-    waves.value[0]
-}
+    waves.value[0];
+};
 
 const generateWaves = async () => {
-  loading.value = true
+  if (
+    waves.value.length > 0 &&
+    !confirm(
+      'Replanejar as ondas? Ondas em andamento, concluídas ou já detalhadas são mantidas; só o trabalho ainda não detalhado é redistribuído.',
+    )
+  ) {
+    return;
+  }
+  loading.value = true;
   try {
     const response = await $fetch<ProjectWave[]>(`/api/projects/${props.projectId}/generate-waves`, {
       method: 'POST',
       body: {
         waveLengthDays: 28, // 4 semanas - duração é calculada do projeto.deadline
       },
-    })
-    await refreshProjectData(response)
-  } catch (error) {
-    console.error('Erro ao gerar ondas:', error)
+    });
+    await refreshProjectData(response);
+  } catch (error: any) {
+    console.error('Erro ao gerar ondas:', error);
+    alert(`Erro ao planejar ondas: ${error?.data?.message || error?.message || error}`);
   } finally {
-    loading.value = false
+    loading.value = false;
   }
-}
+};
 
 const activateWave = async (waveId: string) => {
   try {
     await $fetch<void>(`/api/projects/${props.projectId}/waves/${waveId}`, {
       method: 'PATCH',
       body: { status: 'active' },
-    })
-    await refreshProjectData()
+    });
+    await refreshProjectData();
   } catch (error) {
-    console.error('Erro ao ativar onda:', error)
+    console.error('Erro ao ativar onda:', error);
   }
-}
+};
 
 const completeWave = async (waveId: string) => {
   try {
     await $fetch<void>(`/api/projects/${props.projectId}/waves/${waveId}`, {
       method: 'PATCH',
       body: { status: 'completed' },
-    })
-    await refreshProjectData()
+    });
+    await refreshProjectData();
   } catch (error) {
-    console.error('Erro ao completar onda:', error)
+    console.error('Erro ao completar onda:', error);
   }
-}
+};
 
 const replanTaskDeadlines = async () => {
-  replanningDeadlines.value = true
+  replanningDeadlines.value = true;
   try {
     const response = await $fetch<ReplanTaskDeadlinesResponse>(
       `/api/projects/${props.projectId}/waves/replan-task-deadlines`,
       {
         method: 'POST',
       },
-    )
+    );
 
-    await refreshProjectData()
+    await refreshProjectData();
     console.debug(
       `[waves] replanejamento concluído: ${response.updatedCount} tarefas atualizadas em ${response.waveCount} ondas`,
-    )
+    );
   } catch (error) {
-    console.error('Erro ao replanejar prazos das tarefas:', error)
+    console.error('Erro ao replanejar prazos das tarefas:', error);
   } finally {
-    replanningDeadlines.value = false
+    replanningDeadlines.value = false;
   }
-}
+};
 
 onMounted(async () => {
   try {
-    await refreshProjectData()
+    await refreshProjectData();
   } catch (error) {
     // Erro ao carregar ondas é esperado se a rota não existir ainda
-    console.debug('Ondas não existem ainda:', error)
+    console.debug('Ondas não existem ainda:', error);
   }
-})
+});
 </script>
 
 <style scoped>
@@ -505,7 +628,10 @@ onMounted(async () => {
 
 .wave-item {
   cursor: pointer;
-  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    border-color 0.2s ease;
   min-width: 0;
 }
 
@@ -558,7 +684,12 @@ onMounted(async () => {
   inset: 50% -0.55rem auto;
   height: 2px;
   transform: translateY(-50%);
-  background: linear-gradient(90deg, rgba(148, 163, 184, 0.24), rgba(148, 163, 184, 0.52), rgba(148, 163, 184, 0.24));
+  background: linear-gradient(
+    90deg,
+    rgba(148, 163, 184, 0.24),
+    rgba(148, 163, 184, 0.52),
+    rgba(148, 163, 184, 0.24)
+  );
 }
 
 .wave-item:first-child .wave-connector {

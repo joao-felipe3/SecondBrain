@@ -248,6 +248,58 @@ describe('DraftsAiService', () => {
       expect(outlines.length).toBe(1);
       expect(outlines[0].name).toBe('Outline Plan 1');
     });
+
+    it('divide o lote quando a IA devolve menos outlines que o pedido (com plano)', async () => {
+      const outline = (name: string) => ({
+        name,
+        pomodorosPlanned: 2,
+        priority: 2,
+        difficult: 2,
+        microTaskType: 'code',
+        themeTag: 't',
+        contextTag: 'c',
+        cognitiveMode: 'm',
+      });
+      mockGeminiExecutor.generateContent
+        // 2 chunks pedidos, 1 devolvido: resposta cortada
+        .mockResolvedValueOnce(JSON.stringify([outline('Plan Left')]))
+        .mockResolvedValueOnce(JSON.stringify([outline('Plan Left')]))
+        .mockResolvedValueOnce(JSON.stringify([outline('Plan Right')]));
+
+      const outlines = await service.generateOutlineWithPlan(
+        { node: { name: 'Node' }, plan: {} } as any,
+        [60, 60],
+        [],
+      );
+
+      expect(outlines.map((o) => o.name)).toEqual(['Plan Left', 'Plan Right']);
+      expect(mockGeminiExecutor.generateContent).toHaveBeenCalledTimes(3);
+    });
+
+    it('tenta de novo um lote unitário com outline sem campos obrigatórios', async () => {
+      const complete = {
+        name: 'Plan Ok',
+        pomodorosPlanned: 2,
+        priority: 2,
+        difficult: 2,
+        microTaskType: 'code',
+        themeTag: 't',
+        contextTag: 'c',
+        cognitiveMode: 'm',
+      };
+      mockGeminiExecutor.generateContent
+        .mockResolvedValueOnce(JSON.stringify([{ pomodorosPlanned: 2 }]))
+        .mockResolvedValueOnce(JSON.stringify([complete]));
+
+      const outlines = await service.generateOutlineWithPlan(
+        { node: { name: 'Node' }, plan: {} } as any,
+        [60],
+        [],
+      );
+
+      expect(outlines[0].name).toBe('Plan Ok');
+      expect(mockGeminiExecutor.generateContent).toHaveBeenCalledTimes(2);
+    });
   });
 
   describe('generateDetails & generateDetailsBatch', () => {

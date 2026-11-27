@@ -320,8 +320,8 @@
     "semantic_hash": ""
   },
   "Backend/src/projects/interfaces/wbs-conversion.interface.ts": {
-    "mtime": 1795745260.5520058,
-    "ast_hash": "ca50dafb99f984156bc916201522c935",
+    "mtime": 1795747539.7649589,
+    "ast_hash": "4ce6a0870be87054906162d5bea0adf2",
     "semantic_hash": ""
   },
   "Backend/src/projects/interfaces/wbs-metrics.interface.ts": {
@@ -1850,8 +1850,8 @@
     "semantic_hash": ""
   },
   "Frontend/components/features/projects/dialogs/InteractiveConversionDialog.vue": {
-    "mtime": 1795744826.8730733,
-    "ast_hash": "c0b198b55cdf6869a5acd878094760df",
+    "mtime": 1795747538.4073498,
+    "ast_hash": "78d9aeb7ffab69b50d7cee0e22fe3219",
     "semantic_hash": ""
   },
   "Frontend/components/features/projects/dialogs/ProjectPlannerDialog.vue": {
@@ -1860,8 +1860,8 @@
     "semantic_hash": ""
   },
   "Frontend/components/features/projects/dialogs/conversion/ConversionActions.vue": {
-    "mtime": 1795655817.8457613,
-    "ast_hash": "4faa00ea842c7f94ab0beb496ac5b463",
+    "mtime": 1795747539.3306532,
+    "ast_hash": "3e4246650c70ce3951e60d809e518566",
     "semantic_hash": ""
   },
   "Frontend/components/features/projects/dialogs/conversion/ConversionProgressHeader.vue": {
@@ -1870,8 +1870,8 @@
     "semantic_hash": ""
   },
   "Frontend/components/features/projects/dialogs/conversion/LeafDetailsPanel.vue": {
-    "mtime": 1795744702.6741085,
-    "ast_hash": "b486a42ac5f1e175e9b2698f85d98cad",
+    "mtime": 1795747539.7057252,
+    "ast_hash": "f38b176447d376a265200a86a81b1a21",
     "semantic_hash": ""
   },
   "Frontend/components/features/projects/dialogs/conversion/LeafNodePaperDialog.vue": {
@@ -1890,13 +1890,13 @@
     "semantic_hash": ""
   },
   "Frontend/components/features/projects/dialogs/conversion/ModelSelectionDialog.vue": {
-    "mtime": 1795648739.4124565,
-    "ast_hash": "bf1af6e6e4f883f72b8c669bccfe1e74",
+    "mtime": 1795747539.8780787,
+    "ast_hash": "9d43b0388ea80eabb14e0c2b7ceac9f8",
     "semantic_hash": ""
   },
   "Frontend/components/features/projects/dialogs/conversion/ResolutionDialog.vue": {
-    "mtime": 1795669681.927668,
-    "ast_hash": "ab99061fbd01510b12b6bcc72f28affd",
+    "mtime": 1795747540.123532,
+    "ast_hash": "cd5d31ee7870a67d473041c289ec6709",
     "semantic_hash": ""
   },
   "Frontend/components/features/projects/dialogs/index.ts": {
@@ -1935,8 +1935,8 @@
     "semantic_hash": ""
   },
   "Frontend/components/features/projects/pages/RTMPage.vue": {
-    "mtime": 1795746109.1827688,
-    "ast_hash": "5c5874d246761550e0197a88f2beaa53",
+    "mtime": 1795747540.281602,
+    "ast_hash": "4edbf318bda2792cabaeedabd4830e36",
     "semantic_hash": ""
   },
   "Frontend/components/features/projects/pages/RiskPage.vue": {
@@ -1950,8 +1950,8 @@
     "semantic_hash": ""
   },
   "Frontend/components/features/projects/pages/WBSPage.vue": {
-    "mtime": 1795746115.635085,
-    "ast_hash": "df4287bb30e1a662c276bb228def1b02",
+    "mtime": 1795747540.803763,
+    "ast_hash": "14cd1c4bcc47646b24768c9ee352fc8f",
     "semantic_hash": ""
   },
   "Frontend/components/features/projects/pages/XMatrixPage.vue": {
@@ -2005,8 +2005,8 @@
     "semantic_hash": ""
   },
   "Frontend/components/features/projects/sections/ProjectWavesTimeline.vue": {
-    "mtime": 1795744826.7430286,
-    "ast_hash": "2ee0c0dd40041fdc7c173a0e8bdfa23e",
+    "mtime": 1795747541.3904505,
+    "ast_hash": "ef639b992f937f02c13965e621549bff",
     "semantic_hash": ""
   },
   "Frontend/components/features/projects/sections/RTMMatrix.vue": {
@@ -2035,8 +2035,8 @@
     "semantic_hash": ""
   },
   "Frontend/components/features/projects/sections/WBSTreeNode.vue": {
-    "mtime": 1795623341.1555157,
-    "ast_hash": "e2f8aa21f7a9c3888bd83ac6fea65088",
+    "mtime": 1795747541.7524483,
+    "ast_hash": "89b4e6a812031a8d109c5675031e784a",
     "semantic_hash": ""
   },
   "Frontend/components/features/projects/sections/WBSTreeView.vue": {
@@ -2510,8 +2510,8 @@
     "semantic_hash": ""
   },
   "Frontend/composables/features/useConversionHelpers.ts": {
-    "mtime": 1795744695.9698904,
-    "ast_hash": "7107469944353153660fd40148d8b36e",
+    "mtime": 1795747542.2270265,
+    "ast_hash": "aa0d6bcdc0171b1ff7278d092cd0fae9",
     "semantic_hash": ""
   },
   "Frontend/composables/features/useGanttData.ts": {
@@ -3440,8 +3440,8 @@
     "semantic_hash": ""
   },
   "Frontend/composables/api/useWbsApi.ts": {
-    "mtime": 1795744797.3540676,
-    "ast_hash": "8dda2c09c533f146889c66b82847212f",
+    "mtime": 1795747542.0216968,
+    "ast_hash": "dcda7e3f64a0459cf5bc7bb695fb2b03",
     "semantic_hash": ""
   },
   "Frontend/components/features/hall/GuildStaircasePennant.vue": {
@@ -4915,23 +4915,23 @@
     "semantic_hash": ""
   },
   "Frontend/composables/features/useWaveHorizon.ts": {
-    "mtime": 1795744826.1721838,
-    "ast_hash": "220e45aeab7538a587aa5d6ecb381655",
+    "mtime": 1795747542.5716245,
+    "ast_hash": "45aab75fe9a96f839ee23bb6326023b1",
     "semantic_hash": ""
   },
   "Frontend/tests/unit/build-audit-resolution.spec.ts": {
-    "mtime": 1795669720.3591554,
-    "ast_hash": "2c719ea4e95a9090019d506c90726181",
+    "mtime": 1795747543.2997494,
+    "ast_hash": "d13ed85c8453ad0440543251ace3a205",
     "semantic_hash": ""
   },
   "Frontend/tests/unit/wave-detail-dialog.spec.ts": {
-    "mtime": 1795744919.98238,
-    "ast_hash": "3481a93b001bcee25d76dfd07b883acb",
+    "mtime": 1795747543.4586682,
+    "ast_hash": "2c26a49dbd9e4a49926a1ea18017c0c8",
     "semantic_hash": ""
   },
   "Frontend/tests/unit/wave-horizon.spec.ts": {
-    "mtime": 1795744855.4824033,
-    "ast_hash": "a34cbaae91a82cec66cf317c6991aa93",
+    "mtime": 1795747543.5580413,
+    "ast_hash": "b1f3d6f9ae94b965ecfe6b1de7796855",
     "semantic_hash": ""
   },
   "Frontend/tests/unit/wbs-tree-node.spec.ts": {

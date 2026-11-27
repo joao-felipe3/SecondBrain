@@ -41,6 +41,8 @@ export class Task {
   parentTaskId?: string;
   parentWbsNodeId?: string;
   wbsPath?: string;
+  waveId?: string;
+  waveSliceId?: string;
   generationBatchId?: string;
   milestoneId?: string;
   experience!: number;

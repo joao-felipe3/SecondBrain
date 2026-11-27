@@ -12,7 +12,7 @@
           class="mt-1"
           :rules="[(v: any) => !!v || 'Nome é obrigatório']"
         />
-        
+
         <v-textarea
           v-model="editData.description"
           label="Descrição (opcional)"
@@ -22,7 +22,7 @@
           rows="2"
           class="mt-2"
         />
-        
+
         <v-text-field
           v-model.number="editData.estimatedHours"
           label="Horas estimadas"
@@ -33,7 +33,7 @@
           class="mt-2"
           :rules="[(v: any) => (v >= 1 && v <= 200) || 'Entre 1 e 200 horas']"
         />
-        
+
         <div class="edit-actions mt-2">
           <v-btn
             size="x-small"
@@ -58,9 +58,17 @@
     </div>
 
     <!-- View mode -->
-    <div 
+    <div
       v-else
-      :class="['node-row', { 'is-leaf': isLeaf, 'is-invalid': !validation.valid, 'is-dragging': isDragging, 'is-drag-over': isDragOver }]"
+      :class="[
+        'node-row',
+        {
+          'is-leaf': isLeaf,
+          'is-invalid': !validation.valid,
+          'is-dragging': isDragging,
+          'is-drag-over': isDragOver,
+        },
+      ]"
       :draggable="editing"
       @click="toggleExpand"
       @dragstart="handleDragStart"
@@ -70,11 +78,7 @@
       @dragend="handleDragEnd"
     >
       <!-- Expand/Collapse icon -->
-      <v-icon
-        v-if="!isLeaf"
-        :class="['expand-toggle', { rotated: expanded }]"
-        size="16"
-      >
+      <v-icon v-if="!isLeaf" :class="['expand-toggle', { rotated: expanded }]" size="16">
         mdi-chevron-right
       </v-icon>
       <span v-else class="leaf-dot">•</span>
@@ -82,12 +86,7 @@
       <!-- Validation icon -->
       <v-tooltip :text="validation.reason || 'Válido (8-80h)'" location="top">
         <template #activator="{ props: tooltipProps }">
-          <v-icon 
-            v-bind="tooltipProps"
-            :color="validationColor"
-            size="16"
-            class="validation-icon"
-          >
+          <v-icon v-bind="tooltipProps" :color="validationColor" size="16" class="validation-icon">
             {{ validationIcon }}
           </v-icon>
         </template>
@@ -97,12 +96,7 @@
       <span class="node-name">{{ node.name }}</span>
 
       <!-- Hours badge -->
-      <v-chip
-        :color="validationColor"
-        size="x-small"
-        variant="tonal"
-        class="hours-chip"
-      >
+      <v-chip :color="validationColor" size="x-small" variant="tonal" class="hours-chip">
         {{ node.estimatedHours }}h
       </v-chip>
 
@@ -134,9 +128,9 @@
         />
       </div>
 
-      <!-- Suggest decomposition button for invalid nodes -->
+      <!-- Suggest decomposition button for invalid nodes (também no modo de edição) -->
       <v-btn
-        v-else-if="isLeaf && !validation.valid"
+        v-if="isLeaf && !validation.valid"
         size="x-small"
         variant="text"
         color="warning"
@@ -147,7 +141,11 @@
     </div>
 
     <!-- Description (if expanded and has description) -->
-    <div v-if="expanded && node.description && !isEditing" class="node-description" :style="{ paddingLeft: `${depth * 0.8 + 2}rem` }">
+    <div
+      v-if="expanded && node.description && !isEditing"
+      class="node-description"
+      :style="{ paddingLeft: `${depth * 0.8 + 2}rem` }"
+    >
       {{ node.description }}
     </div>
 
@@ -171,66 +169,66 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
-import type { WBSNode } from './WBSTreeView.vue'
+import { ref, computed } from 'vue';
+import type { WBSNode } from './WBSTreeView.vue';
 
 const props = defineProps<{
-  node: WBSNode
-  depth: number
-  editing?: boolean
-}>()
+  node: WBSNode;
+  depth: number;
+  editing?: boolean;
+}>();
 
 const emit = defineEmits<{
-  (e: 'suggest-decomposition', node: WBSNode): void
-  (e: 'update-node', payload: { nodeId?: string | undefined; field: string; value: any }): void
-  (e: 'delete-node', nodeId?: string | undefined): void
-  (e: 'add-child', nodeId?: string | undefined): void
-  (e: 'move-node', payload: { sourceId?: string; targetId?: string }): void
-}>()
+  (e: 'suggest-decomposition', node: WBSNode): void;
+  (e: 'update-node', payload: { nodeId?: string | undefined; field: string; value: any }): void;
+  (e: 'delete-node', nodeId?: string | undefined): void;
+  (e: 'add-child', nodeId?: string | undefined): void;
+  (e: 'move-node', payload: { sourceId?: string; targetId?: string }): void;
+}>();
 
-const expanded = ref(true)
-const isEditing = ref(false)
-const isDragging = ref(false)
-const isDragOver = ref(false)
+const expanded = ref(true);
+const isEditing = ref(false);
+const isDragging = ref(false);
+const isDragOver = ref(false);
 const editData = ref({
   name: props.node.name,
   description: props.node.description || '',
   estimatedHours: props.node.estimatedHours,
-})
+});
 
-const isLeaf = computed(() => !props.node.children || props.node.children.length === 0)
+const isLeaf = computed(() => !props.node.children || props.node.children.length === 0);
 
 const validation = computed(() => {
-  if (!isLeaf.value) return { valid: true }
+  if (!isLeaf.value) return { valid: true };
 
   if (props.node.estimatedHours < 8) {
     return {
       valid: false,
       reason: `Muito pequeno: ${props.node.estimatedHours}h (mínimo 8h)`,
-    }
+    };
   }
   if (props.node.estimatedHours > 80) {
     return {
       valid: false,
       reason: `Muito grande: ${props.node.estimatedHours}h (máximo 80h)`,
-    }
+    };
   }
-  return { valid: true, reason: undefined }
-})
+  return { valid: true, reason: undefined };
+});
 
 const validationColor = computed(() => {
-  if (!isLeaf.value) return 'grey'
-  return validation.value.valid ? 'success' : 'warning'
-})
+  if (!isLeaf.value) return 'grey';
+  return validation.value.valid ? 'success' : 'warning';
+});
 
 const validationIcon = computed(() => {
-  if (!isLeaf.value) return 'mdi-folder-outline'
-  return validation.value.valid ? 'mdi-check-circle-outline' : 'mdi-alert-outline'
-})
+  if (!isLeaf.value) return 'mdi-folder-outline';
+  return validation.value.valid ? 'mdi-check-circle-outline' : 'mdi-alert-outline';
+});
 
 function toggleExpand() {
   if (!isLeaf.value) {
-    expanded.value = !expanded.value
+    expanded.value = !expanded.value;
   }
 }
 
@@ -239,76 +237,83 @@ function startEdit() {
     name: props.node.name,
     description: props.node.description || '',
     estimatedHours: props.node.estimatedHours,
-  }
-  isEditing.value = true
+  };
+  isEditing.value = true;
 }
 
 function saveEdit() {
   // Emit updates for each changed field
   if (editData.value.name !== props.node.name) {
-    emit('update-node', { nodeId: props.node._id, field: 'name', value: editData.value.name })
+    emit('update-node', { nodeId: props.node._id, field: 'name', value: editData.value.name });
   }
   if (editData.value.description !== (props.node.description || '')) {
-    emit('update-node', { nodeId: props.node._id, field: 'description', value: editData.value.description })
+    emit('update-node', {
+      nodeId: props.node._id,
+      field: 'description',
+      value: editData.value.description,
+    });
   }
   if (editData.value.estimatedHours !== props.node.estimatedHours) {
-    emit('update-node', { nodeId: props.node._id, field: 'estimatedHours', value: editData.value.estimatedHours })
+    emit('update-node', {
+      nodeId: props.node._id,
+      field: 'estimatedHours',
+      value: editData.value.estimatedHours,
+    });
   }
-  isEditing.value = false
+  isEditing.value = false;
 }
 
 function cancelEdit() {
-  isEditing.value = false
+  isEditing.value = false;
 }
 
 function deleteNode() {
   if (confirm('Tem certeza que quer deletar este pacote e todos os seus filhos?')) {
-    emit('delete-node', props.node._id)
+    emit('delete-node', props.node._id);
   }
 }
 
 function addChild() {
-  emit('add-child', props.node._id)
+  emit('add-child', props.node._id);
 }
 
 function handleDragStart(event: DragEvent) {
-  isDragging.value = true
+  isDragging.value = true;
   if (event.dataTransfer) {
-    event.dataTransfer.effectAllowed = 'move'
-    event.dataTransfer.setData('text/plain', props.node._id || '')
+    event.dataTransfer.effectAllowed = 'move';
+    event.dataTransfer.setData('text/plain', props.node._id || '');
   }
 }
 
 function handleDragOver(event: DragEvent) {
   if (props.editing) {
-    event.preventDefault()
+    event.preventDefault();
     if (event.dataTransfer) {
-      event.dataTransfer.dropEffect = 'move'
+      event.dataTransfer.dropEffect = 'move';
     }
-    isDragOver.value = true
+    isDragOver.value = true;
   }
 }
 
 function handleDragLeave() {
-  isDragOver.value = false
+  isDragOver.value = false;
 }
 
 function handleDrop(event: DragEvent) {
-  event.preventDefault()
-  event.stopPropagation()
-  isDragOver.value = false
+  event.preventDefault();
+  event.stopPropagation();
+  isDragOver.value = false;
 
-  const sourceId = event.dataTransfer?.getData('text/plain')
+  const sourceId = event.dataTransfer?.getData('text/plain');
   if (sourceId && sourceId !== props.node._id && props.editing) {
-    emit('move-node', { sourceId, targetId: props.node._id })
+    emit('move-node', { sourceId, targetId: props.node._id });
   }
 }
 
 function handleDragEnd() {
-  isDragging.value = false
-  isDragOver.value = false
+  isDragging.value = false;
+  isDragOver.value = false;
 }
-
 </script>
 
 <style scoped>
@@ -332,7 +337,7 @@ function handleDragEnd() {
   overflow: hidden;
 }
 
-.node-row[draggable="true"] {
+.node-row[draggable='true'] {
   cursor: move;
 }
 

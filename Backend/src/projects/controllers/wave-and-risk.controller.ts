@@ -11,12 +11,13 @@ import {
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { RollingWaveService } from '../services/strategy';
+import { RollingWaveService, WaveDetailingService } from '../services/strategy';
+import { LeafTasksBufferService } from '../services/execution/leaf-tasks-buffer.service';
 import { RiskService } from '../services/execution';
 import { EVMService, EVMProgressService } from '../services/evm';
 import { TasksService } from '../../tasks/tasks.service';
 import { CPMService, TaskNode, TaskDependencyEdge } from '../../tasks/services/dependencies';
-import { UpdateWaveDto } from '../dto/wave.dto';
+import { CommitWaveTasksDto, GenerateWaveSliceTasksDto, UpdateWaveDto } from '../dto/wave.dto';
 import { CreateRiskDto, UpdateRiskDto } from '../dto/risk.dto';
 import { RecordProjectProgressDto } from '../dto/evm.dto';
 import { ProjectWave } from '../schemas/project-wave.schema';
@@ -46,6 +47,8 @@ interface IDepRecord {
 export class WaveAndRiskController {
   constructor(
     private readonly waveService: RollingWaveService,
+    private readonly waveDetailing: WaveDetailingService,
+    private readonly leafBuffer: LeafTasksBufferService,
     private readonly riskService: RiskService,
     private readonly evmService: EVMService,
     private readonly evmProgressService: EVMProgressService,
@@ -53,6 +56,25 @@ export class WaveAndRiskController {
     private readonly cpmService: CPMService,
     @InjectModel(Project.name) private projectModel: Model<ProjectDocument>,
   ) {}
+
+  /** Limite/quota do Gemini vira 429 com o tempo de espera, para o Frontend explicar ao usuário. */
+  private toRateLimitHttpException(err: unknown): HttpException | null {
+    const e = err as { code?: string; retryAfterMs?: number; isQuotaExceeded?: boolean; model?: string };
+    if (e?.code !== 'RATE_LIMIT') return null;
+    const retryAfterMs = Number(e.retryAfterMs);
+    return new HttpException(
+      {
+        message: e.isQuotaExceeded
+          ? 'Limite/Quota do Gemini atingido. Tente novamente mais tarde ou aumente a quota/billing.'
+          : 'Rate limit do Gemini. Aguarde e tente novamente.',
+        code: 'RATE_LIMIT',
+        isQuotaExceeded: !!e.isQuotaExceeded,
+        retryAfterMs: Number.isFinite(retryAfterMs) ? retryAfterMs : undefined,
+        model: e.model,
+      },
+      HttpStatus.TOO_MANY_REQUESTS,
+    );
+  }
 
   private getErrorMessage(error: unknown): string {
     if (error instanceof Error) return error.message;
@@ -203,6 +225,68 @@ export class WaveAndRiskController {
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
+  }
+
+  // ============================================
+  // DETALHAMENTO DE ONDA (fatias → micro-tarefas)
+  // ============================================
+
+  /** Fatias ainda não detalhadas da onda, no formato de item do diálogo interativo. */
+  @Get('waves/:waveId/detail-items')
+  async getWaveDetailItems(@Param('projectId') projectId: string, @Param('waveId') waveId: string) {
+    const items = await this.waveDetailing.getDetailItems(projectId, waveId);
+    return {
+      items,
+      total: items.length,
+      totalHours: items.reduce((sum, item) => sum + Number(item.node.estimatedHours || 0), 0),
+    };
+  }
+
+  /** Pré-visualização das micro-tarefas de uma fatia (não salva). */
+  @Post('waves/:waveId/slices/:sliceId/generate-tasks')
+  async generateWaveSliceTasks(
+    @Param('projectId') projectId: string,
+    @Param('waveId') waveId: string,
+    @Param('sliceId') sliceId: string,
+    @Body() dto: GenerateWaveSliceTasksDto,
+  ) {
+    const preferences = dto?.preferences || {};
+    const keyFor = (id: string) =>
+      `wavebuf:${projectId}:${waveId}:${id}:${preferences.modelOverride || ''}:${preferences.regenerateNonce || ''}`;
+
+    for (const nextId of dto?.prefetchSliceIds || []) {
+      if (nextId === sliceId) continue;
+      this.leafBuffer.prefetch(keyFor(nextId), projectId, () =>
+        this.waveDetailing.generateSliceTasks(projectId, waveId, nextId, preferences),
+      );
+    }
+
+    const buffered = await this.leafBuffer.consume<{ tasks?: unknown[] }>(keyFor(sliceId));
+    let result: Awaited<ReturnType<WaveDetailingService['generateSliceTasks']>> | { tasks?: unknown[] };
+    try {
+      result =
+        buffered ??
+        (await this.waveDetailing.generateSliceTasks(projectId, waveId, sliceId, preferences));
+    } catch (err: unknown) {
+      throw this.toRateLimitHttpException(err) ?? err;
+    }
+    return {
+      ...result,
+      message: `📝 ${result.tasks?.length || 0} micro-tarefas preparadas para revisão`,
+    };
+  }
+
+  /**
+   * Fecha o detalhamento depois que as tarefas foram salvas (POST /tasks/bulk com waveId/waveSliceId):
+   * vincula as tarefas às fatias, marca-as como detalhadas e aplica re-baselines.
+   */
+  @Post('waves/:waveId/commit-tasks')
+  async commitWaveTasks(
+    @Param('projectId') projectId: string,
+    @Param('waveId') waveId: string,
+    @Body() dto: CommitWaveTasksDto,
+  ): Promise<ProjectWave> {
+    return this.waveDetailing.commitTasks(projectId, waveId, dto?.sliceHours || []);
   }
 
   @Post('waves/replan-task-deadlines')

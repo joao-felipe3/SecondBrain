@@ -101,27 +101,3 @@ export function getLeafNodesWithPaths(nodes: WBSNodeDto[]): Array<{
   traverse(nodes);
   return leafNodes;
 }
-
-// Compute leaf hours for audit
-export function computeLeafHours(tasks: Array<{ pomodorosPlanned?: number }>): number {
-  const totalPoms = tasks.reduce((sum, task) => sum + (task?.pomodorosPlanned || 0), 0);
-  return totalPoms * 0.5;
-}
-
-// Shrink leaf tasks to target hours by adjusting pomodoros
-export function shrinkLeafTasksToTargetHours(
-  tasks: Array<{ pomodorosPlanned: number }>,
-  targetHours: number,
-): void {
-  const currentPoms = tasks.reduce((sum, t) => sum + t.pomodorosPlanned, 0);
-  const currentHours = currentPoms * 0.5;
-
-  if (currentHours <= targetHours || targetHours <= 0) return;
-
-  const shrinkRatio = targetHours / currentHours;
-
-  for (const t of tasks) {
-    const newPom = Math.max(1, Math.round(t.pomodorosPlanned * shrinkRatio));
-    t.pomodorosPlanned = newPom;
-  }
-}

@@ -10,6 +10,9 @@ export type GenerationStrategy = 'two-phase' | 'legacy';
 export interface ConversionOptions {
   strategy?: GenerationStrategy;
   modelOverride?: string;
+  regenerateNonce?: string;
+  /** Títulos que já existem para o pacote (fatias anteriores): o modelo não deve repeti-los. */
+  avoidTaskTitles?: string[];
   autoAudit?: boolean;
   autoApplyFixes?: boolean;
   logVerbose?: boolean;
@@ -37,59 +40,11 @@ export interface ConversionResult {
 }
 
 export interface LeafAuditResult {
-  diagnosis: 'underestimated' | 'gold_plating' | 'mixed' | (string & {});
+  diagnosis:
+    'underestimated' | 'gold_plating' | 'mixed' | 'overestimated' | 'incomplete' | (string & {});
   rationale: string;
-  suggestedAction: 'rebaseline' | 'simplify' | 'none';
+  suggestedAction: 'rebaseline' | 'simplify' | 'regenerate' | 'none';
   suggestedEstimatedHours?: number;
-}
-
-export interface GeneratedTaskDto {
-  name: string;
-  description: string;
-  estimatedMinutes: number;
-  pomodorosPlanned: number;
-  priority: number;
-  project: string;
-  deadline: Date;
-  isConcluded: boolean;
-  late: boolean;
-  recurrency: string;
-  wbsPath: string;
-
-  // Optional AI metadata fields:
-  microTaskType?: string;
-  themeTag?: string | string[];
-  contextTag?: string;
-  cognitiveMode?: string;
-
-  // Optional PERT calculations:
-  pertOptimisticMinutes?: number;
-  pertMostLikelyMinutes?: number;
-  pertPessimisticMinutes?: number;
-  pertExpectedMinutes?: number;
-  pertVariance?: number;
-}
-
-export interface WbsNodeUpdate {
-  nodeId: string;
-  newEstimatedHours: number;
-}
-
-export interface AuditRecord {
-  nodeId?: string;
-  nodePath: string;
-  budgetHours: number;
-  generatedHours: number;
-  appliedAction: 'rebaseline' | 'simplify' | 'none';
-  diagnosis?: string;
-  suggestedEstimatedHours?: number;
-  finalHours?: number;
-}
-
-export interface WbsConversionResult {
-  createdTasks: any[];
-  wbsUpdates: WbsNodeUpdate[];
-  auditsApplied: AuditRecord[];
 }
 
 export interface TasksServiceSubset {
@@ -98,65 +53,22 @@ export interface TasksServiceSubset {
   recalculateProjectStats?: (projectId: string) => Promise<void>;
 }
 
-export interface GenerateTasksForLeafParams {
-  node: WBSNodeDto;
-  nodePath: string;
-  projectId: string;
-  priorityOffset?: number;
-}
-
-export interface AuditLeafDiscrepancyParams {
-  node: WBSNodeDto;
-  nodePath: string;
-  leafTaskDtos: GeneratedTaskDto[];
-  budgetHours: number;
-  generatedHoursBefore: number;
-  result: WbsConversionResult;
-}
-
-export interface ApplySimplifyFixParams {
-  node: WBSNodeDto;
-  nodeId?: string;
-  leafTaskDtos: GeneratedTaskDto[];
-  budgetHours: number;
-  suggestedHoursRaw: number;
-  hasSuggestedHours: boolean;
-  nodePath: string;
-  audit: LeafAuditResult;
-  result: WbsConversionResult;
-}
-
-export interface ApplyRebaselineFixParams {
-  node: WBSNodeDto;
-  nodeId?: string;
-  budgetHours: number;
-  generatedHoursBefore: number;
-  suggestedHoursRaw: number;
-  hasSuggestedHours: boolean;
-  nodePath: string;
-  audit: LeafAuditResult;
-  result: WbsConversionResult;
-}
-
-export interface CreateAndSaveLeaveTasksParams {
-  leafTaskDtos: GeneratedTaskDto[];
-  tasksService: TasksServiceSubset;
-  nodePath: string;
-  result: WbsConversionResult;
-}
-
 export interface GenerateTasksForSingleLeafParams {
   leafNode: WBSNodeDto;
   nodePath: string;
   projectId: string;
   project: any;
-  tasksService: TasksServiceSubset;
+  /** Obrigatório só quando saveTasks=true. */
+  tasksService?: TasksServiceSubset;
   preferences?: {
     targetPomodoros?: number;
     workflowMix?: Record<string, number>;
     modelOverride?: string;
+    regenerateNonce?: string;
   };
   saveTasks?: boolean;
+  /** Títulos já usados no pacote (fatias anteriores). */
+  avoidTaskTitles?: string[];
 }
 
 export interface AuditLeafDiscrepancyInput {
@@ -175,8 +87,8 @@ export interface AuditLeafDiscrepancyInput {
 }
 
 export interface ApplyGuardrailsParams {
-  diagnosis: 'underestimated' | 'gold_plating' | 'mixed';
-  suggestedAction: 'rebaseline' | 'simplify';
+  diagnosis: AuditDiagnosis;
+  suggestedAction: AuditAction;
   duplicateRatio: number;
   repetitionMetrics: BatchMetricsResult;
   diffPct: number;
@@ -193,35 +105,6 @@ export interface AutoFixMonotonyParams {
   maxCalls: number;
   forceIndices?: number[];
   modelOverride?: string;
-}
-
-export interface ConvertWBSToTasksWithAIParams {
-  nodes: WBSNodeDto[];
-  projectId: string;
-  project: { name?: string };
-  tasksService: TasksServiceSubset;
-  preferences?: {
-    targetPomodoros?: number;
-    workflowMix?: Record<string, number>;
-  };
-  options?: {
-    autoResolveDiscrepancies?: boolean;
-    autoAuditThresholdPct?: number;
-  };
-}
-
-export interface ProcessLeafNodeParams {
-  node: WBSNodeDto;
-  nodePath: string;
-  projectId: string;
-  project: { name?: string };
-  tasksService: TasksServiceSubset;
-  options?: {
-    autoResolveDiscrepancies?: boolean;
-    autoAuditThresholdPct?: number;
-  };
-  result: WbsConversionResult;
-  priorityOffset?: number;
 }
 
 export interface ConvertWbsToTasksParams {
@@ -248,9 +131,9 @@ export interface AuditLeafDiscrepancyAiInput {
 }
 
 export interface AuditLeafDiscrepancyAiResult {
-  diagnosis: 'underestimated' | 'gold_plating' | 'mixed';
+  diagnosis: AuditDiagnosis;
   rationale: string;
-  suggestedAction: 'rebaseline' | 'simplify';
+  suggestedAction: AuditAction;
   suggestedEstimatedHours?: number;
 }
 
@@ -275,61 +158,10 @@ export interface GenerateTasksForSingleLeafResult {
   pomodorosGenerated: number;
 }
 
-export interface ShrinkTaskInput {
-  pomodorosPlanned: number;
-  pertOptimisticMinutes?: number;
-  pertMostLikelyMinutes?: number;
-  pertPessimisticMinutes?: number;
-  pertExpectedMinutes?: number;
-  pertVariance?: number;
-}
-
-export interface ShrinkResult {
-  targetHours: number;
-  finalHours: number;
-}
-
-export interface LegacyGeneratedTask {
-  name: string;
-  description: string;
-  projectId: string;
-  estimatedMinutes: number;
-  priority: number;
-  pomodorosPlanned: number;
-}
-
 export interface DraftToTaskContext {
   wbsNode?: WBSNodeDto;
   project?: { _id?: string | Types.ObjectId | null; id?: string | null };
   path?: string;
-}
-
-export interface DraftsWithPlanCacheParams {
-  projectId: string;
-  node: WBSNodeDto;
-  nodePath: string;
-  chunkMinutes: number[];
-  plan?: Record<string, unknown> | null;
-  modelOverride?: string;
-}
-
-export interface MapDraftsToTasksParams {
-  drafts: MicroTaskDraft[];
-  node: WBSNodeDto;
-  nodePath: string;
-  projectId: string;
-  chunkMinutes: number[];
-  priorityOffset: number;
-  deadline: Date;
-}
-
-export interface GenerateFallbackTasksParams {
-  node: WBSNodeDto;
-  nodePath: string;
-  projectId: string;
-  chunkMinutes: number[];
-  priorityOffset: number;
-  deadline: Date;
 }
 
 export interface FixMonotonyBatchParams {
@@ -341,4 +173,29 @@ export interface FixMonotonyBatchParams {
   indices: number[];
   round: number;
   modelOverride?: string;
+}
+
+/**
+ * Diagnóstico da auditoria de discrepância.
+ * - Diferença positiva (gerado > orçado): underestimated | gold_plating | mixed.
+ * - Diferença negativa (gerado < orçado): overestimated (pacote superestimado)
+ *   | incomplete (faltam micro-tarefas para cobrir o escopo).
+ */
+export type AuditDiagnosis =
+  'underestimated' | 'gold_plating' | 'mixed' | 'overestimated' | 'incomplete';
+export type AuditAction = 'rebaseline' | 'simplify' | 'regenerate';
+
+export interface CompleteLeafTasksParams {
+  leafNode: WBSNodeDto;
+  nodePath: string;
+  project: any;
+  existingTaskNames: string[];
+  missingHours: number;
+  preferences?: { modelOverride?: string };
+}
+
+export interface CompleteLeafTasksResult {
+  tasks: any[];
+  generatedHours: number;
+  pomodorosGenerated: number;
 }

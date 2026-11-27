@@ -11,6 +11,8 @@ import {
   extractJsonObject,
 } from '../../../projects/services/wbs/utils/json-parser.util';
 import {
+  AuditAction,
+  AuditDiagnosis,
   AuditLeafDiscrepancyAiInput,
   AuditLeafDiscrepancyAiResult,
   GenerateWbsInput,
@@ -24,27 +26,33 @@ export class WbsAiService {
   // Generate WBS nodes from a SMART objective
   async generateWbs(smartObjective: GenerateWbsInput): Promise<Record<string, unknown>[]> {
     const prompt = buildWbsGenerationPrompt(smartObjective);
-    try {
-      const response = await this.geminiExecutor.generateContent(prompt);
-      let cleanResponse = response.trim();
+    // Modelos sem JSON mode (ex.: Gemma) às vezes respondem com texto em volta do JSON.
+    // extractJsonArray isola o array, repara e salva o que for possível; se nada sair,
+    // pede uma nova resposta uma vez. Falhas da própria chamada à IA não são repetidas aqui
+    // (o GeminiExecutorService já faz os retries de quota e sobrecarga).
+    const maxParseAttempts = 2;
+    let lastParseError: unknown = null;
 
-      // Remove markdown JSON code blocks
-      if (cleanResponse.startsWith('```')) {
-        cleanResponse = cleanResponse
-          .replace(/^```(?:json)?\s*/, '')
-          .replace(/```\s*$/, '')
-          .trim();
-      }
+    for (let attempt = 1; attempt <= maxParseAttempts; attempt++) {
+      const response = await this.geminiExecutor.generateContent(prompt).catch((error: unknown) => {
+        console.error('[WbsAiService] Erro ao gerar WBS:', error);
+        throw new Error('Não foi possível gerar a WBS com IA');
+      });
 
-      const parsed = JSON.parse(cleanResponse) as unknown;
-      if (!Array.isArray(parsed)) {
-        throw new Error('Resposta da IA não é um array JSON válido');
+      try {
+        const nodes = extractJsonArray<Record<string, unknown>>(response);
+        if (nodes.length === 0) throw new Error('Resposta da IA sem nós de WBS');
+        return nodes;
+      } catch (error) {
+        lastParseError = error;
+        console.warn(
+          `[WbsAiService] Resposta sem JSON utilizável (tentativa ${attempt}/${maxParseAttempts}).`,
+        );
       }
-      return parsed as Record<string, unknown>[];
-    } catch (error) {
-      console.error('[WbsAiService] Erro ao gerar WBS:', error);
-      throw new Error('Não foi possível gerar a WBS com IA');
     }
+
+    console.error('[WbsAiService] Erro ao gerar WBS:', lastParseError);
+    throw new Error('Não foi possível gerar a WBS com IA');
   }
 
   // Suggest decomposition for a WBS node violating 8/80
@@ -91,16 +99,14 @@ export class WbsAiService {
     }>(response);
 
     const diagnosisRaw = String(parsed?.diagnosis || '').trim();
-    const diagnosis: 'underestimated' | 'gold_plating' | 'mixed' =
-      diagnosisRaw === 'gold_plating'
-        ? 'gold_plating'
-        : diagnosisRaw === 'mixed'
-          ? 'mixed'
-          : 'underestimated';
+    const knownDiagnoses: AuditDiagnosis[] = ['gold_plating', 'mixed', 'overestimated', 'incomplete'];
+    const diagnosis: AuditDiagnosis = knownDiagnoses.find((d) => d === diagnosisRaw) ?? 'underestimated';
 
     const suggestedActionRaw = String(parsed?.suggestedAction || '').trim();
-    const suggestedAction: 'rebaseline' | 'simplify' =
-      suggestedActionRaw === 'simplify' ? 'simplify' : 'rebaseline';
+    const suggestedAction: AuditAction =
+      suggestedActionRaw === 'simplify' || suggestedActionRaw === 'regenerate'
+        ? suggestedActionRaw
+        : 'rebaseline';
 
     const rationale = String(parsed?.rationale || '').trim() || 'Sem justificativa.';
     let suggestedEstimatedHours: number | undefined;

@@ -39,6 +39,8 @@ export interface WBSLeafGenerationContext {
     milestones?: Array<{ name?: string; goal?: string; atMinutes?: number }>;
   };
   modelOverride?: string;
+  /** Muda a chave de cache para forçar uma nova geração (botão "Regenerar"). */
+  regenerateNonce?: string;
 }
 
 export interface WBSLeafWithPlanGenerationContext extends WBSLeafGenerationContext {
@@ -97,6 +99,8 @@ export interface WBSLeafPlanParamsDto {
   chunkMinutes: number[];
   workflowMix?: Record<string, number>;
   modelOverride?: string;
+  /** Muda a chave de cache para forçar uma nova geração (botão "Regenerar"). */
+  regenerateNonce?: string;
 }
 
 export interface WBSLeafPlanResultDto {
@@ -123,4 +127,6 @@ export interface GenerateLeafDraftsDto {
 export interface GenerateLeafDraftsWithPlanDto {
   context: WBSLeafWithPlanGenerationContext;
   chunkMinutes: number[];
+  /** Títulos já existentes no pacote: o modelo deve gerar tarefas diferentes delas. */
+  avoidTaskTitles?: string[];
 }

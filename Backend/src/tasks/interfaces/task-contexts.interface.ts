@@ -53,6 +53,8 @@ export interface TaskTraceability {
   parentTaskId?: string;
   parentWbsNodeId?: string;
   wbsPath?: string;
+  waveId?: string;
+  waveSliceId?: string;
   generationBatchId?: string;
   milestoneId?: string;
   requirementIds?: string[];
