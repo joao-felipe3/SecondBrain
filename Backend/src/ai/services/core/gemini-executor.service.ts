@@ -6,6 +6,7 @@ import { GoogleGenerativeAI, HarmBlockThreshold, HarmCategory } from '@google/ge
 export class GeminiExecutorService {
   private readonly genAI: GoogleGenerativeAI;
   private readonly model: string;
+  private readonly fallbackModel?: string;
   private readonly strongModel?: string;
   private readonly strongModelMaxCallsPerDay: number;
   private strongModelCallsDay = '';
@@ -30,16 +31,21 @@ export class GeminiExecutorService {
 
     this.genAI = new GoogleGenerativeAI(apiKey);
 
+    // Modelo padrão: gratuito. Se ele falhar, o fallback é usado imediatamente.
     this.model =
-      this.configService.get<string>('GEMINI_MODEL') ||
-      process.env.GEMINI_MODEL ||
-      'gemini-2.5-flash-lite';
+      this.configService.get<string>('GEMINI_MODEL') || process.env.GEMINI_MODEL || 'gemma-4-31b-it';
 
-    const strongRaw =
-      this.configService.get<string>('GEMINI_STRONG_MODEL') ||
+    // Fallback imediato: o mais barato entre os modelos Gemini.
+    const fallbackRaw =
       this.configService.get<string>('GEMINI_FALLBACK_MODEL') ||
-      process.env.GEMINI_STRONG_MODEL ||
-      process.env.GEMINI_FALLBACK_MODEL;
+      process.env.GEMINI_FALLBACK_MODEL ||
+      'gemini-2.5-flash-lite';
+    const fallbackNormalized = String(fallbackRaw).trim();
+    this.fallbackModel = fallbackNormalized || undefined;
+
+    // Modelo forte: usado apenas quando uma chamada pede explicitamente por ele.
+    const strongRaw =
+      this.configService.get<string>('GEMINI_STRONG_MODEL') || process.env.GEMINI_STRONG_MODEL;
     const strongNormalized = String(strongRaw ?? '').trim();
     this.strongModel = strongNormalized || undefined;
 
@@ -77,6 +83,10 @@ export class GeminiExecutorService {
 
   getModelName(): string {
     return this.model;
+  }
+
+  getFallbackModelName(): string | undefined {
+    return this.fallbackModel;
   }
 
   getStrongModelName(): string | undefined {
@@ -219,6 +229,7 @@ export class GeminiExecutorService {
     const baseModelName = this.pickModel(options?.model);
     let currentModelName = baseModelName;
     let model = this.genAI.getGenerativeModel({ model: currentModelName });
+    let triedFallback = false;
 
     const buildGenerationConfig = (modelName: string) => ({
       temperature: options?.temperature ?? 0.8,
@@ -252,8 +263,6 @@ export class GeminiExecutorService {
 
     const maxRetries = 4;
     let attempt = 0;
-    let baseModelAttempts = 0;
-    let triedStrongModel = false;
     let lastError: { status?: number; code?: number; message?: string } | null = null;
 
     const isTransientOverload = (status: number | undefined, message: string) => {
@@ -277,24 +286,19 @@ export class GeminiExecutorService {
         const status = errObj.status || errObj.code;
         const message = typeof errObj.message === 'string' ? errObj.message : String(err);
 
-        if (currentModelName === baseModelName) {
-          baseModelAttempts++;
-        }
-
-        const minBaseAttempts = 2;
+        // Falha no modelo padrão: troca imediatamente para o fallback, sem novos retries.
         if (
-          this.strongModel &&
-          currentModelName === baseModelName &&
-          currentModelName !== this.strongModel &&
-          isTransientOverload(status, message) &&
-          baseModelAttempts >= minBaseAttempts &&
-          !triedStrongModel &&
-          this.canUseStrongModel()
+          !triedFallback &&
+          baseModelName === this.model &&
+          this.fallbackModel &&
+          this.fallbackModel !== baseModelName
         ) {
-          currentModelName = this.strongModel;
+          console.warn(
+            `[GeminiService] Modelo "${this.sanitizeModelNameForLog(baseModelName)}" falhou (status=${this.sanitizeForLog(String(status ?? ''), 10)}). Usando fallback "${this.sanitizeModelNameForLog(this.fallbackModel)}".`,
+          );
+          currentModelName = this.fallbackModel;
           model = this.genAI.getGenerativeModel({ model: currentModelName });
-          triedStrongModel = true;
-          attempt++;
+          triedFallback = true;
           continue;
         }
 

@@ -9,7 +9,8 @@ describe('GeminiExecutorService', () => {
     mockConfigService = {
       get: jest.fn((key: string) => {
         if (key === 'GEMINI_API_KEY') return 'mock-api-key';
-        if (key === 'GEMINI_MODEL') return 'gemini-2.5-flash-lite';
+        if (key === 'GEMINI_MODEL') return 'gemma-4-31b-it';
+        if (key === 'GEMINI_FALLBACK_MODEL') return 'gemini-2.5-flash-lite';
         if (key === 'GEMINI_STRONG_MODEL') return 'gemini-2.5-pro';
         if (key === 'GEMINI_STRONG_MODEL_MAX_CALLS_PER_DAY') return '2';
         if (key === 'GEMINI_EMBEDDING_MODEL') return 'text-embedding-004';
@@ -25,9 +26,12 @@ describe('GeminiExecutorService', () => {
   });
 
   it('should initialize correctly with API keys and models', () => {
-    expect(service.getModelName()).toBe('gemini-2.5-flash-lite');
+    expect(service.getModelName()).toBe('gemma-4-31b-it');
+    expect(service.getFallbackModelName()).toBe('gemini-2.5-flash-lite');
     expect(service.getStrongModelName()).toBe('gemini-2.5-pro');
-    expect(service.supportsJsonMode()).toBe(true);
+    // Gemma não recebe JSON mode automático; o fallback gemini-* recebe.
+    expect(service.supportsJsonMode()).toBe(false);
+    expect((service as any).supportsJsonModeForModel('gemini-2.5-flash-lite')).toBe(true);
   });
 
   it('should throw error when no API key is provided', () => {
@@ -65,7 +69,7 @@ describe('GeminiExecutorService', () => {
     (service as any).strongModelCallsDay = new Date().toISOString().slice(0, 10);
 
     const picked = (service as any).pickModel('gemini-2.5-pro');
-    expect(picked).toBe('gemini-2.5-flash-lite');
+    expect(picked).toBe('gemma-4-31b-it');
   });
 
   it('should throw error when NODE_ENV is test', async () => {
@@ -95,25 +99,39 @@ describe('GeminiExecutorService', () => {
     expect(res).toBe('Response text');
   });
 
-  it('should handle rate limit retry and fallback to strong model on transient overload', async () => {
+  it('should switch to the fallback model immediately when the default model fails', async () => {
     process.env.NODE_ENV = 'development';
 
     const mockGenerate = jest
       .fn()
       .mockRejectedValueOnce({ status: 503, message: 'overloaded' })
-      .mockRejectedValueOnce({ status: 503, message: 'overloaded' })
       .mockResolvedValueOnce({
-        response: { text: () => 'Strong response' },
+        response: { text: () => 'Fallback response' },
       });
+    const getGenerativeModel = jest.fn().mockReturnValue({ generateContent: mockGenerate });
 
-    (service as any).genAI = {
-      getGenerativeModel: jest.fn().mockReturnValue({
-        generateContent: mockGenerate,
-      }),
-    };
+    (service as any).genAI = { getGenerativeModel };
 
     const res = await service.generateContent('prompt');
-    expect(res).toBe('Strong response');
+    expect(res).toBe('Fallback response');
+    expect(getGenerativeModel.mock.calls.map((c) => c[0].model)).toEqual([
+      'gemma-4-31b-it',
+      'gemini-2.5-flash-lite',
+    ]);
+  });
+
+  it('should not use the fallback when the caller explicitly requests another model', async () => {
+    process.env.NODE_ENV = 'development';
+
+    const mockGenerate = jest.fn().mockRejectedValue({ status: 400, message: 'Bad request' });
+    const getGenerativeModel = jest.fn().mockReturnValue({ generateContent: mockGenerate });
+
+    (service as any).genAI = { getGenerativeModel };
+
+    await expect(service.generateContent('prompt', { model: 'gemini-2.5-pro' })).rejects.toThrow(
+      'Falha ao gerar conteúdo com a IA do Gemini',
+    );
+    expect(getGenerativeModel.mock.calls.map((c) => c[0].model)).toEqual(['gemini-2.5-pro']);
   });
 
   it('should throw RATE_LIMIT error if 429 errors exhaust max retries', async () => {

@@ -29,7 +29,9 @@
 Environment variables used by the AI layer:
 
 - `GEMINI_API_KEY` (or `GOOGLE_API_KEY`): API key for Google Generative AI
-- `GEMINI_MODEL`: model name (example: `gemma-3-27b-it` or `gemini-1.5-flash`)
+- `GEMINI_MODEL`: default model, free (default in code: `gemma-4-31b-it`)
+- `GEMINI_FALLBACK_MODEL`: model used immediately when the default model fails (default in code: `gemini-2.5-flash-lite`, the cheapest Gemini)
+- `GEMINI_STRONG_MODEL`: stronger model, used only when a call explicitly requests it
 - `GEMINI_JSON_MODE` (optional): `true|false` to force JSON mode on/off.
   - Default behavior: enabled automatically for `gemini-*` models and disabled for `gemma-*` models.
 - `GEMINI_EMBEDDING_MODEL` (optional): embedding model name (example: `text-embedding-004`).
