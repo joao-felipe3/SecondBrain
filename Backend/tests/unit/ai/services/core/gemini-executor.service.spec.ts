@@ -25,6 +25,32 @@ describe('GeminiExecutorService', () => {
     process.env.NODE_ENV = originalEnv;
   });
 
+  describe('thinkingConfigFor', () => {
+    afterEach(() => {
+      delete process.env.GEMINI_THINKING_LEVEL;
+    });
+
+    it('Gemini 3.x+ pensa pouco por padrão; Gemma e 2.x não recebem o campo', () => {
+      expect(service.thinkingConfigFor('gemini-3.8-flash')).toEqual({
+        thinkingConfig: { thinkingLevel: 'low' },
+      });
+      expect(service.thinkingConfigFor('gemini-3.1-pro-preview')).toEqual({
+        thinkingConfig: { thinkingLevel: 'low' },
+      });
+      expect(service.thinkingConfigFor('gemini-2.5-flash-lite')).toEqual({});
+      expect(service.thinkingConfigFor('gemma-4-31b-it')).toEqual({});
+    });
+
+    it('respeita GEMINI_THINKING_LEVEL e permite desligar', () => {
+      process.env.GEMINI_THINKING_LEVEL = 'high';
+      expect(service.thinkingConfigFor('gemini-3.8-flash')).toEqual({
+        thinkingConfig: { thinkingLevel: 'high' },
+      });
+      process.env.GEMINI_THINKING_LEVEL = 'off';
+      expect(service.thinkingConfigFor('gemini-3.8-flash')).toEqual({});
+    });
+  });
+
   it('should initialize correctly with API keys and models', () => {
     expect(service.getModelName()).toBe('gemma-4-31b-it');
     expect(service.getFallbackModelName()).toBe('gemini-2.5-flash-lite');

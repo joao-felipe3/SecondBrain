@@ -166,6 +166,27 @@ export class GeminiExecutorService {
       .slice(0, 60);
   }
 
+  /**
+   * Modelos Gemini 3.x+ "pensam" antes de responder e esse raciocínio conta no maxOutputTokens.
+   * Com os limites usados na geração de micro-tarefas (900–3500 tokens) ele consumia o orçamento
+   * inteiro e a resposta vinha vazia/truncada. Por padrão usa raciocínio "low"
+   * (GEMINI_THINKING_LEVEL=low|medium|high; "off" para não enviar a configuração).
+   * Gemma e Gemini 2.x não recebem o campo.
+   */
+  thinkingConfigFor(modelName: string): { thinkingConfig?: { thinkingLevel: string } } {
+    const match = /^gemini-(\d+)/i.exec(String(modelName || '').trim());
+    if (!match || Number(match[1]) < 3) return {};
+    const raw = String(
+      this.configService.get<string>('GEMINI_THINKING_LEVEL') ??
+        process.env.GEMINI_THINKING_LEVEL ??
+        'low',
+    )
+      .trim()
+      .toLowerCase();
+    if (!raw || ['off', 'none', 'default', '0', 'false'].includes(raw)) return {};
+    return { thinkingConfig: { thinkingLevel: raw } };
+  }
+
   private shouldUseJsonMode(requested: string | undefined, modelName: string): string | undefined {
     if (!requested) return undefined;
     if (this.supportsJsonModeForModel(modelName)) return requested;
@@ -237,6 +258,7 @@ export class GeminiExecutorService {
       topP: options?.topP ?? 1,
       maxOutputTokens: options?.maxOutputTokens ?? 4096,
       responseMimeType: this.shouldUseJsonMode(options?.responseMimeType, modelName),
+      ...this.thinkingConfigFor(modelName),
     });
 
     const safetySettings: {

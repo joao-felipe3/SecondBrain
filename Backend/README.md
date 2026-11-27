@@ -32,6 +32,7 @@ Environment variables used by the AI layer:
 - `GEMINI_MODEL`: default model, free (default in code: `gemma-4-31b-it`)
 - `GEMINI_FALLBACK_MODEL`: model used immediately when the default model fails (default in code: `gemini-2.5-flash-lite`, the cheapest Gemini)
 - `GEMINI_STRONG_MODEL`: stronger model, used only when a call explicitly requests it
+- `GEMINI_THINKING_LEVEL`: reasoning level sent to Gemini 3.x+ models (`low` by default, `off` to omit). Their reasoning counts toward `maxOutputTokens`, so high levels can leave empty or truncated answers
 - `GEMINI_JSON_MODE` (optional): `true|false` to force JSON mode on/off.
   - Default behavior: enabled automatically for `gemini-*` models and disabled for `gemma-*` models.
 - `GEMINI_EMBEDDING_MODEL` (optional): embedding model name (example: `text-embedding-004`).
