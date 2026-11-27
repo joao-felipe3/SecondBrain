@@ -13,11 +13,11 @@ export interface GrimoireChapter {
  * a fita "Editar" abra o modal exatamente na mesma etapa.
  */
 export const GRIMOIRE_CHAPTERS: readonly GrimoireChapter[] = [
-  // Planejamento: objetivo → pacotes (WBS) → ondas (Rolling Wave)
+  // Planejamento: objetivo → pacotes (WBS) e ondas (Rolling Wave) → rastreabilidade
   { id: 'geral', title: 'Visão Geral', icon: '📜' },
   { id: 'smart', title: 'Objetivo SMART', icon: '🎯' },
-  { id: 'eap', title: 'EAP (WBS)', icon: '🌳' },
-  { id: 'rtm', title: 'Ondas & Rastreabilidade', icon: '🌊' },
+  { id: 'eap', title: 'EAP (WBS) & Ondas', icon: '🌳' },
+  { id: 'rtm', title: 'Rastreabilidade (RTM)', icon: '🔗' },
   // Execução: análises que dependem das micro-tarefas detalhadas por onda
   { id: 'caminho-critico', title: 'Caminho Crítico', icon: '🛤️' },
   { id: 'pert', title: 'Diagrama PERT', icon: '🕸️' },

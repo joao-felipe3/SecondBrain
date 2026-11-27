@@ -26,9 +26,9 @@ export class RollingWaveService {
   async createInitialWaves(
     projectId: string,
     project: DeterministicProjectInput,
-    waveLengthDays: number = 28,
   ): Promise<ProjectWave[]> {
-    return this.rollingWavePlanningService.createInitialWaves(projectId, project, waveLengthDays);
+    // O tamanho das ondas é definido por horas (ROLLING_WAVE_TARGET_HOURS), não por dias.
+    return this.rollingWavePlanningService.createInitialWaves(projectId, project);
   }
 
   async getWavesByProject(projectId: string): Promise<ProjectWaveDocument[]> {

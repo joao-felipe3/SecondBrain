@@ -1129,8 +1129,8 @@
       "source_location": "L73",
       "_origin": "ast",
       "id": "backend_package_devdependencies_nestjs_testing",
-      "community": 149,
-      "community_name": "devDependencies",
+      "community": 189,
+      "community_name": "@nestjs/testing",
       "norm_label": "@nestjs/testing"
     },
     {
@@ -1140,8 +1140,8 @@
       "source_location": "L73",
       "_origin": "ast",
       "id": "nestjs_testing",
-      "community": 149,
-      "community_name": "devDependencies",
+      "community": 189,
+      "community_name": "@nestjs/testing",
       "norm_label": "@nestjs/testing"
     },
     {
@@ -1305,8 +1305,8 @@
       "source_location": "L81",
       "_origin": "ast",
       "id": "backend_package_devdependencies_dependency_cruiser",
-      "community": 201,
-      "community_name": "dependency-cruiser",
+      "community": 149,
+      "community_name": "devDependencies",
       "norm_label": "dependency-cruiser"
     },
     {
@@ -1316,8 +1316,8 @@
       "source_location": "L81",
       "_origin": "ast",
       "id": "dependency_cruiser",
-      "community": 201,
-      "community_name": "dependency-cruiser",
+      "community": 149,
+      "community_name": "devDependencies",
       "norm_label": "dependency-cruiser"
     },
     {
@@ -5343,7 +5343,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_controllers_projects_visualization_controller_projectsvisualizationcontroller",
       "community": 295,
-      "community_name": "CreateXMatrixDto",
+      "community_name": "ProjectsVisualizationController",
       "norm_label": "projectsvisualizationcontroller"
     },
     {
@@ -5354,7 +5354,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_controllers_projects_visualization_controller_ts_apitags",
       "community": 295,
-      "community_name": "CreateXMatrixDto",
+      "community_name": "ProjectsVisualizationController",
       "norm_label": "apitags"
     },
     {
@@ -5365,7 +5365,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_controllers_projects_visualization_controller_ts_controller",
       "community": 295,
-      "community_name": "CreateXMatrixDto",
+      "community_name": "ProjectsVisualizationController",
       "norm_label": "controller"
     },
     {
@@ -5376,7 +5376,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_controllers_projects_visualization_controller_ts_get",
       "community": 295,
-      "community_name": "CreateXMatrixDto",
+      "community_name": "ProjectsVisualizationController",
       "norm_label": "get"
     },
     {
@@ -5387,7 +5387,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_controllers_projects_visualization_controller_ts_apioperation",
       "community": 295,
-      "community_name": "CreateXMatrixDto",
+      "community_name": "ProjectsVisualizationController",
       "norm_label": "apioperation"
     },
     {
@@ -5398,7 +5398,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_controllers_projects_visualization_controller_ts_apiresponse",
       "community": 295,
-      "community_name": "CreateXMatrixDto",
+      "community_name": "ProjectsVisualizationController",
       "norm_label": "apiresponse"
     },
     {
@@ -5409,7 +5409,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_controllers_projects_visualization_controller_ts_param",
       "community": 295,
-      "community_name": "CreateXMatrixDto",
+      "community_name": "ProjectsVisualizationController",
       "norm_label": "param"
     },
     {
@@ -5420,7 +5420,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_controllers_projects_visualization_controller_ts_query",
       "community": 295,
-      "community_name": "CreateXMatrixDto",
+      "community_name": "ProjectsVisualizationController",
       "norm_label": "query"
     },
     {
@@ -5431,7 +5431,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_controllers_projects_visualization_controller_ts_post",
       "community": 295,
-      "community_name": "CreateXMatrixDto",
+      "community_name": "ProjectsVisualizationController",
       "norm_label": "post"
     },
     {
@@ -5442,7 +5442,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_controllers_projects_visualization_controller_ts_body",
       "community": 295,
-      "community_name": "CreateXMatrixDto",
+      "community_name": "ProjectsVisualizationController",
       "norm_label": "body"
     },
     {
@@ -5453,7 +5453,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_controllers_projects_visualization_controller_projectsvisualizationcontroller_constructor",
       "community": 295,
-      "community_name": "CreateXMatrixDto",
+      "community_name": "ProjectsVisualizationController",
       "norm_label": ".constructor()"
     },
     {
@@ -5464,7 +5464,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_controllers_projects_visualization_controller_projectsvisualizationcontroller_getganttdata",
       "community": 295,
-      "community_name": "CreateXMatrixDto",
+      "community_name": "ProjectsVisualizationController",
       "norm_label": ".getganttdata()"
     },
     {
@@ -5475,7 +5475,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_controllers_projects_visualization_controller_projectsvisualizationcontroller_getpertdiagramdata",
       "community": 295,
-      "community_name": "CreateXMatrixDto",
+      "community_name": "ProjectsVisualizationController",
       "norm_label": ".getpertdiagramdata()"
     },
     {
@@ -5486,7 +5486,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_controllers_projects_visualization_controller_projectsvisualizationcontroller_createxmatrix",
       "community": 295,
-      "community_name": "CreateXMatrixDto",
+      "community_name": "ProjectsVisualizationController",
       "norm_label": ".createxmatrix()"
     },
     {
@@ -5497,7 +5497,7 @@
       "_origin": "ast",
       "id": "backend_src_projects_controllers_projects_visualization_controller_projectsvisualizationcontroller_getsavedxmatrix",
       "community": 295,
-      "community_name": "CreateXMatrixDto",
+      "community_name": "ProjectsVisualizationController",
       "norm_label": ".getsavedxmatrix()"
     },
     {
@@ -7333,8 +7333,8 @@
       "source_location": "L3",
       "_origin": "ast",
       "id": "backend_src_projects_dto_x_matrix_dto_createxmatrixdto",
-      "community": 295,
-      "community_name": "CreateXMatrixDto",
+      "community": 43,
+      "community_name": "projects.module.ts",
       "norm_label": "createxmatrixdto"
     },
     {
@@ -7377,8 +7377,8 @@
       "source_location": "L35",
       "_origin": "ast",
       "id": "backend_src_projects_dto_x_matrix_dto_xmatrixresponsedto",
-      "community": 295,
-      "community_name": "CreateXMatrixDto",
+      "community": 43,
+      "community_name": "projects.module.ts",
       "norm_label": "xmatrixresponsedto"
     },
     {
@@ -8111,7 +8111,7 @@
       "label": "TasksServiceSubset",
       "file_type": "code",
       "source_file": "Backend/src/projects/interfaces/wbs-conversion.interface.ts",
-      "source_location": "L55",
+      "source_location": "L50",
       "_origin": "ast",
       "id": "backend_src_projects_interfaces_wbs_conversion_interface_tasksservicesubset",
       "community": 1,
@@ -8122,7 +8122,7 @@
       "label": "GenerateTasksForSingleLeafParams",
       "file_type": "code",
       "source_file": "Backend/src/projects/interfaces/wbs-conversion.interface.ts",
-      "source_location": "L61",
+      "source_location": "L56",
       "_origin": "ast",
       "id": "backend_src_projects_interfaces_wbs_conversion_interface_generatetasksforsingleleafparams",
       "community": 1,
@@ -8133,7 +8133,7 @@
       "label": "AuditLeafDiscrepancyInput",
       "file_type": "code",
       "source_file": "Backend/src/projects/interfaces/wbs-conversion.interface.ts",
-      "source_location": "L79",
+      "source_location": "L74",
       "_origin": "ast",
       "id": "backend_src_projects_interfaces_wbs_conversion_interface_auditleafdiscrepancyinput",
       "community": 0,
@@ -8144,7 +8144,7 @@
       "label": "ApplyGuardrailsParams",
       "file_type": "code",
       "source_file": "Backend/src/projects/interfaces/wbs-conversion.interface.ts",
-      "source_location": "L94",
+      "source_location": "L89",
       "_origin": "ast",
       "id": "backend_src_projects_interfaces_wbs_conversion_interface_applyguardrailsparams",
       "community": 0,
@@ -8155,7 +8155,7 @@
       "label": "AutoFixMonotonyParams",
       "file_type": "code",
       "source_file": "Backend/src/projects/interfaces/wbs-conversion.interface.ts",
-      "source_location": "L103",
+      "source_location": "L98",
       "_origin": "ast",
       "id": "backend_src_projects_interfaces_wbs_conversion_interface_autofixmonotonyparams",
       "community": 279,
@@ -8166,7 +8166,7 @@
       "label": "ConvertWbsToTasksParams",
       "file_type": "code",
       "source_file": "Backend/src/projects/interfaces/wbs-conversion.interface.ts",
-      "source_location": "L115",
+      "source_location": "L110",
       "_origin": "ast",
       "id": "backend_src_projects_interfaces_wbs_conversion_interface_convertwbstotasksparams",
       "community": 1,
@@ -8177,7 +8177,7 @@
       "label": "AuditLeafDiscrepancyAiInput",
       "file_type": "code",
       "source_file": "Backend/src/projects/interfaces/wbs-conversion.interface.ts",
-      "source_location": "L122",
+      "source_location": "L117",
       "_origin": "ast",
       "id": "backend_src_projects_interfaces_wbs_conversion_interface_auditleafdiscrepancyaiinput",
       "community": 125,
@@ -8188,7 +8188,7 @@
       "label": "AuditLeafDiscrepancyAiResult",
       "file_type": "code",
       "source_file": "Backend/src/projects/interfaces/wbs-conversion.interface.ts",
-      "source_location": "L138",
+      "source_location": "L133",
       "_origin": "ast",
       "id": "backend_src_projects_interfaces_wbs_conversion_interface_auditleafdiscrepancyairesult",
       "community": 125,
@@ -8199,7 +8199,7 @@
       "label": "GenerateWbsInput",
       "file_type": "code",
       "source_file": "Backend/src/projects/interfaces/wbs-conversion.interface.ts",
-      "source_location": "L145",
+      "source_location": "L140",
       "_origin": "ast",
       "id": "backend_src_projects_interfaces_wbs_conversion_interface_generatewbsinput",
       "community": 279,
@@ -8210,7 +8210,7 @@
       "label": "GenerateTasksForSingleLeafResult",
       "file_type": "code",
       "source_file": "Backend/src/projects/interfaces/wbs-conversion.interface.ts",
-      "source_location": "L157",
+      "source_location": "L152",
       "_origin": "ast",
       "id": "backend_src_projects_interfaces_wbs_conversion_interface_generatetasksforsingleleafresult",
       "community": 1,
@@ -8221,7 +8221,7 @@
       "label": "DraftToTaskContext",
       "file_type": "code",
       "source_file": "Backend/src/projects/interfaces/wbs-conversion.interface.ts",
-      "source_location": "L166",
+      "source_location": "L161",
       "_origin": "ast",
       "id": "backend_src_projects_interfaces_wbs_conversion_interface_drafttotaskcontext",
       "community": 1,
@@ -8232,7 +8232,7 @@
       "label": "FixMonotonyBatchParams",
       "file_type": "code",
       "source_file": "Backend/src/projects/interfaces/wbs-conversion.interface.ts",
-      "source_location": "L172",
+      "source_location": "L167",
       "_origin": "ast",
       "id": "backend_src_projects_interfaces_wbs_conversion_interface_fixmonotonybatchparams",
       "community": 141,
@@ -8243,7 +8243,7 @@
       "label": "AuditDiagnosis",
       "file_type": "code",
       "source_file": "Backend/src/projects/interfaces/wbs-conversion.interface.ts",
-      "source_location": "L189",
+      "source_location": "L184",
       "_origin": "ast",
       "id": "backend_src_projects_interfaces_wbs_conversion_interface_auditdiagnosis",
       "community": 0,
@@ -8254,7 +8254,7 @@
       "label": "AuditAction",
       "file_type": "code",
       "source_file": "Backend/src/projects/interfaces/wbs-conversion.interface.ts",
-      "source_location": "L195",
+      "source_location": "L186",
       "_origin": "ast",
       "id": "backend_src_projects_interfaces_wbs_conversion_interface_auditaction",
       "community": 0,
@@ -8265,7 +8265,7 @@
       "label": "CompleteLeafTasksParams",
       "file_type": "code",
       "source_file": "Backend/src/projects/interfaces/wbs-conversion.interface.ts",
-      "source_location": "L197",
+      "source_location": "L188",
       "_origin": "ast",
       "id": "backend_src_projects_interfaces_wbs_conversion_interface_completeleaftasksparams",
       "community": 1,
@@ -8276,7 +8276,7 @@
       "label": "CompleteLeafTasksResult",
       "file_type": "code",
       "source_file": "Backend/src/projects/interfaces/wbs-conversion.interface.ts",
-      "source_location": "L206",
+      "source_location": "L197",
       "_origin": "ast",
       "id": "backend_src_projects_interfaces_wbs_conversion_interface_completeleaftasksresult",
       "community": 1,
@@ -8741,8 +8741,8 @@
       "source_location": "L26",
       "_origin": "ast",
       "id": "backend_src_projects_projects_service_projectsservice_createxmatrix",
-      "community": 295,
-      "community_name": "CreateXMatrixDto",
+      "community": 43,
+      "community_name": "projects.module.ts",
       "norm_label": ".createxmatrix()"
     },
     {
@@ -8752,8 +8752,8 @@
       "source_location": "L30",
       "_origin": "ast",
       "id": "backend_src_projects_projects_service_projectsservice_getsavedxmatrix",
-      "community": 295,
-      "community_name": "CreateXMatrixDto",
+      "community": 43,
+      "community_name": "projects.module.ts",
       "norm_label": ".getsavedxmatrix()"
     },
     {
@@ -9082,8 +9082,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_src_projects_schemas_project_wave_schema",
-      "community": 43,
-      "community_name": "projects.module.ts",
+      "community": 41,
+      "community_name": "rolling-wave-planning.service.ts",
       "norm_label": "project-wave.schema.ts"
     },
     {
@@ -9104,8 +9104,8 @@
       "source_location": "L12",
       "_origin": "ast",
       "id": "backend_src_projects_schemas_project_wave_schema_waveslice",
-      "community": 43,
-      "community_name": "projects.module.ts",
+      "community": 41,
+      "community_name": "rolling-wave-planning.service.ts",
       "norm_label": "waveslice"
     },
     {
@@ -9115,8 +9115,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "backend_src_projects_schemas_project_wave_schema_ts_schema",
-      "community": 43,
-      "community_name": "projects.module.ts",
+      "community": 41,
+      "community_name": "rolling-wave-planning.service.ts",
       "norm_label": "schema"
     },
     {
@@ -9126,8 +9126,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "backend_src_projects_schemas_project_wave_schema_ts_prop",
-      "community": 43,
-      "community_name": "projects.module.ts",
+      "community": 41,
+      "community_name": "rolling-wave-planning.service.ts",
       "norm_label": "prop"
     },
     {
@@ -9137,8 +9137,8 @@
       "source_location": "L43",
       "_origin": "ast",
       "id": "backend_src_projects_schemas_project_wave_schema_wavesliceschema",
-      "community": 43,
-      "community_name": "projects.module.ts",
+      "community": 41,
+      "community_name": "rolling-wave-planning.service.ts",
       "norm_label": "wavesliceschema"
     },
     {
@@ -9148,8 +9148,8 @@
       "source_location": "L46",
       "_origin": "ast",
       "id": "backend_src_projects_schemas_project_wave_schema_projectwave",
-      "community": 43,
-      "community_name": "projects.module.ts",
+      "community": 41,
+      "community_name": "rolling-wave-planning.service.ts",
       "norm_label": "projectwave"
     },
     {
@@ -9159,8 +9159,8 @@
       "source_location": "L77",
       "_origin": "ast",
       "id": "backend_src_projects_schemas_project_wave_schema_projectwaveschema",
-      "community": 43,
-      "community_name": "projects.module.ts",
+      "community": 41,
+      "community_name": "rolling-wave-planning.service.ts",
       "norm_label": "projectwaveschema"
     },
     {
@@ -10490,8 +10490,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "backend_src_projects_services_evm_evm_service_ts_injectmodel",
-      "community": 80,
-      "community_name": "ProjectDocument",
+      "community": 148,
+      "community_name": "ProjectWaveDocument",
       "norm_label": "injectmodel"
     },
     {
@@ -10501,8 +10501,8 @@
       "source_location": "L33",
       "_origin": "ast",
       "id": "backend_src_projects_services_evm_evm_service_evmservice_constructor",
-      "community": 80,
-      "community_name": "ProjectDocument",
+      "community": 148,
+      "community_name": "ProjectWaveDocument",
       "norm_label": ".constructor()"
     },
     {
@@ -11326,8 +11326,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_src_projects_services_strategy_index",
-      "community": 43,
-      "community_name": "projects.module.ts",
+      "community": 41,
+      "community_name": "rolling-wave-planning.service.ts",
       "norm_label": "strategy/index.ts"
     },
     {
@@ -11623,8 +11623,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_src_projects_services_strategy_rolling_wave_service",
-      "community": 43,
-      "community_name": "projects.module.ts",
+      "community": 41,
+      "community_name": "rolling-wave-planning.service.ts",
       "norm_label": "rolling-wave.service.ts"
     },
     {
@@ -12151,8 +12151,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_src_projects_services_strategy_wave_detailing_service",
-      "community": 43,
-      "community_name": "projects.module.ts",
+      "community": 41,
+      "community_name": "rolling-wave-planning.service.ts",
       "norm_label": "wave-detailing.service.ts"
     },
     {
@@ -12162,8 +12162,8 @@
       "source_location": "L11",
       "_origin": "ast",
       "id": "backend_src_projects_services_strategy_wave_detailing_service_slicedoc",
-      "community": 43,
-      "community_name": "projects.module.ts",
+      "community": 41,
+      "community_name": "rolling-wave-planning.service.ts",
       "norm_label": "slicedoc"
     },
     {
@@ -12173,8 +12173,8 @@
       "source_location": "L14",
       "_origin": "ast",
       "id": "backend_src_projects_services_strategy_wave_detailing_service_wavedetailitem",
-      "community": 43,
-      "community_name": "projects.module.ts",
+      "community": 41,
+      "community_name": "rolling-wave-planning.service.ts",
       "norm_label": "wavedetailitem"
     },
     {
@@ -12184,8 +12184,8 @@
       "source_location": "L24",
       "_origin": "ast",
       "id": "backend_src_projects_services_strategy_wave_detailing_service_generateslicetaskspreferences",
-      "community": 43,
-      "community_name": "projects.module.ts",
+      "community": 41,
+      "community_name": "rolling-wave-planning.service.ts",
       "norm_label": "generateslicetaskspreferences"
     },
     {
@@ -12569,8 +12569,8 @@
       "source_location": "L23",
       "_origin": "ast",
       "id": "backend_src_projects_services_visualization_projects_x_matrix_service_projectsxmatrixservice_createxmatrix",
-      "community": 295,
-      "community_name": "CreateXMatrixDto",
+      "community": 43,
+      "community_name": "projects.module.ts",
       "norm_label": ".createxmatrix()"
     },
     {
@@ -12580,8 +12580,8 @@
       "source_location": "L46",
       "_origin": "ast",
       "id": "backend_src_projects_services_visualization_projects_x_matrix_service_projectsxmatrixservice_validateandgetproject",
-      "community": 295,
-      "community_name": "CreateXMatrixDto",
+      "community": 43,
+      "community_name": "projects.module.ts",
       "norm_label": ".validateandgetproject()"
     },
     {
@@ -12591,8 +12591,8 @@
       "source_location": "L62",
       "_origin": "ast",
       "id": "backend_src_projects_services_visualization_projects_x_matrix_service_projectsxmatrixservice_fetchtasksandwaves",
-      "community": 295,
-      "community_name": "CreateXMatrixDto",
+      "community": 43,
+      "community_name": "projects.module.ts",
       "norm_label": ".fetchtasksandwaves()"
     },
     {
@@ -12602,8 +12602,8 @@
       "source_location": "L89",
       "_origin": "ast",
       "id": "backend_src_projects_services_visualization_projects_x_matrix_service_projectsxmatrixservice_getsavedxmatrix",
-      "community": 295,
-      "community_name": "CreateXMatrixDto",
+      "community": 43,
+      "community_name": "projects.module.ts",
       "norm_label": ".getsavedxmatrix()"
     },
     {
@@ -16420,7 +16420,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_controllers_rtm_controller_rtmcontroller",
       "community": 78,
-      "community_name": "RTMController",
+      "community_name": "RTMService",
       "norm_label": "rtmcontroller"
     },
     {
@@ -16431,7 +16431,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_controllers_rtm_controller_ts_apitags",
       "community": 78,
-      "community_name": "RTMController",
+      "community_name": "RTMService",
       "norm_label": "apitags"
     },
     {
@@ -16442,7 +16442,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_controllers_rtm_controller_ts_apibearerauth",
       "community": 78,
-      "community_name": "RTMController",
+      "community_name": "RTMService",
       "norm_label": "apibearerauth"
     },
     {
@@ -16453,7 +16453,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_controllers_rtm_controller_ts_controller",
       "community": 78,
-      "community_name": "RTMController",
+      "community_name": "RTMService",
       "norm_label": "controller"
     },
     {
@@ -16464,7 +16464,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_controllers_rtm_controller_ts_post",
       "community": 78,
-      "community_name": "RTMController",
+      "community_name": "RTMService",
       "norm_label": "post"
     },
     {
@@ -16475,7 +16475,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_controllers_rtm_controller_ts_apioperation",
       "community": 78,
-      "community_name": "RTMController",
+      "community_name": "RTMService",
       "norm_label": "apioperation"
     },
     {
@@ -16486,7 +16486,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_controllers_rtm_controller_ts_apiresponse",
       "community": 78,
-      "community_name": "RTMController",
+      "community_name": "RTMService",
       "norm_label": "apiresponse"
     },
     {
@@ -16497,7 +16497,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_controllers_rtm_controller_ts_param",
       "community": 78,
-      "community_name": "RTMController",
+      "community_name": "RTMService",
       "norm_label": "param"
     },
     {
@@ -16508,7 +16508,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_controllers_rtm_controller_ts_body",
       "community": 78,
-      "community_name": "RTMController",
+      "community_name": "RTMService",
       "norm_label": "body"
     },
     {
@@ -16519,7 +16519,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_controllers_rtm_controller_ts_get",
       "community": 78,
-      "community_name": "RTMController",
+      "community_name": "RTMService",
       "norm_label": "get"
     },
     {
@@ -16530,7 +16530,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_controllers_rtm_controller_ts_delete",
       "community": 78,
-      "community_name": "RTMController",
+      "community_name": "RTMService",
       "norm_label": "delete"
     },
     {
@@ -16540,8 +16540,8 @@
       "source_location": "L13",
       "_origin": "ast",
       "id": "backend_src_tasks_controllers_rtm_controller_rtmcontroller_constructor",
-      "community": 6,
-      "community_name": "Requirement",
+      "community": 78,
+      "community_name": "RTMService",
       "norm_label": ".constructor()"
     },
     {
@@ -16552,7 +16552,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_controllers_rtm_controller_rtmcontroller_autogeneraterequirements",
       "community": 78,
-      "community_name": "RTMController",
+      "community_name": "RTMService",
       "norm_label": ".autogeneraterequirements()"
     },
     {
@@ -16563,7 +16563,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_controllers_rtm_controller_rtmcontroller_getrtmmatrix",
       "community": 78,
-      "community_name": "RTMController",
+      "community_name": "RTMService",
       "norm_label": ".getrtmmatrix()"
     },
     {
@@ -16574,7 +16574,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_controllers_rtm_controller_rtmcontroller_maprequirementtotask",
       "community": 78,
-      "community_name": "RTMController",
+      "community_name": "RTMService",
       "norm_label": ".maprequirementtotask()"
     },
     {
@@ -16585,7 +16585,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_controllers_rtm_controller_rtmcontroller_unmaprequirementfromtask",
       "community": 78,
-      "community_name": "RTMController",
+      "community_name": "RTMService",
       "norm_label": ".unmaprequirementfromtask()"
     },
     {
@@ -16596,7 +16596,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_controllers_rtm_controller_rtmcontroller_deleterequirement",
       "community": 78,
-      "community_name": "RTMController",
+      "community_name": "RTMService",
       "norm_label": ".deleterequirement()"
     },
     {
@@ -16607,7 +16607,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_controllers_rtm_controller_rtmcontroller_deleteallrequirements",
       "community": 78,
-      "community_name": "RTMController",
+      "community_name": "RTMService",
       "norm_label": ".deleteallrequirements()"
     },
     {
@@ -16618,7 +16618,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_controllers_rtm_controller_rtmcontroller_getrequirements",
       "community": 78,
-      "community_name": "RTMController",
+      "community_name": "RTMService",
       "norm_label": ".getrequirements()"
     },
     {
@@ -16629,7 +16629,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_controllers_rtm_controller_rtmcontroller_automaprequirementstotasks",
       "community": 78,
-      "community_name": "RTMController",
+      "community_name": "RTMService",
       "norm_label": ".automaprequirementstotasks()"
     },
     {
@@ -16640,7 +16640,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_controllers_rtm_controller_rtmcontroller_generatetasksforunmappedrequirements",
       "community": 78,
-      "community_name": "RTMController",
+      "community_name": "RTMService",
       "norm_label": ".generatetasksforunmappedrequirements()"
     },
     {
@@ -24251,8 +24251,8 @@
       "source_location": "L162",
       "_origin": "ast",
       "id": "backend_src_tasks_services_traceability_rtm_crud_service_rtmcrudservice_deleterequirement",
-      "community": 6,
-      "community_name": "Requirement",
+      "community": 78,
+      "community_name": "RTMService",
       "norm_label": ".deleterequirement()"
     },
     {
@@ -24262,8 +24262,8 @@
       "source_location": "L177",
       "_origin": "ast",
       "id": "backend_src_tasks_services_traceability_rtm_crud_service_rtmcrudservice_deleteallrequirements",
-      "community": 6,
-      "community_name": "Requirement",
+      "community": 78,
+      "community_name": "RTMService",
       "norm_label": ".deleteallrequirements()"
     },
     {
@@ -24856,8 +24856,8 @@
       "source_location": "L20",
       "_origin": "ast",
       "id": "backend_src_tasks_services_traceability_rtm_service_rtmservice",
-      "community": 6,
-      "community_name": "Requirement",
+      "community": 78,
+      "community_name": "RTMService",
       "norm_label": "rtmservice"
     },
     {
@@ -24867,8 +24867,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "backend_src_tasks_services_traceability_rtm_service_ts_injectable",
-      "community": 6,
-      "community_name": "Requirement",
+      "community": 78,
+      "community_name": "RTMService",
       "norm_label": "injectable"
     },
     {
@@ -24911,8 +24911,8 @@
       "source_location": "L39",
       "_origin": "ast",
       "id": "backend_src_tasks_services_traceability_rtm_service_rtmservice_deleterequirement",
-      "community": 6,
-      "community_name": "Requirement",
+      "community": 78,
+      "community_name": "RTMService",
       "norm_label": ".deleterequirement()"
     },
     {
@@ -24922,8 +24922,8 @@
       "source_location": "L43",
       "_origin": "ast",
       "id": "backend_src_tasks_services_traceability_rtm_service_rtmservice_deleteallrequirements",
-      "community": 6,
-      "community_name": "Requirement",
+      "community": 78,
+      "community_name": "RTMService",
       "norm_label": ".deleteallrequirements()"
     },
     {
@@ -24989,7 +24989,7 @@
       "_origin": "ast",
       "id": "backend_src_tasks_services_traceability_rtm_service_rtmservice_validatertm",
       "community": 78,
-      "community_name": "RTMController",
+      "community_name": "RTMService",
       "norm_label": ".validatertm()"
     },
     {
@@ -24999,8 +24999,8 @@
       "source_location": "L87",
       "_origin": "ast",
       "id": "backend_src_tasks_services_traceability_rtm_service_rtmservice_getrtmmatrix",
-      "community": 6,
-      "community_name": "Requirement",
+      "community": 78,
+      "community_name": "RTMService",
       "norm_label": ".getrtmmatrix()"
     },
     {
@@ -27617,8 +27617,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_tests_e2e_recurrence_e2e_spec",
-      "community": 189,
-      "community_name": "recurrence.e2e-spec.ts",
+      "community": 3,
+      "community_name": "app.module.ts",
       "norm_label": "recurrence.e2e-spec.ts"
     },
     {
@@ -27628,8 +27628,8 @@
       "source_location": "L7",
       "_origin": "ast",
       "id": "backend_tests_e2e_recurrence_e2e_spec_projectresponse",
-      "community": 189,
-      "community_name": "recurrence.e2e-spec.ts",
+      "community": 3,
+      "community_name": "app.module.ts",
       "norm_label": "projectresponse"
     },
     {
@@ -27639,8 +27639,8 @@
       "source_location": "L11",
       "_origin": "ast",
       "id": "backend_tests_e2e_recurrence_e2e_spec_taskresponse",
-      "community": 189,
-      "community_name": "recurrence.e2e-spec.ts",
+      "community": 3,
+      "community_name": "app.module.ts",
       "norm_label": "taskresponse"
     },
     {
@@ -27650,8 +27650,8 @@
       "source_location": "L24",
       "_origin": "ast",
       "id": "backend_tests_e2e_recurrence_e2e_spec_habitdashboarditem",
-      "community": 189,
-      "community_name": "recurrence.e2e-spec.ts",
+      "community": 3,
+      "community_name": "app.module.ts",
       "norm_label": "habitdashboarditem"
     },
     {
@@ -27661,8 +27661,8 @@
       "source_location": "L29",
       "_origin": "ast",
       "id": "backend_tests_e2e_recurrence_e2e_spec_habitsdashboardresponse",
-      "community": 189,
-      "community_name": "recurrence.e2e-spec.ts",
+      "community": 3,
+      "community_name": "app.module.ts",
       "norm_label": "habitsdashboardresponse"
     },
     {
@@ -27981,7 +27981,7 @@
       "_origin": "ast",
       "id": "backend_tests_unit_projects_controllers_projects_visualization_controller_spec",
       "community": 295,
-      "community_name": "CreateXMatrixDto",
+      "community_name": "ProjectsVisualizationController",
       "norm_label": "projects-visualization.controller.spec.ts"
     },
     {
@@ -28299,8 +28299,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_tests_unit_projects_services_strategy_rolling_wave_service_spec",
-      "community": 43,
-      "community_name": "projects.module.ts",
+      "community": 41,
+      "community_name": "rolling-wave-planning.service.ts",
       "norm_label": "rolling-wave.service.spec.ts"
     },
     {
@@ -28376,8 +28376,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_tests_unit_projects_services_strategy_wave_detailing_service_spec",
-      "community": 148,
-      "community_name": "ProjectWaveDocument",
+      "community": 41,
+      "community_name": "rolling-wave-planning.service.ts",
       "norm_label": "wave-detailing.service.spec.ts"
     },
     {
@@ -28387,8 +28387,8 @@
       "source_location": "L5",
       "_origin": "ast",
       "id": "backend_tests_unit_projects_services_strategy_wave_detailing_service_spec_projectid",
-      "community": 148,
-      "community_name": "ProjectWaveDocument",
+      "community": 41,
+      "community_name": "rolling-wave-planning.service.ts",
       "norm_label": "projectid"
     },
     {
@@ -28398,8 +28398,8 @@
       "source_location": "L6",
       "_origin": "ast",
       "id": "backend_tests_unit_projects_services_strategy_wave_detailing_service_spec_oid",
-      "community": 148,
-      "community_name": "ProjectWaveDocument",
+      "community": 41,
+      "community_name": "rolling-wave-planning.service.ts",
       "norm_label": "oid()"
     },
     {
@@ -28409,8 +28409,8 @@
       "source_location": "L8",
       "_origin": "ast",
       "id": "backend_tests_unit_projects_services_strategy_wave_detailing_service_spec_makeslice",
-      "community": 148,
-      "community_name": "ProjectWaveDocument",
+      "community": 41,
+      "community_name": "rolling-wave-planning.service.ts",
       "norm_label": "makeslice()"
     },
     {
@@ -28420,8 +28420,8 @@
       "source_location": "L22",
       "_origin": "ast",
       "id": "backend_tests_unit_projects_services_strategy_wave_detailing_service_spec_makewave",
-      "community": 148,
-      "community_name": "ProjectWaveDocument",
+      "community": 41,
+      "community_name": "rolling-wave-planning.service.ts",
       "norm_label": "makewave()"
     },
     {
@@ -28784,7 +28784,7 @@
       "_origin": "ast",
       "id": "backend_tests_unit_tasks_controllers_rtm_controller_spec",
       "community": 78,
-      "community_name": "RTMController",
+      "community_name": "RTMService",
       "norm_label": "rtm.controller.spec.ts"
     },
     {
@@ -49452,8 +49452,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "frontend_composables_index",
-      "community": 129,
-      "community_name": "BacklogSection.vue",
+      "community": 35,
+      "community_name": "Board.vue",
       "norm_label": "composables/index.ts"
     },
     {
@@ -83793,7 +83793,7 @@
       "context": "field",
       "confidence": "EXTRACTED",
       "source_file": "Backend/src/projects/interfaces/wbs-conversion.interface.ts",
-      "source_location": "L80",
+      "source_location": "L75",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_src_projects_interfaces_wbs_conversion_interface_auditleafdiscrepancyinput",
@@ -83805,7 +83805,7 @@
       "context": "field",
       "confidence": "EXTRACTED",
       "source_file": "Backend/src/projects/interfaces/wbs-conversion.interface.ts",
-      "source_location": "L105",
+      "source_location": "L100",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_src_projects_interfaces_wbs_conversion_interface_autofixmonotonyparams",
@@ -83817,7 +83817,7 @@
       "context": "field",
       "confidence": "EXTRACTED",
       "source_file": "Backend/src/projects/interfaces/wbs-conversion.interface.ts",
-      "source_location": "L198",
+      "source_location": "L189",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_src_projects_interfaces_wbs_conversion_interface_completeleaftasksparams",
@@ -83829,7 +83829,7 @@
       "context": "field",
       "confidence": "EXTRACTED",
       "source_file": "Backend/src/projects/interfaces/wbs-conversion.interface.ts",
-      "source_location": "L116",
+      "source_location": "L111",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_src_projects_interfaces_wbs_conversion_interface_convertwbstotasksparams",
@@ -83841,7 +83841,7 @@
       "context": "field",
       "confidence": "EXTRACTED",
       "source_file": "Backend/src/projects/interfaces/wbs-conversion.interface.ts",
-      "source_location": "L167",
+      "source_location": "L162",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_src_projects_interfaces_wbs_conversion_interface_drafttotaskcontext",
@@ -83853,7 +83853,7 @@
       "context": "field",
       "confidence": "EXTRACTED",
       "source_file": "Backend/src/projects/interfaces/wbs-conversion.interface.ts",
-      "source_location": "L174",
+      "source_location": "L169",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_src_projects_interfaces_wbs_conversion_interface_fixmonotonybatchparams",
@@ -83865,7 +83865,7 @@
       "context": "field",
       "confidence": "EXTRACTED",
       "source_file": "Backend/src/projects/interfaces/wbs-conversion.interface.ts",
-      "source_location": "L62",
+      "source_location": "L57",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_src_projects_interfaces_wbs_conversion_interface_generatetasksforsingleleafparams",
@@ -83877,7 +83877,7 @@
       "context": "field",
       "confidence": "EXTRACTED",
       "source_file": "Backend/src/projects/interfaces/wbs-conversion.interface.ts",
-      "source_location": "L159",
+      "source_location": "L154",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_src_projects_interfaces_wbs_conversion_interface_generatetasksforsingleleafresult",
@@ -86013,7 +86013,7 @@
       "context": "field",
       "confidence": "EXTRACTED",
       "source_file": "Backend/src/projects/interfaces/wbs-conversion.interface.ts",
-      "source_location": "L109",
+      "source_location": "L104",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_src_projects_interfaces_wbs_conversion_interface_autofixmonotonyparams",
@@ -86025,7 +86025,7 @@
       "context": "field",
       "confidence": "EXTRACTED",
       "source_file": "Backend/src/projects/interfaces/wbs-conversion.interface.ts",
-      "source_location": "L177",
+      "source_location": "L172",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_src_projects_interfaces_wbs_conversion_interface_fixmonotonybatchparams",
@@ -86421,7 +86421,7 @@
       "context": "field",
       "confidence": "EXTRACTED",
       "source_file": "Backend/src/projects/interfaces/wbs-conversion.interface.ts",
-      "source_location": "L104",
+      "source_location": "L99",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_src_projects_interfaces_wbs_conversion_interface_autofixmonotonyparams",
@@ -86433,7 +86433,7 @@
       "context": "field",
       "confidence": "EXTRACTED",
       "source_file": "Backend/src/projects/interfaces/wbs-conversion.interface.ts",
-      "source_location": "L173",
+      "source_location": "L168",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_src_projects_interfaces_wbs_conversion_interface_fixmonotonybatchparams",
@@ -88748,7 +88748,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "Backend/src/projects/interfaces/wbs-conversion.interface.ts",
-      "source_location": "L94",
+      "source_location": "L89",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_src_projects_interfaces_wbs_conversion_interface",
@@ -88759,7 +88759,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "Backend/src/projects/interfaces/wbs-conversion.interface.ts",
-      "source_location": "L195",
+      "source_location": "L186",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_src_projects_interfaces_wbs_conversion_interface",
@@ -88770,7 +88770,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "Backend/src/projects/interfaces/wbs-conversion.interface.ts",
-      "source_location": "L189",
+      "source_location": "L184",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_src_projects_interfaces_wbs_conversion_interface",
@@ -88781,7 +88781,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "Backend/src/projects/interfaces/wbs-conversion.interface.ts",
-      "source_location": "L122",
+      "source_location": "L117",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_src_projects_interfaces_wbs_conversion_interface",
@@ -88792,7 +88792,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "Backend/src/projects/interfaces/wbs-conversion.interface.ts",
-      "source_location": "L138",
+      "source_location": "L133",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_src_projects_interfaces_wbs_conversion_interface",
@@ -88803,7 +88803,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "Backend/src/projects/interfaces/wbs-conversion.interface.ts",
-      "source_location": "L79",
+      "source_location": "L74",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_src_projects_interfaces_wbs_conversion_interface",
@@ -88814,7 +88814,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "Backend/src/projects/interfaces/wbs-conversion.interface.ts",
-      "source_location": "L103",
+      "source_location": "L98",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_src_projects_interfaces_wbs_conversion_interface",
@@ -88825,7 +88825,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "Backend/src/projects/interfaces/wbs-conversion.interface.ts",
-      "source_location": "L197",
+      "source_location": "L188",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_src_projects_interfaces_wbs_conversion_interface",
@@ -88836,7 +88836,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "Backend/src/projects/interfaces/wbs-conversion.interface.ts",
-      "source_location": "L206",
+      "source_location": "L197",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_src_projects_interfaces_wbs_conversion_interface",
@@ -88869,7 +88869,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "Backend/src/projects/interfaces/wbs-conversion.interface.ts",
-      "source_location": "L115",
+      "source_location": "L110",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_src_projects_interfaces_wbs_conversion_interface",
@@ -88880,7 +88880,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "Backend/src/projects/interfaces/wbs-conversion.interface.ts",
-      "source_location": "L166",
+      "source_location": "L161",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_src_projects_interfaces_wbs_conversion_interface",
@@ -88891,7 +88891,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "Backend/src/projects/interfaces/wbs-conversion.interface.ts",
-      "source_location": "L172",
+      "source_location": "L167",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_src_projects_interfaces_wbs_conversion_interface",
@@ -88902,7 +88902,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "Backend/src/projects/interfaces/wbs-conversion.interface.ts",
-      "source_location": "L61",
+      "source_location": "L56",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_src_projects_interfaces_wbs_conversion_interface",
@@ -88913,7 +88913,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "Backend/src/projects/interfaces/wbs-conversion.interface.ts",
-      "source_location": "L157",
+      "source_location": "L152",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_src_projects_interfaces_wbs_conversion_interface",
@@ -88924,7 +88924,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "Backend/src/projects/interfaces/wbs-conversion.interface.ts",
-      "source_location": "L145",
+      "source_location": "L140",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_src_projects_interfaces_wbs_conversion_interface",
@@ -88957,7 +88957,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "Backend/src/projects/interfaces/wbs-conversion.interface.ts",
-      "source_location": "L55",
+      "source_location": "L50",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_src_projects_interfaces_wbs_conversion_interface",
@@ -89377,7 +89377,7 @@
       "context": "field",
       "confidence": "EXTRACTED",
       "source_file": "Backend/src/projects/interfaces/wbs-conversion.interface.ts",
-      "source_location": "L98",
+      "source_location": "L93",
       "weight": 1.0,
       "_origin": "ast",
       "source": "backend_src_projects_interfaces_wbs_conversion_interface_applyguardrailsparams",
@@ -201862,5 +201862,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "03da444ec6db508b1bfcaafd077191ca9206595c"
+  "built_at_commit": "1658144f270bf47b2cef039a0af2b13857af13c4"
 }

@@ -13,7 +13,8 @@ import { estimateTaskHours } from './utils/rolling-wave-helpers.util';
 import {
   PlannedSlice,
   SlicingPackage,
-  computeWaveStructure,
+  resolveWaveTargetHours,
+  scheduleWaves,
   describeWaveFromSlices,
   roundToHalf,
   sliceWbsPackagesIntoWaves,
@@ -53,9 +54,9 @@ export class RollingWavePlanningService {
   async createInitialWaves(
     projectId: string,
     project: DeterministicProjectInput,
-    waveLengthDays: number = 28,
   ): Promise<ProjectWave[]> {
     const dailyCapacityHours = Number(process.env.ROLLING_WAVE_DAILY_CAPACITY_HOURS || 6);
+    const waveTargetHours = resolveWaveTargetHours(process.env.ROLLING_WAVE_TARGET_HOURS);
     const projectObjectId = new Types.ObjectId(projectId);
 
     const existing = await this.waveModel
@@ -83,12 +84,13 @@ export class RollingWavePlanningService {
     const today = new Date();
     const lastKept = kept[kept.length - 1];
     const startDate = lastKept && lastKept.endDate > today ? new Date(lastKept.endDate) : today;
-    const structure = computeWaveStructure({
+    // Ondas pequenas (≈ meta de horas) e equilibradas; as datas vêm depois, proporcionais à carga.
+    const slicesByWave = sliceWbsPackagesIntoWaves(packages, waveTargetHours);
+    const structure = scheduleWaves({
+      waveHours: slicesByWave.map((slices) => slices.reduce((sum, sl) => sum + sl.hours, 0)),
       startDate,
       deadline: project?.deadline ?? null,
-      totalHours,
       dailyCapacityHours,
-      waveLengthDays,
     });
 
     if (structure.adjustedDeadline) {
@@ -99,10 +101,6 @@ export class RollingWavePlanningService {
       );
     }
 
-    const slicesByWave = sliceWbsPackagesIntoWaves(
-      packages,
-      structure.waves.map((w) => w.capacityHours),
-    );
     await this.applySliceGoals(project, packages, slicesByWave);
 
     const firstNumber = (lastKept?.waveNumber ?? 0) + 1;

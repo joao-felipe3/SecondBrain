@@ -59,11 +59,15 @@ describe('RollingWavePlanningService.createInitialWaves', () => {
   const project = { name: 'Chinês', deadline: new Date(Date.now() + 60 * 86400000) };
 
   it('fatia os pacotes folha em ondas sem criar micro-tarefas', async () => {
-    await service.createInitialWaves(projectId, project, 28);
+    await service.createInitialWaves(projectId, project);
 
     const slices = saved.flatMap((w) => w.slices);
     expect(slices.reduce((a: number, s: any) => a + s.hours, 0)).toBe(100);
-    expect(slices.filter((s: any) => s.wbsNodeId === 'anki')).toHaveLength(4);
+    // meta padrão de 30h por onda → fatias de até 15h
+    expect(slices.filter((s: any) => s.wbsNodeId === 'anki')).toHaveLength(6);
+    for (const wave of saved) {
+      expect(wave.slices.reduce((a: number, sl: any) => a + sl.hours, 0)).toBeLessThanOrEqual(30);
+    }
     expect(slices.every((s: any) => s.status === 'planned' && s.taskIds.length === 0)).toBe(true);
     expect(saved.every((w) => w.taskIds.length === 0)).toBe(true);
     expect(saved.map((w) => w.waveNumber)).toEqual(saved.map((_, i) => i + 1));
@@ -71,22 +75,29 @@ describe('RollingWavePlanningService.createInitialWaves', () => {
 
   it('usa os objetivos da IA e mantém "Parte n/m" onde ela falhou', async () => {
     ai.describeSlices.mockResolvedValue(
-      new Map([['anki', ['Cap 1-2', 'Cap 3-4', 'Cap 5-6', 'Revisão']]]),
+      new Map([['anki', ['Cap 1', 'Cap 2', 'Cap 3', 'Cap 4', 'Cap 5', 'Revisão']]]),
     );
-    await service.createInitialWaves(projectId, project, 28);
+    await service.createInitialWaves(projectId, project);
 
     const anki = saved.flatMap((w) => w.slices).filter((s: any) => s.wbsNodeId === 'anki');
-    expect(anki.map((s: any) => s.goal)).toEqual(['Cap 1-2', 'Cap 3-4', 'Cap 5-6', 'Revisão']);
+    expect(anki.map((s: any) => s.goal)).toEqual([
+      'Cap 1',
+      'Cap 2',
+      'Cap 3',
+      'Cap 4',
+      'Cap 5',
+      'Revisão',
+    ]);
     // Só pacotes com 2+ fatias vão para a IA
     const sent = ai.describeSlices.mock.calls[0][0].packages.map((p: any) => p.id);
-    expect(sent).toEqual(['anki']);
+    expect(sent).toEqual(['anki', 'leitura']);
   });
 
   it('desconta horas de tarefas já criadas para o pacote', async () => {
     projectsService.getTasksForProject.mockResolvedValue([
       { parentWbsNodeId: 'anki', pomodorosPlanned: 40 }, // 20h
     ]);
-    await service.createInitialWaves(projectId, project, 28);
+    await service.createInitialWaves(projectId, project);
 
     const anki = saved.flatMap((w) => w.slices).filter((s: any) => s.wbsNodeId === 'anki');
     expect(anki.reduce((a: number, s: any) => a + s.hours, 0)).toBe(60);
@@ -114,7 +125,7 @@ describe('RollingWavePlanningService.createInitialWaves', () => {
       { parentWbsNodeId: 'anki', pomodorosPlanned: 40 },
     ]);
 
-    await service.createInitialWaves(projectId, project, 28);
+    await service.createInitialWaves(projectId, project);
 
     expect(waveModel.deleteMany).toHaveBeenCalledWith({ _id: { $in: [replaceable._id] } });
     const anki = saved.flatMap((w) => w.slices).filter((s: any) => s.wbsNodeId === 'anki');
@@ -129,7 +140,7 @@ describe('RollingWavePlanningService.createInitialWaves', () => {
       { parentWbsNodeId: 'anki', pomodorosPlanned: 160 },
       { parentWbsNodeId: 'leitura', pomodorosPlanned: 40 },
     ]);
-    await service.createInitialWaves(projectId, project, 28);
+    await service.createInitialWaves(projectId, project);
     expect(saved).toHaveLength(0);
     expect(ai.describeSlices).not.toHaveBeenCalled();
   });

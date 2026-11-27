@@ -328,6 +328,10 @@ interface ReplanTaskDeadlinesResponse {
 
 const props = defineProps<{
   projectId: string;
+  /** Chamado antes de planejar (ex.: salvar a WBS). Retornar false cancela o planejamento. */
+  beforePlan?: () => Promise<boolean>;
+  /** Quando preenchido, o planejamento fica bloqueado e o motivo é exibido. */
+  planDisabledReason?: string;
 }>();
 
 const waves: Ref<ProjectWave[]> = ref([]);
@@ -489,6 +493,10 @@ const refreshProjectData = async (providedWaves?: ProjectWave[]) => {
 };
 
 const generateWaves = async () => {
+  if (props.planDisabledReason) {
+    alert(props.planDisabledReason);
+    return;
+  }
   if (
     waves.value.length > 0 &&
     !confirm(
@@ -499,6 +507,7 @@ const generateWaves = async () => {
   }
   loading.value = true;
   try {
+    if (props.beforePlan && !(await props.beforePlan())) return;
     const response = await $fetch<ProjectWave[]>(`/api/projects/${props.projectId}/generate-waves`, {
       method: 'POST',
       body: {

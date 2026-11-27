@@ -5,12 +5,12 @@
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 5683 nodes · 11985 edges · 303 communities (271 shown, 32 thin omitted)
+- 5683 nodes · 11985 edges · 302 communities (270 shown, 32 thin omitted)
 - Extraction: 99% EXTRACTED · 1% INFERRED · 0% AMBIGUOUS · INFERRED: 71 edges (avg confidence: 0.6)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `03da444e`
+- Built from commit: `1658144f`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -93,7 +93,7 @@
 - CreateWaveDto
 - ZoomedContent.vue
 - TasksHabitsService
-- RTMController
+- RTMService
 - CriticalPathAnalysisPanel.vue
 - ProjectDocument
 - XMatrix.vue
@@ -204,7 +204,7 @@
 - ADR-004: Estratégia de Validação em 3 Camadas
 - ADR-005: Motores de Visualização Gráfica e Diagramas de Rede (ECharts, Cytoscape & Dagre)
 - RiskPage.vue
-- recurrence.e2e-spec.ts
+- @nestjs/testing
 - usePertLayoutFallbacks.ts
 - cpm.interface.ts
 - RecordProjectProgressDto
@@ -216,7 +216,6 @@
 - ADR-007: Gestão de Estado Global no Frontend (Pinia + Composables por Domínio)
 - ADR-010: Camada de Consulta Semântica e Graph RAG (LLM Wiki & Knowledge Base)
 - Backend/README.md
-- dependency-cruiser
 - sass-loader
 - vue
 - ADR-002: Separação de Módulos por Domínio
@@ -288,7 +287,7 @@
 - P0 - Preload e tamanho da carga inicial
 - Fase 2 executada - 19/11/2026
 - cytoscape
-- CreateXMatrixDto
+- ProjectsVisualizationController
 - useApiFetch
 - Fase 3 executada - 22/11/2026
 - Fase 4 executada - 22/11/2026
@@ -324,7 +323,7 @@
 ## Import Cycles
 - None detected.
 
-## Communities (303 total, 32 thin omitted)
+## Communities (302 total, 32 thin omitted)
 
 ### Community 0 - "wbs-conversion.interface.ts"
 Cohesion: 0.20
@@ -339,8 +338,8 @@ Cohesion: 0.08
 Nodes (13): CreateMicroTaskDto, RecurringRuleDto, IsArray, TaskDocument, TasksCompletionService, Injectable, InjectModel, TasksRecurringService (+5 more)
 
 ### Community 3 - "app.module.ts"
-Cohesion: 0.12
-Nodes (12): AppModule, Module, MongooseLoggerInterceptor, Injectable, SettingsModule, Module, FeedbackResponse, LineageResponse (+4 more)
+Cohesion: 0.10
+Nodes (16): AppModule, Module, MongooseLoggerInterceptor, Injectable, SettingsModule, Module, FeedbackResponse, LineageResponse (+8 more)
 
 ### Community 4 - "BufferService"
 Cohesion: 0.08
@@ -351,8 +350,8 @@ Cohesion: 0.10
 Nodes (33): buildInferInterLeafPrompt(), buildInferWithAiPrompt(), buildRetryPrompt(), InferenceLeafGatesDto, InferenceTaskDto, InferInterLeafWithAiDto, InferredDependencyDto, InferWithAiDto (+25 more)
 
 ### Community 6 - "Requirement"
-Cohesion: 0.09
-Nodes (17): MapRequirementToTaskDto, PreparedRequirementDataDto, ProcessSingleRequirementDto, RTMValidationDto, SaveRequirementDto, ApiProperty, ApiPropertyOptional, IsNotEmpty (+9 more)
+Cohesion: 0.11
+Nodes (15): MapRequirementToTaskDto, PreparedRequirementDataDto, ProcessSingleRequirementDto, RTMValidationDto, SaveRequirementDto, ApiProperty, ApiPropertyOptional, IsNotEmpty (+7 more)
 
 ### Community 7 - "ProjectPlannerDialog.vue"
 Cohesion: 0.05
@@ -475,7 +474,7 @@ Cohesion: 0.05
 Nodes (47): notification, activeFilterCount, activeIcon, allTasks, api, boardVars, canSendBrowserNotifications(), checkMobile() (+39 more)
 
 ### Community 35 - "Board.vue"
-Cohesion: 0.10
+Cohesion: 0.09
 Nodes (24): containerRef, emit, { getTaskPositionStyle }, { handleEdit, handleDelete, handleCompleteFall }, handleNavigateTask(), maxVisibleTasks, route, router (+16 more)
 
 ### Community 36 - "ai-suggestions-runner.service.ts"
@@ -499,16 +498,16 @@ Cohesion: 0.05
 Nodes (45): dependencies, class-transformer, class-validator, @google/generative-ai, ioredis, joi, mongoose, @nestjs/common (+37 more)
 
 ### Community 41 - "rolling-wave-planning.service.ts"
-Cohesion: 0.12
-Nodes (22): DeterministicProjectInput, idToString(), RollingWavePlanningService, Injectable, defaultSingleSliceGoal(), describeWaveFromSlices(), packSlicesIntoWaves(), PlannedSlice (+14 more)
+Cohesion: 0.08
+Nodes (35): DeterministicProjectInput, ProjectWave, ProjectWaveSchema, Prop, Schema, WaveSlice, WaveSliceSchema, idToString() (+27 more)
 
 ### Community 42 - "GuildPuppetCanvas.vue"
 Cohesion: 0.13
 Nodes (16): canvas, emit, handleVisibility(), Part, props, ready, startLoop(), stopLoop() (+8 more)
 
 ### Community 43 - "projects.module.ts"
-Cohesion: 0.09
-Nodes (24): IDepRecord, ITaskRecord, Project, projectMongooseFeature, DashboardMetricPreferences, ProjectSchema, SmartObjective, ProjectWave (+16 more)
+Cohesion: 0.10
+Nodes (17): IDepRecord, ITaskRecord, CreateXMatrixDto, XMatrixResponseDto, Project, projectMongooseFeature, DashboardMetricPreferences, ProjectSchema (+9 more)
 
 ### Community 44 - "RTMMappingService"
 Cohesion: 0.24
@@ -642,9 +641,9 @@ Nodes (15): activeIndex, emit, getCurrentTabs(), getPos(), getSheetVars(), habit
 Cohesion: 0.08
 Nodes (20): HabitsController, ApiOperation, ApiResponse, ApiTags, Controller, Get, Query, GetHabitsDashboardDto (+12 more)
 
-### Community 78 - "RTMController"
-Cohesion: 0.24
-Nodes (11): RTMController, ApiBearerAuth, ApiOperation, ApiResponse, ApiTags, Body, Controller, Delete (+3 more)
+### Community 78 - "RTMService"
+Cohesion: 0.16
+Nodes (13): RTMController, ApiBearerAuth, ApiOperation, ApiResponse, ApiTags, Body, Controller, Delete (+5 more)
 
 ### Community 79 - "CriticalPathAnalysisPanel.vue"
 Cohesion: 0.09
@@ -652,7 +651,7 @@ Nodes (19): bufferSummary, capacityScenarios, capacitySummary, CpmDiagnostics, c
 
 ### Community 80 - "ProjectDocument"
 Cohesion: 0.09
-Nodes (33): GanttDataResponse, GanttDependencyItem, GanttQueryOptions, GanttTaskItem, GanttTimeWindow, AdjustWindowBoundsParams, BuildTaskNodesParams, EffectiveEndParams (+25 more)
+Nodes (32): GanttDataResponse, GanttDependencyItem, GanttQueryOptions, GanttTaskItem, GanttTimeWindow, AdjustWindowBoundsParams, BuildTaskNodesParams, EffectiveEndParams (+24 more)
 
 ### Community 81 - "XMatrix.vue"
 Cohesion: 0.09
@@ -925,12 +924,12 @@ Cohesion: 0.28
 Nodes (8): dropTarget, emit, JournalTabId, onDrop(), props, selectTab(), TabConfig, tabs
 
 ### Community 148 - "ProjectWaveDocument"
-Cohesion: 0.10
-Nodes (13): InjectModel, ProjectWaveDocument, InjectModel, RollingWaveService, Injectable, InjectModel, Injectable, InjectModel (+5 more)
+Cohesion: 0.11
+Nodes (10): InjectModel, ProjectWaveDocument, InjectModel, InjectModel, RollingWaveService, Injectable, InjectModel, Injectable (+2 more)
 
 ### Community 149 - "devDependencies"
 Cohesion: 0.05
-Nodes (37): autocannon, devDependencies, autocannon, eslint, eslint-config-prettier, @eslint/eslintrc, globals, mongodb-memory-server (+29 more)
+Nodes (37): autocannon, devDependencies, autocannon, dependency-cruiser, eslint, eslint-config-prettier, @eslint/eslintrc, globals (+29 more)
 
 ### Community 150 - "GuildParticlesCanvas.vue"
 Cohesion: 0.13
@@ -1059,10 +1058,6 @@ Nodes (14): 1. Diagrama PERT/CPM (Cytoscape + Dagre), 2. Cronograma de Gantt (EC
 ### Community 188 - "RiskPage.vue"
 Cohesion: 0.14
 Nodes (7): assessing, mitigationPlan, props, Risk, risks, savingPlan, selectedRisk
-
-### Community 189 - "recurrence.e2e-spec.ts"
-Cohesion: 0.40
-Nodes (4): HabitDashboardItem, HabitsDashboardResponse, ProjectResponse, TaskResponse
 
 ### Community 190 - "usePertLayoutFallbacks.ts"
 Cohesion: 0.29
@@ -1316,9 +1311,9 @@ Nodes (4): 1. Remover o PNG de 27,59 MB, 2. Limitar a fila de preload a poucos a
 Cohesion: 0.50
 Nodes (4): Alteracoes aplicadas, Comparacao antes/depois, Fase 2 executada - 19/11/2026, Validacao
 
-### Community 295 - "CreateXMatrixDto"
-Cohesion: 0.15
-Nodes (12): ProjectsVisualizationController, ApiOperation, ApiResponse, ApiTags, Body, Controller, Get, Param (+4 more)
+### Community 295 - "ProjectsVisualizationController"
+Cohesion: 0.23
+Nodes (10): ProjectsVisualizationController, ApiOperation, ApiResponse, ApiTags, Body, Controller, Get, Param (+2 more)
 
 ### Community 297 - "Fase 3 executada - 22/11/2026"
 Cohesion: 0.50
@@ -1359,6 +1354,6 @@ _Questions this graph is uniquely positioned to answer:_
 - **Should `TaskDocument` be split into smaller, more focused modules?**
   _Cohesion score 0.07506584723441616 - nodes in this community are weakly interconnected._
 - **Should `app.module.ts` be split into smaller, more focused modules?**
-  _Cohesion score 0.12380952380952381 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.09846153846153846 - nodes in this community are weakly interconnected._
 - **Should `BufferService` be split into smaller, more focused modules?**
   _Cohesion score 0.07683000604960677 - nodes in this community are weakly interconnected._

@@ -128,4 +128,31 @@ describe('ProjectWavesTimeline', () => {
     expect(wrapper.text()).not.toContain('Detalhar Onda');
     expect(wrapper.text()).toContain('quando estiver no horizonte');
   });
+
+  it('planejamento bloqueado mostra o motivo e não chama a API', async () => {
+    const wrapper = await mountWith([]);
+    const alertSpy = vi.spyOn(window, 'alert').mockImplementation(() => undefined);
+    await wrapper.setProps({ planDisabledReason: 'Corrija a WBS' });
+    await (wrapper.vm as any).$.setupState.generateWaves();
+    expect(alertSpy).toHaveBeenCalledWith('Corrija a WBS');
+    expect(($fetch as any).mock.calls.some((c: any[]) => String(c[0]).includes('generate-waves'))).toBe(
+      false,
+    );
+  });
+
+  it('salva a WBS (beforePlan) antes de planejar as ondas', async () => {
+    const wrapper = await mountWith([]);
+    const order: string[] = [];
+    const beforePlan = vi.fn(async () => {
+      order.push('save');
+      return true;
+    });
+    ($fetch as any).mockImplementation((url: string) => {
+      if (url.includes('generate-waves')) order.push('plan');
+      return Promise.resolve([]);
+    });
+    await wrapper.setProps({ beforePlan });
+    await (wrapper.vm as any).$.setupState.generateWaves();
+    expect(order).toEqual(['save', 'plan']);
+  });
 });

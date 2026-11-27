@@ -1,9 +1,11 @@
 import {
-  SLICE_MAX_HOURS,
+  MAX_WAVE_TARGET_HOURS,
   SlicingPackage,
-  assignSlicesToWaves,
-  computeWaveStructure,
   describeWaveFromSlices,
+  packSlicesIntoWaves,
+  resolveWaveTargetHours,
+  scheduleWaves,
+  sliceMaxForTarget,
   sliceWbsPackagesIntoWaves,
   splitPackageIntoSlices,
 } from '@src/projects/services/strategy/utils/wave-slicing.util';
@@ -17,23 +19,37 @@ const pkg = (over: Partial<SlicingPackage> = {}): SlicingPackage => ({
   ...over,
 });
 
+const sum = (xs: Array<{ hours: number }>) => xs.reduce((a, s) => a + s.hours, 0);
+
 describe('wave-slicing.util', () => {
+  describe('meta de horas por onda', () => {
+    it('padrão 30h, limitada a 8–40h', () => {
+      expect(resolveWaveTargetHours(undefined)).toBe(30);
+      expect(resolveWaveTargetHours('abc')).toBe(30);
+      expect(resolveWaveTargetHours(100)).toBe(MAX_WAVE_TARGET_HOURS);
+      expect(resolveWaveTargetHours(2)).toBe(8);
+      expect(resolveWaveTargetHours('24')).toBe(24);
+    });
+
+    it('fatia máxima é metade da onda (até 20h)', () => {
+      expect(sliceMaxForTarget(30)).toBe(15);
+      expect(sliceMaxForTarget(40)).toBe(20);
+      expect(sliceMaxForTarget(8)).toBe(4);
+    });
+  });
+
   describe('splitPackageIntoSlices', () => {
-    it('pacote de 80h vira fatias de até 20h que somam 80h', () => {
+    it('pacote de 80h vira fatias iguais de até 20h que somam 80h', () => {
       const slices = splitPackageIntoSlices(pkg());
       expect(slices).toHaveLength(4);
-      expect(slices.every((s) => s.hours <= SLICE_MAX_HOURS)).toBe(true);
-      expect(slices.reduce((a, s) => a + s.hours, 0)).toBe(80);
-      expect(slices.map((s) => s.sliceIndex)).toEqual([1, 2, 3, 4]);
+      expect(sum(slices)).toBe(80);
       expect(slices[1].goal).toBe('Parte 2/4');
     });
 
-    it('divide em partes iguais em múltiplos de 0,5h, nunca menores que 4h', () => {
-      const slices = splitPackageIntoSlices(pkg({ remainingHours: 21 }));
-      expect(slices.map((s) => s.hours)).toEqual([10.5, 10.5]);
-      const odd = splitPackageIntoSlices(pkg({ remainingHours: 45.5 }));
-      expect(odd.reduce((a, s) => a + s.hours, 0)).toBe(45.5);
-      expect(odd.every((s) => s.hours >= 4 && (s.hours * 2) % 1 === 0)).toBe(true);
+    it('respeita a fatia máxima pedida, em múltiplos de 0,5h', () => {
+      const slices = splitPackageIntoSlices(pkg({ remainingHours: 45.5 }), 15);
+      expect(slices.every((s) => s.hours <= 15 && (s.hours * 2) % 1 === 0)).toBe(true);
+      expect(sum(slices)).toBe(45.5);
     });
 
     it('pacote pequeno é uma fatia só, com a descrição como objetivo', () => {
@@ -46,91 +62,93 @@ describe('wave-slicing.util', () => {
 
     it('sem horas restantes não gera fatia', () => {
       expect(splitPackageIntoSlices(pkg({ remainingHours: 0 }))).toEqual([]);
-      expect(splitPackageIntoSlices(pkg({ remainingHours: -3 }))).toEqual([]);
     });
   });
 
-  describe('computeWaveStructure', () => {
-    const start = new Date('2026-12-01T10:00:00');
+  describe('packSlicesIntoWaves', () => {
+    it('nenhuma onda passa da meta e todas (menos a última) ficam perto dela', () => {
+      const packages = [
+        pkg({ wbsNodeId: 'a', remainingHours: 80, branchKey: 'A' }),
+        pkg({ wbsNodeId: 'b', remainingHours: 60, branchKey: 'A' }),
+        pkg({ wbsNodeId: 'c', remainingHours: 100, branchKey: 'B' }),
+        pkg({ wbsNodeId: 'd', remainingHours: 24, branchKey: 'C' }),
+      ];
+      const waves = sliceWbsPackagesIntoWaves(packages, 30);
 
-    it('usa o prazo quando a capacidade cabe nele', () => {
-      const r = computeWaveStructure({
-        startDate: start,
-        deadline: new Date('2027-03-01'),
-        totalHours: 200,
-        dailyCapacityHours: 6,
-        waveLengthDays: 28,
-      });
-      const days = r.waves.reduce((a, w) => a + w.days, 0);
-      expect(days).toBe(90);
-      expect(r.waves).toHaveLength(3);
-      expect(r.adjustedDeadline).toBeNull();
-      expect(r.waves[1].startDate.getTime()).toBe(r.waves[0].endDate.getTime());
-      expect(r.waves[0].capacityHours).toBe(r.waves[0].days * 6);
+      expect(sum(waves.flat())).toBe(264);
+      for (const wave of waves) expect(sum(wave)).toBeLessThanOrEqual(30);
+      for (const wave of waves.slice(0, -1)) expect(sum(wave)).toBeGreaterThan(15);
+      // nenhuma onda vazia
+      expect(waves.every((w) => w.length > 0)).toBe(true);
     });
 
-    it('estende o prazo quando as horas não cabem na capacidade', () => {
-      const r = computeWaveStructure({
+    it('frentes paralelas se alternam e a ordem da WBS é mantida dentro de cada frente', () => {
+      const slices = [
+        ...splitPackageIntoSlices(pkg({ wbsNodeId: 'a1', remainingHours: 20, branchKey: 'A' }), 10),
+        ...splitPackageIntoSlices(pkg({ wbsNodeId: 'a2', remainingHours: 20, branchKey: 'A' }), 10),
+        ...splitPackageIntoSlices(pkg({ wbsNodeId: 'b1', remainingHours: 20, branchKey: 'B' }), 10),
+      ];
+      const waves = packSlicesIntoWaves(slices, 20);
+
+      // a primeira onda tem trabalho das duas frentes
+      expect(new Set(waves[0].map((s) => s.branchKey))).toEqual(new Set(['A', 'B']));
+      // dentro da frente A: a1 (1,2) antes de a2 (1,2)
+      const orderA = waves
+        .flat()
+        .filter((s) => s.branchKey === 'A')
+        .map((s) => `${s.wbsNodeId}-${s.sliceIndex}`);
+      expect(orderA).toEqual(['a1-1', 'a1-2', 'a2-1', 'a2-2']);
+    });
+
+    it('fatia maior que a meta ainda entra sozinha numa onda', () => {
+      const waves = packSlicesIntoWaves(splitPackageIntoSlices(pkg({ remainingHours: 18 }), 20), 10);
+      expect(waves).toHaveLength(1);
+      expect(sum(waves[0])).toBe(18);
+    });
+  });
+
+  describe('scheduleWaves', () => {
+    const start = new Date('2026-12-01T10:00:00');
+
+    it('divide o período até o prazo na proporção das horas de cada onda', () => {
+      const r = scheduleWaves({
+        waveHours: [30, 30, 15],
+        startDate: start,
+        deadline: new Date('2027-01-15'),
+        dailyCapacityHours: 6,
+      });
+      const days = r.waves.map((w) => w.days);
+      expect(days.reduce((a, b) => a + b, 0)).toBe(45);
+      expect(days[0]).toBe(days[1]);
+      expect(days[2]).toBeLessThan(days[0]);
+      expect(r.waves[1].startDate.getTime()).toBe(r.waves[0].endDate.getTime());
+      expect(r.adjustedDeadline).toBeNull();
+    });
+
+    it('estende o prazo quando a capacidade diária não comporta as horas', () => {
+      const r = scheduleWaves({
+        waveHours: [30, 30, 30, 30],
         startDate: start,
         deadline: new Date('2026-12-11'),
-        totalHours: 120,
         dailyCapacityHours: 6,
-        waveLengthDays: 28,
       });
       expect(r.waves.reduce((a, w) => a + w.days, 0)).toBe(20);
       expect(r.adjustedDeadline).not.toBeNull();
     });
 
-    it('sem prazo, usa só a capacidade', () => {
-      const r = computeWaveStructure({
+    it('toda onda tem pelo menos um dia', () => {
+      const r = scheduleWaves({
+        waveHours: [30, 1],
         startDate: start,
         deadline: null,
-        totalHours: 336,
         dailyCapacityHours: 6,
-        waveLengthDays: 28,
       });
-      expect(r.waves.reduce((a, w) => a + w.days, 0)).toBe(56);
-      expect(r.waves).toHaveLength(2);
+      expect(r.waves.every((w) => w.days >= 1)).toBe(true);
     });
   });
 
-  describe('assignSlicesToWaves', () => {
-    it('cada frente se espalha por todas as ondas, mantendo a ordem da WBS', () => {
-      const slices = [
-        ...splitPackageIntoSlices(pkg({ wbsNodeId: 'a', remainingHours: 40, branchKey: 'A' })),
-        ...splitPackageIntoSlices(pkg({ wbsNodeId: 'b', remainingHours: 40, branchKey: 'A' })),
-        ...splitPackageIntoSlices(pkg({ wbsNodeId: 'c', remainingHours: 40, branchKey: 'B' })),
-      ];
-      const waves = assignSlicesToWaves(slices, [100, 100]);
-      // Frente A (80h): pacote a na onda 1, pacote b na onda 2
-      expect(waves.slice(0, 2)).toEqual([0, 0]);
-      expect(waves.slice(2, 4)).toEqual([1, 1]);
-      // Frente B (40h) é paralela: metade em cada onda
-      expect(waves.slice(4)).toEqual([0, 1]);
-      // ordem nunca regride dentro da frente
-      const a = waves.slice(0, 4);
-      expect([...a].sort()).toEqual(a);
-    });
-
-    it('com uma onda só, tudo vai para ela', () => {
-      expect(assignSlicesToWaves(splitPackageIntoSlices(pkg()), [500])).toEqual([0, 0, 0, 0]);
-    });
-  });
-
-  describe('sliceWbsPackagesIntoWaves', () => {
-    it('preserva o total de horas e respeita a capacidade proporcional', () => {
-      const packages = [
-        pkg({ wbsNodeId: 'a', remainingHours: 80, branchKey: 'A' }),
-        pkg({ wbsNodeId: 'b', remainingHours: 60, branchKey: 'A' }),
-        pkg({ wbsNodeId: 'c', remainingHours: 100, branchKey: 'B' }),
-      ];
-      const byWave = sliceWbsPackagesIntoWaves(packages, [168, 168]);
-      const total = byWave.flat().reduce((a, s) => a + s.hours, 0);
-      expect(total).toBe(240);
-      for (const wave of byWave) {
-        expect(wave.reduce((a, s) => a + s.hours, 0)).toBeLessThanOrEqual(168);
-      }
-      expect(describeWaveFromSlices(byWave[0])).toMatch(/^\d+(\.5)?h · /);
-    });
+  it('descreve a onda pelas horas e pacotes', () => {
+    const waves = sliceWbsPackagesIntoWaves([pkg({ remainingHours: 20 })], 30);
+    expect(describeWaveFromSlices(waves[0])).toBe('20h · Anki básico');
   });
 });

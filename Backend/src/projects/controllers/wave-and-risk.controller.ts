@@ -170,10 +170,7 @@ export class WaveAndRiskController {
   }
 
   @Post('generate-waves')
-  async generateWaves(
-    @Param('projectId') projectId: string,
-    @Body() body: { totalDurationDays?: number; waveLengthDays?: number } = {},
-  ): Promise<ProjectWave[]> {
+  async generateWaves(@Param('projectId') projectId: string): Promise<ProjectWave[]> {
     try {
       // Buscar projeto para obter deadline e smartObjective
       const project = await this.projectModel.findById(String(projectId)).populate('tasks');
@@ -181,11 +178,7 @@ export class WaveAndRiskController {
         throw new HttpException('Projeto não encontrado', HttpStatus.NOT_FOUND);
       }
 
-      const result = await this.waveService.createInitialWaves(
-        projectId,
-        project,
-        body?.waveLengthDays || 28,
-      );
+      const result = await this.waveService.createInitialWaves(projectId, project);
 
       return result;
     } catch (error) {

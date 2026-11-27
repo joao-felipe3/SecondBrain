@@ -154,7 +154,7 @@ describe('WaveAndRiskController', () => {
       const waves = await controller.getWaves(validProjId);
       expect(waves.length).toBe(1);
 
-      const generated = await controller.generateWaves(validProjId, {});
+      const generated = await controller.generateWaves(validProjId);
       expect(generated.length).toBe(1);
 
       const replanned = await controller.replanTaskDeadlines(validProjId);
@@ -166,7 +166,7 @@ describe('WaveAndRiskController', () => {
         populate: jest.fn().mockResolvedValue(null),
       });
 
-      await expect(controller.generateWaves(validProjId, {})).rejects.toThrow(HttpException);
+      await expect(controller.generateWaves(validProjId)).rejects.toThrow(HttpException);
     });
 
     it('should update wave and advance wave', async () => {

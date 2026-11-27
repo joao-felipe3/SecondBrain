@@ -320,8 +320,8 @@
     "semantic_hash": ""
   },
   "Backend/src/projects/interfaces/wbs-conversion.interface.ts": {
-    "mtime": 1795747778.735857,
-    "ast_hash": "ca50dafb99f984156bc916201522c935",
+    "mtime": 1795750151.8334794,
+    "ast_hash": "4ce6a0870be87054906162d5bea0adf2",
     "semantic_hash": ""
   },
   "Backend/src/projects/interfaces/wbs-metrics.interface.ts": {
@@ -4835,8 +4835,8 @@
     "semantic_hash": ""
   },
   "Frontend/composables/features/useGrimoireBook.ts": {
-    "mtime": 1795749769.2853863,
-    "ast_hash": "2a5109ddfe0fc9589981cdd1cb93cc2b",
+    "mtime": 1795750153.00883,
+    "ast_hash": "ae6c79d2ed2fb2f50f661bed6170ae9a",
     "semantic_hash": ""
   },
   "Frontend/composables/features/useProjectCreationGate.ts": {
@@ -4925,13 +4925,13 @@
     "semantic_hash": ""
   },
   "Frontend/tests/unit/wave-detail-dialog.spec.ts": {
-    "mtime": 1795749787.4515653,
-    "ast_hash": "7e037fc64dd3df588c02fc3f3cc84e89",
+    "mtime": 1795750153.0617566,
+    "ast_hash": "f06bd69b5d1190204052be668b8106e5",
     "semantic_hash": ""
   },
   "Frontend/tests/unit/wave-horizon.spec.ts": {
-    "mtime": 1795749787.452565,
-    "ast_hash": "f2ce2676a91d8ffd440da3cb448b50f4",
+    "mtime": 1795750153.1224234,
+    "ast_hash": "d37130c0e38bb2545aac47c884388c27",
     "semantic_hash": ""
   },
   "Frontend/tests/unit/wbs-tree-node.spec.ts": {

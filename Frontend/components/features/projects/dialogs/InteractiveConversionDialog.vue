@@ -84,7 +84,7 @@
         :is-last-leaf="isLastLeaf"
         :processing="processing"
         :difference-percentage="differencePercentage"
-        :approved-tasks-count="approvedTasks.length"
+        :approved-tasks-count="tasksToSaveCount"
         @cancel="handleCancel"
         @regenerate="handleRegenerate"
         @open-model-selection="modelSelectionDialogOpen = true"
@@ -176,6 +176,10 @@ const wbsUpdates = ref<
 >([]);
 
 // Computed
+// Aprovadas + as que estão em revisão agora (salvas juntas em "Salvar Todas").
+const tasksToSaveCount = computed(
+  () => approvedTasks.value.length + (currentGeneratedResult.value?.tasks?.length || 0),
+);
 const totalLeafs = computed(() => leafNodes.value.length);
 const currentLeaf = computed(() => leafNodes.value[currentIndex.value]);
 const isLastLeaf = computed(() => currentIndex.value === totalLeafs.value - 1);
@@ -597,8 +601,10 @@ async function handleApproveAndContinue() {
   currentIndex.value = totalLeafs.value;
 }
 async function handleSaveAll() {
-  if (approvedTasks.value.length === 0) {
-    alert('Nenhuma task aprovada para salvar');
+  // No último item (ou quando a onda tem um item só) as tarefas em revisão ainda não foram
+  // "aprovadas": entram no salvamento junto com as já aprovadas.
+  if (tasksToSaveCount.value === 0) {
+    alert('Nenhuma task para salvar');
     return;
   }
   const totalApprovedHours =

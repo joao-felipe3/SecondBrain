@@ -116,38 +116,20 @@
     <!-- RIGHT PAGE -->
     <v-sheet class="page right-page" elevation="0" color="transparent" @click.stop>
       <div v-if="hasWBS">
-        <h3 class="mb-2">📋 Ações</h3>
-
-        <!-- Rolling Wave -->
-        <v-card elevation="1" class="mb-3" @click.stop>
-          <v-card-text style="padding: 0.75rem">
-            <div class="d-flex align-center mb-2">
-              <v-icon color="primary" size="20" class="mr-2">mdi-waves</v-icon>
-              <span class="text-body-2 font-weight-medium">Planejamento em Ondas</span>
-            </div>
-            <p class="text-caption text-medium-emphasis mb-2">
-              Os pacotes (8/80h) são divididos em <strong>fatias de até 20h</strong> e distribuídos em
-              <strong>ondas</strong> pela sua capacidade diária. As micro-tarefas são geradas onda a
-              onda, na próxima página, <strong>🌊 Ondas &amp; Rastreabilidade</strong>.
-            </p>
-            <v-btn
-              color="primary"
-              size="small"
-              variant="flat"
-              prepend-icon="mdi-waves"
-              style="font-size: 0.65rem"
-              :loading="planningWaves"
-              :disabled="!validation?.valid"
-              block
-              @click.stop="planWaves"
-            >
-              Planejar Ondas ({{ totalLeafNodes }} pacotes · {{ totalHours.toFixed(0) }}h)
-            </v-btn>
-            <p v-if="!validation?.valid" class="text-caption text-warning mt-1">
-              Corrija as violações 8/80 antes de planejar as ondas
-            </p>
-          </v-card-text>
-        </v-card>
+        <h3 class="mb-2">🌊 Planejamento em Ondas</h3>
+        <p class="text-caption text-medium-emphasis mb-2">
+          Os pacotes são divididos em <strong>fatias</strong> e agrupados em
+          <strong>ondas pequenas</strong>
+          (até ~30h cada). As micro-tarefas são geradas onda a onda, só para a onda atual e a próxima.
+        </p>
+        <ProjectWavesTimeline
+          v-if="project?._id"
+          :project-id="project._id"
+          :before-plan="saveWBSBeforePlanning"
+          :plan-disabled-reason="
+            validation?.valid ? '' : 'Corrija as violações 8/80 da WBS antes de planejar as ondas.'
+          "
+        />
 
         <!-- Decomposition suggestion -->
         <v-card v-if="decompositionSuggestion" elevation="1" class="mb-3" @click.stop>
@@ -243,6 +225,7 @@
 import { ref, computed, watch, onMounted } from 'vue';
 import type { PropType } from 'vue';
 import WBSTreeView from '../sections/WBSTreeView.vue';
+import ProjectWavesTimeline from '../sections/ProjectWavesTimeline.vue';
 import type { WBSNode } from '../sections/WBSTreeView.vue';
 import { useNuxtApp } from '#app';
 
@@ -258,7 +241,6 @@ const emit = defineEmits(['wbs-updated', 'update-field']);
 const wbsNodes = ref<WBSNode[]>([]);
 const validation = ref<{ valid: boolean; violations: any[] } | null>(null);
 const generating = ref(false);
-const planningWaves = ref(false);
 const savingWBS = ref(false);
 const decompositionSuggestion = ref('');
 const parsedSuggestion = ref<WBSNode[] | null>(null);
@@ -377,35 +359,17 @@ async function saveWBS() {
   }
 }
 
-// Salva a WBS e distribui os pacotes em ondas (Rolling Wave). As micro-tarefas vêm depois, por onda.
-async function planWaves() {
-  if (!props.project?._id || wbsNodes.value.length === 0) return;
-  if (
-    !confirm(
-      `Planejar as ondas a partir de ${totalLeafNodes.value} pacotes (${totalHours.value.toFixed(1)}h)?
-
-` + 'Ondas em andamento, concluídas ou já detalhadas são mantidas; o restante é redistribuído.',
-    )
-  )
-    return;
-
-  planningWaves.value = true;
+// Antes de planejar as ondas, salva a WBS (o planejamento lê os pacotes do banco).
+async function saveWBSBeforePlanning(): Promise<boolean> {
+  if (!props.project?._id || wbsNodes.value.length === 0) return false;
   try {
     const { $api } = useNuxtApp() as any;
     await $api.post(`/projects/${props.project._id}/save-wbs`, { nodes: wbsNodes.value });
-    const response = await $api.post(`/projects/${props.project._id}/generate-waves`, {
-      waveLengthDays: 28,
-    });
-    const waves = Array.isArray(response?.data) ? response.data : [];
-    const slices = waves.reduce((sum: number, w: any) => sum + (w?.slices?.length || 0), 0);
-    conversionResult.value = `🌊 ${waves.length} ondas planejadas com ${slices} fatias. Detalhe a primeira onda na próxima página (Ondas & Rastreabilidade).`;
     await loadWBS();
-    emit('wbs-updated');
+    return true;
   } catch (error: any) {
-    const errorMsg = error?.response?.data?.message || error?.message || 'Erro desconhecido';
-    alert(`Erro ao planejar ondas: ${errorMsg}`);
-  } finally {
-    planningWaves.value = false;
+    alert(`Erro ao salvar a WBS: ${error?.response?.data?.message || error?.message || error}`);
+    return false;
   }
 }
 
