@@ -106,6 +106,21 @@ export interface Puppet {
   music?: PuppetMusic;
 }
 
+export function createPuppetRenderGate() {
+  let dirty = true;
+  return {
+    invalidate() {
+      dirty = true;
+    },
+    shouldRender(animating: boolean): boolean {
+      return dirty || animating;
+    },
+    rendered() {
+      dirty = false;
+    },
+  };
+}
+
 export interface PuppetPose {
   bones: Record<string, { rotation: number; length: number; scale: number }>;
   opacity: Record<string, number>;

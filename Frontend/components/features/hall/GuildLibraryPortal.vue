@@ -21,7 +21,15 @@
     <div class="door-sprite" :style="spriteStyleFull" />
 
     <!-- CAMADA 3: Overlay da Cadeira (Fica por cima da porta) -->
-    <img src="/vfx/chair.png" class="chair-overlay" alt="Cadeira" />
+    <img
+      src="/vfx/chair.png"
+      class="chair-overlay"
+      alt="Cadeira"
+      width="334"
+      height="427"
+      fetchpriority="high"
+      decoding="async"
+    />
 
     <!-- Hitbox Transparente de Interacao -->
     <button

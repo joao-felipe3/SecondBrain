@@ -4,6 +4,7 @@ import { resolve } from 'node:path';
 import {
   applyVars,
   boneWorlds,
+  createPuppetRenderGate,
   evalPose,
   invert,
   multiply,
@@ -71,6 +72,20 @@ const arm: Puppet = {
 };
 
 describe('marionete (player próprio)', () => {
+  it('redesenha a pose quando muda e não repete o desenho durante o repouso', () => {
+    const gate = createPuppetRenderGate();
+    expect(gate.shouldRender(false)).toBe(true);
+    gate.rendered();
+    expect(gate.shouldRender(false)).toBe(false);
+    expect(gate.shouldRender(true)).toBe(true);
+    gate.rendered();
+    expect(gate.shouldRender(true)).toBe(true);
+    gate.rendered();
+    expect(gate.shouldRender(false)).toBe(false);
+    gate.invalidate();
+    expect(gate.shouldRender(false)).toBe(true);
+  });
+
   it('interpola keyframes linearmente e segura nas pontas', () => {
     const k: [number, number][] = [
       [0, 0],

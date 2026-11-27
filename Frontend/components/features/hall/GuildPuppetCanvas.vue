@@ -9,6 +9,7 @@ import {
   applyVars,
   boneWorlds,
   cuesBetween,
+  createPuppetRenderGate,
   evalPose,
   meshUv,
   pickNext,
@@ -204,6 +205,7 @@ onMounted(async () => {
     g.bindFramebuffer(g.FRAMEBUFFER, null);
     const quad = buf(g.ARRAY_BUFFER, new Float32Array([0, 0, 1, 0, 1, 1, 0, 1]), g.STATIC_DRAW);
     const quadIdx = buf(g.ELEMENT_ARRAY_BUFFER, new Uint16Array([0, 1, 2, 0, 2, 3]), g.STATIC_DRAW);
+    const renderGate = createPuppetRenderGate();
 
     // tamanho REAL na tela: o saguão é ampliado por transform (scale), que clientWidth não vê;
     // medir antes da ampliação desenhava o Gloin pequeno e o navegador esticava (borrado)
@@ -213,8 +215,11 @@ onMounted(async () => {
       const box = el.getBoundingClientRect();
       const w = Math.min(AW, Math.round(box.width * dpr)) || AW;
       const h = Math.min(AH, Math.round(box.height * dpr)) || AH;
-      if (el.width !== w) el.width = w;
-      if (el.height !== h) el.height = h;
+      if (el.width !== w || el.height !== h) {
+        el.width = w;
+        el.height = h;
+        renderGate.invalidate();
+      }
     };
     fit();
     observer = new ResizeObserver(fit);
@@ -252,6 +257,7 @@ onMounted(async () => {
       // Depois de muito atraso (aba em segundo plano), recomeça do agora.
       const seam = anim && k >= 0 && now - until < 250;
       anim = k >= 0 ? puppet.anims[k]! : null;
+      renderGate.invalidate();
       started = seam ? until : now;
       lastF = -1e-6;
       until = started + (anim ? (anim.frames / puppet.fps) * 1000 : i0 + Math.random() * (i1 - i0));
@@ -274,6 +280,7 @@ onMounted(async () => {
       // a escala do saguão pode mudar sem redimensionar a janela (zoom do palco): confere de vez em quando
       if (++fitTick % 30 === 0) fit();
       if (!frozen && now >= until) next(now);
+      if (!renderGate.shouldRender(!!anim && !frozen)) return;
       const playing = frozen ?? anim;
       const f = frozen
         ? Number(freeze![1] ?? 0) * puppet.fps
@@ -344,6 +351,7 @@ onMounted(async () => {
         Math.min(MAX_TAPS, Math.max(1, Math.ceil(AH / el.height))),
       );
       g.drawElements(g.TRIANGLES, 6, g.UNSIGNED_SHORT, 0);
+      renderGate.rendered();
 
       if (!ready.value) {
         ready.value = true;

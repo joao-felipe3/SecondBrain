@@ -707,3 +707,213 @@ Acao recomendada:
 
 - 26 testes unitarios do Hall passaram.
 - Build completo passou com codigo de saida zero.
+
+## Reavaliacao estatica - 27/11/2026
+
+Esta reavaliacao confere o codigo atual e mede os arquivos do Hall no disco. Ela
+nao substitui um perfil em navegador: nao foram coletados FPS, long tasks, memoria
+de GPU, LCP ou consumo de bateria em runtime.
+
+### Estado e medidas atuais
+
+- O panorama continua em 5056x3392: `Entrada-expandida.webp` tem 1.813.388
+  bytes (~1,73 MiB); o PNG-fonte tem 28.926.954 bytes (~27,59 MiB) e continua
+  necessario ao pipeline de vinhetas.
+- `public/vfx/hall-life` contem 194 arquivos e 4.001.689 bytes (~3,82 MiB):
+  187 WebP (~2,11 MiB) e 7 JSON de marionete (~1,71 MiB).
+- Continuam existindo 7 marionetes, ativadas por proximidade. Seus arquivos
+  declaram 152 partes de desenho e 122 malhas.
+- Se todas as marionetes estivessem montadas, os framebuffers RGBA de resolucao
+  artistica somariam 20.017.476 bytes (~19,09 MiB). E uma estimativa do framebuffer
+  principal, nao da memoria GPU total; texturas, buffers e overhead do navegador
+  ficam fora dela. A ativacao por proximidade reduz o numero real em uso.
+- A camada VFX cria 36 sprites de chama e 36 glows separados, alem das fagulhas.
+  As animacoes CSS continuam ativas sem depender da visibilidade individual dos
+  elementos; varios glows usam blur e `mix-blend-mode`.
+- Os limites configurados continuam em 45 fagulhas + 85 poeiras no desktop e
+  25 + 45 no modo compacto. A tela desenha as particulas a 30 FPS, mas o callback
+  de `requestAnimationFrame` ainda acorda na frequencia do monitor para descartar
+  os quadros excedentes.
+
+### Novos achados priorizados
+
+#### P1 - O fallback de hardware nao reduz o custo das marionetes
+
+`getHallFallbackProfile` marca hardware com ate 4 nucleos ou 4 GiB como
+conservador, mas `allowPuppets` depende apenas da rede. Em hardware lento, as
+particulas param, porem as marionetes continuam permitidas, com o mesmo limite de
+DPR e FPS. O campo `mobile24fps` e calculado, mas nao e consumido pelo scheduler.
+O perfil de bateria baixa tambem interrompe somente as particulas.
+
+Impacto: os aparelhos mais limitados ainda podem executar os sete contextos
+WebGL e o trabalho de skinning. A regra de fallback nao corresponde ao objetivo
+de reduzir o custo total nesses dispositivos.
+
+#### P1 - Marionetes ativas redesenham mesmo sem mudanca de pose
+
+Cada callback do scheduler refaz a pose, o skinning das malhas e duas etapas de
+desenho WebGL: composição na resolucao da arte e redução para o canvas. Isso
+acontece em todos os callbacks enquanto a marionete estiver ativa, inclusive
+durante o tempo parado entre gestos. O limite de 30/24 FPS reduz a frequencia,
+mas nao elimina os quadros sem alteracao visual.
+
+Impacto: consumo evitavel de CPU/GPU em idle; pode ser particularmente relevante
+em cenas onde varias marionetes ficam dentro da margem de proximidade.
+
+#### P1 - VFX mantem muitas animacoes e superficies de blur
+
+As 36 chamas usam animacao de spritesheet e seus 36 glows mantem animacao propria.
+A camada tambem inclui glow da lareira e quatro fagulhas CSS. Nao ha reducao
+responsiva do numero de chamas nem pausa por proximidade; `prefers-reduced-motion`
+remove as animacoes, mas mantem os elementos e os filtros estaticos.
+
+Impacto: custo de composicao e de atualizacao de estilo que persiste enquanto o
+Hall esta montado. O custo de blur/blend varia por navegador e GPU e precisa de
+perfil de runtime para quantificar.
+
+#### P2 - Codigo de marionetes e portais e importado de forma eager
+
+`pages/index.vue` importa os componentes do Hall estaticamente, e `GuildNpcLayer`
+tambem importa `GuildPuppetCanvas` estaticamente. O `v-if` evita montar os
+contextos WebGL antes da proximidade, mas nao garante que o codigo JS desses
+componentes fique fora do bundle inicial.
+
+Impacto: parse e avaliacao de codigo podem aumentar a carga inicial mesmo quando
+o usuario ainda nao aproximou a camera dos NPCs. Confirmar no relatorio de bundle
+antes de introduzir importacao assincrona.
+
+#### P2 - Preload secundario ainda percorre os intermediarios
+
+O limite de duas cargas simultaneas continua aplicado, mas cancelar o preload
+marca apenas uma flag: cargas em andamento nao sao abortadas. Em dispositivos
+nao conservadores, o callback idle pode carregar os intermediarios e ciclos em
+segundo plano mesmo que o usuario saia do Hall logo depois.
+
+Impacto: trafego e decodificacao que podem nao ser usados nessa visita; nao ha
+medicao atual do pico de imagens decodificadas nem do tempo total dessa fila.
+
+### Proximos passos recomendados
+
+1. Obter uma medicao reproduzivel no Chrome em desktop e mobile: entrada,
+   60 segundos em idle, arraste, transicao de rota e retorno de aba oculta.
+   Registrar FPS, long tasks, CPU, heap, DOM, camadas e contextos WebGL.
+2. Corrigir e testar os perfis conservadores para hardware e bateria; verificar
+   explicitamente que a configuracao efetiva de FPS/DPR chega ao scheduler e ao
+   canvas.
+3. Implementar redesenho sob demanda das marionetes, acordando o player apenas
+   quando um gesto comecar, avancar ou terminar.
+4. Medir a camada VFX isolada e comparar um perfil compacto com menos chamas e
+   glows, sem alterar a aparencia padrao antes de validar o ganho.
+5. Se o bundle confirmar custo relevante, carregar o player WebGL e os overlays
+   sob demanda; depois, tornar o preload secundario sensivel a cancelamento e
+   prioridade.
+
+Os pontos acima sao oportunidades estruturais verificadas no codigo, nao ganhos
+medidos. Nenhuma percentagem de melhoria deve ser atribuida antes de comparar
+traces equivalentes antes/depois no mesmo navegador e dispositivo.
+
+## Renderizacao de marionetes em idle - 27/11/2026
+
+### Alteracao aplicada
+
+- O player agora redesenha somente no primeiro quadro, durante uma animacao, ao
+  iniciar outro gesto ou quando o tamanho do canvas muda.
+- Em poses estaticas, o callback do scheduler retorna antes de calcular pose,
+  fazer skinning e executar as duas etapas WebGL.
+- O scheduler compartilhado ainda acorda a 30 FPS no desktop e 24 FPS no mobile;
+  foi removido o trabalho de desenho WebGL redundante, nao todos os callbacks.
+
+### Validacao
+
+- 38 testes focados de `puppet.spec.ts` e `hall-life.spec.ts` passaram.
+- `npm run build` passou. Permanecem avisos preexistentes de chunk grande,
+  Browserslist desatualizado e nome de componente duplicado.
+- O ganho em FPS, GPU e bateria ainda depende de medicao em navegador.
+
+## Hover da porta e custo da cena - 27/11/2026
+
+### Causa provavel identificada
+
+O hover da porta emitia estado ate `pages/index.vue`, que aplicava
+`scale(1.05)`, rotacao 3D e `filter: brightness()/contrast()` a `.safe-zone`.
+Essa zona inclui o panorama ampliado, canvases, vinhetas e VFX; assim, um gesto
+local podia acionar composicao/filtro da cena inteira durante a transicao CSS.
+O efeito era compartilhado pelo hover do arco e da escadaria.
+
+### Alteracao aplicada
+
+- Removido o transform e filtro global acionado por hover da `.safe-zone`.
+- Mantidas a animacao local da porta, os brilhos locais, tooltip, efeitos da
+  flâmula e a transicao de zoom acionada por clique.
+- O estado de hover continua sendo usado pelas interacoes locais, sem animar a
+  cena completa.
+
+### Validacao e limite
+
+- Confirmado por busca que nao restaram referencias a `is-camera-hovering`.
+- `git diff --check` passou.
+- A validacao visual nao foi executada: o Chromium requerido pelo Playwright nao
+  esta instalado neste ambiente. Nenhum navegador foi baixado.
+- A causa e fortemente indicada pela cadeia de estado e CSS, mas o custo relativo
+  ainda precisa ser confirmado com um trace de Performance em browser.
+
+## Metricas locais recebidas - 27/11/2026
+
+O usuario reportou LCP de 17,77 s, CLS de 0,02 e INP de 368 ms. O elemento
+LCP identificado foi `img.chair-overlay`; o INP foi rotulado como interacao
+`pointer`, sem alvo ou fase detalhada.
+
+- O CLS esta em faixa boa; nao e a prioridade atual.
+- A imagem da cadeira (`/vfx/chair.png`) mede 334x427 e tem 257.257 bytes.
+  Foram declarados `width`, `height`, `fetchpriority="high"` e
+  `decoding="async"` para antecipar o fetch e preservar a proporcao intrinseca.
+- Ainda nao ha resultado pos-mudanca. O LCP reportado sozinho nao informa se o
+  atraso esta no TTFB, descoberta, download ou atraso de renderizacao.
+- O INP requer a identificacao da interacao real e a divisao entre atraso de
+  entrada, processamento do handler e atraso de apresentacao antes de outra
+  otimizacao.
+
+## Breakdown de desempenho em preview - 27/11/2026
+
+Medicao enviada pelo usuario em `npm run preview`:
+
+| Metrica | Valor / breakdown |
+|---|---|
+| LCP | 4,57 s |
+| TTFB | 115 ms |
+| Atraso de descoberta do recurso | 563 ms |
+| Duracao de carregamento do recurso | 285 ms |
+| Atraso de renderizacao do elemento | 3.603 ms |
+| CLS | 0,00 |
+| INP | 368 ms |
+| Atraso de entrada / processamento / apresentacao | 2 / 171 / 203 ms |
+
+O atraso de renderizacao representa aproximadamente 79% do LCP decomposto
+(4.566 ms); o download do recurso representa cerca de 6%. Assim, priorizar ou
+recomprimir a imagem nao deve ser a principal linha de otimizacao sem evidencias
+adicionais. O foco passa a ser descobrir por que o elemento LCP aguarda cerca de
+3,6 s para ser pintado, examinando tarefas da thread principal, CSS/layout e o
+elemento efetivamente apontado no breakdown.
+
+As interacoes feitas foram hover na porta da biblioteca e no arco, seguidas de
+clique no balao de dialogo. O INP e atribuivel a interacao discreta (clique), nao
+mede o atraso visual do hover. O balao atualiza um indice reativo e o texto
+derivado; o breakdown sozinho nao demonstra que esse handler seja a causa dos
+171 ms de processamento ou dos 203 ms de apresentacao. A soma das subpartes
+(376 ms) difere em 8 ms do INP de headline (368 ms), possivelmente por
+arredondamento ou por interacao selecionada diferente.
+
+A captura ainda lista extensoes de navegador, inclusive Spector.js, tradutor e
+bloqueadores. Elas podem influenciar scripting, composicao e WebGL; os valores
+sao uteis como indicacao, mas nao sao uma comparacao isolada do codigo.
+
+### Proxima validacao
+
+- Repetir em perfil sem extensoes e com cache frio, mantendo `npm run preview`.
+- No LCP breakdown, registrar o seletor/elemento e inspecionar a thread principal
+  entre o fim do download e o paint do LCP.
+- Para o travamento de hover, gravar uma captura separada e inspecionar frames e
+  long tasks durante a entrada/saida da porta e do arco; hover nao e medido pelo
+  valor de INP.
+- Para INP, selecionar especificamente o clique no balao na faixa Interactions e
+  verificar o elemento-alvo e as tarefas que compoem o processamento/apresentacao.

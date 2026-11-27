@@ -9,8 +9,6 @@
       <div
         class="safe-zone"
         :class="{
-          'is-camera-hovering':
-            (isLeftArchHovered || isRightDoorHovered || isStairsHovered) && !isTransitioning,
           'is-camera-zooming': isTransitioning,
         }"
         :style="{
@@ -410,7 +408,6 @@ onBeforeUnmount(() => {
   overflow: visible;
 }
 
-.safe-zone.is-camera-hovering,
 .safe-zone.is-camera-zooming {
   will-change: transform, filter;
 }
@@ -448,12 +445,6 @@ onBeforeUnmount(() => {
   display: block;
   height: 100dvh;
   touch-action: none;
-}
-
-/* PRÉVIA DO GIRO DE CÂMERA 3D À DIREITA NO HOVER */
-.safe-zone.is-camera-hovering {
-  transform: scale(1.05) rotateY(-5deg) rotateX(1deg) rotateZ(0.2deg) translateZ(10px) translateX(-10px);
-  filter: brightness(1.06) contrast(1.03);
 }
 
 /* ESTADO DE ZOOM E GIRO DE CÂMERA ESPACIAL 3D À DIREITA NO CLIQUE */
