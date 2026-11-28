@@ -117,11 +117,6 @@
     <v-sheet class="page right-page" elevation="0" color="transparent" @click.stop>
       <div v-if="hasWBS">
         <h3 class="mb-2">🌊 Planejamento em Ondas</h3>
-        <p class="text-caption text-medium-emphasis mb-2">
-          Os pacotes são divididos em <strong>fatias</strong> e agrupados em
-          <strong>ondas pequenas</strong>
-          (até ~30h cada). As micro-tarefas são geradas onda a onda, só para a onda atual e a próxima.
-        </p>
         <ProjectWavesTimeline
           v-if="project?._id"
           :project-id="project._id"
