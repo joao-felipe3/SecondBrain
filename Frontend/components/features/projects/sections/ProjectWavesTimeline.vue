@@ -46,63 +46,107 @@
   <div v-if="waves.length > 0" class="timeline-shell">
     <div class="timeline">
       <div
-        v-for="(wave, idx) in waves"
-        :key="wave._id"
-        class="wave-item"
-        :class="[
-          `wave-status-${wave.status}`,
-          {
-            'wave-current': idx === progressiveWaveIndex,
-            'wave-future': isFutureWave(idx, wave.status),
-          },
-        ]"
-        @click="selectWave(wave)"
+        v-for="row in timelineRows"
+        :key="row.id"
+        class="timeline-row"
+        :class="{ 'timeline-row--compact': row.compact, 'timeline-row--active': !row.compact }"
       >
-        <v-tooltip location="top" open-delay="120" max-width="320">
-          <template #activator="{ props: tooltipProps }">
-            <div class="wave-surface" v-bind="tooltipProps">
-              <div class="wave-marker-wrap">
-                <div class="wave-connector"></div>
-                <div class="wave-marker">
-                  <v-icon size="18">
-                    {{ getWaveIcon(wave.status) }}
-                  </v-icon>
+        <div
+          v-for="entry in row.waves"
+          :key="entry.wave._id"
+          class="wave-item"
+          :class="[
+            `wave-status-${entry.wave.status}`,
+            {
+              'wave-current': entry.index === progressiveWaveIndex,
+              'wave-future': isFutureWave(entry.index, entry.wave.status),
+              'wave-compact': isWaveCompact(entry.wave),
+              'wave-has-tasks': entry.wave.taskIds.length > 0,
+              'wave-no-tasks': entry.wave.taskIds.length === 0,
+            },
+          ]"
+          @click="selectWave(entry.wave)"
+        >
+          <v-tooltip location="top" open-delay="120" max-width="320">
+            <template #activator="{ props: tooltipProps }">
+              <div class="wave-surface" v-bind="tooltipProps">
+                <div class="wave-marker-wrap">
+                  <div v-if="!isWaveCompact(entry.wave)" class="wave-connector"></div>
+                  <svg
+                    v-else
+                    class="wave-connector-wave"
+                    viewBox="0 0 100 28"
+                    preserveAspectRatio="none"
+                    aria-hidden="true"
+                  >
+                    <path
+                      class="wave-connector-halo"
+                      d="M 0 14 C 14 14 17 1 32 1 C 46 1 48 16 60 23 C 70 29 78 22 84 15 C 90 8 94 11 100 14"
+                    />
+                    <path
+                      class="wave-connector-flow"
+                      d="M 0 14 C 14 14 17 1 32 1 C 46 1 48 16 60 23 C 70 29 78 22 84 15 C 90 8 94 11 100 14"
+                    />
+                    <path
+                      class="wave-connector-ripple"
+                      d="M 0 14 C 15 14 19 5 32 5 C 44 5 49 18 61 24 C 70 28 77 21 84 16 C 90 11 95 13 100 14"
+                    />
+                    <path class="wave-connector-curl" d="M 30 3 C 36 0 44 1 47 7 C 43 4 38 4 34 8" />
+                    <path
+                      class="wave-connector-spray"
+                      d="M 19 8 C 16 6 15 4 15 2 M 26 5 C 24 3 24 1 25 0"
+                    />
+                  </svg>
+                  <div class="wave-marker">
+                    <v-icon size="18">
+                      {{ getWaveIcon(entry.wave.status) }}
+                    </v-icon>
+                  </div>
+                </div>
+
+                <div class="wave-label">
+                  <p class="wave-title">Onda {{ entry.wave.waveNumber }}</p>
+                  <p v-if="!isWaveCompact(entry.wave)" class="wave-subtitle">
+                    {{ formatDate(entry.wave.startDate) }} - {{ formatDate(entry.wave.endDate) }}
+                  </p>
+                </div>
+
+                <div v-if="!isWaveCompact(entry.wave)" class="wave-footer">
+                  <v-chip
+                    size="x-small"
+                    label
+                    class="wave-status-chip"
+                    :class="`status-${entry.wave.status}`"
+                  >
+                    {{ getWaveStatusLabel(entry.wave.status) }}
+                  </v-chip>
+
+                  <div class="wave-tasks-count">
+                    {{ waveCountLabel(entry.wave) }}
+                  </div>
                 </div>
               </div>
+            </template>
 
-              <div class="wave-label">
-                <p class="wave-title">Onda {{ wave.waveNumber }}</p>
-                <p class="wave-subtitle">
-                  {{ formatDate(wave.startDate) }} - {{ formatDate(wave.endDate) }}
-                </p>
+            <div class="wave-tooltip">
+              <div class="tooltip-title">Onda {{ entry.wave.waveNumber }}</div>
+              <div class="tooltip-line">Status: {{ getWaveStatusLabel(entry.wave.status) }}</div>
+              <div class="tooltip-line">
+                Período: {{ formatDate(entry.wave.startDate) }} - {{ formatDate(entry.wave.endDate) }}
               </div>
-
-              <div class="wave-footer">
-                <v-chip size="x-small" label class="wave-status-chip" :class="`status-${wave.status}`">
-                  {{ getWaveStatusLabel(wave.status) }}
-                </v-chip>
-
-                <div class="wave-tasks-count">
-                  {{ waveCountLabel(wave) }}
-                </div>
+              <div v-if="entry.wave.slices?.length" class="tooltip-line">
+                Fatias: {{ entry.wave.slices.length }} ({{
+                  detailedSlicesCount(entry.wave)
+                }}
+                detalhadas) · {{ waveSliceHours(entry.wave) }}h
+              </div>
+              <div class="tooltip-line">Tarefas: {{ entry.wave.taskIds.length }}</div>
+              <div v-if="entry.wave.description" class="tooltip-description">
+                {{ entry.wave.description }}
               </div>
             </div>
-          </template>
-
-          <div class="wave-tooltip">
-            <div class="tooltip-title">Onda {{ wave.waveNumber }}</div>
-            <div class="tooltip-line">Status: {{ getWaveStatusLabel(wave.status) }}</div>
-            <div class="tooltip-line">
-              Período: {{ formatDate(wave.startDate) }} - {{ formatDate(wave.endDate) }}
-            </div>
-            <div v-if="wave.slices?.length" class="tooltip-line">
-              Fatias: {{ wave.slices.length }} ({{ detailedSlicesCount(wave) }} detalhadas) ·
-              {{ waveSliceHours(wave) }}h
-            </div>
-            <div class="tooltip-line">Tarefas: {{ wave.taskIds.length }}</div>
-            <div v-if="wave.description" class="tooltip-description">{{ wave.description }}</div>
-          </div>
-        </v-tooltip>
+          </v-tooltip>
+        </div>
       </div>
     </div>
   </div>
@@ -119,6 +163,14 @@
     <div class="legend-item">
       <span class="legend-dot completed"></span>
       <span>Concluída</span>
+    </div>
+    <div class="legend-item">
+      <span class="legend-dot has-tasks"></span>
+      <span>Com tarefas</span>
+    </div>
+    <div class="legend-item">
+      <span class="legend-dot no-tasks"></span>
+      <span>Sem tarefas</span>
     </div>
   </div>
 
@@ -302,6 +354,17 @@ interface ProjectWave {
   slices?: WaveSlice[];
 }
 
+interface TimelineWaveEntry {
+  wave: ProjectWave;
+  index: number;
+}
+
+interface TimelineRow {
+  id: string;
+  compact: boolean;
+  waves: TimelineWaveEntry[];
+}
+
 interface ProjectTask {
   _id: string;
   name: string;
@@ -342,9 +405,55 @@ const showWaveDialog = ref(false);
 const replanningDeadlines = ref(false);
 const showDetailDialog = ref(false);
 const detailWave: Ref<ProjectWave | null> = ref(null);
+const ACTIVE_LINE_WAVE_COUNT = 3;
+const COMPACT_LINE_WAVE_COUNT = 5;
 
 /** Horizonte de detalhamento: a onda atual (ativa ou primeira não concluída) e a seguinte. */
 const horizonWaveIds = computed(() => computeHorizonWaveIds(waves.value));
+const activeLineStartIndex = computed(() => {
+  const activeIndex = waves.value.findIndex((wave) => wave.status === 'active');
+  const currentIndex =
+    activeIndex >= 0 ? activeIndex : waves.value.findIndex((wave) => wave.status !== 'completed');
+  return currentIndex < 0
+    ? -1
+    : Math.floor(currentIndex / ACTIVE_LINE_WAVE_COUNT) * ACTIVE_LINE_WAVE_COUNT;
+});
+const activeLineWaveIds = computed(() => {
+  const lineStart = activeLineStartIndex.value;
+  return lineStart < 0
+    ? []
+    : waves.value.slice(lineStart, lineStart + ACTIVE_LINE_WAVE_COUNT).map((wave) => wave._id);
+});
+const timelineRows = computed<TimelineRow[]>(() => {
+  const entries = waves.value.map((wave, index) => ({ wave, index }));
+  const compactRows = (items: TimelineWaveEntry[], prefix: string): TimelineRow[] => {
+    const rows: TimelineRow[] = [];
+    for (let offset = 0; offset < items.length; offset += COMPACT_LINE_WAVE_COUNT) {
+      rows.push({
+        id: `${prefix}-${offset}`,
+        compact: true,
+        waves: items.slice(offset, offset + COMPACT_LINE_WAVE_COUNT),
+      });
+    }
+    return rows;
+  };
+
+  const lineStart = activeLineStartIndex.value;
+  if (lineStart < 0) return compactRows(entries, 'compact');
+
+  const lineEnd = Math.min(lineStart + ACTIVE_LINE_WAVE_COUNT, entries.length);
+  return [
+    ...compactRows(entries.slice(0, lineStart), 'before'),
+    {
+      id: 'active-line',
+      compact: false,
+      waves: entries.slice(lineStart, lineEnd),
+    },
+    ...compactRows(entries.slice(lineEnd), 'after'),
+  ];
+});
+const isWaveCompact = (wave: ProjectWave) =>
+  wave.status === 'completed' || !activeLineWaveIds.value.includes(wave._id);
 
 const detailedSlicesCount = (wave: ProjectWave) =>
   (wave.slices || []).filter((slice) => slice.status === 'detailed').length;
@@ -591,7 +700,12 @@ onMounted(async () => {
 .header-actions {
   display: flex;
   gap: 0.5rem;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
+}
+
+.header-actions :deep(.v-btn) {
+  flex: 1 1 0;
+  min-width: 0;
 }
 
 .section-eyebrow {
@@ -629,10 +743,22 @@ onMounted(async () => {
 
 .timeline {
   position: relative;
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(104px, 1fr));
-  gap: 0.55rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.12rem;
   width: 100%;
+}
+
+.timeline-row {
+  --wave-column-gap: 0.55rem;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  column-gap: var(--wave-column-gap);
+}
+
+.timeline-row--compact {
+  --wave-column-gap: 0.3rem;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
 }
 
 .wave-item {
@@ -648,7 +774,7 @@ onMounted(async () => {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.38rem;
+  gap: 0.28rem;
   height: 100%;
   padding: 0.35rem 0.25rem 0.2rem;
   border-radius: 12px;
@@ -679,6 +805,21 @@ onMounted(async () => {
   filter: saturate(0.82);
 }
 
+.wave-item.wave-compact {
+  opacity: 0.6;
+  filter: saturate(0.65);
+}
+
+.wave-item.wave-no-tasks:not(.wave-current) {
+  opacity: 0.68;
+  filter: saturate(0.65);
+}
+
+.wave-item.wave-compact.wave-no-tasks {
+  opacity: 0.45;
+  filter: saturate(0.5);
+}
+
 .wave-marker-wrap {
   position: relative;
   width: 100%;
@@ -699,6 +840,53 @@ onMounted(async () => {
     rgba(148, 163, 184, 0.52),
     rgba(148, 163, 184, 0.24)
   );
+}
+
+.wave-connector-wave {
+  position: absolute;
+  z-index: 0;
+  top: 50%;
+  left: 50%;
+  width: calc(100% + var(--wave-column-gap));
+  height: 24px;
+  overflow: visible;
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+.wave-connector-wave path {
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.wave-connector-halo {
+  stroke: rgba(96, 165, 250, 0.28);
+  stroke-width: 8;
+}
+
+.wave-connector-flow {
+  stroke: #3b82f6;
+  stroke-width: 3.4;
+}
+
+.wave-connector-ripple,
+.wave-connector-curl,
+.wave-connector-spray {
+  stroke: rgba(255, 255, 255, 0.82);
+  stroke-width: 0.9;
+}
+
+.wave-connector-spray {
+  stroke-width: 1.1;
+}
+
+.timeline-row--compact .wave-item:nth-child(even) .wave-connector-wave {
+  transform: translateY(-50%) scaleY(-1);
+}
+
+.timeline-row .wave-item:last-child .wave-connector-wave {
+  display: none;
 }
 
 .wave-item:first-child .wave-connector {
@@ -733,6 +921,29 @@ onMounted(async () => {
   color: #1565c0;
 }
 
+.wave-item.wave-has-tasks .wave-marker {
+  background: #1976d2;
+  color: #fff;
+}
+
+.wave-item.wave-no-tasks .wave-marker {
+  background: #f1f5f9;
+}
+
+.wave-item.wave-compact .wave-surface {
+  gap: 0.22rem;
+  padding: 0.2rem 0.15rem 0.1rem;
+}
+
+.wave-item.wave-compact .wave-marker-wrap {
+  min-height: 21px;
+}
+
+.wave-item.wave-compact .wave-marker {
+  width: 22px;
+  height: 22px;
+}
+
 .wave-label {
   min-width: 0;
   text-align: center;
@@ -740,14 +951,18 @@ onMounted(async () => {
 
 .wave-title {
   font-weight: 600;
-  font-size: 0.77rem;
+  font-size: 0.7rem;
   line-height: 1.1;
   margin: 0 0 0.08rem;
   color: #0f172a;
 }
 
+.wave-item.wave-compact .wave-title {
+  font-size: 0.62rem;
+}
+
 .wave-subtitle {
-  font-size: 0.63rem;
+  font-size: 0.56rem;
   color: #64748b;
   margin: 0;
   white-space: nowrap;
@@ -765,11 +980,16 @@ onMounted(async () => {
 }
 
 .wave-tasks-count {
-  font-size: 0.62rem;
+  font-size: 0.56rem;
   color: #475569;
   background: rgba(15, 23, 42, 0.05);
   padding: 0.16rem 0.38rem;
   border-radius: 999px;
+}
+
+.wave-item.wave-compact .wave-tasks-count {
+  font-size: 0.56rem;
+  padding: 0.12rem 0.28rem;
 }
 
 .wave-status-chip {
@@ -818,6 +1038,7 @@ onMounted(async () => {
   width: 10px;
   height: 10px;
   border-radius: 999px;
+  box-sizing: border-box;
 }
 
 .legend-dot.planned {
@@ -830,6 +1051,16 @@ onMounted(async () => {
 
 .legend-dot.completed {
   background: #90caf9;
+}
+
+.legend-dot.has-tasks {
+  background: #1976d2;
+  border: 1px solid #1976d2;
+}
+
+.legend-dot.no-tasks {
+  background: #f1f5f9;
+  border: 1px solid #64748b;
 }
 
 .wave-focus-card {
@@ -872,8 +1103,13 @@ onMounted(async () => {
 }
 
 @media (max-width: 700px) {
-  .timeline {
-    grid-template-columns: repeat(auto-fit, minmax(92px, 1fr));
+  .header-actions {
+    gap: 0.35rem;
+  }
+
+  .header-actions :deep(.v-btn) {
+    padding-inline: 0.5rem;
+    font-size: 0.75rem;
   }
 
   .timeline-shell {

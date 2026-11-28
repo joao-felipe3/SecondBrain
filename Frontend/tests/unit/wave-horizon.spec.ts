@@ -118,6 +118,57 @@ describe('ProjectWavesTimeline', () => {
     expect(wrapper.text()).toContain('Detalhar Onda (2)');
   });
 
+  it('diferencia pela cor as ondas com tarefas planejadas das ondas sem tarefas', async () => {
+    const wrapper = await mountWith([
+      wave('w1', 'active', { taskIds: ['t1'] }),
+      wave('w2', 'planned'),
+    ]);
+
+    expect(wrapper.findAll('.wave-has-tasks')).toHaveLength(1);
+    expect(wrapper.findAll('.wave-no-tasks')).toHaveLength(1);
+    expect(wrapper.find('.wave-task-chip').exists()).toBe(false);
+  });
+
+  it('mantém visíveis os labels da linha ativa, incluindo a terceira onda', async () => {
+    const wrapper = await mountWith([
+      wave('w1', 'completed'),
+      wave('w2', 'active'),
+      wave('w3', 'planned'),
+      wave('w4', 'planned'),
+      wave('w5', 'planned'),
+    ]);
+    const waveItems = wrapper.findAll('.wave-item');
+
+    expect(waveItems[0].classes()).toContain('wave-compact');
+    expect(waveItems[1].classes()).not.toContain('wave-compact');
+    expect(waveItems[2].classes()).not.toContain('wave-compact');
+    expect(waveItems[3].classes()).toContain('wave-compact');
+    expect(waveItems[4].classes()).toContain('wave-compact');
+    expect(waveItems[0].find('.wave-subtitle').exists()).toBe(false);
+    expect(waveItems[0].find('.wave-footer').exists()).toBe(false);
+    expect(waveItems[1].find('.wave-subtitle').exists()).toBe(true);
+    expect(waveItems[1].find('.wave-footer').exists()).toBe(true);
+    expect(waveItems[2].find('.wave-subtitle').exists()).toBe(true);
+    expect(waveItems[2].find('.wave-footer').exists()).toBe(true);
+    expect(waveItems[3].find('.wave-subtitle').exists()).toBe(false);
+    expect(waveItems[3].find('.wave-footer').exists()).toBe(false);
+    expect(waveItems[3].find('.wave-connector-wave path').attributes('d')).toContain('C');
+    expect(waveItems[4].find('.wave-subtitle').exists()).toBe(false);
+    expect(waveItems[4].find('.wave-footer').exists()).toBe(false);
+  });
+
+  it('agrupa até cinco ondas em cada linha compacta', async () => {
+    const wrapper = await mountWith(
+      Array.from({ length: 10 }, (_, index) =>
+        wave(`w${index + 1}`, index === 0 ? 'active' : 'planned'),
+      ),
+    );
+    const compactRows = wrapper.findAll('.timeline-row--compact');
+
+    expect(wrapper.find('.timeline-row--active').findAll('.wave-item')).toHaveLength(3);
+    expect(compactRows.map((row) => row.findAll('.wave-item').length)).toEqual([5, 2]);
+  });
+
   it('onda fora do horizonte não tem botão de detalhar e explica quando será detalhada', async () => {
     const wrapper = await mountWith([
       wave('w1', 'active'),
