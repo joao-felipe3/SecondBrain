@@ -5,12 +5,13 @@
       v-for="(bay, bayIndex) in BAYS"
       :key="bayIndex"
       class="bay"
-      :style="{ left: bay.left, width: bay.width }"
+      :style="{ left: bay.left, width: bay.width, clipPath: ARCH_CLIP }"
     >
       <div
         v-for="(row, rowIndex) in ROWS"
         :key="rowIndex"
         class="bay-row"
+        :class="{ 'is-arched': rowIndex === 0 }"
         :style="{ top: row.top, height: row.height }"
       >
         <div v-for="cell in SLOTS_PER_ROW" :key="cell" class="book-slot">
@@ -24,6 +25,7 @@
               :is-locked="bookAt(bayIndex, rowIndex, cell - 1).isLocked || false"
               :interactive="true"
               class="shelf-book"
+              :style="bookVariety(bayIndex, rowIndex, cell - 1)"
               @mouseenter="$emit('project-hover', bookAt(bayIndex, rowIndex, cell - 1))"
               @click="onBookClick(bookAt(bayIndex, rowIndex, cell - 1), $event)"
             />
@@ -69,6 +71,10 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
 import UiGrimoireBook from '../../ui/diegetic/UiGrimoireBook.vue';
+import { bayArchClipPath } from '~/composables/ui/useLibraryScene';
+
+// Os livros ficam atrás do arco entalhado de cada baia: o que passa da abertura é escondido
+const ARCH_CLIP = bayArchClipPath();
 
 const props = withDefaults(
   defineProps<{
@@ -96,10 +102,10 @@ const BAYS = [
   { left: '41%', width: '18.5%' },
   { left: '62.8%', width: '18%' },
 ];
-// Em % da altura da baia (22,5% a 54,5% do palco): fileira de cima até a 1ª prateleira
-// (37,8%), fileira de baixo de 39,6% até a 2ª prateleira (54,4%).
+// Em % da altura da baia (22,5% a 54,3% do palco). A base de cada fileira cai na emenda entre o
+// painel do fundo e a tábua (1ª prateleira em 37,64%, 2ª em 54,3%): é ali que o livro se apoia.
 const ROWS = [
-  { top: '0%', height: '47.5%' },
+  { top: '0%', height: '47.6%' },
   { top: '53.5%', height: '46.5%' },
 ];
 const SLOTS_PER_ROW = 3;
@@ -123,6 +129,22 @@ function bookAt(bayIndex: number, rowIndex: number, cellIndex: number) {
   return pageProjects.value[index];
 }
 
+// Tomos de alturas um pouco diferentes, como numa estante de verdade (padrão fixo por posição)
+const HEIGHT_VARIETY = [1, 0.94, 0.98, 0.95, 1, 0.92, 0.97, 0.93, 0.99];
+// Giro de cada tomo (graus): livros quase de lado na prateleira, mostrando a lombada (com o título) e a
+// capa em escorço. Pequena variação por posição, como livros arrumados à mão.
+const BAY_TURN = [60, 60, 60];
+const TURN_JITTER = [0, 5, -4, 3, -6, 4, -2, 6, -5];
+function bookVariety(bayIndex: number, rowIndex: number, cellIndex: number) {
+  const slot = bayIndex * ROWS.length * SLOTS_PER_ROW + rowIndex * SLOTS_PER_ROW + cellIndex;
+  const turn = (BAY_TURN[bayIndex] ?? 0) + (TURN_JITTER[slot % TURN_JITTER.length] ?? 0);
+  return {
+    '--book-k': String(HEIGHT_VARIETY[slot % HEIGHT_VARIETY.length]),
+    '--book-turn': `${turn}deg`,
+    '--book-lean': '5deg',
+  };
+}
+
 function bookKey(project: any) {
   return project._id || project.id || project.name;
 }
@@ -134,21 +156,20 @@ function bookKey(project: any) {
   inset: 0;
   /* Capas dimensionadas pela altura do palco (cqh), para acompanhar a imagem */
   container-type: size;
-  --book-h: 14cqh;
-  --book-w: calc(var(--book-h) * 0.7);
+  --shelf-book-h: 13.6cqh;
 }
 
 /* Telas maiores: capas um pouco maiores (limite: a altura do compartimento pintado, ~15%) */
 @media (min-width: 1600px) {
   .bay-shelf {
-    --book-h: 15cqh;
+    --shelf-book-h: 14.6cqh;
   }
 }
 
 .bay {
   position: absolute;
   top: 22.5%;
-  height: 32%;
+  height: 31.8%;
 }
 
 .bay-row {
@@ -158,8 +179,19 @@ function bookKey(project: any) {
   display: flex;
   align-items: flex-end;
   justify-content: space-around;
-  padding: 0 4%;
+  padding: 0 6%;
   box-sizing: border-box;
+}
+
+/* Fileira de cima: fica sob o arco, que desce junto às colunas. Os livros vão mais para o centro para o
+   topo não encostar na curva (senão o recorte do arco corta o canto do livro). */
+.bay-row.is-arched {
+  justify-content: center;
+  padding: 0 13%;
+}
+
+.bay-row.is-arched .book-slot {
+  width: 30%;
 }
 
 .book-slot {
@@ -171,6 +203,9 @@ function bookKey(project: any) {
 }
 
 .shelf-book {
+  /* altura com a variação do tomo; largura na proporção da arte (519×720) */
+  --book-h: calc(var(--shelf-book-h) * var(--book-k, 1));
+  --book-w: calc(var(--book-h) * 0.72);
   cursor: pointer;
 }
 

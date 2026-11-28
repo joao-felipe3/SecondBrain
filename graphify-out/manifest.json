@@ -320,8 +320,8 @@
     "semantic_hash": ""
   },
   "Backend/src/projects/interfaces/wbs-conversion.interface.ts": {
-    "mtime": 1795750151.8334794,
-    "ast_hash": "4ce6a0870be87054906162d5bea0adf2",
+    "mtime": 1795750280.837074,
+    "ast_hash": "ca50dafb99f984156bc916201522c935",
     "semantic_hash": ""
   },
   "Backend/src/projects/interfaces/wbs-metrics.interface.ts": {
@@ -1950,8 +1950,8 @@
     "semantic_hash": ""
   },
   "Frontend/components/features/projects/pages/WBSPage.vue": {
-    "mtime": 1795749767.4949594,
-    "ast_hash": "a421379400c8d0d8b4ee7487c5f3565e",
+    "mtime": 1795897982.9817522,
+    "ast_hash": "437835cc40dd4418d3a69d6ec462f21e",
     "semantic_hash": ""
   },
   "Frontend/components/features/projects/pages/XMatrixPage.vue": {
@@ -2680,13 +2680,13 @@
     "semantic_hash": ""
   },
   "Frontend/pages/index.vue": {
-    "mtime": 1795621179.7652762,
-    "ast_hash": "281be5a565b33ee06bc776936ea7d4a2",
+    "mtime": 1795897982.9871657,
+    "ast_hash": "b99c7c634eb4019e8f9c8395365d76ed",
     "semantic_hash": ""
   },
   "Frontend/pages/projects/index.vue": {
-    "mtime": 1795747054.864877,
-    "ast_hash": "460e068a0588a6887961c7e25a4b6e8b",
+    "mtime": 1795840536.665501,
+    "ast_hash": "18a6fd2689166ac261acda029973d89b",
     "semantic_hash": ""
   },
   "Frontend/plugins/axios.ts": {
@@ -3290,8 +3290,8 @@
     "semantic_hash": ""
   },
   "Frontend/components/features/hall/GuildLibraryPortal.vue": {
-    "mtime": 1795621179.7442672,
-    "ast_hash": "cbd5cc23ef749c8e7db5a3d2c8c6918b",
+    "mtime": 1795897982.9747517,
+    "ast_hash": "b4879770a6331ff287d5e6ecd150614b",
     "semantic_hash": ""
   },
   "Frontend/public/vfx/chair.png": {
@@ -3560,8 +3560,8 @@
     "semantic_hash": ""
   },
   "Frontend/components/ui/diegetic/UiGrimoireBook.vue": {
-    "mtime": 1795480675.932061,
-    "ast_hash": "37ad168cdd6ec040cdffc23e188e3afa",
+    "mtime": 1795898000.8654418,
+    "ast_hash": "deb215e7f79f71482acf3791e0ce667d",
     "semantic_hash": ""
   },
   "Frontend/components/ui/diegetic/UiHourglass.vue": {
@@ -3615,8 +3615,8 @@
     "semantic_hash": ""
   },
   "Frontend/components/features/hall/GuildPuppetCanvas.vue": {
-    "mtime": 1795406101.6691117,
-    "ast_hash": "943fa7b3b3dbe754f949d5586b684420",
+    "mtime": 1795897982.977751,
+    "ast_hash": "b080e60e6f55b2feac7b24185c268a97",
     "semantic_hash": ""
   },
   "Frontend/components/features/hall/GuildSceneSpace.vue": {
@@ -3630,8 +3630,8 @@
     "semantic_hash": ""
   },
   "Frontend/composables/ui/puppet.ts": {
-    "mtime": 1795031285.2812817,
-    "ast_hash": "8fbebf0770d888be880713b5eefceeab",
+    "mtime": 1795897982.9847524,
+    "ast_hash": "48d21bf65f562b20034d4035522d55b0",
     "semantic_hash": ""
   },
   "Frontend/composables/ui/useSceneSpace.ts": {
@@ -3720,8 +3720,8 @@
     "semantic_hash": ""
   },
   "Frontend/tests/unit/puppet.spec.ts": {
-    "mtime": 1795031285.7149093,
-    "ast_hash": "3f1280453ab23503d04e11cd05de3a14",
+    "mtime": 1795897982.9891503,
+    "ast_hash": "ae1b466c8d02322afb6ab8089ff623f6",
     "semantic_hash": ""
   },
   "Frontend/tests/unit/scene-space.spec.ts": {
@@ -4800,8 +4800,8 @@
     "semantic_hash": ""
   },
   "docs/hall-performance-analysis.md": {
-    "mtime": 1795621179.7712693,
-    "ast_hash": "40bcd0d3fb3e50f4308589fbc9d7d597",
+    "mtime": 1795897982.9918344,
+    "ast_hash": "5c13b6c1b26834e40ad14be1f5e1eba5",
     "semantic_hash": ""
   },
   "Frontend/components/features/tasks/page/MuralFlames.vue": {
@@ -4820,8 +4820,8 @@
     "semantic_hash": ""
   },
   "Frontend/components/features/projects/GrimoireBayShelf.vue": {
-    "mtime": 1795486000.00642,
-    "ast_hash": "94653d56689e7bc3d3aefc20a840b38e",
+    "mtime": 1795896925.7951572,
+    "ast_hash": "56c8c681f89822ec352fa33325bb2c4a",
     "semantic_hash": ""
   },
   "Frontend/components/features/projects/GrimoireBookViewer.vue": {
@@ -4875,8 +4875,8 @@
     "semantic_hash": ""
   },
   "Frontend/public/imagens/Projects-expandido.webp": {
-    "mtime": 1795480642.0535848,
-    "ast_hash": "2a5fff0b8f237f8cc94e759ba9c141e0",
+    "mtime": 1795841182.4831252,
+    "ast_hash": "897a9d68093ebc58f11b43cd6a393c70",
     "semantic_hash": ""
   },
   "Backend/src/ai/prompts/projects/anti-repetition.prompts.ts": {
@@ -4937,6 +4937,31 @@
   "Frontend/tests/unit/wbs-tree-node.spec.ts": {
     "mtime": 1795623395.279288,
     "ast_hash": "c72bd7b0f4d326439b9851c084f9a2d0",
+    "semantic_hash": ""
+  },
+  "Frontend/components/features/projects/LibraryLights.vue": {
+    "mtime": 1795891160.3439977,
+    "ast_hash": "a0154b0d80aec2ac5a040f37ce384047",
+    "semantic_hash": ""
+  },
+  "Frontend/composables/ui/useLibraryScene.ts": {
+    "mtime": 1795893839.9461863,
+    "ast_hash": "b37b78e2b01f462b85f23234f53d3499",
+    "semantic_hash": ""
+  },
+  "Frontend/tests/unit/library-scene.spec.ts": {
+    "mtime": 1795893944.1247911,
+    "ast_hash": "41ceaca1c150cec61c4a19203f77ff75",
+    "semantic_hash": ""
+  },
+  "Frontend/public/imagens/grimoire/tome-base.webp": {
+    "mtime": 1795840814.2894616,
+    "ast_hash": "56c4f676f5f40485f9fc71f23cd77967",
+    "semantic_hash": ""
+  },
+  "Frontend/public/imagens/grimoire/tome-leather-mask.webp": {
+    "mtime": 1795840814.3020663,
+    "ast_hash": "d103cb243eac5cc7210fffff1a3b3f0c",
     "semantic_hash": ""
   }
 }

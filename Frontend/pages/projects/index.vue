@@ -24,14 +24,8 @@
           <!-- Palco com a proporção da imagem, ampliado para cobrir toda a tela (como o saguão) -->
           <div class="library-stage">
             <img class="library-bg" src="/imagens/Projects-expandido.webp" alt="" aria-hidden="true" />
-            <!-- Luzes da sala: ficam entre a imagem e as capas, sobre as posições das fontes de luz -->
-            <div class="stage-lights" aria-hidden="true">
-              <span class="stage-light light-torch light-torch--left" />
-              <span class="stage-light light-torch light-torch--right" />
-              <span class="stage-light light-lantern" />
-              <span class="stage-light light-window" />
-              <span class="stage-vignette" />
-            </div>
+            <!-- Luz viva da sala (janela, lanterna, tochas e velas): entre a imagem e as capas -->
+            <LibraryLights />
             <GrimoireBayShelf
               :projects="projects"
               @select-project="onProjectClick"
@@ -125,6 +119,7 @@ import GrimoireBayShelf from '../../components/features/projects/GrimoireBayShel
 import GrimoireGridMobile from '../../components/features/projects/GrimoireGridMobile.vue';
 import GrimoireBookViewer from '../../components/features/projects/GrimoireBookViewer.vue';
 import BookModal from '../../components/features/projects/BookModal.vue';
+import LibraryLights from '../../components/features/projects/LibraryLights.vue';
 import DeleteProjectDialog from '../../components/shared/dialogs/DeleteProjectDialog.vue';
 import { useProjects } from '~/composables/features/useProjects';
 import { useProjectModal } from '~/composables/features/useProjectModal';
@@ -353,132 +348,6 @@ const onConfirmDelete = async (deleteTasks: boolean) => {
 }
 /* Tela inteira, como o saguão: a sala é ampliada até cobrir o viewport (sem faixas).
    Fica no body, acima do layout e abaixo da navegação lateral e do cabeçalho. */
-/* Luzes ambientes: posições em % do palco (medidas sobre a imagem) */
-.stage-lights {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  overflow: hidden;
-}
-
-.stage-light {
-  position: absolute;
-  display: block;
-  border-radius: 50%;
-  transform: translate(-50%, -50%);
-  mix-blend-mode: screen;
-  will-change: opacity, transform;
-}
-
-/* Tochas: chama oscilando em ritmos diferentes */
-.light-torch {
-  width: 15%;
-  aspect-ratio: 1;
-  top: 37%;
-  background: radial-gradient(
-    circle,
-    rgba(255, 170, 60, 0.55) 0%,
-    rgba(255, 130, 40, 0.18) 35%,
-    transparent 70%
-  );
-  animation: torch-flicker 2.3s ease-in-out infinite;
-}
-
-.light-torch--left {
-  left: 16.5%;
-}
-
-.light-torch--right {
-  left: 83%;
-  animation-delay: -1.1s;
-}
-
-/* Lanterna do teto: brilho lento e amplo */
-.light-lantern {
-  left: 50%;
-  top: 14%;
-  width: 22%;
-  aspect-ratio: 1;
-  background: radial-gradient(
-    circle,
-    rgba(255, 200, 90, 0.5) 0%,
-    rgba(255, 150, 50, 0.14) 40%,
-    transparent 70%
-  );
-  animation: lantern-glow 4.5s ease-in-out infinite;
-}
-
-/* Janela de vitral à esquerda: luz fria e suave */
-.light-window {
-  left: 3%;
-  top: 40%;
-  width: 16%;
-  aspect-ratio: 1;
-  background: radial-gradient(
-    circle,
-    rgba(255, 240, 200, 0.35) 0%,
-    rgba(255, 220, 160, 0.1) 40%,
-    transparent 70%
-  );
-  animation: window-sway 7s ease-in-out infinite;
-}
-
-/* Vinheta: escurece as bordas e concentra a atenção no centro */
-.stage-vignette {
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(ellipse at 50% 45%, transparent 55%, rgba(10, 5, 2, 0.45) 100%);
-}
-
-@keyframes torch-flicker {
-  0%,
-  100% {
-    opacity: 0.8;
-    transform: translate(-50%, -50%) scale(1);
-  }
-  25% {
-    opacity: 1;
-    transform: translate(-50%, -50%) scale(1.06);
-  }
-  50% {
-    opacity: 0.6;
-    transform: translate(-50%, -50%) scale(0.96);
-  }
-  75% {
-    opacity: 0.95;
-    transform: translate(-50%, -50%) scale(1.03);
-  }
-}
-
-@keyframes lantern-glow {
-  0%,
-  100% {
-    opacity: 0.75;
-  }
-  50% {
-    opacity: 1;
-  }
-}
-
-@keyframes window-sway {
-  0%,
-  100% {
-    opacity: 0.55;
-    transform: translate(-50%, -50%) translateX(0);
-  }
-  50% {
-    opacity: 0.85;
-    transform: translate(-50%, -50%) translateX(6px);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .light-torch,
-  .light-lantern,
-  .light-window {
-    animation: none;
-  }
-}
 
 .library-canvas {
   position: fixed;
